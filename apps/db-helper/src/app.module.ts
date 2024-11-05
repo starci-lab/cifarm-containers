@@ -1,10 +1,8 @@
 import { Module } from "@nestjs/common"
-import { DoHealthcheckModule } from "./do-healthcheck"
 import { TypeOrmModule } from "@nestjs/typeorm"
 
 @Module({
     imports: [
-        DoHealthcheckModule,
         TypeOrmModule.forRoot({
             type: "postgres",
             host: "localhost",
@@ -17,5 +15,6 @@ import { TypeOrmModule } from "@nestjs/typeorm"
         }),
     ],
     controllers: [],
+    providers: [],
 })
 export class AppModule {}
