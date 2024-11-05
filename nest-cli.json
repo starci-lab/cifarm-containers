@@ -1,8 +1,32 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/cifarm-server/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/cifarm-server/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/cifarm-server",
+  "projects": {
+    "healthcheck-service": {
+      "type": "application",
+      "root": "apps/healthcheck-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/healthcheck-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/healthcheck-service/tsconfig.app.json"
+      }
+    },
+    "rest-api-gateway": {
+      "type": "application",
+      "root": "apps/rest-api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/rest-api-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/rest-api-gateway/tsconfig.app.json"
+      }
+    }
   }
 }

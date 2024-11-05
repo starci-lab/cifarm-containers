@@ -1,7 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { DoHealthcheckResponse } from "./do-healthcheck.dto"
-import { grpcConstants } from "../constant"
+import { healthcheckGrpcConstants } from "../constant"
 
 @Controller()
 export class DoHealthcheckService {
@@ -9,7 +9,7 @@ export class DoHealthcheckService {
 
     constructor() {}
 
-  @GrpcMethod(grpcConstants.SERVICE, "DoHealthcheck")
+  @GrpcMethod(healthcheckGrpcConstants.SERVICE, "DoHealthcheck")
     public doHealthcheck(): DoHealthcheckResponse {
         this.logger.debug("Healthcheck request received")
         return {

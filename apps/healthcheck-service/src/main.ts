@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { grpcConstants } from "./constant"
+import { healthcheckGrpcConstants } from "./constant"
 
 
 const bootstrap = async () => {
@@ -11,8 +11,8 @@ const bootstrap = async () => {
             transport: Transport.GRPC,
             options: {
                 url: "0.0.0.0:3002",
-                package: grpcConstants.PACKAGE,
-                protoPath: grpcConstants.PROTO_PATH,
+                package: healthcheckGrpcConstants.PACKAGE,
+                protoPath: healthcheckGrpcConstants.PROTO_PATH,
             },
         },
     )
