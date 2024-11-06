@@ -20,7 +20,6 @@ import {
     VerifySignatureRequest,
     VerifySignatureResponse,
 } from "@apps/auth-service"
-import { TransformedSuccessResponse } from "../transform"
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -37,52 +36,31 @@ export class AuthController implements OnModuleInit {
     }
 
   @HttpCode(HttpStatus.OK)
-  @ApiResponse({ type: TransformedSuccessResponse<RequestMessageResponse> })
+  @ApiResponse({ type: RequestMessageResponse })
   @Post("message")
-    public async requestMessage(): Promise<
-    TransformedSuccessResponse<RequestMessageResponse>
-    > {
-        const data = await lastValueFrom(this.authService.requestMessage({}))
-        return {
-            data,
-            status: HttpStatus.OK,
-            message: "Success",
-        }
+    public async requestMessage(): Promise<RequestMessageResponse> {
+        return await lastValueFrom(this.authService.requestMessage({}))
     }
 
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
-      type: TransformedSuccessResponse<GenerateTestSignatureResponse>,
+      type: GenerateTestSignatureResponse,
   })
   @Post("test-signature")
   public async generateTestSignature(
     @Body() request: GenerateTestSignatureRequest,
-  ): Promise<TransformedSuccessResponse<GenerateTestSignatureResponse>> {
-      const data = await lastValueFrom(
-          this.authService.generateTestSignature(request),
-      )
-      return {
-          data,
-          status: HttpStatus.OK,
-          message: "Success",
-      }
+  ): Promise<GenerateTestSignatureResponse> {
+      return await lastValueFrom(this.authService.generateTestSignature(request))
   }
 
   @HttpCode(HttpStatus.OK)
   @ApiResponse({
-      type: TransformedSuccessResponse<VerifySignatureResponse>,
+      type: VerifySignatureResponse,
   })
   @Post("verify-signature")
   public async verifySignature(
     @Body() request: VerifySignatureRequest,
-  ): Promise<TransformedSuccessResponse<VerifySignatureResponse>> {
-      const data = await lastValueFrom(
-          this.authService.verifySignature(request),
-      )
-      return {
-          data,
-          status: HttpStatus.OK,
-          message: "Success",
-      }
+  ): Promise<VerifySignatureResponse> {
+      return await lastValueFrom(this.authService.verifySignature(request))
   }
 }

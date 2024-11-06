@@ -1,3 +1,6 @@
+import { ApiProperty } from "@nestjs/swagger"
+
 export class DoHealthcheckResponse {
-    message: string
+    @ApiProperty({ example: "hello world" })
+        message: string
 }

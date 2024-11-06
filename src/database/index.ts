@@ -1,1 +1,1 @@
-export * from "./postgresql"
+export * from "./gameplay-postgresql"

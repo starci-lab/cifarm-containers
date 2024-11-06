@@ -1,6 +1,6 @@
 import { Module, ValidationPipe } from "@nestjs/common"
 import { APP_PIPE } from "@nestjs/core"
-import { cacheRedisModule, configModule, typeOrmPostgresqlModule } from "@src/modules"
+import { cacheRedisModule, configModule, typeOrmGameplayPostgresqlModule } from "@src/modules"
 import { GenerateTestSignatureModule } from "./generate-test-signature"
 import { RequestMessageModule } from "./request-message"
 import { AppController } from "./app.controller"
@@ -10,7 +10,7 @@ import { VerifySignatureModule } from "./verify-signature"
 @Module({
     imports: [
         configModule,
-        typeOrmPostgresqlModule,
+        typeOrmGameplayPostgresqlModule,
         cacheRedisModule,
         BlockchainAuthModule,
         JwtModule,

@@ -1,8 +1,9 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, Entity } from "typeorm"
+import { Column, Entity, OneToMany } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { SupportedChainKey } from "@src/config"
 import { Network } from "@src/config"
+import { InventoryEntity } from "./inventory.entity"
 
 @ObjectType()
 @Entity("users")
@@ -20,6 +21,10 @@ export class UserEntity extends AbstractEntity {
       network: Network
 
   @Field(() => String)
-  @Column({ name: "accountAddress", type: "varchar", length: 50 })
+  @Column({ name: "account_address", type: "varchar", length: 100 })
       accountAddress: string
+
+  @Field(() => [InventoryEntity])
+  @OneToMany(() => InventoryEntity, (inventory) => inventory.user)
+      inventories?: Array<InventoryEntity>
 }
