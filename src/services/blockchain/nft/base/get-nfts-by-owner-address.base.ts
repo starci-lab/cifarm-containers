@@ -13,14 +13,14 @@ import {
     Platform,
     blockchainConfig,
     chainKeyToPlatform,
-} from "@/config"
-import { PlatformNotFoundException } from "@/exceptions"
+} from "@src/config"
+import { PlatformNotFoundException } from "@src/exceptions"
 import { MulticallProvider } from "@ethers-ext/provider-multicall"
 import { AlgorandMetadata, NearNft, NftData } from "../common"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
 import { fetchAllDigitalAssetByOwner } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey, isSome } from "@metaplex-foundation/umi"
-import { Atomic } from "@/utils"
+import { Atomic } from "@src/types"
 import { IpfsService } from "../common"
 
 export interface GetNftsByOwnerAddressParams {

@@ -1,5 +1,5 @@
-import { Network } from "@/config"
-import { Atomic } from "@/utils"
+import { Network } from "@src/config"
+import { Atomic } from "@src/types"
 
 
 export interface GetContractObservableParams {

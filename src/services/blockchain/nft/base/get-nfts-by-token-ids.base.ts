@@ -14,15 +14,15 @@ import {
     Platform,
     blockchainConfig,
     chainKeyToPlatform,
-} from "@/config"
-import { PlatformNotFoundException } from "@/exceptions"
+} from "@src/config"
+import { PlatformNotFoundException } from "@src/exceptions"
 import { MulticallProvider } from "@ethers-ext/provider-multicall"
 import { NearNft, NftData } from "../common"
 import { Connection, PublicKey, ParsedAccountData } from "@solana/web3.js"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
 import { fetchDigitalAsset } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey } from "@metaplex-foundation/umi"
-import { Atomic } from "@/utils"
+import { Atomic } from "@src/types"
 import { IpfsService } from "../common"
 
 export interface GetNftsByTokenIdsParams {

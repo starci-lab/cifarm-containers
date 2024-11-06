@@ -1,4 +1,4 @@
-import { Network } from "@/config"
+import { Network } from "@src/config"
 import { Network as AptosNetwork, Aptos, AptosConfig } from "@aptos-labs/ts-sdk"
 
 export const networkMap: Record<Network, AptosNetwork> = {

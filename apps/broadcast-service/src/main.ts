@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { AppModule } from "./app.module"
-import { websocketBroadcastGrpcConstants } from "./constant"
+import { broadcastGrpcConstants } from "./constant"
 
 
 const bootstrap = async () => {
@@ -11,8 +11,8 @@ const bootstrap = async () => {
             transport: Transport.GRPC,
             options: {
                 url: "0.0.0.0:3004",
-                package: websocketBroadcastGrpcConstants.PACKAGE,
-                protoPath: websocketBroadcastGrpcConstants.PROTO_PATH,
+                package: broadcastGrpcConstants.PACKAGE,
+                protoPath: broadcastGrpcConstants.PROTO_PATH,
             },
         },
     )

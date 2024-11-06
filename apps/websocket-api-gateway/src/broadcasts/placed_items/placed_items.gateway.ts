@@ -1,4 +1,4 @@
-import { websocketBroadcastGrpcConstants } from "@apps/websocket-broadcast-service"
+import { websocketBroadcastGrpcConstants } from "@apps/broadcast-service"
 import { Inject, Logger, OnModuleInit } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
 import { Interval } from "@nestjs/schedule"

@@ -5,9 +5,10 @@ import {
     Network,
     Platform,
     SupportedChainKey,
-} from "@/config"
+} from "@src/config"
 import { nearClient, nearKeyPair, nearKeyStore } from "../../rpcs"
-import { computeRaw, TransactionResult } from "@/utils"
+import { computeRaw } from "@src/utils"
+import { TransactionResult } from "@src/types"
 import { NearNftMetadata } from "../common"
 
 export interface MintNftParams {

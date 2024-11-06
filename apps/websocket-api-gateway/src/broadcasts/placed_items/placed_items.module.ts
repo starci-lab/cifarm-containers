@@ -1,5 +1,5 @@
 
-import { websocketBroadcastGrpcConstants } from "@apps/websocket-broadcast-service"
+import { websocketBroadcastGrpcConstants } from "@apps/broadcast-service"
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { PlacedItemsGateway } from "./placed_items.gateway"

@@ -1,4 +1,4 @@
-import { Network } from "@/config"
+import { Network } from "@src/config"
 import { avalancheHttpRpcUrl, avalancheWsRpcUrl } from "./avalanche.evm"
 
 export const evmHttpRpcUrl = (chainKey: string, network: Network) => {

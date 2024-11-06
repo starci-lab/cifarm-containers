@@ -1,7 +1,7 @@
 import {
     BroadcastPlacedItemsRequest,
     BroadcastPlacedItemsResponse,
-} from "@apps/websocket-broadcast-service"
+} from "@apps/broadcast-service"
 import { Observable } from "rxjs"
 
 export interface IPlacedItemsService {

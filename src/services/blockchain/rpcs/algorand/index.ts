@@ -1,4 +1,4 @@
-import { Network } from "@/config"
+import { Network } from "@src/config"
 import { Algodv2, Indexer } from "algosdk"
 
 export const TESTNET_ALGOD_SERVER_URL = "https://testnet-api.algonode.cloud"

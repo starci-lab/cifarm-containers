@@ -1,4 +1,4 @@
-import { Network } from "@/config"
+import { Network } from "@src/config"
 import { clusterApiUrl } from "@solana/web3.js"
 
 export const solanaHttpRpcUrl = (network: Network) => {

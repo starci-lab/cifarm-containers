@@ -1,7 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { DataSource } from "typeorm"
-import { websocketBroadcastGrpcConstants } from "../constant"
+import { broadcastGrpcConstants } from "../constant"
 import { BroadcastPlacedItemsRequest, BroadcastPlacedItemsResponse } from "./broadcast-placed-items.dto"
 import { PlacedItemEntity } from "@src/database"
 
@@ -13,7 +13,7 @@ export class BroadcastPlacedItemsService {
         private readonly dataSource: DataSource
     ) {}
 
-  @GrpcMethod(websocketBroadcastGrpcConstants.SERVICE, "BroadcastPlacedItems")
+  @GrpcMethod(broadcastGrpcConstants.SERVICE, "BroadcastPlacedItems")
     public async broadcastPlacedItems(request: BroadcastPlacedItemsRequest): Promise<BroadcastPlacedItemsResponse> {
         this.logger.debug("Broadcast placed items request received")
         this.logger.debug(request)

@@ -10,7 +10,7 @@ import { decode } from "bs58"
 export class SolanaAuthService {
     private readonly logger = new Logger(SolanaAuthService.name)
     constructor() {}
-
+ 
     public verifyMessage({
         message,
         signature,

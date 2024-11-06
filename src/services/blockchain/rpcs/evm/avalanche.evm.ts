@@ -1,4 +1,4 @@
-import { Network } from "@/config"
+import { Network } from "@src/config"
 
 export const AVALANCHE_TESTNET_RPC_URL =
   "https://api.avax-test.network/ext/bc/C/rpc"

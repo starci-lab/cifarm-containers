@@ -1,20 +1,16 @@
-import { Module } from "@nestjs/common"
-import { TypeOrmModule } from "@nestjs/typeorm"
+import { Module, ValidationPipe } from "@nestjs/common"
+import { APP_PIPE } from "@nestjs/core"
+import { ServicesModule } from "@src/services"
+import { cacheRedisModule, typeOrmPostgresqlModule } from "@src/modules"
 
 @Module({
-    imports: [
-        TypeOrmModule.forRoot({
-            type: "postgres",
-            host: "localhost",
-            port: 5432,
-            username: "postgres",
-            password: "Cuong123_A",
-            database: "cifarm",
-            autoLoadEntities: true,
-            synchronize: true,
-        }),
-    ],
+    imports: [typeOrmPostgresqlModule, cacheRedisModule, ServicesModule],
     controllers: [],
-    providers: [],
+    providers: [
+        {
+            provide: APP_PIPE,
+            useClass: ValidationPipe,
+        },
+    ],
 })
 export class AppModule {}

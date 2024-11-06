@@ -1,4 +1,4 @@
-import { Network } from "@/config"
+import { Network } from "@src/config"
 import { solanaHttpRpcUrl as _solanaHttpRpcUrl } from "./solana.solana"
 
 export * from "./solana.solana"

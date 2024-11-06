@@ -1,4 +1,4 @@
-import { ChainKeyNotFoundException } from "@/exceptions"
+import { ChainKeyNotFoundException } from "@src/exceptions"
 
 export enum Network {
   Testnet = "testnet",
