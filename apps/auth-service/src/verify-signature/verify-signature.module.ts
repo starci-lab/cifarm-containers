@@ -1,7 +1,7 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { HealthcheckEntity } from "@src/database"
-import { GenerateTestSignatureService } from "./verify-signature.service"
+import { VerifySignatureService } from "./verify-signature.service"
 import { RequestMessageService } from "../request-message"
 import {
     AlgorandAuthService,
@@ -11,6 +11,7 @@ import {
     PolkadotAuthService,
     SolanaAuthService,
 } from "@src/services"
+import { JwtService } from "@nestjs/jwt"
 
 @Global()
 @Module({
@@ -24,8 +25,9 @@ import {
         AlgorandAuthService,
         PolkadotAuthService,
         RequestMessageService,
-        GenerateTestSignatureService,
+        VerifySignatureService,
+        JwtService,
     ],
-    exports: [GenerateTestSignatureService],
+    exports: [VerifySignatureService],
 })
 export class GenerateTestSignatureModule {}

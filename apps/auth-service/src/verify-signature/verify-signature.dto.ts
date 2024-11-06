@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty, IsOptional, IsString } from "class-validator"
-import { Network } from "@src/config"
+import { Network, SupportedChainKey } from "@src/config"
 import { SignedMessage } from "@src/services"
 
 export class VerifySignatureRequest implements SignedMessage {
@@ -14,12 +14,19 @@ export class VerifySignatureRequest implements SignedMessage {
         "0x62cc52b62e31d82925e36747ed8229b583d34f2dce52dee3dcc4664c25c58cfa13f8cc15ed0bfb834646069d649ade99d12b3a67fa6a469a27b77baeaffd8b991b",
     })
         signature: string
+
     @IsOptional()
-    @ApiProperty({ example: "avalanche" })
-        chainKey?: string
+    @ApiProperty({ example: SupportedChainKey.Solana })
+        chainKey?: SupportedChainKey
+
     @IsOptional()
     @ApiProperty({ example: "testnet" })
         network?: Network
+
+    //near, aptos 
+    @IsOptional()
+    @ApiProperty({ example: "0xab" })
+        accountAddress?: string
 }
 
 export class VerifySignatureResponse {

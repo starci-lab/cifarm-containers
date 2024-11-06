@@ -1,7 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import {
     VerifySignatureRequest,
-    VerifySignatureResponse
+    VerifySignatureResponse,
 } from "./verify-signature.dto"
 import {
     chainKeyToPlatform,
@@ -21,20 +21,26 @@ import {
 } from "@src/services"
 import { RequestMessageService } from "../request-message"
 import { Cache } from "cache-manager"
+import { JwtService } from "@nestjs/jwt"
+import { DataSource } from "typeorm"
+import { CACHE_MANAGER } from "@nestjs/cache-manager"
+import { UserEntity } from "@src/database"
 
 @Injectable()
-export class GenerateTestSignatureService {
-    private readonly logger = new Logger(GenerateTestSignatureService.name)
+export class VerifySignatureService {
+    private readonly logger = new Logger(VerifySignatureService.name)
 
     constructor(
+    @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
-    private readonly requestMessageService: RequestMessageService,
+    private readonly dataSource: DataSource,
     private readonly evmAuthService: EvmAuthService,
     private readonly solanaAuthService: SolanaAuthService,
     private readonly aptosAuthService: AptosAuthService,
     private readonly algorandAuthService: AlgorandAuthService,
     private readonly polkadotAuthService: PolkadotAuthService,
     private readonly nearAuthService: NearAuthService,
+    private readonly jwtService: JwtService,
     ) {}
 
     public async verifySignature({
@@ -43,6 +49,7 @@ export class GenerateTestSignatureService {
         signature,
         chainKey,
         network,
+        accountAddress,
     }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
         const valid = await this.cacheManager.get(message)
         if (!valid) {
@@ -52,11 +59,12 @@ export class GenerateTestSignatureService {
         //await this.cacheManager.del(message)
         let result = false
 
-        chainKey = chainKey ?? defaultChainKey
-        network = network ?? Network.Testnet
-        //
-        console.log(chainKey, network)
+        chainKey = chainKey || defaultChainKey
+        network = network || Network.Testnet
         const platform = chainKeyToPlatform(chainKey)
+        
+        const _accountAddress = publicKey
+
         switch (platform) {
         case Platform.Evm: {
             result = this.evmAuthService.verifyMessage({
@@ -75,11 +83,13 @@ export class GenerateTestSignatureService {
             break
         }
         case Platform.Aptos: {
+            if (!accountAddress) throw new Error("Account address is required")
             result = this.aptosAuthService.verifyMessage({
                 message,
                 signature,
                 publicKey,
             })
+            _accountAddress = accountAddress
             break
         }
         case Platform.Algorand: {
@@ -91,19 +101,23 @@ export class GenerateTestSignatureService {
             break
         }
         case Platform.Polkadot: {
+            if (!accountAddress) throw new Error("Account address is required")
             result = this.polkadotAuthService.verifyMessage({
                 message,
                 signature,
                 publicKey,
             })
+            _accountAddress = accountAddress
             break
         }
         case Platform.Near: {
+            if (!accountAddress) throw new Error("Account address is required")
             result = this.nearAuthService.verifyMessage({
                 message,
                 signature,
                 publicKey,
             })
+            _accountAddress = accountAddress
             break
         }
         default:
@@ -111,8 +125,24 @@ export class GenerateTestSignatureService {
             result = false
             break
         }
+        let user = await this.dataSource.manager.findOne(UserEntity, {
+            where: {
+                accountAddress: _accountAddress,
+                chainKey,
+                network
+            }
+        })
+        //if user not found, create user
+        if (!user) {
+            user = await this.dataSource.manager.save(UserEntity, {
+                accountAddress: _accountAddress,
+                chainKey,
+                network
+            })
+        }
+
         return {
-            result
+            result,
         }
     }
 }
