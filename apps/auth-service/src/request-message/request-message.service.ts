@@ -16,7 +16,6 @@ export class RequestMessageService {
     ) {}
 
     public async requestMessage(): Promise<RequestMessageResponse> {
-        this.logger.debug("RequestMessage called")
         const message = randomUUID()
         await this.cacheManager.set(message, true, 0)
         return {

@@ -11,7 +11,7 @@ import { authGrpcConstants } from "@apps/auth-service"
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
-                        url: "0.0.0.0:3004",
+                        url: "0.0.0.0:3005",
                         package: authGrpcConstants.PACKAGE,
                         protoPath: authGrpcConstants.PROTO_PATH
                     },

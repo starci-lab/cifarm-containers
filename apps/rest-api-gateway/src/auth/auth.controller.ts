@@ -1,19 +1,20 @@
 import {
+    Body,
     Controller,
-    Get,
     HttpCode,
     HttpStatus,
     Inject,
     Logger,
     OnModuleInit,
+    Post,
 } from "@nestjs/common"
-import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { IAuthService } from "./auth.service"
 import { lastValueFrom } from "rxjs"
 import { ApiResponse, ApiTags } from "@nestjs/swagger"
 import {
     authGrpcConstants,
+    GenerateTestSignatureRequest,
     GenerateTestSignatureResponse,
     RequestMessageResponse,
 } from "@apps/auth-service"
@@ -29,13 +30,13 @@ export class AuthController implements OnModuleInit {
     private authService: IAuthService
     onModuleInit() {
         this.authService = this.client.getService<IAuthService>(
-            healthcheckGrpcConstants.SERVICE,
+            authGrpcConstants.SERVICE,
         )
     }
 
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ type: TransformedSuccessResponse<RequestMessageResponse> })
-  @Get()
+  @Post("request-message")
     public async requestMessage(): Promise<
     TransformedSuccessResponse<RequestMessageResponse>
     > {
@@ -51,12 +52,12 @@ export class AuthController implements OnModuleInit {
   @ApiResponse({
       type: TransformedSuccessResponse<GenerateTestSignatureResponse>,
   })
-  @Get()
-  public async generateTestSignature(): Promise<
-    TransformedSuccessResponse<GenerateTestSignatureResponse>
-    > {
+  @Post("generate-test-signature")
+  public async generateTestSignature(
+    @Body() request: GenerateTestSignatureRequest,
+  ): Promise<TransformedSuccessResponse<GenerateTestSignatureResponse>> {
       const data = await lastValueFrom(
-          this.authService.generateTestSignature({}),
+          this.authService.generateTestSignature(request),
       )
       return {
           data,
