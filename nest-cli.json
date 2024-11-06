@@ -36,6 +36,33 @@
       "compilerOptions": {
         "tsConfigPath": "apps/db-helper/tsconfig.app.json"
       }
+    },
+    "websocket-api-gateway": {
+      "type": "application",
+      "root": "apps/websocket-api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/websocket-api-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/websocket-api-gateway/tsconfig.app.json"
+      }
+    },
+    "websocket-broadcast-service": {
+      "type": "application",
+      "root": "apps/websocket-broadcast-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/websocket-broadcast-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/websocket-broadcast-service/tsconfig.app.json"
+      }
+    },
+    "auth-service": {
+      "type": "application",
+      "root": "apps/auth-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/auth-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/auth-service/tsconfig.app.json"
+      }
     }
   }
 }

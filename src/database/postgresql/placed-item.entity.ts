@@ -7,7 +7,7 @@ import { AbstractEntity } from "./abstract"
 
 @ObjectType()
 @Entity("placed_items")
-export class PlacedItemEntities extends AbstractEntity {
+export class PlacedItemEntity extends AbstractEntity {
   @Field(() => String)
   @Column({ name: "quantity", type: "int", default: 1 })
       quantity: string

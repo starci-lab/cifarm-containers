@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package websocket_broadcast;
+
+message BroadcastPlacedItemsRequest {
+    string user_id = 1;     
+}
+
+message BroadcastPlacedItemsResponse {
+    string message = 1;
+}
+
+service WebsocketBroadcastService {
+  rpc BroadcastPlacedItems(BroadcastPlacedItemsRequest) returns (BroadcastPlacedItemsResponse);
+}
