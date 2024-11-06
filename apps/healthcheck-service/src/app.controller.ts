@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { healthcheckGrpcConstants } from "./constant"
+import { healthcheckGrpcConstants } from "./constants"
 import { DoHealthcheckResponse, DoHealthcheckService } from "./do-healthcheck"
 
 @Controller()

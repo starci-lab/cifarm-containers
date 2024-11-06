@@ -1,7 +1,7 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { HealthcheckEntity } from "@src/database"
-import { GenerateFakeSignatureService } from "./generate-fake-signature.service"
+import { GenerateTestSignatureService } from "./generate-test-signature.service"
 import { RequestMessageService } from "../request-message"
 import {
     AlgorandAuthService,
@@ -24,8 +24,8 @@ import {
         AlgorandAuthService,
         PolkadotAuthService,
         RequestMessageService,
-        GenerateFakeSignatureService,
+        GenerateTestSignatureService,
     ],
-    exports: [GenerateFakeSignatureService],
+    exports: [GenerateTestSignatureService],
 })
-export class GenerateFakeSignatureModule {}
+export class GenerateTestSignatureModule {}

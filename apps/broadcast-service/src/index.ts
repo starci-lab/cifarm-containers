@@ -1,3 +1,3 @@
 export * from "./app.module"
 export * from "./broadcast-placed-items"
-export * from "./constant"
+export * from "./constants"

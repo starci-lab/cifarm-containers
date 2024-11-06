@@ -3,7 +3,7 @@ import { IsNotEmpty, IsOptional } from "class-validator"
 import { Network } from "@src/config"
 import { BotType } from "@src/guards"
 
-export class GenerateFakeSignatureRequest {
+export class GenerateTestSignatureRequest {
   @IsOptional()
   @ApiProperty({ example: "avalanche" })
       chainKey?: string
@@ -16,7 +16,7 @@ export class GenerateFakeSignatureRequest {
       network?: Network
 }
 
-export class GenerateFakeSignatureResponse {
+export class GenerateTestSignatureResponse {
   @IsOptional()
   @ApiProperty({ example: "avalanche" })
       chainKey: string

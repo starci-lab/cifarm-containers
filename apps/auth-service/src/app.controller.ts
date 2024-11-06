@@ -1,10 +1,10 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { authGrpcConstants } from "./constant"
+import { authGrpcConstants } from "./constants"
 import {
-    GenerateFakeSignatureRequest,
-    GenerateFakeSignatureService,
-} from "./generate-fake-signature"
+    GenerateTestSignatureRequest,
+    GenerateTestSignatureService,
+} from "./generate-test-signature"
 import { RequestMessageService } from "./request-message"
 
 @Controller()
@@ -13,7 +13,7 @@ export class AppController {
 
     constructor(
     private readonly requestMessageService: RequestMessageService,
-    private readonly generateFakeSignatureService: GenerateFakeSignatureService,
+    private readonly generateTestSignatureService: GenerateTestSignatureService,
     ) {}
 
   @GrpcMethod(authGrpcConstants.SERVICE, "RequestMessage")
@@ -22,9 +22,9 @@ export class AppController {
         return this.requestMessageService.requestMessage()
     }
 
-  @GrpcMethod(authGrpcConstants.SERVICE, "GenerateFakeSignature")
-  public async generateFakeSignature(request: GenerateFakeSignatureRequest) {
-      this.logger.debug("GenerateFakeSignature called")
-      return this.generateFakeSignatureService.generateFakeSignature(request)
+  @GrpcMethod(authGrpcConstants.SERVICE, "GenerateTestSignature")
+  public async generateTestSignature(request: GenerateTestSignatureRequest) {
+      this.logger.debug("GenerateTestSignature called")
+      return this.generateTestSignatureService.generateTestSignature(request)
   }
 }

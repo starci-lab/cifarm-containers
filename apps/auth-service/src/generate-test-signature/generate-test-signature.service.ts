@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    GenerateFakeSignatureRequest,
-    GenerateFakeSignatureResponse,
-} from "./generate-fake-signature.dto"
+    GenerateTestSignatureRequest,
+    GenerateTestSignatureResponse,
+} from "./generate-test-signature.dto"
 import {
     chainKeyToPlatform,
     defaultChainKey,
@@ -25,8 +25,8 @@ import { RequestMessageService } from "../request-message"
 import { encode } from "bs58"
 
 @Injectable()
-export class GenerateFakeSignatureService {
-    private readonly logger = new Logger(GenerateFakeSignatureService.name)
+export class GenerateTestSignatureService {
+    private readonly logger = new Logger(GenerateTestSignatureService.name)
 
     constructor(
     private readonly requestMessageService: RequestMessageService,
@@ -38,11 +38,11 @@ export class GenerateFakeSignatureService {
     private readonly nearAuthService: NearAuthService,
     ) {}
 
-    public async generateFakeSignature({
+    public async generateTestSignature({
         accountNumber,
         chainKey,
         network,
-    }: GenerateFakeSignatureRequest): Promise<GenerateFakeSignatureResponse> {
+    }: GenerateTestSignatureRequest): Promise<GenerateTestSignatureResponse> {
         network = network || defaultNetwork
         const { message } = await this.requestMessageService.requestMessage()
         chainKey = chainKey ?? defaultChainKey

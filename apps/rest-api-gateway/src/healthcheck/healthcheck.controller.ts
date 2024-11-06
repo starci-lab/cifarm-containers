@@ -1,4 +1,12 @@
-import { Controller, Get, HttpCode, HttpStatus, Inject, Logger, OnModuleInit } from "@nestjs/common"
+import {
+    Controller,
+    Get,
+    HttpCode,
+    HttpStatus,
+    Inject,
+    Logger,
+    OnModuleInit,
+} from "@nestjs/common"
 import {
     DoHealthcheckResponse,
     healthcheckGrpcConstants,
@@ -7,6 +15,7 @@ import { ClientGrpc } from "@nestjs/microservices"
 import { IHealthcheckService } from "./healthcheck.service"
 import { lastValueFrom } from "rxjs"
 import { ApiResponse, ApiTags } from "@nestjs/swagger"
+import { TransformedSuccessResponse } from "../transform"
 
 @ApiTags("Healthcheck")
 @Controller("healthcheck")
@@ -24,11 +33,17 @@ export class HealthcheckController implements OnModuleInit {
         )
     }
 
-    @HttpCode(HttpStatus.OK)
-    @ApiResponse({ type: DoHealthcheckResponse })
-    @Get()
-    public async doHealthcheck(): Promise<DoHealthcheckResponse> {
-        this.logger.debug("Healthcheck request called")
-        return await lastValueFrom(this.healthcheckService.doHealthcheck({}))
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({ type: TransformedSuccessResponse<DoHealthcheckResponse> })
+  @Get()
+    public async doHealthcheck(): Promise<
+    TransformedSuccessResponse<DoHealthcheckResponse>
+    > {
+        const data = await lastValueFrom(this.healthcheckService.doHealthcheck({}))
+        return {
+            data,
+            status: HttpStatus.OK,
+            message: "Success",
+        }
     }
 }

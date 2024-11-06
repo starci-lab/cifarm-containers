@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package auth;
+
+message RequestMessageResponse {
+    string message = 1;     
+}
+
+message GenerateTestSignatureRequest {
+    string chain_key = 1;   // Optional field
+    int32 account_number = 2; // Optional field
+    string network = 3;     // Enum type, could be defined as 'Network'
+}
+
+message GenerateTestSignatureResponse {
+    string chain_key = 1;    // Optional field (could be empty string if not set)
+    string message = 2;       // Required field
+    string public_key = 3;    // Required field
+    string signature = 4;     // Required field
+    string network = 5;      // Enum (TESTNET, MAINNET, etc.)
+    string telegram_init_data_raw = 6; // Optional field
+    string bot_type = 7;     // Enum (CIWALLET, etc.)
+    string account_address = 8; // Required field
+}
+
+service AuthService {
+    rpc RequestMessage(google.protobuf.Empty) returns (RequestMessageResponse);
+    rpc GenerateTestSignature(GenerateTestSignatureRequest) returns (GenerateTestSignatureResponse);
+  }

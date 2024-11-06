@@ -1,3 +1,3 @@
 export * from "./app.module"
 export * from "./do-healthcheck"
-export * from "./constant"
+export * from "./constants"

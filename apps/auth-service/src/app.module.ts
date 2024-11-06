@@ -1,7 +1,7 @@
 import { Module, ValidationPipe } from "@nestjs/common"
 import { APP_PIPE } from "@nestjs/core"
 import { cacheRedisModule, typeOrmPostgresqlModule } from "@src/modules"
-import { GenerateFakeSignatureModule } from "./generate-fake-signature"
+import { GenerateTestSignatureModule } from "./generate-test-signature"
 import { RequestMessageModule } from "./request-message"
 import { AppController } from "./app.controller"
 
@@ -10,7 +10,7 @@ import { AppController } from "./app.controller"
         typeOrmPostgresqlModule,
         cacheRedisModule,
         RequestMessageModule,
-        GenerateFakeSignatureModule,
+        GenerateTestSignatureModule,
     ],
     controllers: [AppController],
     providers: [

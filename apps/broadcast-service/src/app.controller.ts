@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { broadcastGrpcConstants } from "./constant"
+import { broadcastGrpcConstants } from "./constants"
 import {
     BroadcastPlacedItemsRequest,
     BroadcastPlacedItemsResponse,
