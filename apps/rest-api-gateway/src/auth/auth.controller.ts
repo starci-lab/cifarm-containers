@@ -36,7 +36,7 @@ export class AuthController implements OnModuleInit {
 
   @HttpCode(HttpStatus.OK)
   @ApiResponse({ type: TransformedSuccessResponse<RequestMessageResponse> })
-  @Post("request-message")
+  @Post("message")
     public async requestMessage(): Promise<
     TransformedSuccessResponse<RequestMessageResponse>
     > {
@@ -52,7 +52,7 @@ export class AuthController implements OnModuleInit {
   @ApiResponse({
       type: TransformedSuccessResponse<GenerateTestSignatureResponse>,
   })
-  @Post("generate-test-signature")
+  @Post("test-signature")
   public async generateTestSignature(
     @Body() request: GenerateTestSignatureRequest,
   ): Promise<TransformedSuccessResponse<GenerateTestSignatureResponse>> {
