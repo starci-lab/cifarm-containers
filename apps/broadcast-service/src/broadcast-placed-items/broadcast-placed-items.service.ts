@@ -1,23 +1,26 @@
-import { Controller, Logger } from "@nestjs/common"
-import { GrpcMethod } from "@nestjs/microservices"
+import { Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
-import { broadcastGrpcConstants } from "../constant"
-import { BroadcastPlacedItemsRequest, BroadcastPlacedItemsResponse } from "./broadcast-placed-items.dto"
+import {
+    BroadcastPlacedItemsRequest,
+    BroadcastPlacedItemsResponse,
+} from "./broadcast-placed-items.dto"
 import { PlacedItemEntity } from "@src/database"
 
-@Controller()
+@Injectable()
 export class BroadcastPlacedItemsService {
     private readonly logger = new Logger(BroadcastPlacedItemsService.name)
 
-    constructor(
-        private readonly dataSource: DataSource
-    ) {}
+    constructor(private readonly dataSource: DataSource) {}
 
-  @GrpcMethod(broadcastGrpcConstants.SERVICE, "BroadcastPlacedItems")
-    public async broadcastPlacedItems(request: BroadcastPlacedItemsRequest): Promise<BroadcastPlacedItemsResponse> {
+    public async broadcastPlacedItems(
+        request: BroadcastPlacedItemsRequest,
+    ): Promise<BroadcastPlacedItemsResponse> {
         this.logger.debug("Broadcast placed items request received")
         this.logger.debug(request)
-        const placedItems = await this.dataSource.manager.find(PlacedItemEntity, {})
+        const placedItems = await this.dataSource.manager.find(
+            PlacedItemEntity,
+            {},
+        )
         this.logger.debug(`Found ${placedItems.length} placed items`)
         return {
             message: "ok",
