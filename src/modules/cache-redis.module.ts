@@ -2,6 +2,7 @@ import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { redisStore } from "cache-manager-redis-yet"
 
 export const cacheRedisModule = CacheModule.registerAsync({
+    isGlobal: true,
     useFactory: async () => {
         const store = await redisStore({
             socket: {
