@@ -25,7 +25,23 @@ message GenerateTestSignatureResponse {
     string account_address = 8; // Required field
 }
 
+message VerifySignatureRequest {
+    string message = 1;  // Message field, like "hello world"
+    string publicKey = 2;  // Public key (hex string)
+    string signature = 3;  // Signature (hex string)
+    string chainKey = 4;  // Supported chain (optional)
+    string network = 5;  // Network type (optional)
+    string accountAddress = 6;  // Account address (optional)
+}
+  
+  // Message for VerifySignatureResponse
+message VerifySignatureResponse {
+    string accessToken = 1;  // JWT access token
+    string refreshToken = 2;  // JWT refresh token
+}
+
 service AuthService {
     rpc RequestMessage(google.protobuf.Empty) returns (RequestMessageResponse);
     rpc GenerateTestSignature(GenerateTestSignatureRequest) returns (GenerateTestSignatureResponse);
+    rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse);
   }

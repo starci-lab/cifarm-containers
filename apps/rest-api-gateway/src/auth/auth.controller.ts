@@ -17,6 +17,8 @@ import {
     GenerateTestSignatureRequest,
     GenerateTestSignatureResponse,
     RequestMessageResponse,
+    VerifySignatureRequest,
+    VerifySignatureResponse,
 } from "@apps/auth-service"
 import { TransformedSuccessResponse } from "../transform"
 
@@ -58,6 +60,24 @@ export class AuthController implements OnModuleInit {
   ): Promise<TransformedSuccessResponse<GenerateTestSignatureResponse>> {
       const data = await lastValueFrom(
           this.authService.generateTestSignature(request),
+      )
+      return {
+          data,
+          status: HttpStatus.OK,
+          message: "Success",
+      }
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiResponse({
+      type: TransformedSuccessResponse<VerifySignatureResponse>,
+  })
+  @Post("verify-signature")
+  public async verifySignature(
+    @Body() request: VerifySignatureRequest,
+  ): Promise<TransformedSuccessResponse<VerifySignatureResponse>> {
+      const data = await lastValueFrom(
+          this.authService.verifySignature(request),
       )
       return {
           data,

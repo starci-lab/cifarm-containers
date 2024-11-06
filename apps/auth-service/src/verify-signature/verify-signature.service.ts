@@ -15,13 +15,12 @@ import {
     AlgorandAuthService,
     AptosAuthService,
     EvmAuthService,
+    JwtService,
     NearAuthService,
     PolkadotAuthService,
     SolanaAuthService,
 } from "@src/services"
-import { RequestMessageService } from "../request-message"
 import { Cache } from "cache-manager"
-import { JwtService } from "@nestjs/jwt"
 import { DataSource } from "typeorm"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { UserEntity } from "@src/database"
@@ -55,16 +54,12 @@ export class VerifySignatureService {
         if (!valid) {
             throw new CacheNotFound(message)
         }
-        console.log(message, signature, publicKey)
-        //await this.cacheManager.del(message)
         let result = false
-
         chainKey = chainKey || defaultChainKey
         network = network || Network.Testnet
         const platform = chainKeyToPlatform(chainKey)
-        
-        const _accountAddress = publicKey
 
+        let _accountAddress = publicKey
         switch (platform) {
         case Platform.Evm: {
             result = this.evmAuthService.verifyMessage({
@@ -125,24 +120,30 @@ export class VerifySignatureService {
             result = false
             break
         }
+        if (!result) throw new Error("Signature verification")
+
         let user = await this.dataSource.manager.findOne(UserEntity, {
             where: {
                 accountAddress: _accountAddress,
                 chainKey,
-                network
-            }
+                network,
+            },
         })
         //if user not found, create user
         if (!user) {
             user = await this.dataSource.manager.save(UserEntity, {
+                username: `${chainKey}-${_accountAddress.substring(0, 5)}`,
                 accountAddress: _accountAddress,
                 chainKey,
-                network
+                network,
             })
         }
+        const { accessToken, refreshToken } =
+      await this.jwtService.createAuthTokenPair({ id: user.id })
 
         return {
-            result,
+            accessToken,
+            refreshToken,
         }
     }
 }

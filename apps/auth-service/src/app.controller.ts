@@ -6,6 +6,7 @@ import {
     GenerateTestSignatureService,
 } from "./generate-test-signature"
 import { RequestMessageService } from "./request-message"
+import { VerifySignatureRequest, VerifySignatureService } from "./verify-signature"
 
 @Controller()
 export class AppController {
@@ -14,6 +15,7 @@ export class AppController {
     constructor(
     private readonly requestMessageService: RequestMessageService,
     private readonly generateTestSignatureService: GenerateTestSignatureService,
+    private readonly verifySignatureService: VerifySignatureService
     ) {}
 
   @GrpcMethod(authGrpcConstants.SERVICE, "RequestMessage")
@@ -26,5 +28,11 @@ export class AppController {
   public async generateTestSignature(request: GenerateTestSignatureRequest) {
       this.logger.debug("GenerateTestSignature called")
       return this.generateTestSignatureService.generateTestSignature(request)
+  }
+
+  @GrpcMethod(authGrpcConstants.SERVICE, "VerifySignature")
+  public async verifySignature(request: VerifySignatureRequest) {
+      this.logger.debug("VerifySignature called")
+      return this.verifySignatureService.verifySignature(request)
   }
 }

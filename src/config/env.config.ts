@@ -86,7 +86,8 @@ export const envConfig = () => ({
         },
         jwt: {
             secret: process.env.JWT_SECRET,
-            expiresIn: process.env.JWT_EXPIRES_IN,
+            accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION,
+            refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION,
         },
         admin: {
             username: process.env.ADMIN_USERNAME,
