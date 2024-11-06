@@ -37,14 +37,12 @@ export const envConfig = () => ({
             },
         },
         postgres: {
-            postgres1: {
-                dbName: process.env.POSTGRES_1_DB_NAME,
-                host: process.env.POSTGRES_1_HOST,
-                port: process.env.POSTGRES_1_PORT
-                    ? Number(process.env.POSTGRES_1_PORT)
-                    : 5433,
-                user: process.env.POSTGRES_1_USER,
-                pass: process.env.POSTGRES_1_PASS,
+            gameplay: {
+                dbName: process.env.GAMEPLAY_POSTGRES_DBNAME,
+                host: process.env.GAMEPLAY_POSTGRES_HOST,
+                port: Number(process.env.GAMEPLAY_POSTGRES_PORT),
+                user: process.env.GAMEPLAY_POSTGRES_USER,
+                pass: process.env.GAMEPLAY_POSTGRES_PASS,
             },
         },
     },

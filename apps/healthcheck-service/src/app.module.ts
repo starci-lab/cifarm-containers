@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common"
 import { DoHealthcheckModule } from "./do-healthcheck"
 import { AppController } from "./app.controller"
-import { typeOrmPostgresqlModule } from "@src/modules"
+import { typeOrmGameplayPostgresqlModule } from "@src/modules"
 
 @Module({
     imports: [
         DoHealthcheckModule,
-        typeOrmPostgresqlModule
+        typeOrmGameplayPostgresqlModule
     ],
     controllers: [
         AppController
