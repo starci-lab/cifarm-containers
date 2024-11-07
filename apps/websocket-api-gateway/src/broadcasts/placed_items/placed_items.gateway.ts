@@ -1,4 +1,4 @@
-import { websocketBroadcastGrpcConstants } from "@apps/broadcast-service"
+import { broadcastGrpcConstants } from "@apps/broadcast-service"
 import { Inject, Logger, OnModuleInit } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
 import { Interval } from "@nestjs/schedule"
@@ -17,12 +17,12 @@ export class PlacedItemsGateway implements OnModuleInit {
 
     private placedItemsService: IPlacedItemsService
     constructor(
-      @Inject(websocketBroadcastGrpcConstants.NAME) private client: ClientGrpc,
+      @Inject(broadcastGrpcConstants.NAME) private client: ClientGrpc,
     ) {}
 
     onModuleInit() {
         this.placedItemsService = this.client.getService<IPlacedItemsService>(
-            websocketBroadcastGrpcConstants.SERVICE,
+            broadcastGrpcConstants.SERVICE,
         )
     }
     
@@ -36,3 +36,4 @@ export class PlacedItemsGateway implements OnModuleInit {
       this.server.emit("placed_items", response)
   }
 }
+  

@@ -1,5 +1,5 @@
 
-import { websocketBroadcastGrpcConstants } from "@apps/broadcast-service"
+import { broadcastGrpcConstants } from "@apps/broadcast-service"
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { PlacedItemsGateway } from "./placed_items.gateway"
@@ -8,13 +8,13 @@ import { PlacedItemsGateway } from "./placed_items.gateway"
     imports: [
         ClientsModule.registerAsync(
             [{
-                name: websocketBroadcastGrpcConstants.NAME,
+                name: broadcastGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
                         url: "0.0.0.0:3004",
-                        package: websocketBroadcastGrpcConstants.PACKAGE,
-                        protoPath: websocketBroadcastGrpcConstants.PROTO_PATH
+                        package: broadcastGrpcConstants.PACKAGE,
+                        protoPath: broadcastGrpcConstants.PROTO_PATH
                     },
                 })}
             ]

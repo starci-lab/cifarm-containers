@@ -3,6 +3,7 @@ import { BroadcastPlacedItemsModule } from "./broadcast-placed-items"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { ConfigModule } from "@nestjs/config"
 import { envConfig } from "@src/config"
+import { AppController } from "./app.controller"
 
 @Module({
     imports: [
@@ -23,7 +24,7 @@ import { envConfig } from "@src/config"
         }),
         BroadcastPlacedItemsModule,
     ],
-    controllers: [],
+    controllers: [AppController],
     providers: [],
 })
 export class AppModule {}
