@@ -2,6 +2,7 @@ import { NestFactory } from "@nestjs/core"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { AppModule } from "./app.module"
 import { broadcastGrpcConstants } from "./constants"
+import { ExceptionFilter } from "@src/filters"
 
 
 const bootstrap = async () => {
@@ -16,6 +17,10 @@ const bootstrap = async () => {
             },
         },
     )
+
+    // Apply the global filter
+    app.useGlobalFilters(new ExceptionFilter())
+
     await app.listen()
 }  
 bootstrap() 
