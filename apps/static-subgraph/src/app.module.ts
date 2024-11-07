@@ -8,7 +8,6 @@ import { AnimalsModule } from "./animals"
 import { BuildingsModule } from "./buildings"
 import { CropsModule } from "./crops"
 import { ToolsModule } from "./tools"
-import { UpgradesModule } from "./upgrades"
 
 @Module({
     imports: [
@@ -39,8 +38,7 @@ import { UpgradesModule } from "./upgrades"
         AnimalsModule,
         CropsModule,
         ToolsModule,
-        BuildingsModule,
-        UpgradesModule,
+        BuildingsModule
     ],
     controllers: [],
     providers: [],

@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToMany } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { AnimalType, BuildingKeyType } from "./enums"
@@ -23,12 +23,12 @@ export class BuildingEntity extends AbstractEntity {
     @Column({ name: "max_upgrade", type: "int" })
         maxUpgrade: number
 
-    @Field(() => BigInt)
-    @Column({ name: "price", type: "bigint" })
+    @Field(() => Float)
+    @Column({ name: "price", type: "float" })
         price: number
 
     @Field(() => [UpgradeEntity], { nullable: true })
     @OneToMany(() => UpgradeEntity, (upgrade) => upgrade.building, { cascade: true })
     @JoinColumn()
-    upgrades?: UpgradeEntity[]
+    upgrades?: Array<UpgradeEntity>
 }

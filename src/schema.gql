@@ -71,10 +71,26 @@ type UpgradeEntity {
   capacity: Int!
 }
 
+type BuildingEntity {
+  buildingKey: BuildingKeyType!
+  availableInShop: Boolean!
+  type: AnimalType
+  maxUpgrade: Int!
+  price: Float!
+  upgrades: [UpgradeEntity!]
+}
+
+enum BuildingKeyType {
+  Coop
+  Pasture
+  Home
+}
+
 type Query {
   animals(args: GetAnimalsArgs!): [AnimalEntity!]!
   crops(args: GetCropsArgs!): [CropEntity!]!
   tools(args: GetToolsArgs!): [ToolEntity!]!
+  buildings(args: GetBuildingsArgs!): [BuildingEntity!]!
 }
 
 input GetAnimalsArgs {
@@ -88,6 +104,11 @@ input GetCropsArgs {
 }
 
 input GetToolsArgs {
+  limit: Int
+  offset: Int
+}
+
+input GetBuildingsArgs {
   limit: Int
   offset: Int
 }

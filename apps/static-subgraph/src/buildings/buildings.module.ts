@@ -5,7 +5,7 @@ import { BuildingsResolver } from "./buildings.resolver"
 import { BuildingsService } from "./buildings.service"
 
 @Module({
-    imports: [TypeOrmModule.forFeature([BuildingEntity])],
+    imports: [TypeOrmModule.forFeature([BuildingEntity, UpgradeEntity])],
     providers: [BuildingsService, BuildingsResolver],
 })
 export class BuildingsModule {}
