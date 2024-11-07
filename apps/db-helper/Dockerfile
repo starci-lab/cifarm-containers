@@ -8,14 +8,14 @@ WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm ci --omit=dev
 
 # Create a new stage for building the application
 FROM deps as build
 
 # Install all dependencies, including dev dependencies
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 # Install NestJS CLI globally
 RUN npm i -g @nestjs/cli
