@@ -86,6 +86,13 @@ enum BuildingKeyType {
   Home
 }
 
+type DailyRewardPossibility {
+  goldAmount: Int
+  tokenAmount: Int
+  thresholdMin: Float!
+  thresholdMax: Float!
+}
+
 type Query {
   animals(args: GetAnimalsArgs!): [AnimalEntity!]!
   crops(args: GetCropsArgs!): [CropEntity!]!

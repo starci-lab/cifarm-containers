@@ -30,5 +30,5 @@ export class BuildingEntity extends AbstractEntity {
     @Field(() => [UpgradeEntity], { nullable: true })
     @OneToMany(() => UpgradeEntity, (upgrade) => upgrade.building, { cascade: true })
     @JoinColumn()
-    upgrades?: Array<UpgradeEntity>
+        upgrades?: Array<UpgradeEntity>
 }

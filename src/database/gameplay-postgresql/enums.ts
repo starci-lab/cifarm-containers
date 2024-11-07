@@ -48,3 +48,24 @@ export enum BuildingKeyType {
 registerEnumType(BuildingKeyType, {
     name: "BuildingKeyType",
 });
+
+export enum TileKeyType {
+    StarterTile,
+    BasicTile1,
+    BasicTile2,
+    BasicTile3,
+    FertileTile,
+}
+
+registerEnumType(TileKeyType, {
+    name: "TileKeyType",
+});
+
+export enum SupplyType {
+    BasicFertilizer,
+    AnimalFeed,
+}
+
+registerEnumType(SupplyType, {
+    name: "SupplyType",
+});
