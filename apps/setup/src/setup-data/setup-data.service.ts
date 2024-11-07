@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { AnimalEntity, BuildingEntity, CropEntity, MarketPricingEntity, PlacedItemEntity, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database";
+import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity, DayType, MarketPricingEntity, PlacedItemEntity, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database";
 import { AnimalType, ToolType, AvailableInType, BuildingKeyType, MarketPricingType } from '@src/database';
 
 @Injectable()
@@ -59,6 +59,7 @@ export class SetupDataService implements OnModuleInit {
             await this.seedPlacedItemData(queryRunner);
             await this.seedTileData(queryRunner);
             await this.seedSupplyData(queryRunner);
+            await this.seedDailyRewardData(queryRunner);
 
             await queryRunner.commitTransaction();
             this.logger.log("Seeding data finished");
@@ -220,6 +221,52 @@ export class SetupDataService implements OnModuleInit {
         for (const supplyData of suppliesData) {
             const supply = queryRunner.manager.create(SupplyEntity, supplyData);
             await queryRunner.manager.save(supply);
+        }
+    }
+
+    async seedDailyRewardData(queryRunner) {
+        const dailyRewardsData = [
+            {
+                key: DayType.Day1,
+                amount: 100,
+                day: 1,
+                isLastDay: false,
+            },
+            {
+                key: DayType.Day2,
+                amount: 200,
+                day: 2,
+                isLastDay: false,
+            },
+            {
+                key: DayType.Day3,
+                amount: 300,
+                day: 3,
+                isLastDay: false,
+            },
+            {
+                key: DayType.Day4,
+                amount: 600,
+                day: 4,
+                isLastDay: false,
+            },
+            {
+                key: DayType.Day5,
+                day: 5,
+                isLastDay: true,
+                dailyRewardPossibilities: [
+                    { goldAmount: 1000, thresholdMin: 0, thresholdMax: 0.8 },
+                    { goldAmount: 1500, thresholdMin: 0.8, thresholdMax: 0.9 },
+                    { goldAmount: 2000, thresholdMin: 0.9, thresholdMax: 0.95 },
+                    { tokenAmount: 3, thresholdMin: 0.95, thresholdMax: 0.99 },
+                    { tokenAmount: 10, thresholdMin: 0.99, thresholdMax: 1 },
+                ],
+            },
+        ];
+    
+        for (const rewardData of dailyRewardsData) {
+            const reward = queryRunner.manager.create(DailyRewardEntity, rewardData);
+            await queryRunner.manager.save(reward);
         }
     }
     
