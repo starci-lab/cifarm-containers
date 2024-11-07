@@ -69,15 +69,3 @@ export enum SupplyType {
 registerEnumType(SupplyType, {
     name: "SupplyType",
 });
-
-export enum DayType {
-    Day1,
-    Day2,
-    Day3,
-    Day4,
-    Day5,
-}
-
-registerEnumType(DayType, {
-    name: 'DayType',
-});

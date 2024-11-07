@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity, DayType, MarketPricingEntity, PlacedItemEntity, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database";
+import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity,  DailyRewardPossibility,  MarketPricingEntity, PlacedItemEntity, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database";
 import { AnimalType, ToolType, AvailableInType, BuildingKeyType, MarketPricingType } from '@src/database';
 
 @Injectable()
@@ -24,14 +24,16 @@ export class SetupDataService implements OnModuleInit {
             await queryRunner.startTransaction();
 
             await queryRunner.manager.delete(AnimalEntity, {});
+            await queryRunner.manager.delete(UpgradeEntity, {});
             await queryRunner.manager.delete(BuildingEntity, {});
             await queryRunner.manager.delete(CropEntity, {});
             await queryRunner.manager.delete(ToolEntity, {});
             await queryRunner.manager.delete(PlacedItemEntity, {});
             await queryRunner.manager.delete(MarketPricingEntity, {});
-            await queryRunner.manager.delete(UpgradeEntity, {});
             await queryRunner.manager.delete(TileEntity, {});
             await queryRunner.manager.delete(SupplyEntity, {});
+            await queryRunner.manager.delete(DailyRewardPossibility, {});
+            await queryRunner.manager.delete(DailyRewardEntity, {});
 
             await queryRunner.commitTransaction();
             this.logger.log("Clearing old data finished");
@@ -227,31 +229,30 @@ export class SetupDataService implements OnModuleInit {
     async seedDailyRewardData(queryRunner) {
         const dailyRewardsData = [
             {
-                key: DayType.Day1,
                 amount: 100,
                 day: 1,
                 isLastDay: false,
+                dailyRewardPossibilities: [],
             },
             {
-                key: DayType.Day2,
                 amount: 200,
                 day: 2,
                 isLastDay: false,
+                dailyRewardPossibilities: [],
             },
             {
-                key: DayType.Day3,
                 amount: 300,
                 day: 3,
                 isLastDay: false,
+                dailyRewardPossibilities: [],
             },
             {
-                key: DayType.Day4,
                 amount: 600,
                 day: 4,
                 isLastDay: false,
+                dailyRewardPossibilities: [],
             },
             {
-                key: DayType.Day5,
                 day: 5,
                 isLastDay: true,
                 dailyRewardPossibilities: [
@@ -265,9 +266,21 @@ export class SetupDataService implements OnModuleInit {
         ];
     
         for (const rewardData of dailyRewardsData) {
-            const reward = queryRunner.manager.create(DailyRewardEntity, rewardData);
+            const { dailyRewardPossibilities, ...rewardInfo } = rewardData;
+            const reward = queryRunner.manager.create(DailyRewardEntity, rewardInfo);
             await queryRunner.manager.save(reward);
+    
+            if (reward.isLastDay && dailyRewardPossibilities) {
+                for (const possibilityData of dailyRewardPossibilities) {
+                    const possibility = queryRunner.manager.create(DailyRewardPossibility, {
+                        ...possibilityData,
+                        dailyReward: reward,
+                    });
+                    await queryRunner.manager.save(possibility);
+                }
+            }
         }
     }
+    
     
 }
