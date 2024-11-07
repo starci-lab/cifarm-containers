@@ -26,6 +26,11 @@ export interface ChainCredentialsConfig {
 export const envConfig = () => ({
     port: process.env.PORT ?? 9999,
     nodeEnv: (process.env.NODE_ENV ?? NodeEnv.Development) as NodeEnv,
+    graphqlFederation: {
+        subgraphUrls: {
+            static: process.env.GRAPHQL_SUBGRAPH_STATIC_URL,
+        }   
+    },
     database: {
         mongo: {
             mongo1: {

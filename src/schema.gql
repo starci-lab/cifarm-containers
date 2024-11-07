@@ -1,0 +1,56 @@
+type UserEntity {
+  username: String!
+  chainKey: String!
+  network: String!
+  accountAddress: String!
+  inventories: [InventoryEntity!]!
+}
+
+type InventoryEntity {
+  quantity: String!
+  userId: String!
+  user: UserEntity!
+}
+
+type AnimalEntity {
+  yieldTime: Int!
+  offspringPrice: Int!
+  isNFT: Boolean!
+  growthTime: Int!
+  availableInShop: Boolean!
+  hungerTime: Int!
+  minHarvestQuantity: Int!
+  maxHarvestQuantity: Int!
+  basicHarvestExperiences: Int!
+  premiumHarvestExperiences: Int!
+  type: AnimalType!
+  sickChance: Float!
+}
+
+enum AnimalType {
+  Poultry
+  Livestock
+}
+
+type CropEntity {
+  growthStageDuration: Int!
+  growthStages: Int!
+  price: Int!
+  premium: Boolean!
+  perennial: Boolean!
+  nextGrowthStageAfterHarvest: Int!
+  minHarvestQuantity: Int!
+  maxHarvestQuantity: Int!
+  basicHarvestExperiences: Int!
+  premiumHarvestExperiences: Int!
+  availableInShop: Boolean!
+}
+
+type Query {
+  animals(args: GetAnimalsArgs!): [AnimalEntity!]!
+}
+
+input GetAnimalsArgs {
+  limit: Int
+  offset: Int
+}

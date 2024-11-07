@@ -2,7 +2,7 @@ import { join } from "path"
 
 const BUILD_FOLDER = "cifarm-build/Build"
 const FILE_NAME = "cifarm-build"
-
+ 
 export const packageConfig = () => ({
     loader: {
         filename: `${FILE_NAME}.loader.js`,

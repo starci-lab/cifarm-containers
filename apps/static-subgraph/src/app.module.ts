@@ -1,7 +1,10 @@
 import { Module } from "@nestjs/common"
+import { AnimalsModule } from "./animals"
 import { ConfigModule } from "@nestjs/config"
-import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
+import { TypeOrmModule } from "@nestjs/typeorm"
+import { GraphQLModule } from "@nestjs/graphql"
+import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo"
 
 @Module({
     imports: [
@@ -20,6 +23,16 @@ import { envConfig } from "@src/config"
             autoLoadEntities: true,
             synchronize: true,
         }),
+        GraphQLModule.forRoot<ApolloFederationDriverConfig>({
+            driver: ApolloFederationDriver,
+            typePaths: ["./**/*.gql"],
+            playground: false,
+            //plugins: [ApolloServerPluginInlineTraceDisabled],
+            buildSchemaOptions: {
+                orphanedTypes: [],
+            },
+        }),  
+        AnimalsModule,
     ],
     controllers: [],
     providers: [],

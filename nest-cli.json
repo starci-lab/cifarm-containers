@@ -63,6 +63,60 @@
       "compilerOptions": {
         "tsConfigPath": "apps/auth-service/tsconfig.app.json"
       }
+    },
+    "graphql-api-gateway": {
+      "type": "application",
+      "root": "apps/graphql-api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/graphql-api-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/graphql-api-gateway/tsconfig.app.json"
+      }
+    },
+    "cronjobs": {
+      "type": "application",
+      "root": "apps/cronjobs",
+      "entryFile": "main",
+      "sourceRoot": "apps/cronjobs/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/cronjobs/tsconfig.app.json"
+      }
+    },
+    "setup": {
+      "type": "application",
+      "root": "apps/setup",
+      "entryFile": "main",
+      "sourceRoot": "apps/setup/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/setup/tsconfig.app.json"
+      }
+    },
+    "static-subgraph": {
+      "type": "application",
+      "root": "apps/static-subgraph",
+      "entryFile": "main",
+      "sourceRoot": "apps/static-subgraph/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/static-subgraph/tsconfig.app.json"
+      }
+    },
+    "shop-service": {
+      "type": "application",
+      "root": "apps/shop-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/shop-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/shop-service/tsconfig.app.json"
+      }
+    },
+    "community-service": {
+      "type": "application",
+      "root": "apps/community-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/community-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/community-service/tsconfig.app.json"
+      }
     }
   }
 }
