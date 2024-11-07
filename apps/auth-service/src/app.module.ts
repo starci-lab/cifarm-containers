@@ -33,8 +33,8 @@ import { envConfig } from "@src/config"
             useFactory: async () => {
                 const store = await redisStore({
                     socket: {
-                        host: "localhost",
-                        port: 6379,
+                        host: envConfig().database.redis.cache.host,
+                        port: envConfig().database.redis.cache.port,
                     },
                 })
         

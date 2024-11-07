@@ -50,6 +50,12 @@ export const envConfig = () => ({
                 pass: process.env.GAMEPLAY_POSTGRES_PASS,
             },
         },
+        redis: {
+            cache: {
+                host: process.env.CACHE_REDIS_HOST,
+                port: Number(process.env.CACHE_REDIS_PORT),
+            }
+        }
     },
     messageBrokers: {
         rabbitMq: {
