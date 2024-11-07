@@ -46,11 +46,43 @@ type CropEntity {
   availableInShop: Boolean!
 }
 
+type ToolEntity {
+  type: ToolType!
+  availableIn: AvailableIn!
+  index: Int!
+}
+
+enum ToolType {
+  Scythe
+  Steal
+  WaterCan
+  Herbicide
+  Pesticide
+}
+
+enum AvailableIn {
+  Home
+  Neighbor
+  Both
+}
+
 type Query {
   animals(args: GetAnimalsArgs!): [AnimalEntity!]!
+  crops(args: GetCropsArgs!): [CropEntity!]!
+  tools(args: GetToolsArgs!): [ToolEntity!]!
 }
 
 input GetAnimalsArgs {
+  limit: Int
+  offset: Int
+}
+
+input GetCropsArgs {
+  limit: Int
+  offset: Int
+}
+
+input GetToolsArgs {
   limit: Int
   offset: Int
 }

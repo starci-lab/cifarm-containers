@@ -5,6 +5,8 @@ import { envConfig } from "@src/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { GraphQLModule } from "@nestjs/graphql"
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo"
+import { CropsModule } from "./crops"
+import { ToolsModule } from "./tools"
 
 @Module({
     imports: [
@@ -33,6 +35,8 @@ import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/ap
             },
         }),  
         AnimalsModule,
+        CropsModule,
+        ToolsModule
     ],
     controllers: [],
     providers: [],
