@@ -66,6 +66,11 @@ enum AvailableIn {
   Both
 }
 
+type UpgradeEntity {
+  upgradePrice: Int!
+  capacity: Int!
+}
+
 type Query {
   animals(args: GetAnimalsArgs!): [AnimalEntity!]!
   crops(args: GetCropsArgs!): [CropEntity!]!

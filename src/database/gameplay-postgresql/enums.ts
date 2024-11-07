@@ -28,12 +28,23 @@ registerEnumType(ToolType, {
     name: "ToolType",
 });
 
-export enum AvailableIn {
+export enum AvailableInType {
     Home,
     Neighbor,
     Both,
 }
 
-registerEnumType(AvailableIn, {
+registerEnumType(AvailableInType, {
     name: "AvailableIn",
+});
+
+
+export enum BuildingKeyType {
+    Coop,
+    Pasture,
+    Home,
+}
+
+registerEnumType(BuildingKeyType, {
+    name: "BuildingKeyType",
 });

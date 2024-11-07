@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, ManyToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { BuildingEntity } from "./building.entity"
 
@@ -15,5 +15,6 @@ export class UpgradeEntity extends AbstractEntity {
         capacity: number
 
     @ManyToOne(() => BuildingEntity, (building) => building.upgrades, { onDelete: "CASCADE" })
-        building: BuildingEntity
+    @JoinColumn()
+    building: BuildingEntity
 }

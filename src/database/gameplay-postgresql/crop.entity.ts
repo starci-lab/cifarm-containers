@@ -1,5 +1,5 @@
 import { ObjectType, Field, Int } from "@nestjs/graphql"
-import { Entity, Column, OneToOne } from "typeorm"
+import { Entity, Column, OneToOne, JoinColumn } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { MarketPricingEntity } from "./market-pricing.entity"
 
@@ -51,5 +51,6 @@ export class CropEntity extends AbstractEntity {
         availableInShop: boolean
 
     @OneToOne(() => MarketPricingEntity)
+    @JoinColumn()
         marketPricing: MarketPricingEntity
 }
