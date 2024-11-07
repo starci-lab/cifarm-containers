@@ -1,5 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { MarketPricingEntity } from "./market-pricing.entity"
 import { AnimalType } from "./enums"
@@ -56,5 +56,6 @@ export class AnimalEntity extends AbstractEntity {
         sickChance: number
 
     @OneToOne(() => MarketPricingEntity)
+    @JoinColumn()
         marketPricing: MarketPricingEntity
 }

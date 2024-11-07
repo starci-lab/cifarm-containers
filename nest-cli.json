@@ -117,6 +117,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/community-service/tsconfig.app.json"
       }
+    },
+    "setup": {
+      "type": "application",
+      "root": "apps/setup",
+      "entryFile": "main",
+      "sourceRoot": "apps/setup/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/setup/tsconfig.app.json"
+      }
     }
   }
 }

@@ -15,3 +15,36 @@ export enum AnimalType {
 registerEnumType(AnimalType, {
     name: "AnimalType",
 })
+
+export enum ToolType {
+    Scythe,
+    Steal,
+    WaterCan,
+    Herbicide,
+    Pesticide,
+}
+
+registerEnumType(ToolType, {
+    name: "ToolType",
+});
+
+export enum AvailableInType {
+    Home,
+    Neighbor,
+    Both,
+}
+
+registerEnumType(AvailableInType, {
+    name: "AvailableIn",
+});
+
+
+export enum BuildingKeyType {
+    Coop,
+    Pasture,
+    Home,
+}
+
+registerEnumType(BuildingKeyType, {
+    name: "BuildingKeyType",
+});

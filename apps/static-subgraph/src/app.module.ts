@@ -1,10 +1,13 @@
-import { Module } from "@nestjs/common"
-import { AnimalsModule } from "./animals"
-import { ConfigModule } from "@nestjs/config"
-import { envConfig } from "@src/config"
-import { TypeOrmModule } from "@nestjs/typeorm"
-import { GraphQLModule } from "@nestjs/graphql"
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo"
+import { Module } from "@nestjs/common"
+import { ConfigModule } from "@nestjs/config"
+import { GraphQLModule } from "@nestjs/graphql"
+import { TypeOrmModule } from "@nestjs/typeorm"
+import { envConfig } from "@src/config"
+import { AnimalsModule } from "./animals"
+import { BuildingsModule } from "./buildings"
+import { CropsModule } from "./crops"
+import { ToolsModule } from "./tools"
 
 @Module({
     imports: [
@@ -33,6 +36,9 @@ import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/ap
             },
         }),  
         AnimalsModule,
+        CropsModule,
+        ToolsModule,
+        BuildingsModule
     ],
     controllers: [],
     providers: [],
