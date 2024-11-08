@@ -2,10 +2,10 @@ services:
   server:
     build:
       context: ../..
-      dockerfile: apps/db-helper/Dockerfile
+      dockerfile: apps/setup/Dockerfile
     env_file:
       - ../../.env.docker
     environment:
       NODE_ENV: production
 
-#docker compose -f apps/db-helper/compose.yaml up -d --build
+#docker compose -f apps/setup/compose.yaml up -d
