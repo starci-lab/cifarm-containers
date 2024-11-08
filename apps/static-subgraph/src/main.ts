@@ -12,13 +12,26 @@ import { AppModule } from "./app.module"
 import { BuildingsResolver } from "./buildings"
 import { CropsResolver } from "./crops"
 import { ToolsResolver } from "./tools"
+import { TilesResolver } from "./tiles"
+import { SuppliesResolver } from "./supplies"
+import { SpinsResolver } from "./spins"
+import { DailyRewardsResolver } from "./daily-rewards"
 
 const generateSchema = async () => {
     const app = await NestFactory.create(GraphQLSchemaBuilderModule)
     await app.init()
 
     const gqlSchemaFactory = app.get(GraphQLSchemaFactory)
-    const schema = await gqlSchemaFactory.create([AnimalsResolver, CropsResolver, ToolsResolver, BuildingsResolver])
+    const schema = await gqlSchemaFactory.create([
+        AnimalsResolver, 
+        CropsResolver, 
+        ToolsResolver, 
+        BuildingsResolver,
+        DailyRewardsResolver,
+        SpinsResolver,
+        SuppliesResolver,
+        TilesResolver
+    ])
 
     writeFileSync(
         join(

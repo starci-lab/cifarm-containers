@@ -86,6 +86,34 @@ enum BuildingKeyType {
   Home
 }
 
+type TileEntity {
+  type: TileKeyType!
+  price: Float!
+  maxOwnership: Int!
+  isNFT: Boolean!
+  availableInShop: Boolean!
+}
+
+enum TileKeyType {
+  StarterTile
+  BasicTile1
+  BasicTile2
+  BasicTile3
+  FertileTile
+}
+
+type SupplyEntity {
+  type: SupplyType!
+  price: Float!
+  availableInShop: Boolean!
+  fertilizerEffectTimeReduce: Int
+}
+
+enum SupplyType {
+  BasicFertilizer
+  AnimalFeed
+}
+
 type DailyRewardPossibility {
   goldAmount: Int
   tokenAmount: Int
@@ -93,11 +121,38 @@ type DailyRewardPossibility {
   thresholdMax: Float!
 }
 
+type DailyRewardEntity {
+  amount: Int!
+  day: Int!
+  isLastDay: Boolean!
+  dailyRewardPossibilities: [DailyRewardPossibility!]
+}
+
+type SpinEntity {
+  type: SpinType!
+  goldAmount: Int
+  quantity: Int
+  tokenAmount: Int
+  thresholdMin: Float!
+  thresholdMax: Float!
+}
+
+enum SpinType {
+  Gold
+  Seed
+  Supply
+  Token
+}
+
 type Query {
   animals(args: GetAnimalsArgs!): [AnimalEntity!]!
   crops(args: GetCropsArgs!): [CropEntity!]!
   tools(args: GetToolsArgs!): [ToolEntity!]!
   buildings(args: GetBuildingsArgs!): [BuildingEntity!]!
+  dailyRewards(args: GetDailyRewardsArgs!): [DailyRewardEntity!]!
+  spins(args: GetSpinsArgs!): [SpinEntity!]!
+  supplies(args: GetSuppliesArgs!): [SupplyEntity!]!
+  tiles(args: GetTilesArgs!): [TileEntity!]!
 }
 
 input GetAnimalsArgs {
@@ -116,6 +171,26 @@ input GetToolsArgs {
 }
 
 input GetBuildingsArgs {
+  limit: Int
+  offset: Int
+}
+
+input GetDailyRewardsArgs {
+  limit: Int
+  offset: Int
+}
+
+input GetSpinsArgs {
+  limit: Int
+  offset: Int
+}
+
+input GetSuppliesArgs {
+  limit: Int
+  offset: Int
+}
+
+input GetTilesArgs {
   limit: Int
   offset: Int
 }
