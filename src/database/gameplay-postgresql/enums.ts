@@ -69,3 +69,14 @@ export enum SupplyType {
 registerEnumType(SupplyType, {
     name: "SupplyType",
 });
+
+export enum SpinType {
+    Gold,
+    Seed,
+    Supply,
+    Token,
+}
+
+registerEnumType(SpinType, {
+    name: 'SpinType',
+});

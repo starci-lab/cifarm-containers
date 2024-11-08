@@ -8,6 +8,10 @@ import { AnimalsModule } from "./animals"
 import { BuildingsModule } from "./buildings"
 import { CropsModule } from "./crops"
 import { ToolsModule } from "./tools"
+import { DailyRewardsModule } from "./daily-rewards"
+import { SpinsModule } from "./spins"
+import { SuppliesModule } from "./supplies"
+import { TilesModule } from "./tiles"
 
 @Module({
     imports: [
@@ -38,7 +42,11 @@ import { ToolsModule } from "./tools"
         AnimalsModule,
         CropsModule,
         ToolsModule,
-        BuildingsModule
+        BuildingsModule,
+        DailyRewardsModule,
+        SpinsModule,
+        SuppliesModule,
+        TilesModule
     ],
     controllers: [],
     providers: [],

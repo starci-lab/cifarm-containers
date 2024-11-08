@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity,  DailyRewardPossibility,  MarketPricingEntity, PlacedItemEntity, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database";
+import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity,  DailyRewardPossibility,  MarketPricingEntity, PlacedItemEntity, SpinEntity, SpinType, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database";
 import { AnimalType, ToolType, AvailableInType, BuildingKeyType, MarketPricingType } from '@src/database';
 
 @Injectable()
@@ -34,6 +34,7 @@ export class SetupDataService implements OnModuleInit {
             await queryRunner.manager.delete(SupplyEntity, {});
             await queryRunner.manager.delete(DailyRewardPossibility, {});
             await queryRunner.manager.delete(DailyRewardEntity, {});
+            await queryRunner.manager.delete(SpinEntity, {});
 
             await queryRunner.commitTransaction();
             this.logger.log("Clearing old data finished");
@@ -62,6 +63,7 @@ export class SetupDataService implements OnModuleInit {
             await this.seedTileData(queryRunner);
             await this.seedSupplyData(queryRunner);
             await this.seedDailyRewardData(queryRunner);
+            await this.seedSpinData(queryRunner);
 
             await queryRunner.commitTransaction();
             this.logger.log("Seeding data finished");
@@ -281,6 +283,24 @@ export class SetupDataService implements OnModuleInit {
             }
         }
     }
+    async seedSpinData(queryRunner) {
+        const spinsData = [
+            {type: SpinType.Gold, goldAmount: 100, thresholdMin: 0, thresholdMax: 0.2 },
+            {type: SpinType.Gold, goldAmount: 250, thresholdMin: 0.2, thresholdMax: 0.35 },
+            {type: SpinType.Gold, goldAmount: 500, thresholdMin: 0.35, thresholdMax: 0.45 },
+            {type: SpinType.Gold, goldAmount: 200, thresholdMin: 0.45, thresholdMax: 0.5 },
+            {type: SpinType.Seed, quantity: 2, thresholdMin: 0.5, thresholdMax: 0.65 },
+            {type: SpinType.Seed, quantity: 2, thresholdMin: 0.65, thresholdMax: 0.8 },
+            {type: SpinType.Supply, quantity: 4, thresholdMin: 0.8, thresholdMax: 0.99 },
+            {type: SpinType.Token, tokenAmount: 15, thresholdMin: 0.99, thresholdMax: 1 },
+        ];
+    
+        for (const spinData of spinsData) {
+            const spin = queryRunner.manager.create(SpinEntity, spinData);
+            await queryRunner.manager.save(spin);
+        }
+    }
+    
     
     
 }

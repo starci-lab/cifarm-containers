@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity, DailyRewardPossibility, MarketPricingEntity, PlacedItemEntity, SupplyEntity, TileEntity, ToolEntity, UpgradeEntity } from "@src/database"
+import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity, DailyRewardPossibility, MarketPricingEntity, PlacedItemEntity, SpinEntity, SupplyEntity, TileEntity, ToolEntity, UpgradeEntity } from "@src/database"
 import { SetupDataService } from "./setup-data.service"
 
 @Module({
@@ -14,7 +14,8 @@ import { SetupDataService } from "./setup-data.service"
         TileEntity,
         SupplyEntity,
         DailyRewardEntity,
-        DailyRewardPossibility
+        DailyRewardPossibility,
+        SpinEntity
     ])],
     providers: [SetupDataService],
 })
