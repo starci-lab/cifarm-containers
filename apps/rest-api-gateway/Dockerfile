@@ -22,7 +22,7 @@ RUN npm i -g @nestjs/cli
 
 # Copy the source code
 COPY . .
-RUN nest build auth-service
+RUN nest build rest-api-gateway
 
 # Create a new stage for running the application
 FROM build as final 
