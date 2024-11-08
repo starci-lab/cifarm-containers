@@ -25,7 +25,7 @@ COPY . .
 RUN nest build graphql-api-gateway
 
 # Create a new stage for running the application
-FROM build as final 
+FROM build as final
 
 # Use production node environment by default.
 ENV NODE_ENV production
@@ -34,6 +34,8 @@ ENV NODE_ENV production
 COPY package.json .
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist/apps/graphql-api-gateway ./dist
+
+RUN chown -R node:node /usr/src/app/dist
 
 # Run the application as a non-root user.
 USER node

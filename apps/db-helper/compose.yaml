@@ -8,4 +8,4 @@ services:
     environment:
       NODE_ENV: production
 
-#docker compose -f apps/db-helper/compose.yaml up -d
+#docker compose -f apps/db-helper/compose.yaml up -d --build

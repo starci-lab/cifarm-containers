@@ -9,5 +9,11 @@ services:
       NODE_ENV: production
     ports:
       - "3006:3006"
+    networks:
+      - graphql-network
 
-#docker compose -f apps/graphql-api-gateway/compose.yaml up -d
+networks:
+  graphql-network:
+    driver: bridge
+
+#docker compose -f apps/graphql-api-gateway/compose.yaml up -d --build

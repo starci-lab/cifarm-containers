@@ -9,5 +9,11 @@ services:
       NODE_ENV: production
     ports:
       - "3007:3007"
+    networks:
+      - graphql-network
 
-#docker compose -f apps/static-subgraph/compose.yaml up -d
+networks:
+  graphql-network:
+    driver: bridge
+
+#docker compose -f apps/static-subgraph/compose.yaml up -d --build

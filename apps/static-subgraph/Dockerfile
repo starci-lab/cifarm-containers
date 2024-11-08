@@ -35,9 +35,10 @@ COPY package.json .
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist/apps/static-subgraph ./dist
 
+RUN chown -R node:node /usr/src/app/dist
+
 # Run the application as a non-root user.
 USER node
-RUN chown -R node:node /usr/src/app/dist
 
 # Expose the port the application runs on.
 EXPOSE 3007
