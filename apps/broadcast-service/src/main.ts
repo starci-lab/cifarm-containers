@@ -3,6 +3,7 @@ import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { AppModule } from "./app.module"
 import { broadcastGrpcConstants } from "./constants"
 import { ExceptionFilter } from "@src/filters"
+import { envConfig } from "@src/config"
 
 
 const bootstrap = async () => {
@@ -11,7 +12,7 @@ const bootstrap = async () => {
         {
             transport: Transport.GRPC,
             options: {
-                url: "0.0.0.0:3004",
+                url: `0.0.0.0:${envConfig().containers.broadcastService.port}`,
                 package: broadcastGrpcConstants.PACKAGE,
                 protoPath: broadcastGrpcConstants.PROTO_PATH,
             },

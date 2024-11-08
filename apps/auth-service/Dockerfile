@@ -38,8 +38,5 @@ COPY --from=build /usr/src/app/dist/apps/auth-service ./dist
 # Run the application as a non-root user.
 USER node
 
-# Expose the port the application runs on.
-EXPOSE 3005
-
 # Run the application.
 CMD ["node", "dist/main"]

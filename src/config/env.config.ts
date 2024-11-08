@@ -40,6 +40,10 @@ export const envConfig = () => ({
             host: process.env.REST_API_GATEWAY_HOST,
             port: Number(process.env.REST_API_GATEWAY_PORT),
         },
+        broadcastService: {
+            host: process.env.BROADCAST_SERVICE_HOST,
+            port: Number(process.env.BROADCAST_SERVICE_PORT),
+        }
     },
     database: {
         mongo: {

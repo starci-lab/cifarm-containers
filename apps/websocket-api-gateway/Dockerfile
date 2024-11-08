@@ -40,8 +40,5 @@ RUN chown -R node:node /usr/src/app/dist
 # Run the application as a non-root user.
 USER node
 
-# Expose the port the application runs on.
-EXPOSE 3003
-
 # Run the application.
 CMD ["node", "dist/main"]
