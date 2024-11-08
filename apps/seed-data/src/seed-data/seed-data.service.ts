@@ -1,90 +1,90 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { DataSource } from 'typeorm';
-import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity,  DailyRewardPossibility,  MarketPricingEntity, PlacedItemEntity, SpinEntity, SpinType, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database";
-import { AnimalType, ToolType, AvailableInType, BuildingKeyType, MarketPricingType } from '@src/database';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { DataSource } from "typeorm"
+import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity,  DailyRewardPossibility,  MarketPricingEntity, PlacedItemEntity, SpinEntity, SpinType, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database"
+import { AnimalType, ToolType, AvailableInType, BuildingKeyType, MarketPricingType } from "@src/database"
 
 @Injectable()
-export class SetupDataService implements OnModuleInit {
-    private readonly logger = new Logger(SetupDataService.name);
+export class SeedDataService implements OnModuleInit {
+    private readonly logger = new Logger(SeedDataService.name)
 
     constructor(private readonly dataSource: DataSource) {}
 
     async onModuleInit() {
-        await this.clearData();
-        await this.seedData();
+        await this.clearData()
+        await this.seedData()
     }
 
     async clearData() {
-        this.logger.log("Clearing old data started");
+        this.logger.log("Clearing old data started")
 
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
 
         try {
-            await queryRunner.startTransaction();
+            await queryRunner.startTransaction()
 
-            await queryRunner.manager.delete(AnimalEntity, {});
-            await queryRunner.manager.delete(UpgradeEntity, {});
-            await queryRunner.manager.delete(BuildingEntity, {});
-            await queryRunner.manager.delete(CropEntity, {});
-            await queryRunner.manager.delete(ToolEntity, {});
-            await queryRunner.manager.delete(PlacedItemEntity, {});
-            await queryRunner.manager.delete(MarketPricingEntity, {});
-            await queryRunner.manager.delete(TileEntity, {});
-            await queryRunner.manager.delete(SupplyEntity, {});
-            await queryRunner.manager.delete(DailyRewardPossibility, {});
-            await queryRunner.manager.delete(DailyRewardEntity, {});
-            await queryRunner.manager.delete(SpinEntity, {});
+            await queryRunner.manager.delete(AnimalEntity, {})
+            await queryRunner.manager.delete(UpgradeEntity, {})
+            await queryRunner.manager.delete(BuildingEntity, {})
+            await queryRunner.manager.delete(CropEntity, {})
+            await queryRunner.manager.delete(ToolEntity, {})
+            await queryRunner.manager.delete(PlacedItemEntity, {})
+            await queryRunner.manager.delete(MarketPricingEntity, {})
+            await queryRunner.manager.delete(TileEntity, {})
+            await queryRunner.manager.delete(SupplyEntity, {})
+            await queryRunner.manager.delete(DailyRewardPossibility, {})
+            await queryRunner.manager.delete(DailyRewardEntity, {})
+            await queryRunner.manager.delete(SpinEntity, {})
 
-            await queryRunner.commitTransaction();
-            this.logger.log("Clearing old data finished");
+            await queryRunner.commitTransaction()
+            this.logger.log("Clearing old data finished")
         } catch (error) {
-            await queryRunner.rollbackTransaction();
-            this.logger.error("Error clearing data:", error);
+            await queryRunner.rollbackTransaction()
+            this.logger.error("Error clearing data:", error)
         } finally {
-            await queryRunner.release();
+            await queryRunner.release()
         }
     }
 
     async seedData() {
-        this.logger.log("Seeding data started");
+        this.logger.log("Seeding data started")
 
-        const queryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
 
         try {
-            await queryRunner.startTransaction();
+            await queryRunner.startTransaction()
 
-            await this.seedAnimalData(queryRunner);
-            await this.seedCropData(queryRunner);
-            await this.seedBuildingData(queryRunner);
-            await this.seedToolData(queryRunner);
-            await this.seedPlacedItemData(queryRunner);
-            await this.seedTileData(queryRunner);
-            await this.seedSupplyData(queryRunner);
-            await this.seedDailyRewardData(queryRunner);
-            await this.seedSpinData(queryRunner);
+            await this.seedAnimalData(queryRunner)
+            await this.seedCropData(queryRunner)
+            await this.seedBuildingData(queryRunner)
+            await this.seedToolData(queryRunner)
+            await this.seedPlacedItemData(queryRunner)
+            await this.seedTileData(queryRunner)
+            await this.seedSupplyData(queryRunner)
+            await this.seedDailyRewardData(queryRunner)
+            await this.seedSpinData(queryRunner)
 
-            await queryRunner.commitTransaction();
-            this.logger.log("Seeding data finished");
+            await queryRunner.commitTransaction()
+            this.logger.log("Seeding data finished")
         } catch (error) {
-            await queryRunner.rollbackTransaction();
-            this.logger.error("Error seeding data:", error);
+            await queryRunner.rollbackTransaction()
+            this.logger.error("Error seeding data:", error)
         } finally {
-            await queryRunner.release();
+            await queryRunner.release()
         }
     }
 
     async seedAnimalData(queryRunner) {
 
-        let animalMarketPricingChicken = await queryRunner.manager.save(
+        const animalMarketPricingChicken = await queryRunner.manager.save(
             queryRunner.manager.create(MarketPricingEntity, {
                 basicAmount: 100.0,
                 premiumAmount: 200.0,
                 type: MarketPricingType.Animal,
             }))
 
-        let animalMarketPricingCow = await queryRunner.manager.save(
+        const animalMarketPricingCow = await queryRunner.manager.save(
             queryRunner.manager.create(MarketPricingEntity, {
                 basicAmount: 100.0,
                 premiumAmount: 200.0,
@@ -106,8 +106,8 @@ export class SetupDataService implements OnModuleInit {
             type: AnimalType.Poultry,
             sickChance: 0.001,
             marketPricing: animalMarketPricingChicken,
-        });
-        await queryRunner.manager.save(chicken);
+        })
+        await queryRunner.manager.save(chicken)
 
         const cow = queryRunner.manager.create(AnimalEntity, {
             yieldTime: 60 * 60 * 24 * 2, // 2 days in seconds
@@ -123,18 +123,18 @@ export class SetupDataService implements OnModuleInit {
             type: AnimalType.Livestock,
             sickChance: 0.001,
             marketPricing: animalMarketPricingCow,
-        });
-        await queryRunner.manager.save(cow);
+        })
+        await queryRunner.manager.save(cow)
     }
 
     async seedCropData(queryRunner) {
-        let cropMarketPricing = await queryRunner.manager.save(
+        const cropMarketPricing = await queryRunner.manager.save(
             queryRunner.manager.create(MarketPricingEntity, {
                 basicAmount: 50.0,
                 premiumAmount: 120.0,
                 type: MarketPricingType.Crop,
             })
-        );
+        )
         const crop = queryRunner.manager.create(CropEntity, {
             growthStageDuration: 300,
             growthStages: 4,
@@ -148,8 +148,8 @@ export class SetupDataService implements OnModuleInit {
             premiumHarvestExperiences: 25,
             availableInShop: true,
             marketPricing: cropMarketPricing
-        });
-        await queryRunner.manager.save(crop);
+        })
+        await queryRunner.manager.save(crop)
     }
 
     async seedBuildingData(queryRunner) {
@@ -159,15 +159,15 @@ export class SetupDataService implements OnModuleInit {
             type: AnimalType.Poultry,
             maxUpgrade: 3,
             price: 500.0,
-        });
-        await queryRunner.manager.save(building);
+        })
+        await queryRunner.manager.save(building)
 
         const upgrade = queryRunner.manager.create(UpgradeEntity, {
             upgradePrice: 200,
             capacity: 10,
             building: building
-        });
-        await queryRunner.manager.save(upgrade);
+        })
+        await queryRunner.manager.save(upgrade)
     }
 
     async seedToolData(queryRunner) {
@@ -177,19 +177,19 @@ export class SetupDataService implements OnModuleInit {
             { type: ToolType.WaterCan, availableIn: AvailableInType.Both, index: 2 },
             { type: ToolType.Herbicide, availableIn: AvailableInType.Both, index: 3 },
             { type: ToolType.Pesticide, availableIn: AvailableInType.Both, index: 4 },
-        ];
+        ]
 
         for (const toolData of toolsData) {
-            const tool = queryRunner.manager.create(ToolEntity, toolData);
-            await queryRunner.manager.save(tool);
+            const tool = queryRunner.manager.create(ToolEntity, toolData)
+            await queryRunner.manager.save(tool)
         }
     }
 
     async seedPlacedItemData(queryRunner) {
         const placedItem = queryRunner.manager.create(PlacedItemEntity, {
-            quantity: '5'
-        });
-        await queryRunner.manager.save(placedItem);
+            quantity: "5"
+        })
+        await queryRunner.manager.save(placedItem)
     }
 
     async seedTileData(queryRunner) {
@@ -199,11 +199,11 @@ export class SetupDataService implements OnModuleInit {
             { type: TileKeyType.BasicTile2, price: 2500, maxOwnership: 30, isNFT: false, availableInShop: true },
             { type: TileKeyType.BasicTile3, price: 10000, maxOwnership: 9999, isNFT: false, availableInShop: true },
             { type: TileKeyType.FertileTile, price: 0, maxOwnership: 0, isNFT: true, availableInShop: false },
-        ];
+        ]
     
         for (const tileData of tilesData) {
-            const tile = queryRunner.manager.create(TileEntity, tileData);
-            await queryRunner.manager.save(tile);
+            const tile = queryRunner.manager.create(TileEntity, tileData)
+            await queryRunner.manager.save(tile)
         }
     }
 
@@ -220,11 +220,11 @@ export class SetupDataService implements OnModuleInit {
                 price: 50,
                 availableInShop: true,
             },
-        ];
+        ]
     
         for (const supplyData of suppliesData) {
-            const supply = queryRunner.manager.create(SupplyEntity, supplyData);
-            await queryRunner.manager.save(supply);
+            const supply = queryRunner.manager.create(SupplyEntity, supplyData)
+            await queryRunner.manager.save(supply)
         }
     }
 
@@ -265,20 +265,20 @@ export class SetupDataService implements OnModuleInit {
                     { tokenAmount: 10, thresholdMin: 0.99, thresholdMax: 1 },
                 ],
             },
-        ];
+        ]
     
         for (const rewardData of dailyRewardsData) {
-            const { dailyRewardPossibilities, ...rewardInfo } = rewardData;
-            const reward = queryRunner.manager.create(DailyRewardEntity, rewardInfo);
-            await queryRunner.manager.save(reward);
+            const { dailyRewardPossibilities, ...rewardInfo } = rewardData
+            const reward = queryRunner.manager.create(DailyRewardEntity, rewardInfo)
+            await queryRunner.manager.save(reward)
     
             if (reward.isLastDay && dailyRewardPossibilities) {
                 for (const possibilityData of dailyRewardPossibilities) {
                     const possibility = queryRunner.manager.create(DailyRewardPossibility, {
                         ...possibilityData,
                         dailyReward: reward,
-                    });
-                    await queryRunner.manager.save(possibility);
+                    })
+                    await queryRunner.manager.save(possibility)
                 }
             }
         }
@@ -293,11 +293,11 @@ export class SetupDataService implements OnModuleInit {
             {type: SpinType.Seed, quantity: 2, thresholdMin: 0.65, thresholdMax: 0.8 },
             {type: SpinType.Supply, quantity: 4, thresholdMin: 0.8, thresholdMax: 0.99 },
             {type: SpinType.Token, tokenAmount: 15, thresholdMin: 0.99, thresholdMax: 1 },
-        ];
+        ]
     
         for (const spinData of spinsData) {
-            const spin = queryRunner.manager.create(SpinEntity, spinData);
-            await queryRunner.manager.save(spin);
+            const spin = queryRunner.manager.create(SpinEntity, spinData)
+            await queryRunner.manager.save(spin)
         }
     }
     
