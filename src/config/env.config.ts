@@ -36,7 +36,7 @@ export const envConfig = () => ({
             host: process.env.AUTH_SERVICE_HOST,
             port: Number(process.env.AUTH_SERVICE_PORT),
         },
-        restApiGatewat: {
+        restApiGateway: {
             host: process.env.REST_API_GATEWAY_HOST,
             port: Number(process.env.REST_API_GATEWAY_PORT),
         },
