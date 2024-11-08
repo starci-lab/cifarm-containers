@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { AuthController } from "./auth.controller"
 import { authGrpcConstants } from "@apps/auth-service"
+import { envConfig } from "@src/config"
 
 @Module({
     imports: [
@@ -11,7 +12,7 @@ import { authGrpcConstants } from "@apps/auth-service"
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
-                        url: "0.0.0.0:3005",
+                        url: `${envConfig().containers.authService.host}:${envConfig().containers.authService.port}`,
                         package: authGrpcConstants.PACKAGE,
                         protoPath: authGrpcConstants.PROTO_PATH
                     },

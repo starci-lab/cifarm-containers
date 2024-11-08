@@ -31,6 +31,16 @@ export const envConfig = () => ({
             static: process.env.GRAPHQL_SUBGRAPH_STATIC_URL,
         }   
     },
+    containers: {
+        authService: {
+            host: process.env.AUTH_SERVICE_HOST,
+            port: Number(process.env.AUTH_SERVICE_PORT),
+        },
+        restApiGatewat: {
+            host: process.env.REST_API_GATEWAY_HOST,
+            port: Number(process.env.REST_API_GATEWAY_PORT),
+        },
+    },
     database: {
         mongo: {
             mongo1: {

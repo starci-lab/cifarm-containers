@@ -3,6 +3,7 @@ import { AppModule } from "./app.module"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { authGrpcConstants } from "./constants"
 import { ExceptionFilter } from "@src/filters"
+import { envConfig } from "@src/config"
 
 const bootstrap = async () => {
     const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -10,7 +11,7 @@ const bootstrap = async () => {
         {
             transport: Transport.GRPC,
             options: {
-                url: "0.0.0.0:3005",
+                url: `0.0.0.0:${envConfig().containers.authService.port}`,
                 package: authGrpcConstants.PACKAGE,
                 protoPath: authGrpcConstants.PROTO_PATH,
             },
