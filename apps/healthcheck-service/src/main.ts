@@ -19,7 +19,7 @@ const bootstrap = async () => {
     )
 
     // Apply the global filter
-    app.useGlobalFilters(new ExceptionFilter());
+    app.useGlobalFilters(new ExceptionFilter())
 
     await app.listen()
 }  

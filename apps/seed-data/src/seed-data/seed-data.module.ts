@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity, DailyRewardPossibility, MarketPricingEntity, PlacedItemEntity, SpinEntity, SupplyEntity, TileEntity, ToolEntity, UpgradeEntity } from "@src/database"
-import { SetupDataService } from "./setup-data.service"
+import { SeedDataService } from "./seed-data.service"
 
 @Module({
     imports: [TypeOrmModule.forFeature([ToolEntity,
@@ -17,6 +17,6 @@ import { SetupDataService } from "./setup-data.service"
         DailyRewardPossibility,
         SpinEntity
     ])],
-    providers: [SetupDataService],
+    providers: [SeedDataService],
 })
-export class SetupDataModule {}
+export class SeedDataModule {}

@@ -82,15 +82,6 @@
         "tsConfigPath": "apps/cronjobs/tsconfig.app.json"
       }
     },
-    "setup": {
-      "type": "application",
-      "root": "apps/setup",
-      "entryFile": "main",
-      "sourceRoot": "apps/setup/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/setup/tsconfig.app.json"
-      }
-    },
     "static-subgraph": {
       "type": "application",
       "root": "apps/static-subgraph",
@@ -118,13 +109,13 @@
         "tsConfigPath": "apps/community-service/tsconfig.app.json"
       }
     },
-    "setup": {
+    "seed-data": {
       "type": "application",
-      "root": "apps/setup",
+      "root": "apps/seed-data",
       "entryFile": "main",
-      "sourceRoot": "apps/setup/src",
+      "sourceRoot": "apps/seed-data/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/setup/tsconfig.app.json"
+        "tsConfigPath": "apps/seed-data/tsconfig.app.json"
       }
     }
   }
