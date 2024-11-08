@@ -26,7 +26,7 @@ export enum ToolType {
 
 registerEnumType(ToolType, {
     name: "ToolType",
-});
+})
 
 export enum AvailableInType {
     Home,
@@ -36,7 +36,7 @@ export enum AvailableInType {
 
 registerEnumType(AvailableInType, {
     name: "AvailableIn",
-});
+})
 
 
 export enum BuildingKeyType {
@@ -47,7 +47,7 @@ export enum BuildingKeyType {
 
 registerEnumType(BuildingKeyType, {
     name: "BuildingKeyType",
-});
+})
 
 export enum TileKeyType {
     StarterTile,
@@ -59,7 +59,7 @@ export enum TileKeyType {
 
 registerEnumType(TileKeyType, {
     name: "TileKeyType",
-});
+})
 
 export enum SupplyType {
     BasicFertilizer,
@@ -68,7 +68,7 @@ export enum SupplyType {
 
 registerEnumType(SupplyType, {
     name: "SupplyType",
-});
+})
 
 export enum SpinType {
     Gold,
@@ -78,5 +78,5 @@ export enum SpinType {
 }
 
 registerEnumType(SpinType, {
-    name: 'SpinType',
-});
+    name: "SpinType",
+})
