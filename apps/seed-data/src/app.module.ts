@@ -3,6 +3,8 @@ import { ConfigModule } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { SeedDataModule } from "./seed-data"
+import { CacheModule, CacheStore } from "@nestjs/cache-manager"
+import { redisStore } from "cache-manager-redis-yet"
 
 @Module({
     imports: [
@@ -20,6 +22,22 @@ import { SeedDataModule } from "./seed-data"
             database: envConfig().database.postgres.gameplay.dbName,    
             autoLoadEntities: true,
             synchronize: true,
+        }),
+        CacheModule.registerAsync({
+            isGlobal: true,
+            useFactory: async () => {
+                const store = await redisStore({
+                    socket: {
+                        host: envConfig().database.redis.cache.host,
+                        port: envConfig().database.redis.cache.port,
+                    },
+                })
+        
+                return {
+                    store: store as unknown as CacheStore,
+                    ttl: Infinity
+                }
+            },
         }),
         SeedDataModule
     ],

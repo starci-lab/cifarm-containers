@@ -12,6 +12,8 @@ import { DailyRewardsModule } from "./daily-rewards"
 import { SpinsModule } from "./spins"
 import { SuppliesModule } from "./supplies"
 import { TilesModule } from "./tiles"
+import { CacheModule, CacheStore } from "@nestjs/cache-manager"
+import { redisStore } from "cache-manager-redis-yet"
 
 @Module({
     imports: [
@@ -29,6 +31,22 @@ import { TilesModule } from "./tiles"
             database: envConfig().database.postgres.gameplay.dbName,    
             autoLoadEntities: true,
             synchronize: true,
+        }),
+        CacheModule.registerAsync({
+            isGlobal: true,
+            useFactory: async () => {
+                const store = await redisStore({
+                    socket: {
+                        host: envConfig().database.redis.cache.host,
+                        port: envConfig().database.redis.cache.port,
+                    },
+                })
+        
+                return {
+                    store: store as unknown as CacheStore,
+                    ttl: Infinity
+                }
+            },
         }),
         GraphQLModule.forRoot<ApolloFederationDriverConfig>({
             driver: ApolloFederationDriver,

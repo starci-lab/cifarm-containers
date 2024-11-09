@@ -6,7 +6,7 @@ import { DailyRewardPossibility } from "./daily-reward-possibility.entity"
 @ObjectType()
 @Entity("daily_rewards")
 export class DailyRewardEntity extends AbstractEntity {
-    @Field(() => Int)
+    @Field(() => Int, { nullable: true })
     @Column({ name: "reward_amount", type: "int", nullable: true })
         amount: number
 
@@ -19,7 +19,7 @@ export class DailyRewardEntity extends AbstractEntity {
         isLastDay: boolean
 
     @Field(() => [DailyRewardPossibility], { nullable: true })
-    @OneToMany(() => DailyRewardPossibility, (dailyRewardPossibilities) => dailyRewardPossibilities.dailyReward, { cascade: true })
+    @OneToMany(() => DailyRewardPossibility, (dailyRewardPossibilities) => dailyRewardPossibilities.dailyReward, { cascade: true, eager: true })
     @JoinColumn()
         dailyRewardPossibilities?: Array<DailyRewardPossibility>
 }

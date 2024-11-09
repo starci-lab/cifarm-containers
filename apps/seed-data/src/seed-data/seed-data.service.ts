@@ -1,20 +1,73 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { DataSource } from "typeorm"
 import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity,  DailyRewardPossibility,  MarketPricingEntity, PlacedItemEntity, SpinEntity, SpinType, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database"
 import { AnimalType, ToolType, AvailableInType, BuildingKeyType, MarketPricingType } from "@src/database"
+import { REDIS_KEY } from "@src/constants"
+import { CACHE_MANAGER } from "@nestjs/cache-manager"
+import { Cache } from "cache-manager"
 
 @Injectable()
 export class SeedDataService implements OnModuleInit {
     private readonly logger = new Logger(SeedDataService.name)
 
-    constructor(private readonly dataSource: DataSource) {}
+    constructor(
+        private readonly dataSource: DataSource,
+        @Inject(CACHE_MANAGER)
+        private cacheManager: Cache,    
+    ) {}
 
     async onModuleInit() {
-        await this.clearData()
+        await this.clearPostgresData()
+        await this.clearRedisCacheData()
         await this.seedData()
+        await this.saveDataToRedis()
     }
 
-    async clearData() {
+    async clearRedisCacheData() {
+        this.logger.log("Clearing cache data started")
+    
+        try {
+            await this.cacheManager.reset()
+            this.logger.log("Cache data cleared successfully")
+        } catch (error) {
+            this.logger.error(`Failed to clear cache data: ${error.message}`)
+            throw error
+        }
+    }
+
+    async saveDataToRedis() {
+        this.logger.log("Saving data to Redis started")
+        try{
+            // Fetch each type of data from the database
+            const animals = await this.dataSource.manager.find(AnimalEntity)
+            const crops = await this.dataSource.manager.find(CropEntity)
+            const buildings = await this.dataSource.manager.find(BuildingEntity)
+            const tools = await this.dataSource.manager.find(ToolEntity)
+            const placedItems = await this.dataSource.manager.find(PlacedItemEntity)
+            const tiles = await this.dataSource.manager.find(TileEntity)
+            const supplies = await this.dataSource.manager.find(SupplyEntity)
+            const dailyRewards = await this.dataSource.manager.find(DailyRewardEntity)
+            const spins = await this.dataSource.manager.find(SpinEntity)
+
+            // Save each data type to Redis
+            await this.cacheManager.set(REDIS_KEY.ANIMALS, animals)
+            await this.cacheManager.set(REDIS_KEY.CROPS, crops)
+            await this.cacheManager.set(REDIS_KEY.BUILDINGS, buildings)
+            await this.cacheManager.set(REDIS_KEY.TOOLS, tools)
+            await this.cacheManager.set(REDIS_KEY.PLACED_ITEMS, placedItems)
+            await this.cacheManager.set(REDIS_KEY.TILES, tiles)
+            await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies)
+            await this.cacheManager.set(REDIS_KEY.DAILY_REWARDS, dailyRewards)
+            await this.cacheManager.set(REDIS_KEY.SPINS, spins)
+
+            this.logger.log("Data saved to Redis successfully")
+        }catch(error){
+            this.logger.error(`Failed to save data to Redis: ${error.message}`)
+            throw error
+        }
+    }
+
+    async clearPostgresData() {
         this.logger.log("Clearing old data started")
 
         const queryRunner = this.dataSource.createQueryRunner()
