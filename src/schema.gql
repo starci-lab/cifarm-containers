@@ -3,6 +3,8 @@ type UserEntity {
   chainKey: String!
   network: String!
   accountAddress: String!
+  golds: Int!
+  gems: Float!
   inventories: [InventoryEntity!]!
 }
 
@@ -76,7 +78,7 @@ type BuildingEntity {
   availableInShop: Boolean!
   type: AnimalType
   maxUpgrade: Int!
-  price: Float!
+  price: Int
   upgrades: [UpgradeEntity!]
 }
 
@@ -122,7 +124,7 @@ type DailyRewardPossibility {
 }
 
 type DailyRewardEntity {
-  amount: Int!
+  amount: Int
   day: Int!
   isLastDay: Boolean!
   dailyRewardPossibilities: [DailyRewardPossibility!]
