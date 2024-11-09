@@ -43,7 +43,11 @@ export const envConfig = () => ({
         broadcastService: {
             host: process.env.BROADCAST_SERVICE_HOST,
             port: Number(process.env.BROADCAST_SERVICE_PORT),
-        }
+        },
+        graphqlApiGateway: {
+            host: process.env.GRAPHQL_API_GATEWAY_HOST,
+            port: Number(process.env.GRAPHQL_API_GATEWAY_PORT),
+        },
     },
     database: {
         mongo: {

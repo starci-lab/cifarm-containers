@@ -1,8 +1,9 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
+import { envConfig } from "@src/config"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
-    await app.listen(3006)
+    await app.listen(envConfig().containers.graphqlApiGateway.port)
 } 
 bootstrap()

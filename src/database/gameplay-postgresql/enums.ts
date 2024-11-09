@@ -1,82 +1,75 @@
 import { registerEnumType } from "@nestjs/graphql"
 
 export enum MarketPricingType {
-    Animal,
-    Crop,
+    Animal = "Animal",
+    Crop = "Crop",
 }
 registerEnumType(MarketPricingType, {
     name: "MarketPricingType",
 })
 
 export enum AnimalType {
-    Poultry,
-    Livestock,
+    Poultry = "Poultry",
+    Livestock = "Livestock",
 }
 registerEnumType(AnimalType, {
-    name: "AnimalType",
+    name: "AnimalType"
 })
 
 export enum ToolType {
-    Scythe,
-    Steal,
-    WaterCan,
-    Herbicide,
-    Pesticide,
+    Scythe = "Scythe",
+    Steal = "Steal",
+    WaterCan = "WaterCan",
+    Herbicide = "Herbicide",
+    Pesticide = "Pesticide",
 }
-
 registerEnumType(ToolType, {
-    name: "ToolType",
+    name: "ToolType"
 })
 
 export enum AvailableInType {
-    Home,
-    Neighbor,
-    Both,
+    Home = "Home",
+    Neighbor = "Neighbor",
+    Both = "Both",
 }
-
 registerEnumType(AvailableInType, {
     name: "AvailableIn",
 })
 
-
 export enum BuildingKeyType {
-    Coop,
-    Pasture,
-    Home,
+    Coop = "Coop",
+    Pasture = "Pasture",
+    Home = "Home",
 }
-
 registerEnumType(BuildingKeyType, {
-    name: "BuildingKeyType",
+    name: "BuildingKeyType"
 })
 
 export enum TileKeyType {
-    StarterTile,
-    BasicTile1,
-    BasicTile2,
-    BasicTile3,
-    FertileTile,
+    StarterTile = "StarterTile",
+    BasicTile1 = "BasicTile1",
+    BasicTile2 = "BasicTile2",
+    BasicTile3 = "BasicTile3",
+    FertileTile = "FertileTile",
 }
-
 registerEnumType(TileKeyType, {
     name: "TileKeyType",
 })
 
 export enum SupplyType {
-    BasicFertilizer,
-    AnimalFeed,
+    BasicFertilizer = "BasicFertilizer",
+    AnimalFeed = "AnimalFeed",
 }
-
 registerEnumType(SupplyType, {
     name: "SupplyType",
 })
 
 export enum SpinType {
-    Gold,
-    Seed,
-    Supply,
-    Token,
+    Gold = "Gold",
+    Seed = "Seed",
+    Supply = "Supply",
+    Token = "Token",
 }
-
 registerEnumType(SpinType, {
     name: "SpinType",
 })
