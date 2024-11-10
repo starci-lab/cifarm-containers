@@ -48,6 +48,10 @@ export const envConfig = () => ({
             host: process.env.GRAPHQL_API_GATEWAY_HOST,
             port: Number(process.env.GRAPHQL_API_GATEWAY_PORT),
         },
+        websocketApiGateway: {
+            host: process.env.WEBSOCKET_API_GATEWAY_HOST,
+            port: Number(process.env.WEBSOCKET_API_GATEWAY_PORT)
+        }
     },
     database: {
         mongo: {
@@ -72,6 +76,10 @@ export const envConfig = () => ({
             cache: {
                 host: process.env.CACHE_REDIS_HOST,
                 port: Number(process.env.CACHE_REDIS_PORT),
+            },
+            adapter: {
+                host: process.env.ADAPTER_REDIS_HOST,
+                port: Number(process.env.ADAPTER_REDIS_PORT)
             }
         }
     },
