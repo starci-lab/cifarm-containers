@@ -3,6 +3,7 @@ import { broadcastGrpcConstants } from "@apps/broadcast-service"
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { PlacedItemsGateway } from "./placed_items.gateway"
+import { envConfig } from "@src/config"
 
 @Module({
     imports: [
@@ -12,7 +13,7 @@ import { PlacedItemsGateway } from "./placed_items.gateway"
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
-                        url: "0.0.0.0:3004",
+                        url: `0.0.0.0:${envConfig().containers.broadcastService.port}`,
                         package: broadcastGrpcConstants.PACKAGE,
                         protoPath: broadcastGrpcConstants.PROTO_PATH
                     },
