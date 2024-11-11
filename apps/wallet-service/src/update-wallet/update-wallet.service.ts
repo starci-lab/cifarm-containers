@@ -1,15 +1,18 @@
-import { Injectable, Logger, NotFoundException, InternalServerErrorException } from "@nestjs/common"
+import { Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { UpdateWalletRequest, UpdateWalletResponse } from "./update-wallet.dto"
 import { DataSource } from "typeorm"
 import { UserEntity } from "@src/database"
 import { RpcException } from "@nestjs/microservices"
 
+// 1 - item id.
 @Injectable()
 export class UpdateWalletService {
     private readonly logger = new Logger(UpdateWalletService.name)
 
     constructor(private readonly dataSource: DataSource) {}
-
+    //update golds, tokens
+    //add, decrease
+    //get balance 
     public async updateWallet(request: UpdateWalletRequest): Promise<UpdateWalletResponse> {
         try {
             this.logger.debug(
