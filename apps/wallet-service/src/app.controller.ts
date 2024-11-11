@@ -15,6 +15,11 @@ export class AppController {
     // @UseGuards(RestJwtAuthGuard)
     @GrpcMethod(walletGrpcConstants.SERVICE, "UpdateWallet")
     public async requestMessage(request: UpdateWalletRequest) {
-        return this.updateWalletService.updateWallet(request)
+        try{
+            return this.updateWalletService.updateWallet(request)
+        } catch (error) {
+            this.logger.error(`Error processing wallet update for user ${request.userId}`)
+            throw error
+        }
     }
 }

@@ -17,7 +17,7 @@ export class ExceptionFilter implements RpcExceptionFilter<RpcException> {
         const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR
         const message = exception instanceof HttpException ? exception.message : "Internal Server Error"
 
-        this.logger.error(`Exception in service ${serviceName}: status=${status}, message=${message}`)
+        this.logger.debug(`Exception in service ${serviceName}: status=${status}, message=${message}`)
 
         return throwError(() => ({
             statusCode: status,

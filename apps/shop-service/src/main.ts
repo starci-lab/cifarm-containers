@@ -1,8 +1,26 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
+import { envConfig } from "@src/config"
+import { ExceptionFilter } from "@src/filters"
+import { shopGrpcConstants } from "./constants"
+import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 
-async function bootstrap() {
-    const app = await NestFactory.create(AppModule)
-    await app.listen(process.env.port ?? 3008)
+const bootstrap = async () => {
+    const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+        AppModule,
+        {
+            transport: Transport.GRPC,
+            options: {
+                url: `${envConfig().containers.shopService.host}:${envConfig().containers.shopService.port}`,
+                package: shopGrpcConstants.PACKAGE,
+                protoPath: shopGrpcConstants.PROTO_PATH,
+            },
+        },
+    )
+
+    // Apply the global filter
+    app.useGlobalFilters(new ExceptionFilter())
+
+    await app.listen()
 }
 bootstrap()

@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException, InternalServerErrorException } f
 import { UpdateWalletRequest, UpdateWalletResponse } from "./update-wallet.dto"
 import { DataSource } from "typeorm"
 import { UserEntity } from "@src/database"
+import { RpcException } from "@nestjs/microservices"
 
 @Injectable()
 export class UpdateWalletService {
@@ -38,13 +39,13 @@ export class UpdateWalletService {
             return { message: "Wallet updated successfully" }
 
         } catch (error) {
-            this.logger.debug(`Failed to update wallet for userId: ${request.userId}`, error.stack)
+            this.logger.debug(`Failed to update wallet for userId: ${request.userId}`, error.message)
             
             if (error instanceof NotFoundException) {
-                throw error
+                throw new RpcException(error.message)
             }
 
-            throw new InternalServerErrorException("An error occurred while updating the wallet")
+            throw new RpcException("An error occurred while updating the wallet")
         }
     }
 }

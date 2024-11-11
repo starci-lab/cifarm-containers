@@ -4,6 +4,10 @@ import { ConfigModule } from "@nestjs/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
+import { BuyAnimalModule } from "./buy-animal"
+import { AppController } from "./app.controller"
+import { ClientsModule, Transport } from "@nestjs/microservices"
+import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 
 @Module({
     imports: [
@@ -38,8 +42,9 @@ import { redisStore } from "cache-manager-redis-yet"
                 }
             },
         }),
+        BuyAnimalModule
     ],
-    controllers: [],
+    controllers: [AppController],
     providers: [],
 })
 export class AppModule {}

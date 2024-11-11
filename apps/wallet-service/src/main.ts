@@ -11,7 +11,7 @@ async function bootstrap() {
         {
             transport: Transport.GRPC,
             options: {
-                url: `0.0.0.0:${envConfig().containers.walletService.port}`,
+                url: `${envConfig().containers.walletService.host}:${envConfig().containers.walletService.port}`,
                 package: walletGrpcConstants.PACKAGE,
                 protoPath: walletGrpcConstants.PROTO_PATH,
             },

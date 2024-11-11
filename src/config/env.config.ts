@@ -55,7 +55,11 @@ export const envConfig = () => ({
         walletService: {
             host: process.env.WALLET_SERVICE_HOST,
             port: Number(process.env.WALLET_SERVICE_PORT),
-        }
+        },
+        shopService: {
+            host: process.env.SHOP_SERVICE_HOST,
+            port: Number(process.env.SHOP_SERVICE_PORT),
+        },
     },
     database: {
         mongo: {

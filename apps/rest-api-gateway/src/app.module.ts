@@ -5,6 +5,7 @@ import { GameplayModule } from "./gameplay"
 import { StrategiesModule } from "@src/strategies"
 import { ConfigModule } from "@nestjs/config"
 import { envConfig } from "@src/config"
+import { ShopModule } from "./shop"
 
 @Module({
     imports: [
@@ -16,7 +17,8 @@ import { envConfig } from "@src/config"
         StrategiesModule,
         HealthcheckModule,
         AuthModule,
-        GameplayModule
+        GameplayModule,
+        ShopModule
     ],
     controllers: [],
     providers: [],

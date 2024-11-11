@@ -1,12 +1,28 @@
 import { Module, Global } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { BuyAnimalService } from "./buy-animal.service"
-import { UserEntity } from "@src/database"
+import { InventoryEntity, UserEntity } from "@src/database"
+import { ClientsModule, Transport } from "@nestjs/microservices"
+import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
+import { envConfig } from "@src/config"
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity]) 
+        TypeOrmModule.forFeature([UserEntity, InventoryEntity]),
+        ClientsModule.registerAsync(
+            [{
+                name: walletGrpcConstants.NAME,
+                useFactory: async () => ({
+                    transport: Transport.GRPC,
+                    options: {
+                        url: `${envConfig().containers.walletService.host}:${envConfig().containers.walletService.port}`,
+                        package: walletGrpcConstants.PACKAGE,
+                        protoPath: walletGrpcConstants.PROTO_PATH
+                    },
+                })}
+            ]
+        ),
     ],
     providers: [BuyAnimalService],
     exports: [BuyAnimalService],
