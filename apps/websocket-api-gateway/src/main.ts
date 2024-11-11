@@ -10,6 +10,6 @@ const bootstrap = async () => {
     await redisIoAdapter.connectToRedis()
     app.useWebSocketAdapter(redisIoAdapter)
 
-    await app.listen(envConfig().containers.graphqlApiGateway.port)
+    await app.listen(envConfig().containers.websocketApiGateway.port)
 }
 bootstrap()
