@@ -25,12 +25,12 @@ export class UserEntity extends AbstractEntity {
       accountAddress: string
 
   @Field(() => Int)
-  @Column({name: "golds", type: "int64", default: 0})
+  @Column({name: "golds", type: "int", default: 0})
       golds: number
 
   @Field(() => Float)
   @Column({name: "tokens", type: "float", default: 0})
-      gems: number    
+      tokens: number    
 
   @Field(() => [InventoryEntity])
   @OneToMany(() => InventoryEntity, (inventory) => inventory.user)

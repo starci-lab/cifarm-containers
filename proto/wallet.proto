@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package wallet;
+
+// Request message for updating the wallet
+message UpdateWalletRequest {
+    string user_id = 1;                // User ID of the wallet owner
+    int64 gold_amount = 2;             // Amount of gold to update
+    double token_amount = 3;           // Amount of tokens to update
+}
+
+// Response message for wallet update
+message UpdateWalletResponse {
+    string message = 1;
+}
+
+// Wallet service definition
+service WalletService {
+    rpc UpdateWallet (UpdateWalletRequest) returns (UpdateWalletResponse);
+}

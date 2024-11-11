@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package shop;
+
+// Request message for buying an animal
+message BuyAnimalRequest {
+    string user_id = 1;                    // ID of the user making the purchase
+    string animal_key = 2;                 // Key of the animal being purchased
+    string placed_item_building_key = 3;   // Key of the building where the animal will be placed
+    Position position = 4;                 // Position within the building to place the animal
+}
+
+// Position details within the building
+message Position {
+    double x = 1;   // X-coordinate position
+    double y = 2;   // Y-coordinate position
+}
+
+// Response message for successful animal purchase
+message BuyAnimalResponse {
+    string placed_item_animal_key = 1;     // Key of the newly placed animal item
+}
+
+// Define the Shop service with methods for buying animals
+service ShopService {
+    rpc BuyAnimal(BuyAnimalRequest) returns (BuyAnimalResponse); // RPC method for buying an animal
+}

@@ -51,6 +51,10 @@ export const envConfig = () => ({
         websocketApiGateway: {
             host: process.env.WEBSOCKET_API_GATEWAY_HOST,
             port: Number(process.env.WEBSOCKET_API_GATEWAY_PORT)
+        },
+        walletService: {
+            host: process.env.WALLET_SERVICE_HOST,
+            port: Number(process.env.WALLET_SERVICE_PORT),
         }
     },
     database: {

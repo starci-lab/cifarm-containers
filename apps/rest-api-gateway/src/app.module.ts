@@ -16,7 +16,7 @@ import { envConfig } from "@src/config"
         StrategiesModule,
         HealthcheckModule,
         AuthModule,
-        GameplayModule,
+        GameplayModule
     ],
     controllers: [],
     providers: [],

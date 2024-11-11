@@ -37,6 +37,11 @@ export class HealthcheckController implements OnModuleInit {
   @Get()
     public async doHealthcheck(): Promise<DoHealthcheckResponse
     > {
-        return await lastValueFrom(this.healthcheckService.doHealthcheck({}))
+        try {
+            return await lastValueFrom(this.healthcheckService.doHealthcheck({}));
+        } catch (error) {
+            this.logger.error("Healthcheck failed", error)
+            throw new Error("Healthcheck service unavailable")
+        }
     }
 }
