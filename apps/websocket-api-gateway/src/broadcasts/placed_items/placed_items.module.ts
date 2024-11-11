@@ -1,4 +1,3 @@
-
 import { broadcastGrpcConstants } from "@apps/broadcast-service"
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
@@ -7,23 +6,21 @@ import { envConfig } from "@src/config"
 
 @Module({
     imports: [
-        ClientsModule.registerAsync(
-            [{
+        ClientsModule.registerAsync([
+            {
                 name: broadcastGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
-                        url: `0.0.0.0:${envConfig().containers.broadcastService.port}`,
+                        url: `${envConfig().containers.broadcastService.host}:${envConfig().containers.broadcastService.port}`,
                         package: broadcastGrpcConstants.PACKAGE,
-                        protoPath: broadcastGrpcConstants.PROTO_PATH
+                        protoPath: broadcastGrpcConstants.PROTO_PATH,
                     },
-                })}
-            ]
-        ),
+                }),
+            },
+        ]),
     ],
     controllers: [],
-    providers: [
-        PlacedItemsGateway
-    ],
+    providers: [PlacedItemsGateway],
 })
 export class PlacedItemsModule {}
