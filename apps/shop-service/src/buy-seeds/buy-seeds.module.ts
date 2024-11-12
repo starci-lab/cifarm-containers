@@ -3,13 +3,13 @@ import { Global, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
-import { InventoryEntity, UserEntity } from "@src/database"
+import { CropEntity, InventoryEntity, UserEntity } from "@src/database"
 import { BuySeedsService } from "./buy-seeds.service"
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity, InventoryEntity]),
+        TypeOrmModule.forFeature([UserEntity, InventoryEntity, CropEntity]),
         ClientsModule.registerAsync(
             [{
                 name: walletGrpcConstants.NAME,
