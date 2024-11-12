@@ -37,58 +37,64 @@ export class SeedDataService implements OnModuleInit {
 
     async saveDataToRedis() {
         this.logger.log("Saving data to Redis started")
-        try{
-            // Fetch each type of data from the database
-            const animals = await this.dataSource.manager.find(AnimalEntity)
-            const crops = await this.dataSource.manager.find(CropEntity)
-            const buildings = await this.dataSource.manager.find(BuildingEntity)
-            const tools = await this.dataSource.manager.find(ToolEntity)
-            const placedItems = await this.dataSource.manager.find(PlacedItemEntity)
-            const tiles = await this.dataSource.manager.find(TileEntity)
-            const supplies = await this.dataSource.manager.find(SupplyEntity)
-            const dailyRewards = await this.dataSource.manager.find(DailyRewardEntity)
-            const spins = await this.dataSource.manager.find(SpinEntity)
-
-            // Save each data type to Redis
-            await this.cacheManager.set(REDIS_KEY.ANIMALS, animals)
-            await this.cacheManager.set(REDIS_KEY.CROPS, crops)
-            await this.cacheManager.set(REDIS_KEY.BUILDINGS, buildings)
-            await this.cacheManager.set(REDIS_KEY.TOOLS, tools)
-            await this.cacheManager.set(REDIS_KEY.PLACED_ITEMS, placedItems)
-            await this.cacheManager.set(REDIS_KEY.TILES, tiles)
-            await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies)
-            await this.cacheManager.set(REDIS_KEY.DAILY_REWARDS, dailyRewards)
-            await this.cacheManager.set(REDIS_KEY.SPINS, spins)
-
+        try {
+            // Fetch each type of data from the database concurrently
+            const [animals, crops, buildings, tools, placedItems, tiles, supplies, dailyRewards, spins] = await Promise.all([
+                this.dataSource.manager.find(AnimalEntity),
+                this.dataSource.manager.find(CropEntity),
+                this.dataSource.manager.find(BuildingEntity),
+                this.dataSource.manager.find(ToolEntity),
+                this.dataSource.manager.find(PlacedItemEntity),
+                this.dataSource.manager.find(TileEntity),
+                this.dataSource.manager.find(SupplyEntity),
+                this.dataSource.manager.find(DailyRewardEntity),
+                this.dataSource.manager.find(SpinEntity),
+            ])
+    
+            // Save each data type to Redis concurrently
+            await Promise.all([
+                this.cacheManager.set(REDIS_KEY.ANIMALS, animals),
+                this.cacheManager.set(REDIS_KEY.CROPS, crops),
+                this.cacheManager.set(REDIS_KEY.BUILDINGS, buildings),
+                this.cacheManager.set(REDIS_KEY.TOOLS, tools),
+                this.cacheManager.set(REDIS_KEY.PLACED_ITEMS, placedItems),
+                this.cacheManager.set(REDIS_KEY.TILES, tiles),
+                this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies),
+                this.cacheManager.set(REDIS_KEY.DAILY_REWARDS, dailyRewards),
+                this.cacheManager.set(REDIS_KEY.SPINS, spins),
+            ])
+    
             this.logger.log("Data saved to Redis successfully")
-        }catch(error){
+        } catch (error) {
             this.logger.error(`Failed to save data to Redis: ${error.message}`)
             throw error
         }
     }
-
+    
     async clearPostgresData() {
         this.logger.log("Clearing old data started")
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
+    
         try {
             await queryRunner.startTransaction()
-
-            await queryRunner.manager.delete(AnimalEntity, {})
-            await queryRunner.manager.delete(UpgradeEntity, {})
-            await queryRunner.manager.delete(BuildingEntity, {})
-            await queryRunner.manager.delete(CropEntity, {})
-            await queryRunner.manager.delete(ToolEntity, {})
-            await queryRunner.manager.delete(PlacedItemEntity, {})
-            await queryRunner.manager.delete(MarketPricingEntity, {})
-            await queryRunner.manager.delete(TileEntity, {})
-            await queryRunner.manager.delete(SupplyEntity, {})
-            await queryRunner.manager.delete(DailyRewardPossibility, {})
-            await queryRunner.manager.delete(DailyRewardEntity, {})
-            await queryRunner.manager.delete(SpinEntity, {})
-
+    
+            // Delete all data concurrently
+            await Promise.all([
+                queryRunner.manager.delete(AnimalEntity, {}),
+                queryRunner.manager.delete(UpgradeEntity, {}),
+                queryRunner.manager.delete(BuildingEntity, {}),
+                queryRunner.manager.delete(CropEntity, {}),
+                queryRunner.manager.delete(ToolEntity, {}),
+                queryRunner.manager.delete(PlacedItemEntity, {}),
+                queryRunner.manager.delete(MarketPricingEntity, {}),
+                queryRunner.manager.delete(TileEntity, {}),
+                queryRunner.manager.delete(SupplyEntity, {}),
+                queryRunner.manager.delete(DailyRewardPossibility, {}),
+                queryRunner.manager.delete(DailyRewardEntity, {}),
+                queryRunner.manager.delete(SpinEntity, {}),
+            ])
+    
             await queryRunner.commitTransaction()
             this.logger.log("Clearing old data finished")
         } catch (error) {
@@ -98,26 +104,28 @@ export class SeedDataService implements OnModuleInit {
             await queryRunner.release()
         }
     }
-
+    
     async seedData() {
         this.logger.log("Seeding data started")
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
+    
         try {
             await queryRunner.startTransaction()
-
-            await this.seedAnimalData(queryRunner)
-            await this.seedCropData(queryRunner)
-            await this.seedBuildingData(queryRunner)
-            await this.seedToolData(queryRunner)
-            await this.seedPlacedItemData(queryRunner)
-            await this.seedTileData(queryRunner)
-            await this.seedSupplyData(queryRunner)
-            await this.seedDailyRewardData(queryRunner)
-            await this.seedSpinData(queryRunner)
-
+    
+            // Seed data concurrently
+            await Promise.all([
+                this.seedAnimalData(queryRunner),
+                this.seedCropData(queryRunner),
+                this.seedBuildingData(queryRunner),
+                this.seedToolData(queryRunner),
+                this.seedPlacedItemData(queryRunner),
+                this.seedTileData(queryRunner),
+                this.seedSupplyData(queryRunner),
+                this.seedDailyRewardData(queryRunner),
+                this.seedSpinData(queryRunner),
+            ])
+    
             await queryRunner.commitTransaction()
             this.logger.log("Seeding data finished")
         } catch (error) {
@@ -127,6 +135,7 @@ export class SeedDataService implements OnModuleInit {
             await queryRunner.release()
         }
     }
+    
 
     async seedAnimalData(queryRunner) {
 

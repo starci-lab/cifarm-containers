@@ -1,21 +1,18 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
-import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
-import { DataSource } from "typeorm"
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Cache } from "cache-manager"
-import { UpdateWalletRequest, UpdateWalletResponse } from "@apps/wallet-service/src/update-wallet"
-import { lastValueFrom, Observable } from "rxjs"
 import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
+import { CACHE_MANAGER } from "@nestjs/cache-manager"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
-
-interface IWalletService {
-    updateWallet(data: UpdateWalletRequest): Observable<UpdateWalletResponse>;
-}
+import { Cache } from "cache-manager"
+import { lastValueFrom, Observable } from "rxjs"
+import { DataSource } from "typeorm"
+import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
+import { IWalletService } from "@src/services/wallet"
+import { GoldRequest } from "@apps/wallet-service/src/update-wallet"
 
 @Injectable()
 export class BuyAnimalService {
     private readonly logger = new Logger(BuyAnimalService.name)
-    private walletService: IWalletService;
+    private walletService: IWalletService
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
@@ -24,17 +21,17 @@ export class BuyAnimalService {
     ) {}
 
     onModuleInit() {
-        this.walletService = this.client.getService<IWalletService>("WalletService");
+        this.walletService = this.client.getService<IWalletService>("WalletService")
     }
 
     async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {
         try {
-            const walletRequest: UpdateWalletRequest = {
+            const walletRequest: GoldRequest = {
                 userId: request.userId,
                 goldAmount: 99, 
-                tokenAmount: 29, // if applicable
             }
-            const response = await lastValueFrom(this.walletService.updateWallet(walletRequest))
+            // const response = await lastValueFrom(this.walletService.addGold(walletRequest))
+            
             return {
                 placedItemAnimalKey: "1234",
             }

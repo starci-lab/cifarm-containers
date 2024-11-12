@@ -4,6 +4,19 @@ import "google/protobuf/empty.proto";
 
 package shop;
 
+
+// Buy seeds request and response messages
+message BuySeedsRequest {
+    string user_id = 1;          // ID of the user making the purchase
+    string key = 2;               // Seed type or identifier key
+    int32 quantity = 3;           // Quantity of seeds to buy
+}
+
+message BuySeedsResponse {
+    string inventory_seed_key = 1; // Key of the inventory item created or updated
+}
+
+
 // Request message for buying an animal
 message BuyAnimalRequest {
     string user_id = 1;                    // ID of the user making the purchase
@@ -25,5 +38,6 @@ message BuyAnimalResponse {
 
 // Define the Shop service with methods for buying animals
 service ShopService {
+    rpc BuySeeds(BuySeedsRequest) returns (BuySeedsResponse);
     rpc BuyAnimal(BuyAnimalRequest) returns (BuyAnimalResponse); // RPC method for buying an animal
 }

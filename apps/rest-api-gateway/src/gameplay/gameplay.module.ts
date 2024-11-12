@@ -1,7 +1,9 @@
+import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
+import { shopGrpcConstants } from "@apps/shop-service/src/constants"
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
-import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
-import { HealthcheckController } from "./gameplay.controller"
+import { envConfig } from "@src/config"
+import { GameplayController } from "./gameplay.controller"
 
 @Module({
     imports: [
@@ -15,11 +17,21 @@ import { HealthcheckController } from "./gameplay.controller"
                         package: healthcheckGrpcConstants.PACKAGE,
                         protoPath: healthcheckGrpcConstants.PROTO_PATH
                     },
+                })},
+            {
+                name: shopGrpcConstants.NAME,
+                useFactory: async () => ({
+                    transport: Transport.GRPC,
+                    options: {
+                        url: `${envConfig().containers.shopService.host}:${envConfig().containers.shopService.port}`,
+                        package: shopGrpcConstants.PACKAGE,
+                        protoPath: shopGrpcConstants.PROTO_PATH
+                    },
                 })}
             ]
         ),
     ],
-    controllers: [HealthcheckController],
+    controllers: [GameplayController],
     providers: [],
 })
 export class GameplayModule {}

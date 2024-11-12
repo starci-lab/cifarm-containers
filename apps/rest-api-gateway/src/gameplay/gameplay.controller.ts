@@ -1,50 +1,60 @@
 import {
+    healthcheckGrpcConstants
+} from "@apps/healthcheck-service"
+import {
+    Body,
     Controller,
     HttpCode,
     HttpStatus,
     Inject,
     Logger,
     OnModuleInit,
-    Post,
-    UseGuards,
+    Post
 } from "@nestjs/common"
-import {
-    DoHealthcheckResponse,
-    healthcheckGrpcConstants,
-} from "@apps/healthcheck-service"
 
+import { shopGrpcConstants } from "@apps/shop-service/src/constants"
 import { ClientGrpc } from "@nestjs/microservices"
+import { ApiResponse, ApiTags } from "@nestjs/swagger"
 import { lastValueFrom } from "rxjs"
-import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"  
 import { IHealthcheckService } from "../healthcheck"
-import { User } from "@src/decorators"
-import { UserLike } from "@src/services"
-import { RestJwtAuthGuard } from "@src/guards"
+import { IGameplayService } from "./gameplay.service"
+import { BuySeedsRequest, BuySeedsResponse } from "@apps/shop-service/src/buy-seeds"
 
 @ApiTags("Gameplay")
 @Controller("gameplay")
-export class HealthcheckController implements OnModuleInit {
-    private readonly logger = new Logger(HealthcheckController.name)
+export class GameplayController implements OnModuleInit {
+    private readonly logger = new Logger(GameplayController.name)
 
     constructor(
-    @Inject(healthcheckGrpcConstants.NAME) private client: ClientGrpc,
+        @Inject(healthcheckGrpcConstants.NAME) private healthCheckServiceClient: ClientGrpc,
+        @Inject(shopGrpcConstants.NAME) private shopServiceClient: ClientGrpc,
     ) {}
 
     private healthcheckService: IHealthcheckService
+    private gameplayService: IGameplayService
+
     onModuleInit() {
-        this.healthcheckService = this.client.getService<IHealthcheckService>(
-            healthcheckGrpcConstants.SERVICE,
+        this.healthcheckService = this.healthCheckServiceClient.getService<IHealthcheckService>(
+            healthcheckGrpcConstants.SERVICE
         )
+        this.gameplayService = this.shopServiceClient.getService<IGameplayService>(
+            shopGrpcConstants.SERVICE
+        )
+
     }
-   
-  @ApiBearerAuth()
-  @UseGuards(RestJwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiResponse({ type: DoHealthcheckResponse })
-  @Post("/buy-seeds") 
-    public async buySeeds(@User() user: UserLike): Promise<DoHealthcheckResponse
-    > { 
-        console.log("User", user)
-        return await lastValueFrom(this.healthcheckService.doHealthcheck({}))
+
+    // @ApiBearerAuth()
+    // @UseGuards(RestJwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({ type: BuySeedsResponse })
+    @Post("/buy-seeds")
+    public async buySeeds(
+        // @User() user: UserLike,
+        @Body() request: BuySeedsRequest
+    ): Promise<BuySeedsResponse> {
+        // this.logger.debug(`Processing buySeeds for user ${user.id}`)
+        // const buySeedRequest: BuySeedRequest = { ...request, userId: user.id }
+        const buySeedRequest: BuySeedsRequest = { ...request}
+        return await lastValueFrom(this.gameplayService.buySeeds(buySeedRequest))
     }
 }

@@ -1,7 +1,7 @@
-import { Module, Global } from "@nestjs/common"
+import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { UpdateWalletService } from "./update-wallet.service"
 import { InventoryEntity, UserEntity } from "@src/database"
+import { UpdateWalletService } from "./update-wallet.service"
 
 @Global()
 @Module({

@@ -1,54 +1,61 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common"
-import { UpdateWalletRequest, UpdateWalletResponse } from "./update-wallet.dto"
-import { DataSource } from "typeorm"
-import { UserEntity } from "@src/database"
 import { RpcException } from "@nestjs/microservices"
+import { UserEntity } from "@src/database"
+import { DataSource } from "typeorm"
 
-// 1 - item id.
 @Injectable()
 export class UpdateWalletService {
     private readonly logger = new Logger(UpdateWalletService.name)
 
     constructor(private readonly dataSource: DataSource) {}
-    //update golds, tokens
-    //add, decrease
-    //get balance 
-    public async updateWallet(request: UpdateWalletRequest): Promise<UpdateWalletResponse> {
-        try {
-            this.logger.debug(
-                `Processing wallet update for userId: ${request.userId} with goldAmount: ${request.goldAmount}, tokenAmount: ${request.tokenAmount}`
-            )
 
-            // Find the user by userId
-            const user = await this.dataSource.manager.findOne(UserEntity, { where: { id: request.userId } })
-            if (!user) {
-                this.logger.debug(`User with ID ${request.userId} not found`)
-                throw new NotFoundException("User not found")
-            }
+    // 1. Get balance of gold and tokens
+    public async getBalance(userId: string): Promise<{ golds: number; tokens: number }> {
+        const user = await this.findUserById(userId)
+        return { golds: user.golds, tokens: user.tokens }
+    }
 
-            // Update user wallet fields
-            if (request.goldAmount !== undefined && request.goldAmount > 0) {
-                user.golds = Number(request.goldAmount)
-            }
-            
-            if (request.tokenAmount !== undefined && request.tokenAmount > 0) {
-                user.tokens = request.tokenAmount
-            }
-            
+    // 2. Add gold to the user wallet
+    public async addGold(userId: string, goldAmount: number): Promise<{ message: string }> {
+        if(goldAmount < 0) throw new RpcException("Gold amount must be positive")
+        const user = await this.findUserById(userId)
+        if(!user) throw new NotFoundException("User not found")
+        user.golds += goldAmount
+        await this.dataSource.manager.save(user)
+        return { message: "Gold added successfully" }
+    }
 
-            await this.dataSource.manager.save(user)
-            this.logger.debug(`Wallet updated successfully for userId: ${request.userId}`)
+    // 3. Subtract gold from the user wallet
+    public async subtractGold(userId: string, goldAmount: number): Promise<{ message: string }> {
+        if(goldAmount < 0) throw new RpcException("Gold amount must be positive")
+        const user = await this.findUserById(userId)
+        if(!user) throw new NotFoundException("User not found")
+        if (user.golds < goldAmount) throw new RpcException("Insufficient gold balance")
+        user.golds -= goldAmount
+        await this.dataSource.manager.save(user)
+        return { message: "Gold subtracted successfully" }
+    }
 
-            return { message: "Wallet updated successfully" }
+    // 4. Add tokens to the user wallet
+    public async addToken(userId: string, tokenAmount: number): Promise<{ message: string }> {
+        const user = await this.findUserById(userId)
+        user.tokens += tokenAmount
+        await this.dataSource.manager.save(user)
+        return { message: "Tokens added successfully" }
+    }
 
-        } catch (error) {
-            this.logger.debug(`Failed to update wallet for userId: ${request.userId}`, error.message)
-            
-            if (error instanceof NotFoundException) {
-                throw new RpcException(error.message)
-            }
+    // 5. Subtract tokens from the user wallet
+    public async subtractToken(userId: string, tokenAmount: number): Promise<{ message: string }> {
+        const user = await this.findUserById(userId)
+        if (user.tokens < tokenAmount) throw new RpcException("Insufficient token balance")
+        user.tokens -= tokenAmount
+        await this.dataSource.manager.save(user)
+        return { message: "Tokens subtracted successfully" }
+    }
 
-            throw new RpcException("An error occurred while updating the wallet")
-        }
+    private async findUserById(userId: string): Promise<UserEntity> {
+        const user = await this.dataSource.manager.findOne(UserEntity, { where: { id: userId } })
+        if (!user) throw new NotFoundException("User not found")
+        return user
     }
 }

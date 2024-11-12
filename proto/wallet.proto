@@ -2,19 +2,33 @@ syntax = "proto3";
 
 package wallet;
 
-// Request message for updating the wallet
-message UpdateWalletRequest {
-    string user_id = 1;                // User ID of the wallet owner
-    int64 gold_amount = 2;             // Amount of gold to update
-    double token_amount = 3;           // Amount of tokens to update
+message UserRequest {
+    string user_id = 1;
 }
 
-// Response message for wallet update
+message GoldRequest {
+    string user_id = 1;
+    int64 gold_amount = 2;
+}
+
+message TokenRequest {
+    string user_id = 1;
+    double token_amount = 2;
+}
+
+message BalanceResponse {
+    int64 golds = 1;
+    double tokens = 2;
+}
+
 message UpdateWalletResponse {
     string message = 1;
 }
 
-// Wallet service definition
 service WalletService {
-    rpc UpdateWallet (UpdateWalletRequest) returns (UpdateWalletResponse);
+    rpc GetBalance (UserRequest) returns (BalanceResponse);
+    rpc AddGold (GoldRequest) returns (UpdateWalletResponse);
+    rpc SubtractGold (GoldRequest) returns (UpdateWalletResponse);
+    rpc AddToken (TokenRequest) returns (UpdateWalletResponse);
+    rpc SubtractToken (TokenRequest) returns (UpdateWalletResponse);
 }

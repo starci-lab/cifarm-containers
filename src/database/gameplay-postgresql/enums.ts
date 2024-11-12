@@ -73,3 +73,17 @@ export enum SpinType {
 registerEnumType(SpinType, {
     name: "SpinType",
 })
+
+
+export enum InventoryType {
+    Seed = "Seed",
+    Tile = "Tile",
+    Animal = "Animal",
+    HarvestedCrop = "HarvestedCrop",
+    AnimalProduct = "AnimalProduct",
+    Supply = "Supply",
+}
+
+registerEnumType(InventoryType, {
+    name: "InventoryType",
+})
