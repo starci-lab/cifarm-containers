@@ -16,6 +16,18 @@ message BuySeedsResponse {
     string inventory_seed_key = 1; // Key of the inventory item created or updated
 }
 
+// Request message for buying supplies
+message BuySuppliesRequest {
+    string user_id = 1;         // The ID of the user making the purchase
+    string key = 2;              // The key (ID) of the supply item to purchase
+    int32 quantity = 3;          // The quantity of supplies to purchase
+}
+
+// Response message for buying supplies
+message BuySuppliesResponse {
+    string inventory_key = 1;    // The inventory key for the purchased supplies
+}
+
 
 // Request message for buying an animal
 message BuyAnimalRequest {
@@ -39,5 +51,6 @@ message BuyAnimalResponse {
 // Define the Shop service with methods for buying animals
 service ShopService {
     rpc BuySeeds(BuySeedsRequest) returns (BuySeedsResponse);
+    rpc BuySupplies (BuySuppliesRequest) returns (BuySuppliesResponse);
     rpc BuyAnimal(BuyAnimalRequest) returns (BuyAnimalResponse); // RPC method for buying an animal
 }

@@ -19,6 +19,7 @@ import { lastValueFrom } from "rxjs"
 import { IHealthcheckService } from "../healthcheck"
 import { IGameplayService } from "./gameplay.service"
 import { BuySeedsRequest, BuySeedsResponse } from "@apps/shop-service/src/buy-seeds"
+import { BuySuppliesRequest, BuySuppliesResponse } from "@apps/shop-service/src/buy-supplies"
 
 @ApiTags("Gameplay")
 @Controller("gameplay")
@@ -56,5 +57,18 @@ export class GameplayController implements OnModuleInit {
         // const buySeedRequest: BuySeedRequest = { ...request, userId: user.id }
         const buySeedRequest: BuySeedsRequest = { ...request}
         return await lastValueFrom(this.gameplayService.buySeeds(buySeedRequest))
+    }
+
+    // @ApiBearerAuth()
+    // @UseGuards(RestJwtAuthGuard)
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({ type: BuySuppliesResponse })
+    @Post("/buy-supplies")
+    public async buySupplies(
+        // @User() user: UserLike,
+        @Body() request: BuySuppliesRequest
+    ): Promise<BuySuppliesResponse> {
+        // this.logger.debug(`Processing buySupplies for user ${user.id}`)
+        return await lastValueFrom(this.gameplayService.buySupplies({ ...request}))
     }
 }

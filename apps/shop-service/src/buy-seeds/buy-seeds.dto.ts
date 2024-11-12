@@ -18,5 +18,5 @@ export class BuySeedsRequest extends UserIdRequest {
 
 export class BuySeedsResponse {
     @ApiProperty({ example: "inventory-seed-key", description: "The inventory key for the purchased seeds" })
-        inventorySeedKey: string
+        inventoryKey: string
 }

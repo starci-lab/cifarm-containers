@@ -1,27 +1,27 @@
+// buy-supplies.service.ts
+
 import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
-import { CropEntity, InventoryEntity, InventoryType } from "@src/database"
+import { SupplyEntity, InventoryEntity, InventoryType } from "@src/database"
 import { IWalletService } from "@src/services/wallet"
 import { Cache } from "cache-manager"
-import { DataSource } from "typeorm"
-import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
-import { REDIS_KEY } from "@src/constants"
 import { lastValueFrom } from "rxjs"
+import { DataSource } from "typeorm"
+import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
+import { REDIS_KEY} from "@src/constants"
 import { GAMEPLAY } from "@src/constants/gameplay.constant"
 
-
 @Injectable()
-export class BuySeedsService {
-    private readonly logger = new Logger(BuySeedsService.name)
+export class BuySuppliesService {
+    private readonly logger = new Logger(BuySuppliesService.name)
     private walletService: IWalletService
 
     constructor(
         private readonly dataSource: DataSource,
         @Inject(walletGrpcConstants.NAME) private client: ClientGrpc,
-        @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,    
+        @Inject(CACHE_MANAGER) private cacheManager: Cache
     ) {}
 
     onModuleInit() {
@@ -30,41 +30,38 @@ export class BuySeedsService {
         )
     }
 
-    async buySeeds(request: BuySeedsRequest): Promise<BuySeedsResponse> {
+    async buySupplies(request: BuySuppliesRequest): Promise<BuySuppliesResponse> {
         const { key, quantity, userId } = request
-        this.logger.debug(`Buying seed for user ${userId} key: ${key} quantity: ${quantity}`)
+        this.logger.debug(`Buying supply for user ${userId} key: ${key} quantity: ${quantity}`)
 
-        // Fetch crop details (Get from cache or DB)
-        let crops = await this.cacheManager.get<Array<CropEntity>>(REDIS_KEY.CROPS)
-        if (!crops) {
-            crops = await this.dataSource.manager.find(CropEntity)
-            await this.cacheManager.set(REDIS_KEY.CROPS, crops, Infinity)
+        // Fetch supply details (Get from cache or DB)
+        let supplies = await this.cacheManager.get<Array<SupplyEntity>>(REDIS_KEY.SUPPLIES)
+        if (!supplies) {
+            supplies = await this.dataSource.manager.find(SupplyEntity)
+            await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies, Infinity)
         }
-        const crop = crops.find(c => c.id.toString() === key)
-        if (!crop) throw new NotFoundException("Crop not found")
-        if (!crop.availableInShop) throw new Error("Crop not available in shop")
+        const supply = supplies.find(s => s.id.toString() === key)
+        if (!supply) throw new NotFoundException("Supply not found")
+        if (!supply.availableInShop) throw new Error("Supply not available in shop")
 
         // Calculate total cost
-        const totalCost = crop.price * quantity
+        const totalCost = supply.price * quantity
 
         // Check Balance
         const balance = await lastValueFrom(this.walletService.getBalance({ userId }))
-        this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds} tokens: ${balance.tokens}`)
+        this.logger.debug(`User ${userId} has golds: ${balance.golds}, tokens: ${balance.tokens}`)
         if (balance.golds < totalCost) throw new Error("Insufficient gold balance")
-    
-        // Update wallet
-        const walletRequest = { userId, goldAmount: totalCost }
-        this.logger.debug(`Updating wallet for user ${userId} by deducting golds: ${totalCost}`)
-        const response = await lastValueFrom(this.walletService.subtractGold(walletRequest))
-        console.log(response.message)
 
-        this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds} tokens: ${balance.tokens}`)
+        // Update wallet
+        const walletRequest = { userId, goldAmount: -totalCost }
+        this.logger.debug(`Updating wallet for user ${userId} by deducting golds: ${totalCost}`)
+        await lastValueFrom(this.walletService.subtractGold(walletRequest))
 
         // Update Inventory with max stack handling
         const maxStack = GAMEPLAY.MAX_STACK_DEFAULT
         let remainingQuantity = quantity
 
-        // Fetch all inventory items for this user and seed type
+        // Fetch all inventory items for this user and supply type
         const inventories = await this.dataSource.manager.find(InventoryEntity, {
             where: { referenceKey: key, userId }
         })
@@ -88,13 +85,14 @@ export class BuySeedsService {
             const newInventory = this.dataSource.manager.create(InventoryEntity, {
                 referenceKey: key,
                 userId,
+                tokenId: null, // Id?
                 quantity: newQuantity,
-                type: InventoryType.Seed,
+                type: InventoryType.Supply,
                 placeable: true,
                 isPlaced: false,
-                premium: crop.premium,
+                // premium: supply.premium,
                 deliverable: true,
-                asTool: false,
+                asTool: true, // Supplies are tools
                 maxStack,
             })
             remainingQuantity -= newQuantity
