@@ -4,14 +4,14 @@ import { Global, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
-import { InventoryEntity, SupplyEntity, UserEntity } from "@src/database"
+import { InventoryEntity, MarketPricingEntity, SupplyEntity, UserEntity } from "@src/database"
 import { BuySuppliesService } from "./buy-supplies.service"
 import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity, InventoryEntity, SupplyEntity]),
+        TypeOrmModule.forFeature([UserEntity, InventoryEntity, SupplyEntity, MarketPricingEntity]),
         ClientsModule.registerAsync([
             {
                 name: walletGrpcConstants.NAME,

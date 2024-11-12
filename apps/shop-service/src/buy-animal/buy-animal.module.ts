@@ -1,7 +1,7 @@
 import { Module, Global } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { BuyAnimalService } from "./buy-animal.service"
-import { InventoryEntity, UserEntity } from "@src/database"
+import { InventoryEntity, MarketPricingEntity, UserEntity } from "@src/database"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { envConfig } from "@src/config"
@@ -9,7 +9,7 @@ import { envConfig } from "@src/config"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity, InventoryEntity]),
+        TypeOrmModule.forFeature([UserEntity, InventoryEntity, MarketPricingEntity]),
         ClientsModule.registerAsync(
             [{
                 name: walletGrpcConstants.NAME,

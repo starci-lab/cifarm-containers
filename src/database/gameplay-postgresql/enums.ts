@@ -87,3 +87,10 @@ export enum InventoryType {
 registerEnumType(InventoryType, {
     name: "InventoryType",
 })
+
+export enum AnimalKey {
+    Chicken = "Chicken",
+    Cow = "Cow",
+    Pig = "Pig",
+    Sheep = "Sheep",
+}

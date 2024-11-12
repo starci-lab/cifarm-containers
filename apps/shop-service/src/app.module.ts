@@ -7,6 +7,7 @@ import { redisStore } from "cache-manager-redis-yet"
 import { AppController } from "./app.controller"
 import { BuyAnimalModule } from "./buy-animal"
 import { BuySeedsModule } from "./buy-seeds"
+import { BuySuppliesModule } from "./buy-supplies"
 
 @Module({
     imports: [
@@ -42,7 +43,8 @@ import { BuySeedsModule } from "./buy-seeds"
             },
         }),
         BuyAnimalModule,
-        BuySeedsModule
+        BuySeedsModule,
+        BuySuppliesModule
     ],
     controllers: [AppController],
     providers: [],
