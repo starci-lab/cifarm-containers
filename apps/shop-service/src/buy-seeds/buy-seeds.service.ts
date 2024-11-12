@@ -10,6 +10,7 @@ import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
 import { REDIS_KEY } from "@src/constants"
 import { lastValueFrom } from "rxjs"
 import { GAMEPLAY } from "@src/constants/gameplay.constant"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 
 
 @Injectable()
@@ -37,9 +38,11 @@ export class BuySeedsService {
         // Fetch crop details (Get from cache or DB)
         let crops = await this.cacheManager.get<Array<CropEntity>>(REDIS_KEY.CROPS)
         if (!crops) {
-            crops = await this.dataSource.manager.find(CropEntity)
-            await this.cacheManager.set(REDIS_KEY.CROPS, crops, Infinity)
+            throw new GrpcNotFoundException("User Not Found.")
         }
+        crops = await this.dataSource.manager.find(CropEntity)
+        await this.cacheManager.set(REDIS_KEY.CROPS, crops, Infinity)
+
         const crop = crops.find(c => c.id.toString() === key)
         if (!crop) throw new NotFoundException("Crop not found")
         if (!crop.availableInShop) throw new Error("Crop not available in shop")

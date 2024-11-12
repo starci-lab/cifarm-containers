@@ -9,7 +9,7 @@ import {
     Inject,
     Logger,
     OnModuleInit,
-    Post
+    Post,
 } from "@nestjs/common"
 
 import { shopGrpcConstants } from "@apps/shop-service/src/constants"
