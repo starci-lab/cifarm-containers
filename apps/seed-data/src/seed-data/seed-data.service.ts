@@ -165,9 +165,9 @@ export class SeedDataService implements OnModuleInit {
                 this.seedTileData(queryRunner),
                 this.seedSupplyData(queryRunner),
                 this.seedDailyRewardData(queryRunner),
-                this.seedSpinData(queryRunner),
-                this.seedProducts(queryRunner),
+                this.seedSpinData(queryRunner)
             ])
+            await this.seedProducts(queryRunner)
 
             await queryRunner.commitTransaction()
             this.logger.log("Seeding data finished")
