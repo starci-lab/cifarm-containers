@@ -57,7 +57,7 @@ export class BuySuppliesService {
         await lastValueFrom(this.walletService.subtractGold(walletRequest))
 
         // Update Inventory with max stack handling
-        const maxStack = supplies.maxStack
+        const maxStack = supply.maxStack
         let remainingQuantity = quantity
 
         // Fetch all inventory items for this user and supply type
