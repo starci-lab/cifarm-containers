@@ -1,10 +1,9 @@
-import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
-import { DataSource } from "typeorm"
-import { AnimalEntity, BuildingEntity, CropEntity, DailyRewardEntity,  DailyRewardPossibility,  MarketPricingEntity, PlacedItemEntity, SpinEntity, SpinType, SupplyEntity, SupplyType, TileEntity, TileKeyType, ToolEntity, UpgradeEntity } from "@src/database"
-import { AnimalType, ToolType, AvailableInType, BuildingKeyType, MarketPricingType } from "@src/database"
-import { REDIS_KEY } from "@src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
+import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { REDIS_KEY } from "@src/constants"
+import { AnimalEntity, AnimalKey, AnimalType, AvailableInType, BuildingEntity, BuildingKey, CropEntity, CropKey, DailyRewardEntity, DailyRewardKey, DailyRewardPossibility, MarketPricingEntity, PlacedItemEntity, SpinEntity, SpinKey, SpinType, SupplyEntity, SupplyKey, SupplyType, TileEntity, TileKey, ToolEntity, ToolKey, UpgradeEntity } from "@src/database"
 import { Cache } from "cache-manager"
+import { DataSource } from "typeorm"
 
 @Injectable()
 export class SeedDataService implements OnModuleInit {
@@ -119,11 +118,11 @@ export class SeedDataService implements OnModuleInit {
                 this.seedCropData(queryRunner),
                 this.seedBuildingData(queryRunner),
                 this.seedToolData(queryRunner),
-                this.seedPlacedItemData(queryRunner),
                 this.seedTileData(queryRunner),
                 this.seedSupplyData(queryRunner),
                 this.seedDailyRewardData(queryRunner),
                 this.seedSpinData(queryRunner),
+                this.seedPlacedItemData(queryRunner),
             ])
     
             await queryRunner.commitTransaction()
@@ -138,23 +137,9 @@ export class SeedDataService implements OnModuleInit {
     
 
     async seedAnimalData(queryRunner) {
-
-        const animalMarketPricingChicken = await queryRunner.manager.save(
-            queryRunner.manager.create(MarketPricingEntity, {
-                basicAmount: 100.0,
-                premiumAmount: 200.0,
-                type: MarketPricingType.Animal,
-            }))
-
-        const animalMarketPricingCow = await queryRunner.manager.save(
-            queryRunner.manager.create(MarketPricingEntity, {
-                basicAmount: 100.0,
-                premiumAmount: 200.0,
-                type: MarketPricingType.Animal,
-            }))
-
         // Define and save animals
         const chicken = queryRunner.manager.create(AnimalEntity, {
+            key: AnimalKey.Chicken,
             yieldTime: 60 * 60 * 24, // 1 day in seconds
             offspringPrice: 1000,
             isNFT: false,
@@ -167,11 +152,12 @@ export class SeedDataService implements OnModuleInit {
             premiumHarvestExperiences: 96,
             type: AnimalType.Poultry,
             sickChance: 0.001,
-            marketPricing: animalMarketPricingChicken,
+            marketPricing: null,
         })
         await queryRunner.manager.save(chicken)
 
         const cow = queryRunner.manager.create(AnimalEntity, {
+            key: AnimalKey.Cow,
             yieldTime: 60 * 60 * 24 * 2, // 2 days in seconds
             offspringPrice: 2500,
             isNFT: false,
@@ -184,61 +170,175 @@ export class SeedDataService implements OnModuleInit {
             premiumHarvestExperiences: 96,
             type: AnimalType.Livestock,
             sickChance: 0.001,
-            marketPricing: animalMarketPricingCow,
+            marketPricing: null,
         })
         await queryRunner.manager.save(cow)
     }
 
     async seedCropData(queryRunner) {
-        const cropMarketPricing = await queryRunner.manager.save(
-            queryRunner.manager.create(MarketPricingEntity, {
-                basicAmount: 50.0,
-                premiumAmount: 120.0,
-                type: MarketPricingType.Crop,
+
+        const cropsData = [
+            {
+                key: CropKey.Carrot,
+                growthStageDuration: 60 * 60, // 1 hour
+                growthStages: 5,
+                price: 50,
+                premium: false,
+                perennial: false,
+                minHarvestQuantity: 14,
+                maxHarvestQuantity: 20,
+                basicHarvestExperiences: 12,
+                premiumHarvestExperiences: 60,
+                availableInShop: true,
+            },
+            {
+                key: CropKey.Potato,
+                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
+                growthStages: 5,
+                price: 100,
+                premium: false,
+                perennial: false,
+                minHarvestQuantity: 16,
+                maxHarvestQuantity: 23,
+                nextGrowthStageAfterHarvest: 1,
+                basicHarvestExperiences: 21,
+                premiumHarvestExperiences: 110,
+                availableInShop: true,
+            },
+            {
+                key: CropKey.Cucumber,
+                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
+                growthStages: 5,
+                price: 100,
+                premium: false,
+                perennial: false,
+                minHarvestQuantity: 16,
+                maxHarvestQuantity: 23,
+                nextGrowthStageAfterHarvest: 1,
+                basicHarvestExperiences: 21,
+                premiumHarvestExperiences: 110,
+                availableInShop: true,
+            },
+            {
+                key: CropKey.Pineapple,
+                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
+                growthStages: 5,
+                price: 100,
+                premium: false,
+                perennial: false,
+                minHarvestQuantity: 16,
+                maxHarvestQuantity: 23,
+                nextGrowthStageAfterHarvest: 1,
+                basicHarvestExperiences: 21,
+                premiumHarvestExperiences: 110,
+                availableInShop: true,
+            },
+            {
+                key: CropKey.Watermelon,
+                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
+                growthStages: 5,
+                price: 100,
+                premium: false,
+                perennial: false,
+                minHarvestQuantity: 16,
+                maxHarvestQuantity: 23,
+                nextGrowthStageAfterHarvest: 1,
+                basicHarvestExperiences: 21,
+                premiumHarvestExperiences: 110,
+                availableInShop: true,
+            },
+            {
+                key: CropKey.BellPepper,
+                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
+                growthStages: 5,
+                price: 100,
+                premium: false,
+                perennial: false,
+                minHarvestQuantity: 16,
+                maxHarvestQuantity: 23,
+                nextGrowthStageAfterHarvest: 1,
+                basicHarvestExperiences: 21,
+                premiumHarvestExperiences: 110,
+                availableInShop: true,
+            },
+        ]
+    
+        for (const cropData of cropsData) {
+            const crop = queryRunner.manager.create(CropEntity, {
+                ...cropData,
             })
-        )
-        const crop = queryRunner.manager.create(CropEntity, {
-            growthStageDuration: 300,
-            growthStages: 4,
-            price: 100,
-            premium: true,
-            perennial: false,
-            nextGrowthStageAfterHarvest: 1,
-            minHarvestQuantity: 2,
-            maxHarvestQuantity: 5,
-            basicHarvestExperiences: 10,
-            premiumHarvestExperiences: 25,
-            availableInShop: true,
-            marketPricing: cropMarketPricing
-        })
-        await queryRunner.manager.save(crop)
+            await queryRunner.manager.save(crop)
+        }
     }
 
     async seedBuildingData(queryRunner) {
-        const building = queryRunner.manager.create(BuildingEntity, {
-            buildingKey: BuildingKeyType.Coop,
-            availableInShop: true,
-            type: AnimalType.Poultry,
-            maxUpgrade: 3,
-            price: 500.0,
-        })
-        await queryRunner.manager.save(building)
-
-        const upgrade = queryRunner.manager.create(UpgradeEntity, {
-            upgradePrice: 200,
-            capacity: 10,
-            building: building
-        })
-        await queryRunner.manager.save(upgrade)
+        // Define building data
+        const buildingsData = [
+            {
+                key: BuildingKey.Coop,
+                availableInShop: true,
+                type: AnimalType.Poultry,
+                maxUpgrade: 2,
+                price: 2000,
+                upgrades: [
+                    { upgradePrice: 0, capacity: 3 },
+                    { upgradePrice: 1000, capacity: 5 },
+                    { upgradePrice: 2000, capacity: 10 }
+                ]
+            },
+            {
+                key: BuildingKey.Pasture,
+                availableInShop: true,
+                type: AnimalType.Livestock,
+                maxUpgrade: 2,
+                price: 3000,
+                upgrades: [
+                    { upgradePrice: 0, capacity: 3 },
+                    { upgradePrice: 1000, capacity: 5 },
+                    { upgradePrice: 2000, capacity: 10 }
+                ]
+            },
+            {
+                key: BuildingKey.Home,
+                availableInShop: false,
+                maxUpgrade: 0,
+                price: 0,
+                upgrades: []
+            }
+        ]
+    
+        // Iterate over buildingsData to create each building and its upgrades
+        for (const buildingData of buildingsData) {
+            // Save the building
+            const building = queryRunner.manager.create(BuildingEntity, {
+                key: buildingData.key,
+                availableInShop: buildingData.availableInShop,
+                type: buildingData.type,
+                maxUpgrade: buildingData.maxUpgrade,
+                price: buildingData.price
+            })
+            await queryRunner.manager.save(building)
+    
+            // Save each upgrade for the building
+            for (const upgradeData of buildingData.upgrades) {
+                const upgrade = queryRunner.manager.create(UpgradeEntity, {
+                    upgradePrice: upgradeData.upgradePrice,
+                    capacity: upgradeData.capacity,
+                    building: building
+                })
+                await queryRunner.manager.save(upgrade)
+            }
+        }
     }
+    
 
     async seedToolData(queryRunner) {
         const toolsData = [
-            { type: ToolType.Scythe, availableIn: AvailableInType.Home, index: 0 },
-            { type: ToolType.Steal, availableIn: AvailableInType.Neighbor, index: 1 },
-            { type: ToolType.WaterCan, availableIn: AvailableInType.Both, index: 2 },
-            { type: ToolType.Herbicide, availableIn: AvailableInType.Both, index: 3 },
-            { type: ToolType.Pesticide, availableIn: AvailableInType.Both, index: 4 },
+            { key: ToolKey.Scythe, availableIn: AvailableInType.Home, index: 0 },
+            { key: ToolKey.Steal, availableIn: AvailableInType.Neighbor, index: 1 },
+            { key: ToolKey.WaterCan, availableIn: AvailableInType.Both, index: 2 },
+            { key: ToolKey.Herbicide, availableIn: AvailableInType.Both, index: 3 },
+            { key: ToolKey.Pesticide, availableIn: AvailableInType.Both, index: 4 },
         ]
 
         for (const toolData of toolsData) {
@@ -247,20 +347,15 @@ export class SeedDataService implements OnModuleInit {
         }
     }
 
-    async seedPlacedItemData(queryRunner) {
-        const placedItem = queryRunner.manager.create(PlacedItemEntity, {
-            quantity: "5"
-        })
-        await queryRunner.manager.save(placedItem)
-    }
+
 
     async seedTileData(queryRunner) {
         const tilesData = [
-            { type: TileKeyType.StarterTile, price: 0, maxOwnership: 6, isNFT: false, availableInShop: true },
-            { type: TileKeyType.BasicTile1, price: 1000, maxOwnership: 10, isNFT: false, availableInShop: true },
-            { type: TileKeyType.BasicTile2, price: 2500, maxOwnership: 30, isNFT: false, availableInShop: true },
-            { type: TileKeyType.BasicTile3, price: 10000, maxOwnership: 9999, isNFT: false, availableInShop: true },
-            { type: TileKeyType.FertileTile, price: 0, maxOwnership: 0, isNFT: true, availableInShop: false },
+            { key: TileKey.StarterTile, price: 0, maxOwnership: 6, isNFT: false, availableInShop: true },
+            { key: TileKey.BasicTile1, price: 1000, maxOwnership: 10, isNFT: false, availableInShop: true },
+            { key: TileKey.BasicTile2, price: 2500, maxOwnership: 30, isNFT: false, availableInShop: true },
+            { key: TileKey.BasicTile3, price: 10000, maxOwnership: 9999, isNFT: false, availableInShop: true },
+            { key: TileKey.FertileTile, price: 0, maxOwnership: 0, isNFT: true, availableInShop: false },
         ]
     
         for (const tileData of tilesData) {
@@ -272,12 +367,14 @@ export class SeedDataService implements OnModuleInit {
     async seedSupplyData(queryRunner) {
         const suppliesData = [
             {
-                type: SupplyType.BasicFertilizer,
+                key: SupplyKey.BasicFertilizer,
+                type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,
                 fertilizerEffectTimeReduce: 60 * 30,
             },
             {
+                key: SupplyKey.AnimalFeed,
                 type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,
@@ -293,30 +390,35 @@ export class SeedDataService implements OnModuleInit {
     async seedDailyRewardData(queryRunner) {
         const dailyRewardsData = [
             {
+                key: DailyRewardKey.Day1,
                 amount: 100,
                 day: 1,
                 isLastDay: false,
                 dailyRewardPossibilities: [],
             },
             {
+                key: DailyRewardKey.Day2,
                 amount: 200,
                 day: 2,
                 isLastDay: false,
                 dailyRewardPossibilities: [],
             },
             {
+                key: DailyRewardKey.Day3,
                 amount: 300,
                 day: 3,
                 isLastDay: false,
                 dailyRewardPossibilities: [],
             },
             {
+                key: DailyRewardKey.Day4,
                 amount: 600,
                 day: 4,
                 isLastDay: false,
                 dailyRewardPossibilities: [],
             },
             {
+                key: DailyRewardKey.Day5,
                 day: 5,
                 isLastDay: true,
                 dailyRewardPossibilities: [
@@ -347,14 +449,14 @@ export class SeedDataService implements OnModuleInit {
     }
     async seedSpinData(queryRunner) {
         const spinsData = [
-            {type: SpinType.Gold, goldAmount: 100, thresholdMin: 0, thresholdMax: 0.2 },
-            {type: SpinType.Gold, goldAmount: 250, thresholdMin: 0.2, thresholdMax: 0.35 },
-            {type: SpinType.Gold, goldAmount: 500, thresholdMin: 0.35, thresholdMax: 0.45 },
-            {type: SpinType.Gold, goldAmount: 200, thresholdMin: 0.45, thresholdMax: 0.5 },
-            {type: SpinType.Seed, quantity: 2, thresholdMin: 0.5, thresholdMax: 0.65 },
-            {type: SpinType.Seed, quantity: 2, thresholdMin: 0.65, thresholdMax: 0.8 },
-            {type: SpinType.Supply, quantity: 4, thresholdMin: 0.8, thresholdMax: 0.99 },
-            {type: SpinType.Token, tokenAmount: 15, thresholdMin: 0.99, thresholdMax: 1 },
+            {key: SpinKey.Gold1,type: SpinType.Gold, goldAmount: 100, thresholdMin: 0, thresholdMax: 0.2 },
+            {key: SpinKey.Gold2,type: SpinType.Gold, goldAmount: 250, thresholdMin: 0.2, thresholdMax: 0.35 },
+            {key: SpinKey.Gold3,type: SpinType.Gold, goldAmount: 500, thresholdMin: 0.35, thresholdMax: 0.45 },
+            {key: SpinKey.Gold4,type: SpinType.Gold, goldAmount: 200, thresholdMin: 0.45, thresholdMax: 0.5 },
+            {key: SpinKey.Seed1,type: SpinType.Seed, quantity: 2, thresholdMin: 0.5, thresholdMax: 0.65 },
+            {key: SpinKey.Seed2,type: SpinType.Seed, quantity: 2, thresholdMin: 0.65, thresholdMax: 0.8 },
+            {key: SpinKey.BasicFertilizer,type: SpinType.Supply, quantity: 4, thresholdMin: 0.8, thresholdMax: 0.99 },
+            {key: SpinKey.Token,type: SpinType.Token, tokenAmount: 15, thresholdMin: 0.99, thresholdMax: 1 },
         ]
     
         for (const spinData of spinsData) {
@@ -363,6 +465,11 @@ export class SeedDataService implements OnModuleInit {
         }
     }
     
-    
+    async seedPlacedItemData(queryRunner) {
+        const placedItem = queryRunner.manager.create(PlacedItemEntity, {
+            quantity: "5"
+        })
+        await queryRunner.manager.save(placedItem)
+    }
     
 }

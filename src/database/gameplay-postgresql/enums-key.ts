@@ -61,7 +61,6 @@ export enum SpinKey {
     Gold4 = "Gold4",
     Seed1 = CropKey.Pineapple,
     Seed2 = CropKey.Watermelon,
-    Seed3 = CropKey.Cucumber,
     BasicFertilizer = SupplyKey.BasicFertilizer,
     Token = "Token",
 }

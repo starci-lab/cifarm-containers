@@ -9,8 +9,8 @@ import { UpgradeEntity } from "./upgrade.entity"
 @Entity("buildings")
 export class BuildingEntity extends AbstractEntity {
     @Field(() => BuildingKey)
-    @Column({ name: "building_key", type: "enum", enum: BuildingKey })
-        buildingKey: BuildingKey
+    @Column({type: "enum", enum: BuildingKey })
+        key: BuildingKey
 
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })

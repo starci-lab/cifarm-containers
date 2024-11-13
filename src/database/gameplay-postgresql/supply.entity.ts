@@ -8,7 +8,7 @@ import { SupplyKey } from "./enums-key"
 @Entity("supplies")
 export class SupplyEntity extends AbstractEntity {
     @Field(() => SupplyKey)
-    @Column({ name: "supply_key", type: "enum", enum: SupplyKey })
+    @Column({type: "enum", enum: SupplyKey })
         key: SupplyKey
 
     @Field(() => SupplyType)

@@ -7,8 +7,8 @@ import { TileKey } from "./enums-key"
 @Entity("tiles")
 export class TileEntity extends AbstractEntity {
     @Field(() => TileKey)
-    @Column({ name: "type", type: "enum", enum: TileKey })
-        type: TileKey
+    @Column({type: "enum", enum: TileKey })
+        key: TileKey
 
     @Field(() => Float)
     @Column({ name: "price", type: "float" })

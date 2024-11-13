@@ -8,8 +8,8 @@ import { ToolKey } from "./enums-key"
 @Entity("tools")
 export class ToolEntity extends AbstractEntity {
     @Field(() => ToolKey)
-    @Column({ name: "type", type: "enum", enum: ToolKey })
-        type: ToolKey
+    @Column({type: "enum", enum: ToolKey })
+        key: ToolKey
     
     @Field(() => AvailableInType)
     @Column({ name: "available_in", type: "enum", enum: AvailableInType })
