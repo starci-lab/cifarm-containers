@@ -9,7 +9,6 @@ import { DataSource } from "typeorm"
 import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
 import { REDIS_KEY } from "@src/constants"
 import { lastValueFrom } from "rxjs"
-import { GAMEPLAY } from "@src/constants/gameplay.constant"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 
 
@@ -63,8 +62,8 @@ export class BuySeedsService {
 
         this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds} tokens: ${balance.tokens}`)
 
-        // Update Inventory with max stack handling
-        const maxStack = GAMEPLAY.MAX_STACK_DEFAULT
+        // Set maxStack from the crop's maxStack attribute
+        const maxStack = crop.maxStack
         let remainingQuantity = quantity
 
         // Fetch all inventory items for this user and seed type

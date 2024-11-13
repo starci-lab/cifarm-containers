@@ -56,7 +56,7 @@ export class CropEntity extends AbstractEntity {
         availableInShop: boolean
 
     @Field(() => Int)
-    @Column({ name: "maxStack", type: "int" })
+    @Column({ name: "maxStack", type: "int", default: 16 })
         maxStack: number
 
     @OneToOne(() => MarketPricingEntity, { cascade: true, onDelete: "CASCADE" })

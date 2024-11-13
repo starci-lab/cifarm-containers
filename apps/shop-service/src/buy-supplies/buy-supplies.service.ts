@@ -4,14 +4,13 @@ import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
-import { SupplyEntity, InventoryEntity, InventoryType } from "@src/database"
+import { REDIS_KEY } from "@src/constants"
+import { InventoryEntity, InventoryType, SupplyEntity } from "@src/database"
 import { IWalletService } from "@src/services/wallet"
 import { Cache } from "cache-manager"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
 import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
-import { REDIS_KEY} from "@src/constants"
-import { GAMEPLAY } from "@src/constants/gameplay.constant"
 
 @Injectable()
 export class BuySuppliesService {
@@ -58,7 +57,7 @@ export class BuySuppliesService {
         await lastValueFrom(this.walletService.subtractGold(walletRequest))
 
         // Update Inventory with max stack handling
-        const maxStack = GAMEPLAY.MAX_STACK_DEFAULT
+        const maxStack = supplies.maxStack
         let remainingQuantity = quantity
 
         // Fetch all inventory items for this user and supply type

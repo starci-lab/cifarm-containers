@@ -339,12 +339,14 @@ export class SeedDataService implements OnModuleInit {
                 price: 50,
                 availableInShop: true,
                 fertilizerEffectTimeReduce: 60 * 30,
+                maxStack: 16,
             },
             {
                 key: SupplyKey.AnimalFeed,
                 type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,
+                maxStack: 16,
             },
         ]
     

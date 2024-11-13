@@ -23,6 +23,10 @@ export class SupplyEntity extends AbstractEntity {
     @Column({ name: "available_in_shop", type: "boolean", default: false })
         availableInShop: boolean
 
+    @Field(() => Int)
+    @Column({ name: "maxStack", type: "int", default: 16 })
+        maxStack: number
+
     @Field(() => Int, { nullable: true })
     @Column({ name: "time_reduce", type: "int", nullable: true })
         fertilizerEffectTimeReduce?: number
