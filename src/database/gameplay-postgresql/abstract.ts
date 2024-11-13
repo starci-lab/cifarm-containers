@@ -1,12 +1,12 @@
 
 
+import { Field, ID } from "@nestjs/graphql"
+import { ClassConstructor, instanceToPlain, plainToInstance } from "class-transformer"
 import {
     CreateDateColumn,
     PrimaryGeneratedColumn,
-    UpdateDateColumn,
+    UpdateDateColumn
 } from "typeorm"
-import { Field, ID } from "@nestjs/graphql"
-import { ClassConstructor, plainToInstance, instanceToPlain  } from "class-transformer"
 
 export abstract class AbstractEntity {
     @Field(() => ID)
@@ -23,6 +23,24 @@ export abstract class AbstractEntity {
     @UpdateDateColumn({name: "updated_at"})
         updatedAt: Date
     
+    toDto<Dto>(dtoClass: ClassConstructor<Dto>): Dto {
+        return plainToInstance(dtoClass, this)
+    }
+
+    toPlain<Plain>(): Plain {
+        return instanceToPlain(this) as Plain
+    }
+}
+
+export abstract class ReadableAbstractEntity{
+    @Field(() => Date)
+    @CreateDateColumn({ name: "created_at" })
+        createdAt: Date
+
+    @Field(() => Date)
+    @UpdateDateColumn({ name: "updated_at" })
+        updatedAt: Date
+
     toDto<Dto>(dtoClass: ClassConstructor<Dto>): Dto {
         return plainToInstance(dtoClass, this)
     }

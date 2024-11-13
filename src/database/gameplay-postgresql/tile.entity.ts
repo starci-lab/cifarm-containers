@@ -1,14 +1,14 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
-import { AbstractEntity } from "./abstract"
+import { ReadableAbstractEntity } from "./abstract"
 import { TileKey } from "./enums-key"
 
 @ObjectType()
 @Entity("tiles")
-export class TileEntity extends AbstractEntity {
+export class TileEntity extends ReadableAbstractEntity {
     @Field(() => TileKey)
     @Column({type: "enum", enum: TileKey })
-        key: TileKey
+        id: TileKey
 
     @Field(() => Float)
     @Column({ name: "price", type: "float" })

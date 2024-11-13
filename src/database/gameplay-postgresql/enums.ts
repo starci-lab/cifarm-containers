@@ -49,8 +49,7 @@ export enum InventoryType {
     Seed = "Seed",
     Tile = "Tile",
     Animal = "Animal",
-    HarvestedCrop = "HarvestedCrop",
-    AnimalProduct = "AnimalProduct",
+    Product = "Product",
     Supply = "Supply",
 }
 

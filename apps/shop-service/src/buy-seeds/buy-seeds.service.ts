@@ -1,21 +1,21 @@
+import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Inject, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
+import { REDIS_KEY } from "@src/constants"
 import { CropEntity, InventoryEntity, InventoryType } from "@src/database"
+import { IGoldWalletService } from "@src/services/wallet"
 import { Cache } from "cache-manager"
+import { GrpcAbortedException, GrpcNotFoundException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
+import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
 import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
-import { REDIS_KEY } from "@src/constants"
-import { lastValueFrom } from "rxjs"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
-import { IGoldWalletService } from "@src/services/wallet"
 
 
 @Injectable()
 export class BuySeedsService {
     private readonly logger = new Logger(BuySeedsService.name)
-    private walletService: IGoldWalletService
+    private goldWalletService: IGoldWalletService
 
     constructor(
         private readonly dataSource: DataSource,
@@ -25,7 +25,7 @@ export class BuySeedsService {
     ) {}
 
     onModuleInit() {
-        this.walletService = this.client.getService<IGoldWalletService>(
+        this.goldWalletService = this.client.getService<IGoldWalletService>(
             goldWalletGrpcConstants.SERVICE
         )
     }
@@ -37,27 +37,31 @@ export class BuySeedsService {
         // Fetch crop details (Get from cache or DB)
         let crops = await this.cacheManager.get<Array<CropEntity>>(REDIS_KEY.CROPS)
         if (!crops) {
-            throw new GrpcNotFoundException("User Not Found.")
+            this.logger.debug("Crops not found in cache, fetching from database...")
+            crops = await this.dataSource.manager.find(CropEntity)
+            if (crops.length === 0) {
+                throw new GrpcNotFoundException("No crops found in the database.")
+            }
+            // Store crops in cache
+            await this.cacheManager.set(REDIS_KEY.CROPS, crops, Infinity)
         }
-        crops = await this.dataSource.manager.find(CropEntity)
-        await this.cacheManager.set(REDIS_KEY.CROPS, crops, Infinity)
 
-        const crop = crops.find(c => c.id.toString() === key)
-        if (!crop) throw new NotFoundException("Crop not found")
-        if (!crop.availableInShop) throw new Error("Crop not available in shop")
+        const crop = crops.find(c => c.key.toString() === key.toString())
+        if (!crop) throw new GrpcNotFoundException("Crop not found or invalid key: " + key)
+        if (!crop.availableInShop) throw new GrpcPermissionDeniedException("Crop not available in shop")
 
         // Calculate total cost
         const totalCost = crop.price * quantity
 
         // Check Balance
-        const balance = await lastValueFrom(this.walletService.getGoldBalance({ userId }))
+        const balance = await lastValueFrom(this.goldWalletService.getGoldBalance({ userId }))
         this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds}`)
-        if (balance.golds < totalCost) throw new Error("Insufficient gold balance")
+        if (balance.golds < totalCost) throw new GrpcAbortedException("Insufficient gold balance")
     
         // Update wallet
         const walletRequest = { userId, goldAmount: totalCost }
         this.logger.debug(`Updating wallet for user ${userId} by deducting golds: ${totalCost}`)
-        const response = await lastValueFrom(this.walletService.subtractGold(walletRequest))
+        const response = await lastValueFrom(this.goldWalletService.subtractGold(walletRequest))
         console.log(response.message)
 
         this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds}`)
@@ -68,7 +72,7 @@ export class BuySeedsService {
 
         // Fetch all inventory items for this user and seed type
         const inventories = await this.dataSource.manager.find(InventoryEntity, {
-            where: { referenceKey: key, userId }
+            where: { referenceKey: crop.id, userId }
         })
 
         for (const inventory of inventories) {
