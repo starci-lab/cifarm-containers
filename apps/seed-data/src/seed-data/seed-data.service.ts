@@ -14,7 +14,7 @@ import {
     DailyRewardKey,
     DailyRewardPossibility,
     ProductEntity,
-    ProductEntityType,
+    ProductType,
     SpinEntity,
     SpinKey,
     SpinType,
@@ -47,7 +47,7 @@ export class SeedDataService implements OnModuleInit {
         await this.saveDataToRedis()
     }
 
-    async clearRedisCacheData() {
+    private async clearRedisCacheData() {
         this.logger.log("Clearing cache data started")
 
         try {
@@ -59,10 +59,9 @@ export class SeedDataService implements OnModuleInit {
         }
     }
 
-    async saveDataToRedis() {
+    private async saveDataToRedis() {
         this.logger.log("Saving data to Redis started")
         try {
-            // Fetch each type of data from the database concurrently
             const [
                 animals,
                 crops,
@@ -96,7 +95,6 @@ export class SeedDataService implements OnModuleInit {
                 this.cacheManager.set(REDIS_KEY.SPINS, spins),
                 this.cacheManager.set(REDIS_KEY.MARKET_PRICINGS, marketPricings),
             ])
-
             this.logger.log("Data saved to Redis successfully")
         } catch (error) {
             this.logger.error(`Failed to save data to Redis: ${error.message}`)
@@ -104,7 +102,7 @@ export class SeedDataService implements OnModuleInit {
         }
     }
 
-    async clearPostgresData() {
+    private async clearPostgresData() {
         this.logger.log("Clearing old data started")
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -112,7 +110,6 @@ export class SeedDataService implements OnModuleInit {
         try {
             await queryRunner.startTransaction()
 
-            // Delete marketplace pricing
             await Promise.all([
                 queryRunner.manager
                     .createQueryBuilder()
@@ -152,7 +149,7 @@ export class SeedDataService implements OnModuleInit {
         }
     }
 
-    async seedData() {
+    private async seedData() {
         this.logger.log("Seeding data started")
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -160,7 +157,6 @@ export class SeedDataService implements OnModuleInit {
         try {
             await queryRunner.startTransaction()
 
-            // Seed data concurrently
             await Promise.all([
                 this.seedAnimalData(queryRunner),
                 this.seedCropData(queryRunner),
@@ -170,6 +166,7 @@ export class SeedDataService implements OnModuleInit {
                 this.seedSupplyData(queryRunner),
                 this.seedDailyRewardData(queryRunner),
                 this.seedSpinData(queryRunner),
+                this.seedProducts(queryRunner),
             ])
 
             await queryRunner.commitTransaction()
@@ -217,7 +214,7 @@ export class SeedDataService implements OnModuleInit {
         await queryRunner.manager.save(AnimalEntity, data)
     }
 
-    async seedCropData(queryRunner: QueryRunner) {
+    private async seedCropData(queryRunner: QueryRunner) {
         const data : Array<DeepPartial<CropEntity>> = [
             {
                 key: CropKey.Carrot,
@@ -310,52 +307,99 @@ export class SeedDataService implements OnModuleInit {
                 maxStack: 16,
             },
         ]
-        const cropsMarketPricing = [
-            { key: CropKey.Carrot, basicAmount: 4, premiumAmount: 0.02 },
-            { key: CropKey.Potato, basicAmount: 8, premiumAmount: 0.04 },
-            { key: CropKey.BellPepper, basicAmount: 8, premiumAmount: 0.04 },
-            { key: CropKey.Cucumber, basicAmount: 8, premiumAmount: 0.04 },
-            { key: CropKey.Pineapple, basicAmount: 8, premiumAmount: 0.04 },
-            { key: CropKey.Watermelon, basicAmount: 8, premiumAmount: 0.04 },
+        
+        await queryRunner.manager.save(CropEntity, data)
+        
+    }
+
+    private async seedProducts(queryRunner: QueryRunner) {
+        const chicken:AnimalEntity = await queryRunner.manager.findOne(AnimalEntity, { where: { key: AnimalKey.Chicken } })
+        const cow:AnimalEntity = await queryRunner.manager.findOne(AnimalEntity, { where: { key: AnimalKey.Cow } })
+        const carrot:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { key: CropKey.Carrot } })
+        const potato:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { key: CropKey.Potato } })
+        const bellPepper:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { key: CropKey.BellPepper } })
+        const cucumber:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { key: CropKey.Cucumber } })
+        const pineapple:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { key: CropKey.Pineapple } })
+        const watermelon:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { key: CropKey.Watermelon } })
+
+        const data: Array<DeepPartial<ProductEntity>> = [
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Animal,
+                animal: chicken,
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Animal,
+                animal: cow,
+            },
+            {
+                isPremium: false,
+                goldAmount: 4,
+                tokenAmount: 0.02,
+                type: ProductType.Crop,
+                crop: carrot,
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: potato,
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: bellPepper,
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: cucumber,
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: pineapple,
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: watermelon,
+            },
         ]
+    
+        await queryRunner.manager.save(ProductEntity, data)
 
-        for (let i = 0; i < cropsData.length; i++) {
-            const cropData = cropsData[i]
-            const pricingData = cropsMarketPricing.find(
-                (pricing) => pricing.key === cropData.key,
-            )
+        //Update crop and animal with products
+        carrot.product = data.find(product => product.crop?.key === CropKey.Carrot) as ProductEntity
+        potato.product = data.find(product => product.crop?.key === CropKey.Potato) as ProductEntity
+        bellPepper.product = data.find(product => product.crop?.key === CropKey.BellPepper) as ProductEntity
+        cucumber.product = data.find(product => product.crop?.key === CropKey.Cucumber) as ProductEntity
+        pineapple.product = data.find(product => product.crop?.key === CropKey.Pineapple) as ProductEntity
+        watermelon.product = data.find(product => product.crop?.key === CropKey.Watermelon) as ProductEntity
+        chicken.product = data.find(product => product.animal?.key === AnimalKey.Chicken) as ProductEntity
+        cow.product = data.find(product => product.animal?.key === AnimalKey.Cow) as ProductEntity
 
-            const crop = queryRunner.manager.create(CropEntity, cropData)
-            await queryRunner.manager.save(crop)
-
-            const marketPricing = await this.seedMarketPricing(
-                queryRunner,
-                cropData.key,
-                pricingData.basicAmount,
-                pricingData.premiumAmount,
-                MarketPricingType.Crop,
-                crop,
-            )
-
-            crop.marketPricing = marketPricing
-            await queryRunner.manager.save(crop)
-        }
+        //Save updated crop and animal
+        await queryRunner.manager.save(CropEntity, [carrot, potato, bellPepper, cucumber, pineapple, watermelon])
     }
 
-    async seedProducts(queryRunner: QueryRunner) {
-        const marketPricing = queryRunner.manager.create(MarketPricingEntity, {
-            basicAmount,
-            premiumAmount,
-            type,
-            animalId: type === MarketPricingType.Animal && entity ? entity.id : null,
-            cropId: type === MarketPricingType.Crop && entity ? entity.id : null,
-        })
-        return await queryRunner.manager.save(marketPricing)
-    }
-
-    async seedBuildingData(queryRunner) {
+    private async seedBuildingData(queryRunner: QueryRunner) {
     // Define building data
-        const buildingsData = [
+        const data: Array<DeepPartial<BuildingEntity>> = [
             {
                 key: BuildingKey.Coop,
                 availableInShop: true,
@@ -389,47 +433,22 @@ export class SeedDataService implements OnModuleInit {
             },
         ]
 
-        // Iterate over buildingsData to create each building and its upgrades
-        for (const buildingData of buildingsData) {
-            // Save the building
-            const building = queryRunner.manager.create(BuildingEntity, {
-                key: buildingData.key,
-                availableInShop: buildingData.availableInShop,
-                type: buildingData.type,
-                maxUpgrade: buildingData.maxUpgrade,
-                price: buildingData.price,
-            })
-            await queryRunner.manager.save(building)
-
-            // Save each upgrade for the building
-            for (const upgradeData of buildingData.upgrades) {
-                const upgrade = queryRunner.manager.create(UpgradeEntity, {
-                    upgradePrice: upgradeData.upgradePrice,
-                    capacity: upgradeData.capacity,
-                    building: building,
-                })
-                await queryRunner.manager.save(upgrade)
-            }
-        }
+        await queryRunner.manager.save(BuildingEntity, data)
     }
 
-    async seedToolData(queryRunner) {
-        const toolsData = [
+    private async seedToolData(queryRunner: QueryRunner) {
+        const data : Array<DeepPartial<ToolEntity>> = [
             { key: ToolKey.Scythe, availableIn: AvailableInType.Home, index: 0 },
             { key: ToolKey.Steal, availableIn: AvailableInType.Neighbor, index: 1 },
             { key: ToolKey.WaterCan, availableIn: AvailableInType.Both, index: 2 },
             { key: ToolKey.Herbicide, availableIn: AvailableInType.Both, index: 3 },
             { key: ToolKey.Pesticide, availableIn: AvailableInType.Both, index: 4 },
         ]
-
-        for (const toolData of toolsData) {
-            const tool = queryRunner.manager.create(ToolEntity, toolData)
-            await queryRunner.manager.save(tool)
-        }
+        await queryRunner.manager.save(ToolEntity, data)
     }
 
-    async seedTileData(queryRunner) {
-        const tilesData = [
+    private async seedTileData(queryRunner: QueryRunner) {
+        const data:Array<DeepPartial<TileEntity>> = [
             {
                 key: TileKey.StarterTile,
                 price: 0,
@@ -467,14 +486,11 @@ export class SeedDataService implements OnModuleInit {
             },
         ]
 
-        for (const tileData of tilesData) {
-            const tile = queryRunner.manager.create(TileEntity, tileData)
-            await queryRunner.manager.save(tile)
-        }
+        queryRunner.manager.save(TileEntity, data)
     }
 
-    async seedSupplyData(queryRunner) {
-        const suppliesData = [
+    private async seedSupplyData(queryRunner: QueryRunner) {
+        const data : Array<DeepPartial<SupplyEntity>> = [
             {
                 key: SupplyKey.BasicFertilizer,
                 type: SupplyType.AnimalFeed,
@@ -492,41 +508,33 @@ export class SeedDataService implements OnModuleInit {
             },
         ]
 
-        for (const supplyData of suppliesData) {
-            const supply = queryRunner.manager.create(SupplyEntity, supplyData)
-            await queryRunner.manager.save(supply)
-        }
+        await queryRunner.manager.save(SupplyEntity, data)
     }
-
-    async seedDailyRewardData(queryRunner) {
-        const dailyRewardsData = [
+    private async seedDailyRewardData(queryRunner: QueryRunner) {
+        const data: Array<DeepPartial<DailyRewardEntity>> = [
             {
                 key: DailyRewardKey.Day1,
                 amount: 100,
                 day: 1,
                 isLastDay: false,
-                dailyRewardPossibilities: [],
             },
             {
                 key: DailyRewardKey.Day2,
                 amount: 200,
                 day: 2,
                 isLastDay: false,
-                dailyRewardPossibilities: [],
             },
             {
                 key: DailyRewardKey.Day3,
                 amount: 300,
                 day: 3,
                 isLastDay: false,
-                dailyRewardPossibilities: [],
             },
             {
                 key: DailyRewardKey.Day4,
                 amount: 600,
                 day: 4,
                 isLastDay: false,
-                dailyRewardPossibilities: [],
             },
             {
                 key: DailyRewardKey.Day5,
@@ -541,28 +549,12 @@ export class SeedDataService implements OnModuleInit {
                 ],
             },
         ]
-
-        for (const rewardData of dailyRewardsData) {
-            const { dailyRewardPossibilities, ...rewardInfo } = rewardData
-            const reward = queryRunner.manager.create(DailyRewardEntity, rewardInfo)
-            await queryRunner.manager.save(reward)
-
-            if (reward.isLastDay && dailyRewardPossibilities) {
-                for (const possibilityData of dailyRewardPossibilities) {
-                    const possibility = queryRunner.manager.create(
-                        DailyRewardPossibility,
-                        {
-                            ...possibilityData,
-                            dailyReward: reward,
-                        },
-                    )
-                    await queryRunner.manager.save(possibility)
-                }
-            }
-        }
+    
+        await queryRunner.manager.save(DailyRewardEntity, data)
+        
     }
-    async seedSpinData(queryRunner) {
-        const spinsData = [
+    private async seedSpinData(queryRunner: QueryRunner) {
+        const data:Array<DeepPartial<SpinEntity>> = [
             {
                 key: SpinKey.Gold1,
                 type: SpinType.Gold,
@@ -621,9 +613,6 @@ export class SeedDataService implements OnModuleInit {
             },
         ]
 
-        for (const spinData of spinsData) {
-            const spin = queryRunner.manager.create(SpinEntity, spinData)
-            await queryRunner.manager.save(spin)
-        }
+        await queryRunner.manager.save(SpinEntity, data)
     }
 }
