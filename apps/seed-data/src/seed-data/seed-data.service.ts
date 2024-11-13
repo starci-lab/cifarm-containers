@@ -110,20 +110,20 @@ export class SeedDataService implements OnModuleInit {
         try {
             await queryRunner.startTransaction()
 
-            await Promise.all([
-                queryRunner.manager
-                    .createQueryBuilder()
-                    .delete()
-                    .from(ProductEntity)
-                    .where("animal_id IS NOT NULL")
-                    .execute(),
-                queryRunner.manager
-                    .createQueryBuilder()
-                    .delete()
-                    .from(ProductEntity)
-                    .where("crop_id IS NOT NULL")
-                    .execute(),
-            ])
+            // await Promise.all([
+            //     queryRunner.manager
+            //         .createQueryBuilder()
+            //         .delete()
+            //         .from(ProductEntity)
+            //         .where("animal_id IS NOT NULL")
+            //         .execute(),
+            //     queryRunner.manager
+            //         .createQueryBuilder()
+            //         .delete()
+            //         .from(ProductEntity)
+            //         .where("crop_id IS NOT NULL")
+            //         .execute(),
+            // ])
 
             // Delete all data concurrently
             await Promise.all([
@@ -511,46 +511,46 @@ export class SeedDataService implements OnModuleInit {
         await queryRunner.manager.save(SupplyEntity, data)
     }
     private async seedDailyRewardData(queryRunner: QueryRunner) {
-        const data: Array<DeepPartial<DailyRewardEntity>> = [
-            {
-                id: DailyRewardKey.Day1,
-                amount: 100,
-                day: 1,
-                isLastDay: false,
-            },
-            {
-                id: DailyRewardKey.Day2,
-                amount: 200,
-                day: 2,
-                isLastDay: false,
-            },
-            {
-                id: DailyRewardKey.Day3,
-                amount: 300,
-                day: 3,
-                isLastDay: false,
-            },
-            {
-                id: DailyRewardKey.Day4,
-                amount: 600,
-                day: 4,
-                isLastDay: false,
-            },
-            {
-                id: DailyRewardKey.Day5,
-                day: 5,
-                isLastDay: true,
-                dailyRewardPossibilities: [
-                    { goldAmount: 1000, thresholdMin: 0, thresholdMax: 0.8 },
-                    { goldAmount: 1500, thresholdMin: 0.8, thresholdMax: 0.9 },
-                    { goldAmount: 2000, thresholdMin: 0.9, thresholdMax: 0.95 },
-                    { tokenAmount: 3, thresholdMin: 0.95, thresholdMax: 0.99 },
-                    { tokenAmount: 10, thresholdMin: 0.99, thresholdMax: 1 },
-                ],
-            },
-        ]
+        // const data: Array<DeepPartial<DailyRewardEntity>> = [
+        //     {
+        //         id: DailyRewardKey.Day1,
+        //         amount: 100,
+        //         day: 1,
+        //         isLastDay: false,
+        //     },
+        //     {
+        //         id: DailyRewardKey.Day2,
+        //         amount: 200,
+        //         day: 2,
+        //         isLastDay: false,
+        //     },
+        //     {
+        //         id: DailyRewardKey.Day3,
+        //         amount: 300,
+        //         day: 3,
+        //         isLastDay: false,
+        //     },
+        //     {
+        //         id: DailyRewardKey.Day4,
+        //         amount: 600,
+        //         day: 4,
+        //         isLastDay: false,
+        //     },
+        //     {
+        //         id: DailyRewardKey.Day5,
+        //         day: 5,
+        //         isLastDay: true,
+        //         dailyRewardPossibilities: [
+        //             { goldAmount: 1000, thresholdMin: 0, thresholdMax: 0.8, dailyReward: { id: DailyRewardKey.Day5 } },
+        //             { goldAmount: 1500, thresholdMin: 0.8, thresholdMax: 0.9, dailyReward: { id: DailyRewardKey.Day5 } },
+        //             { goldAmount: 2000, thresholdMin: 0.9, thresholdMax: 0.95, dailyReward: { id: DailyRewardKey.Day5 } },
+        //             { tokenAmount: 3, thresholdMin: 0.95, thresholdMax: 0.99, dailyReward: { id: DailyRewardKey.Day5 } },
+        //             { tokenAmount: 10, thresholdMin: 0.99, thresholdMax: 1, dailyReward: { id: DailyRewardKey.Day5 } },
+        //         ],
+        //     },
+        // ]
     
-        await queryRunner.manager.save(DailyRewardEntity, data)
+        // await queryRunner.manager.save(DailyRewardEntity, data)
         
     }
     private async seedSpinData(queryRunner: QueryRunner) {
