@@ -1,16 +1,16 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToMany } from "typeorm"
-import { AbstractEntity } from "./abstract"
+import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from "typeorm"
+import { AbstractEntity, ReadableAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
 import { BuildingKey } from "./enums-key"
 import { UpgradeEntity } from "./upgrade.entity"
 
 @ObjectType()
 @Entity("buildings")
-export class BuildingEntity extends AbstractEntity {
+export class BuildingEntity extends ReadableAbstractEntity {
     @Field(() => BuildingKey)
-    @Column({type: "enum", enum: BuildingKey })
-        key: BuildingKey
+    @PrimaryColumn({type: "enum", enum: BuildingKey })
+        id: BuildingKey
 
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })
@@ -28,8 +28,8 @@ export class BuildingEntity extends AbstractEntity {
     @Column({ name: "price", type: "int", nullable: true })
         price?: number
 
-    @Field(() => [UpgradeEntity], { nullable: true })
-    @OneToMany(() => UpgradeEntity, (upgrade) => upgrade.building, { cascade: true, eager: true })
-    @JoinColumn()
-        upgrades?: Array<UpgradeEntity>
+    // @Field(() => [UpgradeEntity], { nullable: true })
+    // @OneToMany(() => UpgradeEntity, (upgrade) => upgrade.building, { cascade: true, eager: true })
+    // @JoinColumn()
+    //     upgrades?: Array<UpgradeEntity>
 }

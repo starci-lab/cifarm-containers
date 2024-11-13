@@ -14,7 +14,7 @@ export class UpgradeEntity extends AbstractEntity {
     @Column({ name: "capacity", type: "int" })
         capacity: number
 
-    @ManyToOne(() => BuildingEntity, (building) => building.upgrades, { onDelete: "CASCADE" })
-    @JoinColumn()
-        building: BuildingEntity
+    // @ManyToOne(() => BuildingEntity, (building) => building.upgrades, { onDelete: "CASCADE" })
+    // @JoinColumn()
+    //     building: BuildingEntity
 }

@@ -110,20 +110,11 @@ export class SeedDataService implements OnModuleInit {
         try {
             await queryRunner.startTransaction()
 
-            // await Promise.all([
-            //     queryRunner.manager
-            //         .createQueryBuilder()
-            //         .delete()
-            //         .from(ProductEntity)
-            //         .where("animal_id IS NOT NULL")
-            //         .execute(),
-            //     queryRunner.manager
-            //         .createQueryBuilder()
-            //         .delete()
-            //         .from(ProductEntity)
-            //         .where("crop_id IS NOT NULL")
-            //         .execute(),
-            // ])
+            await queryRunner.manager
+                .createQueryBuilder()
+                .delete()
+                .from(ProductEntity)
+                .execute()
 
             // Delete all data concurrently
             await Promise.all([
@@ -399,41 +390,41 @@ export class SeedDataService implements OnModuleInit {
 
     private async seedBuildingData(queryRunner: QueryRunner) {
         // Define building data
-        // const data: Array<DeepPartial<BuildingEntity>> = [
-        //     {
-        //         id: BuildingKey.Coop,
-        //         availableInShop: true,
-        //         type: AnimalType.Poultry,
-        //         maxUpgrade: 2,
-        //         price: 2000,
-        //         upgrades: [
-        //             { upgradePrice: 0, capacity: 3 },
-        //             { upgradePrice: 1000, capacity: 5 },
-        //             { upgradePrice: 2000, capacity: 10 },
-        //         ],
-        //     },
-        //     {
-        //         id: BuildingKey.Pasture,
-        //         availableInShop: true,
-        //         type: AnimalType.Livestock,
-        //         maxUpgrade: 2,
-        //         price: 3000,
-        //         upgrades: [
-        //             { upgradePrice: 0, capacity: 3 },
-        //             { upgradePrice: 1000, capacity: 5 },
-        //             { upgradePrice: 2000, capacity: 10 },
-        //         ],
-        //     },
-        //     {
-        //         id: BuildingKey.Home,
-        //         availableInShop: false,
-        //         maxUpgrade: 0,
-        //         price: 0,
-        //         upgrades: [],
-        //     },
-        // ]
+        const data: Array<DeepPartial<BuildingEntity>> = [
+            {
+                id: BuildingKey.Coop,
+                availableInShop: true,
+                type: AnimalType.Poultry,
+                maxUpgrade: 2,
+                price: 2000,
+                // upgrades: [
+                //     { upgradePrice: 0, capacity: 3 },
+                //     { upgradePrice: 1000, capacity: 5 },
+                //     { upgradePrice: 2000, capacity: 10 },
+                // ],
+            },
+            {
+                id: BuildingKey.Pasture,
+                availableInShop: true,
+                type: AnimalType.Livestock,
+                maxUpgrade: 2,
+                price: 3000,
+                // upgrades: [
+                //     { upgradePrice: 0, capacity: 3 },
+                //     { upgradePrice: 1000, capacity: 5 },
+                //     { upgradePrice: 2000, capacity: 10 },
+                // ],
+            },
+            {
+                id: BuildingKey.Home,
+                availableInShop: false,
+                maxUpgrade: 0,
+                price: 0,
+                // upgrades: [],
+            },
+        ]
 
-        // await queryRunner.manager.save(BuildingEntity, data)
+        await queryRunner.manager.save(BuildingEntity, data)
     }
 
     private async seedToolData(queryRunner: QueryRunner) {
