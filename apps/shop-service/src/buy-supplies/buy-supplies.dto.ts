@@ -5,7 +5,7 @@ import { UserIdRequest } from "@src/types"
 import { IsString, IsInt, Min } from "class-validator"
 
 export class BuySuppliesRequest extends UserIdRequest {
-    @ApiProperty({ example: "supply-key", description: "The id of the supply to purchase" })
+    @ApiProperty({ example: "BasicFertilizer", description: "The key of the supply to purchase" })
     @IsString()
         key: string
 
