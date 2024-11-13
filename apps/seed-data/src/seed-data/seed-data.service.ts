@@ -1,7 +1,7 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { REDIS_KEY } from "@src/constants"
-import { AnimalEntity, AnimalKey, AnimalType, AvailableInType, BuildingEntity, BuildingKey, CropEntity, CropKey, DailyRewardEntity, DailyRewardKey, DailyRewardPossibility, MarketPricingEntity, MarketPricingType, PlacedItemEntity, SpinEntity, SpinKey, SpinType, SupplyEntity, SupplyKey, SupplyType, TileEntity, TileKey, ToolEntity, ToolKey, UpgradeEntity } from "@src/database"
+import { AnimalEntity, AnimalKey, AnimalType, AvailableInType, BuildingEntity, BuildingKey, CropEntity, CropKey, DailyRewardEntity, DailyRewardKey, DailyRewardPossibility, MarketPricingEntity, MarketPricingType, SpinEntity, SpinKey, SpinType, SupplyEntity, SupplyKey, SupplyType, TileEntity, TileKey, ToolEntity, ToolKey, UpgradeEntity } from "@src/database"
 import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
 
@@ -38,16 +38,16 @@ export class SeedDataService implements OnModuleInit {
         this.logger.log("Saving data to Redis started")
         try {
             // Fetch each type of data from the database concurrently
-            const [animals, crops, buildings, tools, placedItems, tiles, supplies, dailyRewards, spins] = await Promise.all([
+            const [animals, crops, buildings, tools, tiles, supplies, dailyRewards, spins, marketPricings] = await Promise.all([
                 this.dataSource.manager.find(AnimalEntity),
                 this.dataSource.manager.find(CropEntity),
                 this.dataSource.manager.find(BuildingEntity),
                 this.dataSource.manager.find(ToolEntity),
-                this.dataSource.manager.find(PlacedItemEntity),
                 this.dataSource.manager.find(TileEntity),
                 this.dataSource.manager.find(SupplyEntity),
                 this.dataSource.manager.find(DailyRewardEntity),
                 this.dataSource.manager.find(SpinEntity),
+                this.dataSource.manager.find(MarketPricingEntity),
             ])
     
             // Save each data type to Redis concurrently
@@ -56,11 +56,11 @@ export class SeedDataService implements OnModuleInit {
                 this.cacheManager.set(REDIS_KEY.CROPS, crops),
                 this.cacheManager.set(REDIS_KEY.BUILDINGS, buildings),
                 this.cacheManager.set(REDIS_KEY.TOOLS, tools),
-                this.cacheManager.set(REDIS_KEY.PLACED_ITEMS, placedItems),
                 this.cacheManager.set(REDIS_KEY.TILES, tiles),
                 this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies),
                 this.cacheManager.set(REDIS_KEY.DAILY_REWARDS, dailyRewards),
                 this.cacheManager.set(REDIS_KEY.SPINS, spins),
+                this.cacheManager.set(REDIS_KEY.MARKET_PRICINGS, marketPricings),
             ])
     
             this.logger.log("Data saved to Redis successfully")
@@ -85,7 +85,6 @@ export class SeedDataService implements OnModuleInit {
                 queryRunner.manager.delete(BuildingEntity, {}),
                 queryRunner.manager.delete(CropEntity, {}),
                 queryRunner.manager.delete(ToolEntity, {}),
-                queryRunner.manager.delete(PlacedItemEntity, {}),
                 queryRunner.manager.delete(MarketPricingEntity, {}),
                 queryRunner.manager.delete(TileEntity, {}),
                 queryRunner.manager.delete(SupplyEntity, {}),
@@ -122,7 +121,6 @@ export class SeedDataService implements OnModuleInit {
                 this.seedSupplyData(queryRunner),
                 this.seedDailyRewardData(queryRunner),
                 this.seedSpinData(queryRunner),
-                this.seedPlacedItemData(queryRunner),
             ])
     
             await queryRunner.commitTransaction()
@@ -137,9 +135,6 @@ export class SeedDataService implements OnModuleInit {
     
 
     async seedAnimalData(queryRunner) {
-        const chickenPricing = await this.seedMarketPricing(queryRunner, AnimalKey.Chicken, 8, 0.04, MarketPricingType.Animal)
-        const cowPricing = await this.seedMarketPricing(queryRunner, AnimalKey.Cow, 8, 0.04, MarketPricingType.Animal)
-
         const chicken = queryRunner.manager.create(AnimalEntity, {
             key: AnimalKey.Chicken,
             yieldTime: 60 * 60 * 24,
@@ -154,10 +149,12 @@ export class SeedDataService implements OnModuleInit {
             premiumHarvestExperiences: 96,
             type: AnimalType.Poultry,
             sickChance: 0.001,
-            marketPricing: chickenPricing,
         })
         await queryRunner.manager.save(chicken)
-
+        chicken.marketPricing = await this.seedMarketPricing(queryRunner, AnimalKey.Chicken, 8, 0.04, MarketPricingType.Animal, chicken)
+        await queryRunner.manager.save(chicken)
+    
+        // Create Cow
         const cow = queryRunner.manager.create(AnimalEntity, {
             key: AnimalKey.Cow,
             yieldTime: 60 * 60 * 24 * 2,
@@ -172,33 +169,59 @@ export class SeedDataService implements OnModuleInit {
             premiumHarvestExperiences: 96,
             type: AnimalType.Livestock,
             sickChance: 0.001,
-            marketPricing: cowPricing,
         })
+        await queryRunner.manager.save(cow)
+        cow.marketPricing = await this.seedMarketPricing(queryRunner, AnimalKey.Cow, 8, 0.04, MarketPricingType.Animal, cow)
         await queryRunner.manager.save(cow)
     }
 
     async seedCropData(queryRunner) {
         const cropsData = [
-            { key: CropKey.Carrot, price: 50, growthStageDuration: 3600, growthStages: 5, basicHarvestExperiences: 12, premiumHarvestExperiences: 60, minHarvestQuantity: 14, maxHarvestQuantity: 20, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Carrot, 4, 0.02, MarketPricingType.Crop) },
-            { key: CropKey.Potato, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Potato, 8, 0.04, MarketPricingType.Crop) },
-            { key: CropKey.Cucumber, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Cucumber, 8, 0.04, MarketPricingType.Crop) },
-            { key: CropKey.Pineapple, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Pineapple, 8, 0.04, MarketPricingType.Crop) },
-            { key: CropKey.Watermelon, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Watermelon, 8, 0.04, MarketPricingType.Crop) },
-            { key: CropKey.BellPepper, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.BellPepper, 8, 0.04, MarketPricingType.Crop) },
+            { key: CropKey.Carrot, price: 50, growthStageDuration: 3600, growthStages: 5, basicHarvestExperiences: 12, premiumHarvestExperiences: 60, minHarvestQuantity: 14, maxHarvestQuantity: 20, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
+            { key: CropKey.Potato, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
+            { key: CropKey.Cucumber, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
+            { key: CropKey.Pineapple, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
+            { key: CropKey.Watermelon, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
+            { key: CropKey.BellPepper, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true }
         ]
-
-        for (const cropData of cropsData) {
+        const cropsMarketPricing = [
+            { key: CropKey.Carrot, basicAmount: 4, premiumAmount: 0.02 },
+            { key: CropKey.Potato, basicAmount: 8, premiumAmount: 0.04 },
+            { key: CropKey.BellPepper, basicAmount: 8, premiumAmount: 0.04 },
+            { key: CropKey.Cucumber, basicAmount: 8, premiumAmount: 0.04 },
+            { key: CropKey.Pineapple, basicAmount: 8, premiumAmount: 0.04 },
+            { key: CropKey.Watermelon, basicAmount: 8, premiumAmount: 0.04 },
+        ]
+    
+        for (let i = 0; i < cropsData.length; i++) {
+            const cropData = cropsData[i]
+            const pricingData = cropsMarketPricing.find(pricing => pricing.key === cropData.key)
+    
             const crop = queryRunner.manager.create(CropEntity, cropData)
+            await queryRunner.manager.save(crop)
+    
+            const marketPricing = await this.seedMarketPricing(
+                queryRunner,
+                cropData.key,
+                pricingData.basicAmount,
+                pricingData.premiumAmount,
+                MarketPricingType.Crop,
+                crop
+            )
+    
+            crop.marketPricing = marketPricing
             await queryRunner.manager.save(crop)
         }
     }
+    
 
-    async seedMarketPricing(queryRunner, key, basicAmount, premiumAmount, type) {
+    async seedMarketPricing(queryRunner, key, basicAmount, premiumAmount, type, entity = null) {
         const marketPricing = queryRunner.manager.create(MarketPricingEntity, {
             basicAmount,
             premiumAmount,
             type,
-            key,
+            animalId: type === MarketPricingType.Animal && entity ? entity.id : null,
+            cropId: type === MarketPricingType.Crop && entity ? entity.id : null,
         })
         return await queryRunner.manager.save(marketPricing)
     }
@@ -396,12 +419,4 @@ export class SeedDataService implements OnModuleInit {
             await queryRunner.manager.save(spin)
         }
     }
-    
-    async seedPlacedItemData(queryRunner) {
-        const placedItem = queryRunner.manager.create(PlacedItemEntity, {
-            quantity: "5"
-        })
-        await queryRunner.manager.save(placedItem)
-    }
-    
 }
