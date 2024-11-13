@@ -1,26 +1,26 @@
-import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
+import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
+import { GoldRequest } from "@apps/gold-wallet-service/src/update-gold-wallet"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
+import { IGoldWalletService } from "@src/services/wallet"
 import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
 import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
-import { IWalletService } from "@src/services/wallet"
-import { GoldRequest } from "@apps/wallet-service/src/update-wallet"
 
 @Injectable()
 export class BuyAnimalService {
     private readonly logger = new Logger(BuyAnimalService.name)
-    private walletService: IWalletService
+    private GoldWalletService: IGoldWalletService
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-        @Inject(walletGrpcConstants.NAME) private client: ClientGrpc,
+        @Inject(goldWalletGrpcConstants.NAME) private client: ClientGrpc,
     ) {}
 
     onModuleInit() {
-        this.walletService = this.client.getService<IWalletService>("WalletService")
+        this.GoldWalletService = this.client.getService<IGoldWalletService>(goldWalletGrpcConstants.SERVICE)
     }
 
     async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {
@@ -29,7 +29,7 @@ export class BuyAnimalService {
                 userId: request.userId,
                 goldAmount: 99, 
             }
-            // const response = await lastValueFrom(this.walletService.addGold(walletRequest))
+            // const response = await lastValueFrom(this.GoldWalletService.addGold(walletRequest))
             
             return {
                 placedItemAnimalKey: "1234",

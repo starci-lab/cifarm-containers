@@ -1,11 +1,14 @@
-import { BalanceResponse, GoldRequest, TokenRequest, UpdateWalletResponse } from "@apps/wallet-service/src/update-wallet"
+import { GoldBalanceResponse, GoldRequest, GoldResponse, TokenRequest } from "@apps/gold-wallet-service/src/update-gold-wallet"
 import { UserIdRequest } from "@src/types"
 import { Observable } from "rxjs"
 
-export interface IWalletService {
-    getBalance(request: UserIdRequest): Observable<BalanceResponse>
-    addGold(request: GoldRequest): Observable<UpdateWalletResponse>
-    subtractGold(request: GoldRequest): Observable<UpdateWalletResponse>
-    addToken(request: TokenRequest): Observable<UpdateWalletResponse>
-    subtractToken(request: TokenRequest): Observable<UpdateWalletResponse>
+export interface IGoldWalletService {
+    getGoldBalance(request: UserIdRequest): Observable<GoldBalanceResponse>
+    addGold(request: GoldRequest): Observable<GoldResponse>
+    subtractGold(request: GoldRequest): Observable<GoldResponse>
+}
+
+export interface ITokenWalletService {
+    // getTokenBalance(request: UserIdRequest): Observable<TokenBal>
+    // addToken(request: TokenRequest): Observable<GoldResponse>
 }

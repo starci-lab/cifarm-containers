@@ -5,7 +5,9 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
 import { AppController } from "./app.controller"
-import { UpdateWalletModule } from "./update-wallet"
+import { UpdateGoldWalletModule } from "./update-gold-wallet"
+import { APP_FILTER } from "@nestjs/core"
+import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 
 @Module({
     imports: [
@@ -40,9 +42,14 @@ import { UpdateWalletModule } from "./update-wallet"
                 }
             },
         }),
-        UpdateWalletModule
+        UpdateGoldWalletModule
     ],
     controllers: [AppController],
-    providers: [],
+    providers: [
+        {
+            provide: APP_FILTER,
+            useClass: GrpcServerExceptionFilter,
+        },
+    ],
 })
 export class AppModule {}

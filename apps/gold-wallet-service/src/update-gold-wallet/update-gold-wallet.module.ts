@@ -1,14 +1,14 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { InventoryEntity, UserEntity } from "@src/database"
-import { UpdateWalletService } from "./update-wallet.service"
+import { UpdateGoldWalletService } from "./update-gold-wallet.service"
 
 @Global()
 @Module({
     imports: [
         TypeOrmModule.forFeature([UserEntity, InventoryEntity])
     ],
-    providers: [UpdateWalletService],
-    exports: [UpdateWalletService],
+    providers: [UpdateGoldWalletService],
+    exports: [UpdateGoldWalletService],
 })
-export class UpdateWalletModule {}
+export class UpdateGoldWalletModule {}

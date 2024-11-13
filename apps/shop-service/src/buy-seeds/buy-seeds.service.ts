@@ -1,32 +1,32 @@
-import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
 import { CropEntity, InventoryEntity, InventoryType } from "@src/database"
-import { IWalletService } from "@src/services/wallet"
 import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
 import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
 import { REDIS_KEY } from "@src/constants"
 import { lastValueFrom } from "rxjs"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
+import { IGoldWalletService } from "@src/services/wallet"
 
 
 @Injectable()
 export class BuySeedsService {
     private readonly logger = new Logger(BuySeedsService.name)
-    private walletService: IWalletService
+    private walletService: IGoldWalletService
 
     constructor(
         private readonly dataSource: DataSource,
-        @Inject(walletGrpcConstants.NAME) private client: ClientGrpc,
+        @Inject(goldWalletGrpcConstants.NAME) private client: ClientGrpc,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache,    
     ) {}
 
     onModuleInit() {
-        this.walletService = this.client.getService<IWalletService>(
-            walletGrpcConstants.SERVICE
+        this.walletService = this.client.getService<IGoldWalletService>(
+            goldWalletGrpcConstants.SERVICE
         )
     }
 
@@ -50,8 +50,8 @@ export class BuySeedsService {
         const totalCost = crop.price * quantity
 
         // Check Balance
-        const balance = await lastValueFrom(this.walletService.getBalance({ userId }))
-        this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds} tokens: ${balance.tokens}`)
+        const balance = await lastValueFrom(this.walletService.getGoldBalance({ userId }))
+        this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds}`)
         if (balance.golds < totalCost) throw new Error("Insufficient gold balance")
     
         // Update wallet
@@ -60,7 +60,7 @@ export class BuySeedsService {
         const response = await lastValueFrom(this.walletService.subtractGold(walletRequest))
         console.log(response.message)
 
-        this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds} tokens: ${balance.tokens}`)
+        this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds}`)
 
         // Set maxStack from the crop's maxStack attribute
         const maxStack = crop.maxStack
@@ -103,7 +103,6 @@ export class BuySeedsService {
             await this.dataSource.manager.save(newInventory)
         }
 
-        // Return a response indicating the operation was successful
         return { inventoryKey: key }
     }
 }

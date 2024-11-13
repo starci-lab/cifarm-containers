@@ -1,13 +1,14 @@
 // buy-supplies.service.ts
 
-import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
+import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Inject, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
 import { REDIS_KEY } from "@src/constants"
 import { InventoryEntity, InventoryType, SupplyEntity } from "@src/database"
-import { IWalletService } from "@src/services/wallet"
+import { IGoldWalletService } from "@src/services/wallet"
 import { Cache } from "cache-manager"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
 import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
@@ -15,17 +16,17 @@ import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
 @Injectable()
 export class BuySuppliesService {
     private readonly logger = new Logger(BuySuppliesService.name)
-    private walletService: IWalletService
+    private goldWalletService: IGoldWalletService
 
     constructor(
         private readonly dataSource: DataSource,
-        @Inject(walletGrpcConstants.NAME) private client: ClientGrpc,
+        @Inject(goldWalletGrpcConstants.NAME) private client: ClientGrpc,
         @Inject(CACHE_MANAGER) private cacheManager: Cache
     ) {}
 
     onModuleInit() {
-        this.walletService = this.client.getService<IWalletService>(
-            walletGrpcConstants.SERVICE
+        this.goldWalletService = this.client.getService<IGoldWalletService>(
+            goldWalletGrpcConstants.SERVICE
         )
     }
 
@@ -40,21 +41,23 @@ export class BuySuppliesService {
             await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies, Infinity)
         }
         const supply = supplies.find(s => s.id.toString() === key)
-        if (!supply) throw new NotFoundException("Supply not found")
-        if (!supply.availableInShop) throw new Error("Supply not available in shop")
+        if (!supply) throw new GrpcNotFoundException("Supply not found")
+        if (!supply.availableInShop){
+            throw new GrpcNotFoundException("Supply not available in shop")
+        }
 
         // Calculate total cost
         const totalCost = supply.price * quantity
 
         // Check Balance
-        const balance = await lastValueFrom(this.walletService.getBalance({ userId }))
-        this.logger.debug(`User ${userId} has golds: ${balance.golds}, tokens: ${balance.tokens}`)
+        const balance = await lastValueFrom(this.goldWalletService.getGoldBalance({ userId }))
+        this.logger.debug(`User ${userId} has golds: ${balance.golds}`)
         if (balance.golds < totalCost) throw new Error("Insufficient gold balance")
 
         // Update wallet
         const walletRequest = { userId, goldAmount: -totalCost }
         this.logger.debug(`Updating wallet for user ${userId} by deducting golds: ${totalCost}`)
-        await lastValueFrom(this.walletService.subtractGold(walletRequest))
+        await lastValueFrom(this.goldWalletService.subtractGold(walletRequest))
 
         // Update Inventory with max stack handling
         const maxStack = supply.maxStack

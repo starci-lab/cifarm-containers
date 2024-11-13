@@ -2,8 +2,7 @@ import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { envConfig } from "@src/config"
-import { walletGrpcConstants } from "./constants"
-import { ExceptionFilter } from "@src/filters"
+import { goldWalletGrpcConstants } from "./constants"
 
 async function bootstrap() {
     const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -11,15 +10,12 @@ async function bootstrap() {
         {
             transport: Transport.GRPC,
             options: {
-                url: `${envConfig().containers.walletService.host}:${envConfig().containers.walletService.port}`,
-                package: walletGrpcConstants.PACKAGE,
-                protoPath: walletGrpcConstants.PROTO_PATH,
+                url: `${envConfig().containers.goldWalletService.host}:${envConfig().containers.goldWalletService.port}`,
+                package: goldWalletGrpcConstants.PACKAGE,
+                protoPath: goldWalletGrpcConstants.PROTO_PATH,
             },
         },
     )
-
-    // Apply the global filter
-    app.useGlobalFilters(new ExceptionFilter())
 
     await app.listen()
 }

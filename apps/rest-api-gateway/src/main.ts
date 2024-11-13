@@ -13,10 +13,22 @@ const bootstrap = async () => {
 
     const config = new DocumentBuilder()
         .setVersion("1.0")
-        .addBearerAuth()
+        .addBearerAuth(
+            {
+                type: "http",
+                scheme: "bearer",
+                bearerFormat: "JWT",
+                in: "header",
+            },
+            "access-token",
+        )
         .build()
     const document = SwaggerModule.createDocument(app, config)
-    SwaggerModule.setup("/api", app, document)
+    SwaggerModule.setup("/api", app, document, {
+        swaggerOptions: {
+            persistAuthorization: true,
+        },
+    })
     await app.listen(envConfig().containers.restApiGateway.port)
 }
 bootstrap()

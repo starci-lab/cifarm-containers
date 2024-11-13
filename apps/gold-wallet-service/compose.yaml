@@ -2,7 +2,7 @@ services:
   server:
     build:
       context: ../..
-      dockerfile: apps/wallet-service/Dockerfile
+      dockerfile: apps/gold-wallet-service/Dockerfile
     env_file:
       - ../../.env.docker
     environment:
@@ -10,4 +10,4 @@ services:
     ports:
       - "3008:3008"
 
-#docker compose -f apps/wallet-service/compose.yaml up -d --build
+#docker compose -f apps/gold-wallet-service/compose.yaml up -d --build

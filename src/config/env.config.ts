@@ -52,9 +52,13 @@ export const envConfig = () => ({
             host: process.env.WEBSOCKET_API_GATEWAY_HOST,
             port: Number(process.env.WEBSOCKET_API_GATEWAY_PORT)
         },
-        walletService: {
-            host: process.env.WALLET_SERVICE_HOST,
-            port: Number(process.env.WALLET_SERVICE_PORT),
+        goldWalletService: {
+            host: process.env.GOLD_WALLET_SERVICE_HOST,
+            port: Number(process.env.GOLD_WALLET_SERVICE_PORT),
+        },
+        tokenWalletService: {
+            host: process.env.TOKEN_WALLET_SERVICE_HOST,
+            port: Number(process.env.TOKEN_WALLET_SERVICE_PORT),
         },
         shopService: {
             host: process.env.SHOP_SERVICE_HOST,

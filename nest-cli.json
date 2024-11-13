@@ -118,13 +118,13 @@
         "tsConfigPath": "apps/seed-data/tsconfig.app.json"
       }
     },
-    "wallet-service": {
+    "gold-wallet-service": {
       "type": "application",
-      "root": "apps/wallet-service",
+      "root": "apps/gold-wallet-service",
       "entryFile": "main",
-      "sourceRoot": "apps/wallet-service/src",
+      "sourceRoot": "apps/gold-wallet-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/wallet-service/tsconfig.app.json"
+        "tsConfigPath": "apps/gold-wallet-service/tsconfig.app.json"
       }
     }
   }

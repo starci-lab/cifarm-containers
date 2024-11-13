@@ -4,23 +4,23 @@ import { Global, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
-import { InventoryEntity, MarketPricingEntity, SupplyEntity, UserEntity } from "@src/database"
+import { InventoryEntity,  ProductEntity,  SupplyEntity, UserEntity } from "@src/database"
 import { BuySuppliesService } from "./buy-supplies.service"
-import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
+import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity, InventoryEntity, SupplyEntity, MarketPricingEntity]),
+        TypeOrmModule.forFeature([UserEntity, InventoryEntity, SupplyEntity, ProductEntity]),
         ClientsModule.registerAsync([
             {
-                name: walletGrpcConstants.NAME,
+                name: goldWalletGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
-                        url: `${envConfig().containers.walletService.host}:${envConfig().containers.walletService.port}`,
-                        package: walletGrpcConstants.PACKAGE,
-                        protoPath: walletGrpcConstants.PROTO_PATH,
+                        url: `${envConfig().containers.goldWalletService.host}:${envConfig().containers.goldWalletService.port}`,
+                        package: goldWalletGrpcConstants.PACKAGE,
+                        protoPath: goldWalletGrpcConstants.PROTO_PATH,
                     },
                 }),
             },
