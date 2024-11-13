@@ -1,7 +1,7 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { REDIS_KEY } from "@src/constants"
-import { AnimalEntity, AnimalKey, AnimalType, AvailableInType, BuildingEntity, BuildingKey, CropEntity, CropKey, DailyRewardEntity, DailyRewardKey, DailyRewardPossibility, MarketPricingEntity, PlacedItemEntity, SpinEntity, SpinKey, SpinType, SupplyEntity, SupplyKey, SupplyType, TileEntity, TileKey, ToolEntity, ToolKey, UpgradeEntity } from "@src/database"
+import { AnimalEntity, AnimalKey, AnimalType, AvailableInType, BuildingEntity, BuildingKey, CropEntity, CropKey, DailyRewardEntity, DailyRewardKey, DailyRewardPossibility, MarketPricingEntity, MarketPricingType, PlacedItemEntity, SpinEntity, SpinKey, SpinType, SupplyEntity, SupplyKey, SupplyType, TileEntity, TileKey, ToolEntity, ToolKey, UpgradeEntity } from "@src/database"
 import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
 
@@ -137,138 +137,70 @@ export class SeedDataService implements OnModuleInit {
     
 
     async seedAnimalData(queryRunner) {
-        // Define and save animals
+        const chickenPricing = await this.seedMarketPricing(queryRunner, AnimalKey.Chicken, 8, 0.04, MarketPricingType.Animal)
+        const cowPricing = await this.seedMarketPricing(queryRunner, AnimalKey.Cow, 8, 0.04, MarketPricingType.Animal)
+
         const chicken = queryRunner.manager.create(AnimalEntity, {
             key: AnimalKey.Chicken,
-            yieldTime: 60 * 60 * 24, // 1 day in seconds
+            yieldTime: 60 * 60 * 24,
             offspringPrice: 1000,
             isNFT: false,
-            growthTime: 60 * 60 * 24 * 3, // 3 days in seconds
+            growthTime: 60 * 60 * 24 * 3,
             availableInShop: true,
-            hungerTime: 60 * 60 * 12, // 12 hours in seconds
+            hungerTime: 60 * 60 * 12,
             minHarvestQuantity: 14,
             maxHarvestQuantity: 20,
             basicHarvestExperiences: 32,
             premiumHarvestExperiences: 96,
             type: AnimalType.Poultry,
             sickChance: 0.001,
-            marketPricing: null,
+            marketPricing: chickenPricing,
         })
         await queryRunner.manager.save(chicken)
 
         const cow = queryRunner.manager.create(AnimalEntity, {
             key: AnimalKey.Cow,
-            yieldTime: 60 * 60 * 24 * 2, // 2 days in seconds
+            yieldTime: 60 * 60 * 24 * 2,
             offspringPrice: 2500,
             isNFT: false,
-            growthTime: 60 * 60 * 24 * 7, // 7 days in seconds
+            growthTime: 60 * 60 * 24 * 7,
             availableInShop: true,
-            hungerTime: 60 * 60 * 12, // 12 hours in seconds
+            hungerTime: 60 * 60 * 12,
             minHarvestQuantity: 14,
             maxHarvestQuantity: 20,
             basicHarvestExperiences: 32,
             premiumHarvestExperiences: 96,
             type: AnimalType.Livestock,
             sickChance: 0.001,
-            marketPricing: null,
+            marketPricing: cowPricing,
         })
         await queryRunner.manager.save(cow)
     }
 
     async seedCropData(queryRunner) {
-
         const cropsData = [
-            {
-                key: CropKey.Carrot,
-                growthStageDuration: 60 * 60, // 1 hour
-                growthStages: 5,
-                price: 50,
-                premium: false,
-                perennial: false,
-                minHarvestQuantity: 14,
-                maxHarvestQuantity: 20,
-                basicHarvestExperiences: 12,
-                premiumHarvestExperiences: 60,
-                availableInShop: true,
-            },
-            {
-                key: CropKey.Potato,
-                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
-                growthStages: 5,
-                price: 100,
-                premium: false,
-                perennial: false,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                nextGrowthStageAfterHarvest: 1,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                availableInShop: true,
-            },
-            {
-                key: CropKey.Cucumber,
-                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
-                growthStages: 5,
-                price: 100,
-                premium: false,
-                perennial: false,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                nextGrowthStageAfterHarvest: 1,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                availableInShop: true,
-            },
-            {
-                key: CropKey.Pineapple,
-                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
-                growthStages: 5,
-                price: 100,
-                premium: false,
-                perennial: false,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                nextGrowthStageAfterHarvest: 1,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                availableInShop: true,
-            },
-            {
-                key: CropKey.Watermelon,
-                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
-                growthStages: 5,
-                price: 100,
-                premium: false,
-                perennial: false,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                nextGrowthStageAfterHarvest: 1,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                availableInShop: true,
-            },
-            {
-                key: CropKey.BellPepper,
-                growthStageDuration: 60 * 60 * 2.5, // 2.5 hours
-                growthStages: 5,
-                price: 100,
-                premium: false,
-                perennial: false,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                nextGrowthStageAfterHarvest: 1,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                availableInShop: true,
-            },
+            { key: CropKey.Carrot, price: 50, growthStageDuration: 3600, growthStages: 5, basicHarvestExperiences: 12, premiumHarvestExperiences: 60, minHarvestQuantity: 14, maxHarvestQuantity: 20, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Carrot, 4, 0.02, MarketPricingType.Crop) },
+            { key: CropKey.Potato, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Potato, 8, 0.04, MarketPricingType.Crop) },
+            { key: CropKey.Cucumber, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Cucumber, 8, 0.04, MarketPricingType.Crop) },
+            { key: CropKey.Pineapple, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Pineapple, 8, 0.04, MarketPricingType.Crop) },
+            { key: CropKey.Watermelon, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.Watermelon, 8, 0.04, MarketPricingType.Crop) },
+            { key: CropKey.BellPepper, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, marketPricing: await this.seedMarketPricing(queryRunner, CropKey.BellPepper, 8, 0.04, MarketPricingType.Crop) },
         ]
-    
+
         for (const cropData of cropsData) {
-            const crop = queryRunner.manager.create(CropEntity, {
-                ...cropData,
-            })
+            const crop = queryRunner.manager.create(CropEntity, cropData)
             await queryRunner.manager.save(crop)
         }
+    }
+
+    async seedMarketPricing(queryRunner, key, basicAmount, premiumAmount, type) {
+        const marketPricing = queryRunner.manager.create(MarketPricingEntity, {
+            basicAmount,
+            premiumAmount,
+            type,
+            key,
+        })
+        return await queryRunner.manager.save(marketPricing)
     }
 
     async seedBuildingData(queryRunner) {
