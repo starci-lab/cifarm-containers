@@ -20,6 +20,19 @@ registerEnumType(BuildingKey, {
     name: "BuildingKey"
 })
 
+export enum UpgradeKey{
+    Coop_Upgrade1 = "Coop_Upgrade1",
+    Coop_Upgrade2 = "Coop_Upgrade2",
+    Coop_Upgrade3 = "Coop_Upgrade3",
+    Pasture_Upgrade1 = "Pasture_Upgrade1",
+    Pasture_Upgrade2 = "Pasture_Upgrade2",
+    Pasture_Upgrade3 = "Pasture_Upgrade3",
+}
+
+registerEnumType(UpgradeKey, {
+    name: "UpgradeKey"
+})
+
 export enum CropKey {
     Carrot = "Carrot",
     Potato = "Potato",
@@ -43,6 +56,18 @@ export enum DailyRewardKey {
 
 registerEnumType(DailyRewardKey, {
     name: "DailyRewardKey"
+})
+
+export enum DailyRewardPossibilityKey {
+    Possibility1 = "Possibility1",
+    Possibility2 = "Possibility2",
+    Possibility3 = "Possibility3",
+    Possibility4 = "Possibility4",
+    Possibility5 = "Possibility5",
+}
+
+registerEnumType(DailyRewardPossibilityKey, {
+    name: "DailyRewardPossibilityKey"
 })
 
 export enum SupplyKey {
@@ -90,3 +115,4 @@ export enum ToolKey {
 registerEnumType(ToolKey, {
     name: "ToolKey"
 })
+

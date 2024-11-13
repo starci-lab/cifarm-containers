@@ -26,6 +26,7 @@ import {
     ToolEntity,
     ToolKey,
     UpgradeEntity,
+    UpgradeKey,
 } from "@src/database"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
@@ -389,7 +390,6 @@ export class SeedDataService implements OnModuleInit {
     // }
 
     private async seedBuildingData(queryRunner: QueryRunner) {
-        // Define building data
         const data: Array<DeepPartial<BuildingEntity>> = [
             {
                 id: BuildingKey.Coop,
@@ -397,11 +397,11 @@ export class SeedDataService implements OnModuleInit {
                 type: AnimalType.Poultry,
                 maxUpgrade: 2,
                 price: 2000,
-                // upgrades: [
-                //     { upgradePrice: 0, capacity: 3 },
-                //     { upgradePrice: 1000, capacity: 5 },
-                //     { upgradePrice: 2000, capacity: 10 },
-                // ],
+                upgrades: [
+                    { id: UpgradeKey.Coop_Upgrade1, upgradePrice: 0, capacity: 3 },
+                    { id: UpgradeKey.Coop_Upgrade2, upgradePrice: 1000, capacity: 5 },
+                    { id: UpgradeKey.Coop_Upgrade3, upgradePrice: 2000, capacity: 10 },
+                ],
             },
             {
                 id: BuildingKey.Pasture,
@@ -409,23 +409,26 @@ export class SeedDataService implements OnModuleInit {
                 type: AnimalType.Livestock,
                 maxUpgrade: 2,
                 price: 3000,
-                // upgrades: [
-                //     { upgradePrice: 0, capacity: 3 },
-                //     { upgradePrice: 1000, capacity: 5 },
-                //     { upgradePrice: 2000, capacity: 10 },
-                // ],
+                upgrades: [
+                    { id: UpgradeKey.Pasture_Upgrade1, upgradePrice: 0, capacity: 3 },
+                    { id: UpgradeKey.Pasture_Upgrade2, upgradePrice: 1000, capacity: 5 },
+                    { id: UpgradeKey.Pasture_Upgrade3, upgradePrice: 2000, capacity: 10 },
+                ],
             },
             {
                 id: BuildingKey.Home,
                 availableInShop: false,
                 maxUpgrade: 0,
                 price: 0,
-                // upgrades: [],
+                upgrades: [],
             },
         ]
-
+    
+        // Use cascade saving for buildings and related upgrades
         await queryRunner.manager.save(BuildingEntity, data)
     }
+    
+    
 
     private async seedToolData(queryRunner: QueryRunner) {
         const data : Array<DeepPartial<ToolEntity>> = [

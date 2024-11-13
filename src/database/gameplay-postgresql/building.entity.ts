@@ -28,8 +28,7 @@ export class BuildingEntity extends ReadableAbstractEntity {
     @Column({ name: "price", type: "int", nullable: true })
         price?: number
 
-    // @Field(() => [UpgradeEntity], { nullable: true })
-    // @OneToMany(() => UpgradeEntity, (upgrade) => upgrade.building, { cascade: true, eager: true })
-    // @JoinColumn()
-    //     upgrades?: Array<UpgradeEntity>
+        @Field(() => [UpgradeEntity], { nullable: true })
+        @OneToMany(() => UpgradeEntity, (upgrade) => upgrade.building, { cascade: ["insert", "update"] })
+            upgrades?: Array<UpgradeEntity>
 }
