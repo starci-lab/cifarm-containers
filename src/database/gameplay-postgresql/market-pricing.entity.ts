@@ -21,7 +21,7 @@ export class MarketPricingEntity extends AbstractEntity {
       type: MarketPricingType
 
   @Field(() => ID, {
-      nullable: true
+      nullable: true,
   })
   @Column({ name: "animal_id", type: "uuid", nullable: true })
       animalId: number
@@ -29,17 +29,20 @@ export class MarketPricingEntity extends AbstractEntity {
   @Field(() => AnimalEntity)
   @OneToOne(() => AnimalEntity, (animal) => animal.marketPricing)
   @JoinColumn({
-      name: "animal_id"
+      name: "animal_id",
   })
       animal: AnimalEntity
 
+  @Field(() => ID, {
+      nullable: true,
+  })
   @Column({ name: "crop_id", type: "uuid", nullable: true })
       cropId: number
 
   @Field(() => CropEntity)
   @OneToOne(() => CropEntity, (crop) => crop.marketPricing)
   @JoinColumn({
-      name: "crop_id"
+      name: "crop_id",
   })
       crop: CropEntity
 }

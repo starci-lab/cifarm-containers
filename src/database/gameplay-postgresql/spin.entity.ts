@@ -2,10 +2,15 @@ import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { SpinType } from "./enums"
+import { SpinKey } from "./enums-key"
 
 @ObjectType()
 @Entity("spins")
 export class SpinEntity extends AbstractEntity {
+    @Field(() => SpinKey)
+    @Column({ type: "enum", enum: SpinKey })
+        key: SpinKey
+
     @Field(() => SpinType)
     @Column({ name: "spin_type", type: "enum", enum: SpinType })
         type: SpinType

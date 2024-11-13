@@ -3,10 +3,15 @@ import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { MarketPricingEntity } from "./market-pricing.entity"
 import { AnimalType } from "./enums"
+import { AnimalKey } from "./enums-key"
 
 @ObjectType()
 @Entity("animals")
 export class AnimalEntity extends AbstractEntity {
+    @Field(() => AnimalKey)
+    @Column({ type: "enum", enum: AnimalKey })
+        key: AnimalKey
+
     @Field(() => Int)
     @Column({ name: "yield_time", type: "bigint" })
         yieldTime: number

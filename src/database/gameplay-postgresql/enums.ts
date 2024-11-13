@@ -16,16 +16,6 @@ registerEnumType(AnimalType, {
     name: "AnimalType"
 })
 
-export enum ToolType {
-    Scythe = "Scythe",
-    Steal = "Steal",
-    WaterCan = "WaterCan",
-    Herbicide = "Herbicide",
-    Pesticide = "Pesticide",
-}
-registerEnumType(ToolType, {
-    name: "ToolType"
-})
 
 export enum AvailableInType {
     Home = "Home",
@@ -36,28 +26,8 @@ registerEnumType(AvailableInType, {
     name: "AvailableIn",
 })
 
-export enum BuildingKeyType {
-    Coop = "Coop",
-    Pasture = "Pasture",
-    Home = "Home",
-}
-registerEnumType(BuildingKeyType, {
-    name: "BuildingKeyType"
-})
-
-export enum TileKeyType {
-    StarterTile = "StarterTile",
-    BasicTile1 = "BasicTile1",
-    BasicTile2 = "BasicTile2",
-    BasicTile3 = "BasicTile3",
-    FertileTile = "FertileTile",
-}
-registerEnumType(TileKeyType, {
-    name: "TileKeyType",
-})
-
 export enum SupplyType {
-    BasicFertilizer = "BasicFertilizer",
+    Fertilizer = "Fertilizer",
     AnimalFeed = "AnimalFeed",
 }
 registerEnumType(SupplyType, {
@@ -88,9 +58,3 @@ registerEnumType(InventoryType, {
     name: "InventoryType",
 })
 
-export enum AnimalKey {
-    Chicken = "Chicken",
-    Cow = "Cow",
-    Pig = "Pig",
-    Sheep = "Sheep",
-}
