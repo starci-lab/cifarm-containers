@@ -1,15 +1,16 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToMany } from "typeorm"
 import { AbstractEntity } from "./abstract"
-import { AnimalType, BuildingKeyType } from "./enums"
+import { AnimalType } from "./enums"
+import { BuildingKey } from "./enums-key"
 import { UpgradeEntity } from "./upgrade.entity"
 
 @ObjectType()
 @Entity("buildings")
 export class BuildingEntity extends AbstractEntity {
-    @Field(() => BuildingKeyType)
-    @Column({ name: "building_key", type: "enum", enum: BuildingKeyType })
-        buildingKey: BuildingKeyType
+    @Field(() => BuildingKey)
+    @Column({ name: "building_key", type: "enum", enum: BuildingKey })
+        buildingKey: BuildingKey
 
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })

@@ -2,10 +2,15 @@ import { ObjectType, Field, Int } from "@nestjs/graphql"
 import { Entity, Column, OneToOne, JoinColumn } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { MarketPricingEntity } from "./market-pricing.entity"
+import { CropKey } from "./enums-key"
 
 @ObjectType()
 @Entity("crops")
 export class CropEntity extends AbstractEntity {
+    @Field(() => CropKey)
+    @Column({ type: "enum", enum: CropKey })
+        key: CropKey
+
     @Field(() => Int)
     @Column({ name: "growth_stage_duration", type: "bigint" })
         growthStageDuration: number
