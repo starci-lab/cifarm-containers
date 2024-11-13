@@ -1,31 +1,35 @@
-import { Field, Float, ID, ObjectType } from "@nestjs/graphql"
+import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
-import { MarketPricingType } from "./enums"
+import { ProductType } from "./enums"
 
 @ObjectType()
-@Entity("market_pricing")
-export class MarketPricingEntity extends AbstractEntity {
-  @Field(() => Float)
-  @Column({ name: "basic_amount", type: "float" })
-      basicAmount: number
+@Entity("product")
+export class ProductEntity extends AbstractEntity {
+  @Field(() => Boolean)
+  @Column({ name: "is_premium", type: "boolean" })
+      isPremium: number
+   
+  @Field(() => Int)
+  @Column({ name: "gold_amount", type: "int" })
+      goldAmount: number
 
   @Field(() => Float)
-  @Column({ name: "premium_amount", type: "float" })
-      premiumAmount: number
+  @Column({ name: "token_amount", type: "float" })
+      tokenAmount: number
 
-  @Field(() => MarketPricingType)
-  @Column({ name: "type", type: "enum", enum: MarketPricingType })
-      type: MarketPricingType
+  @Field(() => ProductType)
+  @Column({ name: "type", type: "enum", enum: ProductType })
+      type: ProductType
 
     @Field(() => ID, { nullable: true })
     @Column({ name: "animal_id", type: "uuid", nullable: true })
         animalId: number
 
     @Field(() => AnimalEntity)
-    @OneToOne(() => AnimalEntity, (animal) => animal.marketPricing)
+    @OneToOne(() => AnimalEntity, (animal) => animal.product)
     @JoinColumn({ name: "animal_id" })
         animal: AnimalEntity
 
@@ -34,7 +38,7 @@ export class MarketPricingEntity extends AbstractEntity {
         cropId: number
 
     @Field(() => CropEntity)
-    @OneToOne(() => CropEntity, (crop) => crop.marketPricing)
+    @OneToOne(() => CropEntity, (crop) => crop.product)
     @JoinColumn({ name: "crop_id" })
         crop: CropEntity
 }

@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
-import { MarketPricingEntity } from "./market-pricing.entity"
+import { ProductEntity } from "./product.entity"
 import { AnimalType } from "./enums"
 import { AnimalKey } from "./enums-key"
 
@@ -60,7 +60,7 @@ export class AnimalEntity extends AbstractEntity {
     @Column({ name: "sick_chance", type: "float" })
         sickChance: number
 
-    @OneToOne(() => MarketPricingEntity, { cascade: true, onDelete: "CASCADE" })
+    @OneToOne(() => ProductEntity, { cascade: true, onDelete: "CASCADE" })
     @JoinColumn()
-        marketPricing: MarketPricingEntity
+        product: ProductEntity
 }

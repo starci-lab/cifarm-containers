@@ -1,11 +1,11 @@
 import { registerEnumType } from "@nestjs/graphql"
 
-export enum MarketPricingType {
+export enum ProductType {
     Animal = "Animal",
     Crop = "Crop",
 }
-registerEnumType(MarketPricingType, {
-    name: "MarketPricingType",
+registerEnumType(ProductType, {
+    name: "ProductType",
 })
 
 export enum AnimalType {

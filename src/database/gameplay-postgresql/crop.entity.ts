@@ -1,7 +1,7 @@
 import { ObjectType, Field, Int } from "@nestjs/graphql"
 import { Entity, Column, OneToOne, JoinColumn } from "typeorm"
 import { AbstractEntity } from "./abstract"
-import { MarketPricingEntity } from "./market-pricing.entity"
+import { ProductEntity } from "./product.entity"
 import { CropKey } from "./enums-key"
 
 @ObjectType()
@@ -59,7 +59,7 @@ export class CropEntity extends AbstractEntity {
     @Column({ name: "maxStack", type: "int", default: 16 })
         maxStack: number
 
-    @OneToOne(() => MarketPricingEntity, { cascade: true, onDelete: "CASCADE" })
+    @OneToOne(() => ProductEntity, { cascade: true, onDelete: "CASCADE" })
     @JoinColumn()
-        marketPricing: MarketPricingEntity
+        product: ProductEntity
 }
