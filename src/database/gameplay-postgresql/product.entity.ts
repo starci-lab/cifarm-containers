@@ -1,8 +1,6 @@
-import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Column, Entity } from "typeorm"
 import { AbstractEntity } from "./abstract"
-import { AnimalEntity } from "./animal.entity"
-import { CropEntity } from "./crop.entity"
 import { ProductType } from "./enums"
 
 @ObjectType()
@@ -24,21 +22,21 @@ export class ProductEntity extends AbstractEntity {
   @Column({ name: "type", type: "enum", enum: ProductType })
       type: ProductType
 
-    @Field(() => ID, { nullable: true })
-    @Column({ name: "animal_id", type: "uuid", nullable: true })
-        animalId: number
+    // @Field(() => ID, { nullable: true })
+    // @Column({ name: "animal_id", type: "uuid", nullable: true })
+    //     animalId: number
 
-    @Field(() => AnimalEntity)
-    @OneToOne(() => AnimalEntity, (animal) => animal.product)
-    @JoinColumn({ name: "animal_id" })
-        animal: AnimalEntity
+    // @Field(() => AnimalEntity)
+    // @OneToOne(() => AnimalEntity, (animal) => animal.product)
+    // @JoinColumn({ name: "animal_id" })
+    //     animal: AnimalEntity
 
-    @Field(() => ID, { nullable: true })
-    @Column({ name: "crop_id", type: "uuid", nullable: true })
-        cropId: number
+    // @Field(() => ID, { nullable: true })
+    // @Column({ name: "crop_id", type: "uuid", nullable: true })
+    //     cropId: number
 
-    @Field(() => CropEntity)
-    @OneToOne(() => CropEntity, (crop) => crop.product)
-    @JoinColumn({ name: "crop_id" })
-        crop: CropEntity
+    // @Field(() => CropEntity)
+    // @OneToOne(() => CropEntity, (crop) => crop.product)
+    // @JoinColumn({ name: "crop_id" })
+    //     crop: CropEntity
 }

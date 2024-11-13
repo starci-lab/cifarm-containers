@@ -2,13 +2,14 @@ import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, PrimaryColumn } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
 import { SupplyType } from "./enums"
+import { SupplyKey } from "./enums-key"
 
 @ObjectType()
 @Entity("supplies")
 export class SupplyEntity extends ReadableAbstractEntity {
-    @Field(() => SupplyEntity)
-    @PrimaryColumn({ type: "enum", enum: SupplyEntity })
-        id: SupplyEntity
+    @Field(() => SupplyKey)
+    @PrimaryColumn({ type: "enum", enum: SupplyKey })
+        id: SupplyKey
 
     @Field(() => SupplyType)
     @Column({ name: "type", type: "enum", enum: SupplyType })

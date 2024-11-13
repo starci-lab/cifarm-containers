@@ -41,10 +41,10 @@ export class SeedDataService implements OnModuleInit {
     ) {}
 
     async onModuleInit() {
-        // await this.clearPostgresData()
-        // await this.clearRedisCacheData()
-        // await this.seedData()
-        // await this.saveDataToRedis()
+        await this.clearPostgresData()
+        await this.clearRedisCacheData()
+        await this.seedData()
+        await this.saveDataToRedis()
     }
 
     private async clearRedisCacheData() {
@@ -158,14 +158,14 @@ export class SeedDataService implements OnModuleInit {
             await queryRunner.startTransaction()
 
             await Promise.all([
-                // this.seedAnimalData(queryRunner),
-                // this.seedCropData(queryRunner),
-                // this.seedBuildingData(queryRunner),
+                this.seedAnimalData(queryRunner),
+                this.seedCropData(queryRunner),
+                this.seedBuildingData(queryRunner),
                 this.seedToolData(queryRunner),
-                // this.seedTileData(queryRunner),
-                // this.seedSupplyData(queryRunner),
-                // this.seedDailyRewardData(queryRunner),
-                // this.seedSpinData(queryRunner)
+                this.seedTileData(queryRunner),
+                this.seedSupplyData(queryRunner),
+                this.seedDailyRewardData(queryRunner),
+                this.seedSpinData(queryRunner)
             ])
             // await this.seedProducts(queryRunner)
 
@@ -322,119 +322,119 @@ export class SeedDataService implements OnModuleInit {
     //     const pineapple:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { id: CropKey.Pineapple } })
     //     const watermelon:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { id: CropKey.Watermelon } })
 
-        //     const data: Array<DeepPartial<ProductEntity>> = [
-        //         {
-        //             isPremium: false,
-        //             goldAmount: 8,
-        //             tokenAmount: 0.04,
-        //             type: ProductType.Animal,
-        //             animal: chicken,
-        //         },
-        //         {
-        //             isPremium: false,
-        //             goldAmount: 8,
-        //             tokenAmount: 0.04,
-        //             type: ProductType.Animal,
-        //             animal: cow,
-        //         },
-        //         {
-        //             isPremium: false,
-        //             goldAmount: 4,
-        //             tokenAmount: 0.02,
-        //             type: ProductType.Crop,
-        //             crop: carrot,
-        //         },
-        //         {
-        //             isPremium: false,
-        //             goldAmount: 8,
-        //             tokenAmount: 0.04,
-        //             type: ProductType.Crop,
-        //             crop: potato,
-        //         },
-        //         {
-        //             isPremium: false,
-        //             goldAmount: 8,
-        //             tokenAmount: 0.04,
-        //             type: ProductType.Crop,
-        //             crop: bellPepper,
-        //         },
-        //         {
-        //             isPremium: false,
-        //             goldAmount: 8,
-        //             tokenAmount: 0.04,
-        //             type: ProductType.Crop,
-        //             crop: cucumber,
-        //         },
-        //         {
-        //             isPremium: false,
-        //             goldAmount: 8,
-        //             tokenAmount: 0.04,
-        //             type: ProductType.Crop,
-        //             crop: pineapple,
-        //         },
-        //         {
-        //             isPremium: false,
-        //             goldAmount: 8,
-        //             tokenAmount: 0.04,
-        //             type: ProductType.Crop,
-        //             crop: watermelon,
-        //         },
-        //     ]
+    //     const data: Array<DeepPartial<ProductEntity>> = [
+    //         {
+    //             isPremium: false,
+    //             goldAmount: 8,
+    //             tokenAmount: 0.04,
+    //             type: ProductType.Animal,
+    //             animal: chicken,
+    //         },
+    //         {
+    //             isPremium: false,
+    //             goldAmount: 8,
+    //             tokenAmount: 0.04,
+    //             type: ProductType.Animal,
+    //             animal: cow,
+    //         },
+    //         {
+    //             isPremium: false,
+    //             goldAmount: 4,
+    //             tokenAmount: 0.02,
+    //             type: ProductType.Crop,
+    //             crop: carrot,
+    //         },
+    //         {
+    //             isPremium: false,
+    //             goldAmount: 8,
+    //             tokenAmount: 0.04,
+    //             type: ProductType.Crop,
+    //             crop: potato,
+    //         },
+    //         {
+    //             isPremium: false,
+    //             goldAmount: 8,
+    //             tokenAmount: 0.04,
+    //             type: ProductType.Crop,
+    //             crop: bellPepper,
+    //         },
+    //         {
+    //             isPremium: false,
+    //             goldAmount: 8,
+    //             tokenAmount: 0.04,
+    //             type: ProductType.Crop,
+    //             crop: cucumber,
+    //         },
+    //         {
+    //             isPremium: false,
+    //             goldAmount: 8,
+    //             tokenAmount: 0.04,
+    //             type: ProductType.Crop,
+    //             crop: pineapple,
+    //         },
+    //         {
+    //             isPremium: false,
+    //             goldAmount: 8,
+    //             tokenAmount: 0.04,
+    //             type: ProductType.Crop,
+    //             crop: watermelon,
+    //         },
+    //     ]
     
-        //     await queryRunner.manager.save(ProductEntity, data)
+    //     await queryRunner.manager.save(ProductEntity, data)
 
-        //     //Update crop and animal with products
-        //     carrot.product = data.find(product => product.crop?.id?.toString() === CropKey.Carrot) as ProductEntity
-        //     potato.product = data.find(product => product.crop?.id?.toString() === CropKey.Potato) as ProductEntity
-        //     bellPepper.product = data.find(product => product.crop?.id?.toString() === CropKey.BellPepper) as ProductEntity
-        //     cucumber.product = data.find(product => product.crop?.id?.toString() === CropKey.Cucumber) as ProductEntity
-        //     pineapple.product = data.find(product => product.crop?.id?.toString() === CropKey.Pineapple) as ProductEntity
-        //     watermelon.product = data.find(product => product.crop?.id?.toString() === CropKey.Watermelon) as ProductEntity
-        //     chicken.product = data.find(product => product.animal?.id?.toString() === AnimalKey.Chicken) as ProductEntity
-        //     cow.product = data.find(product => product.animal?.id?.toString() === AnimalKey.Cow) as ProductEntity
+    //     //Update crop and animal with products
+    //     carrot.product = data.find(product => product.crop?.id?.toString() === CropKey.Carrot) as ProductEntity
+    //     potato.product = data.find(product => product.crop?.id?.toString() === CropKey.Potato) as ProductEntity
+    //     bellPepper.product = data.find(product => product.crop?.id?.toString() === CropKey.BellPepper) as ProductEntity
+    //     cucumber.product = data.find(product => product.crop?.id?.toString() === CropKey.Cucumber) as ProductEntity
+    //     pineapple.product = data.find(product => product.crop?.id?.toString() === CropKey.Pineapple) as ProductEntity
+    //     watermelon.product = data.find(product => product.crop?.id?.toString() === CropKey.Watermelon) as ProductEntity
+    //     chicken.product = data.find(product => product.animal?.id?.toString() === AnimalKey.Chicken) as ProductEntity
+    //     cow.product = data.find(product => product.animal?.id?.toString() === AnimalKey.Cow) as ProductEntity
 
-        //     //Save updated crop and animal
-        //     await queryRunner.manager.save(CropEntity, [carrot, potato, bellPepper, cucumber, pineapple, watermelon])
-        // }
-
-        // private async seedBuildingData(queryRunner: QueryRunner) {
-        // // Define building data
-        //     const data: Array<DeepPartial<BuildingEntity>> = [
-        //         {
-        //             id: BuildingKey.Coop,
-        //             availableInShop: true,
-        //             type: AnimalType.Poultry,
-        //             maxUpgrade: 2,
-        //             price: 2000,
-        //             upgrades: [
-        //                 { upgradePrice: 0, capacity: 3 },
-        //                 { upgradePrice: 1000, capacity: 5 },
-        //                 { upgradePrice: 2000, capacity: 10 },
-        //             ],
-        //         },
-        //         {
-        //             id: BuildingKey.Pasture,
-        //             availableInShop: true,
-        //             type: AnimalType.Livestock,
-        //             maxUpgrade: 2,
-        //             price: 3000,
-        //             upgrades: [
-        //                 { upgradePrice: 0, capacity: 3 },
-        //                 { upgradePrice: 1000, capacity: 5 },
-        //                 { upgradePrice: 2000, capacity: 10 },
-        //             ],
-        //         },
-        //         {
-        //             id: BuildingKey.Home,
-        //             availableInShop: false,
-        //             maxUpgrade: 0,
-        //             price: 0,
-        //             upgrades: [],
-        //         },
-        //     ]
-
-    //     await queryRunner.manager.save(BuildingEntity, data)
+    //     //Save updated crop and animal
+    //     await queryRunner.manager.save(CropEntity, [carrot, potato, bellPepper, cucumber, pineapple, watermelon])
     // }
+
+    private async seedBuildingData(queryRunner: QueryRunner) {
+        // Define building data
+        // const data: Array<DeepPartial<BuildingEntity>> = [
+        //     {
+        //         id: BuildingKey.Coop,
+        //         availableInShop: true,
+        //         type: AnimalType.Poultry,
+        //         maxUpgrade: 2,
+        //         price: 2000,
+        //         upgrades: [
+        //             { upgradePrice: 0, capacity: 3 },
+        //             { upgradePrice: 1000, capacity: 5 },
+        //             { upgradePrice: 2000, capacity: 10 },
+        //         ],
+        //     },
+        //     {
+        //         id: BuildingKey.Pasture,
+        //         availableInShop: true,
+        //         type: AnimalType.Livestock,
+        //         maxUpgrade: 2,
+        //         price: 3000,
+        //         upgrades: [
+        //             { upgradePrice: 0, capacity: 3 },
+        //             { upgradePrice: 1000, capacity: 5 },
+        //             { upgradePrice: 2000, capacity: 10 },
+        //         ],
+        //     },
+        //     {
+        //         id: BuildingKey.Home,
+        //         availableInShop: false,
+        //         maxUpgrade: 0,
+        //         price: 0,
+        //         upgrades: [],
+        //     },
+        // ]
+
+        // await queryRunner.manager.save(BuildingEntity, data)
+    }
 
     private async seedToolData(queryRunner: QueryRunner) {
         const data : Array<DeepPartial<ToolEntity>> = [
