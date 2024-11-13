@@ -8,6 +8,8 @@ import { AppController } from "./app.controller"
 import { BuyAnimalModule } from "./buy-animal"
 import { BuySeedsModule } from "./buy-seeds"
 import { BuySuppliesModule } from "./buy-supplies"
+import { APP_FILTER } from "@nestjs/core"
+import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 
 @Module({
     imports: [
@@ -47,6 +49,11 @@ import { BuySuppliesModule } from "./buy-supplies"
         BuySuppliesModule
     ],
     controllers: [AppController],
-    providers: [],
+    providers: [
+        {
+            provide: APP_FILTER,
+            useClass: GrpcServerExceptionFilter,
+        },
+    ],
 })
 export class AppModule {}

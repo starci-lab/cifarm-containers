@@ -1,7 +1,6 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import { envConfig } from "@src/config"
-import { ExceptionFilter } from "@src/filters"
 import { shopGrpcConstants } from "./constants"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 
@@ -17,9 +16,6 @@ const bootstrap = async () => {
             },
         },
     )
-
-    // Apply the global filter
-    app.useGlobalFilters(new ExceptionFilter())
 
     await app.listen()
 }
