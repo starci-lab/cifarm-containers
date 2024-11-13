@@ -60,7 +60,7 @@ export class AnimalEntity extends AbstractEntity {
     @Column({ name: "sick_chance", type: "float" })
         sickChance: number
 
-    @OneToOne(() => MarketPricingEntity)
+    @OneToOne(() => MarketPricingEntity, { cascade: true, onDelete: "CASCADE" })
     @JoinColumn()
         marketPricing: MarketPricingEntity
 }

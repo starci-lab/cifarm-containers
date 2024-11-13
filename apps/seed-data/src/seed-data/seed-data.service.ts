@@ -49,7 +49,6 @@ export class SeedDataService implements OnModuleInit {
                 this.dataSource.manager.find(SpinEntity),
                 this.dataSource.manager.find(MarketPricingEntity),
             ])
-    
             // Save each data type to Redis concurrently
             await Promise.all([
                 this.cacheManager.set(REDIS_KEY.ANIMALS, animals),
@@ -78,14 +77,27 @@ export class SeedDataService implements OnModuleInit {
         try {
             await queryRunner.startTransaction()
     
+            // Delete marketplace pricing
+            await Promise.all([
+                queryRunner.manager.createQueryBuilder()
+                    .delete()
+                    .from(MarketPricingEntity)
+                    .where("animal_id IS NOT NULL")
+                    .execute(),
+                queryRunner.manager.createQueryBuilder()
+                    .delete()
+                    .from(MarketPricingEntity)
+                    .where("crop_id IS NOT NULL")
+                    .execute()
+            ])
+
             // Delete all data concurrently
             await Promise.all([
                 queryRunner.manager.delete(AnimalEntity, {}),
+                queryRunner.manager.delete(CropEntity, {}),
                 queryRunner.manager.delete(UpgradeEntity, {}),
                 queryRunner.manager.delete(BuildingEntity, {}),
-                queryRunner.manager.delete(CropEntity, {}),
                 queryRunner.manager.delete(ToolEntity, {}),
-                queryRunner.manager.delete(MarketPricingEntity, {}),
                 queryRunner.manager.delete(TileEntity, {}),
                 queryRunner.manager.delete(SupplyEntity, {}),
                 queryRunner.manager.delete(DailyRewardPossibility, {}),
@@ -177,12 +189,12 @@ export class SeedDataService implements OnModuleInit {
 
     async seedCropData(queryRunner) {
         const cropsData = [
-            { key: CropKey.Carrot, price: 50, growthStageDuration: 3600, growthStages: 5, basicHarvestExperiences: 12, premiumHarvestExperiences: 60, minHarvestQuantity: 14, maxHarvestQuantity: 20, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
-            { key: CropKey.Potato, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
-            { key: CropKey.Cucumber, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
-            { key: CropKey.Pineapple, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
-            { key: CropKey.Watermelon, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true },
-            { key: CropKey.BellPepper, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true }
+            { key: CropKey.Carrot, price: 50, growthStageDuration: 3600, growthStages: 5, basicHarvestExperiences: 12, premiumHarvestExperiences: 60, minHarvestQuantity: 14, maxHarvestQuantity: 20, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true, maxStack: 16 },
+            { key: CropKey.Potato, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true, maxStack: 16 },
+            { key: CropKey.Cucumber, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true, maxStack: 16 },
+            { key: CropKey.Pineapple, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true, maxStack: 16 },
+            { key: CropKey.Watermelon, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true, maxStack: 16 },
+            { key: CropKey.BellPepper, price: 100, growthStageDuration: 9000, growthStages: 5, basicHarvestExperiences: 21, premiumHarvestExperiences: 110, minHarvestQuantity: 16, maxHarvestQuantity: 23, premium: false, perennial: false, nextGrowthStageAfterHarvest: 1, availableInShop: true, maxStack: 16 }
         ]
         const cropsMarketPricing = [
             { key: CropKey.Carrot, basicAmount: 4, premiumAmount: 0.02 },
