@@ -10,7 +10,7 @@ import { ProductType } from "./enums"
 export class ProductEntity extends AbstractEntity {
   @Field(() => Boolean)
   @Column({ name: "is_premium", type: "boolean" })
-      isPremium: boolean
+      isPremium: number
    
   @Field(() => Int)
   @Column({ name: "gold_amount", type: "int" })

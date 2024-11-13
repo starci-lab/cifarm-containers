@@ -1,15 +1,15 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { Column, Entity, JoinColumn, OneToMany } from "typeorm"
+import { AbstractEntity } from "./abstract"
 import { DailyRewardPossibility } from "./daily-reward-possibility.entity"
 import { DailyRewardKey } from "./enums-key"
 
 @ObjectType()
 @Entity("daily_rewards")
-export class DailyRewardEntity extends ReadableAbstractEntity {
+export class DailyRewardEntity extends AbstractEntity {
     @Field(() => DailyRewardKey)
-    @PrimaryColumn({ type: "enum", enum: DailyRewardKey })
-        id: DailyRewardKey
+    @Column({ type: "enum", enum: DailyRewardKey })
+        key: DailyRewardKey
 
     @Field(() => Int, { nullable: true })
     @Column({ name: "reward_amount", type: "int", nullable: true })

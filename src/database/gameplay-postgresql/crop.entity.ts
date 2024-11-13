@@ -1,15 +1,15 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { ObjectType, Field, Int } from "@nestjs/graphql"
+import { Entity, Column, OneToOne, JoinColumn } from "typeorm"
+import { AbstractEntity } from "./abstract"
 import { CropKey } from "./enums-key"
 import { ProductEntity } from "./product.entity"
 
 @ObjectType()
 @Entity("crops")
-export class CropEntity extends ReadableAbstractEntity {
+export class CropEntity extends AbstractEntity {
     @Field(() => CropKey)
-    @PrimaryColumn({ type: "enum", enum: CropKey })
-        id: CropKey
+    @Column({ type: "enum", enum: CropKey })
+        key: CropKey
 
     @Field(() => Int)
     @Column({ name: "growth_stage_duration", type: "bigint" })

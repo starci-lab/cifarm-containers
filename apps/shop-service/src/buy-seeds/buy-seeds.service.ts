@@ -46,7 +46,7 @@ export class BuySeedsService {
             await this.cacheManager.set(REDIS_KEY.CROPS, crops, Infinity)
         }
 
-        const crop = crops.find(c => c.key.toString() === key.toString())
+        const crop = crops.find(c => c.id.toString() === key.toString())
         if (!crop) throw new GrpcNotFoundException("Crop not found or invalid key: " + key)
         if (!crop.availableInShop) throw new GrpcPermissionDeniedException("Crop not available in shop")
 
