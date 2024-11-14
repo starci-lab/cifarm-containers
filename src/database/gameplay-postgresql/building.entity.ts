@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from "typeorm"
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
 import { BuildingKey } from "./enums-key"

@@ -9,7 +9,7 @@ import { DailyRewardPossibilityKey } from "./enums-key"
 export class DailyRewardPossibility extends ReadableAbstractEntity{
     @Field(() => DailyRewardPossibilityKey)
     @PrimaryColumn({ type: "enum", enum: DailyRewardPossibilityKey })
-        key: DailyRewardPossibilityKey
+        id: DailyRewardPossibilityKey
         
     @Field(() => Int, { nullable: true })
     @Column({ name: "gold_amount", type: "int", nullable: true })

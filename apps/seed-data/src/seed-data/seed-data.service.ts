@@ -13,6 +13,7 @@ import {
     DailyRewardEntity,
     DailyRewardKey,
     DailyRewardPossibility,
+    DailyRewardPossibilityKey,
     ProductEntity,
     ProductType,
     SpinEntity,
@@ -43,9 +44,9 @@ export class SeedDataService implements OnModuleInit {
 
     async onModuleInit() {
         // await this.clearPostgresData()
-        // await this.clearRedisCacheData()
-        // await this.seedData()
-        // await this.saveDataToRedis()
+        await this.clearRedisCacheData()
+        await this.seedData()
+        await this.saveDataToRedis()
     }
 
     private async clearRedisCacheData() {
@@ -103,9 +104,9 @@ export class SeedDataService implements OnModuleInit {
         }
     }
     private async clearPostgresData() {
-        this.logger.log("Clearing old data started");
-        const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
-        await queryRunner.connect();
+        this.logger.log("Clearing old data started")
+        const queryRunner: QueryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
     
         try {
             await queryRunner.startTransaction()
@@ -161,14 +162,14 @@ export class SeedDataService implements OnModuleInit {
             await queryRunner.startTransaction()
 
             await Promise.all([
-                // this.seedAnimalData(queryRunner),
-                // this.seedCropData(queryRunner),
-                // this.seedBuildingData(queryRunner),
-                // this.seedToolData(queryRunner),
-                // this.seedTileData(queryRunner),
-                // this.seedSupplyData(queryRunner),
-                // this.seedDailyRewardData(queryRunner),
-                // this.seedSpinData(queryRunner)
+                this.seedAnimalData(queryRunner),
+                this.seedCropData(queryRunner),
+                this.seedBuildingData(queryRunner),
+                this.seedToolData(queryRunner),
+                this.seedTileData(queryRunner),
+                this.seedSupplyData(queryRunner),
+                this.seedDailyRewardData(queryRunner),
+                this.seedSpinData(queryRunner)
             ])
             // await this.seedProducts(queryRunner)
 
@@ -540,11 +541,11 @@ export class SeedDataService implements OnModuleInit {
                 day: 5,
                 isLastDay: true,
                 dailyRewardPossibilities: [
-                    { goldAmount: 1000, thresholdMin: 0, thresholdMax: 0.8, dailyReward: { id: DailyRewardKey.Day5 } },
-                    { goldAmount: 1500, thresholdMin: 0.8, thresholdMax: 0.9, dailyReward: { id: DailyRewardKey.Day5 } },
-                    { goldAmount: 2000, thresholdMin: 0.9, thresholdMax: 0.95, dailyReward: { id: DailyRewardKey.Day5 } },
-                    { tokenAmount: 3, thresholdMin: 0.95, thresholdMax: 0.99, dailyReward: { id: DailyRewardKey.Day5 } },
-                    { tokenAmount: 10, thresholdMin: 0.99, thresholdMax: 1, dailyReward: { id: DailyRewardKey.Day5 } },
+                    {id: DailyRewardPossibilityKey.Possibility1, goldAmount: 1000, thresholdMin: 0, thresholdMax: 0.8, dailyReward: { id: DailyRewardKey.Day5 } },
+                    {id: DailyRewardPossibilityKey.Possibility2, goldAmount: 1500, thresholdMin: 0.8, thresholdMax: 0.9, dailyReward: { id: DailyRewardKey.Day5 } },
+                    {id: DailyRewardPossibilityKey.Possibility3, goldAmount: 2000, thresholdMin: 0.9, thresholdMax: 0.95, dailyReward: { id: DailyRewardKey.Day5 } },
+                    {id: DailyRewardPossibilityKey.Possibility4, tokenAmount: 3, thresholdMin: 0.95, thresholdMax: 0.99, dailyReward: { id: DailyRewardKey.Day5 } },
+                    {id: DailyRewardPossibilityKey.Possibility5, tokenAmount: 10, thresholdMin: 0.99, thresholdMax: 1, dailyReward: { id: DailyRewardKey.Day5 } },
                 ],
             },
         ]
