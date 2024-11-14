@@ -110,7 +110,7 @@ export class SeedDataService implements OnModuleInit {
 
         try {
             await queryRunner.startTransaction()
-            // await queryRunner.manager.createQueryBuilder().delete().from(ProductEntity).execute()
+            await queryRunner.manager.createQueryBuilder().delete().from(ProductEntity).execute()
 
             await Promise.all([
                 queryRunner.manager.delete(AnimalEntity, {}),
@@ -386,7 +386,6 @@ export class SeedDataService implements OnModuleInit {
 
         await queryRunner.manager.save(ProductEntity, data)
 
-        //Update crop and animal with products
         carrot.product = data.find(
             (product) => product.crop?.id?.toString() === CropKey.Carrot
         ) as ProductEntity
