@@ -1,15 +1,11 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, PrimaryColumn } from "typeorm"
+import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
-import { CropKey } from "./enums-key"
+import { ProductEntity } from "./product.entity"
 
 @ObjectType()
 @Entity("crops")
 export class CropEntity extends ReadableAbstractEntity {
-    @Field(() => CropKey)
-    @PrimaryColumn({ type: "enum", enum: CropKey })
-        id: CropKey
-
     @Field(() => Int)
     @Column({ name: "growth_stage_duration", type: "bigint" })
         growthStageDuration: number
@@ -58,7 +54,10 @@ export class CropEntity extends ReadableAbstractEntity {
     @Column({ name: "maxStack", type: "int", default: 16 })
         maxStack: number
 
-    // @OneToOne(() => ProductEntity, { cascade: true, onDelete: "CASCADE" })
-    // @JoinColumn()
-    //     product: ProductEntity
+    @OneToOne(() => ProductEntity, { cascade: true, onDelete: "CASCADE" })
+    @JoinColumn({
+        name: "product_id",
+        referencedColumnName: "id"
+    })
+        product: ProductEntity
 }

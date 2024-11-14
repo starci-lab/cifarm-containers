@@ -1,18 +1,12 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm"
+import { Column, Entity, OneToMany } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
-import { BuildingKey } from "./enums-key"
 import { UpgradeEntity } from "./upgrade.entity"
 
 @ObjectType()
 @Entity("buildings")
 export class BuildingEntity extends ReadableAbstractEntity {
-    @Field(() => BuildingKey)
-    // @PrimaryColumn({name:"id", type: "enum", enum: BuildingKey})
-    @PrimaryColumn({ name: "id", type: "varchar" })
-        id: BuildingKey
-
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })
         availableInShop: boolean

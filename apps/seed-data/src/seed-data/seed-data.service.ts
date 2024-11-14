@@ -43,7 +43,7 @@ export class SeedDataService implements OnModuleInit {
     ) {}
 
     async onModuleInit() {
-        // await this.clearPostgresData()
+        await this.clearPostgresData()
         await this.clearRedisCacheData()
         await this.seedData()
         await this.saveDataToRedis()
@@ -110,26 +110,7 @@ export class SeedDataService implements OnModuleInit {
 
         try {
             await queryRunner.startTransaction()
-
-            // Fetch and drop all foreign key constraints
-            const foreignKeys = await queryRunner.query(`
-                SELECT 
-                    tc.constraint_name, 
-                    tc.table_name 
-                FROM 
-                    information_schema.table_constraints AS tc 
-                WHERE 
-                    tc.constraint_type = 'FOREIGN KEY';
-            `)
-
-            for (const key of foreignKeys) {
-                await queryRunner.query(
-                    `ALTER TABLE "${key.table_name}" DROP CONSTRAINT "${key.constraint_name}";`
-                )
-            }
-
-            // Now delete data from all tables in the appropriate order
-            await queryRunner.manager.createQueryBuilder().delete().from(ProductEntity).execute()
+            // await queryRunner.manager.createQueryBuilder().delete().from(ProductEntity).execute()
 
             await Promise.all([
                 queryRunner.manager.delete(AnimalEntity, {}),
@@ -141,7 +122,8 @@ export class SeedDataService implements OnModuleInit {
                 queryRunner.manager.delete(SupplyEntity, {}),
                 queryRunner.manager.delete(DailyRewardPossibility, {}),
                 queryRunner.manager.delete(DailyRewardEntity, {}),
-                queryRunner.manager.delete(SpinEntity, {})
+                queryRunner.manager.delete(SpinEntity, {}),
+                queryRunner.manager.delete(ProductEntity, {})
             ])
 
             await queryRunner.commitTransaction()
@@ -172,7 +154,7 @@ export class SeedDataService implements OnModuleInit {
                 this.seedDailyRewardData(queryRunner),
                 this.seedSpinData(queryRunner)
             ])
-            // await this.seedProducts(queryRunner)
+            await this.seedProducts(queryRunner)
 
             await queryRunner.commitTransaction()
             this.logger.log("Seeding data finished")
@@ -317,90 +299,129 @@ export class SeedDataService implements OnModuleInit {
         await queryRunner.manager.save(CropEntity, data)
     }
 
-    // private async seedProducts(queryRunner: QueryRunner) {
-    //     const chicken:AnimalEntity = await queryRunner.manager.findOne(AnimalEntity, { where: { id: AnimalKey.Chicken } })
-    //     const cow:AnimalEntity = await queryRunner.manager.findOne(AnimalEntity, { where: { id: AnimalKey.Cow } })
-    //     const carrot:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { id: CropKey.Carrot } })
-    //     const potato:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { id: CropKey.Potato } })
-    //     const bellPepper:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { id: CropKey.BellPepper } })
-    //     const cucumber:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { id: CropKey.Cucumber } })
-    //     const pineapple:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { id: CropKey.Pineapple } })
-    //     const watermelon:CropEntity = await queryRunner.manager.findOne(CropEntity, { where: { id: CropKey.Watermelon } })
+    private async seedProducts(queryRunner: QueryRunner) {
+        const chicken: AnimalEntity = await queryRunner.manager.findOne(AnimalEntity, {
+            where: { id: AnimalKey.Chicken }
+        })
+        const cow: AnimalEntity = await queryRunner.manager.findOne(AnimalEntity, {
+            where: { id: AnimalKey.Cow }
+        })
+        const carrot: CropEntity = await queryRunner.manager.findOne(CropEntity, {
+            where: { id: CropKey.Carrot }
+        })
+        const potato: CropEntity = await queryRunner.manager.findOne(CropEntity, {
+            where: { id: CropKey.Potato }
+        })
+        const bellPepper: CropEntity = await queryRunner.manager.findOne(CropEntity, {
+            where: { id: CropKey.BellPepper }
+        })
+        const cucumber: CropEntity = await queryRunner.manager.findOne(CropEntity, {
+            where: { id: CropKey.Cucumber }
+        })
+        const pineapple: CropEntity = await queryRunner.manager.findOne(CropEntity, {
+            where: { id: CropKey.Pineapple }
+        })
+        const watermelon: CropEntity = await queryRunner.manager.findOne(CropEntity, {
+            where: { id: CropKey.Watermelon }
+        })
 
-    //     const data: Array<DeepPartial<ProductEntity>> = [
-    //         {
-    //             isPremium: false,
-    //             goldAmount: 8,
-    //             tokenAmount: 0.04,
-    //             type: ProductType.Animal,
-    //             animal: chicken,
-    //         },
-    //         {
-    //             isPremium: false,
-    //             goldAmount: 8,
-    //             tokenAmount: 0.04,
-    //             type: ProductType.Animal,
-    //             animal: cow,
-    //         },
-    //         {
-    //             isPremium: false,
-    //             goldAmount: 4,
-    //             tokenAmount: 0.02,
-    //             type: ProductType.Crop,
-    //             crop: carrot,
-    //         },
-    //         {
-    //             isPremium: false,
-    //             goldAmount: 8,
-    //             tokenAmount: 0.04,
-    //             type: ProductType.Crop,
-    //             crop: potato,
-    //         },
-    //         {
-    //             isPremium: false,
-    //             goldAmount: 8,
-    //             tokenAmount: 0.04,
-    //             type: ProductType.Crop,
-    //             crop: bellPepper,
-    //         },
-    //         {
-    //             isPremium: false,
-    //             goldAmount: 8,
-    //             tokenAmount: 0.04,
-    //             type: ProductType.Crop,
-    //             crop: cucumber,
-    //         },
-    //         {
-    //             isPremium: false,
-    //             goldAmount: 8,
-    //             tokenAmount: 0.04,
-    //             type: ProductType.Crop,
-    //             crop: pineapple,
-    //         },
-    //         {
-    //             isPremium: false,
-    //             goldAmount: 8,
-    //             tokenAmount: 0.04,
-    //             type: ProductType.Crop,
-    //             crop: watermelon,
-    //         },
-    //     ]
+        const data: Array<DeepPartial<ProductEntity>> = [
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Animal,
+                animal: chicken
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Animal,
+                animal: cow
+            },
+            {
+                isPremium: false,
+                goldAmount: 4,
+                tokenAmount: 0.02,
+                type: ProductType.Crop,
+                crop: carrot
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: potato
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: bellPepper
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: cucumber
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: pineapple
+            },
+            {
+                isPremium: false,
+                goldAmount: 8,
+                tokenAmount: 0.04,
+                type: ProductType.Crop,
+                crop: watermelon
+            }
+        ]
 
-    //     await queryRunner.manager.save(ProductEntity, data)
+        await queryRunner.manager.save(ProductEntity, data)
 
-    //     //Update crop and animal with products
-    //     carrot.product = data.find(product => product.crop?.id?.toString() === CropKey.Carrot) as ProductEntity
-    //     potato.product = data.find(product => product.crop?.id?.toString() === CropKey.Potato) as ProductEntity
-    //     bellPepper.product = data.find(product => product.crop?.id?.toString() === CropKey.BellPepper) as ProductEntity
-    //     cucumber.product = data.find(product => product.crop?.id?.toString() === CropKey.Cucumber) as ProductEntity
-    //     pineapple.product = data.find(product => product.crop?.id?.toString() === CropKey.Pineapple) as ProductEntity
-    //     watermelon.product = data.find(product => product.crop?.id?.toString() === CropKey.Watermelon) as ProductEntity
-    //     chicken.product = data.find(product => product.animal?.id?.toString() === AnimalKey.Chicken) as ProductEntity
-    //     cow.product = data.find(product => product.animal?.id?.toString() === AnimalKey.Cow) as ProductEntity
+        //Update crop and animal with products
+        carrot.product = data.find(
+            (product) => product.crop?.id?.toString() === CropKey.Carrot
+        ) as ProductEntity
+        potato.product = data.find(
+            (product) => product.crop?.id?.toString() === CropKey.Potato
+        ) as ProductEntity
+        bellPepper.product = data.find(
+            (product) => product.crop?.id?.toString() === CropKey.BellPepper
+        ) as ProductEntity
+        cucumber.product = data.find(
+            (product) => product.crop?.id?.toString() === CropKey.Cucumber
+        ) as ProductEntity
+        pineapple.product = data.find(
+            (product) => product.crop?.id?.toString() === CropKey.Pineapple
+        ) as ProductEntity
+        watermelon.product = data.find(
+            (product) => product.crop?.id?.toString() === CropKey.Watermelon
+        ) as ProductEntity
+        chicken.product = data.find(
+            (product) => product.animal?.id?.toString() === AnimalKey.Chicken
+        ) as ProductEntity
+        cow.product = data.find(
+            (product) => product.animal?.id?.toString() === AnimalKey.Cow
+        ) as ProductEntity
 
-    //     //Save updated crop and animal
-    //     await queryRunner.manager.save(CropEntity, [carrot, potato, bellPepper, cucumber, pineapple, watermelon])
-    // }
+        //Save updated crop and animal
+        await queryRunner.manager.save(CropEntity, [
+            carrot,
+            potato,
+            bellPepper,
+            cucumber,
+            pineapple,
+            watermelon
+        ])
+    }
 
     private async seedBuildingData(queryRunner: QueryRunner) {
         const data: Array<DeepPartial<BuildingEntity>> = [
@@ -546,36 +567,31 @@ export class SeedDataService implements OnModuleInit {
                         id: DailyRewardPossibilityKey.Possibility1,
                         goldAmount: 1000,
                         thresholdMin: 0,
-                        thresholdMax: 0.8,
-                        dailyReward: { id: DailyRewardKey.Day5 }
+                        thresholdMax: 0.8
                     },
                     {
                         id: DailyRewardPossibilityKey.Possibility2,
                         goldAmount: 1500,
                         thresholdMin: 0.8,
-                        thresholdMax: 0.9,
-                        dailyReward: { id: DailyRewardKey.Day5 }
+                        thresholdMax: 0.9
                     },
                     {
                         id: DailyRewardPossibilityKey.Possibility3,
                         goldAmount: 2000,
                         thresholdMin: 0.9,
-                        thresholdMax: 0.95,
-                        dailyReward: { id: DailyRewardKey.Day5 }
+                        thresholdMax: 0.95
                     },
                     {
                         id: DailyRewardPossibilityKey.Possibility4,
                         tokenAmount: 3,
                         thresholdMin: 0.95,
-                        thresholdMax: 0.99,
-                        dailyReward: { id: DailyRewardKey.Day5 }
+                        thresholdMax: 0.99
                     },
                     {
                         id: DailyRewardPossibilityKey.Possibility5,
                         tokenAmount: 10,
                         thresholdMin: 0.99,
-                        thresholdMax: 1,
-                        dailyReward: { id: DailyRewardKey.Day5 }
+                        thresholdMax: 1
                     }
                 ]
             }

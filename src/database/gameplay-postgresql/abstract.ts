@@ -4,6 +4,7 @@ import { Field, ID } from "@nestjs/graphql"
 import { ClassConstructor, instanceToPlain, plainToInstance } from "class-transformer"
 import {
     CreateDateColumn,
+    PrimaryColumn,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm"
@@ -33,6 +34,10 @@ export abstract class AbstractEntity {
 }
 
 export abstract class ReadableAbstractEntity{
+    @Field(() => ID)
+    @PrimaryColumn({ name: "id", type: "varchar", length: 36 })
+        id: string
+
     @Field(() => Date)
     @CreateDateColumn({ name: "created_at" })
         createdAt: Date

@@ -1,17 +1,12 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from "typeorm"
-import { AnimalType } from "./enums"
-import { AnimalKey } from "./enums-key"
-import { ProductEntity } from "./product.entity"
+import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
+import { AnimalType } from "./enums"
+import { ProductEntity } from "./product.entity"
 
 @ObjectType()
 @Entity("animals")
 export class AnimalEntity extends ReadableAbstractEntity {
-    @Field(() => AnimalKey)
-    @PrimaryColumn({ type: "enum", enum: AnimalKey })
-        id: AnimalKey
-
     @Field(() => Int)
     @Column({ name: "yield_time", type: "bigint" })
         yieldTime: number
@@ -61,6 +56,9 @@ export class AnimalEntity extends ReadableAbstractEntity {
         sickChance: number
 
     @OneToOne(() => ProductEntity, { cascade: true, onDelete: "CASCADE" })
-    @JoinColumn()
+    @JoinColumn({
+        name: "product_id",
+        referencedColumnName: "id"
+    })
         product: ProductEntity
 }
