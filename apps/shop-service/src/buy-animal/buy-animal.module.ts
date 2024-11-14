@@ -10,8 +10,8 @@ import { envConfig } from "@src/config"
 @Module({
     imports: [
         TypeOrmModule.forFeature([UserEntity, InventoryEntity, ProductEntity, AnimalEntity]),
-        ClientsModule.registerAsync(
-            [{
+        ClientsModule.registerAsync([
+            {
                 name: goldWalletGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
@@ -19,12 +19,12 @@ import { envConfig } from "@src/config"
                         url: `${envConfig().containers.goldWalletService.host}:${envConfig().containers.goldWalletService.port}`,
                         package: goldWalletGrpcConstants.PACKAGE,
                         protoPath: goldWalletGrpcConstants.PROTO_PATH
-                    },
-                })}
-            ]
-        ),
+                    }
+                })
+            }
+        ])
     ],
     providers: [BuyAnimalService],
-    exports: [BuyAnimalService],
+    exports: [BuyAnimalService]
 })
 export class BuyAnimalModule {}

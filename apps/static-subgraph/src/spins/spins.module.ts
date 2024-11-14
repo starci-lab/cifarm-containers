@@ -6,6 +6,6 @@ import { SpinsService } from "./spins.service"
 
 @Module({
     imports: [TypeOrmModule.forFeature([SpinEntity])],
-    providers: [SpinsService, SpinsResolver],
+    providers: [SpinsService, SpinsResolver]
 })
 export class SpinsModule {}

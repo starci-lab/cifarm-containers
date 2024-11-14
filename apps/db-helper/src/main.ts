@@ -10,7 +10,7 @@ const createGamplayPostgresqlDatabase = async () => {
         host: envConfig().database.postgres.gameplay.host,
         port: envConfig().database.postgres.gameplay.port,
         username: envConfig().database.postgres.gameplay.user,
-        password: envConfig().database.postgres.gameplay.pass,
+        password: envConfig().database.postgres.gameplay.pass
     })
     const dataSource = await postgres.initialize()
     await dataSource.createQueryRunner().createDatabase("cifarm", true)

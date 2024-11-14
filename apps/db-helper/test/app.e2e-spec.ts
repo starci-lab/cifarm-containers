@@ -8,7 +8,7 @@ describe("DbHelperController (e2e)", () => {
 
     beforeEach(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [DbHelperModule],
+            imports: [DbHelperModule]
         }).compile()
 
         app = moduleFixture.createNestApplication()
@@ -16,9 +16,6 @@ describe("DbHelperController (e2e)", () => {
     })
 
     it("/ (GET)", () => {
-        return request(app.getHttpServer())
-            .get("/")
-            .expect(200)
-            .expect("Hello World!")
+        return request(app.getHttpServer()).get("/").expect(200).expect("Hello World!")
     })
 })

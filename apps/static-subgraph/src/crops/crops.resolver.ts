@@ -10,11 +10,11 @@ export class CropsResolver {
 
     constructor(private readonly cropsService: CropsService) {}
 
-  @Query(() => [CropEntity], {
-      name: "crops",
-  })
+    @Query(() => [CropEntity], {
+        name: "crops"
+    })
     async getCrops(@Args("args") args: GetCropsArgs): Promise<Array<CropEntity>> {
         this.logger.debug(`getCrops: args=${JSON.stringify(args)}`)
         return this.cropsService.getCrops(args)
-    } 
+    }
 }

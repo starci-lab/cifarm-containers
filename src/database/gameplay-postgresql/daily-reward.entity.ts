@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from "typeorm"
-import { AbstractEntity, ReadableAbstractEntity } from "./abstract"
+import { ReadableAbstractEntity } from "./abstract"
 import { DailyRewardPossibility } from "./daily-reward-possibility.entity"
 import { DailyRewardKey } from "./enums-key"
 

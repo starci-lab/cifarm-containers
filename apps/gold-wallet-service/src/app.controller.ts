@@ -7,9 +7,7 @@ import { UpdateGoldWalletService } from "./update-gold-wallet"
 export class AppController {
     private readonly logger = new Logger(AppController.name)
 
-    constructor(
-        private readonly goldWalletService: UpdateGoldWalletService
-    ) {}
+    constructor(private readonly goldWalletService: UpdateGoldWalletService) {}
 
     @GrpcMethod(goldWalletGrpcConstants.SERVICE, "GetGoldBalance")
     public async getBalance(request: { userId: string }) {

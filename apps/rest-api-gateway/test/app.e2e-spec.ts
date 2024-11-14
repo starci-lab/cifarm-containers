@@ -4,9 +4,7 @@ import { of } from "rxjs"
 import * as request from "supertest"
 
 const mockHealthcheckService = {
-    doHealthcheck: jest.fn().mockReturnValue(
-        of({ status: "ok" })
-    ),
+    doHealthcheck: jest.fn().mockReturnValue(of({ status: "ok" }))
 }
 
 describe("RestApiGatewayController (e2e)", () => {
@@ -29,7 +27,7 @@ describe("RestApiGatewayController (e2e)", () => {
                 //     autoLoadEntities: true,
                 //     synchronize: true,
                 // }),
-            ],
+            ]
         }).compile()
 
         app = moduleFixture.createNestApplication()
@@ -41,9 +39,7 @@ describe("RestApiGatewayController (e2e)", () => {
     })
 
     it("/api/healthcheck (GET) - should return healthcheck status", async () => {
-        const response = await request(app.getHttpServer())
-            .get("/api/healthcheck")
-            .expect(200)
+        const response = await request(app.getHttpServer()).get("/api/healthcheck").expect(200)
 
         expect(response.body).toEqual({ status: "ok" })
         expect(mockHealthcheckService.doHealthcheck).toHaveBeenCalled()

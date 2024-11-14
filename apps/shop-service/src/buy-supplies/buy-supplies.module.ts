@@ -4,7 +4,7 @@ import { Global, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
-import { InventoryEntity,  ProductEntity,  SupplyEntity, UserEntity } from "@src/database"
+import { InventoryEntity, ProductEntity, SupplyEntity, UserEntity } from "@src/database"
 import { BuySuppliesService } from "./buy-supplies.service"
 import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
 
@@ -20,13 +20,13 @@ import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants
                     options: {
                         url: `${envConfig().containers.goldWalletService.host}:${envConfig().containers.goldWalletService.port}`,
                         package: goldWalletGrpcConstants.PACKAGE,
-                        protoPath: goldWalletGrpcConstants.PROTO_PATH,
-                    },
-                }),
-            },
-        ]),
+                        protoPath: goldWalletGrpcConstants.PROTO_PATH
+                    }
+                })
+            }
+        ])
     ],
     providers: [BuySuppliesService],
-    exports: [BuySuppliesService],
+    exports: [BuySuppliesService]
 })
 export class BuySuppliesModule {}

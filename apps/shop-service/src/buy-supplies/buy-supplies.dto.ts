@@ -7,15 +7,18 @@ import { IsString, IsInt, Min } from "class-validator"
 export class BuySuppliesRequest extends UserIdRequest {
     @ApiProperty({ example: "BasicFertilizer", description: "The key of the supply to purchase" })
     @IsString()
-        key: string
+    key: string
 
     @ApiProperty({ example: 10, description: "The quantity of supplies to purchase" })
     @IsInt()
     @Min(1)
-        quantity: number
+    quantity: number
 }
 
 export class BuySuppliesResponse {
-    @ApiProperty({ example: "inventory-key", description: "The inventory key for the purchased supplies" })
-        inventoryKey: string
+    @ApiProperty({
+        example: "inventory-key",
+        description: "The inventory key for the purchased supplies"
+    })
+    inventoryKey: string
 }

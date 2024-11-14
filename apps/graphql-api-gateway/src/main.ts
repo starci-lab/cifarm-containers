@@ -5,5 +5,5 @@ import { envConfig } from "@src/config"
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
     await app.listen(envConfig().containers.graphqlApiGateway.port)
-} 
+}
 bootstrap()

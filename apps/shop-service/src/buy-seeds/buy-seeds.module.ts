@@ -10,8 +10,8 @@ import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants
 @Module({
     imports: [
         TypeOrmModule.forFeature([UserEntity, InventoryEntity, CropEntity, ProductEntity]),
-        ClientsModule.registerAsync(
-            [{
+        ClientsModule.registerAsync([
+            {
                 name: goldWalletGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
@@ -19,12 +19,12 @@ import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants
                         url: `${envConfig().containers.goldWalletService.host}:${envConfig().containers.goldWalletService.port}`,
                         package: goldWalletGrpcConstants.PACKAGE,
                         protoPath: goldWalletGrpcConstants.PROTO_PATH
-                    },
-                })}
-            ]
-        ),
+                    }
+                })
+            }
+        ])
     ],
     providers: [BuySeedsService],
-    exports: [BuySeedsService],
+    exports: [BuySeedsService]
 })
 export class BuySeedsModule {}

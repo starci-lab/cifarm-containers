@@ -4,7 +4,7 @@ import { BuySeedsRequest, BuySeedsResponse } from "@apps/shop-service/src/buy-se
 import { BuySuppliesRequest, BuySuppliesResponse } from "@apps/shop-service/src/buy-supplies"
 
 export interface IGameplayService {
-  buySeeds(request: BuySeedsRequest): Observable<BuySeedsResponse>
-  buySupplies(request: BuySuppliesRequest): Observable<BuySuppliesResponse>
-  buyAnimal(request: BuyAnimalRequest) : Observable<BuyAnimalResponse>
+    buySeeds(request: BuySeedsRequest): Observable<BuySeedsResponse>
+    buySupplies(request: BuySuppliesRequest): Observable<BuySuppliesResponse>
+    buyAnimal(request: BuyAnimalRequest): Observable<BuyAnimalResponse>
 }

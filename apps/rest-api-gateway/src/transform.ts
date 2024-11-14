@@ -1,23 +1,22 @@
 import { HttpStatus } from "@nestjs/common"
 import { ApiProperty } from "@nestjs/swagger"
 
-export interface ITransformedSuccessResponse<Data>  
-{
-    data: Data;
-    status: HttpStatus;
-    message: string;
-} 
+export interface ITransformedSuccessResponse<Data> {
+    data: Data
+    status: HttpStatus
+    message: string
+}
 
 export class TransformedSuccessResponse<Data> implements ITransformedSuccessResponse<Data> {
     data: Data
 
-    @ApiProperty({ 
+    @ApiProperty({
         example: HttpStatus.OK
     })
-        status: HttpStatus
+    status: HttpStatus
 
     @ApiProperty({
         example: "Success"
     })
-        message: string
+    message: string
 }

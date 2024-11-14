@@ -3,5 +3,5 @@ import { Empty } from "@src/types"
 import { Observable } from "rxjs"
 
 export interface IHealthcheckService {
-  doHealthcheck(request: Empty): Observable<DoHealthcheckResponse>;
+    doHealthcheck(request: Empty): Observable<DoHealthcheckResponse>
 }

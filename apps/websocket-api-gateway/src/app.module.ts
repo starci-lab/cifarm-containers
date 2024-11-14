@@ -2,11 +2,8 @@ import { PlacedItemsModule } from "./broadcasts"
 import { Module } from "@nestjs/common"
 import { ScheduleModule } from "@nestjs/schedule"
 @Module({
-    imports: [
-        ScheduleModule.forRoot(),
-        PlacedItemsModule
-    ],
+    imports: [ScheduleModule.forRoot(), PlacedItemsModule],
     controllers: [],
-    providers: [],
+    providers: []
 })
 export class AppModule {}

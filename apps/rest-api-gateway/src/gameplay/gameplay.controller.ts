@@ -1,6 +1,4 @@
-import {
-    healthcheckGrpcConstants
-} from "@apps/healthcheck-service"
+import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
 import {
     Body,
     Controller,
@@ -9,7 +7,7 @@ import {
     Inject,
     Logger,
     OnModuleInit,
-    Post,
+    Post
 } from "@nestjs/common"
 
 import { shopGrpcConstants } from "@apps/shop-service/src/constants"
@@ -28,7 +26,7 @@ export class GameplayController implements OnModuleInit {
 
     constructor(
         @Inject(healthcheckGrpcConstants.NAME) private healthCheckServiceClient: ClientGrpc,
-        @Inject(shopGrpcConstants.NAME) private shopServiceClient: ClientGrpc,
+        @Inject(shopGrpcConstants.NAME) private shopServiceClient: ClientGrpc
     ) {}
 
     private healthcheckService: IHealthcheckService
@@ -41,7 +39,6 @@ export class GameplayController implements OnModuleInit {
         this.gameplayService = this.shopServiceClient.getService<IGameplayService>(
             shopGrpcConstants.SERVICE
         )
-
     }
 
     // @ApiBearerAuth()
@@ -55,7 +52,7 @@ export class GameplayController implements OnModuleInit {
     ): Promise<BuySeedsResponse> {
         // this.logger.debug(`Processing buySeeds for user ${user.id}`)
         // const buySeedRequest: BuySeedRequest = { ...request, userId: user.id }
-        const buySeedRequest: BuySeedsRequest = { ...request}
+        const buySeedRequest: BuySeedsRequest = { ...request }
         return await lastValueFrom(this.gameplayService.buySeeds(buySeedRequest))
     }
 
@@ -69,6 +66,6 @@ export class GameplayController implements OnModuleInit {
         @Body() request: BuySuppliesRequest
     ): Promise<BuySuppliesResponse> {
         // this.logger.debug(`Processing buySupplies for user ${user.id}`)
-        return await lastValueFrom(this.gameplayService.buySupplies({ ...request}))
+        return await lastValueFrom(this.gameplayService.buySupplies({ ...request }))
     }
 }

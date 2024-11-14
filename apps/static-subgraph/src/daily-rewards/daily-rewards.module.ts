@@ -6,6 +6,6 @@ import { DailyRewardsService } from "./daily-rewards.service"
 
 @Module({
     imports: [TypeOrmModule.forFeature([DailyRewardEntity, DailyRewardPossibility])],
-    providers: [DailyRewardsService, DailyRewardsResolver],
+    providers: [DailyRewardsService, DailyRewardsResolver]
 })
 export class DailyRewardsModule {}

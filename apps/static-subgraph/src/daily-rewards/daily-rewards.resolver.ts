@@ -10,10 +10,12 @@ export class DailyRewardsResolver {
 
     constructor(private readonly dailyRewardsService: DailyRewardsService) {}
 
-  @Query(() => [DailyRewardEntity], {
-      name: "dailyRewards",
-  })
-    async getDailyRewards(@Args("args") args: GetDailyRewardsArgs): Promise<Array<DailyRewardEntity>> {
+    @Query(() => [DailyRewardEntity], {
+        name: "dailyRewards"
+    })
+    async getDailyRewards(
+        @Args("args") args: GetDailyRewardsArgs
+    ): Promise<Array<DailyRewardEntity>> {
         return this.dailyRewardsService.getDailyRewards(args)
-    } 
+    }
 }

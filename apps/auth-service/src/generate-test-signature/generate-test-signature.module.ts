@@ -8,6 +8,6 @@ import { GenerateTestSignatureService } from "./generate-test-signature.service"
     imports: [TypeOrmModule.forFeature([HealthcheckEntity])],
     controllers: [],
     providers: [GenerateTestSignatureService],
-    exports: [GenerateTestSignatureService],
+    exports: [GenerateTestSignatureService]
 })
 export class GenerateTestSignatureModule {}

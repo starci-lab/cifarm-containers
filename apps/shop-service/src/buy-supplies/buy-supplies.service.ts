@@ -40,9 +40,9 @@ export class BuySuppliesService {
             supplies = await this.dataSource.manager.find(SupplyEntity)
             await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies, Infinity)
         }
-        const supply = supplies.find(s => s.id.toString() === key)
+        const supply = supplies.find((s) => s.id.toString() === key)
         if (!supply) throw new GrpcNotFoundException("Supply not found")
-        if (!supply.availableInShop){
+        if (!supply.availableInShop) {
             throw new GrpcNotFoundException("Supply not available in shop")
         }
 
@@ -95,7 +95,7 @@ export class BuySuppliesService {
                 // premium: supply.premium,
                 deliverable: true,
                 asTool: true, // Supplies are tools
-                maxStack,
+                maxStack
             })
             remainingQuantity -= newQuantity
             await this.dataSource.manager.save(newInventory)

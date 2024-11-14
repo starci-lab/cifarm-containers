@@ -13,17 +13,19 @@ import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],
-            isGlobal: true,
+            isGlobal: true
         }),
         StrategiesModule,
         HealthcheckModule,
         AuthModule,
-        GameplayModule,
+        GameplayModule
     ],
     controllers: [],
-    providers: [{
-        provide: APP_INTERCEPTOR,
-        useClass: GrpcToHttpInterceptor,
-    }],
+    providers: [
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: GrpcToHttpInterceptor
+        }
+    ]
 })
 export class AppModule {}

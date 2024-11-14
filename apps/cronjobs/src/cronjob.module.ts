@@ -5,6 +5,6 @@ import { CronjobService } from "./cronjob.service"
 @Module({
     imports: [],
     controllers: [CronjobController],
-    providers: [CronjobService],
+    providers: [CronjobService]
 })
 export class CronjobModule {}

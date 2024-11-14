@@ -11,7 +11,7 @@ import { redisStore } from "cache-manager-redis-yet"
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],
-            isGlobal: true,
+            isGlobal: true
         }),
         TypeOrmModule.forRoot({
             type: "postgres",
@@ -19,9 +19,9 @@ import { redisStore } from "cache-manager-redis-yet"
             port: envConfig().database.postgres.gameplay.port,
             username: envConfig().database.postgres.gameplay.user,
             password: envConfig().database.postgres.gameplay.pass,
-            database: envConfig().database.postgres.gameplay.dbName,    
+            database: envConfig().database.postgres.gameplay.dbName,
             autoLoadEntities: true,
-            synchronize: true,
+            synchronize: true
         }),
         CacheModule.registerAsync({
             isGlobal: true,
@@ -29,19 +29,19 @@ import { redisStore } from "cache-manager-redis-yet"
                 const store = await redisStore({
                     socket: {
                         host: envConfig().database.redis.cache.host,
-                        port: envConfig().database.redis.cache.port,
-                    },
+                        port: envConfig().database.redis.cache.port
+                    }
                 })
-        
+
                 return {
                     store: store as unknown as CacheStore,
                     ttl: Infinity
                 }
-            },
+            }
         }),
         SeedDataModule
     ],
     controllers: [],
-    providers: [],
+    providers: []
 })
 export class AppModule {}

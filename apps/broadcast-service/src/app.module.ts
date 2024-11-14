@@ -10,7 +10,7 @@ import { AppController } from "./app.controller"
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],
-            isGlobal: true,
+            isGlobal: true
         }),
         TypeOrmModule.forRoot({
             type: "postgres",
@@ -18,13 +18,13 @@ import { AppController } from "./app.controller"
             port: envConfig().database.postgres.gameplay.port,
             username: envConfig().database.postgres.gameplay.user,
             password: envConfig().database.postgres.gameplay.pass,
-            database: envConfig().database.postgres.gameplay.dbName,    
+            database: envConfig().database.postgres.gameplay.dbName,
             autoLoadEntities: true,
-            synchronize: true,
+            synchronize: true
         }),
-        BroadcastPlacedItemsModule,
+        BroadcastPlacedItemsModule
     ],
     controllers: [AppController],
-    providers: [],
+    providers: []
 })
 export class AppModule {}

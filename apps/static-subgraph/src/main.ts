@@ -1,8 +1,5 @@
 import { NestFactory } from "@nestjs/core"
-import {
-    GraphQLSchemaBuilderModule,
-    GraphQLSchemaFactory,
-} from "@nestjs/graphql"
+import { GraphQLSchemaBuilderModule, GraphQLSchemaFactory } from "@nestjs/graphql"
 import { getEnvValue } from "@src/utils"
 import { writeFileSync } from "fs"
 import { printSchema } from "graphql"
@@ -23,9 +20,9 @@ const generateSchema = async () => {
 
     const gqlSchemaFactory = app.get(GraphQLSchemaFactory)
     const schema = await gqlSchemaFactory.create([
-        AnimalsResolver, 
-        CropsResolver, 
-        ToolsResolver, 
+        AnimalsResolver,
+        CropsResolver,
+        ToolsResolver,
         BuildingsResolver,
         DailyRewardsResolver,
         SpinsResolver,
@@ -36,9 +33,9 @@ const generateSchema = async () => {
     writeFileSync(
         join(
             process.cwd(),
-            `${getEnvValue({ development: "src", production: "dist" })}/schema.gql`,
+            `${getEnvValue({ development: "src", production: "dist" })}/schema.gql`
         ),
-        printSchema(schema),
+        printSchema(schema)
     )
 }
 const bootstrap = async () => {

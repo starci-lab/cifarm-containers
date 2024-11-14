@@ -6,6 +6,6 @@ import { ToolsService } from "./tools.service"
 
 @Module({
     imports: [TypeOrmModule.forFeature([ToolEntity])],
-    providers: [ToolsService, ToolsResolver],
+    providers: [ToolsService, ToolsResolver]
 })
 export class ToolsModule {}

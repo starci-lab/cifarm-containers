@@ -10,10 +10,10 @@ export class SpinsResolver {
 
     constructor(private readonly spinsService: SpinsService) {}
 
-  @Query(() => [SpinEntity], {
-      name: "spins",
-  })
+    @Query(() => [SpinEntity], {
+        name: "spins"
+    })
     async getSpins(@Args("args") args: GetSpinsArgs): Promise<Array<SpinEntity>> {
         return this.spinsService.getSpins(args)
-    } 
+    }
 }

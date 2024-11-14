@@ -13,13 +13,10 @@ export class ToolsService {
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,
+        private cacheManager: Cache
     ) {}
 
-    async getTools({
-        limit = 10,
-        offset = 0,
-    }: GetToolsArgs): Promise<Array<ToolEntity>> {
+    async getTools({ limit = 10, offset = 0 }: GetToolsArgs): Promise<Array<ToolEntity>> {
         this.logger.debug(`GetTools: limit=${limit}, offset=${offset}`)
 
         const cachedData = await this.cacheManager.get<Array<ToolEntity>>(REDIS_KEY.TOOLS)

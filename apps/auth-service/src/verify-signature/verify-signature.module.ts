@@ -8,6 +8,6 @@ import { VerifySignatureService } from "./verify-signature.service"
     imports: [TypeOrmModule.forFeature([UserEntity, InventoryEntity])],
     controllers: [],
     providers: [VerifySignatureService],
-    exports: [VerifySignatureService],
+    exports: [VerifySignatureService]
 })
 export class VerifySignatureModule {}

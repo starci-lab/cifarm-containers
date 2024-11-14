@@ -1,14 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import {
-    VerifySignatureRequest,
-    VerifySignatureResponse,
-} from "./verify-signature.dto"
-import {
-    chainKeyToPlatform,
-    defaultChainKey,
-    Network,
-    Platform,
-} from "@src/config"
+import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
+import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/config"
 import { CacheNotFound } from "@src/exceptions"
 
 import {
@@ -18,7 +10,7 @@ import {
     JwtService,
     NearAuthService,
     PolkadotAuthService,
-    SolanaAuthService,
+    SolanaAuthService
 } from "@src/services"
 import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
@@ -30,16 +22,16 @@ export class VerifySignatureService {
     private readonly logger = new Logger(VerifySignatureService.name)
 
     constructor(
-    @Inject(CACHE_MANAGER)
-    private readonly cacheManager: Cache,
-    private readonly dataSource: DataSource,
-    private readonly evmAuthService: EvmAuthService,
-    private readonly solanaAuthService: SolanaAuthService,
-    private readonly aptosAuthService: AptosAuthService,
-    private readonly algorandAuthService: AlgorandAuthService,
-    private readonly polkadotAuthService: PolkadotAuthService,
-    private readonly nearAuthService: NearAuthService,
-    private readonly jwtService: JwtService,
+        @Inject(CACHE_MANAGER)
+        private readonly cacheManager: Cache,
+        private readonly dataSource: DataSource,
+        private readonly evmAuthService: EvmAuthService,
+        private readonly solanaAuthService: SolanaAuthService,
+        private readonly aptosAuthService: AptosAuthService,
+        private readonly algorandAuthService: AlgorandAuthService,
+        private readonly polkadotAuthService: PolkadotAuthService,
+        private readonly nearAuthService: NearAuthService,
+        private readonly jwtService: JwtService
     ) {}
 
     public async verifySignature({
@@ -48,7 +40,7 @@ export class VerifySignatureService {
         signature,
         chainKey,
         network,
-        accountAddress,
+        accountAddress
     }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
         const valid = await this.cacheManager.get(message)
         if (!valid) {
@@ -61,64 +53,64 @@ export class VerifySignatureService {
 
         let _accountAddress = publicKey
         switch (platform) {
-        case Platform.Evm: {
-            result = this.evmAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey,
-            })
-            break
-        }
-        case Platform.Solana: {
-            result = this.solanaAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey,
-            })
-            break
-        }
-        case Platform.Aptos: {
-            if (!accountAddress) throw new Error("Account address is required")
-            result = this.aptosAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey,
-            })
-            _accountAddress = accountAddress
-            break
-        }
-        case Platform.Algorand: {
-            result = this.algorandAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey,
-            })
-            break
-        }
-        case Platform.Polkadot: {
-            if (!accountAddress) throw new Error("Account address is required")
-            result = this.polkadotAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey,
-            })
-            _accountAddress = accountAddress
-            break
-        }
-        case Platform.Near: {
-            if (!accountAddress) throw new Error("Account address is required")
-            result = this.nearAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey,
-            })
-            _accountAddress = accountAddress
-            break
-        }
-        default:
-            this.logger.error(`Unknown platform: ${platform}`)
-            result = false
-            break
+            case Platform.Evm: {
+                result = this.evmAuthService.verifyMessage({
+                    message,
+                    signature,
+                    publicKey
+                })
+                break
+            }
+            case Platform.Solana: {
+                result = this.solanaAuthService.verifyMessage({
+                    message,
+                    signature,
+                    publicKey
+                })
+                break
+            }
+            case Platform.Aptos: {
+                if (!accountAddress) throw new Error("Account address is required")
+                result = this.aptosAuthService.verifyMessage({
+                    message,
+                    signature,
+                    publicKey
+                })
+                _accountAddress = accountAddress
+                break
+            }
+            case Platform.Algorand: {
+                result = this.algorandAuthService.verifyMessage({
+                    message,
+                    signature,
+                    publicKey
+                })
+                break
+            }
+            case Platform.Polkadot: {
+                if (!accountAddress) throw new Error("Account address is required")
+                result = this.polkadotAuthService.verifyMessage({
+                    message,
+                    signature,
+                    publicKey
+                })
+                _accountAddress = accountAddress
+                break
+            }
+            case Platform.Near: {
+                if (!accountAddress) throw new Error("Account address is required")
+                result = this.nearAuthService.verifyMessage({
+                    message,
+                    signature,
+                    publicKey
+                })
+                _accountAddress = accountAddress
+                break
+            }
+            default:
+                this.logger.error(`Unknown platform: ${platform}`)
+                result = false
+                break
         }
         if (!result) throw new Error("Signature verification")
 
@@ -126,8 +118,8 @@ export class VerifySignatureService {
             where: {
                 accountAddress: _accountAddress,
                 chainKey,
-                network,
-            },
+                network
+            }
         })
         //if user not found, create user
         if (!user) {
@@ -135,15 +127,16 @@ export class VerifySignatureService {
                 username: `${chainKey}-${_accountAddress.substring(0, 5)}`,
                 accountAddress: _accountAddress,
                 chainKey,
-                network,
+                network
             })
         }
-        const { accessToken, refreshToken } =
-      await this.jwtService.createAuthTokenPair({ id: user.id })
+        const { accessToken, refreshToken } = await this.jwtService.createAuthTokenPair({
+            id: user.id
+        })
 
         return {
             accessToken,
-            refreshToken,
+            refreshToken
         }
     }
 }

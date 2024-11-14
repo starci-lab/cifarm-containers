@@ -27,7 +27,7 @@ import {
     ToolEntity,
     ToolKey,
     UpgradeEntity,
-    UpgradeKey,
+    UpgradeKey
 } from "@src/database"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
@@ -37,9 +37,9 @@ export class SeedDataService implements OnModuleInit {
     private readonly logger = new Logger(SeedDataService.name)
 
     constructor(
-    private readonly dataSource: DataSource,
-    @Inject(CACHE_MANAGER)
-    private cacheManager: Cache,
+        private readonly dataSource: DataSource,
+        @Inject(CACHE_MANAGER)
+        private cacheManager: Cache
     ) {}
 
     async onModuleInit() {
@@ -73,7 +73,7 @@ export class SeedDataService implements OnModuleInit {
                 supplies,
                 dailyRewards,
                 spins,
-                marketPricings,
+                marketPricings
             ] = await Promise.all([
                 this.dataSource.manager.find(AnimalEntity),
                 this.dataSource.manager.find(CropEntity),
@@ -83,7 +83,7 @@ export class SeedDataService implements OnModuleInit {
                 this.dataSource.manager.find(SupplyEntity),
                 this.dataSource.manager.find(DailyRewardEntity),
                 this.dataSource.manager.find(SpinEntity),
-                this.dataSource.manager.find(ProductEntity),
+                this.dataSource.manager.find(ProductEntity)
             ])
             // Save each data type to Redis concurrently
             await Promise.all([
@@ -95,7 +95,7 @@ export class SeedDataService implements OnModuleInit {
                 this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies),
                 this.cacheManager.set(REDIS_KEY.DAILY_REWARDS, dailyRewards),
                 this.cacheManager.set(REDIS_KEY.SPINS, spins),
-                this.cacheManager.set(REDIS_KEY.MARKET_PRICINGS, marketPricings),
+                this.cacheManager.set(REDIS_KEY.MARKET_PRICINGS, marketPricings)
             ])
             this.logger.log("Data saved to Redis successfully")
         } catch (error) {
@@ -107,10 +107,10 @@ export class SeedDataService implements OnModuleInit {
         this.logger.log("Clearing old data started")
         const queryRunner: QueryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-    
+
         try {
             await queryRunner.startTransaction()
-    
+
             // Fetch and drop all foreign key constraints
             const foreignKeys = await queryRunner.query(`
                 SELECT 
@@ -121,14 +121,16 @@ export class SeedDataService implements OnModuleInit {
                 WHERE 
                     tc.constraint_type = 'FOREIGN KEY';
             `)
-    
+
             for (const key of foreignKeys) {
-                await queryRunner.query(`ALTER TABLE "${key.table_name}" DROP CONSTRAINT "${key.constraint_name}";`)
+                await queryRunner.query(
+                    `ALTER TABLE "${key.table_name}" DROP CONSTRAINT "${key.constraint_name}";`
+                )
             }
-    
+
             // Now delete data from all tables in the appropriate order
             await queryRunner.manager.createQueryBuilder().delete().from(ProductEntity).execute()
-    
+
             await Promise.all([
                 queryRunner.manager.delete(AnimalEntity, {}),
                 queryRunner.manager.delete(CropEntity, {}),
@@ -139,9 +141,9 @@ export class SeedDataService implements OnModuleInit {
                 queryRunner.manager.delete(SupplyEntity, {}),
                 queryRunner.manager.delete(DailyRewardPossibility, {}),
                 queryRunner.manager.delete(DailyRewardEntity, {}),
-                queryRunner.manager.delete(SpinEntity, {}),
+                queryRunner.manager.delete(SpinEntity, {})
             ])
-    
+
             await queryRunner.commitTransaction()
             this.logger.log("Clearing old data finished")
         } catch (error) {
@@ -151,7 +153,6 @@ export class SeedDataService implements OnModuleInit {
             await queryRunner.release()
         }
     }
-    
 
     private async seedData() {
         this.logger.log("Seeding data started")
@@ -184,42 +185,43 @@ export class SeedDataService implements OnModuleInit {
     }
 
     private async seedAnimalData(queryRunner: QueryRunner) {
-        const data : Array<DeepPartial<AnimalEntity>> = [{
-            id: AnimalKey.Chicken,
-            yieldTime: 60 * 60 * 24,
-            offspringPrice: 1000,
-            isNFT: false,
-            growthTime: 60 * 60 * 24 * 3,
-            availableInShop: true,
-            hungerTime: 60 * 60 * 12,
-            minHarvestQuantity: 14,
-            maxHarvestQuantity: 20,
-            basicHarvestExperiences: 32,
-            premiumHarvestExperiences: 96,
-            type: AnimalType.Poultry,
-            sickChance: 0.001,
-        },
-        {
-            id: AnimalKey.Cow,
-            yieldTime: 60 * 60 * 24 * 2,
-            offspringPrice: 2500,
-            isNFT: false,
-            growthTime: 60 * 60 * 24 * 7,
-            availableInShop: true,
-            hungerTime: 60 * 60 * 12,
-            minHarvestQuantity: 14,
-            maxHarvestQuantity: 20,
-            basicHarvestExperiences: 32,
-            premiumHarvestExperiences: 96,
-            type: AnimalType.Livestock,
-            sickChance: 0.001,
-        }
+        const data: Array<DeepPartial<AnimalEntity>> = [
+            {
+                id: AnimalKey.Chicken,
+                yieldTime: 60 * 60 * 24,
+                offspringPrice: 1000,
+                isNFT: false,
+                growthTime: 60 * 60 * 24 * 3,
+                availableInShop: true,
+                hungerTime: 60 * 60 * 12,
+                minHarvestQuantity: 14,
+                maxHarvestQuantity: 20,
+                basicHarvestExperiences: 32,
+                premiumHarvestExperiences: 96,
+                type: AnimalType.Poultry,
+                sickChance: 0.001
+            },
+            {
+                id: AnimalKey.Cow,
+                yieldTime: 60 * 60 * 24 * 2,
+                offspringPrice: 2500,
+                isNFT: false,
+                growthTime: 60 * 60 * 24 * 7,
+                availableInShop: true,
+                hungerTime: 60 * 60 * 12,
+                minHarvestQuantity: 14,
+                maxHarvestQuantity: 20,
+                basicHarvestExperiences: 32,
+                premiumHarvestExperiences: 96,
+                type: AnimalType.Livestock,
+                sickChance: 0.001
+            }
         ]
         await queryRunner.manager.save(AnimalEntity, data)
     }
 
     private async seedCropData(queryRunner: QueryRunner) {
-        const data : Array<DeepPartial<CropEntity>> = [
+        const data: Array<DeepPartial<CropEntity>> = [
             {
                 id: CropKey.Carrot,
                 price: 50,
@@ -233,7 +235,7 @@ export class SeedDataService implements OnModuleInit {
                 perennial: false,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
+                maxStack: 16
             },
             {
                 id: CropKey.Potato,
@@ -248,7 +250,7 @@ export class SeedDataService implements OnModuleInit {
                 perennial: false,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
+                maxStack: 16
             },
             {
                 id: CropKey.Cucumber,
@@ -263,7 +265,7 @@ export class SeedDataService implements OnModuleInit {
                 perennial: false,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
+                maxStack: 16
             },
             {
                 id: CropKey.Pineapple,
@@ -278,7 +280,7 @@ export class SeedDataService implements OnModuleInit {
                 perennial: false,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
+                maxStack: 16
             },
             {
                 id: CropKey.Watermelon,
@@ -293,7 +295,7 @@ export class SeedDataService implements OnModuleInit {
                 perennial: false,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
+                maxStack: 16
             },
             {
                 id: CropKey.BellPepper,
@@ -308,12 +310,11 @@ export class SeedDataService implements OnModuleInit {
                 perennial: false,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
-            },
+                maxStack: 16
+            }
         ]
-        
+
         await queryRunner.manager.save(CropEntity, data)
-        
     }
 
     // private async seedProducts(queryRunner: QueryRunner) {
@@ -384,7 +385,7 @@ export class SeedDataService implements OnModuleInit {
     //             crop: watermelon,
     //         },
     //     ]
-    
+
     //     await queryRunner.manager.save(ProductEntity, data)
 
     //     //Update crop and animal with products
@@ -412,8 +413,8 @@ export class SeedDataService implements OnModuleInit {
                 upgrades: [
                     { id: UpgradeKey.Coop_Upgrade1, upgradePrice: 0, capacity: 3 },
                     { id: UpgradeKey.Coop_Upgrade2, upgradePrice: 1000, capacity: 5 },
-                    { id: UpgradeKey.Coop_Upgrade3, upgradePrice: 2000, capacity: 10 },
-                ],
+                    { id: UpgradeKey.Coop_Upgrade3, upgradePrice: 2000, capacity: 10 }
+                ]
             },
             {
                 id: BuildingKey.Pasture,
@@ -424,88 +425,88 @@ export class SeedDataService implements OnModuleInit {
                 upgrades: [
                     { id: UpgradeKey.Pasture_Upgrade1, upgradePrice: 0, capacity: 3 },
                     { id: UpgradeKey.Pasture_Upgrade2, upgradePrice: 1000, capacity: 5 },
-                    { id: UpgradeKey.Pasture_Upgrade3, upgradePrice: 2000, capacity: 10 },
-                ],
+                    { id: UpgradeKey.Pasture_Upgrade3, upgradePrice: 2000, capacity: 10 }
+                ]
             },
             {
                 id: BuildingKey.Home,
                 availableInShop: false,
                 maxUpgrade: 0,
                 price: 0,
-                upgrades: [],
-            },
+                upgrades: []
+            }
         ]
-    
+
         await queryRunner.manager.save(BuildingEntity, data)
     }
     private async seedToolData(queryRunner: QueryRunner) {
-        const data : Array<DeepPartial<ToolEntity>> = [
+        const data: Array<DeepPartial<ToolEntity>> = [
             { id: ToolKey.Scythe, availableIn: AvailableInType.Home, index: 0 },
             { id: ToolKey.Steal, availableIn: AvailableInType.Neighbor, index: 1 },
             { id: ToolKey.WaterCan, availableIn: AvailableInType.Both, index: 2 },
             { id: ToolKey.Herbicide, availableIn: AvailableInType.Both, index: 3 },
-            { id: ToolKey.Pesticide, availableIn: AvailableInType.Both, index: 4 },
+            { id: ToolKey.Pesticide, availableIn: AvailableInType.Both, index: 4 }
         ]
         await queryRunner.manager.save(ToolEntity, data)
     }
     private async seedTileData(queryRunner: QueryRunner) {
-        const data:Array<DeepPartial<TileEntity>> = [
+        const data: Array<DeepPartial<TileEntity>> = [
             {
                 id: TileKey.StarterTile,
                 price: 0,
                 maxOwnership: 6,
                 isNFT: false,
-                availableInShop: true,
+                availableInShop: true
             },
             {
                 id: TileKey.BasicTile1,
                 price: 1000,
                 maxOwnership: 10,
                 isNFT: false,
-                availableInShop: true,
+                availableInShop: true
             },
             {
                 id: TileKey.BasicTile2,
                 price: 2500,
                 maxOwnership: 30,
                 isNFT: false,
-                availableInShop: true,
+                availableInShop: true
             },
             {
                 id: TileKey.BasicTile3,
                 price: 10000,
                 maxOwnership: 9999,
                 isNFT: false,
-                availableInShop: true,
+                availableInShop: true
             },
             {
                 id: TileKey.FertileTile,
                 price: 0,
                 maxOwnership: 0,
                 isNFT: true,
-                availableInShop: false,
-            },
+                availableInShop: false
+            }
         ]
 
         queryRunner.manager.save(TileEntity, data)
     }
     private async seedSupplyData(queryRunner: QueryRunner) {
-        const data : Array<DeepPartial<SupplyEntity>> = [
+        const data: Array<DeepPartial<SupplyEntity>> = [
             {
                 id: SupplyKey.BasicFertilizer,
                 type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,
                 fertilizerEffectTimeReduce: 60 * 30,
-                maxStack: 16,
+                maxStack: 16
             },
             {
                 id: SupplyKey.AnimalFeed,
                 type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,
-                maxStack: 16,
-            },
+                maxStack: 16
+            }
         ]
 
         await queryRunner.manager.save(SupplyEntity, data)
@@ -516,101 +517,130 @@ export class SeedDataService implements OnModuleInit {
                 id: DailyRewardKey.Day1,
                 amount: 100,
                 day: 1,
-                isLastDay: false,
+                isLastDay: false
             },
             {
                 id: DailyRewardKey.Day2,
                 amount: 200,
                 day: 2,
-                isLastDay: false,
+                isLastDay: false
             },
             {
                 id: DailyRewardKey.Day3,
                 amount: 300,
                 day: 3,
-                isLastDay: false,
+                isLastDay: false
             },
             {
                 id: DailyRewardKey.Day4,
                 amount: 600,
                 day: 4,
-                isLastDay: false,
+                isLastDay: false
             },
             {
                 id: DailyRewardKey.Day5,
                 day: 5,
                 isLastDay: true,
                 dailyRewardPossibilities: [
-                    {id: DailyRewardPossibilityKey.Possibility1, goldAmount: 1000, thresholdMin: 0, thresholdMax: 0.8, dailyReward: { id: DailyRewardKey.Day5 } },
-                    {id: DailyRewardPossibilityKey.Possibility2, goldAmount: 1500, thresholdMin: 0.8, thresholdMax: 0.9, dailyReward: { id: DailyRewardKey.Day5 } },
-                    {id: DailyRewardPossibilityKey.Possibility3, goldAmount: 2000, thresholdMin: 0.9, thresholdMax: 0.95, dailyReward: { id: DailyRewardKey.Day5 } },
-                    {id: DailyRewardPossibilityKey.Possibility4, tokenAmount: 3, thresholdMin: 0.95, thresholdMax: 0.99, dailyReward: { id: DailyRewardKey.Day5 } },
-                    {id: DailyRewardPossibilityKey.Possibility5, tokenAmount: 10, thresholdMin: 0.99, thresholdMax: 1, dailyReward: { id: DailyRewardKey.Day5 } },
-                ],
-            },
+                    {
+                        id: DailyRewardPossibilityKey.Possibility1,
+                        goldAmount: 1000,
+                        thresholdMin: 0,
+                        thresholdMax: 0.8,
+                        dailyReward: { id: DailyRewardKey.Day5 }
+                    },
+                    {
+                        id: DailyRewardPossibilityKey.Possibility2,
+                        goldAmount: 1500,
+                        thresholdMin: 0.8,
+                        thresholdMax: 0.9,
+                        dailyReward: { id: DailyRewardKey.Day5 }
+                    },
+                    {
+                        id: DailyRewardPossibilityKey.Possibility3,
+                        goldAmount: 2000,
+                        thresholdMin: 0.9,
+                        thresholdMax: 0.95,
+                        dailyReward: { id: DailyRewardKey.Day5 }
+                    },
+                    {
+                        id: DailyRewardPossibilityKey.Possibility4,
+                        tokenAmount: 3,
+                        thresholdMin: 0.95,
+                        thresholdMax: 0.99,
+                        dailyReward: { id: DailyRewardKey.Day5 }
+                    },
+                    {
+                        id: DailyRewardPossibilityKey.Possibility5,
+                        tokenAmount: 10,
+                        thresholdMin: 0.99,
+                        thresholdMax: 1,
+                        dailyReward: { id: DailyRewardKey.Day5 }
+                    }
+                ]
+            }
         ]
-    
+
         await queryRunner.manager.save(DailyRewardEntity, data)
-        
     }
     private async seedSpinData(queryRunner: QueryRunner) {
-        const data:Array<DeepPartial<SpinEntity>> = [
+        const data: Array<DeepPartial<SpinEntity>> = [
             {
                 id: SpinKey.Gold1,
                 type: SpinType.Gold,
                 goldAmount: 100,
                 thresholdMin: 0,
-                thresholdMax: 0.2,
+                thresholdMax: 0.2
             },
             {
                 id: SpinKey.Gold2,
                 type: SpinType.Gold,
                 goldAmount: 250,
                 thresholdMin: 0.2,
-                thresholdMax: 0.35,
+                thresholdMax: 0.35
             },
             {
                 id: SpinKey.Gold3,
                 type: SpinType.Gold,
                 goldAmount: 500,
                 thresholdMin: 0.35,
-                thresholdMax: 0.45,
+                thresholdMax: 0.45
             },
             {
                 id: SpinKey.Gold4,
                 type: SpinType.Gold,
                 goldAmount: 200,
                 thresholdMin: 0.45,
-                thresholdMax: 0.5,
+                thresholdMax: 0.5
             },
             {
                 id: SpinKey.Seed1,
                 type: SpinType.Seed,
                 quantity: 2,
                 thresholdMin: 0.5,
-                thresholdMax: 0.65,
+                thresholdMax: 0.65
             },
             {
                 id: SpinKey.Seed2,
                 type: SpinType.Seed,
                 quantity: 2,
                 thresholdMin: 0.65,
-                thresholdMax: 0.8,
+                thresholdMax: 0.8
             },
             {
                 id: SpinKey.BasicFertilizer,
                 type: SpinType.Supply,
                 quantity: 4,
                 thresholdMin: 0.8,
-                thresholdMax: 0.99,
+                thresholdMax: 0.99
             },
             {
                 id: SpinKey.Token,
                 type: SpinType.Token,
                 tokenAmount: 15,
                 thresholdMin: 0.99,
-                thresholdMax: 1,
-            },
+                thresholdMax: 1
+            }
         ]
 
         await queryRunner.manager.save(SpinEntity, data)

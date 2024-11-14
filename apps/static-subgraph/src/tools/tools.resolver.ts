@@ -10,11 +10,11 @@ export class ToolsResolver {
 
     constructor(private readonly toolsService: ToolsService) {}
 
-  @Query(() => [ToolEntity], {
-      name: "tools",
-  })
+    @Query(() => [ToolEntity], {
+        name: "tools"
+    })
     async getTools(@Args("args") args: GetToolsArgs): Promise<Array<ToolEntity>> {
         this.logger.debug(`getTools: args=${JSON.stringify(args)}`)
         return this.toolsService.getTools(args)
-    } 
+    }
 }

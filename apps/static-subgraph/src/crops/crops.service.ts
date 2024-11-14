@@ -13,13 +13,10 @@ export class CropsService {
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,
+        private cacheManager: Cache
     ) {}
 
-    async getCrops({
-        limit = 10,
-        offset = 0,
-    }: GetCropsArgs): Promise<Array<CropEntity>> {
+    async getCrops({ limit = 10, offset = 0 }: GetCropsArgs): Promise<Array<CropEntity>> {
         this.logger.debug(`GetCrops: limit=${limit}, offset=${offset}`)
 
         const cachedData = await this.cacheManager.get<Array<CropEntity>>(REDIS_KEY.CROPS)
@@ -31,8 +28,8 @@ export class CropsService {
         } else {
             this.logger.debug("GetCrops: From Database")
             crops = await this.dataSource.manager.find(CropEntity)
-            
-            await this.cacheManager.set(REDIS_KEY.CROPS, crops) 
+
+            await this.cacheManager.set(REDIS_KEY.CROPS, crops)
 
             crops = crops.slice(offset, offset + limit)
         }

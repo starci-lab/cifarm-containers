@@ -14,7 +14,7 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],
-            isGlobal: true,
+            isGlobal: true
         }),
         TypeOrmModule.forRoot({
             type: "postgres",
@@ -22,9 +22,9 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
             port: envConfig().database.postgres.gameplay.port,
             username: envConfig().database.postgres.gameplay.user,
             password: envConfig().database.postgres.gameplay.pass,
-            database: envConfig().database.postgres.gameplay.dbName,    
+            database: envConfig().database.postgres.gameplay.dbName,
             autoLoadEntities: true,
-            synchronize: true,
+            synchronize: true
         }),
         CacheModule.registerAsync({
             isGlobal: true,
@@ -32,15 +32,15 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
                 const store = await redisStore({
                     socket: {
                         host: envConfig().database.redis.cache.host,
-                        port: envConfig().database.redis.cache.port,
-                    },
+                        port: envConfig().database.redis.cache.port
+                    }
                 })
-    
+
                 return {
                     store: store as unknown as CacheStore,
-                    ttl: 10 * 60000, // 10 minutes (milliseconds)
+                    ttl: 10 * 60000 // 10 minutes (milliseconds)
                 }
-            },
+            }
         }),
         UpdateGoldWalletModule
     ],
@@ -48,8 +48,8 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
     providers: [
         {
             provide: APP_FILTER,
-            useClass: GrpcServerExceptionFilter,
-        },
-    ],
+            useClass: GrpcServerExceptionFilter
+        }
+    ]
 })
 export class AppModule {}

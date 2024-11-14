@@ -6,11 +6,14 @@ import { REDIS_KEY } from "@src/constants"
 import { CropEntity, InventoryEntity, InventoryType } from "@src/database"
 import { IGoldWalletService } from "@src/services/wallet"
 import { Cache } from "cache-manager"
-import { GrpcAbortedException, GrpcNotFoundException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
+import {
+    GrpcAbortedException,
+    GrpcNotFoundException,
+    GrpcPermissionDeniedException
+} from "nestjs-grpc-exceptions"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
 import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
-
 
 @Injectable()
 export class BuySeedsService {
@@ -21,7 +24,7 @@ export class BuySeedsService {
         private readonly dataSource: DataSource,
         @Inject(goldWalletGrpcConstants.NAME) private client: ClientGrpc,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,    
+        private cacheManager: Cache
     ) {}
 
     onModuleInit() {
@@ -46,9 +49,10 @@ export class BuySeedsService {
             await this.cacheManager.set(REDIS_KEY.CROPS, crops, Infinity)
         }
 
-        const crop = crops.find(c => c.id.toString() === key.toString())
+        const crop = crops.find((c) => c.id.toString() === key.toString())
         if (!crop) throw new GrpcNotFoundException("Crop not found or invalid key: " + key)
-        if (!crop.availableInShop) throw new GrpcPermissionDeniedException("Crop not available in shop")
+        if (!crop.availableInShop)
+            throw new GrpcPermissionDeniedException("Crop not available in shop")
 
         // Calculate total cost
         const totalCost = crop.price * quantity
@@ -57,7 +61,7 @@ export class BuySeedsService {
         const balance = await lastValueFrom(this.goldWalletService.getGoldBalance({ userId }))
         this.logger.debug(`Buying seed for user ${userId} golds: ${balance.golds}`)
         if (balance.golds < totalCost) throw new GrpcAbortedException("Insufficient gold balance")
-    
+
         // Update wallet
         const walletRequest = { userId, goldAmount: totalCost }
         this.logger.debug(`Updating wallet for user ${userId} by deducting golds: ${totalCost}`)
@@ -101,7 +105,7 @@ export class BuySeedsService {
                 premium: crop.premium,
                 deliverable: true,
                 asTool: false,
-                maxStack,
+                maxStack
             })
             remainingQuantity -= newQuantity
             await this.dataSource.manager.save(newInventory)

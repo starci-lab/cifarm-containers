@@ -14,13 +14,13 @@ import { envConfig } from "@src/config"
                     options: {
                         url: `${envConfig().containers.broadcastService.host}:${envConfig().containers.broadcastService.port}`,
                         package: broadcastGrpcConstants.PACKAGE,
-                        protoPath: broadcastGrpcConstants.PROTO_PATH,
-                    },
-                }),
-            },
-        ]),
+                        protoPath: broadcastGrpcConstants.PROTO_PATH
+                    }
+                })
+            }
+        ])
     ],
     controllers: [],
-    providers: [PlacedItemsGateway],
+    providers: [PlacedItemsGateway]
 })
 export class PlacedItemsModule {}

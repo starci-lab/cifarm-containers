@@ -12,14 +12,14 @@ export class RequestMessageService {
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,    
+        private cacheManager: Cache
     ) {}
 
     public async requestMessage(): Promise<RequestMessageResponse> {
         const message = randomUUID()
         await this.cacheManager.set(message, true, 60 * 1000)
         return {
-            message,
+            message
         }
-    }        
+    }
 }

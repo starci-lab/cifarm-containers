@@ -18,16 +18,16 @@ const bootstrap = async () => {
                 type: "http",
                 scheme: "bearer",
                 bearerFormat: "JWT",
-                in: "header",
+                in: "header"
             },
-            "access-token",
+            "access-token"
         )
         .build()
     const document = SwaggerModule.createDocument(app, config)
     SwaggerModule.setup("/api", app, document, {
         swaggerOptions: {
-            persistAuthorization: true,
-        },
+            persistAuthorization: true
+        }
     })
     await app.listen(envConfig().containers.restApiGateway.port)
 }

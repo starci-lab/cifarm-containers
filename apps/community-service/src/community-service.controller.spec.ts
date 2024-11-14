@@ -8,14 +8,14 @@ describe("CommunityServiceController", () => {
     beforeEach(async () => {
         const app: TestingModule = await Test.createTestingModule({
             controllers: [CommunityServiceController],
-            providers: [CommunityServiceService],
+            providers: [CommunityServiceService]
         }).compile()
 
         communityServiceController = app.get<CommunityServiceController>(CommunityServiceController)
     })
 
     describe("root", () => {
-        it("should return \"Hello World!\"", () => {
+        it('should return "Hello World!"', () => {
             expect(communityServiceController.getHello()).toBe("Hello World!")
         })
     })

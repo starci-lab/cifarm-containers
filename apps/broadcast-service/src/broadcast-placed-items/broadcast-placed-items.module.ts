@@ -5,11 +5,9 @@ import { BroadcastPlacedItemsService } from "./broadcast-placed-items.service"
 
 @Global()
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([PlacedItemEntity])
-    ],
+    imports: [TypeOrmModule.forFeature([PlacedItemEntity])],
     controllers: [],
     providers: [BroadcastPlacedItemsService],
-    exports: [BroadcastPlacedItemsService],
+    exports: [BroadcastPlacedItemsService]
 })
 export class BroadcastPlacedItemsModule {}

@@ -16,23 +16,25 @@ export class BuyAnimalService {
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-        @Inject(goldWalletGrpcConstants.NAME) private client: ClientGrpc,
+        @Inject(goldWalletGrpcConstants.NAME) private client: ClientGrpc
     ) {}
 
     onModuleInit() {
-        this.GoldWalletService = this.client.getService<IGoldWalletService>(goldWalletGrpcConstants.SERVICE)
+        this.GoldWalletService = this.client.getService<IGoldWalletService>(
+            goldWalletGrpcConstants.SERVICE
+        )
     }
 
     async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {
         try {
             const walletRequest: GoldRequest = {
                 userId: request.userId,
-                goldAmount: 99, 
+                goldAmount: 99
             }
             // const response = await lastValueFrom(this.GoldWalletService.addGold(walletRequest))
-            
+
             return {
-                placedItemAnimalKey: "1234",
+                placedItemAnimalKey: "1234"
             }
         } catch (error) {
             console.error("Error updating wallet:", error)

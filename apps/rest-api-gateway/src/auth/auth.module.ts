@@ -6,8 +6,8 @@ import { envConfig } from "@src/config"
 
 @Module({
     imports: [
-        ClientsModule.registerAsync(
-            [{
+        ClientsModule.registerAsync([
+            {
                 name: authGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
@@ -15,12 +15,12 @@ import { envConfig } from "@src/config"
                         url: `${envConfig().containers.authService.host}:${envConfig().containers.authService.port}`,
                         package: authGrpcConstants.PACKAGE,
                         protoPath: authGrpcConstants.PROTO_PATH
-                    },
-                })}
-            ]
-        ),
+                    }
+                })
+            }
+        ])
     ],
     controllers: [AuthController],
-    providers: [],
+    providers: []
 })
 export class AuthModule {}

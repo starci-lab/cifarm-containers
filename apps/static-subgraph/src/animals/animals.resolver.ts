@@ -10,10 +10,10 @@ export class AnimalsResolver {
 
     constructor(private readonly animalsService: AnimalsService) {}
 
-  @Query(() => [AnimalEntity], {
-      name: "animals",
-  })
+    @Query(() => [AnimalEntity], {
+        name: "animals"
+    })
     async getAnimals(@Args("args") args: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         return this.animalsService.getAnimals(args)
-    } 
+    }
 }

@@ -10,10 +10,10 @@ export class TilesResolver {
 
     constructor(private readonly tilesService: TilesService) {}
 
-  @Query(() => [TileEntity], {
-      name: "tiles",
-  })
+    @Query(() => [TileEntity], {
+        name: "tiles"
+    })
     async getTiles(@Args("args") args: GetTilesArgs): Promise<Array<TileEntity>> {
         return this.tilesService.getTiles(args)
-    } 
+    }
 }

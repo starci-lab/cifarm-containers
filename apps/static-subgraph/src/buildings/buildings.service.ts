@@ -13,12 +13,12 @@ export class BuildingsService {
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,
+        private cacheManager: Cache
     ) {}
 
     async getBuildings({
         limit = 10,
-        offset = 0,
+        offset = 0
     }: GetBuildingsArgs): Promise<Array<BuildingEntity>> {
         this.logger.debug(`GetBuildings: limit=${limit}, offset=${offset}`)
 

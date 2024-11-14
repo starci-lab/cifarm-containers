@@ -5,7 +5,7 @@ import { CommunityServiceService } from "./community-service.service"
 export class CommunityServiceController {
     constructor(private readonly communityServiceService: CommunityServiceService) {}
 
-  @Get()
+    @Get()
     getHello(): string {
         return this.communityServiceService.getHello()
     }

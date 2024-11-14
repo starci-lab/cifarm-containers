@@ -10,10 +10,10 @@ export class SuppliesResolver {
 
     constructor(private readonly suppliesService: SuppliesService) {}
 
-  @Query(() => [SupplyEntity], {
-      name: "supplies",
-  })
+    @Query(() => [SupplyEntity], {
+        name: "supplies"
+    })
     async getSupplies(@Args("args") args: GetSuppliesArgs): Promise<Array<SupplyEntity>> {
         return this.suppliesService.getSupplies(args)
-    } 
+    }
 }

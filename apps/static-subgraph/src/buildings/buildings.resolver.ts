@@ -10,10 +10,10 @@ export class BuildingsResolver {
 
     constructor(private readonly buildingsService: BuildingsService) {}
 
-  @Query(() => [BuildingEntity], {
-      name: "buildings",
-  })
+    @Query(() => [BuildingEntity], {
+        name: "buildings"
+    })
     async getBuildings(@Args("args") args: GetBuildingsArgs): Promise<Array<BuildingEntity>> {
         return this.buildingsService.getBuildings(args)
-    } 
+    }
 }

@@ -13,13 +13,10 @@ export class AnimalsService {
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,
+        private cacheManager: Cache
     ) {}
 
-    async getAnimals({
-        limit = 10,
-        offset = 0,
-    }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
+    async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         this.logger.debug(`GetAnimals: limit=${limit}, offset=${offset}`)
 
         const cachedData = await this.cacheManager.get<Array<AnimalEntity>>(REDIS_KEY.ANIMALS)

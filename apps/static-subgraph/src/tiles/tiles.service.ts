@@ -13,13 +13,10 @@ export class TilesService {
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,
+        private cacheManager: Cache
     ) {}
 
-    async getTiles({
-        limit = 10,
-        offset = 0,
-    }: GetTilesArgs): Promise<Array<TileEntity>> {
+    async getTiles({ limit = 10, offset = 0 }: GetTilesArgs): Promise<Array<TileEntity>> {
         this.logger.debug(`GetTiles: limit=${limit}, offset=${offset}`)
 
         const cachedData = await this.cacheManager.get<Array<TileEntity>>(REDIS_KEY.TILES)

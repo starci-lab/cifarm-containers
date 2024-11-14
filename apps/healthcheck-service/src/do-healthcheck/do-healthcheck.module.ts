@@ -5,11 +5,9 @@ import { HealthcheckEntity } from "@src/database"
 
 @Global()
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([HealthcheckEntity])
-    ],
+    imports: [TypeOrmModule.forFeature([HealthcheckEntity])],
     controllers: [],
     providers: [DoHealthcheckService],
-    exports: [DoHealthcheckService],
+    exports: [DoHealthcheckService]
 })
 export class DoHealthcheckModule {}

@@ -6,6 +6,6 @@ import { CropsService } from "./crops.service"
 
 @Module({
     imports: [TypeOrmModule.forFeature([AnimalEntity, MarketPricingEntity, CropEntity])],
-    providers: [CropsService, CropsResolver],
+    providers: [CropsService, CropsResolver]
 })
 export class CropsModule {}

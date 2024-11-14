@@ -7,8 +7,8 @@ import { GameplayController } from "./gameplay.controller"
 
 @Module({
     imports: [
-        ClientsModule.registerAsync(
-            [{
+        ClientsModule.registerAsync([
+            {
                 name: healthcheckGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
@@ -16,8 +16,9 @@ import { GameplayController } from "./gameplay.controller"
                         url: "0.0.0.0:3002",
                         package: healthcheckGrpcConstants.PACKAGE,
                         protoPath: healthcheckGrpcConstants.PROTO_PATH
-                    },
-                })},
+                    }
+                })
+            },
             {
                 name: shopGrpcConstants.NAME,
                 useFactory: async () => ({
@@ -26,12 +27,12 @@ import { GameplayController } from "./gameplay.controller"
                         url: `${envConfig().containers.shopService.host}:${envConfig().containers.shopService.port}`,
                         package: shopGrpcConstants.PACKAGE,
                         protoPath: shopGrpcConstants.PROTO_PATH
-                    },
-                })}
-            ]
-        ),
+                    }
+                })
+            }
+        ])
     ],
     controllers: [GameplayController],
-    providers: [],
+    providers: []
 })
 export class GameplayModule {}

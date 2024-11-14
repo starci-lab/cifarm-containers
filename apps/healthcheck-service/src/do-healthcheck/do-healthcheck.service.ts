@@ -7,14 +7,12 @@ import { HealthcheckEntity } from "@src/database"
 export class DoHealthcheckService {
     private readonly logger = new Logger(DoHealthcheckService.name)
 
-    constructor(
-        private readonly dataSource: DataSource
-    ) {}
+    constructor(private readonly dataSource: DataSource) {}
 
     public async doHealthcheck(): Promise<DoHealthcheckResponse> {
         await this.dataSource.manager.save(HealthcheckEntity, {})
         return {
-            message: "ok",
+            message: "ok"
         }
     }
 }

@@ -13,13 +13,10 @@ export class SuppliesService {
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,
+        private cacheManager: Cache
     ) {}
 
-    async getSupplies({
-        limit = 10,
-        offset = 0,
-    }: GetSuppliesArgs): Promise<Array<SupplyEntity>> {
+    async getSupplies({ limit = 10, offset = 0 }: GetSuppliesArgs): Promise<Array<SupplyEntity>> {
         this.logger.debug(`GetSupplies: limit=${limit}, offset=${offset}`)
 
         const cachedData = await this.cacheManager.get<Array<SupplyEntity>>(REDIS_KEY.SUPPLIES)

@@ -16,18 +16,18 @@ export class UpdateGoldWalletService {
     }
 
     public async addGold(userId: string, goldAmount: number): Promise<{ message: string }> {
-        if(goldAmount < 0) throw new RpcException("Gold amount must be positive")
+        if (goldAmount < 0) throw new RpcException("Gold amount must be positive")
         const user = await this.findUserById(userId)
-        if(!user) throw new NotFoundException("User not found")
+        if (!user) throw new NotFoundException("User not found")
         user.golds += goldAmount
         await this.dataSource.manager.save(user)
         return { message: "Gold added successfully" }
     }
 
     public async subtractGold(userId: string, goldAmount: number): Promise<{ message: string }> {
-        if(goldAmount < 0) throw new RpcException("Gold amount must be positive")
+        if (goldAmount < 0) throw new RpcException("Gold amount must be positive")
         const user = await this.findUserById(userId)
-        if(!user) throw new NotFoundException("User not found")
+        if (!user) throw new NotFoundException("User not found")
         if (user.golds < goldAmount) throw new RpcException("Insufficient gold balance")
         user.golds -= goldAmount
         await this.dataSource.manager.save(user)

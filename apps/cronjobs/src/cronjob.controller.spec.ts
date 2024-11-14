@@ -8,14 +8,14 @@ describe("CronjobController", () => {
     beforeEach(async () => {
         const app: TestingModule = await Test.createTestingModule({
             controllers: [CronjobController],
-            providers: [CronjobService],
+            providers: [CronjobService]
         }).compile()
 
         cronjobController = app.get<CronjobController>(CronjobController)
     })
 
     describe("root", () => {
-        it("should return \"Hello World!\"", () => {
+        it('should return "Hello World!"', () => {
             expect(cronjobController.getHello()).toBe("Hello World!")
         })
     })

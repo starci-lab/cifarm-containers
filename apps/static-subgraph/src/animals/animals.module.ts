@@ -6,6 +6,6 @@ import { AnimalsService } from "./animals.service"
 
 @Module({
     imports: [TypeOrmModule.forFeature([AnimalEntity, MarketPricingEntity, CropEntity])],
-    providers: [AnimalsService, AnimalsResolver],
+    providers: [AnimalsService, AnimalsResolver]
 })
 export class AnimalsModule {}

@@ -13,13 +13,10 @@ export class SpinsService {
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,
+        private cacheManager: Cache
     ) {}
 
-    async getSpins({
-        limit = 10,
-        offset = 0,
-    }: GetSpinsArgs): Promise<Array<SpinEntity>> {
+    async getSpins({ limit = 10, offset = 0 }: GetSpinsArgs): Promise<Array<SpinEntity>> {
         this.logger.debug(`GetSpins: limit=${limit}, offset=${offset}`)
 
         const cachedData = await this.cacheManager.get<Array<SpinEntity>>(REDIS_KEY.SPINS)

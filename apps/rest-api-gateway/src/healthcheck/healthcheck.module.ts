@@ -5,8 +5,8 @@ import { HealthcheckController } from "./healthcheck.controller"
 
 @Module({
     imports: [
-        ClientsModule.registerAsync(
-            [{
+        ClientsModule.registerAsync([
+            {
                 name: healthcheckGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
@@ -14,12 +14,12 @@ import { HealthcheckController } from "./healthcheck.controller"
                         url: "0.0.0.0:3002",
                         package: healthcheckGrpcConstants.PACKAGE,
                         protoPath: healthcheckGrpcConstants.PROTO_PATH
-                    },
-                })}
-            ]
-        ),
+                    }
+                })
+            }
+        ])
     ],
     controllers: [HealthcheckController],
-    providers: [],
+    providers: []
 })
 export class HealthcheckModule {}

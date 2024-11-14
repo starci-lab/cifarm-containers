@@ -6,7 +6,7 @@ import {
     Inject,
     Logger,
     OnModuleInit,
-    Post,
+    Post
 } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
 import { IAuthService } from "./auth.service"
@@ -18,7 +18,7 @@ import {
     GenerateTestSignatureResponse,
     RequestMessageResponse,
     VerifySignatureRequest,
-    VerifySignatureResponse,
+    VerifySignatureResponse
 } from "@apps/auth-service"
 
 @ApiTags("Auth")
@@ -30,37 +30,35 @@ export class AuthController implements OnModuleInit {
 
     private authService: IAuthService
     onModuleInit() {
-        this.authService = this.client.getService<IAuthService>(
-            authGrpcConstants.SERVICE,
-        )
+        this.authService = this.client.getService<IAuthService>(authGrpcConstants.SERVICE)
     }
 
-  @HttpCode(HttpStatus.OK)
-  @ApiResponse({ type: RequestMessageResponse })
-  @Post("message")
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({ type: RequestMessageResponse })
+    @Post("message")
     public async requestMessage(): Promise<RequestMessageResponse> {
         return await lastValueFrom(this.authService.requestMessage({}))
     }
 
-  @HttpCode(HttpStatus.OK)
-  @ApiResponse({
-      type: GenerateTestSignatureResponse,
-  })
-  @Post("test-signature")
-  public async generateTestSignature(
-    @Body() request: GenerateTestSignatureRequest,
-  ): Promise<GenerateTestSignatureResponse> {
-      return await lastValueFrom(this.authService.generateTestSignature(request))
-  }
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: GenerateTestSignatureResponse
+    })
+    @Post("test-signature")
+    public async generateTestSignature(
+        @Body() request: GenerateTestSignatureRequest
+    ): Promise<GenerateTestSignatureResponse> {
+        return await lastValueFrom(this.authService.generateTestSignature(request))
+    }
 
-  @HttpCode(HttpStatus.OK)
-  @ApiResponse({
-      type: VerifySignatureResponse,
-  })
-  @Post("verify-signature")
-  public async verifySignature(
-    @Body() request: VerifySignatureRequest,
-  ): Promise<VerifySignatureResponse> {
-      return await lastValueFrom(this.authService.verifySignature(request))
-  }
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: VerifySignatureResponse
+    })
+    @Post("verify-signature")
+    public async verifySignature(
+        @Body() request: VerifySignatureRequest
+    ): Promise<VerifySignatureResponse> {
+        return await lastValueFrom(this.authService.verifySignature(request))
+    }
 }
