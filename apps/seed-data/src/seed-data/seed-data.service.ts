@@ -42,10 +42,10 @@ export class SeedDataService implements OnModuleInit {
     ) {}
 
     async onModuleInit() {
-        await this.clearPostgresData()
-        await this.clearRedisCacheData()
-        await this.seedData()
-        await this.saveDataToRedis()
+        // await this.clearPostgresData()
+        // await this.clearRedisCacheData()
+        // await this.seedData()
+        // await this.saveDataToRedis()
     }
 
     private async clearRedisCacheData() {
@@ -102,22 +102,32 @@ export class SeedDataService implements OnModuleInit {
             throw error
         }
     }
-
     private async clearPostgresData() {
-        this.logger.log("Clearing old data started")
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
+        this.logger.log("Clearing old data started");
+        const queryRunner: QueryRunner = this.dataSource.createQueryRunner();
+        await queryRunner.connect();
+    
         try {
             await queryRunner.startTransaction()
-
-            await queryRunner.manager
-                .createQueryBuilder()
-                .delete()
-                .from(ProductEntity)
-                .execute()
-
-            // Delete all data concurrently
+    
+            // Fetch and drop all foreign key constraints
+            const foreignKeys = await queryRunner.query(`
+                SELECT 
+                    tc.constraint_name, 
+                    tc.table_name 
+                FROM 
+                    information_schema.table_constraints AS tc 
+                WHERE 
+                    tc.constraint_type = 'FOREIGN KEY';
+            `)
+    
+            for (const key of foreignKeys) {
+                await queryRunner.query(`ALTER TABLE "${key.table_name}" DROP CONSTRAINT "${key.constraint_name}";`)
+            }
+    
+            // Now delete data from all tables in the appropriate order
+            await queryRunner.manager.createQueryBuilder().delete().from(ProductEntity).execute()
+    
             await Promise.all([
                 queryRunner.manager.delete(AnimalEntity, {}),
                 queryRunner.manager.delete(CropEntity, {}),
@@ -130,7 +140,7 @@ export class SeedDataService implements OnModuleInit {
                 queryRunner.manager.delete(DailyRewardEntity, {}),
                 queryRunner.manager.delete(SpinEntity, {}),
             ])
-
+    
             await queryRunner.commitTransaction()
             this.logger.log("Clearing old data finished")
         } catch (error) {
@@ -140,6 +150,7 @@ export class SeedDataService implements OnModuleInit {
             await queryRunner.release()
         }
     }
+    
 
     private async seedData() {
         this.logger.log("Seeding data started")
@@ -150,14 +161,14 @@ export class SeedDataService implements OnModuleInit {
             await queryRunner.startTransaction()
 
             await Promise.all([
-                this.seedAnimalData(queryRunner),
-                this.seedCropData(queryRunner),
-                this.seedBuildingData(queryRunner),
-                this.seedToolData(queryRunner),
-                this.seedTileData(queryRunner),
-                this.seedSupplyData(queryRunner),
-                this.seedDailyRewardData(queryRunner),
-                this.seedSpinData(queryRunner)
+                // this.seedAnimalData(queryRunner),
+                // this.seedCropData(queryRunner),
+                // this.seedBuildingData(queryRunner),
+                // this.seedToolData(queryRunner),
+                // this.seedTileData(queryRunner),
+                // this.seedSupplyData(queryRunner),
+                // this.seedDailyRewardData(queryRunner),
+                // this.seedSpinData(queryRunner)
             ])
             // await this.seedProducts(queryRunner)
 
@@ -424,12 +435,8 @@ export class SeedDataService implements OnModuleInit {
             },
         ]
     
-        // Use cascade saving for buildings and related upgrades
         await queryRunner.manager.save(BuildingEntity, data)
     }
-    
-    
-
     private async seedToolData(queryRunner: QueryRunner) {
         const data : Array<DeepPartial<ToolEntity>> = [
             { id: ToolKey.Scythe, availableIn: AvailableInType.Home, index: 0 },
@@ -440,7 +447,6 @@ export class SeedDataService implements OnModuleInit {
         ]
         await queryRunner.manager.save(ToolEntity, data)
     }
-
     private async seedTileData(queryRunner: QueryRunner) {
         const data:Array<DeepPartial<TileEntity>> = [
             {
@@ -482,7 +488,6 @@ export class SeedDataService implements OnModuleInit {
 
         queryRunner.manager.save(TileEntity, data)
     }
-
     private async seedSupplyData(queryRunner: QueryRunner) {
         const data : Array<DeepPartial<SupplyEntity>> = [
             {
@@ -505,46 +510,46 @@ export class SeedDataService implements OnModuleInit {
         await queryRunner.manager.save(SupplyEntity, data)
     }
     private async seedDailyRewardData(queryRunner: QueryRunner) {
-        // const data: Array<DeepPartial<DailyRewardEntity>> = [
-        //     {
-        //         id: DailyRewardKey.Day1,
-        //         amount: 100,
-        //         day: 1,
-        //         isLastDay: false,
-        //     },
-        //     {
-        //         id: DailyRewardKey.Day2,
-        //         amount: 200,
-        //         day: 2,
-        //         isLastDay: false,
-        //     },
-        //     {
-        //         id: DailyRewardKey.Day3,
-        //         amount: 300,
-        //         day: 3,
-        //         isLastDay: false,
-        //     },
-        //     {
-        //         id: DailyRewardKey.Day4,
-        //         amount: 600,
-        //         day: 4,
-        //         isLastDay: false,
-        //     },
-        //     {
-        //         id: DailyRewardKey.Day5,
-        //         day: 5,
-        //         isLastDay: true,
-        //         dailyRewardPossibilities: [
-        //             { goldAmount: 1000, thresholdMin: 0, thresholdMax: 0.8, dailyReward: { id: DailyRewardKey.Day5 } },
-        //             { goldAmount: 1500, thresholdMin: 0.8, thresholdMax: 0.9, dailyReward: { id: DailyRewardKey.Day5 } },
-        //             { goldAmount: 2000, thresholdMin: 0.9, thresholdMax: 0.95, dailyReward: { id: DailyRewardKey.Day5 } },
-        //             { tokenAmount: 3, thresholdMin: 0.95, thresholdMax: 0.99, dailyReward: { id: DailyRewardKey.Day5 } },
-        //             { tokenAmount: 10, thresholdMin: 0.99, thresholdMax: 1, dailyReward: { id: DailyRewardKey.Day5 } },
-        //         ],
-        //     },
-        // ]
+        const data: Array<DeepPartial<DailyRewardEntity>> = [
+            {
+                id: DailyRewardKey.Day1,
+                amount: 100,
+                day: 1,
+                isLastDay: false,
+            },
+            {
+                id: DailyRewardKey.Day2,
+                amount: 200,
+                day: 2,
+                isLastDay: false,
+            },
+            {
+                id: DailyRewardKey.Day3,
+                amount: 300,
+                day: 3,
+                isLastDay: false,
+            },
+            {
+                id: DailyRewardKey.Day4,
+                amount: 600,
+                day: 4,
+                isLastDay: false,
+            },
+            {
+                id: DailyRewardKey.Day5,
+                day: 5,
+                isLastDay: true,
+                dailyRewardPossibilities: [
+                    { goldAmount: 1000, thresholdMin: 0, thresholdMax: 0.8, dailyReward: { id: DailyRewardKey.Day5 } },
+                    { goldAmount: 1500, thresholdMin: 0.8, thresholdMax: 0.9, dailyReward: { id: DailyRewardKey.Day5 } },
+                    { goldAmount: 2000, thresholdMin: 0.9, thresholdMax: 0.95, dailyReward: { id: DailyRewardKey.Day5 } },
+                    { tokenAmount: 3, thresholdMin: 0.95, thresholdMax: 0.99, dailyReward: { id: DailyRewardKey.Day5 } },
+                    { tokenAmount: 10, thresholdMin: 0.99, thresholdMax: 1, dailyReward: { id: DailyRewardKey.Day5 } },
+                ],
+            },
+        ]
     
-        // await queryRunner.manager.save(DailyRewardEntity, data)
+        await queryRunner.manager.save(DailyRewardEntity, data)
         
     }
     private async seedSpinData(queryRunner: QueryRunner) {

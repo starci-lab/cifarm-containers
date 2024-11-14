@@ -8,7 +8,8 @@ import { UpgradeKey } from "./enums-key"
 @Entity("upgrades")
 export class UpgradeEntity extends ReadableAbstractEntity {
     @Field(() => UpgradeKey)
-    @PrimaryColumn({type: "enum", enum: UpgradeKey })
+    // @PrimaryColumn({name: "id", type: "enum", enum: UpgradeKey})
+    @PrimaryColumn({ name: "id", type: "varchar" })
         id: UpgradeKey
 
     @Field(() => Int)
@@ -19,7 +20,9 @@ export class UpgradeEntity extends ReadableAbstractEntity {
     @Column({ name: "capacity", type: "int" })
         capacity: number
 
-    @ManyToOne(() => BuildingEntity, (building) => building.upgrades, { onDelete: "CASCADE" })
-    @JoinColumn()
+    @Field(() => BuildingEntity)
+    @ManyToOne(() => BuildingEntity, (building: BuildingEntity) => building.upgrades)
+    @JoinColumn({ name: "building_id", referencedColumnName: "id" })
         building: BuildingEntity
 }
+    

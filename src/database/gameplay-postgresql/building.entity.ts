@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from "typeorm"
-import { AbstractEntity, ReadableAbstractEntity } from "./abstract"
+import { ReadableAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
 import { BuildingKey } from "./enums-key"
 import { UpgradeEntity } from "./upgrade.entity"
@@ -9,7 +9,8 @@ import { UpgradeEntity } from "./upgrade.entity"
 @Entity("buildings")
 export class BuildingEntity extends ReadableAbstractEntity {
     @Field(() => BuildingKey)
-    @PrimaryColumn({type: "enum", enum: BuildingKey })
+    // @PrimaryColumn({name:"id", type: "enum", enum: BuildingKey})
+    @PrimaryColumn({ name: "id", type: "varchar" })
         id: BuildingKey
 
     @Field(() => Boolean)
@@ -28,7 +29,7 @@ export class BuildingEntity extends ReadableAbstractEntity {
     @Column({ name: "price", type: "int", nullable: true })
         price?: number
 
-        @Field(() => [UpgradeEntity], { nullable: true })
-        @OneToMany(() => UpgradeEntity, (upgrade) => upgrade.building, { cascade: ["insert", "update"] })
-            upgrades?: Array<UpgradeEntity>
+    @Field(() => [UpgradeEntity], { nullable: true })
+    @OneToMany(() => UpgradeEntity, (upgrade: UpgradeEntity) => upgrade.building, { cascade: ["insert", "update"], eager: true })
+        upgrades?:  Array<UpgradeEntity>
 }
