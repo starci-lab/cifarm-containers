@@ -21,6 +21,9 @@ jobs:
         helm template wallet-service cifarm/wallet-service > \
           ./manifest.yaml
 
+    - name: Create namespace
+      run: kubectl create namespace wallet-service 2>/dev/null || echo "Namespace 'wallet-service' already exist
+
     - name: Apply Kaniko Build
       run: |
         kubectl apply -f ./manifest.yaml -l mode=build
