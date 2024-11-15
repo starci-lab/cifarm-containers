@@ -5,7 +5,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
 import { AppController } from "./app.controller"
-import { UpdateGoldWalletModule } from "./update-gold-wallet"
+import { UpdateGoldWalletModule } from "./gold-wallet"
 import { APP_FILTER } from "@nestjs/core"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 

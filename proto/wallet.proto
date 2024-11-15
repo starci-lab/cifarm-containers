@@ -1,0 +1,55 @@
+syntax = "proto3";
+
+package wallet;
+
+// Request message for getting the user's gold balance
+message GoldBalanceRequest {
+    string user_id = 1; // The ID of the user
+}
+
+// Request message for adding or subtracting gold
+message GoldRequest {
+    string user_id = 1;       // The ID of the user
+    int64 gold_amount = 2;    // The amount of gold to add or subtract
+}
+
+// Response message for balance-related requests
+message GoldBalanceResponse {
+    int64 golds = 1;          // The user's gold balance
+}
+
+// Response message for add/subtract gold operations
+message GoldUpdateResponse {
+    string message = 1;       // Operation result message
+}
+
+// Request message for getting token balance
+message TokenBalanceRequest {
+    string user_id = 1; // The ID of the user
+}
+
+// Request message for adding or subtracting tokens
+message TokenRequest {
+    string user_id = 1;       // The ID of the user
+    double token_amount = 2;  // The amount of tokens to add or subtract
+}
+
+// Response message for balance-related requests
+message TokenBalanceResponse {
+    double tokens = 1;        // The user's token balance
+}
+
+// Response message for add/subtract token operations
+message TokenUpdateResponse {
+    string message = 1;       // Operation result message
+}
+
+// WalletService definition
+service WalletService {
+    rpc GetGoldBalance (GoldBalanceRequest) returns (GoldBalanceResponse);
+    rpc AddGold (GoldRequest) returns (GoldUpdateResponse);
+    rpc SubtractGold (GoldRequest) returns (GoldUpdateResponse);
+    rpc GetTokenBalance (TokenBalanceRequest) returns (TokenBalanceResponse);
+    rpc AddToken (TokenRequest) returns (TokenUpdateResponse);
+    rpc SubtractToken (TokenRequest) returns (TokenUpdateResponse);
+}

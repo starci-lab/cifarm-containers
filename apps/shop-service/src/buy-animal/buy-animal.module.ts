@@ -3,7 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { BuyAnimalService } from "./buy-animal.service"
 import { AnimalEntity, InventoryEntity, ProductEntity, UserEntity } from "@src/database"
 import { ClientsModule, Transport } from "@nestjs/microservices"
-import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
+import { goldWalletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { envConfig } from "@src/config"
 
 @Global()

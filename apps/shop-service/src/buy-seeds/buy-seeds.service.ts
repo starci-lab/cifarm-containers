@@ -1,10 +1,10 @@
-import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
+import { goldWalletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
 import { REDIS_KEY } from "@src/constants"
 import { CropEntity, InventoryEntity, InventoryType } from "@src/database"
-import { IGoldWalletService } from "@src/services/wallet"
+import { IGoldWalletService } from "@src/containers/wallet-service"
 import { Cache } from "cache-manager"
 import {
     GrpcAbortedException,

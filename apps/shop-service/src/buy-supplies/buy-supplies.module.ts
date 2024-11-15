@@ -6,7 +6,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { InventoryEntity, ProductEntity, SupplyEntity, UserEntity } from "@src/database"
 import { BuySuppliesService } from "./buy-supplies.service"
-import { goldWalletGrpcConstants } from "@apps/gold-wallet-service/src/constants"
+import { goldWalletGrpcConstants } from "@apps/wallet-service/src/constants"
 
 @Global()
 @Module({

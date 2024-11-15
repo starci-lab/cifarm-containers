@@ -431,9 +431,21 @@ export class SeedDataService implements OnModuleInit {
                 maxUpgrade: 2,
                 price: 2000,
                 upgrades: [
-                    { id: UpgradeKey.Coop_Upgrade1, upgradePrice: 0, capacity: 3 },
-                    { id: UpgradeKey.Coop_Upgrade2, upgradePrice: 1000, capacity: 5 },
-                    { id: UpgradeKey.Coop_Upgrade3, upgradePrice: 2000, capacity: 10 }
+                    {
+                        id: UpgradeKey.Coop_Upgrade1,
+                        upgradePrice: 0,
+                        capacity: 3
+                    },
+                    {
+                        id: UpgradeKey.Coop_Upgrade2,
+                        upgradePrice: 1000,
+                        capacity: 5
+                    },
+                    {
+                        id: UpgradeKey.Coop_Upgrade3,
+                        upgradePrice: 2000,
+                        capacity: 10
+                    }
                 ]
             },
             {
@@ -443,9 +455,21 @@ export class SeedDataService implements OnModuleInit {
                 maxUpgrade: 2,
                 price: 3000,
                 upgrades: [
-                    { id: UpgradeKey.Pasture_Upgrade1, upgradePrice: 0, capacity: 3 },
-                    { id: UpgradeKey.Pasture_Upgrade2, upgradePrice: 1000, capacity: 5 },
-                    { id: UpgradeKey.Pasture_Upgrade3, upgradePrice: 2000, capacity: 10 }
+                    {
+                        id: UpgradeKey.Pasture_Upgrade1,
+                        upgradePrice: 0,
+                        capacity: 3
+                    },
+                    {
+                        id: UpgradeKey.Pasture_Upgrade2,
+                        upgradePrice: 1000,
+                        capacity: 5
+                    },
+                    {
+                        id: UpgradeKey.Pasture_Upgrade3,
+                        upgradePrice: 2000,
+                        capacity: 10
+                    }
                 ]
             },
             {
