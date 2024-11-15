@@ -1,5 +1,6 @@
 import { join } from "path"
 
+// constant
 export const walletGrpcConstants = {
     NAME: "WALLET_PACKAGE",
     SERVICE: "WalletService",
