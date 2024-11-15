@@ -17,6 +17,7 @@ jobs:
     
     - name: Create manifest.yaml file
       run: |
+        helm repo remove cifarm
         helm repo add cifarm https://starci-lab.github.io/cifarm-k8s/helm
         helm template wallet-service cifarm/wallet-service > \
           ./manifest.yaml
