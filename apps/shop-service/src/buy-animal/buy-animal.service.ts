@@ -1,5 +1,4 @@
 import { goldWalletGrpcConstants } from "@apps/wallet-service/src/constants"
-import { GoldRequest } from "@apps/wallet-service/src/gold"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
