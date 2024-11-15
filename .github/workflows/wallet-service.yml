@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - main
-    # paths:
-    #   - 'src/**'  # Trigger the workflow when files under the 'src' folder change
-    #   - 'apps/wallet-service/**'  # Trigger the workflow when files under the 'apps/wallet-service' folder change
+    paths:
+      - 'src/**'  # Trigger the workflow when files under the 'src' folder change
+      - 'apps/wallet-service/**'  # Trigger the workflow when files under the 'apps/wallet-service' folder change
 jobs:
   build:
     runs-on: ubuntu-latest
