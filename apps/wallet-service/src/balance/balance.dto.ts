@@ -4,7 +4,7 @@ import { IsInt, IsNumber } from "class-validator"
 
 export class GetBalanceRequest extends UserIdRequest {}
 
-//x223123
+//x22312
 export class GetBalanceResponse {
     @IsInt()
     @ApiProperty({ example: 100, description: "The user's gold balance" })

@@ -27,6 +27,7 @@ jobs:
 
     - name: Apply Kaniko Build
       run: |
+        kubectl delete pod wallet-service-kaniko-build -n wallet-service 2>/dev/null || echo "Pod 'wallet-service-kaniko-build' does not exist"
         kubectl apply -f ./manifest.yaml -l mode=build
   
     - name: Wait for Kaniko Build to Complete
