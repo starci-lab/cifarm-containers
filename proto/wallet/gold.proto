@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package gold;
+
+// Request message for getting the user's gold balance
+message GetGoldBalanceRequest {
+    string user_id = 1; // The unique ID of the user
+}
+
+// Response message for retrieving the user's gold balance
+message GetGoldBalanceResponse {
+    int32 golds = 1; // The user's current gold balance
+}
+
+// Request message for adding gold to a user's account
+message AddGoldRequest {
+    string user_id = 1;       // The unique ID of the user
+    int32 golds = 2;    // The amount of gold to add
+}
+
+// Response message for adding gold to a user's account
+message AddGoldResponse {
+}
+
+// Request message for subtracting gold from a user's account
+message SubtractGoldRequest {
+    string user_id = 1;       // The unique ID of the user
+    int32 golds = 2;    // The amount of gold to subtract
+}
+
+// Response message for subtracting gold from a user's account
+message SubtractGoldResponse {
+}

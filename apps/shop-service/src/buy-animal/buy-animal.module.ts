@@ -3,7 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { BuyAnimalService } from "./buy-animal.service"
 import { AnimalEntity, InventoryEntity, ProductEntity, UserEntity } from "@src/database"
 import { ClientsModule, Transport } from "@nestjs/microservices"
-import { goldWalletGrpcConstants } from "@apps/wallet-service/src/constants"
+import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { envConfig } from "@src/config"
 
 @Global()
@@ -12,13 +12,13 @@ import { envConfig } from "@src/config"
         TypeOrmModule.forFeature([UserEntity, InventoryEntity, ProductEntity, AnimalEntity]),
         ClientsModule.registerAsync([
             {
-                name: goldWalletGrpcConstants.NAME,
+                name: walletGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
-                        url: `${envConfig().containers.goldWalletService.host}:${envConfig().containers.goldWalletService.port}`,
-                        package: goldWalletGrpcConstants.PACKAGE,
-                        protoPath: goldWalletGrpcConstants.PROTO_PATH
+                        url: `${envConfig().containers.walletService.host}:${envConfig().containers.walletService.port}`,
+                        package: walletGrpcConstants.PACKAGE,
+                        protoPath: walletGrpcConstants.PROTO_PATH
                     }
                 })
             }

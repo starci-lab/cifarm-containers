@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package wallet;
+
+import "google/protobuf/empty.proto";
+
+import "gold.proto";
+import "token.proto";
+
+service WalletService {
+    rpc GetBalance (GetBalanceRequest) returns (GetBalanceResponse);
+
+    rpc GetGoldBalance (gold.GetGoldBalanceRequest) returns (gold.GetGoldBalanceResponse);
+    rpc AddGold (gold.AddGoldRequest) returns (google.protobuf.Empty);
+    rpc SubtractGold (gold.SubtractGoldRequest) returns (google.protobuf.Empty);
+
+    rpc GetTokenBalance (token.GetTokenBalanceRequest) returns (token.GetTokenBalanceResponse);
+    rpc AddToken (token.AddTokenRequest) returns (token.AddTokenResponse);
+    rpc SubtractToken (token.SubtractTokenRequest) returns (google.protobuf.Empty);
+}
+
+// Combined balance request and response
+message GetBalanceRequest {
+    string user_id = 1; // The ID of the user
+}
+
+message GetBalanceResponse {
+    int32 golds = 1; 
+    double tokens = 2;
+}

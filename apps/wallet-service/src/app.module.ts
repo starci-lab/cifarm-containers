@@ -1,13 +1,15 @@
 import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
+import { APP_FILTER } from "@nestjs/core"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
-import { AppController } from "./app.controller"
-import { UpdateGoldWalletModule } from "./gold-wallet"
-import { APP_FILTER } from "@nestjs/core"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
+import { AppController } from "./app.controller"
+import { BalanceModule } from "./balance"
+import { GoldModule } from "./gold"
+import { TokenModule } from "./token"
 
 @Module({
     imports: [
@@ -42,7 +44,9 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
                 }
             }
         }),
-        UpdateGoldWalletModule
+        GoldModule,
+        TokenModule,
+        BalanceModule
     ],
     controllers: [AppController],
     providers: [
