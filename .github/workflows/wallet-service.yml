@@ -22,7 +22,7 @@ jobs:
           ./manifest.yaml
 
     - name: Create namespace
-      run: kubectl create namespace wallet-service 2>/dev/null || echo "Namespace 'wallet-service' already exist
+      run: kubectl create namespace wallet-service 2>/dev/null || echo "Namespace 'wallet-service' already exist"
 
     - name: Apply Kaniko Build
       run: |
