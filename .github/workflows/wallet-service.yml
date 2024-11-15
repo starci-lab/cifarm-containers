@@ -8,8 +8,34 @@ on:
       - 'src/**'  # Trigger the workflow when files under the 'src' folder change
       - 'apps/wallet-service/**'  # Trigger the workflow when files under the 'apps/wallet-service' folder change
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  kaniko-build:
+    runs-on: self-hosted
+    environment: cifarm
     steps:
-      - name: Run a script or build
-        run: echo "Changes detected in the apps/wallet-service/"
+    - name: Checkout code
+      uses: actions/checkout@v2 
+    
+    - name: Create manifest.yaml file
+      run: |
+        helm repo add cifarm https://starci-lab.github.io/cifarm-k8s/helm
+        helm template wallet-service cifarm/wallet-service > \
+          ./manifest.yaml
+
+    - name: Apply Kaniko Build
+      run: |
+        kubectl apply -f ./manifest.yaml -l mode=build
+  
+    - name: Wait for Kaniko Build to Complete
+      run: |
+        kubectl wait --for=condition=complete pod/wallet-service-kaniko-build --timeout=20m
+      continue-on-error: false
+    
+    - name: Restart the Deployment
+      env:
+        POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+        POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
+        POSTGRES_NAKAMA_DATABASE: ${{ secrets.POSTGRES_NAKAMA_DATABASE }}
+
+      run: kubectl rollout restart deployment cifarm-server
