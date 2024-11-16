@@ -1,5 +1,5 @@
 import { NodeEnv, envConfig } from "@src/config"
-//
+
 export const getEnvValue = <ValueType = string>(values: {
     development?: ValueType
     production?: ValueType

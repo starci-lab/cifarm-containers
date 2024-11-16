@@ -10,7 +10,7 @@ on:
 jobs:
   deployment:
     concurrency:
-      group: "deployment"
+      group: "wallet-service-deployment"
       cancel-in-progress: true
     runs-on: self-hosted
     environment: cifarm

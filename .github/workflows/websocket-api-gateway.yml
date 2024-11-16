@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Wallet Service
+name: CI/CD Pipeline for Websocket API Gateway
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 jobs:
   deployment:
     concurrency:
-      group: "deployment"
+      group: "websocket-api-gateway-deployment"
       cancel-in-progress: true
     runs-on: self-hosted
     environment: cifarm
