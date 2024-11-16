@@ -46,12 +46,16 @@ jobs:
         --namespace build \
         --timeout=20m
       continue-on-error: false
-
+    - name: Create secret
+      run: |
+        kubectl delete secret generic wallet-service-env \
+        --namespace wallet-service \
+        --ignore-not-found
+        kubectl create secret generic wallet-service-env --namespace wallet-service \
+        --from-literal=GAMEPLAY_POSTGRES_DBNAME=${{ vars.GAMEPLAY_POSTGRES_DBNAME }} \
+        --from-literal=GAMEPLAY_POSTGRES_HOST=${{ vars.GAMEPLAY_POSTGRES_HOST }} \
+        --from-literal=GAMEPLAY_POSTGRES_PORT=${{ vars.GAMEPLAY_POSTGRES_PORT }} \
+        --from-literal=GAMEPLAY_POSTGRES_USER=${{ secrets.GAMEPLAY_POSTGRES_USER }} \
+        --from-literal=GAMEPLAY_POSTGRES_PASS=${{ secrets.GAMEPLAY_POSTGRES_PASS }}
     - name: Apply the Deployment
-      env:
-        GAMEPLAY_POSTGRES_DBNAME: ${{ vars.GAMEPLAY_POSTGRES_DBNAME }}
-        GAMEPLAY_POSTGRES_HOST: ${{ vars.GAMEPLAY_POSTGRES_HOST }}
-        GAMEPLAY_POSTGRES_PORT: ${{ vars.GAMEPLAY_POSTGRES_PORT }}
-        GAMEPLAY_POSTGRES_USER: ${{ secrets.GAMEPLAY_POSTGRES_USER }}
-        GAMEPLAY_POSTGRES_PASS: ${{ secrets.GAMEPLAY_POSTGRES_PASS }}
       run: kubectl apply -f ./manifest.yaml -l mode=deploy

@@ -46,10 +46,14 @@ jobs:
         --namespace build \
         --timeout=20m
       continue-on-error: false
-
+    - name: Create secret
+      run: |
+        kubectl delete secret generic websocket-api-gateway-env \
+        --namespace websocket-api-gateway \
+        --ignore-not-found
+        kubectl create secret generic websocket-api-gateway-env --namespace websocket-api-gateway \
+        --from-literal=WEBSOCKET_API_GATEWAY_PORT=${{ vars.WEBSOCKET_API_GATEWAY_PORT }} \
+        --from-literal=BROADCAST_SERVICE_HOST=${{ vars.BROADCAST_SERVICE_PORT }} \
+        --from-literal=BROADCAST_SERVICE_PORT=${{ vars.BROADCAST_SERVICE_HOST }}
     - name: Apply the Deployment
-      env:  
-        WEBSOCKET_API_GATEWAY_PORT: ${{ vars.WEBSOCKET_API_GATEWAY_PORT }}
-        BROADCAST_SERVICE_HOST: ${{ vars.BROADCAST_SERVICE_HOST }}
-        BROADCAST_SERVICE_PORT: ${{ vars.BROADCAST_SERVICE_PORT }}
       run: kubectl apply -f ./manifest.yaml -l mode=deploy
