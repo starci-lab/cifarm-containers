@@ -34,13 +34,16 @@ jobs:
       run: |
         kubectl wait --for=condition=complete pod/wallet-service-kaniko-build --timeout=20m
       continue-on-error: false
-    
-    - name: Restart the Deployment
+  apply:  
+    runs-on: self-hosted
+    environment: cifarm
+    steps:
+    - name: Apply the Deployment
       env:
-        POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-        POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
-        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        POSTGRES_USERNAME: ${{ secrets.POSTGRES_USERNAME }}
-        POSTGRES_NAKAMA_DATABASE: ${{ secrets.POSTGRES_NAKAMA_DATABASE }}
+        GAMEPLAY_POSTGRES_DBNAME: ${{ vars.GAMEPLAY_POSTGRES_DBNAME }}
+        GAMEPLAY_POSTGRES_HOST: ${{ vars.GAMEPLAY_POSTGRES_HOST }}
+        GAMEPLAY_POSTGRES_PORT: ${{ vars.GAMEPLAY_POSTGRES_PORT }}
+        GAMEPLAY_POSTGRES_USER: ${{ secrets.GAMEPLAY_POSTGRES_USER }}
+        GAMEPLAY_POSTGRES_PASS: ${{ secrets.GAMEPLAY_POSTGRES_PASS }}
 
-      run: kubectl rollout restart deployment cifarm-server
+      run: kubectl apply -f ./manifest.yaml -l mode=deploy
