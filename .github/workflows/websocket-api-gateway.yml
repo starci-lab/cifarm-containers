@@ -1,0 +1,46 @@
+name: CI/CD Pipeline for Wallet Service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'  # Trigger the workflow when files under the 'src' folder change
+      - 'apps/websocket-api-gateway/**'  # Trigger the workflow when files under the 'apps/websocket-api-gateway' folder change
+jobs:
+  deployment:
+    concurrency:
+      group: "deployment"
+      cancel-in-progress: true
+    runs-on: self-hosted
+    environment: cifarm
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2 
+    
+    - name: Create manifest.yaml file
+      run: |
+        helm repo remove cifarm
+        helm repo add cifarm https://starci-lab.github.io/cifarm-k8s/helm
+        helm template websocket-api-gateway cifarm/websocket-api-gateway > \
+          ./manifest.yaml
+
+    - name: Create namespace
+      run: kubectl create namespace websocket-api-gateway 2>/dev/null || echo "Namespace 'websocket-api-gateway' already exist"
+
+    - name: Apply Kaniko Build
+      run: |
+        kubectl delete pod websocket-api-gateway-kaniko-build --namespace build 2>/dev/null || echo "Pod 'websocket-api-gateway-kaniko-build' does not exist"
+        kubectl apply -f ./manifest.yaml -l mode=build
+  
+    - name: Wait for Kaniko Build to Complete
+      run: |
+        kubectl wait --for=condition=complete pod/websocket-api-gateway-kaniko-build --timeout=20m
+      continue-on-error: false
+
+    - name: Apply the Deployment
+      env:  
+        WEBSOCKET_API_GATEWAY_PORT: ${{ vars.WEBSOCKET_API_GATEWAY_PORT }}
+        BROADCAST_SERVICE_HOST: ${{ vars.BROADCAST_SERVICE_HOST }}
+        BROADCAST_SERVICE_PORT: ${{ vars.BROADCAST_SERVICE_PORT }}
+      run: kubectl apply -f ./manifest.yaml -l mode=deploy
