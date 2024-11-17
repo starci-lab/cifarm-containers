@@ -1,0 +1,61 @@
+name: CI/CD Pipeline for Auth Service
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'  # Trigger the workflow when files under the 'src' folder change
+      - 'apps/auth-service/**'  # Trigger the workflow when files under the 'apps/auth-service' folder change
+jobs:
+  deployment:
+    concurrency:
+      group: "auth-service-deployment"
+      cancel-in-progress: true
+    runs-on: self-hosted
+    environment: cifarm
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2 
+    
+    - name: Create manifest.yaml file
+      run: |
+        if ! helm repo list | grep -q "cifarm"; then
+          helm repo add cifarm https://starci-lab.github.io/cifarm-k8s/helm
+        else
+          helm repo update cifarm
+        fi
+        helm template auth-service cifarm/auth-service > \
+          ./manifest.yaml
+
+    - name: Create namespace
+      run: kubectl create namespace auth-service \
+           2>/dev/null || echo "Namespace 'auth-service' already exist"
+
+    - name: Apply Kaniko Build
+      run: |
+        kubectl delete pod auth-service-kaniko-build \
+        --namespace build \
+        2>/dev/null || echo "Pod 'auth-service-kaniko-build' does not exist"
+        kubectl apply -f ./manifest.yaml -l mode=build
+  
+    - name: Wait for Kaniko Build to Complete
+      run: |
+        kubectl wait pod/auth-service-kaniko-build \
+        --for jsonpath="status.containerStatuses[0].state.terminated.reason"=Completed \
+        --namespace build \
+        --timeout=20m
+      continue-on-error: false
+    - name: Create secret
+      run: |
+        kubectl delete secret generic auth-service-env \
+        --namespace auth-service \
+        --ignore-not-found
+        kubectl create secret generic auth-service-env --namespace auth-service \
+        --from-literal=GAMEPLAY_POSTGRES_DBNAME=${{ vars.GAMEPLAY_POSTGRES_DBNAME }} \
+        --from-literal=GAMEPLAY_POSTGRES_HOST=${{ vars.GAMEPLAY_POSTGRES_HOST }} \
+        --from-literal=GAMEPLAY_POSTGRES_PORT=${{ vars.GAMEPLAY_POSTGRES_PORT }} \
+        --from-literal=GAMEPLAY_POSTGRES_USER=${{ secrets.GAMEPLAY_POSTGRES_USER }} \
+        --from-literal=GAMEPLAY_POSTGRES_PASS=${{ secrets.GAMEPLAY_POSTGRES_PASS }}
+    - name: Apply the Deployment
+      run: kubectl apply -f ./manifest.yaml -l mode=deploy
