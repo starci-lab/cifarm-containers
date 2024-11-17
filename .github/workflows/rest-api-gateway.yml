@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Websocket API Gateway
+name: CI/CD Pipeline for Rest API Gateway
 
 on:
   push:
@@ -6,11 +6,11 @@ on:
       - main
     paths:
       - 'src/**'  # Trigger the workflow when files under the 'src' folder change
-      - 'apps/websocket-api-gateway/**'  # Trigger the workflow when files under the 'apps/websocket-api-gateway' folder change
+      - 'apps/rest-api-gateway/**'  # Trigger the workflow when files under the 'apps/rest-api-gateway' folder change
 jobs:
   deployment:
     concurrency:
-      group: "websocket-api-gateway-deployment"
+      group: "rest-api-gateway-deployment"
       cancel-in-progress: true
     runs-on: self-hosted
     environment: cifarm
@@ -25,35 +25,34 @@ jobs:
         else
           helm repo update cifarm
         fi
-        helm template websocket-api-gateway cifarm/websocket-api-gateway > \
+        helm template rest-api-gateway cifarm/rest-api-gateway > \
           ./manifest.yaml
 
     - name: Create namespace
-      run: kubectl create namespace websocket-api-gateway \
-           2>/dev/null || echo "Namespace 'websocket-api-gateway' already exist"
+      run: kubectl create namespace rest-api-gateway \
+           2>/dev/null || echo "Namespace 'rest-api-gateway' already exist"
 
     - name: Apply Kaniko Build
       run: |
-        kubectl delete pod websocket-api-gateway-kaniko-build \
+        kubectl delete pod rest-api-gateway-kaniko-build \
         --namespace build \
-        2>/dev/null || echo "Pod 'websocket-api-gateway-kaniko-build' does not exist"
+        2>/dev/null || echo "Pod 'rest-api-gateway-kaniko-build' does not exist"
         kubectl apply -f ./manifest.yaml -l mode=build
   
     - name: Wait for Kaniko Build to Complete
       run: |
-        kubectl wait pod/websocket-api-gateway-kaniko-build \
+        kubectl wait pod/rest-api-gateway-kaniko-build \
         --for jsonpath="status.containerStatuses[0].state.terminated.reason"=Completed \
         --namespace build \
         --timeout=20m
       continue-on-error: false
     - name: Create secret
       run: |
-        kubectl delete secret generic websocket-api-gateway-env \
-        --namespace websocket-api-gateway \
+        kubectl delete secret generic rest-api-gateway-env \
+        --namespace rest-api-gateway \
         --ignore-not-found
-        kubectl create secret generic websocket-api-gateway-env --namespace websocket-api-gateway \
-        --from-literal=WEBSOCKET_API_GATEWAY_PORT=${{ vars.WEBSOCKET_API_GATEWAY_PORT }} \
-        --from-literal=BROADCAST_SERVICE_HOST=${{ vars.BROADCAST_SERVICE_HOST }} \
-        --from-literal=BROADCAST_SERVICE_PORT=${{ vars.BROADCAST_SERVICE_PORT }}
+        kubectl create secret generic rest-api-gateway-env --namespace rest-api-gateway \
+        --from-literal=REST_API_GATEWAY_PORT=${{ vars.REST_API_GATEWAY_PORT }} \
+        --from-literal=REST_API_GATEWAY_HOST=${{ vars.REST_API_GATEWAY_HOST }} \
     - name: Apply the Deployment
       run: kubectl apply -f ./manifest.yaml -l mode=deploy
