@@ -7,8 +7,6 @@ const mockHealthcheckService = {
     doHealthcheck: jest.fn().mockReturnValue(of({ status: "ok" }))
 }
 
-// test
-
 describe("RestApiGatewayController (e2e)", () => {
     let app: INestApplication
 
