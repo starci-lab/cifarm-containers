@@ -7,17 +7,25 @@ import {
     Inject,
     Logger,
     OnModuleInit,
-    Post
+    Post,
+    UseGuards
 } from "@nestjs/common"
 
 import { shopGrpcConstants } from "@apps/shop-service/src/constants"
 import { ClientGrpc } from "@nestjs/microservices"
-import { ApiResponse, ApiTags } from "@nestjs/swagger"
+import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { lastValueFrom } from "rxjs"
 import { IHealthcheckService } from "../healthcheck"
 import { IGameplayService } from "./gameplay.service"
-import { BuySeedsRequest, BuySeedsResponse } from "@apps/shop-service/src/buy-seeds"
+import {
+    BuySeedsControllerRequest,
+    BuySeedsRequest,
+    BuySeedsResponse
+} from "@apps/shop-service/src/buy-seeds"
 import { BuySuppliesRequest, BuySuppliesResponse } from "@apps/shop-service/src/buy-supplies"
+import { RestJwtAuthGuard } from "@src/guards"
+import { User } from "@src/decorators"
+import { UserLike } from "@src/services"
 
 @ApiTags("Gameplay")
 @Controller("gameplay")
@@ -41,19 +49,25 @@ export class GameplayController implements OnModuleInit {
         )
     }
 
-    // @ApiBearerAuth()
-    // @UseGuards(RestJwtAuthGuard)
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({ type: BuySeedsResponse })
     @Post("/buy-seeds")
     public async buySeeds(
-        // @User() user: UserLike,
-        @Body() request: BuySeedsRequest
+        @User() user: UserLike,
+        @Body() request: BuySeedsControllerRequest
     ): Promise<BuySeedsResponse> {
-        // this.logger.debug(`Processing buySeeds for user ${user.id}`)
-        // const buySeedRequest: BuySeedRequest = { ...request, userId: user.id }
-        const buySeedRequest: BuySeedsRequest = { ...request }
-        return await lastValueFrom(this.gameplayService.buySeeds(buySeedRequest))
+        this.logger.debug(`Processing buySeeds for user ${user?.id}`)
+
+        return {
+            inventoryKey: "1"
+        }
+        // return await lastValueFrom(this.gameplayService.buySeeds({
+        //     key: request.key,
+        //     quantity: request.quantity,
+        //     userId: user.id
+        // }))
     }
 
     // @ApiBearerAuth()

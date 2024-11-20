@@ -5,9 +5,7 @@ import { CropsService } from "./crops/crops.service"
 import { ScheduleModule } from "@nestjs/schedule"
 
 @Module({
-    imports: [
-        ScheduleModule.forRoot()
-    ],
+    imports: [ScheduleModule.forRoot()],
     controllers: [CronjobController],
     providers: [CropsService, CronjobService]
 })

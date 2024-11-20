@@ -4,7 +4,9 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { CropEntity, InventoryEntity, ProductEntity, UserEntity } from "@src/database"
 import { BuySeedsService } from "./buy-seeds.service"
-import { goldWalletGrpcConstants } from "@apps/wallet-service/src/constants"
+import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
+import { InventoryService } from "../inventory"
+import { BuySeedsController } from "./buy-seeds.controller"
 
 @Global()
 @Module({
@@ -12,19 +14,20 @@ import { goldWalletGrpcConstants } from "@apps/wallet-service/src/constants"
         TypeOrmModule.forFeature([UserEntity, InventoryEntity, CropEntity, ProductEntity]),
         ClientsModule.registerAsync([
             {
-                name: goldWalletGrpcConstants.NAME,
+                name: walletGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
-                        url: `${envConfig().containers.goldWalletService.host}:${envConfig().containers.goldWalletService.port}`,
-                        package: goldWalletGrpcConstants.PACKAGE,
-                        protoPath: goldWalletGrpcConstants.PROTO_PATH
+                        url: `${envConfig().containers.walletService.host}:${envConfig().containers.walletService.port}`,
+                        package: walletGrpcConstants.PACKAGE,
+                        protoPath: walletGrpcConstants.PROTO_PATH
                     }
                 })
             }
         ])
     ],
-    providers: [BuySeedsService],
-    exports: [BuySeedsService]
+    providers: [BuySeedsService, InventoryService],
+    exports: [BuySeedsService],
+    controllers: [BuySeedsController]
 })
 export class BuySeedsModule {}
