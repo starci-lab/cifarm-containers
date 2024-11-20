@@ -11,18 +11,7 @@ const bootstrap = async () => {
     // Register the global exception filter
     app.useGlobalFilters(new ExceptionFilter())
 
-    const config = new DocumentBuilder()
-        .setVersion("1.0")
-        .addBearerAuth(
-            {
-                type: "http",
-                scheme: "bearer",
-                bearerFormat: "JWT",
-                in: "header"
-            },
-            "access-token"
-        )
-        .build()
+    const config = new DocumentBuilder().setVersion("1.0").addBearerAuth().build()
     const document = SwaggerModule.createDocument(app, config)
     SwaggerModule.setup("/api", app, document, {
         swaggerOptions: {

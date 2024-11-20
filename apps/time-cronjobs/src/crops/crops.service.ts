@@ -5,8 +5,7 @@ import { CoreV1Api, KubeConfig } from "@kubernetes/client-node"
 @Injectable()
 export class CropsService {
     private readonly logger = new Logger(CropsService.name)
-    constructor() {
-    }
+    constructor() {}
 
     @Cron("*/1 * * * * *")
     async handleCron() {

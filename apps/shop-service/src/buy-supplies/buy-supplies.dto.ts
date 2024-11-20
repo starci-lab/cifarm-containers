@@ -1,6 +1,6 @@
 // buy-supplies.dto.ts
 
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty, OmitType } from "@nestjs/swagger"
 import { UserIdRequest } from "@src/types"
 import { IsString, IsInt, Min } from "class-validator"
 
@@ -25,3 +25,7 @@ export class BuySuppliesResponse {
     })
     inventoryKey: string
 }
+
+export class BuySuppliesControllerRequest extends OmitType(BuySuppliesRequest, [
+    "userId"
+] as const) {}

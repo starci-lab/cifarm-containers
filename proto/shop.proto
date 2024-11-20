@@ -32,8 +32,8 @@ message BuySuppliesResponse {
 // Request message for buying an animal
 message BuyAnimalRequest {
     string user_id = 1;                    // ID of the user making the purchase
-    string animal_key = 2;                 // Key of the animal being purchased
-    string placed_item_building_key = 3;   // Key of the building where the animal will be placed
+    string key = 2;                 // Key of the animal being purchased
+    string building_key = 3;   // Key of the building where the animal will be placed
     Position position = 4;                 // Position within the building to place the animal
 }
 
@@ -48,9 +48,22 @@ message BuyAnimalResponse {
     string placed_item_animal_key = 1;     // Key of the newly placed animal item
 }
 
+// Request message for constructing a building
+message ConstructBuildingRequest {
+    string user_id = 1;         // ID of the user making the request
+    string key = 2;             // Key of the building type
+    Position position = 3;      // Position to place the building
+}
+
+// Response message for constructing a building
+message ConstructBuildingResponse {
+    string placed_item_building_key = 1; // Key of the constructed building item
+}
+
 // Define the Shop service with methods for buying animals
 service ShopService {
     rpc BuySeeds(BuySeedsRequest) returns (BuySeedsResponse);
     rpc BuySupplies (BuySuppliesRequest) returns (BuySuppliesResponse);
-    rpc BuyAnimal(BuyAnimalRequest) returns (BuyAnimalResponse); // RPC method for buying an animal
+    rpc BuyAnimals(BuyAnimalRequest) returns (BuyAnimalResponse); // RPC method for buying an animal
+    rpc ConstructBuilding(ConstructBuildingRequest) returns (ConstructBuildingResponse);
 }

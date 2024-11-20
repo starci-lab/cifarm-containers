@@ -1,7 +1,13 @@
 import { Module, Global } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { BuyAnimalService } from "./buy-animal.service"
-import { AnimalEntity, InventoryEntity, ProductEntity, UserEntity } from "@src/database"
+import { BuyAnimalsService } from "./buy-animals.service"
+import {
+    AnimalEntity,
+    InventoryEntity,
+    PlacedItemEntity,
+    ProductEntity,
+    UserEntity
+} from "@src/database"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { envConfig } from "@src/config"
@@ -9,7 +15,13 @@ import { envConfig } from "@src/config"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity, InventoryEntity, ProductEntity, AnimalEntity]),
+        TypeOrmModule.forFeature([
+            UserEntity,
+            InventoryEntity,
+            ProductEntity,
+            AnimalEntity,
+            PlacedItemEntity
+        ]),
         ClientsModule.registerAsync([
             {
                 name: walletGrpcConstants.NAME,
@@ -24,7 +36,7 @@ import { envConfig } from "@src/config"
             }
         ])
     ],
-    providers: [BuyAnimalService],
-    exports: [BuyAnimalService]
+    providers: [BuyAnimalsService],
+    exports: [BuyAnimalsService]
 })
-export class BuyAnimalModule {}
+export class BuyAnimalsModule {}

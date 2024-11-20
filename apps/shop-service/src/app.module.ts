@@ -1,15 +1,17 @@
 import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
+import { APP_FILTER } from "@nestjs/core"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
+import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
-import { BuyAnimalModule } from "./buy-animal"
+import { BuyAnimalsModule } from "./buy-animals"
 import { BuySeedsModule } from "./buy-seeds"
 import { BuySuppliesModule } from "./buy-supplies"
-import { APP_FILTER } from "@nestjs/core"
-import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
+import { InventoryModule } from "./inventory"
+import { ConstructBuildingModule } from "./construct-building"
 
 @Module({
     imports: [
@@ -44,9 +46,11 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
                 }
             }
         }),
-        BuyAnimalModule,
+        BuyAnimalsModule,
+        BuySuppliesModule,
         BuySeedsModule,
-        BuySuppliesModule
+        InventoryModule,
+        ConstructBuildingModule
     ],
     controllers: [AppController],
     providers: [

@@ -1,19 +1,18 @@
-// buy-supplies.module.ts
-
-import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { Global, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import {
+    CropEntity,
     InventoryEntity,
     PlacedItemEntity,
     ProductEntity,
-    SupplyEntity,
     UserEntity
 } from "@src/database"
-import { BuySuppliesController } from "./buy-supplies.controller"
-import { BuySuppliesService } from "./buy-supplies.service"
+import { ConstructBuildingService } from "./construct-building.service"
+import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
+import { InventoryService } from "../inventory"
+import { ConstructBuildingController } from "./construct-building.controller"
 
 @Global()
 @Module({
@@ -21,7 +20,7 @@ import { BuySuppliesService } from "./buy-supplies.service"
         TypeOrmModule.forFeature([
             UserEntity,
             InventoryEntity,
-            SupplyEntity,
+            CropEntity,
             ProductEntity,
             PlacedItemEntity
         ]),
@@ -39,8 +38,8 @@ import { BuySuppliesService } from "./buy-supplies.service"
             }
         ])
     ],
-    providers: [BuySuppliesService],
-    exports: [BuySuppliesService],
-    controllers: [BuySuppliesController]
+    providers: [ConstructBuildingService, InventoryService],
+    exports: [ConstructBuildingService],
+    controllers: [ConstructBuildingController]
 })
-export class BuySuppliesModule {}
+export class ConstructBuildingModule {}

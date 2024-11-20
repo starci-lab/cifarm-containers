@@ -7,17 +7,24 @@ import {
     Inject,
     Logger,
     OnModuleInit,
-    Post
+    Post,
+    UseGuards
 } from "@nestjs/common"
 
+import { BuySeedsControllerRequest, BuySeedsResponse } from "@apps/shop-service/src/buy-seeds"
+import {
+    BuySuppliesControllerRequest,
+    BuySuppliesResponse
+} from "@apps/shop-service/src/buy-supplies"
 import { shopGrpcConstants } from "@apps/shop-service/src/constants"
 import { ClientGrpc } from "@nestjs/microservices"
-import { ApiResponse, ApiTags } from "@nestjs/swagger"
+import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
+import { User } from "@src/decorators"
+import { RestJwtAuthGuard } from "@src/guards"
+import { UserLike } from "@src/services"
 import { lastValueFrom } from "rxjs"
 import { IHealthcheckService } from "../healthcheck"
 import { IGameplayService } from "./gameplay.service"
-import { BuySeedsRequest, BuySeedsResponse } from "@apps/shop-service/src/buy-seeds"
-import { BuySuppliesRequest, BuySuppliesResponse } from "@apps/shop-service/src/buy-supplies"
 
 @ApiTags("Gameplay")
 @Controller("gameplay")
@@ -41,31 +48,42 @@ export class GameplayController implements OnModuleInit {
         )
     }
 
-    // @ApiBearerAuth()
-    // @UseGuards(RestJwtAuthGuard)
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({ type: BuySeedsResponse })
     @Post("/buy-seeds")
     public async buySeeds(
-        // @User() user: UserLike,
-        @Body() request: BuySeedsRequest
+        @User() user: UserLike,
+        @Body() request: BuySeedsControllerRequest
     ): Promise<BuySeedsResponse> {
-        // this.logger.debug(`Processing buySeeds for user ${user.id}`)
-        // const buySeedRequest: BuySeedRequest = { ...request, userId: user.id }
-        const buySeedRequest: BuySeedsRequest = { ...request }
-        return await lastValueFrom(this.gameplayService.buySeeds(buySeedRequest))
+        this.logger.debug(`Processing buySeeds for user ${user?.id}`)
+
+        return await lastValueFrom(
+            this.gameplayService.buySeeds({
+                key: request.key,
+                quantity: request.quantity,
+                userId: user.id
+            })
+        )
     }
 
-    // @ApiBearerAuth()
-    // @UseGuards(RestJwtAuthGuard)
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({ type: BuySuppliesResponse })
     @Post("/buy-supplies")
     public async buySupplies(
-        // @User() user: UserLike,
-        @Body() request: BuySuppliesRequest
+        @User() user: UserLike,
+        @Body() request: BuySuppliesControllerRequest
     ): Promise<BuySuppliesResponse> {
-        // this.logger.debug(`Processing buySupplies for user ${user.id}`)
-        return await lastValueFrom(this.gameplayService.buySupplies({ ...request }))
+        this.logger.debug(`Processing buySeeds for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.buySupplies({
+                key: request.key,
+                quantity: request.quantity,
+                userId: user.id
+            })
+        )
     }
 }
