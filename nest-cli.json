@@ -126,6 +126,24 @@
       "compilerOptions": {
         "tsConfigPath": "apps/wallet-service/tsconfig.app.json"
       }
+    },
+    "farming-service": {
+      "type": "application",
+      "root": "apps/farming-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/farming-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/farming-service/tsconfig.app.json"
+      }
+    },
+    "profile-service": {
+      "type": "application",
+      "root": "apps/profile-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/profile-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/profile-service/tsconfig.app.json"
+      }
     }
   }
 }
