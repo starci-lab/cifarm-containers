@@ -4,7 +4,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
 import { REDIS_KEY } from "@src/constants"
 import { IWalletService } from "@src/containers/wallet-service"
-import { BuildingEntity, buildingEntity, InventoryType, PlacedItemEntity } from "@src/database"
+import { BuildingEntity, PlacedItemEntity, PlacedItemType, UserEntity } from "@src/database"
 import { Cache } from "cache-manager"
 import {
     GrpcAbortedException,
@@ -12,7 +12,7 @@ import {
     GrpcPermissionDeniedException
 } from "nestjs-grpc-exceptions"
 import { lastValueFrom } from "rxjs"
-import { DataSource } from "typeorm"
+import { DataSource, DeepPartial } from "typeorm"
 import { InventoryService } from "../inventory"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
 
@@ -43,24 +43,39 @@ export class ConstructBuildingService {
         if (!building.availableInShop)
             throw new GrpcPermissionDeniedException("Building not available in shop")
 
+        const user = await this.dataSource.manager.findOne(UserEntity, { where: { id: userId } })
+        if (!user) {
+            throw new GrpcNotFoundException("User not found: " + userId)
+        }
+
+        const totalCost = building.price
+        const balance = await lastValueFrom(this.walletService.getGoldBalance({ userId }))
+        if (balance.golds < totalCost) {
+            throw new GrpcAbortedException("Insufficient gold balance")
+        }
+
         // Deduct the building cost from the user's wallet
         await this.walletService.subtractGold({
             userId,
             golds: building.price
         })
 
-        // Create a placed building item
-        const placedBuilding = this.dataSource.manager.create(PlacedItemEntity, {
-            userId,
-            referenceKey: key,
-            position,
-            type: InventoryType.BUILDING,
+        const placedItem: DeepPartial<PlacedItemEntity> = {
+            userId: userId,
+            user: user,
+            itemKey: key,
+            type: PlacedItemType.Building,
+            x: position.x,
+            y: position.y,
             buildingInfo: {
-                building,
                 currentUpgrade: 1,
-                occupancy: 0
+                occupancy: 0,
+                building
             }
-        })
+        }
+
+        // Create a placed building item
+        const placedBuilding = this.dataSource.manager.create(PlacedItemEntity, placedItem)
         const savedBuilding = await this.dataSource.manager.save(placedBuilding)
 
         this.logger.debug(`Building constructed with key: ${savedBuilding.id}`)
