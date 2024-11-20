@@ -1,10 +1,14 @@
 import { Module } from "@nestjs/common"
 import { CronjobController } from "./cronjob.controller"
 import { CronjobService } from "./cronjob.service"
+import { CropsService } from "./crops/crops.service"
+import { ScheduleModule } from "@nestjs/schedule"
 
 @Module({
-    imports: [],
+    imports: [
+        ScheduleModule.forRoot()
+    ],
     controllers: [CronjobController],
-    providers: [CronjobService]
+    providers: [CropsService, CronjobService]
 })
 export class CronjobModule {}
