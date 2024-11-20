@@ -1,4 +1,4 @@
-import { BuyAnimalRequest, BuyAnimalResponse } from "@apps/shop-service/src/buy-animal"
+import { BuyAnimalRequest, BuyAnimalResponse } from "@apps/shop-service/src/buy-animals"
 import { Observable } from "rxjs"
 import { BuySeedsRequest, BuySeedsResponse } from "@apps/shop-service/src/buy-seeds"
 import { BuySuppliesRequest, BuySuppliesResponse } from "@apps/shop-service/src/buy-supplies"

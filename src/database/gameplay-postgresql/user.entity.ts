@@ -3,6 +3,7 @@ import { Network, SupportedChainKey } from "@src/config"
 import { Column, Entity, OneToMany } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { InventoryEntity } from "./inventory.entity"
+import { PlacedItemEntity } from "./placed-item.entity"
 
 @ObjectType()
 @Entity("users")
@@ -34,4 +35,8 @@ export class UserEntity extends AbstractEntity {
     @Field(() => [InventoryEntity])
     @OneToMany(() => InventoryEntity, (inventory) => inventory.user)
     inventories?: Array<InventoryEntity>
+
+    @Field(() => [PlacedItemEntity])
+    @OneToMany(() => PlacedItemEntity, (inventory) => inventory.user)
+    placedItems?: Array<PlacedItemEntity>
 }

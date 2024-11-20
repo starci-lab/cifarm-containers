@@ -39,12 +39,14 @@ export class BuySuppliesService {
         this.logger.debug(`Buying supply for user ${userId} key: ${key} quantity: ${quantity}`)
 
         // Fetch supply details (Get from cache or DB)
-        let supplies = await this.cacheManager.get<Array<SupplyEntity>>(REDIS_KEY.SUPPLIES)
+        let supplies: Array<SupplyEntity> = await this.cacheManager.get<Array<SupplyEntity>>(
+            REDIS_KEY.SUPPLIES
+        )
         if (!supplies) {
             supplies = await this.dataSource.manager.find(SupplyEntity)
             await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies, Infinity)
         }
-        const supply = supplies.find((s) => s.id.toString() === key)
+        const supply: SupplyEntity = supplies.find((s) => s.id.toString() === key)
         if (!supply) throw new GrpcNotFoundException("Supply not found")
         if (!supply.availableInShop) {
             throw new GrpcPermissionDeniedException("Supply not available in shop")
@@ -58,13 +60,12 @@ export class BuySuppliesService {
         if (balance.golds < totalCost) throw new GrpcAbortedException("Insufficient gold balance")
 
         await lastValueFrom(this.walletService.subtractGold({ userId, golds: totalCost }))
-
         await this.inventoryService.addInventory({
             userId,
             key,
             quantity,
             maxStack: supply.maxStack,
-            type: InventoryType.Seed,
+            type: InventoryType.Supply,
             placeable: true,
             isPlaced: false,
             premium: false,

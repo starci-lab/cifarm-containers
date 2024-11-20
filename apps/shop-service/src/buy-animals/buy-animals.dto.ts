@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty, OmitType } from "@nestjs/swagger"
 import { IsString, IsUUID, ValidateNested } from "class-validator"
 import { Type } from "class-transformer"
 
@@ -12,18 +12,18 @@ class Position {
     y: number
 }
 
-export class BuyAnimalRequest {
+export class BuyAnimalsRequest {
     @IsUUID(4)
     @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
     userId: string
 
     @IsString()
-    @ApiProperty({ example: "animal_12345" })
-    animalKey: string
+    @ApiProperty({ example: "Chicken" })
+    key: string
 
     @IsString()
-    @ApiProperty({ example: "building_67890" })
-    placedItemBuildingKey: string
+    @ApiProperty({ example: "Coop" })
+    buildingKey: string
 
     @ValidateNested()
     @Type(() => Position)
@@ -31,8 +31,10 @@ export class BuyAnimalRequest {
     position: Position
 }
 
-export class BuyAnimalResponse {
+export class BuyAnimalsResponse {
     @IsString()
-    @ApiProperty({ example: "placed_item_animal_54321" })
+    @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
     placedItemAnimalKey: string
 }
+
+export class BuyAnimalsControllerRequest extends OmitType(BuyAnimalsRequest, ["userId"]) {}
