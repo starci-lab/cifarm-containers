@@ -41,7 +41,7 @@ export class InventoryService {
 
         while (remainingQuantity > 0) {
             const newQuantity = Math.min(maxStack, remainingQuantity)
-            const newInventory = this.dataSource.manager.save(InventoryEntity, {
+            const newInventory = this.dataSource.manager.create(InventoryEntity, {
                 referenceKey: key,
                 userId,
                 quantity: newQuantity,

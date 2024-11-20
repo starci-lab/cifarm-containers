@@ -22,7 +22,7 @@ export class InventoryEntity extends AbstractEntity {
 
     @Field(() => UserEntity)
     @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "user_id", referencedColumnName: "id" })
+    @JoinColumn({ name: "user_id" })
     user: UserEntity
 
     @Field(() => InventoryType)

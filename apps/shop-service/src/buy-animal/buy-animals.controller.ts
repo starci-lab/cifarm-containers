@@ -1,6 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { shopGrpcConstants } from "../constants"
+import { BuySuppliesRequest, BuySuppliesService } from "../buy-supplies"
 
 @Controller()
 export class BuySuppliesController {

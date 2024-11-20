@@ -45,8 +45,12 @@ export class BuySeedsService {
 
         const totalCost = crop.price * quantity
 
+        this.logger.debug(`Total cost: ${totalCost}`)
+
         const balance = await lastValueFrom(this.walletService.getGoldBalance({ userId }))
         if (balance.golds < totalCost) throw new GrpcAbortedException("Insufficient gold balance")
+
+        this.logger.debug(`Balance: ${balance.golds}`)
 
         await lastValueFrom(this.walletService.subtractGold({ userId, golds: totalCost }))
 
@@ -63,6 +67,8 @@ export class BuySeedsService {
             asTool: false
         })
 
-        return { inventoryKey: key }
+        return {
+            inventoryKey: "Successfully bought seeds"
+        }
     }
 }
