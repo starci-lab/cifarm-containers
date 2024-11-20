@@ -49,16 +49,13 @@ export class ConstructBuildingService {
         }
 
         const totalCost = building.price
+        this.logger.debug(`Total cost: ${totalCost}`)
         const balance = await lastValueFrom(this.walletService.getGoldBalance({ userId }))
         if (balance.golds < totalCost) {
             throw new GrpcAbortedException("Insufficient gold balance")
         }
 
-        // Deduct the building cost from the user's wallet
-        await this.walletService.subtractGold({
-            userId,
-            golds: building.price
-        })
+        await lastValueFrom(this.walletService.subtractGold({ userId, golds: totalCost }))
 
         const placedItem: DeepPartial<PlacedItemEntity> = {
             userId: userId,
@@ -80,6 +77,6 @@ export class ConstructBuildingService {
 
         this.logger.debug(`Building constructed with key: ${savedBuilding.id}`)
 
-        return { placedItemBuildingKey: savedBuilding.id }
+        return { placedItemId: savedBuilding.id }
     }
 }

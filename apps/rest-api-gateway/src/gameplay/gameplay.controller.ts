@@ -17,6 +17,10 @@ import {
     BuySuppliesResponse
 } from "@apps/shop-service/src/buy-supplies"
 import { shopGrpcConstants } from "@apps/shop-service/src/constants"
+import {
+    ConstructBuildingControllerRequest,
+    ConstructBuildingResponse
+} from "@apps/shop-service/src/construct-building"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { User } from "@src/decorators"
@@ -82,6 +86,24 @@ export class GameplayController implements OnModuleInit {
             this.gameplayService.buySupplies({
                 key: request.key,
                 quantity: request.quantity,
+                userId: user.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({ type: BuySuppliesResponse })
+    @Post("/construct-building")
+    public async constructBuilding(
+        @User() user: UserLike,
+        @Body() request: ConstructBuildingControllerRequest
+    ): Promise<ConstructBuildingResponse> {
+        this.logger.debug(`Processing buySeeds for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.constructBuilding({
+                ...request,
                 userId: user.id
             })
         )
