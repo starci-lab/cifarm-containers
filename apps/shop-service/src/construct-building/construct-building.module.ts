@@ -2,7 +2,13 @@ import { Global, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
-import { CropEntity, InventoryEntity, ProductEntity, UserEntity } from "@src/database"
+import {
+    CropEntity,
+    InventoryEntity,
+    PlacedItemEntity,
+    ProductEntity,
+    UserEntity
+} from "@src/database"
 import { ConstructBuildingService } from "./construct-building.service"
 import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { InventoryService } from "../inventory"
@@ -11,7 +17,13 @@ import { ConstructBuildingController } from "./construct-building.controller"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity, InventoryEntity, CropEntity, ProductEntity]),
+        TypeOrmModule.forFeature([
+            UserEntity,
+            InventoryEntity,
+            CropEntity,
+            ProductEntity,
+            PlacedItemEntity
+        ]),
         ClientsModule.registerAsync([
             {
                 name: walletGrpcConstants.NAME,

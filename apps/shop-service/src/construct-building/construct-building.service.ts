@@ -4,7 +4,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
 import { REDIS_KEY } from "@src/constants"
 import { IWalletService } from "@src/containers/wallet-service"
-import { BuildingEntity, CropEntity, InventoryType } from "@src/database"
+import { BuildingEntity, buildingEntity, InventoryType, PlacedItemEntity } from "@src/database"
 import { Cache } from "cache-manager"
 import {
     GrpcAbortedException,
@@ -37,14 +37,16 @@ export class ConstructBuildingService {
         const { userId, key, position } = request
 
         // Fetch building details
-        const building = await this.dataSource.manager.findOne(BuildingEntity, {
-            where: { id: key }
-        })
-        if (!building) throw new GrpcNotFoundException("Building not found")
+        const buildings = await this.cacheManager.get<Array<BuildingEntity>>(REDIS_KEY.BUILDINGS)
+        const building = buildings.find((c) => c.id.toString() === key.toString())
+        if (!building) throw new GrpcNotFoundException("Building not found or invalid key: " + key)
+        if (!building.availableInShop)
+            throw new GrpcPermissionDeniedException("Building not available in shop")
 
         // Deduct the building cost from the user's wallet
-        await this.walletService.subtractGold(userId, building.price, {
-            name: "Construct building"
+        await this.walletService.subtractGold({
+            userId,
+            golds: building.price
         })
 
         // Create a placed building item
@@ -52,7 +54,7 @@ export class ConstructBuildingService {
             userId,
             referenceKey: key,
             position,
-            type: "Building",
+            type: InventoryType.BUILDING,
             buildingInfo: {
                 building,
                 currentUpgrade: 1,

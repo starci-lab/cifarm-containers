@@ -5,14 +5,26 @@ import { Global, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
-import { InventoryEntity, ProductEntity, SupplyEntity, UserEntity } from "@src/database"
+import {
+    InventoryEntity,
+    PlacedItemEntity,
+    ProductEntity,
+    SupplyEntity,
+    UserEntity
+} from "@src/database"
 import { BuySuppliesController } from "./buy-supplies.controller"
 import { BuySuppliesService } from "./buy-supplies.service"
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([UserEntity, InventoryEntity, SupplyEntity, ProductEntity]),
+        TypeOrmModule.forFeature([
+            UserEntity,
+            InventoryEntity,
+            SupplyEntity,
+            ProductEntity,
+            PlacedItemEntity
+        ]),
         ClientsModule.registerAsync([
             {
                 name: walletGrpcConstants.NAME,

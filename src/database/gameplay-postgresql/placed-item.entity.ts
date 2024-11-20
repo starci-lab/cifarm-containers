@@ -24,7 +24,7 @@ export class PlacedItemEntity extends AbstractEntity {
     userId: string
 
     @Field(() => UserEntity)
-    @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE" })
+    @ManyToOne(() => UserEntity, (user) => user.placedItems, { onDelete: "CASCADE" })
     @JoinColumn({ name: "user_id" })
     user: UserEntity
 
