@@ -59,6 +59,10 @@ export const envConfig = () => ({
         shopService: {
             host: process.env.SHOP_SERVICE_HOST,
             port: Number(process.env.SHOP_SERVICE_PORT)
+        },
+        profileService: {
+            host: process.env.PROFILE_SERVICE_HOST,
+            port: Number(process.env.PROFILE_SERVICE_PORT)
         }
     },
     database: {

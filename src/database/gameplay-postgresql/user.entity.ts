@@ -32,6 +32,14 @@ export class UserEntity extends AbstractEntity {
     @Column({ name: "tokens", type: "float", default: 0 })
     tokens: number
 
+    @Field(() => Int)
+    @Column({ name: "experiences", type: "int", default: 0 })
+    experiences: number
+
+    @Field(() => Int)
+    @Column({ name: "level", type: "int", default: 1 })
+    level: number
+
     @Field(() => [InventoryEntity])
     @OneToMany(() => InventoryEntity, (inventory) => inventory.user)
     inventories?: Array<InventoryEntity>

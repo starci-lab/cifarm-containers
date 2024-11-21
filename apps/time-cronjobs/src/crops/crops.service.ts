@@ -9,12 +9,16 @@ export class CropsService {
 
     @Cron("*/1 * * * * *")
     async handleCron() {
-        console.log("Called every second")
-        const kc = new KubeConfig()
-        kc.loadFromDefault()
-        const k8sApi = kc.makeApiClient(CoreV1Api)
-        this.logger.debug("Called every second")
-        const podsRes = await k8sApi.listNamespacedPod("default")
-        this.logger.debug(podsRes.body)
+        try {
+            console.log("Called every second")
+            const kc = new KubeConfig()
+            kc.loadFromCluster()
+            const k8sApi = kc.makeApiClient(CoreV1Api)
+            this.logger.debug("Called every second")
+            const podsRes = await k8sApi.listNamespacedPod("default")
+            this.logger.debug(JSON.stringify(podsRes.body))
+        } catch (error) {
+            this.logger.error(JSON.stringify(error))
+        }
     }
 }
