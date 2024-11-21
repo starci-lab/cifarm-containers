@@ -19,6 +19,6 @@ export class CropsService {
             this.logger.debug(JSON.stringify(podsRes.body))
         } catch (error) {
             this.logger.error(JSON.stringify(error))
-        }
+        }  
     }
 }

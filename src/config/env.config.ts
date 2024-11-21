@@ -63,7 +63,7 @@ export const envConfig = () => ({
         profileService: {
             host: process.env.PROFILE_SERVICE_HOST,
             port: Number(process.env.PROFILE_SERVICE_PORT)
-        }
+        },
     },
     database: {
         mongo: {

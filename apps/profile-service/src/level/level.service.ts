@@ -5,7 +5,7 @@ import {
     AddExperiencesRequest,
     AddExperiencesResponse,
     GetLevelRequest,
-    GetLevelResponse
+    GetLevelResponse,
 } from "./level.dto"
 import { UserNotFoundException } from "@src/exceptions"
 
