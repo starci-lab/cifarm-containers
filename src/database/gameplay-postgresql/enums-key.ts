@@ -1,132 +1,100 @@
-import { registerEnumType } from "@nestjs/graphql"
-
+// Animal Enum
 export enum AnimalKey {
-    Chicken = "Chicken",
-    Cow = "Cow",
-    Pig = "Pig",
-    Sheep = "Sheep"
+    Chicken = "chicken",
+    Cow = "cow",
+    Pig = "pig",
+    Sheep = "sheep"
 }
 
-registerEnumType(AnimalKey, {
-    name: "AnimalKey"
-})
-
+// Building Enum
 export enum BuildingKey {
-    Coop = "Coop",
-    Pasture = "Pasture",
-    Home = "Home"
+    Coop = "coop",
+    Pasture = "pasture",
+    Home = "home"
 }
-registerEnumType(BuildingKey, {
-    name: "BuildingKey"
-})
 
+// Upgrade Enum
 export enum UpgradeKey {
-    Coop_Upgrade1 = "Coop_Upgrade1",
-    Coop_Upgrade2 = "Coop_Upgrade2",
-    Coop_Upgrade3 = "Coop_Upgrade3",
-    Pasture_Upgrade1 = "Pasture_Upgrade1",
-    Pasture_Upgrade2 = "Pasture_Upgrade2",
-    Pasture_Upgrade3 = "Pasture_Upgrade3"
+    CoopUpgrade1 = "coopUpgrade1",
+    CoopUpgrade2 = "coopUpgrade2",
+    CoopUpgrade3 = "coopUpgrade3",
+    PastureUpgrade1 = "pastureUpgrade1",
+    PastureUpgrade2 = "pastureUpgrade2",
+    PastureUpgrade3 = "pastureUpgrade3"
 }
 
-registerEnumType(UpgradeKey, {
-    name: "UpgradeKey"
-})
-
+// Crop Enum
 export enum CropKey {
-    Carrot = "Carrot",
-    Potato = "Potato",
-    Pineapple = "Pineapple",
-    Watermelon = "Watermelon",
-    Cucumber = "Cucumber",
-    BellPepper = "BellPepper"
+    Carrot = "carrot",
+    Potato = "potato",
+    Pineapple = "pineapple",
+    Watermelon = "watermelon",
+    Cucumber = "cucumber",
+    BellPepper = "bellPepper"
 }
 
-registerEnumType(CropKey, {
-    name: "CropKey"
-})
-
+// Daily Reward Enum
 export enum DailyRewardKey {
-    Day1 = "Day1",
-    Day2 = "Day2",
-    Day3 = "Day3",
-    Day4 = "Day4",
-    Day5 = "Day5"
+    Day1 = "day1",
+    Day2 = "day2",
+    Day3 = "day3",
+    Day4 = "day4",
+    Day5 = "day5"
 }
 
-registerEnumType(DailyRewardKey, {
-    name: "DailyRewardKey"
-})
-
+// Daily Reward Possibility Enum
 export enum DailyRewardPossibilityKey {
-    Possibility1 = "Possibility1",
-    Possibility2 = "Possibility2",
-    Possibility3 = "Possibility3",
-    Possibility4 = "Possibility4",
-    Possibility5 = "Possibility5"
+    Possibility1 = "possibility1",
+    Possibility2 = "possibility2",
+    Possibility3 = "possibility3",
+    Possibility4 = "possibility4",
+    Possibility5 = "possibility5"
 }
 
-registerEnumType(DailyRewardPossibilityKey, {
-    name: "DailyRewardPossibilityKey"
-})
-
+// Supply Enum
 export enum SupplyKey {
-    BasicFertilizer = "BasicFertilizer",
-    AnimalFeed = "AnimalFeed"
+    BasicFertilizer = "basic_fertilizer",
+    AnimalFeed = "animal_feed"
 }
 
-registerEnumType(SupplyKey, {
-    name: "SupplyKey"
-})
-
+// Spin Enum
 export enum SpinKey {
-    Gold1 = "Gold1",
-    Gold2 = "Gold2",
-    Gold3 = "Gold3",
-    Gold4 = "Gold4",
+    Gold1 = "gold1",
+    Gold2 = "gold2",
+    Gold3 = "gold3",
+    Gold4 = "gold4",
     Seed1 = CropKey.Pineapple,
     Seed2 = CropKey.Watermelon,
     BasicFertilizer = SupplyKey.BasicFertilizer,
-    Token = "Token"
+    Token = "token"
 }
 
-registerEnumType(SpinKey, {
-    name: "SpinKey"
-})
-
+// Tile Enum
 export enum TileKey {
-    StarterTile = "StarterTile",
-    BasicTile1 = "BasicTile1",
-    BasicTile2 = "BasicTile2",
-    BasicTile3 = "BasicTile3",
-    FertileTile = "FertileTile"
+    StarterTile = "starterTile",
+    BasicTile1 = "basicTile1",
+    BasicTile2 = "basicTile2",
+    BasicTile3 = "basicTile3",
+    FertileTile = "fertileTile"
 }
-registerEnumType(TileKey, {
-    name: "TileKey"
-})
 
+// Tool Enum
 export enum ToolKey {
-    Scythe = "Scythe",
-    Steal = "Steal",
-    WaterCan = "WaterCan",
-    Herbicide = "Herbicide",
-    Pesticide = "Pesticide"
+    Scythe = "scythe",
+    Steal = "steal",
+    WaterCan = "watercan",
+    Herbicide = "herbicide",
+    Pesticide = "pesticide"
 }
-registerEnumType(ToolKey, {
-    name: "ToolKey"
-})
 
+// Product Enum
 export enum ProductKey {
-    Egg = "Egg",
-    Milk = "Milk",
-    Carrot = "Carrot",
-    Potato = "Potato",
-    Pineapple = "Pineapple",
-    Watermelon = "Watermelon",
-    Cucumber = "Cucumber",
-    BellPepper = "BellPepper"
+    Egg = "egg",
+    Milk = "milk",
+    Carrot = "carrot",
+    Potato = "potato",
+    Pineapple = "pineapple",
+    Watermelon = "watermelon",
+    Cucumber = "cucumber",
+    BellPepper = "bellPepper"
 }
-
-registerEnumType(ProductKey, {
-    name: "ProductKey"
-})

@@ -55,7 +55,7 @@ export class AnimalEntity extends ReadableAbstractEntity {
     @Column({ name: "sick_chance", type: "float" })
     sickChance: number
 
-    @OneToOne(() => ProductEntity, { onDelete: "CASCADE", eager: true })
+    @OneToOne(() => ProductEntity, { onDelete: "CASCADE", eager: true, cascade: true })
     @JoinColumn({
         name: "product_id",
         referencedColumnName: "id"

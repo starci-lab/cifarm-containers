@@ -28,15 +28,6 @@
         "tsConfigPath": "apps/rest-api-gateway/tsconfig.app.json"
       }
     },
-    "db-helper": {
-      "type": "application",
-      "root": "apps/db-helper",
-      "entryFile": "main",
-      "sourceRoot": "apps/db-helper/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/db-helper/tsconfig.app.json"
-      }
-    },
     "websocket-api-gateway": {
       "type": "application",
       "root": "apps/websocket-api-gateway",
