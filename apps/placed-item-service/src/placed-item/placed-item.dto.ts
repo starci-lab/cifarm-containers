@@ -10,7 +10,7 @@ export class GetPlacedItemsResponse extends ArrayResponse<PlacedItemEntity> {}
 export class GetPlacedItemRequest {
     @IsUUID()
     @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174000" })
-        id: string
+    id: string
 }
 
 export class CreatePlacedItemRequest extends UserIdRequest {
@@ -19,10 +19,10 @@ export class CreatePlacedItemRequest extends UserIdRequest {
             id: "123e4567-e89b-12d3-a456-426614174000",
             x: 1,
             y: 2,
-            z: 3,
+            z: 3
         }
     })
-        placedItem: DeepPartial<PlacedItemEntity>
+    placedItem: DeepPartial<PlacedItemEntity>
 }
 
 export class CreatePlacedItemResponse extends CreatedResponse {}
@@ -30,10 +30,10 @@ export class CreatePlacedItemResponse extends CreatedResponse {}
 export class UpdatePlacedItemRequest {
     @IsUUID()
     @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174000" })
-        id: string
+    id: string
 
     @ApiProperty()
-        placedItem: DeepPartial<PlacedItemEntity>
+    placedItem: DeepPartial<PlacedItemEntity>
 }
 
 export type UpdatePlacedItemResponse = Empty
@@ -41,7 +41,7 @@ export type UpdatePlacedItemResponse = Empty
 export class DeletePlacedItemRequest extends UserIdRequest {
     @IsUUID()
     @ApiProperty({ example: "123e4567-e89b-12d3-a456-426614174000" })
-        id: string
+    id: string
 }
 
 export type DeletePlacedItemResponse = Empty

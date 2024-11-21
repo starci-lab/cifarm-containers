@@ -49,3 +49,17 @@ message BuildingInfo {
     int32 level = 2;
     // etc.
 }
+
+message Inventory {
+    string id = 1;         
+    string referenceKey = 2; 
+    int32 quantity = 3;    
+    string type = 4; 
+    bool placeable = 5;     
+    bool isPlaced = 6;      
+    bool premium = 7;      
+    bool deliverable = 8;   
+    bool asTool = 9;        
+    int32 maxStack = 10;   
+    string tokenId = 11;   
+}

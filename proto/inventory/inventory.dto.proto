@@ -2,37 +2,17 @@ syntax = "proto3";
 
 package inventory;
 
+import "../base/entities.base.proto";
+
 message GetInventoryRequest {
     string userId = 1; 
 }
 
 message GetInventoryResponse {
-    repeated Inventory inventories = 1; 
-}
-
-message Inventory {
-    string id = 1;         
-    string referenceKey = 2; 
-    int32 quantity = 3;    
-    string type = 4; 
-    bool placeable = 5;     
-    bool isPlaced = 6;      
-    bool premium = 7;      
-    bool deliverable = 8;   
-    bool asTool = 9;        
-    int32 maxStack = 10;   
-    string tokenId = 11;   
+    repeated Inventory items = 1; 
 }
 
 message AddInventoryRequest {
     string userId = 1;      
-    string key = 2;         
-    int32 quantity = 3;     
-    int32 maxStack = 4;     
-    string type = 5; 
-    bool placeable = 6;    
-    bool isPlaced = 7;     
-    bool premium = 8;       
-    bool deliverable = 9;   
-    bool asTool = 10;       
+    Inventory inventory = 2; 
 }
