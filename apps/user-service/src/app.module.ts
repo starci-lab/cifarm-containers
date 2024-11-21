@@ -4,9 +4,9 @@ import { APP_FILTER } from "@nestjs/core"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
-import { AppController } from "./app.controller"
 import { LevelModule } from "./level"
 import { WalletModule } from "./wallet/wallet.module"
+import { BalanceModule } from "./wallet"
 
 @Module({
     imports: [
@@ -26,9 +26,9 @@ import { WalletModule } from "./wallet/wallet.module"
             synchronize: true
         }),
         LevelModule,
-        WalletModule
+        WalletModule,
+        BalanceModule
     ],
-    controllers: [AppController],
     providers: [
         {
             provide: APP_FILTER,

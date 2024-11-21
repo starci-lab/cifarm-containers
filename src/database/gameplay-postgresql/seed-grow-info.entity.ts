@@ -3,7 +3,7 @@ import { Column, ManyToOne } from "typeorm"
 import { CropEntity } from "./crop.entity"
 
 @ObjectType()
-export class SeedGrowthInfo {
+export class SeedGrowthInfoEntity {
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
     currentStage: number

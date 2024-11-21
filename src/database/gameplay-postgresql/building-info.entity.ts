@@ -3,7 +3,7 @@ import { Column, ManyToOne } from "typeorm"
 import { BuildingEntity } from "./building.entity"
 
 @ObjectType()
-export class BuildingInfo {
+export class BuildingInfoEntity {
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
     currentUpgrade: number

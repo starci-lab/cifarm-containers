@@ -11,7 +11,7 @@ import {
 import { inventoryGrpcConstants } from "../constants"
 
 @ApiBearerAuth()
-@Controller("shop")
+@Controller("inventory")
 export class InventoryController {
     private readonly logger = new Logger(InventoryController.name)
 

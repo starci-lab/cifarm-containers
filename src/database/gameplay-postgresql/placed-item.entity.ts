@@ -1,10 +1,10 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
-import { AnimalInfo } from "./animal-info"
-import { SeedGrowthInfo } from "./seed-grow-info"
+import { AnimalInfoEntity } from "./animal-info.entity"
+import { BuildingInfoEntity } from "./building-info.entity"
+import { SeedGrowthInfoEntity } from "./seed-grow-info.entity"
 import { UserEntity } from "./user.entity"
-import { BuildingInfo } from "./building-info"
 
 @ObjectType()
 @Entity("placed_items")
@@ -39,17 +39,22 @@ export class PlacedItemEntity extends AbstractEntity {
     @Column({ name: "type", type: "varchar" })
     type: string
 
-    @Field(() => SeedGrowthInfo, { nullable: true })
-    @Column({ type: "json", nullable: true })
-    seedGrowthInfo?: SeedGrowthInfo
+    @Field(() => SeedGrowthInfoEntity, { nullable: true })
+    @ManyToOne(() => SeedGrowthInfoEntity, { nullable: true })
+    @JoinColumn({ name: "seed_growth_info_id" })
+    seedGrowthInfo?: SeedGrowthInfoEntity
 
-    @Field(() => AnimalInfo, { nullable: true })
-    @Column({ type: "json", nullable: true })
-    animalInfo?: AnimalInfo
+    // Sử dụng mối quan hệ mới với AnimalInfoEntity
+    @Field(() => AnimalInfoEntity, { nullable: true })
+    @ManyToOne(() => AnimalInfoEntity, { nullable: true })
+    @JoinColumn({ name: "animal_info_id" })
+    animalInfo?: AnimalInfoEntity
 
-    @Field(() => BuildingInfo, { nullable: true })
-    @Column({ type: "json", nullable: true })
-    buildingInfo?: BuildingInfo
+    // Sử dụng mối quan hệ mới với BuildingInfoEntity
+    @Field(() => BuildingInfoEntity, { nullable: true })
+    @ManyToOne(() => BuildingInfoEntity, { nullable: true })
+    @JoinColumn({ name: "building_info_id" })
+    buildingInfo?: BuildingInfoEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "parent_placed_item_key", type: "varchar", nullable: true })

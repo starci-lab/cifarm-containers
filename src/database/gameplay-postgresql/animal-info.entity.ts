@@ -3,7 +3,7 @@ import { Column, ManyToOne } from "typeorm"
 import { AnimalEntity } from "./animal.entity"
 
 @ObjectType()
-export class AnimalInfo {
+export class AnimalInfoEntity {
     @Field(() => Number)
     @Column({ type: "bigint", nullable: true })
     currentGrowthTime: number
