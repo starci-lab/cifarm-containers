@@ -153,6 +153,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/placed-item-service/tsconfig.app.json"
       }
+    },
+    "static-service": {
+      "type": "application",
+      "root": "apps/static-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/static-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/static-service/tsconfig.app.json"
+      }
     }
   }
 }

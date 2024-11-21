@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { PlacedItemEntity, UserEntity } from "@src/database"
+import { PlacedItemEntity } from "@src/database"
+import { PlacedItemNotFoundException } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import {
     CreatePlacedItemRequest,
@@ -10,7 +11,6 @@ import {
     UpdatePlacedItemRequest,
     UpdatePlacedItemResponse
 } from "./placed-item.dto"
-import { PlacedItemNotFoundException, UserNotFoundException } from "@src/exceptions"
 
 @Injectable()
 export class PlacedItemService {
@@ -38,18 +38,18 @@ export class PlacedItemService {
         request: CreatePlacedItemRequest
     ): Promise<CreatePlacedItemResponse> {
         const { id } = await this.dataSource.manager.save({
-            ...request.placedItem,
+            ...request.item,
             userId: request.userId
         })
         return {
-            id
+            item: { id }
         }
     }
 
     public async updatePlacedItem(
         request: UpdatePlacedItemRequest
     ): Promise<UpdatePlacedItemResponse> {
-        await this.dataSource.manager.update(PlacedItemEntity, request.id, request.placedItem)
+        await this.dataSource.manager.update(PlacedItemEntity, request.id, request.item)
         return {}
     }
 
@@ -58,13 +58,5 @@ export class PlacedItemService {
     ): Promise<UpdatePlacedItemResponse> {
         await this.dataSource.manager.delete(PlacedItemEntity, request.id)
         return {}
-    }
-
-    private async findUserById(userId: string): Promise<UserEntity> {
-        const user = await this.dataSource.manager.findOne(UserEntity, {
-            where: { id: userId }
-        })
-        if (!user) throw new UserNotFoundException(userId)
-        return user
     }
 }

@@ -5,7 +5,4 @@ package inventory;
 import "google/protobuf/empty.proto";
 import "inventory.dto.proto";
 
-service InventoryService {
-    rpc GetInventory(GetInventoryRequest) returns (GetInventoryResponse);
-    rpc AddInventory(AddInventoryRequest) returns (google.protobuf.Empty);
-}
+

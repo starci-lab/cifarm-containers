@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package static;
+
+import "crop.proto";
+
+service StaticService {
+    // Crop
+    rpc GetCrop(GetCropRequest) returns (CropEntity);
+    rpc GetCrops(google.protobuf.Empty) returns (GetCropsResponse);
+    rpc CreateCrop(CropEntity) returns (google.protobuf.Empty);
+    rpc UpdateCrop(UpdateCropRequest) returns (google.protobuf.Empty);
+    rpc DeleteCrop(DeleteCropRequest) returns (google.protobuf.Empty);
+
+    // Animal
+}

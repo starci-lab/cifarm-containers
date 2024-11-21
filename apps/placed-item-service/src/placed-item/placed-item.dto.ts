@@ -1,6 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { PlacedItemEntity } from "@src/database"
-import { ArrayResponse, CreatedResponse, Empty, UserIdRequest } from "@src/types"
+import {
+    ArrayResponse,
+    CreatedResponse,
+    CreateRequest,
+    CreateRequestWithUserId,
+    Empty,
+    UserIdRequest
+} from "@src/types"
 import { IsUUID } from "class-validator"
 import { DeepPartial } from "typeorm"
 
@@ -13,19 +20,9 @@ export class GetPlacedItemRequest {
     id: string
 }
 
-export class CreatePlacedItemRequest extends UserIdRequest {
-    @ApiProperty({
-        example: {
-            id: "123e4567-e89b-12d3-a456-426614174000",
-            x: 1,
-            y: 2,
-            z: 3
-        }
-    })
-    placedItem: DeepPartial<PlacedItemEntity>
-}
+export class CreatePlacedItemRequest extends CreateRequestWithUserId<PlacedItemEntity> {}
 
-export class CreatePlacedItemResponse extends CreatedResponse {}
+export class CreatePlacedItemResponse extends CreateRequest<PlacedItemEntity> {}
 
 export class UpdatePlacedItemRequest {
     @IsUUID()
@@ -33,7 +30,7 @@ export class UpdatePlacedItemRequest {
     id: string
 
     @ApiProperty()
-    placedItem: DeepPartial<PlacedItemEntity>
+    item: DeepPartial<PlacedItemEntity>
 }
 
 export type UpdatePlacedItemResponse = Empty

@@ -9,6 +9,7 @@ import {
     UserEntity
 } from "@src/database"
 import { BalanceService } from "./balance.service"
+import { BalanceController } from "./balance.controller"
 
 @Global()
 @Module({
@@ -22,7 +23,7 @@ import { BalanceService } from "./balance.service"
             BuildingInfoEntity
         ])
     ],
-    providers: [BalanceService],
+    providers: [BalanceController],
     exports: [BalanceService]
 })
 export class BalanceModule {}

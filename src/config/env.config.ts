@@ -67,6 +67,10 @@ export const envConfig = () => ({
         inventoryService: {
             host: process.env.INVENTORY_SERVICE_HOST,
             port: Number(process.env.INVENTORY_SERVICE_PORT)
+        },
+        staticService: {
+            host: process.env.STATIC_SERVICE_HOST,
+            port: Number(process.env.STATIC_SERVICE_PORT)
         }
     },
     database: {

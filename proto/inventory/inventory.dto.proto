@@ -16,3 +16,8 @@ message AddInventoryRequest {
     string userId = 1;      
     Inventory inventory = 2; 
 }
+
+service InventoryService {
+    rpc GetInventory(GetInventoryRequest) returns (GetInventoryResponse);
+    rpc AddInventory(AddInventoryRequest) returns (google.protobuf.Empty);
+}
