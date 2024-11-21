@@ -1,10 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { PlacedItemEntity } from "@src/database"
-import { CreatedResponse, Empty, UserIdRequest } from "@src/types"
+import { ArrayResponse, CreatedResponse, Empty, UserIdRequest } from "@src/types"
 import { IsUUID } from "class-validator"
 import { DeepPartial } from "typeorm"
 
 export class GetPlacedItemsRequest extends UserIdRequest {}
+export class GetPlacedItemsResponse extends ArrayResponse<PlacedItemEntity> {}
 
 export class GetPlacedItemRequest {
     @IsUUID()

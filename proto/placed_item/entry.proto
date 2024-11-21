@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package placed_item;
+
+import "google/protobuf/empty.proto";
+import "placed_item.dto.proto";
+import "../base/entities.base.proto";
+
+service PlacedItemService {
+    rpc GetPlacedItem(GetPlacedItemRequest) returns (PlacedItemEntity);
+    rpc GetPlacedItems(GetPlacedItemsRequest) returns (GetPlacedItemsResponse);
+    rpc CreatePlacedItem(CreatePlacedItemRequest) returns (CreatePlacedItemResponse);
+    rpc UpdatePlacedItem(UpdatePlacedItemRequest) returns (google.protobuf.Empty);
+    rpc DeletePlacedItem(DeletePlacedItemRequest) returns (google.protobuf.Empty);
+}

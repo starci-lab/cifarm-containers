@@ -12,3 +12,8 @@ export class CreatedResponse {
     @ApiProperty({ example: "5a6919c3-6ae3-45de-81eb-f1bbb05a246d" })
         id: string
 }
+
+export class ArrayResponse<TEntity> {
+    @ApiProperty({ type: [Object] })
+        items: Array<TEntity>
+}

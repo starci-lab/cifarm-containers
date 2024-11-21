@@ -63,6 +63,10 @@ export const envConfig = () => ({
         placedItemService: {
             host: process.env.PLACED_ITEM_SERVICE_HOST,
             port: Number(process.env.PLACED_ITEM_SERVICE_PORT)
+        },
+        inventoryService: {
+            host: process.env.INVENTORY_SERVICE_HOST,
+            port: Number(process.env.INVENTORY_SERVICE_PORT)
         }
     },
     database: {

@@ -24,7 +24,7 @@ export class AddExperiencesRequest extends UserIdRequest {
         example: 50,
         description: "The amount of gold to add (positive value)"
     })
-    experiences : number
+    experiences: number
 }
 
 export type AddExperiencesResponse = Empty

@@ -7,6 +7,7 @@ import {
     CreatePlacedItemResponse,
     GetPlacedItemRequest,
     GetPlacedItemsRequest,
+    GetPlacedItemsResponse,
     UpdatePlacedItemRequest,
     UpdatePlacedItemResponse
 } from "./placed-item.dto"
@@ -24,7 +25,7 @@ export class PlacedItemController {
     }
 
     @GrpcMethod(placedItemGrpcConstants.SERVICE, "G")
-    async getPlacedItems(request: GetPlacedItemsRequest): Promise<Array<PlacedItemEntity>> {
+    async getPlacedItems(request: GetPlacedItemsRequest): Promise<GetPlacedItemsResponse> {
         this.logger.debug(`Received getPlacedItems request for userId: ${request.userId}`)
         return this.placedItemService.getPlacedItems(request)
     }

@@ -6,6 +6,7 @@ import {
     CreatePlacedItemResponse,
     GetPlacedItemRequest,
     GetPlacedItemsRequest,
+    GetPlacedItemsResponse,
     UpdatePlacedItemRequest,
     UpdatePlacedItemResponse
 } from "./placed-item.dto"
@@ -24,11 +25,13 @@ export class PlacedItemService {
         return placedItem
     }
 
-    public async getPlacedItems(request: GetPlacedItemsRequest): Promise<Array<PlacedItemEntity>> {
-        const placedItems = await this.dataSource.manager.find(PlacedItemEntity, {
+    public async getPlacedItems(request: GetPlacedItemsRequest): Promise<GetPlacedItemsResponse> {
+        const items = await this.dataSource.manager.find(PlacedItemEntity, {
             where: { id: request.userId }
         })
-        return placedItems
+        return {
+            items
+        }
     }
 
     public async createPlacedItem(

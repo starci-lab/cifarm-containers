@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package placed_item;
+
+import "google/protobuf/empty.proto";
+import "../base/entities.base.proto";
+
+message GetPlacedItemRequest {
+    string id = 1;
+}
+
+message GetPlacedItemsRequest {
+    string user_id = 1;
+}
+
+message GetPlacedItemsResponse {
+    repeated PlacedItemEntity items = 1;
+}
+
+message CreatePlacedItemRequest {
+    string userId = 1;
+    PlacedItemEntity placedItem = 2;
+}
+
+message CreatePlacedItemResponse {
+    string id = 1;
+}
+
+message UpdatePlacedItemRequest {
+    string id = 1;
+    PlacedItemEntity item = 2;
+}
+
+message DeletePlacedItemRequest {
+    string id = 1;
+}
