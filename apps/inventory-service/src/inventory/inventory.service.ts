@@ -7,6 +7,8 @@ import {
     GetInventoryRequest,
     GetInventoryResponse
 } from "./inventory.dto"
+import { isGuid } from "@src/utils/validation.utils"
+import { GrpcInvalidGuidException } from "@src/exceptions"
 
 @Injectable()
 export class InventoryService {
@@ -67,6 +69,11 @@ export class InventoryService {
 
     public async getInventory(request: GetInventoryRequest): Promise<GetInventoryResponse> {
         const { userId } = request
+
+        if (isGuid(userId) === false) {
+            throw new GrpcInvalidGuidException(userId)
+        }
+
         const inventories = await this.dataSource.manager.find(InventoryEntity, {
             where: { userId }
         })
