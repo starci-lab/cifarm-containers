@@ -3,10 +3,13 @@ import { ClientsModule, Transport } from "@nestjs/microservices"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import {
+    AnimalInfoEntity,
+    BuildingInfoEntity,
     CropEntity,
     InventoryEntity,
     PlacedItemEntity,
     ProductEntity,
+    SeedGrowthInfoEntity,
     UserEntity
 } from "@src/database"
 import { BuySeedsService } from "./buy-seeds.service"
@@ -22,7 +25,10 @@ import { BuySeedsController } from "./buy-seeds.controller"
             InventoryEntity,
             CropEntity,
             ProductEntity,
-            PlacedItemEntity
+            PlacedItemEntity,
+            SeedGrowthInfoEntity,
+            AnimalInfoEntity,
+            BuildingInfoEntity
         ]),
         ClientsModule.registerAsync([
             {

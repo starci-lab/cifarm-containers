@@ -13,6 +13,9 @@ import { ConstructBuildingService } from "./construct-building.service"
 import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { InventoryService } from "../inventory"
 import { ConstructBuildingController } from "./construct-building.controller"
+import { SeedGrowthInfoEntity } from "@src/database/gameplay-postgresql/seed-grow-info.entity"
+import { AnimalInfoEntity } from "@src/database/gameplay-postgresql/animal-info.entity"
+import { BuildingInfoEntity } from "@src/database/gameplay-postgresql/building-info.entity"
 
 @Global()
 @Module({
@@ -22,7 +25,10 @@ import { ConstructBuildingController } from "./construct-building.controller"
             InventoryEntity,
             CropEntity,
             ProductEntity,
-            PlacedItemEntity
+            PlacedItemEntity,
+            SeedGrowthInfoEntity,
+            AnimalInfoEntity,
+            BuildingInfoEntity
         ]),
         ClientsModule.registerAsync([
             {

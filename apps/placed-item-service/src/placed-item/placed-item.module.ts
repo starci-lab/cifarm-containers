@@ -1,11 +1,27 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { InventoryEntity, PlacedItemEntity, UserEntity } from "@src/database"
+import {
+    AnimalInfoEntity,
+    BuildingInfoEntity,
+    InventoryEntity,
+    PlacedItemEntity,
+    SeedGrowthInfoEntity,
+    UserEntity
+} from "@src/database"
 import { PlacedItemService } from "./placed-item.service"
 
 @Global()
 @Module({
-    imports: [TypeOrmModule.forFeature([PlacedItemEntity, UserEntity, InventoryEntity])],
+    imports: [
+        TypeOrmModule.forFeature([
+            PlacedItemEntity,
+            UserEntity,
+            InventoryEntity,
+            SeedGrowthInfoEntity,
+            AnimalInfoEntity,
+            BuildingInfoEntity
+        ])
+    ],
     providers: [PlacedItemService],
     exports: [PlacedItemService]
 })
