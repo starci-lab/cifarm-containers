@@ -1,7 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { IsString, IsUUID, ValidateNested } from "class-validator"
-import { Type } from "class-transformer"
+import { ApiProperty, OmitType } from "@nestjs/swagger"
 import { UserIdRequest } from "@src/types"
+import { Type } from "class-transformer"
+import { IsString, ValidateNested } from "class-validator"
 
 class Position {
     @ApiProperty({ example: 100 })
@@ -26,6 +26,10 @@ export class ConstructBuildingRequest extends UserIdRequest {
 
 export class ConstructBuildingResponse {
     @IsString()
-    @ApiProperty({ example: "placed-item-building-key" })
-    placedItemBuildingKey: string
+    @ApiProperty({ example: "placed-item-id" })
+    placedItemId: string
 }
+
+export class ConstructBuildingControllerRequest extends OmitType(ConstructBuildingRequest, [
+    "userId"
+] as const) {}

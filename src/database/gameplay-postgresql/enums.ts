@@ -2,58 +2,64 @@ import { registerEnumType } from "@nestjs/graphql"
 
 export enum ProductType {
     Animal = "Animal",
-    Crop = "Crop",
+    Crop = "Crop"
 }
 registerEnumType(ProductType, {
-    name: "ProductType",
+    name: "ProductType"
 })
 
 export enum AnimalType {
     Poultry = "Poultry",
-    Livestock = "Livestock",
+    Livestock = "Livestock"
 }
 registerEnumType(AnimalType, {
     name: "AnimalType"
 })
 
-
 export enum AvailableInType {
     Home = "Home",
     Neighbor = "Neighbor",
-    Both = "Both",
+    Both = "Both"
 }
 registerEnumType(AvailableInType, {
-    name: "AvailableIn",
+    name: "AvailableIn"
 })
 
 export enum SupplyType {
     Fertilizer = "Fertilizer",
-    AnimalFeed = "AnimalFeed",
+    AnimalFeed = "AnimalFeed"
 }
 registerEnumType(SupplyType, {
-    name: "SupplyType",
+    name: "SupplyType"
 })
 
 export enum SpinType {
     Gold = "Gold",
     Seed = "Seed",
     Supply = "Supply",
-    Token = "Token",
+    Token = "Token"
 }
 registerEnumType(SpinType, {
-    name: "SpinType",
+    name: "SpinType"
 })
-
 
 export enum InventoryType {
     Seed = "Seed",
     Tile = "Tile",
     Animal = "Animal",
     Product = "Product",
-    Supply = "Supply",
+    Supply = "Supply"
 }
 
 registerEnumType(InventoryType, {
-    name: "InventoryType",
+    name: "InventoryType"
 })
 
+export enum PlacedItemType {
+    Tile = "Tile",
+    Building = "Building",
+    Animal = "Animal"
+}
+registerEnumType(PlacedItemType, {
+    name: "PlacedItemType"
+})

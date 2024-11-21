@@ -6,5 +6,6 @@ import { FarmingServiceService } from './farming-service.service';
   imports: [],
   controllers: [FarmingServiceController],
   providers: [FarmingServiceService],
+
 })
 export class FarmingServiceModule {}
