@@ -1,5 +1,5 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm"
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { AnimalInfoEntity } from "./animal-info.entity"
 import { BuildingInfoEntity } from "./building-info.entity"
@@ -39,24 +39,30 @@ export class PlacedItemEntity extends AbstractEntity {
     @Column({ name: "type", type: "varchar" })
     type: string
 
+    @Field(() => String, { nullable: true })
+    @ManyToOne(() => PlacedItemEntity, (placedItem) => placedItem.children, { nullable: true })
+    parent: PlacedItemEntity
+
+    @Field(() => [PlacedItemEntity], { nullable: true })
+    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.parent, { nullable: true })
+    children: PlacedItemEntity[]
+
     @Field(() => SeedGrowthInfoEntity, { nullable: true })
-    @ManyToOne(() => SeedGrowthInfoEntity, { nullable: true })
-    @JoinColumn({ name: "seed_growth_info_id" })
+    @OneToOne(() => SeedGrowthInfoEntity, (seedGrowthInfo) => seedGrowthInfo.placedItem, {
+        nullable: true
+    })
+    @JoinColumn()
     seedGrowthInfo?: SeedGrowthInfoEntity
 
-    // Sử dụng mối quan hệ mới với AnimalInfoEntity
     @Field(() => AnimalInfoEntity, { nullable: true })
-    @ManyToOne(() => AnimalInfoEntity, { nullable: true })
-    @JoinColumn({ name: "animal_info_id" })
+    @OneToOne(() => AnimalInfoEntity, (animalInfo) => animalInfo.placedItem, { nullable: true })
+    @JoinColumn()
     animalInfo?: AnimalInfoEntity
 
-    // Sử dụng mối quan hệ mới với BuildingInfoEntity
     @Field(() => BuildingInfoEntity, { nullable: true })
-    @ManyToOne(() => BuildingInfoEntity, { nullable: true })
-    @JoinColumn({ name: "building_info_id" })
+    @OneToOne(() => BuildingInfoEntity, (buildingInfo) => buildingInfo.placedItem, {
+        nullable: true
+    })
+    @JoinColumn()
     buildingInfo?: BuildingInfoEntity
-
-    @Field(() => String, { nullable: true })
-    @Column({ name: "parent_placed_item_key", type: "varchar", nullable: true })
-    parentPlacedItemKey?: string
 }

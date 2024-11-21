@@ -1,11 +1,16 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import {
+    AnimalEntity,
     AnimalInfoEntity,
+    BuildingEntity,
     BuildingInfoEntity,
+    CropEntity,
     InventoryEntity,
     PlacedItemEntity,
+    ProductEntity,
     SeedGrowthInfoEntity,
+    UpgradeEntity,
     UserEntity
 } from "@src/database"
 import { InventoryService } from "./inventory.service"
@@ -20,7 +25,13 @@ import { InventoryController } from "./inventory.controller"
             PlacedItemEntity,
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
-            BuildingInfoEntity
+            BuildingInfoEntity,
+            CropEntity,
+            ProductEntity,
+            AnimalEntity,
+            BuildingEntity,
+            AnimalEntity,
+            UpgradeEntity
         ])
     ],
     providers: [InventoryService],

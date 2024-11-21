@@ -1,19 +1,23 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, ManyToOne } from "typeorm"
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
 import { CropEntity } from "./crop.entity"
+import { PlacedItemEntity } from "./placed-item.entity"
+import { AbstractEntity } from "./abstract"
+import { UserEntity } from "./user.entity"
 
 @ObjectType()
-export class SeedGrowthInfoEntity {
+@Entity("seed_growth_info")
+export class SeedGrowthInfoEntity extends AbstractEntity {
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
     currentStage: number
 
     @Field(() => Number)
-    @Column({ type: "bigint", nullable: true })
+    @Column({ type: "int", nullable: true })
     currentStageTimeElapsed: number
 
     @Field(() => Number)
-    @Column({ type: "bigint", nullable: true })
+    @Column({ type: "int", nullable: true })
     totalTimeElapsed: number
 
     @Field(() => Number)
@@ -28,9 +32,9 @@ export class SeedGrowthInfoEntity {
     @Column({ type: "int", nullable: true })
     currentState: number
 
-    @Field(() => [String])
-    @Column({ type: "simple-array", nullable: true })
-    thiefedBy: string[]
+    @ManyToMany(() => UserEntity)
+    @JoinTable()
+    thiefedBy: Array<UserEntity>
 
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
@@ -43,4 +47,11 @@ export class SeedGrowthInfoEntity {
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
     isFertilized: boolean
+
+    @Field(() => PlacedItemEntity)
+    @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.seedGrowthInfo, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
+    placedItem?: PlacedItemEntity
 }

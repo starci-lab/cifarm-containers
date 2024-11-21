@@ -1,19 +1,23 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, ManyToOne } from "typeorm"
+import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
 import { AnimalEntity } from "./animal.entity"
+import { PlacedItemEntity } from "./placed-item.entity"
+import { UserEntity } from "./user.entity"
+import { AbstractEntity } from "./abstract"
 
 @ObjectType()
-export class AnimalInfoEntity {
+@Entity("animal_info")
+export class AnimalInfoEntity extends AbstractEntity {
     @Field(() => Number)
-    @Column({ type: "bigint", nullable: true })
+    @Column({ type: "int", nullable: true })
     currentGrowthTime: number
 
     @Field(() => Number)
-    @Column({ type: "bigint", nullable: true })
+    @Column({ type: "int", nullable: true })
     currentHungryTime: number
 
     @Field(() => Number)
-    @Column({ type: "bigint", nullable: true })
+    @Column({ type: "int", nullable: true })
     currentYieldTime: number
 
     @Field(() => Boolean)
@@ -36,11 +40,18 @@ export class AnimalInfoEntity {
     @Column({ type: "int", nullable: true })
     harvestQuantityRemaining: number
 
-    @Field(() => [String])
-    @Column({ type: "simple-array", nullable: true })
-    thiefedBy: string[]
+    @ManyToMany(() => UserEntity)
+    @JoinTable()
+    thiefedBy: Array<UserEntity>
 
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
     alreadySick: boolean
+
+    @Field(() => PlacedItemEntity)
+    @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.animalInfo, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
+    placedItem?: PlacedItemEntity
 }
