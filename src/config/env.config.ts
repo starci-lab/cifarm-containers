@@ -64,6 +64,10 @@ export const envConfig = () => ({
             host: process.env.PROFILE_SERVICE_HOST,
             port: Number(process.env.PROFILE_SERVICE_PORT)
         },
+        inventoryService: {
+            host: process.env.INVENTORY_SERVICE_HOST,
+            port: Number(process.env.INVENTORY_SERVICE_PORT)
+        }
     },
     database: {
         mongo: {
