@@ -4,29 +4,29 @@ export enum AnimalKey {
     Chicken = "Chicken",
     Cow = "Cow",
     Pig = "Pig",
-    Sheep = "Sheep",
+    Sheep = "Sheep"
 }
 
 registerEnumType(AnimalKey, {
-    name: "AnimalKey",
+    name: "AnimalKey"
 })
 
 export enum BuildingKey {
     Coop = "Coop",
     Pasture = "Pasture",
-    Home = "Home",
+    Home = "Home"
 }
 registerEnumType(BuildingKey, {
     name: "BuildingKey"
 })
 
-export enum UpgradeKey{
+export enum UpgradeKey {
     Coop_Upgrade1 = "Coop_Upgrade1",
     Coop_Upgrade2 = "Coop_Upgrade2",
     Coop_Upgrade3 = "Coop_Upgrade3",
     Pasture_Upgrade1 = "Pasture_Upgrade1",
     Pasture_Upgrade2 = "Pasture_Upgrade2",
-    Pasture_Upgrade3 = "Pasture_Upgrade3",
+    Pasture_Upgrade3 = "Pasture_Upgrade3"
 }
 
 registerEnumType(UpgradeKey, {
@@ -39,7 +39,7 @@ export enum CropKey {
     Pineapple = "Pineapple",
     Watermelon = "Watermelon",
     Cucumber = "Cucumber",
-    BellPepper = "BellPepper",
+    BellPepper = "BellPepper"
 }
 
 registerEnumType(CropKey, {
@@ -51,7 +51,7 @@ export enum DailyRewardKey {
     Day2 = "Day2",
     Day3 = "Day3",
     Day4 = "Day4",
-    Day5 = "Day5",
+    Day5 = "Day5"
 }
 
 registerEnumType(DailyRewardKey, {
@@ -63,7 +63,7 @@ export enum DailyRewardPossibilityKey {
     Possibility2 = "Possibility2",
     Possibility3 = "Possibility3",
     Possibility4 = "Possibility4",
-    Possibility5 = "Possibility5",
+    Possibility5 = "Possibility5"
 }
 
 registerEnumType(DailyRewardPossibilityKey, {
@@ -72,7 +72,7 @@ registerEnumType(DailyRewardPossibilityKey, {
 
 export enum SupplyKey {
     BasicFertilizer = "BasicFertilizer",
-    AnimalFeed = "AnimalFeed",
+    AnimalFeed = "AnimalFeed"
 }
 
 registerEnumType(SupplyKey, {
@@ -87,7 +87,7 @@ export enum SpinKey {
     Seed1 = CropKey.Pineapple,
     Seed2 = CropKey.Watermelon,
     BasicFertilizer = SupplyKey.BasicFertilizer,
-    Token = "Token",
+    Token = "Token"
 }
 
 registerEnumType(SpinKey, {
@@ -99,10 +99,10 @@ export enum TileKey {
     BasicTile1 = "BasicTile1",
     BasicTile2 = "BasicTile2",
     BasicTile3 = "BasicTile3",
-    FertileTile = "FertileTile",
+    FertileTile = "FertileTile"
 }
 registerEnumType(TileKey, {
-    name: "TileKey",
+    name: "TileKey"
 })
 
 export enum ToolKey {
@@ -110,9 +110,23 @@ export enum ToolKey {
     Steal = "Steal",
     WaterCan = "WaterCan",
     Herbicide = "Herbicide",
-    Pesticide = "Pesticide",
+    Pesticide = "Pesticide"
 }
 registerEnumType(ToolKey, {
     name: "ToolKey"
 })
 
+export enum ProductKey {
+    Egg = "Egg",
+    Milk = "Milk",
+    Carrot = "Carrot",
+    Potato = "Potato",
+    Pineapple = "Pineapple",
+    Watermelon = "Watermelon",
+    Cucumber = "Cucumber",
+    BellPepper = "BellPepper"
+}
+
+registerEnumType(ProductKey, {
+    name: "ProductKey"
+})

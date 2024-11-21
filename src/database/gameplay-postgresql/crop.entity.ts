@@ -54,7 +54,7 @@ export class CropEntity extends ReadableAbstractEntity {
     @Column({ name: "maxStack", type: "int", default: 16 })
     maxStack: number
 
-    @OneToOne(() => ProductEntity, { cascade: true, onDelete: "CASCADE" })
+    @OneToOne(() => ProductEntity, { onDelete: "CASCADE", eager: true })
     @JoinColumn({
         name: "product_id",
         referencedColumnName: "id"

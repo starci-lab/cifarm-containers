@@ -1,44 +1,40 @@
-import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
-import { AbstractEntity } from "./abstract"
-import { ProductType } from "./enums"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Column, Entity, OneToOne } from "typeorm"
+import { ReadableAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
+import { ProductType } from "./enums"
 
 @ObjectType()
 @Entity("product")
-export class ProductEntity extends AbstractEntity {
+export class ProductEntity extends ReadableAbstractEntity {
     @Field(() => Boolean)
     @Column({ name: "is_premium", type: "boolean" })
-        isPremium: boolean
-   
+    isPremium: boolean
+
     @Field(() => Int)
     @Column({ name: "gold_amount", type: "int" })
-        goldAmount: number
+    goldAmount: number
 
     @Field(() => Float)
     @Column({ name: "token_amount", type: "float" })
-        tokenAmount: number
+    tokenAmount: number
 
     @Field(() => ProductType)
     @Column({ name: "type", type: "enum", enum: ProductType })
-        type: ProductType
+    type: ProductType
 
-    @Field(() => ID, { nullable: true })
-    @Column({ name: "animal_id", type: "uuid", nullable: true })
-        animalId: number
+    @Field(() => CropEntity, { nullable: true })
+    @OneToOne(() => CropEntity, (crop) => crop.product, {
+        nullable: true,
+        onDelete: "CASCADE"
+    })
+    crop?: CropEntity
 
-    @Field(() => AnimalEntity)
-    @OneToOne(() => AnimalEntity, (animal) => animal.product)
-    @JoinColumn({ name: "animal_id" })
-        animal: AnimalEntity
-
-    @Field(() => ID, { nullable: true })
-    @Column({ name: "crop_id", type: "uuid", nullable: true })
-        cropId: number
-
-    @Field(() => CropEntity)
-    @OneToOne(() => CropEntity, (crop) => crop.product)
-    @JoinColumn({ name: "crop_id" })
-        crop: CropEntity
+    @Field(() => AnimalEntity, { nullable: true })
+    @OneToOne(() => AnimalEntity, (animal) => animal.product, {
+        nullable: true,
+        onDelete: "CASCADE"
+    })
+    animal?: AnimalEntity
 }

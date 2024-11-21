@@ -15,6 +15,7 @@ import {
     DailyRewardPossibility,
     DailyRewardPossibilityKey,
     ProductEntity,
+    ProductKey,
     ProductType,
     SpinEntity,
     SpinKey,
@@ -327,6 +328,7 @@ export class SeedDataService implements OnModuleInit {
 
         const data: Array<DeepPartial<ProductEntity>> = [
             {
+                id: ProductKey.Egg,
                 isPremium: false,
                 goldAmount: 8,
                 tokenAmount: 0.04,
@@ -334,6 +336,7 @@ export class SeedDataService implements OnModuleInit {
                 animal: chicken
             },
             {
+                id: ProductKey.Milk,
                 isPremium: false,
                 goldAmount: 8,
                 tokenAmount: 0.04,
@@ -341,6 +344,7 @@ export class SeedDataService implements OnModuleInit {
                 animal: cow
             },
             {
+                id: ProductKey.Carrot,
                 isPremium: false,
                 goldAmount: 4,
                 tokenAmount: 0.02,
@@ -348,6 +352,7 @@ export class SeedDataService implements OnModuleInit {
                 crop: carrot
             },
             {
+                id: ProductKey.Potato,
                 isPremium: false,
                 goldAmount: 8,
                 tokenAmount: 0.04,
@@ -355,6 +360,7 @@ export class SeedDataService implements OnModuleInit {
                 crop: potato
             },
             {
+                id: ProductKey.BellPepper,
                 isPremium: false,
                 goldAmount: 8,
                 tokenAmount: 0.04,
@@ -362,6 +368,7 @@ export class SeedDataService implements OnModuleInit {
                 crop: bellPepper
             },
             {
+                id: ProductKey.Cucumber,
                 isPremium: false,
                 goldAmount: 8,
                 tokenAmount: 0.04,
@@ -369,6 +376,7 @@ export class SeedDataService implements OnModuleInit {
                 crop: cucumber
             },
             {
+                id: ProductKey.Pineapple,
                 isPremium: false,
                 goldAmount: 8,
                 tokenAmount: 0.04,
@@ -376,6 +384,7 @@ export class SeedDataService implements OnModuleInit {
                 crop: pineapple
             },
             {
+                id: ProductKey.Watermelon,
                 isPremium: false,
                 goldAmount: 8,
                 tokenAmount: 0.04,

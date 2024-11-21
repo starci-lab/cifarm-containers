@@ -13,11 +13,15 @@ message GetCropsResponse {
     repeated CropEntity items = 1;
 }
 
+message DeleteCropRequest {
+    string id = 1;
+}
+
+message CreateCropRequest {
+    CropEntity item = 1;
+}
+
 message UpdateCropRequest {
     string id = 1;
     CropEntity item = 2;
-}
-
-message DeleteCropRequest {
-    string id = 1;
 }

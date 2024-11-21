@@ -8,7 +8,7 @@ service StaticService {
     // Crop
     rpc GetCrop(GetCropRequest) returns (CropEntity);
     rpc GetCrops(google.protobuf.Empty) returns (GetCropsResponse);
-    rpc CreateCrop(CropEntity) returns (google.protobuf.Empty);
+    rpc CreateCrop(CreateCropRequest) returns (google.protobuf.Empty);
     rpc UpdateCrop(UpdateCropRequest) returns (google.protobuf.Empty);
     rpc DeleteCrop(DeleteCropRequest) returns (google.protobuf.Empty);
 

@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { CropEntity } from "@src/database"
-import { ArrayResponse, CreateRequest, Empty } from "@src/types"
+import { ArrayResponse, CreatedResponse, CreateRequest, Empty } from "@src/types"
 import { IsString } from "class-validator"
 import { DeepPartial } from "typeorm"
 
@@ -14,14 +14,12 @@ export class GetCropRequest {
 
 export class GetCropResponse extends CropEntity {}
 
-// CreateCrop
-export class CreateCropRequest {
-    item: DeepPartial<CropEntity>
-}
+// CreateCrop ussing deep partial
 
-export class CreateCropResponse extends CreateRequest<CropEntity> {}
+export class CreateCropRequest extends CreateRequest<CropEntity> {}
 
-// UpdateCrop
+export class CreateCropResponse extends CreatedResponse {}
+
 export class UpdateCropRequest {
     @IsString()
     @ApiProperty({ example: "Carrot", description: "The key of the crop" })
