@@ -1,8 +1,8 @@
 import { NestFactory } from "@nestjs/core"
-import { FarmingServiceModule } from "./farming-service.module"
+import { InventoryServiceModule } from "./inventory-service.module"
 
 async function bootstrap() {
-    const app = await NestFactory.create(FarmingServiceModule)
+    const app = await NestFactory.create(InventoryServiceModule)
     await app.listen(process.env.port ?? 3000)
 }
 bootstrap()
