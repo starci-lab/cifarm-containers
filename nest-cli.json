@@ -135,6 +135,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/farming-service/tsconfig.app.json"
       }
+    },
+    "placed-item-service": {
+      "type": "application",
+      "root": "apps/placed-item-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/placed-item-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/placed-item-service/tsconfig.app.json"
+      }
     }
   }
 }
