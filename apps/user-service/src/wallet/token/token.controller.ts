@@ -1,7 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
 import { TokenService } from "./token.service"
 import { GrpcMethod } from "@nestjs/microservices"
-import { walletGrpcConstants } from "../constants"
+import { userGrpcConstants } from "../../constants"
 import {
     AddTokenRequest,
     AddTokenResponse,
@@ -17,13 +17,13 @@ export class TokenController {
 
     constructor(private readonly tokenService: TokenService) {}
 
-    @GrpcMethod(walletGrpcConstants.SERVICE, "GetTokenBalance")
+    @GrpcMethod(userGrpcConstants.SERVICE, "GetTokenBalance")
     async getTokenBalance(request: GetTokenBalanceRequest): Promise<GetTokenBalanceResponse> {
         this.logger.debug(`Received getTokenBalance request for user: ${request.userId}`)
         return this.tokenService.getTokenBalance(request)
     }
 
-    @GrpcMethod(walletGrpcConstants.SERVICE, "AddToken")
+    @GrpcMethod(userGrpcConstants.SERVICE, "AddToken")
     async addToken(request: AddTokenRequest): Promise<AddTokenResponse> {
         this.logger.debug(
             `Received addToken request for user: ${request.userId} with amount: ${request.tokens}`
@@ -31,7 +31,7 @@ export class TokenController {
         return this.tokenService.addToken(request)
     }
 
-    @GrpcMethod(walletGrpcConstants.SERVICE, "SubtractToken")
+    @GrpcMethod(userGrpcConstants.SERVICE, "SubtractToken")
     async subtractToken(request: SubtractTokenRequest): Promise<SubtractTokenResponse> {
         this.logger.debug(
             `Received subtractToken request for user: ${request.userId} with amount: ${request.tokens}`

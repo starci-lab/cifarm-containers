@@ -5,9 +5,8 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
-import { BalanceModule } from "./balance"
-import { GoldModule } from "./gold"
-import { TokenModule } from "./token"
+import { LevelModule } from "./level"
+import { WalletModule } from "./wallet/wallet.module"
 
 @Module({
     imports: [
@@ -26,9 +25,8 @@ import { TokenModule } from "./token"
             autoLoadEntities: true,
             synchronize: true
         }),
-        GoldModule,
-        TokenModule,
-        BalanceModule
+        LevelModule,
+        WalletModule
     ],
     controllers: [AppController],
     providers: [

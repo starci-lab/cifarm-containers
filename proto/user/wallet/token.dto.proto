@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package token;
+package user;
 
 // Request message for getting the user's token balance
 message GetTokenBalanceRequest {

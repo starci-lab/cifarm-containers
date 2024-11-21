@@ -118,13 +118,13 @@
         "tsConfigPath": "apps/seed-data/tsconfig.app.json"
       }
     },
-    "wallet-service": {
+    "user-service": {
       "type": "application",
-      "root": "apps/wallet-service",
+      "root": "apps/user-service",
       "entryFile": "main",
-      "sourceRoot": "apps/wallet-service/src",
+      "sourceRoot": "apps/user-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/wallet-service/tsconfig.app.json"
+        "tsConfigPath": "apps/user-service/tsconfig.app.json"
       }
     },
     "farming-service": {
@@ -134,15 +134,6 @@
       "sourceRoot": "apps/farming-service/src",
       "compilerOptions": {
         "tsConfigPath": "apps/farming-service/tsconfig.app.json"
-      }
-    },
-    "profile-service": {
-      "type": "application",
-      "root": "apps/profile-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/profile-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/profile-service/tsconfig.app.json"
       }
     }
   }

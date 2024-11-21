@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package gold;
+package user;
 
 // Request message for getting the user's gold balance
 message GetGoldBalanceRequest {
