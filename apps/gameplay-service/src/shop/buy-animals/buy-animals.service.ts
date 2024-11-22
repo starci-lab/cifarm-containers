@@ -49,11 +49,11 @@ export class BuyAnimalService {
             throw new GrpcAbortedException("Building is full")
         }
 
-        // Deduct animal cost from wallet
         await this.walletService.subtractGold(userId, animal.price, {
             name: "Buy animal",
             key
-        })
+        }) // Deduct animal cost from wallet
+        a
 
         // Place animal in the building
         const placedAnimal = this.dataSource.manager.create(PlacedItemEntity, {

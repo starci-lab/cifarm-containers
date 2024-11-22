@@ -47,12 +47,7 @@ import {
                     ttl: 3 * 60000 // 3 minutes (milliseconds)
                 }
             }
-        }),
-        BuyAnimalsModule,
-        BuySuppliesModule,
-        BuySeedsModule,
-        InventoryModule,
-        ConstructBuildingModule
+        })
     ],
     controllers: [AppController],
     providers: [

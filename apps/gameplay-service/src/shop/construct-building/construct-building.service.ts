@@ -1,9 +1,5 @@
-import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { ClientGrpc } from "@nestjs/microservices"
-import { REDIS_KEY } from "@src/constants"
-import { IWalletService } from "@src/containers/wallet-service"
 import { BuildingEntity, PlacedItemEntity, PlacedItemType, UserEntity } from "@src/database"
 import { Cache } from "cache-manager"
 import {
@@ -13,29 +9,18 @@ import {
 } from "nestjs-grpc-exceptions"
 import { lastValueFrom } from "rxjs"
 import { DataSource, DeepPartial } from "typeorm"
-import { InventoryService } from "../inventory"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
 
 @Injectable()
 export class ConstructBuildingService {
     private readonly logger = new Logger(ConstructBuildingService.name)
-    private walletService: IWalletService
-
     constructor(
         private readonly dataSource: DataSource,
-        private readonly inventoryService: InventoryService,
-        @Inject(walletGrpcConstants.NAME) private client: ClientGrpc,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache
     ) {}
 
-    onModuleInit() {
-        this.walletService = this.client.getService<IWalletService>(walletGrpcConstants.SERVICE)
-    }
-
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
-        const { userId, key, position } = request
-
         // Fetch building details
         const buildings = await this.cacheManager.get<Array<BuildingEntity>>(REDIS_KEY.BUILDINGS)
         const building = buildings.find((c) => c.id.toString() === key.toString())
