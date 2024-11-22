@@ -15,7 +15,7 @@ import {
 import { AnimalService } from "./animal.service"
 import { EntityCacheKey } from "@src/constants"
 import { CacheInterceptor, CacheKey } from "@nestjs/cache-manager"
-import { IdCacheInterceptor } from "@src/interceptors/id-cache.interceptor"
+import { IdCacheInterceptor } from "@src/interceptors"
 
 @Controller()
 export class AnimalController {

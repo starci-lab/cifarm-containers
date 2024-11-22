@@ -15,7 +15,7 @@ import {
 import { BuildingService } from "./building.service"
 import { CacheInterceptor, CacheKey } from "@nestjs/cache-manager"
 import { EntityCacheKey } from "@src/constants"
-import { IdCacheInterceptor } from "@src/interceptors/id-cache.interceptor"
+import { IdCacheInterceptor } from "@src/interceptors"
 
 @Controller()
 export class BuildingController {

@@ -3,7 +3,7 @@ import { CACHE_MANAGER, CacheInterceptor, CacheKey } from "@nestjs/cache-manager
 import { Controller, Inject, Logger, UseInterceptors } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { EntityCacheKey } from "@src/constants"
-import { IdCacheInterceptor } from "@src/interceptors/id-cache.interceptor"
+import { IdCacheInterceptor } from "@src/interceptors"
 import {
     CreateCropRequest,
     CreateCropResponse,
