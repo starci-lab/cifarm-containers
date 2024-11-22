@@ -2,9 +2,8 @@ import { ApiProperty } from "@nestjs/swagger"
 import { PlacedItemEntity } from "@src/database"
 import {
     ArrayResponse,
-    CreatedResponse,
     CreateRequest,
-    CreateRequestWithUserId,
+    CreateWithUserIdRequest,
     Empty,
     UserIdRequest
 } from "@src/types"
@@ -20,7 +19,7 @@ export class GetPlacedItemRequest {
     id: string
 }
 
-export class CreatePlacedItemRequest extends CreateRequestWithUserId<PlacedItemEntity> {}
+export class CreatePlacedItemRequest extends CreateWithUserIdRequest<PlacedItemEntity> {}
 
 export class CreatePlacedItemResponse extends CreateRequest<PlacedItemEntity> {}
 

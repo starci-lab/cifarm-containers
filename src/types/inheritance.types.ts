@@ -24,7 +24,7 @@ export class CreateRequest<TEntity> {
     item: DeepPartial<TEntity>
 }
 
-export class CreateRequestWithUserId<TEntity> extends UserIdRequest {
+export class CreateWithUserIdRequest<TEntity> extends UserIdRequest {
     @ApiProperty({ type: Object })
     item: DeepPartial<TEntity>
 }
