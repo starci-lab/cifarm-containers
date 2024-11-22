@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package static;
+
+import "google/protobuf/empty.proto";
+import "../entities/building.entity.proto";
+
+message GetBuildingRequest {
+    string id = 1;
+}
+
+message GetBuildingsResponse {
+    repeated BuildingEntity items = 1;
+}
+
+message DeleteBuildingRequest {
+    string id = 1;
+}
+
+message CreateBuildingRequest {
+    BuildingEntity item = 1;
+}
+
+message UpdateBuildingRequest {
+    string id = 1;
+    BuildingEntity item = 2;
+}

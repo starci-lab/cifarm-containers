@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package entities;
+
+message BuildingEntity {
+    string id = 1;
+    bool availableInShop = 2;
+    string type = 3;
+    int32 maxUpgrade = 4;
+    int32 price = 5;
+    repeated UpgradeEntity upgrades = 6;
+}
+
+message UpgradeEntity {
+    string id = 1;
+    int32 upgradePrice = 2;
+    int32 capacity = 3;
+}

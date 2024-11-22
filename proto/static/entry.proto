@@ -3,6 +3,8 @@ syntax = "proto3";
 package static;
 
 import "crop.proto";
+import "animal.proto";
+import "building.proto";
 
 service StaticService {
     // Crop
@@ -13,4 +15,16 @@ service StaticService {
     rpc DeleteCrop(DeleteCropRequest) returns (google.protobuf.Empty);
 
     // Animal
+    rpc GetAnimal(GetAnimalRequest) returns (AnimalEntity);
+    rpc GetAnimals(google.protobuf.Empty) returns (GetAnimalsResponse);
+    rpc CreateAnimal(CreateAnimalRequest) returns (google.protobuf.Empty);
+    rpc UpdateAnimal(UpdateAnimalRequest) returns (google.protobuf.Empty);
+    rpc DeleteAnimal(DeleteCropRequest) returns (google.protobuf.Empty);
+
+    // Building
+    rpc GetBuilding(GetBuildingRequest) returns (BuildingEntity);
+    rpc GetBuildings(google.protobuf.Empty) returns (GetBuildingsResponse);
+    rpc CreateBuilding(CreateBuildingRequest) returns (google.protobuf.Empty);
+    rpc UpdateBuilding(UpdateBuildingRequest) returns (google.protobuf.Empty);
+    rpc DeleteBuilding(DeleteCropRequest) returns (google.protobuf.Empty);
 }

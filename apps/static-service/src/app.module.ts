@@ -5,6 +5,8 @@ import { envConfig } from "@src/config"
 import { CropModule } from "./crop"
 import { APP_FILTER } from "@nestjs/core"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
+import { AnimalModule } from "./animal"
+import { BuildingModule } from "./building"
 
 @Module({
     imports: [
@@ -23,7 +25,9 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
             autoLoadEntities: true,
             synchronize: true
         }),
-        CropModule
+        CropModule,
+        AnimalModule,
+        BuildingModule
     ],
     providers: [
         {

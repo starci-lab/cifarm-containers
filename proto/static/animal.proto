@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package static;
+
+import "google/protobuf/empty.proto";
+import "../entities/animal.entity.proto";
+
+message GetAnimalRequest {
+    string id = 1;
+}
+
+message GetAnimalsResponse {
+    repeated AnimalEntity items = 1;
+}
+
+message DeleteAnimalRequest {
+    string id = 1;
+}
+
+message CreateAnimalRequest {
+    AnimalEntity item = 1;
+}
+
+message UpdateAnimalRequest {
+    string id = 1;
+    AnimalEntity item = 2;
+}

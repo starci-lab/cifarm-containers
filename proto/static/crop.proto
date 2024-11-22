@@ -3,7 +3,7 @@ syntax = "proto3";
 package static;
 
 import "google/protobuf/empty.proto";
-import "../entities/crop.base.proto";
+import "../entities/crop.entity.proto";
 
 message GetCropRequest {
     string id = 1;

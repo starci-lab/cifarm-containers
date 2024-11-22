@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package entities;
+
+import "product.entity.proto";
+
+message AnimalEntity {
+    string id = 1;
+    int32 yieldTime = 2;
+    int32 offspringPrice = 3;
+    bool isNft = 4;
+    int32 growthTime = 5;
+    bool availableInShop = 6;
+    int32 hungerTime = 7;
+    int32 minHarvestQuantity = 8;
+    int32 maxHarvestQuantity = 9;
+    int32 basicHarvestExperiences = 10;
+    int32 premiumHarvestExperiences = 11;
+    string type = 12;
+    float sickChance = 13;
+    ProductEntity product = 14;
+}
