@@ -1,7 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { ClientsModule, Transport } from "@nestjs/microservices"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { envConfig } from "@src/config"
 import {
     CropEntity,
     InventoryEntity,
@@ -9,11 +7,11 @@ import {
     ProductEntity,
     UserEntity
 } from "@src/database"
-import { ConstructBuildingService } from "./construct-building.service"
-import { SeedGrowthInfoEntity } from "@src/database/gameplay-postgresql/seed-grow-info.entity"
 import { AnimalInfoEntity } from "@src/database/gameplay-postgresql/animal-info.entity"
 import { BuildingInfoEntity } from "@src/database/gameplay-postgresql/building-info.entity"
+import { SeedGrowthInfoEntity } from "@src/database/gameplay-postgresql/seed-grow-info.entity"
 import { WalletModule } from "@src/services/gameplay/wallet"
+import { ConstructBuildingService } from "./construct-building.service"
 
 @Global()
 @Module({
