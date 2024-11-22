@@ -108,42 +108,6 @@
       "compilerOptions": {
         "tsConfigPath": "apps/seed-data/tsconfig.app.json"
       }
-    },
-    "user-service": {
-      "type": "application",
-      "root": "apps/user-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/user-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/user-service/tsconfig.app.json"
-      }
-    },
-    "farming-service": {
-      "type": "application",
-      "root": "apps/farming-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/farming-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/farming-service/tsconfig.app.json"
-      }
-    },
-    "placed-item-service": {
-      "type": "application",
-      "root": "apps/placed-item-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/placed-item-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/placed-item-service/tsconfig.app.json"
-      }
-    },
-    "static-service": {
-      "type": "application",
-      "root": "apps/static-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/static-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/static-service/tsconfig.app.json"
-      }
     }
   }
 }

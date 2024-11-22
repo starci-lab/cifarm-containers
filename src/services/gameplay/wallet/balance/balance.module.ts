@@ -14,7 +14,6 @@ import {
     UserEntity
 } from "@src/database"
 import { BalanceService } from "./balance.service"
-import { BalanceController } from "./balance.controller"
 
 @Global()
 @Module({
@@ -33,7 +32,6 @@ import { BalanceController } from "./balance.controller"
             UpgradeEntity
         ])
     ],
-    controllers: [BalanceController],
     providers: [BalanceService],
     exports: [BalanceService]
 })
