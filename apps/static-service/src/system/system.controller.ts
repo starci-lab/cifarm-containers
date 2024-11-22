@@ -1,10 +1,7 @@
 import { EntityCacheKey, staticGrpcConstants } from "@apps/static-service"
 import { Controller, Logger, UseInterceptors } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import {
-    GetSystemRequest,
-    GetSystemResponse
-} from "./system.dto"
+import { GetSystemRequest, GetSystemResponse } from "./system.dto"
 import { SystemService } from "./system.service"
 import { CacheInterceptor, CacheKey } from "@nestjs/cache-manager"
 

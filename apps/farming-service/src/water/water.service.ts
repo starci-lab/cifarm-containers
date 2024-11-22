@@ -44,11 +44,11 @@ export class WaterService {
 
     async water(request: WaterRequest): Promise<WaterResponse> {
         //get experience and energy
-        const { value : activities } = await this.dataSource.manager.findOne(SystemEntity, {
+        const { value: activities } = await this.dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
         })
-        const { water: { energyCost, experiencesGain } } = activities as Activities
-
-        
+        const {
+            water: { energyCost, experiencesGain }
+        } = activities as Activities
     }
 }

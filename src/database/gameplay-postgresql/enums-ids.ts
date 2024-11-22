@@ -100,5 +100,14 @@ export enum ProductId {
 }
 
 export enum SystemId {
-    Activities = "activities",
+    Activities = "activities"
+}
+
+export enum InventoryTypeId {
+    CarrotSeed = "carrotSeed",
+    PotatoSeed = "potatoSeed",
+    PineappleSeed = "pineappleSeed",
+    WatermelonSeed = "watermelonSeed",
+    CucumberSeed = "cucumberSeed",
+    BellPepperSeed = "bellPepperSeed"
 }

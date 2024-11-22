@@ -14,6 +14,9 @@ import {
     DailyRewardId,
     DailyRewardPossibility,
     DailyRewardPossibilityId,
+    InventoryType,
+    InventoryTypeEntity,
+    InventoryTypeId,
     ProductId,
     ProductType,
     SpinEntity,
@@ -82,7 +85,8 @@ export class SeedDataService implements OnModuleInit {
                 queryRunner.manager.delete(DailyRewardPossibility, {}),
                 queryRunner.manager.delete(DailyRewardEntity, {}),
                 queryRunner.manager.delete(SpinEntity, {}),
-                queryRunner.manager.delete(SystemEntity, {})
+                queryRunner.manager.delete(SystemEntity, {}),
+                queryRunner.manager.delete(InventoryTypeEntity, {})
             ])
 
             await queryRunner.commitTransaction()
@@ -205,7 +209,23 @@ export class SeedDataService implements OnModuleInit {
                     isPremium: false,
                     goldAmount: 8,
                     tokenAmount: 0.04,
-                    type: ProductType.Animal
+                    type: ProductType.Animal,
+                    inventoryType: {
+                        id: ProductId.Egg,
+                        asTool: false,
+                        deliverable: false,
+                        maxStack: 1,
+                        placeable: true,
+                        type: InventoryType.Product
+                    }
+                },
+                inventoryType: {
+                    id: AnimalId.Chicken,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 1,
+                    placeable: true,
+                    type: InventoryType.Animal
                 }
             },
             {
@@ -227,7 +247,23 @@ export class SeedDataService implements OnModuleInit {
                     isPremium: false,
                     goldAmount: 8,
                     tokenAmount: 0.04,
-                    type: ProductType.Animal
+                    type: ProductType.Animal,
+                    inventoryType: {
+                        id: ProductId.Milk,
+                        asTool: false,
+                        deliverable: false,
+                        maxStack: 1,
+                        placeable: true,
+                        type: InventoryType.Product
+                    }
+                },
+                inventoryType: {
+                    id: AnimalId.Cow,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 1,
+                    placeable: true,
+                    type: InventoryType.Animal
                 }
             }
         ]
@@ -255,7 +291,23 @@ export class SeedDataService implements OnModuleInit {
                     isPremium: false,
                     goldAmount: 4,
                     tokenAmount: 0.02,
-                    type: ProductType.Crop
+                    type: ProductType.Crop,
+                    inventoryType: {
+                        id: ProductId.Carrot,
+                        asTool: false,
+                        deliverable: true,
+                        maxStack: 16,
+                        placeable: false,
+                        type: InventoryType.Product
+                    }
+                },
+                inventoryType: {
+                    id: InventoryTypeId.CarrotSeed,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: false,
+                    type: InventoryType.Seed
                 }
             },
             {
@@ -277,7 +329,23 @@ export class SeedDataService implements OnModuleInit {
                     isPremium: false,
                     goldAmount: 8,
                     tokenAmount: 0.04,
-                    type: ProductType.Crop
+                    type: ProductType.Crop,
+                    inventoryType: {
+                        id: ProductId.Potato,
+                        asTool: false,
+                        deliverable: true,
+                        maxStack: 16,
+                        placeable: false,
+                        type: InventoryType.Product
+                    }
+                },
+                inventoryType: {
+                    id: InventoryTypeId.PotatoSeed,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: false,
+                    type: InventoryType.Seed
                 }
             },
             {
@@ -295,11 +363,27 @@ export class SeedDataService implements OnModuleInit {
                 availableInShop: true,
                 maxStack: 16,
                 product: {
-                    id: ProductId.BellPepper,
+                    id: ProductId.Cucumber,
                     isPremium: false,
                     goldAmount: 8,
                     tokenAmount: 0.04,
-                    type: ProductType.Crop
+                    type: ProductType.Crop,
+                    inventoryType: {
+                        id: ProductId.Cucumber,
+                        asTool: false,
+                        deliverable: true,
+                        maxStack: 16,
+                        placeable: false,
+                        type: InventoryType.Product
+                    }
+                },
+                inventoryType: {
+                    id: InventoryTypeId.CucumberSeed,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: false,
+                    type: InventoryType.Seed
                 }
             },
             {
@@ -317,11 +401,27 @@ export class SeedDataService implements OnModuleInit {
                 availableInShop: true,
                 maxStack: 16,
                 product: {
-                    id: ProductId.Cucumber,
+                    id: ProductId.Pineapple,
                     isPremium: false,
                     goldAmount: 8,
                     tokenAmount: 0.04,
-                    type: ProductType.Crop
+                    type: ProductType.Crop,
+                    inventoryType: {
+                        id: ProductId.Pineapple,
+                        asTool: false,
+                        deliverable: true,
+                        maxStack: 16,
+                        placeable: false,
+                        type: InventoryType.Product
+                    }
+                },
+                inventoryType: {
+                    id: InventoryTypeId.PineappleSeed,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: false,
+                    type: InventoryType.Seed
                 }
             },
             {
@@ -339,11 +439,27 @@ export class SeedDataService implements OnModuleInit {
                 availableInShop: true,
                 maxStack: 16,
                 product: {
-                    id: ProductId.Pineapple,
+                    id: ProductId.Watermelon,
                     isPremium: false,
                     goldAmount: 8,
                     tokenAmount: 0.04,
-                    type: ProductType.Crop
+                    type: ProductType.Crop,
+                    inventoryType: {
+                        id: ProductId.Watermelon,
+                        asTool: false,
+                        deliverable: true,
+                        maxStack: 16,
+                        placeable: false,
+                        type: InventoryType.Product
+                    }
+                },
+                inventoryType: {
+                    id: InventoryTypeId.WatermelonSeed,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: false,
+                    type: InventoryType.Seed
                 }
             },
             {
@@ -361,11 +477,27 @@ export class SeedDataService implements OnModuleInit {
                 availableInShop: true,
                 maxStack: 16,
                 product: {
-                    id: ProductId.Watermelon,
+                    id: ProductId.BellPepper,
                     isPremium: false,
                     goldAmount: 8,
                     tokenAmount: 0.04,
-                    type: ProductType.Crop
+                    type: ProductType.Crop,
+                    inventoryType: {
+                        id: ProductId.BellPepper,
+                        asTool: false,
+                        deliverable: true,
+                        maxStack: 16,
+                        placeable: false,
+                        type: InventoryType.Product
+                    }
+                },
+                inventoryType: {
+                    id: InventoryTypeId.BellPepperSeed,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: false,
+                    type: InventoryType.Seed
                 }
             }
         ]
@@ -451,35 +583,75 @@ export class SeedDataService implements OnModuleInit {
                 price: 0,
                 maxOwnership: 6,
                 isNFT: false,
-                availableInShop: true
+                availableInShop: true,
+                inventoryType: {
+                    id: TileId.StarterTile,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: true,
+                    type: InventoryType.Tile
+                }
             },
             {
                 id: TileId.BasicTile1,
                 price: 1000,
                 maxOwnership: 10,
                 isNFT: false,
-                availableInShop: true
+                availableInShop: true,
+                inventoryType: {
+                    id: TileId.BasicTile1,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: true,
+                    type: InventoryType.Tile
+                }
             },
             {
                 id: TileId.BasicTile2,
                 price: 2500,
                 maxOwnership: 30,
                 isNFT: false,
-                availableInShop: true
+                availableInShop: true,
+                inventoryType: {
+                    id: TileId.BasicTile2,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: true,
+                    type: InventoryType.Tile
+                }
             },
             {
                 id: TileId.BasicTile3,
                 price: 10000,
                 maxOwnership: 9999,
                 isNFT: false,
-                availableInShop: true
+                availableInShop: true,
+                inventoryType: {
+                    id: TileId.BasicTile3,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: true,
+                    type: InventoryType.Tile
+                }
             },
             {
                 id: TileId.FertileTile,
                 price: 0,
                 maxOwnership: 0,
                 isNFT: true,
-                availableInShop: false
+                availableInShop: false,
+                inventoryType: {
+                    id: TileId.FertileTile,
+                    asTool: false,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: true,
+                    type: InventoryType.Tile
+                }
             }
         ]
 
@@ -493,14 +665,30 @@ export class SeedDataService implements OnModuleInit {
                 price: 50,
                 availableInShop: true,
                 fertilizerEffectTimeReduce: 60 * 30,
-                maxStack: 16
+                maxStack: 16,
+                inventoryType: {
+                    id: SupplyId.BasicFertilizer,
+                    asTool: true,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: false,
+                    type: InventoryType.Supply
+                }
             },
             {
                 id: SupplyId.AnimalFeed,
                 type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,
-                maxStack: 16
+                maxStack: 16,
+                inventoryType: {
+                    id: SupplyId.AnimalFeed,
+                    asTool: true,
+                    deliverable: false,
+                    maxStack: 16,
+                    placeable: false,
+                    type: InventoryType.Supply
+                }
             }
         ]
 

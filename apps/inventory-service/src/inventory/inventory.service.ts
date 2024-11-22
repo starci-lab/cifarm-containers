@@ -19,7 +19,12 @@ export class InventoryService {
         const inventories: DeepPartial<InventoryEntity>[] = await this.dataSource.manager.find(
             InventoryEntity,
             {
-                where: { referenceKey: request.inventory.referenceKey, userId: request.userId }
+                where: {
+                    user: {
+                        id: request.userId
+                    },
+                    type: request.inventory.type
+                }
             }
         )
 

@@ -17,5 +17,5 @@ export enum EntityCacheKey {
     Spins = "spins",
     Supplies = "supplies",
     Product = "product",
-    System = "system",
+    System = "system"
 }

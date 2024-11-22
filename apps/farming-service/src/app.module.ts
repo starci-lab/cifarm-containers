@@ -8,7 +8,7 @@ import { envConfig } from "@src/config"
             load: [envConfig],
             envFilePath: [".env.local"],
             isGlobal: true
-        }),
+        })
     ],
     controllers: [],
     providers: []

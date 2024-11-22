@@ -2,17 +2,24 @@ import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import {
     AnimalEntity,
+    AnimalInfoEntity,
     BuildingEntity,
+    BuildingInfoEntity,
     CropEntity,
     DailyRewardEntity,
     DailyRewardPossibility,
+    InventoryEntity,
+    InventoryTypeEntity,
+    PlacedItemEntity,
     ProductEntity,
+    SeedGrowthInfoEntity,
     SpinEntity,
     SupplyEntity,
     SystemEntity,
     TileEntity,
     ToolEntity,
-    UpgradeEntity
+    UpgradeEntity,
+    UserEntity
 } from "@src/database"
 import { SeedDataService } from "./seed-data.service"
 
@@ -30,7 +37,14 @@ import { SeedDataService } from "./seed-data.service"
             DailyRewardEntity,
             DailyRewardPossibility,
             SpinEntity,
-            SystemEntity
+            SystemEntity,
+            InventoryTypeEntity,
+            InventoryEntity,
+            UserEntity,
+            PlacedItemEntity,
+            SeedGrowthInfoEntity,
+            AnimalInfoEntity,
+            BuildingInfoEntity
         ])
     ],
     providers: [SeedDataService]

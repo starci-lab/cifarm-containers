@@ -4,9 +4,10 @@ import { ReadableAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
 import { ProductType } from "./enums"
+import { InventoryTypeEntity } from "./inventory-type.entity"
 
 @ObjectType()
-@Entity("product")
+@Entity("products")
 export class ProductEntity extends ReadableAbstractEntity {
     @Field(() => Boolean)
     @Column({ name: "is_premium", type: "boolean" })
@@ -37,4 +38,12 @@ export class ProductEntity extends ReadableAbstractEntity {
         onDelete: "CASCADE"
     })
     animal?: AnimalEntity
+
+    @Field(() => InventoryTypeEntity, { nullable: true })
+    @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.product, {
+        nullable: true,
+        onDelete: "CASCADE",
+        cascade: ["insert"]
+    })
+    inventoryType?: InventoryTypeEntity
 }

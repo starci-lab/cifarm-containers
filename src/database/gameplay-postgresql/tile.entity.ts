@@ -1,23 +1,33 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity } from "typeorm"
+import { Column, Entity, OneToMany, OneToOne } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
+import { InventoryEntity } from "./inventory.entity"
+import { InventoryTypeEntity } from "./inventory-type.entity"
 
 @ObjectType()
 @Entity("tiles")
 export class TileEntity extends ReadableAbstractEntity {
     @Field(() => Float)
     @Column({ name: "price", type: "float" })
-        price: number
+    price: number
 
     @Field(() => Int)
     @Column({ name: "max_ownership", type: "int" })
-        maxOwnership: number
+    maxOwnership: number
 
     @Field(() => Boolean)
     @Column({ name: "is_nft", type: "boolean" })
-        isNFT: boolean
+    isNFT: boolean
 
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })
-        availableInShop: boolean
+    availableInShop: boolean
+
+    @Field(() => InventoryTypeEntity, { nullable: true })
+    @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.tile, {
+        nullable: true,
+        onDelete: "CASCADE",
+        cascade: ["insert"]
+    })
+    inventoryType?: InventoryTypeEntity
 }

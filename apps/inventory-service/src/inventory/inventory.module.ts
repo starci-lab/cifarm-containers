@@ -10,6 +10,8 @@ import {
     PlacedItemEntity,
     ProductEntity,
     SeedGrowthInfoEntity,
+    SupplyEntity,
+    TileEntity,
     UpgradeEntity,
     UserEntity
 } from "@src/database"
@@ -31,7 +33,9 @@ import { InventoryController } from "./inventory.controller"
             AnimalEntity,
             BuildingEntity,
             AnimalEntity,
-            UpgradeEntity
+            UpgradeEntity,
+            SupplyEntity,
+            TileEntity
         ])
     ],
     providers: [InventoryService],

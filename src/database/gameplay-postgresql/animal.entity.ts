@@ -2,6 +2,7 @@ import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
+import { InventoryTypeEntity } from "./inventory-type.entity"
 import { ProductEntity } from "./product.entity"
 
 @ObjectType()
@@ -61,4 +62,12 @@ export class AnimalEntity extends ReadableAbstractEntity {
         referencedColumnName: "id"
     })
     product: ProductEntity
+
+    @Field(() => InventoryTypeEntity, { nullable: true })
+    @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.animal, {
+        nullable: true,
+        onDelete: "CASCADE",
+        cascade: ["insert"]
+    })
+    inventoryType?: InventoryTypeEntity
 }
