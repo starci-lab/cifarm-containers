@@ -7,6 +7,8 @@ import { APP_FILTER } from "@nestjs/core"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AnimalModule } from "./animal"
 import { BuildingModule } from "./building"
+import { CacheModule, CacheStore } from "@nestjs/cache-manager"
+import { redisStore } from "cache-manager-redis-yet"
 
 @Module({
     imports: [
@@ -24,6 +26,22 @@ import { BuildingModule } from "./building"
             database: envConfig().database.postgres.gameplay.dbName,
             autoLoadEntities: true,
             synchronize: true
+        }),
+        CacheModule.registerAsync({
+            isGlobal: true,
+            useFactory: async () => {
+                const store = await redisStore({
+                    socket: {
+                        host: envConfig().database.redis.cache.host,
+                        port: envConfig().database.redis.cache.port
+                    }
+                })
+
+                return {
+                    store: store as unknown as CacheStore,
+                    ttl: Infinity
+                }
+            }
         }),
         CropModule,
         AnimalModule,

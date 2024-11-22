@@ -1,14 +1,11 @@
-export const REDIS_KEY = {
-    TILES: "TILES",
-    ANIMALS: "ANIMALS",
-    CROPS: "CROPS",
-    TOOLS: "TOOLS",
-    BUILDINGS: "BUILDINGS",
-    DAILY_REWARDS: "DAILY_REWARDS",
-    SPINS: "SPINS",
-    SUPPLIES: "SUPPLIES",
-    MARKET_PRICINGS: "MARKET_PRICINGS",
-
-    // Chua dung
-    USERS: "USERS",
+export enum EntityCacheKey {
+    Tiles = "tiles",
+    Animals = "animals",
+    Crops = "crops",
+    Tools = "tools",
+    Buildings = "buildings",
+    DailyRewards = "dailyRewards",
+    Spins = "spins",
+    Supplies = "supplies",
+    MarketPricings = "marketPricings"
 }

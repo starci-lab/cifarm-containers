@@ -1,6 +1,9 @@
 import { staticGrpcConstants } from "@apps/static-service/src/constants"
-import { Controller, Logger } from "@nestjs/common"
+import { CACHE_MANAGER, CacheInterceptor, CacheKey } from "@nestjs/cache-manager"
+import { Controller, Inject, Logger, UseInterceptors } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
+import { EntityCacheKey } from "@src/constants"
+import { IdCacheInterceptor } from "@src/interceptors/id-cache.interceptor"
 import {
     CreateCropRequest,
     CreateCropResponse,
@@ -18,13 +21,21 @@ import { CropService } from "./crop.service"
 export class CropController {
     private readonly logger = new Logger(CropController.name)
 
-    constructor(private readonly cropService: CropService) {}
+    constructor(
+        @Inject(CACHE_MANAGER)
+        private readonly cacheManager: Cache,
+        private readonly cropService: CropService
+    ) {}
 
+    @UseInterceptors(CacheInterceptor)
+    @CacheKey(EntityCacheKey.Crops)
     @GrpcMethod(staticGrpcConstants.SERVICE, "GetCrops")
     async getCrops(): Promise<GetCropsResponse> {
         return this.cropService.getCrops()
     }
 
+    @UseInterceptors(IdCacheInterceptor)
+    @CacheKey(EntityCacheKey.Crops)
     @GrpcMethod(staticGrpcConstants.SERVICE, "GetCrop")
     async getCrop(request: GetCropRequest): Promise<GetCropResponse> {
         return this.cropService.getCrop(request)

@@ -47,7 +47,7 @@ export class SeedDataService implements OnModuleInit {
         await this.clearPostgresData()
         await this.clearRedisCacheData()
         await this.seedData()
-        await this.saveDataToRedis()
+        // await this.saveDataToRedis()
     }
 
     private async clearRedisCacheData() {

@@ -1,5 +1,5 @@
 import { staticGrpcConstants } from "@apps/static-service/src/constants"
-import { Controller, Logger } from "@nestjs/common"
+import { Controller, Logger, UseInterceptors } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import {
     CreateAnimalRequest,
@@ -13,6 +13,9 @@ import {
     UpdateAnimalResponse
 } from "./animal.dto"
 import { AnimalService } from "./animal.service"
+import { EntityCacheKey } from "@src/constants"
+import { CacheInterceptor, CacheKey } from "@nestjs/cache-manager"
+import { IdCacheInterceptor } from "@src/interceptors/id-cache.interceptor"
 
 @Controller()
 export class AnimalController {
@@ -20,11 +23,15 @@ export class AnimalController {
 
     constructor(private readonly AnimalService: AnimalService) {}
 
+    @UseInterceptors(CacheInterceptor)
+    @CacheKey(EntityCacheKey.Animals)
     @GrpcMethod(staticGrpcConstants.SERVICE, "GetAnimals")
     async getAnimals(): Promise<GetAnimalsResponse> {
         return this.AnimalService.getAnimals()
     }
 
+    @UseInterceptors(IdCacheInterceptor)
+    @CacheKey(EntityCacheKey.Animals)
     @GrpcMethod(staticGrpcConstants.SERVICE, "GetAnimal")
     async getAnimal(request: GetAnimalRequest): Promise<GetAnimalResponse> {
         return this.AnimalService.getAnimal(request)

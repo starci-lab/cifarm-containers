@@ -1,5 +1,5 @@
 import { staticGrpcConstants } from "@apps/static-service/src/constants"
-import { Controller, Logger } from "@nestjs/common"
+import { Controller, Logger, UseInterceptors } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import {
     CreateBuildingRequest,
@@ -13,6 +13,9 @@ import {
     UpdateBuildingResponse
 } from "./building.dto"
 import { BuildingService } from "./building.service"
+import { CacheInterceptor, CacheKey } from "@nestjs/cache-manager"
+import { EntityCacheKey } from "@src/constants"
+import { IdCacheInterceptor } from "@src/interceptors/id-cache.interceptor"
 
 @Controller()
 export class BuildingController {
@@ -20,11 +23,15 @@ export class BuildingController {
 
     constructor(private readonly BuildingService: BuildingService) {}
 
+    @UseInterceptors(CacheInterceptor)
+    @CacheKey(EntityCacheKey.Buildings)
     @GrpcMethod(staticGrpcConstants.SERVICE, "GetBuildings")
     async getBuildings(): Promise<GetBuildingsResponse> {
         return this.BuildingService.getBuildings()
     }
 
+    @UseInterceptors(IdCacheInterceptor)
+    @CacheKey(EntityCacheKey.Buildings)
     @GrpcMethod(staticGrpcConstants.SERVICE, "GetBuilding")
     async getBuilding(request: GetBuildingRequest): Promise<GetBuildingResponse> {
         return this.BuildingService.getBuilding(request)
