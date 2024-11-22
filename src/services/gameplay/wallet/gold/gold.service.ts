@@ -11,8 +11,8 @@ import {
 import { GrpcInvalidArgumentException } from "nestjs-grpc-exceptions"
 
 @Injectable()
-export class GoldService {
-    private readonly logger: Logger = new Logger(GoldService.name)
+export class GoldTokenService {
+    private readonly logger: Logger = new Logger(GoldTokenService.name)
     constructor(private readonly balanceService: BalanceService) {}
 
     public async getGoldBalance(request: GetGoldBalanceRequest): Promise<GetGoldBalanceResponse> {

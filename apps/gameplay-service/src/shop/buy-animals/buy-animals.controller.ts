@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { BuyAnimalsService } from "./buy-animals.service"
 import { BuyAnimalsRequest } from "./buy-animals.dto"
-import { shopGrpcConstants } from "../../constants"
+import { shopGrpcConstants } from "../../app.constants"
 
 @Controller()
 export class BuyAnimalsController {

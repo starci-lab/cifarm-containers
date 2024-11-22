@@ -11,8 +11,8 @@ import {
 } from "./token.dto"
 
 @Injectable()
-export class TokenService {
-    private readonly logger: Logger = new Logger(TokenService.name)
+export class TokenBalanceService {
+    private readonly logger: Logger = new Logger(TokenBalanceService.name)
 
     constructor(private readonly balanceService: BalanceService) {}
 

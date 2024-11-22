@@ -37,6 +37,10 @@ export class UserEntity extends AbstractEntity {
     experiences: number
 
     @Field(() => Int)
+    @Column({ name: "energy", type: "int", default: 0 })
+    energy: number
+
+    @Field(() => Int)
     @Column({ name: "level", type: "int", default: 1 })
     level: number
 

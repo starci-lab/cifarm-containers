@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import { envConfig } from "@src/config"
-import { shopGrpcConstants } from "./constants"
+import { shopGrpcConstants } from "./app.constants"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 
 const bootstrap = async () => {

@@ -4,13 +4,14 @@ import { CropEntity } from "./crop.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { AbstractEntity } from "./abstract"
 import { UserEntity } from "./user.entity"
+import { CropCurrentState } from "./enums"
 
 @ObjectType()
 @Entity("seed_growth_info")
 export class SeedGrowthInfoEntity extends AbstractEntity {
-    @Field(() => Number)
-    @Column({ type: "int", nullable: true })
-    currentStage: number
+    @Field(() => String)
+    @Column({ type: "enum", enum: CropCurrentState})
+    currentStage: CropCurrentState
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })

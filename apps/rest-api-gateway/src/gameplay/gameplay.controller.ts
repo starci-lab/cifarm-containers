@@ -16,7 +16,7 @@ import {
     BuySuppliesControllerRequest,
     BuySuppliesResponse
 } from "@apps/gameplay-service/src/buy-supplies"
-import { shopGrpcConstants } from "@apps/gameplay-service/src/constants"
+import { shopGrpcConstants } from "@apps/gameplay-service/src/app.constants"
 import {
     ConstructBuildingControllerRequest,
     ConstructBuildingResponse

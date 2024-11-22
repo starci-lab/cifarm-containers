@@ -1,5 +1,3 @@
-import { registerEnumType } from "@nestjs/graphql"
-
 // Crop Current State Enum
 export enum CropCurrentState {
     Normal = "normal",
@@ -8,17 +6,9 @@ export enum CropCurrentState {
     IsInfested = "isInfested"
 }
 
-registerEnumType(CropCurrentState, {
-    name: "CropCurrentState"
-})
-
 // Animal Current State Enum
 export enum AnimalCurrentState {
     Normal = "normal",
     Hungry = "hungry",
     Sick = "sick"
 }
-
-registerEnumType(AnimalCurrentState, {
-    name: "AnimalCurrentState"
-})
