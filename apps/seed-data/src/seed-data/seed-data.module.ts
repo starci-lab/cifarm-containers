@@ -9,6 +9,7 @@ import {
     ProductEntity,
     SpinEntity,
     SupplyEntity,
+    SystemEntity,
     TileEntity,
     ToolEntity,
     UpgradeEntity
@@ -28,7 +29,8 @@ import { SeedDataService } from "./seed-data.service"
             SupplyEntity,
             DailyRewardEntity,
             DailyRewardPossibility,
-            SpinEntity
+            SpinEntity,
+            SystemEntity
         ])
     ],
     providers: [SeedDataService]

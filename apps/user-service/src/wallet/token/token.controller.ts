@@ -1,7 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
 import { TokenService } from "./token.service"
 import { GrpcMethod } from "@nestjs/microservices"
-import { userGrpcConstants } from "../../constants"
+import { userGrpcConstants } from "../../app.constants"
 import {
     AddTokenRequest,
     AddTokenResponse,

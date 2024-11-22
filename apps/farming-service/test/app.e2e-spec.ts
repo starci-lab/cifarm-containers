@@ -1,7 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing"
 import { INestApplication } from "@nestjs/common"
 import * as request from "supertest"
-import { FarmingServiceModule } from "./../src/farming-service.module"
+import { FarmingServiceModule } from "../src/app.module"
 
 describe("FarmingServiceController (e2e)", () => {
     let app: INestApplication

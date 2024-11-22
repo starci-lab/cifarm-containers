@@ -2,7 +2,7 @@ import { NestFactory } from "@nestjs/core"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { AppModule } from "./app.module"
 import { envConfig } from "@src/config"
-import { inventoryGrpcConstants } from "./constants"
+import { inventoryGrpcConstants } from "./app.constants"
 
 const bootstrap = async () => {
     const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {

@@ -1,11 +1,16 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import {
+    AnimalEntity,
     AnimalInfoEntity,
+    BuildingEntity,
     BuildingInfoEntity,
+    CropEntity,
     InventoryEntity,
     PlacedItemEntity,
+    ProductEntity,
     SeedGrowthInfoEntity,
+    UpgradeEntity,
     UserEntity
 } from "@src/database"
 import { BalanceService } from "./balance.service"
@@ -20,10 +25,16 @@ import { BalanceController } from "./balance.controller"
             PlacedItemEntity,
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
-            BuildingInfoEntity
+            BuildingInfoEntity,
+            AnimalEntity,
+            ProductEntity,
+            CropEntity,
+            BuildingEntity,
+            UpgradeEntity
         ])
     ],
-    providers: [BalanceController],
+    controllers: [BalanceController],
+    providers: [BalanceService],
     exports: [BalanceService]
 })
 export class BalanceModule {}

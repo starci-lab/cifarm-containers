@@ -9,6 +9,7 @@ import { AnimalModule } from "./animal"
 import { BuildingModule } from "./building"
 import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { redisStore } from "cache-manager-redis-yet"
+import { SystemModule } from "./system"
 
 @Module({
     imports: [
@@ -45,7 +46,8 @@ import { redisStore } from "cache-manager-redis-yet"
         }),
         CropModule,
         AnimalModule,
-        BuildingModule
+        BuildingModule,
+        SystemModule
     ],
     providers: [
         {

@@ -1,24 +1,14 @@
-import { registerEnumType } from "@nestjs/graphql"
-
 // Product Type Enum
 export enum ProductType {
     Animal = "animal",
     Crop = "crop"
 }
 
-registerEnumType(ProductType, {
-    name: "ProductType"
-})
-
 // Animal Type Enum
 export enum AnimalType {
     Poultry = "poultry",
     Livestock = "livestock"
 }
-
-registerEnumType(AnimalType, {
-    name: "AnimalType"
-})
 
 // Available In Type Enum
 export enum AvailableInType {
@@ -27,19 +17,11 @@ export enum AvailableInType {
     Both = "both"
 }
 
-registerEnumType(AvailableInType, {
-    name: "AvailableIn"
-})
-
 // Supply Type Enum
 export enum SupplyType {
     Fertilizer = "fertilizer",
     AnimalFeed = "animalFeed"
 }
-
-registerEnumType(SupplyType, {
-    name: "SupplyType"
-})
 
 // Spin Type Enum
 export enum SpinType {
@@ -48,10 +30,6 @@ export enum SpinType {
     Supply = "supply",
     Token = "token"
 }
-
-registerEnumType(SpinType, {
-    name: "SpinType"
-})
 
 // Inventory Type Enum
 export enum InventoryType {
@@ -62,9 +40,6 @@ export enum InventoryType {
     Supply = "supply"
 }
 
-registerEnumType(InventoryType, {
-    name: "InventoryType"
-})
 
 // Placed Item Type Enum
 export enum PlacedItemType {
@@ -72,7 +47,3 @@ export enum PlacedItemType {
     Building = "building",
     Animal = "animal"
 }
-
-registerEnumType(PlacedItemType, {
-    name: "PlacedItemType"
-})

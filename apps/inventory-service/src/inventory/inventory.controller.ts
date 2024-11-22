@@ -8,7 +8,7 @@ import {
     GetInventoryRequest,
     GetInventoryResponse
 } from "./inventory.dto"
-import { inventoryGrpcConstants } from "../constants"
+import { inventoryGrpcConstants } from "../app.constants"
 
 @ApiBearerAuth()
 @Controller("inventory")

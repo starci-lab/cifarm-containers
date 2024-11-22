@@ -29,7 +29,7 @@ export class BuyAnimalsService {
     }
 
     async buyAnimals(request: BuyAnimalsRequest): Promise<BuyAnimalsResponse> {
-        const { userId, key, buildingKey, position } = request
+        const { userId, key, BuildingId, position } = request
 
         // Fetch animal details
         const animal = await this.dataSource.manager.findOne(AnimalEntity, {
@@ -42,7 +42,7 @@ export class BuyAnimalsService {
 
         // Fetch parent building details
         const building = await this.dataSource.manager.findOne(PlacedItemEntity, {
-            where: { id: buildingKey, userId }
+            where: { id: BuildingId, userId }
         })
 
         if (!building) throw new GrpcNotFoundException("Parent building not found")
@@ -71,7 +71,7 @@ export class BuyAnimalsService {
         const placedAnimal = this.dataSource.manager.create(PlacedItemEntity, {
             userId,
             referenceKey: key,
-            parentPlacedItemKey: buildingKey,
+            parentPlacedItemKey: BuildingId,
             type: "Animal",
             position,
             animalInfo: { animal }
@@ -85,6 +85,6 @@ export class BuyAnimalsService {
 
         this.logger.debug(`Animal placed with key: ${savedAnimal.id}`)
 
-        return { placedItemAnimalKey: savedAnimal.id }
+        return { placedItemAnimalId: savedAnimal.id }
     }
 }

@@ -1,4 +1,4 @@
-import { staticGrpcConstants } from "@apps/static-service/src/constants"
+import { staticGrpcConstants } from "@apps/static-service/src/app.constants"
 import { Controller, Logger, UseInterceptors } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import {
@@ -14,7 +14,7 @@ import {
 } from "./building.dto"
 import { BuildingService } from "./building.service"
 import { CacheInterceptor, CacheKey } from "@nestjs/cache-manager"
-import { EntityCacheKey } from "@src/constants"
+import { EntityCacheKey } from "../app.constants"
 import { IdCacheInterceptor } from "@src/interceptors"
 
 @Controller()

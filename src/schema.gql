@@ -74,7 +74,7 @@ type UpgradeEntity {
 }
 
 type BuildingEntity {
-  buildingKey: BuildingKeyType!
+  BuildingId: BuildingIdType!
   availableInShop: Boolean!
   type: AnimalType
   maxUpgrade: Int!
@@ -82,21 +82,21 @@ type BuildingEntity {
   upgrades: [UpgradeEntity!]
 }
 
-enum BuildingKeyType {
+enum BuildingIdType {
   Coop
   Pasture
   Home
 }
 
 type TileEntity {
-  type: TileKeyType!
+  type: TileIdType!
   price: Float!
   maxOwnership: Int!
   isNFT: Boolean!
   availableInShop: Boolean!
 }
 
-enum TileKeyType {
+enum TileIdType {
   StarterTile
   BasicTile1
   BasicTile2

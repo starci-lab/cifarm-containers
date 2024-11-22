@@ -1,5 +1,5 @@
 // Animal Enum
-export enum AnimalKey {
+export enum AnimalId {
     Chicken = "chicken",
     Cow = "cow",
     Pig = "pig",
@@ -7,14 +7,14 @@ export enum AnimalKey {
 }
 
 // Building Enum
-export enum BuildingKey {
+export enum BuildingId {
     Coop = "coop",
     Pasture = "pasture",
     Home = "home"
 }
 
 // Upgrade Enum
-export enum UpgradeKey {
+export enum UpgradeId {
     CoopUpgrade1 = "coopUpgrade1",
     CoopUpgrade2 = "coopUpgrade2",
     CoopUpgrade3 = "coopUpgrade3",
@@ -24,7 +24,7 @@ export enum UpgradeKey {
 }
 
 // Crop Enum
-export enum CropKey {
+export enum CropId {
     Carrot = "carrot",
     Potato = "potato",
     Pineapple = "pineapple",
@@ -34,7 +34,7 @@ export enum CropKey {
 }
 
 // Daily Reward Enum
-export enum DailyRewardKey {
+export enum DailyRewardId {
     Day1 = "day1",
     Day2 = "day2",
     Day3 = "day3",
@@ -43,7 +43,7 @@ export enum DailyRewardKey {
 }
 
 // Daily Reward Possibility Enum
-export enum DailyRewardPossibilityKey {
+export enum DailyRewardPossibilityId {
     Possibility1 = "possibility1",
     Possibility2 = "possibility2",
     Possibility3 = "possibility3",
@@ -52,25 +52,25 @@ export enum DailyRewardPossibilityKey {
 }
 
 // Supply Enum
-export enum SupplyKey {
+export enum SupplyId {
     BasicFertilizer = "basic_fertilizer",
     AnimalFeed = "animal_feed"
 }
 
 // Spin Enum
-export enum SpinKey {
+export enum SpinId {
     Gold1 = "gold1",
     Gold2 = "gold2",
     Gold3 = "gold3",
     Gold4 = "gold4",
-    Seed1 = CropKey.Pineapple,
-    Seed2 = CropKey.Watermelon,
-    BasicFertilizer = SupplyKey.BasicFertilizer,
+    Seed1 = CropId.Pineapple,
+    Seed2 = CropId.Watermelon,
+    BasicFertilizer = SupplyId.BasicFertilizer,
     Token = "token"
 }
 
 // Tile Enum
-export enum TileKey {
+export enum TileId {
     StarterTile = "starterTile",
     BasicTile1 = "basicTile1",
     BasicTile2 = "basicTile2",
@@ -79,7 +79,7 @@ export enum TileKey {
 }
 
 // Tool Enum
-export enum ToolKey {
+export enum ToolId {
     Scythe = "scythe",
     Steal = "steal",
     WaterCan = "watercan",
@@ -88,7 +88,7 @@ export enum ToolKey {
 }
 
 // Product Enum
-export enum ProductKey {
+export enum ProductId {
     Egg = "egg",
     Milk = "milk",
     Carrot = "carrot",
@@ -97,4 +97,8 @@ export enum ProductKey {
     Watermelon = "watermelon",
     Cucumber = "cucumber",
     BellPepper = "bellPepper"
+}
+
+export enum SystemId {
+    Activities = "activities",
 }

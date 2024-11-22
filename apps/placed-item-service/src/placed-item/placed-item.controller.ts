@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { placedItemGrpcConstants } from "../constants"
+import { placedItemGrpcConstants } from "../app.constants"
 import { PlacedItemService } from "./placed-item.service"
 import {
     CreatePlacedItemRequest,

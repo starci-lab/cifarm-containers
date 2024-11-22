@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { userGrpcConstants } from "../constants"
+import { userGrpcConstants } from "../app.constants"
 import { LevelService } from "./level.service"
 import {
     AddExperiencesRequest,

@@ -23,7 +23,7 @@ export class BuyAnimalsRequest {
 
     @IsString()
     @ApiProperty({ example: "Coop" })
-    buildingKey: string
+    BuildingId: string
 
     @ValidateNested()
     @Type(() => Position)
@@ -34,7 +34,7 @@ export class BuyAnimalsRequest {
 export class BuyAnimalsResponse {
     @IsString()
     @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
-    placedItemAnimalKey: string
+    placedItemAnimalId: string
 }
 
 export class BuyAnimalsControllerRequest extends OmitType(BuyAnimalsRequest, ["userId"]) {}
