@@ -1,8 +1,9 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { AnimalInfoEntity } from "./animal-info.entity"
 import { BuildingInfoEntity } from "./building-info.entity"
+import { PlacedItemTypeEntity } from "./placed-item-type.entity"
 import { SeedGrowthInfoEntity } from "./seed-grow-info.entity"
 import { UserEntity } from "./user.entity"
 
@@ -17,19 +18,10 @@ export class PlacedItemEntity extends AbstractEntity {
     @Column({ name: "y", type: "int" })
     y: number
 
-    @Field(() => UserEntity)
-    @Index()
-    @Column({ name: "user_id", type: "varchar" })
-    userId: string
-
-    @Field(() => UserEntity)
-    @ManyToOne(() => UserEntity, (user) => user.placedItems, { onDelete: "CASCADE" })
-    @JoinColumn({ name: "user_id" })
-    user: UserEntity
-
-    @Field(() => String, { nullable: true })
-    @Column({ name: "item_key", type: "varchar", nullable: true })
-    itemKey?: string
+    @Field(() => UserEntity, { nullable: true })
+    @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })
+    @JoinColumn({ name: "user_id", referencedColumnName: "id" })
+    user?: UserEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "inventory_key", type: "varchar", nullable: true })
@@ -38,14 +30,6 @@ export class PlacedItemEntity extends AbstractEntity {
     @Field(() => String)
     @Column({ name: "type", type: "varchar" })
     type: string
-
-    @Field(() => String, { nullable: true })
-    @ManyToOne(() => PlacedItemEntity, (placedItem) => placedItem.children, { nullable: true })
-    parent: PlacedItemEntity
-
-    @Field(() => [PlacedItemEntity], { nullable: true })
-    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.parent, { nullable: true })
-    children: PlacedItemEntity[]
 
     @Field(() => SeedGrowthInfoEntity, { nullable: true })
     @OneToOne(() => SeedGrowthInfoEntity, (seedGrowthInfo) => seedGrowthInfo.placedItem, {
@@ -65,4 +49,20 @@ export class PlacedItemEntity extends AbstractEntity {
     })
     @JoinColumn()
     buildingInfo?: BuildingInfoEntity
+
+    @Field(() => [PlacedItemEntity])
+    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.placedItemType)
+    placedItems?: Array<PlacedItemEntity>
+
+    @Field(() => String, { nullable: true })
+    @ManyToOne(() => PlacedItemEntity, (placedItem) => placedItem.id, { nullable: true })
+    parent: PlacedItemEntity
+
+    @Field(() => PlacedItemTypeEntity, { nullable: true })
+    @ManyToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.placedItems, {
+        onDelete: "CASCADE",
+        eager: true
+    })
+    @JoinColumn({ name: "placed_item_type_id", referencedColumnName: "id" })
+    placedItemType?: PlacedItemTypeEntity
 }

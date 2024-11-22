@@ -1,48 +1,36 @@
-import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { ClientGrpc } from "@nestjs/microservices"
-import { IWalletService } from "@src/containers/wallet-service"
-import { Cache } from "cache-manager"
-import { DataSource } from "typeorm"
-import { BuyAnimalsRequest, BuyAnimalsResponse } from "./buy-animals.dto"
-import { AnimalEntity, PlacedItemEntity } from "@src/database"
+import { AnimalEntity, BuildingEntity, PlacedItemEntity } from "@src/database"
 import {
-    GrpcAbortedException,
-    GrpcNotFoundException,
-    GrpcPermissionDeniedException
-} from "nestjs-grpc-exceptions"
+    AnimalNotAvailableInShopException,
+    AnimalNotFoundException
+} from "@src/exceptions/static/animal.exception"
+import { Cache } from "cache-manager"
+import { GrpcAbortedException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { DataSource } from "typeorm"
+import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animals.dto"
 
 @Injectable()
-export class BuyAnimalsService {
-    private readonly logger = new Logger(BuyAnimalsService.name)
-    private walletService: IWalletService
+export class BuyAnimalService {
+    private readonly logger = new Logger(BuyAnimalService.name)
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private readonly cacheManager: Cache,
-        @Inject(walletGrpcConstants.NAME) private client: ClientGrpc
+        private readonly cacheManager: Cache
     ) {}
 
-    onModuleInit() {
-        this.walletService = this.client.getService<IWalletService>(walletGrpcConstants.SERVICE)
-    }
-
-    async buyAnimals(request: BuyAnimalsRequest): Promise<BuyAnimalsResponse> {
-        const { userId, key, BuildingId, position } = request
-
+    async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {
         // Fetch animal details
         const animal = await this.dataSource.manager.findOne(AnimalEntity, {
-            where: { id: key }
+            where: { id: request.id }
         })
 
-        if (!animal) throw new GrpcNotFoundException("Animal not found")
-        if (!animal.availableInShop)
-            throw new GrpcPermissionDeniedException("Animal not available in shop")
+        if (!animal) throw new AnimalNotFoundException(request.id)
+        if (!animal.availableInShop) throw new AnimalNotAvailableInShopException(request.id)
 
         // Fetch parent building details
         const building = await this.dataSource.manager.findOne(PlacedItemEntity, {
-            where: { id: BuildingId, userId }
+            where: { buildingInfo: { id: request.buildingId }, userId: request.userId }
         })
 
         if (!building) throw new GrpcNotFoundException("Parent building not found")

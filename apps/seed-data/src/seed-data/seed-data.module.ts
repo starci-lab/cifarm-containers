@@ -21,6 +21,7 @@ import {
     UpgradeEntity,
     UserEntity
 } from "@src/database"
+import { PlacedItemTypeEntity } from "@src/database/gameplay-postgresql/placed-item-type.entity"
 import { SeedDataService } from "./seed-data.service"
 
 @Module({
@@ -44,7 +45,8 @@ import { SeedDataService } from "./seed-data.service"
             PlacedItemEntity,
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
-            BuildingInfoEntity
+            BuildingInfoEntity,
+            PlacedItemTypeEntity
         ])
     ],
     providers: [SeedDataService]

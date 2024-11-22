@@ -3,6 +3,7 @@ import { Column, Entity, OneToMany, OneToOne } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
 import { InventoryEntity } from "./inventory.entity"
 import { InventoryTypeEntity } from "./inventory-type.entity"
+import { PlacedItemTypeEntity } from "./placed-item-type.entity"
 
 @ObjectType()
 @Entity("tiles")
@@ -30,4 +31,12 @@ export class TileEntity extends ReadableAbstractEntity {
         cascade: ["insert"]
     })
     inventoryType?: InventoryTypeEntity
+
+    @Field(() => PlacedItemTypeEntity, { nullable: true })
+    @OneToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.tile, {
+        nullable: true,
+        onDelete: "CASCADE",
+        cascade: ["insert"]
+    })
+    placedItemType?: PlacedItemTypeEntity
 }

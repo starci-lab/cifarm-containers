@@ -111,3 +111,18 @@ export enum InventoryTypeId {
     CucumberSeed = "cucumberSeed",
     BellPepperSeed = "bellPepperSeed"
 }
+
+export enum PlacedItemTypeId {
+    Chicken = "chicken",
+    Cow = "cow",
+    Pig = "pig",
+    Sheep = "sheep",
+    Coop = "coop",
+    Pasture = "pasture",
+    Home = "home",
+    StarterTile = "starterTile",
+    BasicTile1 = "basicTile1",
+    BasicTile2 = "basicTile2",
+    BasicTile3 = "basicTile3",
+    FertileTile = "fertileTile"
+}

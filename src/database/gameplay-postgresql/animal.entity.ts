@@ -3,6 +3,7 @@ import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
 import { InventoryTypeEntity } from "./inventory-type.entity"
+import { PlacedItemTypeEntity } from "./placed-item-type.entity"
 import { ProductEntity } from "./product.entity"
 
 @ObjectType()
@@ -70,4 +71,12 @@ export class AnimalEntity extends ReadableAbstractEntity {
         cascade: ["insert"]
     })
     inventoryType?: InventoryTypeEntity
+
+    @Field(() => PlacedItemTypeEntity, { nullable: true })
+    @OneToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.animal, {
+        nullable: true,
+        onDelete: "CASCADE",
+        cascade: ["insert"]
+    })
+    placedItemType?: PlacedItemTypeEntity
 }

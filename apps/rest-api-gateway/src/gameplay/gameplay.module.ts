@@ -1,5 +1,5 @@
 import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
-import { shopGrpcConstants } from "@apps/shop-service/src/constants"
+import { shopGrpcConstants } from "@apps/gameplay-service/src/constants"
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { envConfig } from "@src/config"

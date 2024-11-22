@@ -17,6 +17,8 @@ import {
     InventoryType,
     InventoryTypeEntity,
     InventoryTypeId,
+    PlacedItemType,
+    PlacedItemTypeId,
     ProductId,
     ProductType,
     SpinEntity,
@@ -226,6 +228,10 @@ export class SeedDataService implements OnModuleInit {
                     maxStack: 1,
                     placeable: true,
                     type: InventoryType.Animal
+                },
+                placedItemType: {
+                    id: PlacedItemTypeId.Chicken,
+                    type: PlacedItemType.Animal
                 }
             },
             {
@@ -264,6 +270,10 @@ export class SeedDataService implements OnModuleInit {
                     maxStack: 1,
                     placeable: true,
                     type: InventoryType.Animal
+                },
+                placedItemType: {
+                    id: PlacedItemTypeId.Cow,
+                    type: PlacedItemType.Animal
                 }
             }
         ]
@@ -529,7 +539,11 @@ export class SeedDataService implements OnModuleInit {
                         upgradePrice: 2000,
                         capacity: 10
                     }
-                ]
+                ],
+                placedItemType: {
+                    id: PlacedItemTypeId.Coop,
+                    type: PlacedItemType.Building
+                }
             },
             {
                 id: BuildingId.Pasture,
@@ -553,14 +567,22 @@ export class SeedDataService implements OnModuleInit {
                         upgradePrice: 2000,
                         capacity: 10
                     }
-                ]
+                ],
+                placedItemType: {
+                    id: PlacedItemTypeId.Pasture,
+                    type: PlacedItemType.Building
+                }
             },
             {
                 id: BuildingId.Home,
                 availableInShop: false,
                 maxUpgrade: 0,
                 price: 0,
-                upgrades: []
+                upgrades: [],
+                placedItemType: {
+                    id: PlacedItemTypeId.Home,
+                    type: PlacedItemType.Building
+                }
             }
         ]
 
@@ -591,6 +613,10 @@ export class SeedDataService implements OnModuleInit {
                     maxStack: 16,
                     placeable: true,
                     type: InventoryType.Tile
+                },
+                placedItemType: {
+                    id: PlacedItemTypeId.StarterTile,
+                    type: PlacedItemType.Tile
                 }
             },
             {
@@ -606,6 +632,10 @@ export class SeedDataService implements OnModuleInit {
                     maxStack: 16,
                     placeable: true,
                     type: InventoryType.Tile
+                },
+                placedItemType: {
+                    id: PlacedItemTypeId.BasicTile1,
+                    type: PlacedItemType.Tile
                 }
             },
             {
@@ -621,6 +651,10 @@ export class SeedDataService implements OnModuleInit {
                     maxStack: 16,
                     placeable: true,
                     type: InventoryType.Tile
+                },
+                placedItemType: {
+                    id: PlacedItemTypeId.BasicTile2,
+                    type: PlacedItemType.Tile
                 }
             },
             {
@@ -636,6 +670,10 @@ export class SeedDataService implements OnModuleInit {
                     maxStack: 16,
                     placeable: true,
                     type: InventoryType.Tile
+                },
+                placedItemType: {
+                    id: PlacedItemTypeId.BasicTile3,
+                    type: PlacedItemType.Tile
                 }
             },
             {
@@ -651,6 +689,10 @@ export class SeedDataService implements OnModuleInit {
                     maxStack: 16,
                     placeable: true,
                     type: InventoryType.Tile
+                },
+                placedItemType: {
+                    id: PlacedItemTypeId.FertileTile,
+                    type: PlacedItemType.Tile
                 }
             }
         ]

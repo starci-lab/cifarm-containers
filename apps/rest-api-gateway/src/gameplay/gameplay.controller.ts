@@ -11,16 +11,16 @@ import {
     UseGuards
 } from "@nestjs/common"
 
-import { BuySeedsControllerRequest, BuySeedsResponse } from "@apps/shop-service/src/buy-seeds"
+import { BuySeedsControllerRequest, BuySeedsResponse } from "@apps/gameplay-service/src/buy-seeds"
 import {
     BuySuppliesControllerRequest,
     BuySuppliesResponse
-} from "@apps/shop-service/src/buy-supplies"
-import { shopGrpcConstants } from "@apps/shop-service/src/constants"
+} from "@apps/gameplay-service/src/buy-supplies"
+import { shopGrpcConstants } from "@apps/gameplay-service/src/constants"
 import {
     ConstructBuildingControllerRequest,
     ConstructBuildingResponse
-} from "@apps/shop-service/src/construct-building"
+} from "@apps/gameplay-service/src/construct-building"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { User } from "@src/decorators"

@@ -82,13 +82,13 @@
         "tsConfigPath": "apps/static-subgraph/tsconfig.app.json"
       }
     },
-    "shop-service": {
+    "gameplay-service": {
       "type": "application",
-      "root": "apps/shop-service",
+      "root": "apps/gameplay-service",
       "entryFile": "main",
-      "sourceRoot": "apps/shop-service/src",
+      "sourceRoot": "apps/gameplay-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/shop-service/tsconfig.app.json"
+        "tsConfigPath": "apps/gameplay-service/tsconfig.app.json"
       }
     },
     "community-service": {
