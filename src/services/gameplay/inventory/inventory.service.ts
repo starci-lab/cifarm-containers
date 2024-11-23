@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity } from "@src/database"
+import { InventoryEntity, InventoryTypeEntity } from "@src/database"
 import { DataSource, DeepPartial } from "typeorm"
 import {
     AddInventoryRequest,
@@ -16,6 +16,11 @@ export class InventoryService {
 
     public async addInventory(request: AddInventoryRequest): Promise<AddInventoryResponse> {
         let remainingQuantity = request.inventory.quantity
+        const inventoryType = await this.dataSource.manager.findOne(InventoryTypeEntity, {
+            where: {
+                id: request.inventory.inventoryType.id
+            }
+        })
 
         const inventories: DeepPartial<InventoryEntity>[] = await this.dataSource.manager.find(
             InventoryEntity,
@@ -31,11 +36,12 @@ export class InventoryService {
             }
         )
 
+        this.logger.debug(`Found ${inventories.length} inventories`)
+
         for (const inventory of inventories) {
             if (remainingQuantity <= 0) break
 
-            const spaceInCurrentStack =
-                request.inventory.inventoryType.maxStack - inventory.quantity
+            const spaceInCurrentStack = inventoryType.maxStack - inventory.quantity
             if (spaceInCurrentStack > 0) {
                 const quantityToAdd = Math.min(spaceInCurrentStack, remainingQuantity)
                 inventory.quantity += quantityToAdd
@@ -43,16 +49,15 @@ export class InventoryService {
             }
         }
 
-        await this.dataSource.manager.save(inventories)
+        await this.dataSource.manager.save(InventoryEntity, inventories)
+
+        this.logger.debug(`Remaining quantity: ${remainingQuantity}`)
 
         if (remainingQuantity <= 0) return
 
         const inventoriesToCreate: DeepPartial<InventoryEntity>[] = []
         while (remainingQuantity > 0) {
-            const newQuantity = Math.min(
-                request.inventory.inventoryType.maxStack,
-                remainingQuantity
-            )
+            const newQuantity = Math.min(inventoryType.maxStack, remainingQuantity)
             inventoriesToCreate.push({
                 ...request.inventory,
                 user: {
@@ -63,7 +68,7 @@ export class InventoryService {
             remainingQuantity -= newQuantity
         }
 
-        await this.dataSource.manager.save(inventoriesToCreate)
+        await this.dataSource.manager.save(InventoryEntity, inventoriesToCreate)
 
         return
     }

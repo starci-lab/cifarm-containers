@@ -59,7 +59,7 @@ message ConstructBuildingResponse {
 
 // Define the Shop service with methods for buying animals
 service ShopService {
-    rpc BuySeeds(BuySeedsRequest) returns (BuySeedsResponse);
+    
     rpc BuySupplies (BuySuppliesRequest) returns (BuySuppliesResponse);
     rpc BuyAnimals(BuyAnimalRequest) returns (BuyAnimalResponse); // RPC method for buying an animal
     rpc ConstructBuilding(ConstructBuildingRequest) returns (ConstructBuildingResponse);

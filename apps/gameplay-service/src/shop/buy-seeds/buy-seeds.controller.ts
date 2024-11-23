@@ -12,7 +12,7 @@ export class BuySeedsController {
 
     @GrpcMethod(gameplayGrpcConstants.SERVICE, "BuySeeds")
     public async buySeed(request: BuySeedsRequest) {
-        this.logger.debug("BuySeed called")
+        this.logger.debug("BuySeeds called")
         return this.buySeedService.buySeeds(request)
     }
 }

@@ -12,6 +12,7 @@ import {
 } from "@src/database"
 import { BuySuppliesController } from "./buy-supplies.controller"
 import { BuySuppliesService } from "./buy-supplies.service"
+import { GoldBalanceModule, InventoryModule } from "@src/services"
 
 @Global()
 @Module({
@@ -25,7 +26,9 @@ import { BuySuppliesService } from "./buy-supplies.service"
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
             BuildingInfoEntity
-        ])
+        ]),
+        InventoryModule,
+        GoldBalanceModule
     ],
     providers: [BuySuppliesService],
     exports: [BuySuppliesService],

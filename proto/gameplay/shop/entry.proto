@@ -4,3 +4,5 @@ package gameplay;
 
 import  "../../entities/entry.proto";
 import "./construct-building.proto";
+import "./buy-seeds.proto";
+import "./buy-supplies.proto";

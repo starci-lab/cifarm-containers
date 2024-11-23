@@ -53,8 +53,8 @@ export enum DailyRewardPossibilityId {
 
 // Supply Enum
 export enum SupplyId {
-    BasicFertilizer = "basic_fertilizer",
-    AnimalFeed = "animal_feed"
+    BasicFertilizer = "basicFertilizer",
+    AnimalFeed = "animalFeed"
 }
 
 // Spin Enum

@@ -69,7 +69,7 @@ export class InventoryTypeEntity extends ReadableAbstractEntity {
 
     @Field(() => [InventoryEntity], { nullable: true })
     @OneToMany(() => InventoryEntity, (inventory) => inventory.inventoryType, {
-        cascade: ["insert", "update"]
+        cascade: ["insert", "update", "remove"]
     })
     inventories?: Array<InventoryEntity>
 }

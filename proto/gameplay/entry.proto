@@ -6,5 +6,8 @@ import "./shop/entry.proto";
 package gameplay;
 
 service GameplayService {
+    // Shop methods
     rpc ConstructBuilding(ConstructBuildingRequest) returns (ConstructBuildingResponse);
+    rpc BuySeeds(BuySeedsRequest) returns (google.protobuf.Empty);
+    rpc BuySupplies (BuySuppliesRequest) returns (google.protobuf.Empty);
 }

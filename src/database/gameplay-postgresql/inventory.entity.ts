@@ -24,7 +24,7 @@ export class InventoryEntity extends AbstractEntity {
     isPlaced: boolean
 
     @Field(() => UserEntity, { nullable: true })
-    @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })
+    @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "SET NULL", eager: true })
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
     user?: UserEntity
 
@@ -32,7 +32,7 @@ export class InventoryEntity extends AbstractEntity {
     @ManyToOne(
         () => InventoryTypeEntity,
         (inventoryType: InventoryTypeEntity) => inventoryType.inventories,
-        { eager: true }
+        { eager: true, onDelete: "SET NULL" }
     )
     @JoinColumn({ name: "inventory_type_id", referencedColumnName: "id" })
     inventoryType: InventoryTypeEntity

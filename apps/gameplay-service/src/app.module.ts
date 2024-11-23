@@ -7,7 +7,7 @@ import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
-import { ConstructBuildingModule } from "./shop"
+import { ShopModule } from "./shop/shop.module"
 
 @Module({
     imports: [
@@ -42,7 +42,7 @@ import { ConstructBuildingModule } from "./shop"
                 }
             }
         }),
-        ConstructBuildingModule
+        ShopModule
     ],
     controllers: [AppController],
     providers: [
