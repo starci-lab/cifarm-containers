@@ -56,8 +56,7 @@ export class BuySuppliesService {
                 golds: totalCost
             })
 
-            await queryRunner.manager.save(UserEntity, {
-                ...user,
+            await queryRunner.manager.update(UserEntity, user.id, {
                 ...goldsChanged
             })
 
