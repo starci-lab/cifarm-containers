@@ -30,6 +30,7 @@ export class BuySeedsService {
         )
 
         const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
 
         const crop = await queryRunner.manager.findOne(CropEntity, {
             where: { id: request.id }
@@ -47,12 +48,11 @@ export class BuySeedsService {
             throw new UserInsufficientGoldException(user.golds, totalCost)
 
         // Start transaction
-        await queryRunner.connect()
         await queryRunner.startTransaction()
 
         try {
             // Subtract gold
-            const goldsChanged = await this.goldBalanceService.subtractGold({
+            const goldsChanged = await this.goldBalanceService.subtract({
                 entity: user,
                 golds: totalCost
             })

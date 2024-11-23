@@ -65,6 +65,10 @@ export class PlacedItemEntity extends AbstractEntity {
     @ManyToOne(() => PlacedItemEntity, (placedItem) => placedItem.id, { nullable: true })
     parent: PlacedItemEntity
 
+    @Field(() => String, { nullable: true })
+    @Column({ name: "placed_item_type_id", nullable: true })
+    placedItemTypeId?: string
+
     @Field(() => PlacedItemTypeEntity, { nullable: true })
     @ManyToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.placedItems, {
         onDelete: "CASCADE",

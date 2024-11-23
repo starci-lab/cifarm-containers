@@ -1,11 +1,12 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, PlacedItemEntity, PlacedItemTypeEntity } from "@src/database"
+import { BuildingEntity, PlacedItemEntity, PlacedItemTypeEntity, UserEntity } from "@src/database"
 import {
     BuildingNotAvailableInShopException,
     BuildingNotFoundException,
     PlacedItemTypeNotFoundException,
-    UserInsufficientGoldException
+    UserInsufficientGoldException,
+    ConstructBuildingTransactionFailedException
 } from "@src/exceptions"
 import { GoldBalanceService } from "@src/services"
 import { Cache } from "cache-manager"
@@ -15,27 +16,37 @@ import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct
 @Injectable()
 export class ConstructBuildingService {
     private readonly logger = new Logger(ConstructBuildingService.name)
+
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache,
-        private readonly walletService: GoldBalanceService
+        private readonly cacheManager: Cache,
+        private readonly goldBalanceService: GoldBalanceService
     ) {}
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
-        this.logger.debug("hehe")
-        const building = await this.dataSource.manager.findOne(BuildingEntity, {
+        this.logger.debug(
+            `Starting building construction for user ${request.userId}, building id: ${request.id}`
+        )
+
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
+        // Fetch building information
+        const building = await queryRunner.manager.findOne(BuildingEntity, {
             where: { id: request.id }
         })
 
         if (!building) {
             throw new BuildingNotFoundException(request.id)
         }
+
         if (!building.availableInShop) {
             throw new BuildingNotAvailableInShopException(request.id)
         }
 
-        const placedItemType = await this.dataSource.manager.findOne(PlacedItemTypeEntity, {
+        // Fetch placed item type
+        const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
             where: { id: request.id }
         })
 
@@ -43,39 +54,58 @@ export class ConstructBuildingService {
             throw new PlacedItemTypeNotFoundException(request.id)
         }
 
-        const totalCost = building.price || 0
+        // Calculate total cost
+        const totalCost = building.price
 
-        const balance = await this.walletService.getGoldBalance({ userId: request.userId })
+        const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+            where: { id: request.userId }
+        })
 
-        if (balance.golds < totalCost) {
-            throw new UserInsufficientGoldException(balance.golds, totalCost)
-        }
+        if (!this.goldBalanceService.checkSufficient({ entity: user, golds: totalCost }).isEnough)
+            throw new UserInsufficientGoldException(user.golds, totalCost)
 
-        await this.walletService.subtractGold({ userId: request.userId, golds: totalCost })
+        // Start transaction
+        await queryRunner.startTransaction()
 
-        this.logger.debug("start")
+        try {
+            // Subtract gold from user balance
+            const goldsChanged = await this.goldBalanceService.subtract({
+                entity: user,
+                golds: totalCost
+            })
 
-        // Prepare placed item entity
-        const placedItem: DeepPartial<PlacedItemEntity> = {
-            user: { id: request.userId },
-            buildingInfo: {
-                currentUpgrade: 1,
-                occupancy: 0,
-                building
-            },
-            x: request.position.x,
-            y: request.position.y,
-            placedItemType: {
-                id: placedItemType.id
+            await queryRunner.manager.save(UserEntity, {
+                id: request.userId,
+                ...goldsChanged
+            })
+
+            // Prepare placed item entity
+            const placedItem: DeepPartial<PlacedItemEntity> = {
+                user: { id: request.userId },
+                buildingInfo: {
+                    currentUpgrade: 1,
+                    occupancy: 0,
+                    building
+                },
+                x: request.position.x,
+                y: request.position.y,
+                placedItemTypeId: placedItemType.id
             }
+
+            // Save the placed item in the database
+            const savedBuilding = await queryRunner.manager.save(PlacedItemEntity, placedItem)
+
+            await queryRunner.commitTransaction()
+
+            this.logger.log(`Successfully constructed building with id: ${savedBuilding.id}`)
+
+            return { placedItemId: savedBuilding.id }
+        } catch (error) {
+            this.logger.error("Construction transaction failed, rolling back...", error)
+            await queryRunner.rollbackTransaction()
+            throw new ConstructBuildingTransactionFailedException(error.message)
+        } finally {
+            await queryRunner.release()
         }
-
-        this.logger.debug("end")
-
-        const savedBuilding = await this.dataSource.manager.save(PlacedItemEntity, placedItem)
-
-        this.logger.log(`Successfully constructed building: ${savedBuilding.id}`)
-
-        return { placedItemId: savedBuilding.id }
     }
 }

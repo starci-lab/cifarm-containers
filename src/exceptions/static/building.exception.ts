@@ -11,3 +11,9 @@ export class BuildingNotAvailableInShopException extends GrpcNotFoundException {
         super(`Building not available in shop: ${id}`)
     }
 }
+
+export class ConstructBuildingTransactionFailedException extends GrpcNotFoundException {
+    constructor(error: Error) {
+        super(`Failed to construct building due to: ${error}`)
+    }
+}

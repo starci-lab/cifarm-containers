@@ -11,3 +11,9 @@ export class SupplyNotAvailableInShopException extends GrpcResourceExhaustedExce
         super(`Supply not available in shop: ${id}`)
     }
 }
+
+export class BuySuppliesTransactionFailedException extends GrpcResourceExhaustedException {
+    constructor(error: Error) {
+        super(`Failed to buy supplies due to: ${error}`)
+    }
+}

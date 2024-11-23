@@ -11,7 +11,7 @@ import {
 export class TokenBalanceService {
     constructor() {}
 
-    public addToken(request: AddTokenRequest): AddTokenResponse {
+    public add(request: AddTokenRequest): AddTokenResponse {
         if (request.tokens < 0)
             throw new TokenCannotBeZeroOrNegativeException(request.tokens.toString())
 
@@ -20,7 +20,7 @@ export class TokenBalanceService {
         }
     }
 
-    public subtractToken(request: SubtractTokenRequest): SubtractTokenResponse {
+    public subtract(request: SubtractTokenRequest): SubtractTokenResponse {
         if (request.tokens < 0)
             throw new TokenCannotBeZeroOrNegativeException(request.tokens.toString())
 

@@ -1,9 +1,8 @@
-// buy-supplies.service.ts
-
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { SupplyEntity } from "@src/database"
+import { SupplyEntity, InventoryEntity, InventoryTypeEntity, UserEntity } from "@src/database"
 import {
+    BuySuppliesTransactionFailedException,
     SupplyNotAvailableInShopException,
     SupplyNotFoundException,
     UserInsufficientGoldException
@@ -19,44 +18,86 @@ export class BuySuppliesService {
 
     constructor(
         private readonly dataSource: DataSource,
-        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly inventoryService: InventoryService,
-        private readonly goldBalanceService: GoldBalanceService
+        private readonly goldBalanceService: GoldBalanceService,
+        @Inject(CACHE_MANAGER) private readonly cacheManager: Cache
     ) {}
 
     async buySupplies(request: BuySuppliesRequest): Promise<BuySuppliesResponse> {
         this.logger.debug(
-            `Buying supply for user ${request.userId} id: ${request.id} quantity: ${request.quantity}`
+            `Buying supply for user ${request.userId}, id: ${request.id}, quantity: ${request.quantity}`
         )
 
-        const supply: SupplyEntity = await this.dataSource.manager.findOne(SupplyEntity, {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
+        const supply = await queryRunner.manager.findOne(SupplyEntity, {
             where: { id: request.id }
         })
-
         if (!supply) throw new SupplyNotFoundException(request.id)
-        if (!supply.availableInShop) {
-            throw new SupplyNotAvailableInShopException(request.id)
-        }
+        if (!supply.availableInShop) throw new SupplyNotAvailableInShopException(request.id)
 
-        // Calculate total cost
         const totalCost = supply.price * request.quantity
 
-        // Check Balance
-        const balance = await this.goldBalanceService.getGoldBalance({ userId: request.userId })
-        if (balance.golds < totalCost)
-            throw new UserInsufficientGoldException(balance.golds, totalCost)
-
-        await this.goldBalanceService.subtractGold({ userId: request.userId, golds: totalCost })
-        await this.inventoryService.addInventory({
-            userId: request.userId,
-            inventory: {
-                inventoryType: {
-                    id: request.id
-                },
-                quantity: request.quantity
-            }
+        const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+            where: { id: request.userId }
         })
 
-        return
+        if (!this.goldBalanceService.checkSufficient({ entity: user, golds: totalCost }).isEnough)
+            throw new UserInsufficientGoldException(user.golds, totalCost)
+
+        // Start transaction
+        await queryRunner.startTransaction()
+
+        try {
+            // Subtract gold
+            const goldsChanged = await this.goldBalanceService.subtract({
+                entity: user,
+                golds: totalCost
+            })
+
+            await queryRunner.manager.save(UserEntity, {
+                ...user,
+                ...goldsChanged
+            })
+
+            // Get inventory type
+            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+                where: { supplyId: request.id }
+            })
+
+            // Get inventory same type
+            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
+                where: {
+                    userId: request.userId,
+                    inventoryType: {
+                        supply: { id: request.id }
+                    }
+                }
+            })
+            const updatedInventories = await this.inventoryService.addInventory({
+                entities: existingInventories,
+                userId: request.userId,
+                inventoryPartial: {
+                    inventoryType: inventoryType,
+                    quantity: request.quantity,
+                    isPlaced: false,
+                    premium: false,
+                    tokenId: null
+                }
+            })
+
+            // Save inventory
+            await queryRunner.manager.save(InventoryEntity, updatedInventories)
+            await queryRunner.commitTransaction()
+
+            return
+        } catch (error) {
+            this.logger.debug("rollback")
+            await queryRunner.rollbackTransaction()
+            throw new BuySuppliesTransactionFailedException(error)
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

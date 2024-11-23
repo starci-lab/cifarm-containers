@@ -19,7 +19,7 @@ export class GoldBalanceService {
         }
     }
 
-    public addGold(request: AddGoldRequest): AddGoldResponse {
+    public add(request: AddGoldRequest): AddGoldResponse {
         if (request.golds < 0)
             throw new GoldCannotBeZeroOrNegativeException(request.golds.toString())
 
@@ -28,7 +28,7 @@ export class GoldBalanceService {
         }
     }
 
-    public subtractGold(request: SubtractGoldRequest): SubtractGoldResponse {
+    public subtract(request: SubtractGoldRequest): SubtractGoldResponse {
         if (request.golds < 0)
             throw new GoldCannotBeZeroOrNegativeException(request.golds.toString())
 
