@@ -17,11 +17,11 @@ export class EntityWithUserIdRequest<TEntity> extends UserIdRequest {
 }
 
 export class ArrayEntityRequest<TEntity> {
-    entities: TEntity[]
+    entities: Array<TEntity>
 }
 
 export class ArrayEntityWithUserIdRequest<TEntity> extends UserIdRequest {
-    entities: TEntity[]
+    entities: Array<TEntity>
 }
 
 export class CreatedResponse {
