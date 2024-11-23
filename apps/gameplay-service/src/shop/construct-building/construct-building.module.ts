@@ -1,12 +1,17 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import {
+    AnimalEntity,
+    BuildingEntity,
     CropEntity,
     InventoryEntity,
     InventoryTypeEntity,
     PlacedItemEntity,
     PlacedItemTypeEntity,
     ProductEntity,
+    SupplyEntity,
+    TileEntity,
+    UpgradeEntity,
     UserEntity
 } from "@src/database"
 import { AnimalInfoEntity } from "@src/database/gameplay-postgresql/animal-info.entity"
@@ -29,7 +34,12 @@ import { ConstructBuildingController } from "./construct-building.controller"
             AnimalInfoEntity,
             BuildingInfoEntity,
             PlacedItemTypeEntity,
-            InventoryTypeEntity
+            InventoryTypeEntity,
+            AnimalEntity,
+            TileEntity,
+            SupplyEntity,
+            BuildingEntity,
+            UpgradeEntity
         ]),
         WalletModule
     ],

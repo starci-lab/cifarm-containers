@@ -1,7 +1,8 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { CropEntity } from "@src/database"
+import { CropEntity, InventoryEntity, InventoryTypeEntity, UserEntity } from "@src/database"
 import {
+    BuySeedsTransactionFailedException,
     CropNotAvailableInShopException,
     CropNotFoundException,
     UserInsufficientGoldException
@@ -24,47 +25,78 @@ export class BuySeedsService {
     ) {}
 
     async buySeeds(request: BuySeedsRequest): Promise<BuySeedsResponse> {
+        this.logger.debug(
+            `Calling buying seed for user ${request.userId}, id: ${request.id}, quantity: ${request.quantity}`
+        )
+
         const queryRunner = this.dataSource.createQueryRunner()
 
+        const crop = await queryRunner.manager.findOne(CropEntity, {
+            where: { id: request.id }
+        })
+        if (!crop) throw new CropNotFoundException(request.id)
+        if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.id)
+
+        const totalCost = crop.price * request.quantity
+
+        const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+            where: { id: request.userId }
+        })
+
+        if (!this.goldBalanceService.checkSufficient({ entity: user, golds: totalCost }).isEnough)
+            throw new UserInsufficientGoldException(user.golds, totalCost)
+
+        // Start transaction
         await queryRunner.connect()
         await queryRunner.startTransaction()
 
         try {
-            this.logger.debug(
-                `Buying seed for user ${request.userId}, id: ${request.id}, quantity: ${request.quantity}`
-            )
-
-            const crop = await queryRunner.manager.findOne(CropEntity, {
-                where: { id: request.id }
+            // Subtract gold
+            const goldsChanged = await this.goldBalanceService.subtractGold({
+                entity: user,
+                golds: totalCost
             })
-            if (!crop) throw new CropNotFoundException(request.id)
-            if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.id)
 
-            const totalCost = crop.price * request.quantity
+            await queryRunner.manager.save(UserEntity, {
+                ...user,
+                ...goldsChanged
+            })
 
-            const balance = await this.goldBalanceService.getGoldBalance({ userId: request.userId })
-            if (balance.golds < totalCost)
-                throw new UserInsufficientGoldException(balance.golds, totalCost)
+            //Get inventory type
+            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+                where: { cropId: request.id }
+            })
 
-            throw new Error("Test error")
-
-            await this.goldBalanceService.subtractGold({ userId: request.userId, golds: totalCost })
-
-            await this.inventoryService.addInventory(
-                {
+            // Get inventory same type
+            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
+                where: {
                     userId: request.userId,
-                    inventory: {
-                        inventoryType: { id: request.id },
-                        quantity: request.quantity
+                    inventoryType: {
+                        crop: { id: request.id }
                     }
-                },
-                queryRunner.manager
-            )
+                }
+            })
+            const updatedInventories = await this.inventoryService.addInventory({
+                entities: existingInventories,
+                userId: request.userId,
+                inventoryPartial: {
+                    inventoryType: inventoryType,
+                    quantity: request.quantity,
+                    isPlaced: false,
+                    premium: false,
+                    tokenId: null
+                }
+            })
 
+            //Save inventory
+            await queryRunner.manager.save(InventoryEntity, updatedInventories)
             await queryRunner.commitTransaction()
+
+            return
         } catch (error) {
+            this.logger.debug("rollback")
             await queryRunner.rollbackTransaction()
-            throw error
+            throw new BuySeedsTransactionFailedException(error)
         } finally {
             await queryRunner.release()
         }

@@ -4,13 +4,18 @@ import {
     AnimalEntity,
     AnimalInfoEntity,
     BuildingInfoEntity,
+    CropEntity,
     InventoryEntity,
+    InventoryTypeEntity,
     PlacedItemEntity,
+    PlacedItemTypeEntity,
     ProductEntity,
     SeedGrowthInfoEntity,
+    SupplyEntity,
+    TileEntity,
     UserEntity
 } from "@src/database"
-import { EnergyModule } from "@src/services"
+import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
 
 @Global()
 @Module({
@@ -18,12 +23,17 @@ import { EnergyModule } from "@src/services"
         TypeOrmModule.forFeature([
             UserEntity,
             InventoryEntity,
+            CropEntity,
             ProductEntity,
-            AnimalEntity,
             PlacedItemEntity,
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
-            BuildingInfoEntity
+            BuildingInfoEntity,
+            PlacedItemTypeEntity,
+            InventoryTypeEntity,
+            AnimalEntity,
+            TileEntity,
+            SupplyEntity
         ]),
         EnergyModule
     ],

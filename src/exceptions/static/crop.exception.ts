@@ -1,4 +1,8 @@
-import { GrpcNotFoundException, GrpcResourceExhaustedException } from "nestjs-grpc-exceptions"
+import {
+    GrpcNotFoundException,
+    GrpcResourceExhaustedException,
+    GrpcServerExceptionFilter
+} from "nestjs-grpc-exceptions"
 
 export class CropNotFoundException extends GrpcNotFoundException {
     constructor(id: string) {
@@ -9,5 +13,11 @@ export class CropNotFoundException extends GrpcNotFoundException {
 export class CropNotAvailableInShopException extends GrpcResourceExhaustedException {
     constructor(id: string) {
         super(`Crop not available in shop: ${id}`)
+    }
+}
+
+export class BuySeedsTransactionFailedException extends GrpcResourceExhaustedException {
+    constructor(error: Error) {
+        super(`Failed to buy seeds: ${error.message}`)
     }
 }

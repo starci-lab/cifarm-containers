@@ -9,28 +9,18 @@ export class InventoryService {
 
     constructor() {}
 
-    public addInventory(request: AddInventoryRequest): Promise<AddInventoryResponse> {
-        let remainingQuantity = request.inventory.quantity
-        const inventoryType = await manager.findOne(InventoryTypeEntity, {
-            where: {
-                id: request.inventory.inventoryType.id
-            }
-        })
+    public addInventory(request: AddInventoryRequest): AddInventoryResponse {
+        const resultInventories: Array<DeepPartial<InventoryEntity>> = request.entities
 
-        const inventories: DeepPartial<InventoryEntity>[] = await manager.find(InventoryEntity, {
-            where: {
-                user: {
-                    id: request.userId
-                },
-                inventoryType: {
-                    id: request.inventory.inventoryType.id
-                }
-            }
-        })
+        let remainingQuantity = request.inventoryPartial.quantity
 
-        this.logger.debug(`Found ${inventories.length} inventories`)
+        const inventoryType =
+            (request.inventoryPartial.inventoryType as InventoryTypeEntity) ||
+            (request.entities[0].inventoryType as InventoryTypeEntity)
 
-        for (const inventory of inventories) {
+        this.logger.debug(`Found ${resultInventories.length} inventories`)
+
+        for (const inventory of resultInventories) {
             if (remainingQuantity <= 0) break
 
             const spaceInCurrentStack = inventoryType.maxStack - inventory.quantity
@@ -41,27 +31,22 @@ export class InventoryService {
             }
         }
 
-        await manager.save(InventoryEntity, inventories)
-
         this.logger.debug(`Remaining quantity: ${remainingQuantity}`)
 
-        if (remainingQuantity <= 0) return
-
-        const inventoriesToCreate: DeepPartial<InventoryEntity>[] = []
         while (remainingQuantity > 0) {
             const newQuantity = Math.min(inventoryType.maxStack, remainingQuantity)
-            inventoriesToCreate.push({
-                ...request.inventory,
+            resultInventories.push({
+                inventoryType: {
+                    id: inventoryType.id
+                },
+                quantity: newQuantity,
                 user: {
                     id: request.userId
-                },
-                quantity: newQuantity
+                }
             })
             remainingQuantity -= newQuantity
         }
 
-        await manager.save(InventoryEntity, inventoriesToCreate)
-
-        return
+        return resultInventories
     }
 }

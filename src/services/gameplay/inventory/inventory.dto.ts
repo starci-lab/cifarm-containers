@@ -1,11 +1,12 @@
 import { InventoryEntity } from "@src/database"
-import { ArrayEntityRequest, Empty } from "@src/types"
+import { ArrayEntityWithUserIdRequest } from "@src/types"
+import { DeepPartial } from "typeorm"
 
-export class AddInventoryRequest extends ArrayEntityRequest<InventoryEntity> {
+export class AddInventoryRequest extends ArrayEntityWithUserIdRequest<InventoryEntity> {
     inventoryPartial: Pick<
         InventoryEntity,
         "quantity" | "tokenId" | "premium" | "isPlaced" | "inventoryType"
     >
 }
 
-export type AddInventoryResponse = Empty
+export type AddInventoryResponse = Array<DeepPartial<InventoryEntity>>

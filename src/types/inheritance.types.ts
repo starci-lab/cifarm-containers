@@ -9,19 +9,19 @@ export class UserIdRequest {
 }
 
 export class EntityRequest<TEntity> {
-    entity: TEntity
+    entity: DeepPartial<TEntity>
 }
 
 export class EntityWithUserIdRequest<TEntity> extends UserIdRequest {
-    entity: TEntity
+    entity: DeepPartial<TEntity>
 }
 
 export class ArrayEntityRequest<TEntity> {
-    entities: Array<TEntity>
+    entities: Array<DeepPartial<TEntity>>
 }
 
 export class ArrayEntityWithUserIdRequest<TEntity> extends UserIdRequest {
-    entities: Array<TEntity>
+    entities: Array<DeepPartial<TEntity>>
 }
 
 export class CreatedResponse {

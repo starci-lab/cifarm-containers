@@ -23,10 +23,18 @@ export class InventoryEntity extends AbstractEntity {
     @Column({ name: "is_placed", type: "boolean", default: false })
     isPlaced: boolean
 
+    @Field(() => String, { nullable: true })
+    @Column({ name: "user_id", nullable: true })
+    userId: string
+
     @Field(() => UserEntity, { nullable: true })
     @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "SET NULL", eager: true })
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
     user?: UserEntity
+
+    @Field(() => String, { nullable: true })
+    @Column({ name: "inventory_type_id", nullable: true })
+    inventoryTypeId: string
 
     @Field(() => InventoryTypeEntity)
     @ManyToOne(

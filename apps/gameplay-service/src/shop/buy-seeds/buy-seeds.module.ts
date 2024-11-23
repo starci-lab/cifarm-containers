@@ -1,18 +1,25 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import {
+    AnimalEntity,
     AnimalInfoEntity,
+    BuildingEntity,
     BuildingInfoEntity,
     CropEntity,
     InventoryEntity,
+    InventoryTypeEntity,
     PlacedItemEntity,
+    PlacedItemTypeEntity,
     ProductEntity,
     SeedGrowthInfoEntity,
+    SupplyEntity,
+    TileEntity,
+    UpgradeEntity,
     UserEntity
 } from "@src/database"
 import { BuySeedsController } from "./buy-seeds.controller"
 import { BuySeedsService } from "./buy-seeds.service"
-import { InventoryModule } from "@src/services"
+import { GoldBalanceModule, InventoryModule } from "@src/services"
 
 @Global()
 @Module({
@@ -25,9 +32,17 @@ import { InventoryModule } from "@src/services"
             PlacedItemEntity,
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
-            BuildingInfoEntity
+            BuildingInfoEntity,
+            PlacedItemTypeEntity,
+            InventoryTypeEntity,
+            AnimalEntity,
+            TileEntity,
+            SupplyEntity,
+            BuildingEntity,
+            UpgradeEntity
         ]),
-        InventoryModule
+        InventoryModule,
+        GoldBalanceModule
     ],
     providers: [BuySeedsService],
     exports: [BuySeedsService],

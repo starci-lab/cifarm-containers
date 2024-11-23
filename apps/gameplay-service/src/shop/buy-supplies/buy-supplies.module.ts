@@ -1,13 +1,20 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import {
+    AnimalEntity,
     AnimalInfoEntity,
+    BuildingEntity,
     BuildingInfoEntity,
+    CropEntity,
     InventoryEntity,
+    InventoryTypeEntity,
     PlacedItemEntity,
+    PlacedItemTypeEntity,
     ProductEntity,
     SeedGrowthInfoEntity,
     SupplyEntity,
+    TileEntity,
+    UpgradeEntity,
     UserEntity
 } from "@src/database"
 import { BuySuppliesController } from "./buy-supplies.controller"
@@ -20,12 +27,19 @@ import { GoldBalanceModule, InventoryModule } from "@src/services"
         TypeOrmModule.forFeature([
             UserEntity,
             InventoryEntity,
-            SupplyEntity,
+            CropEntity,
             ProductEntity,
             PlacedItemEntity,
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
-            BuildingInfoEntity
+            BuildingInfoEntity,
+            PlacedItemTypeEntity,
+            InventoryTypeEntity,
+            AnimalEntity,
+            TileEntity,
+            SupplyEntity,
+            BuildingEntity,
+            UpgradeEntity
         ]),
         InventoryModule,
         GoldBalanceModule

@@ -3,11 +3,18 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import {
     AnimalEntity,
     AnimalInfoEntity,
+    BuildingEntity,
     BuildingInfoEntity,
+    CropEntity,
     InventoryEntity,
+    InventoryTypeEntity,
     PlacedItemEntity,
+    PlacedItemTypeEntity,
     ProductEntity,
     SeedGrowthInfoEntity,
+    SupplyEntity,
+    TileEntity,
+    UpgradeEntity,
     UserEntity
 } from "@src/database"
 import { BuyAnimalService } from "./buy-animal.service"
@@ -18,12 +25,19 @@ import { BuyAnimalService } from "./buy-animal.service"
         TypeOrmModule.forFeature([
             UserEntity,
             InventoryEntity,
+            CropEntity,
             ProductEntity,
-            AnimalEntity,
             PlacedItemEntity,
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
-            BuildingInfoEntity
+            BuildingInfoEntity,
+            PlacedItemTypeEntity,
+            InventoryTypeEntity,
+            AnimalEntity,
+            TileEntity,
+            SupplyEntity,
+            BuildingEntity,
+            UpgradeEntity
         ])
     ],
     providers: [BuyAnimalService],
