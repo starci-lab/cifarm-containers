@@ -1,11 +1,19 @@
 import { ApiHideProperty, ApiProperty } from "@nestjs/swagger"
 import { IsUUID } from "class-validator"
-import { DeepPartial } from "typeorm"
+import { DeepPartial, QueryRunner } from "typeorm"
 
 export class UserIdRequest {
     @IsUUID("4")
     @ApiHideProperty()
     userId: string
+}
+
+export class EntityRequest<TEntity> {
+    entity: TEntity
+}
+
+export class EntityWithUserIdRequest<TEntity> extends UserIdRequest {
+    entity: TEntity
 }
 
 export class CreatedResponse {
@@ -27,4 +35,8 @@ export class CreateRequest<TEntity> {
 export class CreateWithUserIdRequest<TEntity> extends UserIdRequest {
     @ApiProperty({ type: Object })
     item: DeepPartial<TEntity>
+}
+
+export class QueryRunnerUserIdRequest extends UserIdRequest {
+    queryRunner: QueryRunner
 }

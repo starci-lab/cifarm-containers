@@ -1,8 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Empty, UserIdRequest } from "@src/types"
+import { UserEntity } from "@src/database"
+import { EntityRequest } from "@src/types"
 import { IsInt } from "class-validator"
+import { DeepPartial } from "typeorm"
 
-export class AddEnergyRequest extends UserIdRequest {
+export class AddEnergyRequest extends EntityRequest<UserEntity> {
     @IsInt()
     @ApiProperty({
         example: 1,
@@ -10,9 +12,9 @@ export class AddEnergyRequest extends UserIdRequest {
     })
         energy: number
 }
-export type AddEnergyResponse = Empty
+export type AddEnergyResponse = DeepPartial<UserEntity>
 
-export class SubstractEnergyRequest extends UserIdRequest {
+export class SubstractEnergyRequest extends EntityRequest<UserEntity> {
     @IsInt()
     @ApiProperty({
         example: 3,
@@ -21,4 +23,4 @@ export class SubstractEnergyRequest extends UserIdRequest {
         energy: number
 }
 
-export type SubstractEnergyResponse = Empty
+export type SubstractEnergyResponse = DeepPartial<UserEntity>

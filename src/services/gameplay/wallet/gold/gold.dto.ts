@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Empty, UserIdRequest } from "@src/types"
+import { UserEntity } from "@src/database"
+import { Empty, EntityRequest, UserIdRequest } from "@src/types"
 import { IsInt, Min } from "class-validator"
+import { DeepPartial } from "typeorm"
 
 export class GetGoldBalanceRequest extends UserIdRequest {}
 
@@ -10,7 +12,7 @@ export class GetGoldBalanceResponse {
     golds: number
 }
 
-export class AddGoldRequest extends UserIdRequest {
+export class AddGoldRequest extends EntityRequest<UserEntity> {
     @IsInt()
     @Min(0)
     @ApiProperty({
@@ -20,7 +22,7 @@ export class AddGoldRequest extends UserIdRequest {
     golds: number
 }
 
-export type AddGoldResponse = Empty
+export type AddGoldResponse = DeepPartial<UserEntity>
 
 export class SubtractGoldRequest extends UserIdRequest {
     @IsInt()

@@ -58,13 +58,19 @@ export class WaterService {
         if (user.energy < energyCost) throw new EnergyNotEnoughException(user.energy, energyCost)
 
         // substract energy
-        await this.energyService.substractEnergy({
-            userId: request.userId,
+        const subtractEnergyChanges = this.energyService.substractEnergy({
+            entity: user,
             energy: energyCost
         })
-        await this.levelService.addExperiences({
-            userId: request.userId,
+        const addExperiencesChanges = this.levelService.addExperiences({
+            entity: user,
             experiences: experiencesGain
+        })
+
+        // update user
+        await this.dataSource.manager.update(UserEntity, user.id, {
+            ...subtractEnergyChanges,
+            ...addExperiencesChanges
         })
     }
 }

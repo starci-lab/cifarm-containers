@@ -20,18 +20,16 @@ export class GoldBalanceService {
         return { golds }
     }
 
-    public async addGold(request: AddGoldRequest): Promise<AddGoldResponse> {
+    public addGold(request: AddGoldRequest): AddGoldResponse {
         if (typeof request.golds !== "number" || isNaN(request.golds)) {
             throw new GrpcInvalidArgumentException("Invalid token amount")
         }
         if (request.golds < 0)
             throw new GrpcInvalidArgumentException("Gold amount must be positive")
 
-        return this.balanceService.addBalance({
-            userId: request.userId,
-            golds: request.golds,
-            tokens: 0
-        })
+        return {
+            golds: request.golds + request.entity.golds
+        }
     }
 
     public async subtractGold(request: SubtractGoldRequest): Promise<SubtractGoldResponse> {

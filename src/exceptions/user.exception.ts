@@ -35,3 +35,9 @@ export class UserInsufficientTokenException extends GrpcResourceExhaustedExcepti
         super(`User has insufficient token: ${current} (current), ${need} (need)`)
     }
 }
+
+export class ExperienceCannotBeZeroOrNegativeException extends GrpcResourceExhaustedException {
+    constructor(experiences: number) {
+        super(`Experience cannot be zero or negative: ${experiences}`)
+    }
+}

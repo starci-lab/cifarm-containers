@@ -1,6 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Empty, UserIdRequest } from "@src/types"
+import { UserEntity } from "@src/database"
+import { Empty, EntityRequest, UserIdRequest } from "@src/types"
 import { IsInt } from "class-validator"
+import { DeepPartial } from "typeorm"
 
 export class GetLevelRequest extends UserIdRequest {}
 
@@ -18,7 +20,7 @@ export class GetLevelResponse {
     experienceQuota: number
 }
 
-export class AddExperiencesRequest extends UserIdRequest {
+export class AddExperiencesRequest extends EntityRequest<UserEntity> {
     @IsInt()
     @ApiProperty({
         example: 50,
@@ -27,4 +29,4 @@ export class AddExperiencesRequest extends UserIdRequest {
     experiences: number
 }
 
-export type AddExperiencesResponse = Empty
+export type AddExperiencesResponse = DeepPartial<UserEntity>

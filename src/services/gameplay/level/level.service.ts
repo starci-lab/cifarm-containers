@@ -7,7 +7,7 @@ import {
     GetLevelRequest,
     GetLevelResponse
 } from "./level.dto"
-import { UserNotFoundException } from "@src/exceptions"
+import { ExperienceCannotBeZeroOrNegativeException, UserNotFoundException } from "@src/exceptions"
 
 @Injectable()
 export class LevelService {
@@ -39,16 +39,26 @@ export class LevelService {
         }
     }
 
-    public async addExperiences(request: AddExperiencesRequest): Promise<AddExperiencesResponse> {
-        const user = await this.findUserById(request.userId)
-        user.experiences += Number(request.experiences)
-        const quota = this.computeExperiencesQuota(user.level)
-        if (user.experiences >= quota) {
-            user.level++
-            user.experiences = user.experiences - quota
+    public addExperiences(request: AddExperiencesRequest): AddExperiencesResponse {
+        const { entity, experiences } = request
+        
+        //ensure the experiences is a positive value
+        if (experiences <= 0) 
+            throw new ExperienceCannotBeZeroOrNegativeException(experiences)
+
+        const quota = this.computeExperiencesQuota(entity.level)
+        
+        let current = entity.experiences + experiences
+        let level: number = undefined
+
+        if (current >= quota) {
+            level = entity.level + 1
+            current = entity.experiences - quota
         }
-        await this.dataSource.manager.save(user)
-        return
+        return {
+            level,
+            experiences: current
+        }
     }
 
     private async findUserById(userId: string): Promise<UserEntity> {

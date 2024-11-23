@@ -1,49 +1,30 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { UserEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import { AddEnergyRequest, AddEnergyResponse, SubstractEnergyRequest, SubstractEnergyResponse } from "./energy.dto"
-import { EnergyExceedsMaximumException, UserNotFoundException } from "@src/exceptions"
+import { EnergyExceedsMaximumException } from "@src/exceptions"
 
 @Injectable()
 export class EnergyService {
     private readonly logger: Logger = new Logger(EnergyService.name)
     constructor(private readonly dataSource: DataSource) {}
 
-    public async addEnergy(request: AddEnergyRequest): Promise<AddEnergyResponse> {
-        const user = await this.dataSource.manager.findOne(UserEntity, {
-            where: { id: request.userId }
-        })
-        if (!user) throw new UserNotFoundException(request.userId)
-        const maxEnergy = this.getMaxEnergy(user.level)
-
-        if (user.energy + request.energy > maxEnergy)
-            throw new EnergyExceedsMaximumException(user.energy + request.energy, maxEnergy)
-
-        await this.dataSource.manager.increment(
-            UserEntity,
-            { id: user.id },
-            "energy",
-            request.energy
-        )
-        return {}
+    public addEnergy(request: AddEnergyRequest): AddEnergyResponse {
+        const { energy, entity } = request
+        const maxEnergy = this.getMaxEnergy(entity.level)
+        if (request.entity.energy + request.energy > maxEnergy)
+            throw new EnergyExceedsMaximumException(entity.energy + energy, maxEnergy)
+        return {
+            energy: entity.energy + energy
+        }
     }
 
-    public async substractEnergy(request: SubstractEnergyRequest): Promise<SubstractEnergyResponse> {
-        const user = await this.dataSource.manager.findOne(UserEntity, {
-            where: { id: request.userId }
-        })
-        if (!user) throw new UserNotFoundException(request.userId)
-
-        if (user.energy - request.energy < 0)
-            throw new EnergyExceedsMaximumException(user.energy - request.energy, 0)
-
-        await this.dataSource.manager.decrement(
-            UserEntity,
-            { id: user.id },
-            "energy",
-            request.energy
-        )
-        return {}
+    public substractEnergy(request: SubstractEnergyRequest): SubstractEnergyResponse {
+        const { energy, entity } = request
+        if (entity.energy - energy < 0)
+            throw new EnergyExceedsMaximumException(entity.energy - request.energy, 0)
+        return {
+            energy: entity.energy - energy
+        }
     }
     
     private getMaxEnergy(level: number): number {
