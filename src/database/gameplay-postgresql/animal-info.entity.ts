@@ -50,7 +50,6 @@ export class AnimalInfoEntity extends AbstractEntity {
 
     @Field(() => PlacedItemEntity)
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.animalInfo, {
-        cascade: true,
         onDelete: "CASCADE"
     })
     placedItem?: PlacedItemEntity

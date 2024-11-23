@@ -21,7 +21,6 @@ export class BuildingInfoEntity extends AbstractEntity {
 
     @Field(() => PlacedItemEntity)
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.buildingInfo, {
-        cascade: true,
         onDelete: "CASCADE"
     })
     placedItem?: PlacedItemEntity

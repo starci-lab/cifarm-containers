@@ -10,7 +10,7 @@ import { CropCurrentState } from "./enums"
 @Entity("seed_growth_info")
 export class SeedGrowthInfoEntity extends AbstractEntity {
     @Field(() => String)
-    @Column({ type: "enum", enum: CropCurrentState})
+    @Column({ type: "enum", enum: CropCurrentState })
     currentStage: CropCurrentState
 
     @Field(() => Number)
@@ -51,7 +51,6 @@ export class SeedGrowthInfoEntity extends AbstractEntity {
 
     @Field(() => PlacedItemEntity)
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.seedGrowthInfo, {
-        cascade: true,
         onDelete: "CASCADE"
     })
     placedItem?: PlacedItemEntity

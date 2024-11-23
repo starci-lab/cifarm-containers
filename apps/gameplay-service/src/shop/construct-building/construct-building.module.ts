@@ -3,6 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import {
     CropEntity,
     InventoryEntity,
+    InventoryTypeEntity,
     PlacedItemEntity,
     PlacedItemTypeEntity,
     ProductEntity,
@@ -27,7 +28,8 @@ import { ConstructBuildingController } from "./construct-building.controller"
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
             BuildingInfoEntity,
-            PlacedItemTypeEntity
+            PlacedItemTypeEntity,
+            InventoryTypeEntity
         ]),
         WalletModule
     ],

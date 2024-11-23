@@ -1,15 +1,14 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { IWalletService } from "@src/containers/wallet-service"
-import { BuildingEntity, PlacedItemEntity } from "@src/database"
+import { BuildingEntity, PlacedItemEntity, PlacedItemTypeEntity } from "@src/database"
 import {
     BuildingNotAvailableInShopException,
     BuildingNotFoundException,
     PlacedItemTypeNotFoundException,
     UserInsufficientGoldException
 } from "@src/exceptions"
+import { GoldBalanceService } from "@src/services"
 import { Cache } from "cache-manager"
-import { lastValueFrom } from "rxjs"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
 
@@ -20,10 +19,11 @@ export class ConstructBuildingService {
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache,
-        private readonly walletService: IWalletService
+        private readonly walletService: GoldBalanceService
     ) {}
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
+        this.logger.debug("hehe")
         const building = await this.dataSource.manager.findOne(BuildingEntity, {
             where: { id: request.id }
         })
@@ -35,7 +35,7 @@ export class ConstructBuildingService {
             throw new BuildingNotAvailableInShopException(request.id)
         }
 
-        const placedItemType = await this.dataSource.manager.findOne(PlacedItemEntity, {
+        const placedItemType = await this.dataSource.manager.findOne(PlacedItemTypeEntity, {
             where: { id: request.id }
         })
 
@@ -45,17 +45,15 @@ export class ConstructBuildingService {
 
         const totalCost = building.price || 0
 
-        const balance = await lastValueFrom(
-            this.walletService.getGoldBalance({ userId: request.userId })
-        )
+        const balance = await this.walletService.getGoldBalance({ userId: request.userId })
 
         if (balance.golds < totalCost) {
             throw new UserInsufficientGoldException(balance.golds, totalCost)
         }
 
-        await lastValueFrom(
-            this.walletService.subtractGold({ userId: request.id, golds: totalCost })
-        )
+        await this.walletService.subtractGold({ userId: request.userId, golds: totalCost })
+
+        this.logger.debug("start")
 
         // Prepare placed item entity
         const placedItem: DeepPartial<PlacedItemEntity> = {
@@ -71,6 +69,8 @@ export class ConstructBuildingService {
                 id: placedItemType.id
             }
         }
+
+        this.logger.debug("end")
 
         const savedBuilding = await this.dataSource.manager.save(PlacedItemEntity, placedItem)
 

@@ -29,19 +29,30 @@ export class PlacedItemEntity extends AbstractEntity {
 
     @Field(() => SeedGrowthInfoEntity, { nullable: true })
     @OneToOne(() => SeedGrowthInfoEntity, (seedGrowthInfo) => seedGrowthInfo.placedItem, {
-        nullable: true
+        nullable: true,
+        eager: true,
+        cascade: true,
+        onDelete: "CASCADE"
     })
     @JoinColumn()
     seedGrowthInfo?: SeedGrowthInfoEntity
 
     @Field(() => AnimalInfoEntity, { nullable: true })
-    @OneToOne(() => AnimalInfoEntity, (animalInfo) => animalInfo.placedItem, { nullable: true })
+    @OneToOne(() => AnimalInfoEntity, (animalInfo) => animalInfo.placedItem, {
+        nullable: true,
+        eager: true,
+        cascade: true,
+        onDelete: "CASCADE"
+    })
     @JoinColumn()
     animalInfo?: AnimalInfoEntity
 
     @Field(() => BuildingInfoEntity, { nullable: true })
     @OneToOne(() => BuildingInfoEntity, (buildingInfo) => buildingInfo.placedItem, {
-        nullable: true
+        nullable: true,
+        eager: true,
+        cascade: true,
+        onDelete: "CASCADE"
     })
     @JoinColumn()
     buildingInfo?: BuildingInfoEntity
