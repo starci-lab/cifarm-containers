@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { shopGrpcConstants } from "../constants"
+import { gameplayGrpcConstants } from "../../app.constants"
 import { BuySuppliesRequest } from "./buy-supplies.dto"
 import { BuySuppliesService } from "./buy-supplies.service"
 
@@ -10,7 +10,7 @@ export class BuySuppliesController {
 
     constructor(private readonly buySupplyService: BuySuppliesService) {}
 
-    @GrpcMethod(shopGrpcConstants.SERVICE, "BuySupplies")
+    @GrpcMethod(gameplayGrpcConstants.SERVICE, "BuySupplies")
     public async buySupply(request: BuySuppliesRequest) {
         this.logger.debug("BuySupplies called")
         return this.buySupplyService.buySupplies(request)

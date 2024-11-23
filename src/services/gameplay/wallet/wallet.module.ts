@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common"
-import { GoldModule } from "./gold"
-import { TokenModule } from "./token"
 import { BalanceModule } from "./balance"
+import { GoldBalanceModule } from "./gold"
+import { TokenBalanceModule } from "./token"
 
 @Module({
-    imports: [GoldModule, TokenModule, BalanceModule]
+    imports: [GoldBalanceModule, TokenBalanceModule, BalanceModule]
 })
 export class WalletModule {}

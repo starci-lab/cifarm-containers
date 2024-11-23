@@ -10,7 +10,7 @@ import {
     SeedGrowthInfoEntity,
     UserEntity
 } from "@src/database"
-import { BuyAnimalsService } from "./buy-animals.service"
+import { BuyAnimalService } from "./buy-animal.service"
 
 @Global()
 @Module({
@@ -26,7 +26,7 @@ import { BuyAnimalsService } from "./buy-animals.service"
             BuildingInfoEntity
         ])
     ],
-    providers: [BuyAnimalsService],
-    exports: [BuyAnimalsService]
+    providers: [BuyAnimalService],
+    exports: [BuyAnimalService]
 })
 export class BuyAnimalsModule {}

@@ -1,13 +1,13 @@
 // buy-seed.dto.ts
 
-import { ApiProperty, OmitType } from "@nestjs/swagger"
-import { UserIdRequest } from "@src/types"
-import { IsString, IsInt, Min } from "class-validator"
+import { ApiProperty } from "@nestjs/swagger"
+import { Empty, UserIdRequest } from "@src/types"
+import { IsInt, IsString, Min } from "class-validator"
 
 export class BuySeedsRequest extends UserIdRequest {
-    @ApiProperty({ example: "Carrot", description: "The key of the seed to purchase" })
+    @ApiProperty({ example: "Carrot", description: "The id of the seed to purchase" })
     @IsString()
-    key: string
+    id: string
 
     @ApiProperty({ example: 10, description: "The quantity of seeds to purchase" })
     @IsInt()
@@ -15,12 +15,4 @@ export class BuySeedsRequest extends UserIdRequest {
     quantity: number
 }
 
-export class BuySeedsResponse {
-    @ApiProperty({
-        example: "inventory-seed-key",
-        description: "The inventory key for the purchased seeds"
-    })
-    inventoryKey: string
-}
-
-export class BuySeedsControllerRequest extends OmitType(BuySeedsRequest, ["userId"] as const) {}
+export type BuySeedsResponse = Empty

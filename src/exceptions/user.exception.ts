@@ -23,3 +23,15 @@ export class EnergyNotEnoughException extends GrpcResourceExhaustedException {
         super(`Energy not enough: ${current} (current), ${need} (need)`)
     }
 }
+
+export class UserInsufficientGoldException extends GrpcResourceExhaustedException {
+    constructor(current: number, need: number) {
+        super(`User has insufficient gold: ${current} (current), ${need} (need)`)
+    }
+}
+
+export class UserInsufficientTokenException extends GrpcResourceExhaustedException {
+    constructor(current: number, need: number) {
+        super(`User has insufficient token: ${current} (current), ${need} (need)`)
+    }
+}

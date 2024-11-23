@@ -1,20 +1,19 @@
-import { GetBalanceRequest, GetBalanceResponse } from "@apps/wallet-service/src/balance"
-import {
-    AddGoldRequest,
-    AddGoldResponse,
-    GetGoldBalanceRequest,
-    GetGoldBalanceResponse,
-    SubtractGoldRequest,
-    SubtractGoldResponse
-} from "@apps/wallet-service/src/gold"
 import {
     AddTokenRequest,
     AddTokenResponse,
     GetTokenBalanceRequest,
     GetTokenBalanceResponse,
     SubtractTokenRequest,
-    SubtractTokenResponse
-} from "@apps/wallet-service/src/token"
+    SubtractTokenResponse,
+    AddGoldRequest,
+    AddGoldResponse,
+    GetGoldBalanceRequest,
+    GetGoldBalanceResponse,
+    SubtractGoldRequest,
+    SubtractGoldResponse,
+    GetBalanceRequest,
+    GetBalanceResponse
+} from "@src/services/gameplay/wallet/"
 import { Observable } from "rxjs"
 
 export interface IWalletService {

@@ -1,5 +1,10 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
+import "./shop/entry.proto";
 
 package gameplay;
+
+service GameplayService {
+    rpc ConstructBuilding(ConstructBuildingRequest) returns (ConstructBuildingResponse);
+}

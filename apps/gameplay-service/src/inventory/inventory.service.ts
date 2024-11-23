@@ -24,7 +24,7 @@ export class InventoryService {
 
         let remainingQuantity = quantity
         const inventories = await this.dataSource.manager.find(InventoryEntity, {
-            where: { referenceKey: key, userId }
+            where: { userId: request.userId }
         })
 
         for (const inventory of inventories) {

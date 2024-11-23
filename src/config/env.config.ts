@@ -71,6 +71,10 @@ export const envConfig = () => ({
         staticService: {
             host: process.env.STATIC_SERVICE_HOST,
             port: Number(process.env.STATIC_SERVICE_PORT)
+        },
+        gameplayService: {
+            host: process.env.GAMEPLAY_SERVICE_HOST,
+            port: Number(process.env.GAMEPLAY_SERVICE_PORT)
         }
     },
     database: {

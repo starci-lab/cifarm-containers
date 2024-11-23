@@ -38,10 +38,7 @@ message BuyAnimalRequest {
 }
 
 // Position details within the building
-message Position {
-    double x = 1;   // X-coordinate position
-    double y = 2;   // Y-coordinate position
-}
+
 
 // Response message for successful animal purchase
 message BuyAnimalResponse {

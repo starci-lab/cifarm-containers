@@ -2,77 +2,67 @@
 
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { ClientGrpc } from "@nestjs/microservices"
-import { REDIS_KEY } from "@src/constants"
-import { InventoryType, SupplyEntity } from "@src/database"
-import { Cache } from "cache-manager"
+import { IWalletService } from "@src/containers/wallet-service"
+import { SupplyEntity } from "@src/database"
 import {
-    GrpcAbortedException,
-    GrpcNotFoundException,
-    GrpcPermissionDeniedException
-} from "nestjs-grpc-exceptions"
+    SupplyNotAvailableInShopException,
+    SupplyNotFoundException,
+    UserInsufficientGoldException
+} from "@src/exceptions"
+import { InventoryService } from "@src/services"
+import { Cache } from "cache-manager"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
 import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
-import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
-import { IWalletService } from "@src/containers/wallet-service"
-import { InventoryService } from "../inventory"
 
 @Injectable()
 export class BuySuppliesService {
     private readonly logger = new Logger(BuySuppliesService.name)
-    private walletService: IWalletService
 
     constructor(
         private readonly dataSource: DataSource,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly inventoryService: InventoryService,
-        @Inject(walletGrpcConstants.NAME) private client: ClientGrpc,
-        @Inject(CACHE_MANAGER) private cacheManager: Cache
+        private readonly walletService: IWalletService
     ) {}
 
-    onModuleInit() {
-        this.walletService = this.client.getService<IWalletService>(walletGrpcConstants.SERVICE)
-    }
-
     async buySupplies(request: BuySuppliesRequest): Promise<BuySuppliesResponse> {
-        const { key, quantity, userId } = request
-        this.logger.debug(`Buying supply for user ${userId} key: ${key} quantity: ${quantity}`)
-
-        // Fetch supply details (Get from cache or DB)
-        let supplies: Array<SupplyEntity> = await this.cacheManager.get<Array<SupplyEntity>>(
-            REDIS_KEY.SUPPLIES
+        this.logger.debug(
+            `Buying supply for user ${request.userId} id: ${request.id} quantity: ${request.quantity}`
         )
-        if (!supplies) {
-            supplies = await this.dataSource.manager.find(SupplyEntity)
-            await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies, Infinity)
-        }
-        const supply: SupplyEntity = supplies.find((s) => s.id.toString() === key)
-        if (!supply) throw new GrpcNotFoundException("Supply not found")
+
+        const supply: SupplyEntity = await this.dataSource.manager.findOne(SupplyEntity, {
+            where: { id: request.id }
+        })
+
+        if (!supply) throw new SupplyNotFoundException(request.id)
         if (!supply.availableInShop) {
-            throw new GrpcPermissionDeniedException("Supply not available in shop")
+            throw new SupplyNotAvailableInShopException(request.id)
         }
 
         // Calculate total cost
-        const totalCost = supply.price * quantity
+        const totalCost = supply.price * request.quantity
 
         // Check Balance
-        const balance = await lastValueFrom(this.walletService.getGoldBalance({ userId }))
-        if (balance.golds < totalCost) throw new GrpcAbortedException("Insufficient gold balance")
+        const balance = await lastValueFrom(
+            this.walletService.getGoldBalance({ userId: request.userId })
+        )
+        if (balance.golds < totalCost)
+            throw new UserInsufficientGoldException(balance.golds, totalCost)
 
-        await lastValueFrom(this.walletService.subtractGold({ userId, golds: totalCost }))
+        await lastValueFrom(
+            this.walletService.subtractGold({ userId: request.id, golds: totalCost })
+        )
         await this.inventoryService.addInventory({
-            userId,
-            key,
-            quantity,
-            maxStack: supply.maxStack,
-            type: InventoryType.Supply,
-            placeable: true,
-            isPlaced: false,
-            premium: false,
-            deliverable: true,
-            asTool: false
+            userId: request.userId,
+            inventory: {
+                inventoryType: {
+                    id: request.id
+                },
+                quantity: request.quantity
+            }
         })
 
-        return { inventoryKey: key }
+        return
     }
 }

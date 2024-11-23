@@ -7,6 +7,7 @@ import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
+import { ConstructBuildingModule } from "./shop"
 
 @Module({
     imports: [
@@ -40,7 +41,8 @@ import { AppController } from "./app.controller"
                     ttl: 3 * 60000 // 3 minutes (milliseconds)
                 }
             }
-        })
+        }),
+        ConstructBuildingModule
     ],
     controllers: [AppController],
     providers: [

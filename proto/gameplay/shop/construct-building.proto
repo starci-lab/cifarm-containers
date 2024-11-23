@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package gameplay;
+
+message ConstructBuildingRequest {
+    string userId = 1;
+    string id = 2;
+    Position position = 3;
+}
+
+message ConstructBuildingResponse {
+    string placedItemId = 1;
+}
+

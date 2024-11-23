@@ -1,74 +1,64 @@
-import { walletGrpcConstants } from "@apps/wallet-service/src/constants"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { ClientGrpc } from "@nestjs/microservices"
-import { REDIS_KEY } from "@src/constants"
 import { IWalletService } from "@src/containers/wallet-service"
-import { CropEntity, InventoryType } from "@src/database"
-import { Cache } from "cache-manager"
+import { CropEntity } from "@src/database"
 import {
-    GrpcAbortedException,
-    GrpcNotFoundException,
-    GrpcPermissionDeniedException
-} from "nestjs-grpc-exceptions"
+    CropNotAvailableInShopException,
+    CropNotFoundException,
+    UserInsufficientGoldException
+} from "@src/exceptions"
+import { InventoryService } from "@src/services"
+import { Cache } from "cache-manager"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
-import { InventoryService } from "../inventory"
 import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
 
 @Injectable()
 export class BuySeedsService {
     private readonly logger = new Logger(BuySeedsService.name)
-    private walletService: IWalletService
 
     constructor(
         private readonly dataSource: DataSource,
         private readonly inventoryService: InventoryService,
-        @Inject(walletGrpcConstants.NAME) private client: ClientGrpc,
+        private readonly walletService: IWalletService,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache
     ) {}
 
-    onModuleInit() {
-        this.walletService = this.client.getService<IWalletService>(walletGrpcConstants.SERVICE)
-    }
-
     async buySeeds(request: BuySeedsRequest): Promise<BuySeedsResponse> {
-        const { key, quantity, userId } = request
-        this.logger.debug(`Buying seed for user ${userId}, key: ${key}, quantity: ${quantity}`)
+        this.logger.debug(
+            `Buying seed for user ${request.userId}, id: ${request.id}, quantity: ${request.quantity}`
+        )
 
-        const crops = await this.cacheManager.get<Array<CropEntity>>(REDIS_KEY.CROPS)
-        const crop = crops.find((c) => c.id.toString() === key.toString())
-        if (!crop) throw new GrpcNotFoundException("Crop not found or invalid key: " + key)
-        if (!crop.availableInShop)
-            throw new GrpcPermissionDeniedException("Crop not available in shop")
+        const crop = await this.dataSource.manager.findOne(CropEntity, {
+            where: { id: request.id }
+        })
+        if (!crop) throw new CropNotFoundException(request.id)
+        if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.id)
 
-        const totalCost = crop.price * quantity
-
+        const totalCost = crop.price * request.quantity
         this.logger.debug(`Total cost: ${totalCost}`)
 
-        const balance = await lastValueFrom(this.walletService.getGoldBalance({ userId }))
-        if (balance.golds < totalCost) throw new GrpcAbortedException("Insufficient gold balance")
+        const balance = await lastValueFrom(
+            this.walletService.getGoldBalance({ userId: request.userId })
+        )
+        if (balance.golds < totalCost)
+            throw new UserInsufficientGoldException(balance.golds, totalCost)
 
-        this.logger.debug(`Balance: ${balance.golds}`)
-
-        await lastValueFrom(this.walletService.subtractGold({ userId, golds: totalCost }))
+        await lastValueFrom(
+            this.walletService.subtractGold({ userId: request.userId, golds: totalCost })
+        )
 
         await this.inventoryService.addInventory({
-            userId,
-            key,
-            quantity,
-            maxStack: crop.maxStack,
-            type: InventoryType.Seed,
-            placeable: true,
-            isPlaced: false,
-            premium: crop.premium,
-            deliverable: true,
-            asTool: false
+            userId: request.userId,
+            inventory: {
+                inventoryType: {
+                    id: request.id
+                },
+                quantity: request.quantity
+            }
         })
 
-        return {
-            inventoryKey: "Successfully bought seeds"
-        }
+        return
     }
 }

@@ -1,12 +1,14 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, PlacedItemEntity, PlacedItemType, UserEntity } from "@src/database"
-import { Cache } from "cache-manager"
+import { IWalletService } from "@src/containers/wallet-service"
+import { BuildingEntity, PlacedItemEntity } from "@src/database"
 import {
-    GrpcAbortedException,
-    GrpcNotFoundException,
-    GrpcPermissionDeniedException
-} from "nestjs-grpc-exceptions"
+    BuildingNotAvailableInShopException,
+    BuildingNotFoundException,
+    PlacedItemTypeNotFoundException,
+    UserInsufficientGoldException
+} from "@src/exceptions"
+import { Cache } from "cache-manager"
 import { lastValueFrom } from "rxjs"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
@@ -17,50 +19,62 @@ export class ConstructBuildingService {
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private cacheManager: Cache
+        private cacheManager: Cache,
+        private readonly walletService: IWalletService
     ) {}
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
-        // Fetch building details
-        const buildings = await this.cacheManager.get<Array<BuildingEntity>>(REDIS_KEY.BUILDINGS)
-        const building = buildings.find((c) => c.id.toString() === key.toString())
-        if (!building) throw new GrpcNotFoundException("Building not found or invalid key: " + key)
-        if (!building.availableInShop)
-            throw new GrpcPermissionDeniedException("Building not available in shop")
+        const building = await this.dataSource.manager.findOne(BuildingEntity, {
+            where: { id: request.id }
+        })
 
-        const user = await this.dataSource.manager.findOne(UserEntity, { where: { id: userId } })
-        if (!user) {
-            throw new GrpcNotFoundException("User not found: " + userId)
+        if (!building) {
+            throw new BuildingNotFoundException(request.id)
+        }
+        if (!building.availableInShop) {
+            throw new BuildingNotAvailableInShopException(request.id)
         }
 
-        const totalCost = building.price
-        this.logger.debug(`Total cost: ${totalCost}`)
-        const balance = await lastValueFrom(this.walletService.getGoldBalance({ userId }))
+        const placedItemType = await this.dataSource.manager.findOne(PlacedItemEntity, {
+            where: { id: request.id }
+        })
+
+        if (!placedItemType) {
+            throw new PlacedItemTypeNotFoundException(request.id)
+        }
+
+        const totalCost = building.price || 0
+
+        const balance = await lastValueFrom(
+            this.walletService.getGoldBalance({ userId: request.userId })
+        )
+
         if (balance.golds < totalCost) {
-            throw new GrpcAbortedException("Insufficient gold balance")
+            throw new UserInsufficientGoldException(balance.golds, totalCost)
         }
 
-        await lastValueFrom(this.walletService.subtractGold({ userId, golds: totalCost }))
+        await lastValueFrom(
+            this.walletService.subtractGold({ userId: request.id, golds: totalCost })
+        )
 
+        // Prepare placed item entity
         const placedItem: DeepPartial<PlacedItemEntity> = {
-            userId: userId,
-            user: user,
-            itemKey: key,
-            type: PlacedItemType.Building,
-            x: position.x,
-            y: position.y,
+            user: { id: request.userId },
             buildingInfo: {
                 currentUpgrade: 1,
                 occupancy: 0,
                 building
+            },
+            x: request.position.x,
+            y: request.position.y,
+            placedItemType: {
+                id: placedItemType.id
             }
         }
 
-        // Create a placed building item
-        const placedBuilding = this.dataSource.manager.create(PlacedItemEntity, placedItem)
-        const savedBuilding = await this.dataSource.manager.save(placedBuilding)
+        const savedBuilding = await this.dataSource.manager.save(PlacedItemEntity, placedItem)
 
-        this.logger.debug(`Building constructed with key: ${savedBuilding.id}`)
+        this.logger.log(`Successfully constructed building: ${savedBuilding.id}`)
 
         return { placedItemId: savedBuilding.id }
     }

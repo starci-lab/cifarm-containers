@@ -24,12 +24,8 @@ export class PlacedItemEntity extends AbstractEntity {
     user?: UserEntity
 
     @Field(() => String, { nullable: true })
-    @Column({ name: "inventory_key", type: "varchar", nullable: true })
-    inventoryKey?: string
-
-    @Field(() => String)
-    @Column({ name: "type", type: "varchar" })
-    type: string
+    @Column({ name: "inventory_id", type: "varchar", nullable: true })
+    inventoryId?: string
 
     @Field(() => SeedGrowthInfoEntity, { nullable: true })
     @OneToOne(() => SeedGrowthInfoEntity, (seedGrowthInfo) => seedGrowthInfo.placedItem, {

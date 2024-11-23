@@ -1,10 +1,10 @@
 import { Global, Module } from "@nestjs/common"
 import { BalanceModule } from "../balance"
-import { GoldTokenService } from "./gold.service"
+import { GoldBalanceService } from "./gold.service"
 
 @Global()
 @Module({
-    providers: [GoldTokenService, BalanceModule],
-    exports: [GoldTokenService]
+    providers: [GoldBalanceService, BalanceModule],
+    exports: [GoldBalanceService]
 })
-export class GoldTokenModule {}
+export class GoldBalanceModule {}
