@@ -41,3 +41,15 @@ export class ExperienceCannotBeZeroOrNegativeException extends GrpcResourceExhau
         super(`Experience cannot be zero or negative: ${experiences}`)
     }
 }
+
+export class GoldCannotBeZeroOrNegativeException extends GrpcResourceExhaustedException {
+    constructor(message: string) {
+        super(`Gold cannot be zero or negative: ${message}`)
+    }
+}
+
+export class TokenCannotBeZeroOrNegativeException extends GrpcResourceExhaustedException {
+    constructor(message: string) {
+        super(`Token cannot be zero or negative: ${message}`)
+    }
+}

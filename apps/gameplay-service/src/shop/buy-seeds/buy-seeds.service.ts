@@ -24,34 +24,49 @@ export class BuySeedsService {
     ) {}
 
     async buySeeds(request: BuySeedsRequest): Promise<BuySeedsResponse> {
-        this.logger.debug(
-            `Buying seed for user ${request.userId}, id: ${request.id}, quantity: ${request.quantity}`
-        )
+        const queryRunner = this.dataSource.createQueryRunner()
 
-        const crop = await this.dataSource.manager.findOne(CropEntity, {
-            where: { id: request.id }
-        })
-        if (!crop) throw new CropNotFoundException(request.id)
-        if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.id)
+        await queryRunner.connect()
+        await queryRunner.startTransaction()
 
-        const totalCost = crop.price * request.quantity
+        try {
+            this.logger.debug(
+                `Buying seed for user ${request.userId}, id: ${request.id}, quantity: ${request.quantity}`
+            )
 
-        const balance = await this.goldBalanceService.getGoldBalance({ userId: request.userId })
-        if (balance.golds < totalCost)
-            throw new UserInsufficientGoldException(balance.golds, totalCost)
+            const crop = await queryRunner.manager.findOne(CropEntity, {
+                where: { id: request.id }
+            })
+            if (!crop) throw new CropNotFoundException(request.id)
+            if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.id)
 
-        await this.goldBalanceService.subtractGold({ userId: request.userId, golds: totalCost })
+            const totalCost = crop.price * request.quantity
 
-        await this.inventoryService.addInventory({
-            userId: request.userId,
-            inventory: {
-                inventoryType: {
-                    id: request.id
+            const balance = await this.goldBalanceService.getGoldBalance({ userId: request.userId })
+            if (balance.golds < totalCost)
+                throw new UserInsufficientGoldException(balance.golds, totalCost)
+
+            throw new Error("Test error")
+
+            await this.goldBalanceService.subtractGold({ userId: request.userId, golds: totalCost })
+
+            await this.inventoryService.addInventory(
+                {
+                    userId: request.userId,
+                    inventory: {
+                        inventoryType: { id: request.id },
+                        quantity: request.quantity
+                    }
                 },
-                quantity: request.quantity
-            }
-        })
+                queryRunner.manager
+            )
 
-        return
+            await queryRunner.commitTransaction()
+        } catch (error) {
+            await queryRunner.rollbackTransaction()
+            throw error
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

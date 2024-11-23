@@ -1,12 +1,15 @@
-import { Injectable, Logger } from "@nestjs/common"
-import { DataSource } from "typeorm"
-import { AddEnergyRequest, AddEnergyResponse, SubstractEnergyRequest, SubstractEnergyResponse } from "./energy.dto"
+import { Injectable } from "@nestjs/common"
 import { EnergyExceedsMaximumException } from "@src/exceptions"
+import {
+    AddEnergyRequest,
+    AddEnergyResponse,
+    SubstractEnergyRequest,
+    SubstractEnergyResponse
+} from "./energy.dto"
 
 @Injectable()
 export class EnergyService {
-    private readonly logger: Logger = new Logger(EnergyService.name)
-    constructor(private readonly dataSource: DataSource) {}
+    constructor() {}
 
     public addEnergy(request: AddEnergyRequest): AddEnergyResponse {
         const { energy, entity } = request
@@ -26,7 +29,7 @@ export class EnergyService {
             energy: entity.energy - energy
         }
     }
-    
+
     private getMaxEnergy(level: number): number {
         return 50 + (level - 1) * 3
     }

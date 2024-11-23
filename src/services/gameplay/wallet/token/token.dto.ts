@@ -1,35 +1,29 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Empty, UserIdRequest } from "@src/types"
-import { IsNumber, Min } from "class-validator"
+import { UserEntity } from "@src/database"
+import { EntityRequest } from "@src/types"
+import { IsInt, Min } from "class-validator"
+import { DeepPartial } from "typeorm"
 
-export class GetTokenBalanceRequest extends UserIdRequest {}
-
-export class GetTokenBalanceResponse {
-    @IsNumber()
-    @ApiProperty({ example: 150.75, description: "The user's token balance" })
-    tokens: number
-}
-
-export class AddTokenRequest extends UserIdRequest {
-    @IsNumber()
+export class AddTokenRequest extends EntityRequest<UserEntity> {
+    @IsInt()
     @Min(0)
     @ApiProperty({
-        example: 20.5,
-        description: "The amount of tokens to add (positive value)"
+        example: 50,
+        description: "The amount of token to add (positive value)"
     })
     tokens: number
 }
 
-export type AddTokenResponse = Empty
+export type AddTokenResponse = DeepPartial<UserEntity>
 
-export class SubtractTokenRequest extends UserIdRequest {
-    @IsNumber()
+export class SubtractTokenRequest extends EntityRequest<UserEntity> {
+    @IsInt()
     @Min(0)
     @ApiProperty({
-        example: 10.25,
-        description: "The amount of tokens to subtract (positive value)"
+        example: 50,
+        description: "The amount of token to subtract (positive value)"
     })
     tokens: number
 }
 
-export type SubtractTokenResponse = Empty
+export type SubtractTokenResponse = DeepPartial<UserEntity>

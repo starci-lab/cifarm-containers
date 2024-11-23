@@ -1,40 +1,32 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InventoryEntity, InventoryTypeEntity } from "@src/database"
-import { DataSource, DeepPartial } from "typeorm"
-import {
-    AddInventoryRequest,
-    AddInventoryResponse,
-    GetInventoryRequest,
-    GetInventoryResponse
-} from "./inventory.dto"
+import { DeepPartial } from "typeorm"
+import { AddInventoryRequest, AddInventoryResponse } from "./inventory.dto"
 
 @Injectable()
 export class InventoryService {
     private readonly logger = new Logger(InventoryService.name)
 
-    constructor(private readonly dataSource: DataSource) {}
+    constructor() {}
 
-    public async addInventory(request: AddInventoryRequest): Promise<AddInventoryResponse> {
+    public addInventory(request: AddInventoryRequest): Promise<AddInventoryResponse> {
         let remainingQuantity = request.inventory.quantity
-        const inventoryType = await this.dataSource.manager.findOne(InventoryTypeEntity, {
+        const inventoryType = await manager.findOne(InventoryTypeEntity, {
             where: {
                 id: request.inventory.inventoryType.id
             }
         })
 
-        const inventories: DeepPartial<InventoryEntity>[] = await this.dataSource.manager.find(
-            InventoryEntity,
-            {
-                where: {
-                    user: {
-                        id: request.userId
-                    },
-                    inventoryType: {
-                        id: request.inventory.inventoryType.id
-                    }
+        const inventories: DeepPartial<InventoryEntity>[] = await manager.find(InventoryEntity, {
+            where: {
+                user: {
+                    id: request.userId
+                },
+                inventoryType: {
+                    id: request.inventory.inventoryType.id
                 }
             }
-        )
+        })
 
         this.logger.debug(`Found ${inventories.length} inventories`)
 
@@ -49,7 +41,7 @@ export class InventoryService {
             }
         }
 
-        await this.dataSource.manager.save(InventoryEntity, inventories)
+        await manager.save(InventoryEntity, inventories)
 
         this.logger.debug(`Remaining quantity: ${remainingQuantity}`)
 
@@ -68,20 +60,8 @@ export class InventoryService {
             remainingQuantity -= newQuantity
         }
 
-        await this.dataSource.manager.save(InventoryEntity, inventoriesToCreate)
+        await manager.save(InventoryEntity, inventoriesToCreate)
 
         return
-    }
-
-    public async getInventory(request: GetInventoryRequest): Promise<GetInventoryResponse> {
-        const { userId } = request
-
-        const items = await this.dataSource.manager.find(InventoryEntity, {
-            where: {
-                user: { id: userId }
-            }
-        })
-
-        return { items }
     }
 }

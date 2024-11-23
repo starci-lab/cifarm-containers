@@ -1,22 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Empty, UserIdRequest } from "@src/types"
-import { IsInt, IsNumber } from "class-validator"
+import { UserEntity } from "@src/database"
+import { EntityRequest } from "@src/types"
+import { IsInt, IsNumber, Min } from "class-validator"
+import { DeepPartial } from "typeorm"
 
-export class GetBalanceRequest extends UserIdRequest {}
-
-//x22312
-export class GetBalanceResponse {
+export class AddBalanceRequest extends EntityRequest<UserEntity> {
     @IsInt()
-    @ApiProperty({ example: 100, description: "The user's gold balance" })
-    golds: number
-
-    @IsNumber()
-    @ApiProperty({ example: 100.5, description: "The user's token balance" })
-    tokens: number
-}
-
-export class AddBalanceRequest extends UserIdRequest {
-    @IsInt()
+    @Min(0)
     @ApiProperty({
         example: 50,
         description: "The amount of gold to add (positive value)"
@@ -24,6 +14,7 @@ export class AddBalanceRequest extends UserIdRequest {
     golds: number
 
     @IsNumber()
+    @Min(0)
     @ApiProperty({
         example: 50.5,
         description: "The amount of tokens to add (positive value)"
@@ -31,10 +22,11 @@ export class AddBalanceRequest extends UserIdRequest {
     tokens: number
 }
 
-export type AddBalanceResponse = Empty
+export type AddBalanceResponse = DeepPartial<UserEntity>
 
-export class SubtractBalanceRequest extends UserIdRequest {
+export class SubtractBalanceRequest extends EntityRequest<UserEntity> {
     @IsInt()
+    @Min(0)
     @ApiProperty({
         example: 50,
         description: "The amount of gold to subtract (positive value)"
@@ -42,6 +34,7 @@ export class SubtractBalanceRequest extends UserIdRequest {
     golds: number
 
     @IsNumber()
+    @Min(0)
     @ApiProperty({
         example: 50.5,
         description: "The amount of tokens to subtract (positive value)"
@@ -49,4 +42,4 @@ export class SubtractBalanceRequest extends UserIdRequest {
     tokens: number
 }
 
-export type SubtractBalanceResponse = Empty
+export type SubtractBalanceResponse = DeepPartial<UserEntity>
