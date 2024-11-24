@@ -1,22 +1,18 @@
 import { Injectable } from "@nestjs/common"
-import { GoldCannotBeZeroOrNegativeException } from "@src/exceptions"
+import { GoldCannotBeZeroOrNegativeException, UserInsufficientGoldException } from "@src/exceptions"
 import {
-    AddGoldRequest,
-    AddGoldResponse,
+    AddRequest,
+    AddResponse,
     CheckSufficientRequest,
-    CheckSufficientResponse,
-    SubtractGoldRequest,
-    SubtractGoldResponse
 } from "./gold.dto"
 
 @Injectable()
 export class GoldBalanceService {
     constructor() {}
 
-    public checkSufficient(request: CheckSufficientRequest): CheckSufficientResponse {
-        return {
-            isEnough: request.entity.golds >= request.golds
-        }
+    public checkSufficient({ current, required }: CheckSufficientRequest) {
+        if (current < required)
+            throw new UserInsufficientGoldException(current, required)
     }
 
     public add(request: AddGoldRequest): AddGoldResponse {

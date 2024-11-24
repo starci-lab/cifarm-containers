@@ -1,6 +1,5 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { IWalletService } from "@src/containers/wallet-service"
 import { AnimalEntity } from "@src/database"
 import {
     AnimalNotAvailableInShopException,
@@ -15,7 +14,6 @@ export class BuyAnimalService {
     private readonly logger = new Logger(BuyAnimalService.name)
     constructor(
         private readonly dataSource: DataSource,
-        private readonly walletService: IWalletService,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache
     ) {}

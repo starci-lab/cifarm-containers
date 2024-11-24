@@ -5,7 +5,6 @@ import {
     BuildingNotAvailableInShopException,
     BuildingNotFoundException,
     PlacedItemTypeNotFoundException,
-    UserInsufficientGoldException,
     ConstructBuildingTransactionFailedException
 } from "@src/exceptions"
 import { GoldBalanceService } from "@src/services"
@@ -61,8 +60,8 @@ export class ConstructBuildingService {
             where: { id: request.userId }
         })
 
-        if (!this.goldBalanceService.checkSufficient({ entity: user, golds: totalCost }).isEnough)
-            throw new UserInsufficientGoldException(user.golds, totalCost)
+        //Check sufficient gold
+        this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
         // Start transaction
         await queryRunner.startTransaction()

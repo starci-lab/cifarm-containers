@@ -19,14 +19,14 @@ export class EnergyBelowZeroException extends GrpcResourceExhaustedException {
 }
 
 export class EnergyNotEnoughException extends GrpcResourceExhaustedException {
-    constructor(current: number, need: number) {
-        super(`Energy not enough: ${current} (current), ${need} (need)`)
+    constructor(current: number, required: number) {
+        super(`Energy not enough: ${current} (current), ${required} (required)`)
     }
 }
 
 export class UserInsufficientGoldException extends GrpcResourceExhaustedException {
-    constructor(current: number, need: number) {
-        super(`User has insufficient gold: ${current} (current), ${need} (need)`)
+    constructor(current: number, required: number) {
+        super(`User has insufficient gold: ${current} (current), ${required} (required)`)
     }
 }
 

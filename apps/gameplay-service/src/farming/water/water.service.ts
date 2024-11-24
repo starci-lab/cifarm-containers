@@ -28,7 +28,10 @@ export class WaterService {
     ) {}
 
     async water(request: WaterRequest): Promise<WaterResponse> {
-        const placedItemTile = await this.dataSource.manager.findOne(PlacedItemEntity, {
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
+        const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
             where: { id: request.id },
             relations: {
                 seedGrowthInfo: true
@@ -43,14 +46,14 @@ export class WaterService {
         if (placedItemTile.seedGrowthInfo.currentStage !== CropCurrentState.NeedWater)
             throw new PlacedItemTileNotNeedWaterException(request.id)
 
-        const { value } = await this.dataSource.manager.findOne(SystemEntity, {
+        const { value } = await queryRunner.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
         })
         const {
             water: { energyConsume, experiencesGain }
         } = value as Activities
 
-        const user = await this.dataSource.manager.findOne(UserEntity, {
+        const user = await queryRunner.manager.findOne(UserEntity, {
             where: { id: request.userId }
         })
 
@@ -66,8 +69,6 @@ export class WaterService {
             experiences: experiencesGain
         })
 
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
         await queryRunner.startTransaction()
         try {
             // update user
@@ -82,6 +83,7 @@ export class WaterService {
             })
             return {}
         } catch (error) {
+            this.logger.error("Water transaction failed, rolling back...", error)
             await queryRunner.rollbackTransaction()
             throw new WaterTransactionFailedException(error)
         } finally {
