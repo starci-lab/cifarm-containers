@@ -26,7 +26,7 @@ export class PlacedItemEntity extends AbstractEntity {
     @Field(() => String, { nullable: true })
     @Column({ name: "inventory_id", type: "varchar", nullable: true })
     inventoryId?: string
-
+    
     @Field(() => SeedGrowthInfoEntity, { nullable: true })
     @OneToOne(() => SeedGrowthInfoEntity, (seedGrowthInfo) => seedGrowthInfo.placedItem, {
         nullable: true,

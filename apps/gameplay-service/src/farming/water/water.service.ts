@@ -1,21 +1,21 @@
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
     CropCurrentState,
     PlacedItemEntity,
+    SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/database"
-import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
 import { WaterRequest, WaterResponse } from "./water.dto"
 import {
     EnergyNotEnoughException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotNeedWaterException,
-    PlacedItemTileNotPlantedException
+    PlacedItemTileNotPlantedException,
+    WaterTransactionFailedException
 } from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/services"
 
@@ -58,19 +58,35 @@ export class WaterService {
         if (user.energy < energyCost) throw new EnergyNotEnoughException(user.energy, energyCost)
 
         // substract energy
-        const subtractEnergyChanges = this.energyService.substractEnergy({
+        const energyChanges = this.energyService.substract({
             entity: user,
             energy: energyCost
         })
-        const addExperiencesChanges = this.levelService.addExperiences({
+        const experiencesChanges = this.levelService.addExperiences({
             entity: user,
             experiences: experiencesGain
         })
 
-        // update user
-        await this.dataSource.manager.update(UserEntity, user.id, {
-            ...subtractEnergyChanges,
-            ...addExperiencesChanges
-        })
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        await queryRunner.startTransaction()
+        try {
+            // update user
+            await queryRunner.manager.update(UserEntity, user.id, {
+                ...energyChanges,
+                ...experiencesChanges
+            })
+            // update seed growth info
+            await queryRunner.manager.update(SeedGrowthInfoEntity, placedItemTile.seedGrowthInfo.id, {
+                ...placedItemTile.seedGrowthInfo,
+                currentStage: CropCurrentState.Normal
+            })
+            return {}
+        } catch (error) {
+            await queryRunner.rollbackTransaction()
+            throw new WaterTransactionFailedException(error)
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

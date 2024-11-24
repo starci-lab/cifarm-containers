@@ -17,3 +17,9 @@ export class ConstructBuildingTransactionFailedException extends GrpcNotFoundExc
         super(`Failed to construct building due to: ${error}`)
     }
 }
+
+export class WaterTransactionFailedException extends GrpcNotFoundException {
+    constructor(error: Error) {
+        super(`Failed to water plant due to: ${error}`)
+    }
+}

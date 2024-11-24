@@ -1,17 +1,17 @@
 import { Injectable } from "@nestjs/common"
 import { EnergyExceedsMaximumException } from "@src/exceptions"
 import {
-    AddEnergyRequest,
-    AddEnergyResponse,
-    SubstractEnergyRequest,
-    SubstractEnergyResponse
+    AddRequest,
+    AddResponse,
+    SubstractRequest,
+    SubstractResponse
 } from "./energy.dto"
 
 @Injectable()
 export class EnergyService {
     constructor() {}
 
-    public addEnergy(request: AddEnergyRequest): AddEnergyResponse {
+    public add(request: AddRequest): AddResponse {
         const { energy, entity } = request
         const maxEnergy = this.getMaxEnergy(entity.level)
         if (request.entity.energy + request.energy > maxEnergy)
@@ -21,7 +21,7 @@ export class EnergyService {
         }
     }
 
-    public substractEnergy(request: SubstractEnergyRequest): SubstractEnergyResponse {
+    public substract(request: SubstractRequest): SubstractResponse {
         const { energy, entity } = request
         if (entity.energy - energy < 0)
             throw new EnergyExceedsMaximumException(entity.energy - request.energy, 0)
