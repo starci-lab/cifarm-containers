@@ -69,7 +69,7 @@ export class ConstructBuildingService {
 
         try {
             // Subtract gold from user balance
-            const goldsChanged = await this.goldBalanceService.subtract({
+            const goldsChanged = this.goldBalanceService.subtract({
                 entity: user,
                 golds: totalCost
             })
@@ -83,8 +83,6 @@ export class ConstructBuildingService {
             const placedItem: DeepPartial<PlacedItemEntity> = {
                 user: { id: request.userId },
                 buildingInfo: {
-                    currentUpgrade: 1,
-                    occupancy: 0,
                     building
                 },
                 x: request.position.x,

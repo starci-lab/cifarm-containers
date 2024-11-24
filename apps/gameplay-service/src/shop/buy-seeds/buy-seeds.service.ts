@@ -52,7 +52,7 @@ export class BuySeedsService {
 
         try {
             // Subtract gold
-            const goldsChanged = await this.goldBalanceService.subtract({
+            const goldsChanged = this.goldBalanceService.subtract({
                 entity: user,
                 golds: totalCost
             })
@@ -75,15 +75,12 @@ export class BuySeedsService {
                     }
                 }
             })
-            const updatedInventories = await this.inventoryService.addInventory({
+            const updatedInventories = this.inventoryService.add({
                 entities: existingInventories,
                 userId: request.userId,
-                inventoryPartial: {
+                data: {
                     inventoryType: inventoryType,
                     quantity: request.quantity,
-                    isPlaced: false,
-                    premium: false,
-                    tokenId: null
                 }
             })
 

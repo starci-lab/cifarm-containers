@@ -22,6 +22,7 @@ export class ArrayEntityRequest<TEntity> {
 
 export class ArrayEntityWithUserIdRequest<TEntity> extends UserIdRequest {
     entities: Array<DeepPartial<TEntity>>
+    data: DeepPartial<TEntity>
 }
 
 export class CreatedResponse {
