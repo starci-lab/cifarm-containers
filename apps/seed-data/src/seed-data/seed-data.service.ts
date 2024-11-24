@@ -134,51 +134,51 @@ export class SeedDataService implements OnModuleInit {
     private async seedSystemData(queryRunner: QueryRunner) {
         const activities: Activities = {
             cureAnimal: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             feedAnimal: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             helpCureAnimal: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             helpUseHerbicide: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             helpUsePestiside: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             helpWater: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             thiefAnimalProduct: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             thiefCrop: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             useFertilizer: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             useHerbicide: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             usePestiside: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             },
             water: {
-                energyCost: 1,
+                energyConsume: 1,
                 experiencesGain: 3
             }
         }

@@ -11,7 +11,6 @@ import {
 import { DataSource } from "typeorm"
 import { WaterRequest, WaterResponse } from "./water.dto"
 import {
-    EnergyNotEnoughException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotNeedWaterException,
     PlacedItemTileNotPlantedException,
@@ -48,19 +47,19 @@ export class WaterService {
             where: { id: SystemId.Activities }
         })
         const {
-            water: { energyCost, experiencesGain }
+            water: { energyConsume, experiencesGain }
         } = value as Activities
 
         const user = await this.dataSource.manager.findOne(UserEntity, {
             where: { id: request.userId }
         })
 
-        if (user.energy < energyCost) throw new EnergyNotEnoughException(user.energy, energyCost)
+        this.energyService.checkSufficient(user.energy, energyConsume)
 
         // substract energy
         const energyChanges = this.energyService.substract({
             entity: user,
-            energy: energyCost
+            energy: energyConsume
         })
         const experiencesChanges = this.levelService.addExperiences({
             entity: user,

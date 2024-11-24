@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import { EnergyExceedsMaximumException } from "@src/exceptions"
+import { EnergyExceedsMaximumException, EnergyNotEnoughException } from "@src/exceptions"
 import {
     AddRequest,
     AddResponse,
@@ -32,5 +32,10 @@ export class EnergyService {
 
     private getMaxEnergy(level: number): number {
         return 50 + (level - 1) * 3
+    }
+
+    public checkSufficient(current: number, consume: number) {
+        if (current < consume)
+            throw new EnergyNotEnoughException(current, consume)
     }
 }

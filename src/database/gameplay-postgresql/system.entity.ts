@@ -27,5 +27,5 @@ export class Activities {
 
 export class ActivityInfo {
     experiencesGain: number
-    energyCost: number
+    energyConsume: number
 }
