@@ -1,5 +1,4 @@
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { CropEntity, InventoryEntity, InventoryTypeEntity, UserEntity } from "@src/database"
 import {
     BuySeedsTransactionFailedException,
@@ -7,7 +6,6 @@ import {
     CropNotFoundException
 } from "@src/exceptions"
 import { GoldBalanceService, InventoryService } from "@src/services"
-import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
 import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
 
@@ -18,9 +16,7 @@ export class BuySeedsService {
     constructor(
         private readonly dataSource: DataSource,
         private readonly inventoryService: InventoryService,
-        private readonly goldBalanceService: GoldBalanceService,
-        @Inject(CACHE_MANAGER)
-        private cacheManager: Cache
+        private readonly goldBalanceService: GoldBalanceService
     ) {}
 
     async buySeeds(request: BuySeedsRequest): Promise<BuySeedsResponse> {
@@ -28,12 +24,15 @@ export class BuySeedsService {
             `Calling buying seed for user ${request.userId}, id: ${request.id}, quantity: ${request.quantity}`
         )
 
+        console.log("request", request)
+
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         const crop = await queryRunner.manager.findOne(CropEntity, {
             where: { id: request.id }
         })
+        console.log("crop", crop)
         if (!crop) throw new CropNotFoundException(request.id)
         if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.id)
 

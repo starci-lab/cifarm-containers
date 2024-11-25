@@ -20,14 +20,6 @@ export const createDatabase = async <DbType>({
     user,
     dbName = v4()
 }: CreateDatabaseParams<DbType>) => {
-    console.log("Creating database:", {
-        host,
-        pass,
-        port,
-        type,
-        user,
-        dbName
-    })
     const postgres = new DataSource({
         type: type as unknown as "postgres",
         host,
