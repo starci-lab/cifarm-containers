@@ -69,8 +69,11 @@ export class BuySuppliesService {
                 where: {
                     userId: request.userId,
                     inventoryType: {
-                        supply: { id: request.id }
+                        supplyId: request.id
                     }
+                },
+                relations: {
+                    inventoryType: true
                 }
             })
             const updatedInventories = this.inventoryService.add({

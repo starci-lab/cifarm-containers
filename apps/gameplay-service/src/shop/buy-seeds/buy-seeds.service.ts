@@ -70,8 +70,11 @@ export class BuySeedsService {
                 where: {
                     userId: request.userId,
                     inventoryType: {
-                        crop: { id: request.id }
+                        cropId: request.id
                     }
+                },
+                relations: {
+                    inventoryType: true
                 }
             })
             const updatedInventories = this.inventoryService.add({

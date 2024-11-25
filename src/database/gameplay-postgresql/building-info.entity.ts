@@ -16,7 +16,7 @@ export class BuildingInfoEntity extends AbstractEntity {
     occupancy: number
 
     @Field(() => BuildingEntity)
-    @ManyToOne(() => BuildingEntity, { nullable: true, eager: true, onDelete: "CASCADE" })
+    @ManyToOne(() => BuildingEntity, { nullable: true, onDelete: "CASCADE" })
     building: BuildingEntity
 
     @Field(() => PlacedItemEntity)

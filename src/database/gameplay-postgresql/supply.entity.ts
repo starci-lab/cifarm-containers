@@ -1,8 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToMany, OneToOne } from "typeorm"
+import { Column, Entity, OneToOne } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
 import { SupplyType } from "./enums"
-import { InventoryEntity } from "./inventory.entity"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 
 @ObjectType()

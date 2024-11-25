@@ -26,8 +26,7 @@ export class BuildingEntity extends ReadableAbstractEntity {
 
     @Field(() => [UpgradeEntity], { nullable: true })
     @OneToMany(() => UpgradeEntity, (upgrade: UpgradeEntity) => upgrade.building, {
-        cascade: ["insert", "update"],
-        eager: true
+        cascade: ["insert", "update"]
     })
     upgrades?: Array<UpgradeEntity>
 

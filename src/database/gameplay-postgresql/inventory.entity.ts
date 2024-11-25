@@ -1,8 +1,8 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
-import { UserEntity } from "./user.entity"
 import { InventoryTypeEntity } from "./inventory-type.entity"
+import { UserEntity } from "./user.entity"
 
 @ObjectType()
 @Entity("inventories")
@@ -40,7 +40,7 @@ export class InventoryEntity extends AbstractEntity {
     @ManyToOne(
         () => InventoryTypeEntity,
         (inventoryType: InventoryTypeEntity) => inventoryType.inventories,
-        { eager: true, onDelete: "SET NULL" }
+        { onDelete: "SET NULL" }
     )
     @JoinColumn({ name: "inventory_type_id", referencedColumnName: "id" })
     inventoryType: InventoryTypeEntity
