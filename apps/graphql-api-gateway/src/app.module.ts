@@ -31,7 +31,6 @@ import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin
             }
         })
     ],
-    controllers: [],
     providers: []
 })
 export class AppModule {}

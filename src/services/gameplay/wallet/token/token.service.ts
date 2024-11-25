@@ -1,17 +1,12 @@
 import { Injectable } from "@nestjs/common"
 import { TokenCannotBeZeroOrNegativeException } from "@src/exceptions"
-import {
-    AddTokenRequest,
-    AddTokenResponse,
-    SubtractTokenRequest,
-    SubtractTokenResponse
-} from "./token.dto"
+import { AddRequest, AddResponse, SubtractRequest, SubtractResponse } from "./token.dto"
 
 @Injectable()
 export class TokenBalanceService {
     constructor() {}
 
-    public add(request: AddTokenRequest): AddTokenResponse {
+    public add(request: AddRequest): AddResponse {
         if (request.tokens < 0)
             throw new TokenCannotBeZeroOrNegativeException(request.tokens.toString())
 
@@ -20,7 +15,7 @@ export class TokenBalanceService {
         }
     }
 
-    public subtract(request: SubtractTokenRequest): SubtractTokenResponse {
+    public subtract(request: SubtractRequest): SubtractResponse {
         if (request.tokens < 0)
             throw new TokenCannotBeZeroOrNegativeException(request.tokens.toString())
 

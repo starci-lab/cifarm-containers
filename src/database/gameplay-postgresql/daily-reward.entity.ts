@@ -8,17 +8,21 @@ import { DailyRewardPossibility } from "./daily-reward-possibility.entity"
 export class DailyRewardEntity extends ReadableAbstractEntity {
     @Field(() => Int, { nullable: true })
     @Column({ name: "reward_amount", type: "int", nullable: true })
-        amount: number
+    amount: number
 
     @Field(() => Int)
     @Column({ name: "reward_day", type: "int" })
-        day: number
+    day: number
 
     @Field(() => Boolean)
     @Column({ name: "is_last_day", type: "boolean", default: false })
-        isLastDay: boolean
+    isLastDay: boolean
 
     @Field(() => [DailyRewardPossibility], { nullable: true })
-    @OneToMany(() => DailyRewardPossibility, (dailyRewardPossibilities) => dailyRewardPossibilities.dailyReward, { cascade: true, eager: true })
-        dailyRewardPossibilities?: Array<DailyRewardPossibility>
+    @OneToMany(
+        () => DailyRewardPossibility,
+        (dailyRewardPossibilities) => dailyRewardPossibilities.dailyReward,
+        { cascade: true }
+    )
+    dailyRewardPossibilities?: Array<DailyRewardPossibility>
 }

@@ -4,7 +4,7 @@ import { SupplyEntity, InventoryEntity, InventoryTypeEntity, UserEntity } from "
 import {
     BuySuppliesTransactionFailedException,
     SupplyNotAvailableInShopException,
-    SupplyNotFoundException,
+    SupplyNotFoundException
 } from "@src/exceptions"
 import { GoldBalanceService, InventoryService } from "@src/services"
 import { Cache } from "cache-manager"
@@ -69,8 +69,11 @@ export class BuySuppliesService {
                 where: {
                     userId: request.userId,
                     inventoryType: {
-                        supply: { id: request.id }
+                        supplyId: request.id
                     }
+                },
+                relations: {
+                    inventoryType: true
                 }
             })
             const updatedInventories = this.inventoryService.add({
@@ -78,7 +81,7 @@ export class BuySuppliesService {
                 userId: request.userId,
                 data: {
                     inventoryType: inventoryType,
-                    quantity: request.quantity,
+                    quantity: request.quantity
                 }
             })
 
