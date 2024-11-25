@@ -6,6 +6,7 @@ import { GraphQLModule } from "@nestjs/graphql"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
+import { ToolsModule } from "./tools"
 
 @Module({
     imports: [
@@ -48,8 +49,8 @@ import { redisStore } from "cache-manager-redis-yet"
             buildSchemaOptions: {
                 orphanedTypes: []
             }
-        })
-        // ToolsModule,
+        }),
+        ToolsModule
         // AnimalsModule,
         // CropsModule,
         // BuildingsModule,
