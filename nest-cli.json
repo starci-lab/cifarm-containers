@@ -73,6 +73,15 @@
         "tsConfigPath": "apps/time-scheduler/tsconfig.app.json"
       }
     },
+    "time-worker": {
+      "type": "application",
+      "root": "apps/time-worker",
+      "entryFile": "main",
+      "sourceRoot": "apps/time-worker/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/time-worker/tsconfig.app.json"
+      }
+    },
     "static-subgraph": {
       "type": "application",
       "root": "apps/static-subgraph",
