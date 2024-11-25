@@ -128,7 +128,7 @@ export class BuyAnimalService {
             await queryRunner.commitTransaction()
 
             // this.logger.log(`Successfully placed animal with id: ${savedAnimal.id}`)
-            // return { placedItemId: savedAnimal.id }
+            return { placedItemId: "" }
         } catch (error) {
             this.logger.error("Animal purchase transaction failed, rolling back...", error)
             await queryRunner.rollbackTransaction()
