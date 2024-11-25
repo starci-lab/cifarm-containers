@@ -1,18 +1,10 @@
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo"
+import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
 import { GraphQLModule } from "@nestjs/graphql"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
-import { AnimalsModule } from "./animals"
-import { BuildingsModule } from "./buildings"
-import { CropsModule } from "./crops"
-import { ToolsModule } from "./tools"
-import { DailyRewardsModule } from "./daily-rewards"
-import { SpinsModule } from "./spins"
-import { SuppliesModule } from "./supplies"
-import { TilesModule } from "./tiles"
-import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { redisStore } from "cache-manager-redis-yet"
 
 @Module({
@@ -52,19 +44,19 @@ import { redisStore } from "cache-manager-redis-yet"
             driver: ApolloFederationDriver,
             typePaths: ["./**/*.gql"],
             playground: false,
-            //plugins: [ApolloServerPluginInlineTraceDisabled],
+            // plugins: [ApolloServerPluginInlineTraceDisabled],
             buildSchemaOptions: {
                 orphanedTypes: []
             }
-        }),
-        AnimalsModule,
-        CropsModule,
-        ToolsModule,
-        BuildingsModule,
-        DailyRewardsModule,
-        SpinsModule,
-        SuppliesModule,
-        TilesModule
+        })
+        // ToolsModule,
+        // AnimalsModule,
+        // CropsModule,
+        // BuildingsModule,
+        // DailyRewardsModule,
+        // SpinsModule,
+        // SuppliesModule,
+        // TilesModule
     ],
     controllers: [],
     providers: []

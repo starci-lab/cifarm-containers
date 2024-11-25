@@ -4,7 +4,6 @@ import { DataSource } from "typeorm"
 import { GetSuppliesArgs } from "./supplies.dto"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Cache } from "cache-manager"
-import { REDIS_KEY } from "@src/constants"
 
 @Injectable()
 export class SuppliesService {
@@ -19,20 +18,20 @@ export class SuppliesService {
     async getSupplies({ limit = 10, offset = 0 }: GetSuppliesArgs): Promise<Array<SupplyEntity>> {
         this.logger.debug(`GetSupplies: limit=${limit}, offset=${offset}`)
 
-        const cachedData = await this.cacheManager.get<Array<SupplyEntity>>(REDIS_KEY.SUPPLIES)
         let supplies: Array<SupplyEntity>
+        // const cachedData = await this.cacheManager.get<Array<SupplyEntity>>(REDIS_KEY.SUPPLIES)
 
-        if (cachedData) {
-            this.logger.debug("GetSupplies: Returning data from cache")
-            supplies = cachedData.slice(offset, offset + limit)
-        } else {
-            this.logger.debug("GetSupplies: From Database")
-            supplies = await this.dataSource.manager.find(SupplyEntity)
+        // if (cachedData) {
+        //     this.logger.debug("GetSupplies: Returning data from cache")
+        //     supplies = cachedData.slice(offset, offset + limit)
+        // } else {
+        //     this.logger.debug("GetSupplies: From Database")
+        //     supplies = await this.dataSource.manager.find(SupplyEntity)
 
-            await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies)
+        //     await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies)
 
-            supplies = supplies.slice(offset, offset + limit)
-        }
+        //     supplies = supplies.slice(offset, offset + limit)
+        // }
 
         return supplies
     }

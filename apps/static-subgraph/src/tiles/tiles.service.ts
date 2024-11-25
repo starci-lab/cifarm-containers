@@ -4,7 +4,6 @@ import { DataSource } from "typeorm"
 import { GetTilesArgs } from "./tiles.dto"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Cache } from "cache-manager"
-import { REDIS_KEY } from "@src/constants"
 
 @Injectable()
 export class TilesService {
@@ -19,20 +18,20 @@ export class TilesService {
     async getTiles({ limit = 10, offset = 0 }: GetTilesArgs): Promise<Array<TileEntity>> {
         this.logger.debug(`GetTiles: limit=${limit}, offset=${offset}`)
 
-        const cachedData = await this.cacheManager.get<Array<TileEntity>>(REDIS_KEY.TILES)
         let tiles: Array<TileEntity>
+        // const cachedData = await this.cacheManager.get<Array<TileEntity>>(REDIS_KEY.TILES)
 
-        if (cachedData) {
-            this.logger.debug("GetTiles: Returning data from cache")
-            tiles = cachedData.slice(offset, offset + limit)
-        } else {
-            this.logger.debug("GetTiles: From Database")
-            tiles = await this.dataSource.manager.find(TileEntity)
+        // if (cachedData) {
+        //     this.logger.debug("GetTiles: Returning data from cache")
+        //     tiles = cachedData.slice(offset, offset + limit)
+        // } else {
+        //     this.logger.debug("GetTiles: From Database")
+        //     tiles = await this.dataSource.manager.find(TileEntity)
 
-            await this.cacheManager.set(REDIS_KEY.TILES, tiles)
+        //     await this.cacheManager.set(REDIS_KEY.TILES, tiles)
 
-            tiles = tiles.slice(offset, offset + limit)
-        }
+        //     tiles = tiles.slice(offset, offset + limit)
+        // }
 
         return tiles
     }

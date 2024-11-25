@@ -1,10 +1,9 @@
-import { Injectable, Logger, Inject } from "@nestjs/common"
+import { Injectable, Logger, Inject, UseInterceptors } from "@nestjs/common"
 import { ToolEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import { GetToolsArgs } from "./tools.dto"
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
+import { CACHE_MANAGER, CacheInterceptor, CacheKey } from "@nestjs/cache-manager"
 import { Cache } from "cache-manager"
-import { REDIS_KEY } from "@src/constants"
 
 @Injectable()
 export class ToolsService {
@@ -16,23 +15,14 @@ export class ToolsService {
         private cacheManager: Cache
     ) {}
 
+    @UseInterceptors(CacheInterceptor)
+    @CacheKey("tools")
     async getTools({ limit = 10, offset = 0 }: GetToolsArgs): Promise<Array<ToolEntity>> {
         this.logger.debug(`GetTools: limit=${limit}, offset=${offset}`)
-
-        const cachedData = await this.cacheManager.get<Array<ToolEntity>>(REDIS_KEY.TOOLS)
-        let tools: Array<ToolEntity>
-
-        if (cachedData) {
-            this.logger.debug("GetTools: Returning data from cache")
-            tools = cachedData.slice(offset, offset + limit)
-        } else {
-            this.logger.debug("GetTools: From Database")
-            tools = await this.dataSource.manager.find(ToolEntity)
-
-            await this.cacheManager.set(REDIS_KEY.TOOLS, tools)
-
-            tools = tools.slice(offset, offset + limit)
-        }
+        const tools = await this.dataSource.getRepository(ToolEntity).find({
+            take: limit,
+            skip: offset
+        })
 
         return tools
     }
