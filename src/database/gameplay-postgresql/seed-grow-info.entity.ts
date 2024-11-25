@@ -1,4 +1,4 @@
-import { Field, ObjectType } from "@nestjs/graphql"
+import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
 import { CropEntity } from "./crop.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
@@ -13,15 +13,19 @@ export class SeedGrowthInfoEntity extends AbstractEntity {
     @Column({ type: "enum", enum: CropCurrentState })
         currentStage: CropCurrentState
 
-    @Field(() => Number)
+    @Field(() => Int)
     @Column({ type: "int", nullable: true })
         currentStageTimeElapsed: number
 
-    @Field(() => Number)
+    @Field(() => Int)
     @Column({ type: "int", nullable: true })
         totalTimeElapsed: number
 
-    @Field(() => Number)
+    @Field(() => Int)
+    @Column({ name: "current_perennial_count", type: "int4" })
+        currentPerennialCount: number
+
+    @Field(() => Int)
     @Column({ type: "int", nullable: true })
         harvestQuantityRemaining: number
 
@@ -29,7 +33,7 @@ export class SeedGrowthInfoEntity extends AbstractEntity {
     @ManyToOne(() => CropEntity, { nullable: true, eager: true })
         crop: CropEntity
 
-    @Field(() => Number)
+    @Field(() => Int)
     @Column({ type: "int", nullable: true })
         currentState: number
 
@@ -40,11 +44,7 @@ export class SeedGrowthInfoEntity extends AbstractEntity {
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
         fullyMatured: boolean
-
-    @Field(() => Boolean)
-    @Column({ type: "boolean", nullable: true })
-        isPlanted: boolean
-
+        
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
         isFertilized: boolean

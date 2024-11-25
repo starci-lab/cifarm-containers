@@ -15,7 +15,9 @@ import {
     TileEntity,
     UserEntity
 } from "@src/database"
+import { InventoryModule, LevelModule } from "@src/services"
 import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
+import { WaterService } from "./water.service"
 
 @Global()
 @Module({
@@ -35,9 +37,11 @@ import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
             TileEntity,
             SupplyEntity
         ]),
-        EnergyModule
+        EnergyModule,
+        LevelModule,
+        InventoryModule
     ],
-    providers: [],
-    exports: []
+    providers: [WaterService],
+    exports: [WaterService]
 })
-export class BuyAnimalsModule {}
+export class WaterModule {}

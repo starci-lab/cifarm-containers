@@ -17,6 +17,7 @@ describe("HarvestCropService", () => {
     
     beforeEach(async () => {
         const mockDbName = v4()
+        
         await createDatabase({
             type: "postgres",
             host: envConfig().database.postgres.gameplay.host,

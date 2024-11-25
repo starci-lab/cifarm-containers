@@ -15,7 +15,9 @@ import {
     TileEntity,
     UserEntity
 } from "@src/database"
+import { InventoryModule, LevelModule } from "@src/services"
 import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
+import { HarvestCropService } from "./harvest-crop.service"
 
 @Global()
 @Module({
@@ -35,9 +37,11 @@ import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
             TileEntity,
             SupplyEntity
         ]),
-        EnergyModule
+        EnergyModule,
+        LevelModule,
+        InventoryModule
     ],
-    providers: [],
-    exports: []
+    providers: [HarvestCropService],
+    exports: [HarvestCropService]
 })
-export class BuyAnimalsModule {}
+export class HarvestCropModule {}

@@ -8,6 +8,7 @@ import { redisStore } from "cache-manager-redis-yet"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
 import { ShopModule } from "./shop/shop.module"
+import { FarmingModule } from "./farming/farming.service"
 
 @Module({
     imports: [
@@ -42,7 +43,8 @@ import { ShopModule } from "./shop/shop.module"
                 }
             }
         }),
-        ShopModule
+        ShopModule,
+        FarmingModule
     ],
     controllers: [AppController],
     providers: [
