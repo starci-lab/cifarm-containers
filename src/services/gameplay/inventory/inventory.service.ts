@@ -1,7 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InventoryEntity, InventoryTypeEntity } from "@src/database"
 import { DeepPartial } from "typeorm"
-import { AddRequest, AddResponse } from "./inventory.dto"
+import { AddParams, AddResult, CheckDeleteParams, RemoveParams } from "./inventory.dto"
+import { InventoryQuantityNotSufficientException } from "@src/exceptions"
 
 @Injectable()
 export class InventoryService {
@@ -9,14 +10,14 @@ export class InventoryService {
 
     constructor() {}
 
-    public add(request: AddRequest): AddResponse {
-        const resultInventories: Array<DeepPartial<InventoryEntity>> = request.entities
+    public add(params: AddParams): AddResult {
+        const resultInventories: Array<DeepPartial<InventoryEntity>> = params.entities
 
-        let remainingQuantity = request.data.quantity
+        let remainingQuantity = params.data.quantity
 
         const inventoryType =
-            (request.data.inventoryType as InventoryTypeEntity) ||
-            (request.entities[0].inventoryType as InventoryTypeEntity)
+            (params.data.inventoryType as InventoryTypeEntity) ||
+            (params.entities[0].inventoryType as InventoryTypeEntity)
 
         this.logger.debug(`Found ${resultInventories.length} inventories`)
 
@@ -41,12 +42,34 @@ export class InventoryService {
                 },
                 quantity: newQuantity,
                 user: {
-                    id: request.userId
+                    id: params.userId
                 }
             })
             remainingQuantity -= newQuantity
         }
 
         return resultInventories
+    }
+
+    public remove(params: RemoveParams) {
+        const { entity, quantity } = params
+
+        this.logger.debug(`Removing ${quantity} from inventory ${entity.id}`)
+
+        if (entity.quantity < quantity)
+            throw new InventoryQuantityNotSufficientException(entity.id, params.quantity)
+
+        return { quantity: entity.quantity - quantity }
+    }
+
+    public checkDelete(params: CheckDeleteParams): boolean {
+        const { entity } = params
+
+        if (entity.quantity === 0) {
+            this.logger.debug(`Deleting inventory ${entity.id}`)
+            return true
+        }
+
+        return false
     }
 }

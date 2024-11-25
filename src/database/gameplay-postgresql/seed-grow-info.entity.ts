@@ -44,7 +44,7 @@ export class SeedGrowthInfoEntity extends AbstractEntity {
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
         fullyMatured: boolean
-        
+
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
         isFertilized: boolean

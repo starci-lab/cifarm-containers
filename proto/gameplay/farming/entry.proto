@@ -1,11 +1,7 @@
 syntax = "proto3";
 
-import "google/protobuf/empty.proto";
+package gameplay;
 
-package farming;
-
-import "water.proto";
-
-service FarmingService {
-    rpc Water(WaterRequest) returns (google.protobuf.Empty);
-}
+import  "../../entities/entry.proto";
+import "./harvest_crop.proto";
+import "./water.proto";

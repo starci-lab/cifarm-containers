@@ -1,36 +1,37 @@
 import { Injectable } from "@nestjs/common"
 import { GoldCannotBeZeroOrNegativeException, UserInsufficientGoldException } from "@src/exceptions"
-import { AddRequest, AddResponse, SubtractRequest, SubtractResponse } from "./gold.dto"
-import { CheckSufficientRequest } from "@src/types"
+import {
+    AddParams,
+    AddResult,
+    SubtractParams,
+    SubtractResult,
+} from "./gold.dto"
+import { CheckSufficientParams } from "@src/types"
 
 @Injectable()
 export class GoldBalanceService {
     constructor() {}
 
-    public checkSufficient({ current, required }: CheckSufficientRequest) {
-        if (current < required) throw new UserInsufficientGoldException(current, required)
+    public checkSufficient({ current, required }: CheckSufficientParams) {
+        if (current < required)
+            throw new UserInsufficientGoldException(current, required)
     }
 
-    public add(request: AddRequest): AddResponse {
-        if (request.golds < 0)
-            throw new GoldCannotBeZeroOrNegativeException(request.golds.toString())
+    public add(params: AddParams): AddResult {
+        if (params.golds < 0)
+            throw new GoldCannotBeZeroOrNegativeException(params.golds.toString())
 
         return {
-            golds: request.golds + request.entity.golds
+            golds: params.golds + params.entity.golds
         }
     }
 
-    public subtract(request: SubtractRequest): SubtractResponse {
-        if (request.golds < 0)
-            throw new GoldCannotBeZeroOrNegativeException(request.golds.toString())
-
-        this.checkSufficient({
-            current: request.entity.golds,
-            required: request.golds
-        })
+    public subtract(params: SubtractParams): SubtractResult {
+        if (params.golds < 0)
+            throw new GoldCannotBeZeroOrNegativeException(params.golds.toString())
 
         return {
-            golds: request.entity.golds - request.golds
+            golds: params.entity.golds - params.golds
         }
     }
 }

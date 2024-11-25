@@ -3,6 +3,6 @@ syntax = "proto3";
 package gameplay;
 
 import  "../../entities/entry.proto";
-import "./construct-building.proto";
-import "./buy-seeds.proto";
-import "./buy-supplies.proto";
+import "./construct_building.proto";
+import "./buy_seeds.proto";
+import "./buy_supplies.proto";
