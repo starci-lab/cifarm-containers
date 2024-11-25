@@ -10,25 +10,25 @@ import { PlacedItemTypeEntity } from "./placed-item-type.entity"
 export class BuildingEntity extends ReadableAbstractEntity {
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })
-    availableInShop: boolean
+        availableInShop: boolean
 
     @Field(() => AnimalType, { nullable: true })
     @Column({ name: "type", type: "enum", enum: AnimalType, nullable: true })
-    type?: AnimalType
+        type?: AnimalType
 
     @Field(() => Int)
     @Column({ name: "max_upgrade", type: "int" })
-    maxUpgrade: number
+        maxUpgrade: number
 
     @Field(() => Int, { nullable: true })
     @Column({ name: "price", type: "int", nullable: true })
-    price?: number
+        price?: number
 
     @Field(() => [UpgradeEntity], { nullable: true })
     @OneToMany(() => UpgradeEntity, (upgrade: UpgradeEntity) => upgrade.building, {
         cascade: ["insert", "update"]
     })
-    upgrades?: Array<UpgradeEntity>
+        upgrades?: Array<UpgradeEntity>
 
     @Field(() => PlacedItemTypeEntity, { nullable: true })
     @OneToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.building, {
@@ -36,5 +36,5 @@ export class BuildingEntity extends ReadableAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-    placedItemType?: PlacedItemTypeEntity
+        placedItemType?: PlacedItemTypeEntity
 }

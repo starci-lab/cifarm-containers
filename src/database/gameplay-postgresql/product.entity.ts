@@ -11,33 +11,33 @@ import { InventoryTypeEntity } from "./inventory-type.entity"
 export class ProductEntity extends ReadableAbstractEntity {
     @Field(() => Boolean)
     @Column({ name: "is_premium", type: "boolean" })
-    isPremium: boolean
+        isPremium: boolean
 
     @Field(() => Int)
     @Column({ name: "gold_amount", type: "int" })
-    goldAmount: number
+        goldAmount: number
 
     @Field(() => Float)
     @Column({ name: "token_amount", type: "float" })
-    tokenAmount: number
+        tokenAmount: number
 
     @Field(() => ProductType)
     @Column({ name: "type", type: "enum", enum: ProductType })
-    type: ProductType
+        type: ProductType
 
     @Field(() => CropEntity, { nullable: true })
     @OneToOne(() => CropEntity, (crop) => crop.product, {
         nullable: true,
         onDelete: "CASCADE"
     })
-    crop?: CropEntity
+        crop?: CropEntity
 
     @Field(() => AnimalEntity, { nullable: true })
     @OneToOne(() => AnimalEntity, (animal) => animal.product, {
         nullable: true,
         onDelete: "CASCADE"
     })
-    animal?: AnimalEntity
+        animal?: AnimalEntity
 
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.product, {
@@ -45,5 +45,5 @@ export class ProductEntity extends ReadableAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-    inventoryType?: InventoryTypeEntity
+        inventoryType?: InventoryTypeEntity
 }

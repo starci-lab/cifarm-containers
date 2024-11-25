@@ -10,45 +10,45 @@ import { PlacedItemEntity } from "./placed-item.entity"
 export class UserEntity extends AbstractEntity {
     @Field(() => String)
     @Column({ name: "username", type: "varchar", length: 50 })
-    username: string
+        username: string
 
     @Field(() => String)
     @Column({ name: "chainKey", type: "varchar", length: 50 })
-    chainKey: SupportedChainKey
+        chainKey: SupportedChainKey
 
     @Field(() => String)
     @Column({ name: "network", type: "varchar", length: 50 })
-    network: Network
+        network: Network
 
     @Field(() => String)
     @Column({ name: "account_address", type: "varchar", length: 100 })
-    accountAddress: string
+        accountAddress: string
 
     @Field(() => Int)
     @Column({ name: "golds", type: "int4", default: 0 })
-    golds: number
+        golds: number
 
     @Field(() => Float)
     @Column({ name: "tokens", type: "float", default: 0 })
-    tokens: number
+        tokens: number
 
     @Field(() => Int)
     @Column({ name: "experiences", type: "int", default: 0 })
-    experiences: number
+        experiences: number
 
     @Field(() => Int)
     @Column({ name: "energy", type: "int", default: 0 })
-    energy: number
+        energy: number
 
     @Field(() => Int)
     @Column({ name: "level", type: "int", default: 1 })
-    level: number
+        level: number
 
     @Field(() => [InventoryEntity])
     @OneToMany(() => InventoryEntity, (inventory) => inventory.user)
-    inventories?: Array<InventoryEntity>
+        inventories?: Array<InventoryEntity>
 
     @Field(() => [PlacedItemEntity])
     @OneToMany(() => PlacedItemEntity, (inventory) => inventory.user)
-    placedItems?: Array<PlacedItemEntity>
+        placedItems?: Array<PlacedItemEntity>
 }

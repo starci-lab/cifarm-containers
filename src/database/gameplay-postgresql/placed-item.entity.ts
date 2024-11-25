@@ -12,20 +12,20 @@ import { UserEntity } from "./user.entity"
 export class PlacedItemEntity extends AbstractEntity {
     @Field(() => String)
     @Column({ name: "x", type: "int" })
-    x: number
+        x: number
 
     @Field(() => String)
     @Column({ name: "y", type: "int" })
-    y: number
+        y: number
 
     @Field(() => UserEntity, { nullable: true })
     @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
-    user?: UserEntity
+        user?: UserEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "inventory_id", type: "varchar", nullable: true })
-    inventoryId?: string
+        inventoryId?: string
     
     @Field(() => SeedGrowthInfoEntity, { nullable: true })
     @OneToOne(() => SeedGrowthInfoEntity, (seedGrowthInfo) => seedGrowthInfo.placedItem, {
@@ -35,7 +35,7 @@ export class PlacedItemEntity extends AbstractEntity {
         onDelete: "CASCADE"
     })
     @JoinColumn()
-    seedGrowthInfo?: SeedGrowthInfoEntity
+        seedGrowthInfo?: SeedGrowthInfoEntity
 
     @Field(() => AnimalInfoEntity, { nullable: true })
     @OneToOne(() => AnimalInfoEntity, (animalInfo) => animalInfo.placedItem, {
@@ -45,7 +45,7 @@ export class PlacedItemEntity extends AbstractEntity {
         onDelete: "CASCADE"
     })
     @JoinColumn()
-    animalInfo?: AnimalInfoEntity
+        animalInfo?: AnimalInfoEntity
 
     @Field(() => BuildingInfoEntity, { nullable: true })
     @OneToOne(() => BuildingInfoEntity, (buildingInfo) => buildingInfo.placedItem, {
@@ -55,19 +55,19 @@ export class PlacedItemEntity extends AbstractEntity {
         onDelete: "CASCADE"
     })
     @JoinColumn()
-    buildingInfo?: BuildingInfoEntity
+        buildingInfo?: BuildingInfoEntity
 
     @Field(() => [PlacedItemEntity])
     @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.placedItemType)
-    placedItems?: Array<PlacedItemEntity>
+        placedItems?: Array<PlacedItemEntity>
 
     @Field(() => String, { nullable: true })
     @ManyToOne(() => PlacedItemEntity, (placedItem) => placedItem.id, { nullable: true })
-    parent: PlacedItemEntity
+        parent: PlacedItemEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "placed_item_type_id", nullable: true })
-    placedItemTypeId?: string
+        placedItemTypeId?: string
 
     @Field(() => PlacedItemTypeEntity, { nullable: true })
     @ManyToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.placedItems, {
@@ -75,5 +75,5 @@ export class PlacedItemEntity extends AbstractEntity {
         eager: true
     })
     @JoinColumn({ name: "placed_item_type_id", referencedColumnName: "id" })
-    placedItemType?: PlacedItemTypeEntity
+        placedItemType?: PlacedItemTypeEntity
 }

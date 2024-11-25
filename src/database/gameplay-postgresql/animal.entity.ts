@@ -11,58 +11,58 @@ import { ProductEntity } from "./product.entity"
 export class AnimalEntity extends ReadableAbstractEntity {
     @Field(() => Int)
     @Column({ name: "yield_time", type: "int" })
-    yieldTime: number
+        yieldTime: number
 
     @Field(() => Int)
     @Column({ name: "offspring_price", type: "int" })
-    offspringPrice: number
+        offspringPrice: number
 
     @Field(() => Boolean)
     @Column({ name: "is_nft", type: "boolean" })
-    isNFT: boolean
+        isNFT: boolean
 
     @Field(() => Int)
     @Column({ name: "growth_time", type: "int" })
-    growthTime: number
+        growthTime: number
 
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })
-    availableInShop: boolean
+        availableInShop: boolean
 
     @Field(() => Int)
     @Column({ name: "hunger_time", type: "int" })
-    hungerTime: number
+        hungerTime: number
 
     @Field(() => Int)
     @Column({ name: "min_harvest_quantity", type: "int" })
-    minHarvestQuantity: number
+        minHarvestQuantity: number
 
     @Field(() => Int)
     @Column({ name: "max_harvest_quantity", type: "int" })
-    maxHarvestQuantity: number
+        maxHarvestQuantity: number
 
     @Field(() => Int)
     @Column({ name: "basic_harvest_experiences", type: "int" })
-    basicHarvestExperiences: number
+        basicHarvestExperiences: number
 
     @Field(() => Int)
     @Column({ name: "premium_harvest_experiences", type: "int" })
-    premiumHarvestExperiences: number
+        premiumHarvestExperiences: number
 
     @Field(() => AnimalType)
     @Column({ name: "type", type: "enum", enum: AnimalType })
-    type: AnimalType
+        type: AnimalType
 
     @Field(() => Float)
     @Column({ name: "sick_chance", type: "float" })
-    sickChance: number
+        sickChance: number
 
     @OneToOne(() => ProductEntity, { onDelete: "CASCADE", eager: true, cascade: true })
     @JoinColumn({
         name: "product_id",
         referencedColumnName: "id"
     })
-    product: ProductEntity
+        product: ProductEntity
 
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.animal, {
@@ -70,7 +70,7 @@ export class AnimalEntity extends ReadableAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-    inventoryType?: InventoryTypeEntity
+        inventoryType?: InventoryTypeEntity
 
     @Field(() => PlacedItemTypeEntity, { nullable: true })
     @OneToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.animal, {
@@ -78,5 +78,5 @@ export class AnimalEntity extends ReadableAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-    placedItemType?: PlacedItemTypeEntity
+        placedItemType?: PlacedItemTypeEntity
 }

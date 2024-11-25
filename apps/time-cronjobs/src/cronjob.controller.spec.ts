@@ -15,7 +15,7 @@ describe("CronjobController", () => {
     })
 
     describe("root", () => {
-        it('should return "Hello World!"', () => {
+        it("should return \"Hello World!\"", () => {
             expect(cronjobController.getHello()).toBe("Hello World!")
         })
     })

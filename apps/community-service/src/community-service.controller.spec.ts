@@ -15,7 +15,7 @@ describe("CommunityServiceController", () => {
     })
 
     describe("root", () => {
-        it('should return "Hello World!"', () => {
+        it("should return \"Hello World!\"", () => {
             expect(communityServiceController.getHello()).toBe("Hello World!")
         })
     })

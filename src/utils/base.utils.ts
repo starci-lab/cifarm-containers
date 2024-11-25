@@ -6,10 +6,10 @@ export const getEnvValue = <ValueType = string>(values: {
 }): ValueType => {
     const { development, production } = values
     switch (envConfig().nodeEnv) {
-        case NodeEnv.Production:
-            return production
-        default:
-            return development
+    case NodeEnv.Production:
+        return production
+    default:
+        return development
     }
 }
 

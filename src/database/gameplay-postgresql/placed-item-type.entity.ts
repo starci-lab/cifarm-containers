@@ -12,32 +12,32 @@ import { PlacedItemEntity } from "./placed-item.entity"
 export class PlacedItemTypeEntity extends ReadableAbstractEntity {
     @Field(() => PlacedItemType)
     @Column({ name: "type", type: "enum", enum: PlacedItemType })
-    type: PlacedItemType
+        type: PlacedItemType
 
     @OneToOne(() => TileEntity, { onDelete: "CASCADE", eager: true, cascade: true })
     @JoinColumn({
         name: "tile_id",
         referencedColumnName: "id"
     })
-    tile: TileEntity
+        tile: TileEntity
 
     @OneToOne(() => BuildingEntity, { onDelete: "CASCADE", eager: true, cascade: true })
     @JoinColumn({
         name: "building_id",
         referencedColumnName: "id"
     })
-    building: BuildingEntity
+        building: BuildingEntity
 
     @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", eager: true, cascade: true })
     @JoinColumn({
         name: "animal_id",
         referencedColumnName: "id"
     })
-    animal: AnimalEntity
+        animal: AnimalEntity
 
     @Field(() => [PlacedItemEntity], { nullable: true })
     @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.placedItemType, {
         cascade: ["insert", "update"]
     })
-    placedItems?: Array<PlacedItemEntity>
+        placedItems?: Array<PlacedItemEntity>
 }

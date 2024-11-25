@@ -9,19 +9,19 @@ import { PlacedItemTypeEntity } from "./placed-item-type.entity"
 export class TileEntity extends ReadableAbstractEntity {
     @Field(() => Float)
     @Column({ name: "price", type: "float" })
-    price: number
+        price: number
 
     @Field(() => Int)
     @Column({ name: "max_ownership", type: "int" })
-    maxOwnership: number
+        maxOwnership: number
 
     @Field(() => Boolean)
     @Column({ name: "is_nft", type: "boolean" })
-    isNFT: boolean
+        isNFT: boolean
 
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })
-    availableInShop: boolean
+        availableInShop: boolean
 
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.tile, {
@@ -29,7 +29,7 @@ export class TileEntity extends ReadableAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-    inventoryType?: InventoryTypeEntity
+        inventoryType?: InventoryTypeEntity
 
     @Field(() => PlacedItemTypeEntity, { nullable: true })
     @OneToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.tile, {
@@ -37,5 +37,5 @@ export class TileEntity extends ReadableAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-    placedItemType?: PlacedItemTypeEntity
+        placedItemType?: PlacedItemTypeEntity
 }

@@ -53,64 +53,64 @@ export class VerifySignatureService {
 
         let _accountAddress = publicKey
         switch (platform) {
-            case Platform.Evm: {
-                result = this.evmAuthService.verifyMessage({
-                    message,
-                    signature,
-                    publicKey
-                })
-                break
-            }
-            case Platform.Solana: {
-                result = this.solanaAuthService.verifyMessage({
-                    message,
-                    signature,
-                    publicKey
-                })
-                break
-            }
-            case Platform.Aptos: {
-                if (!accountAddress) throw new Error("Account address is required")
-                result = this.aptosAuthService.verifyMessage({
-                    message,
-                    signature,
-                    publicKey
-                })
-                _accountAddress = accountAddress
-                break
-            }
-            case Platform.Algorand: {
-                result = this.algorandAuthService.verifyMessage({
-                    message,
-                    signature,
-                    publicKey
-                })
-                break
-            }
-            case Platform.Polkadot: {
-                if (!accountAddress) throw new Error("Account address is required")
-                result = this.polkadotAuthService.verifyMessage({
-                    message,
-                    signature,
-                    publicKey
-                })
-                _accountAddress = accountAddress
-                break
-            }
-            case Platform.Near: {
-                if (!accountAddress) throw new Error("Account address is required")
-                result = this.nearAuthService.verifyMessage({
-                    message,
-                    signature,
-                    publicKey
-                })
-                _accountAddress = accountAddress
-                break
-            }
-            default:
-                this.logger.error(`Unknown platform: ${platform}`)
-                result = false
-                break
+        case Platform.Evm: {
+            result = this.evmAuthService.verifyMessage({
+                message,
+                signature,
+                publicKey
+            })
+            break
+        }
+        case Platform.Solana: {
+            result = this.solanaAuthService.verifyMessage({
+                message,
+                signature,
+                publicKey
+            })
+            break
+        }
+        case Platform.Aptos: {
+            if (!accountAddress) throw new Error("Account address is required")
+            result = this.aptosAuthService.verifyMessage({
+                message,
+                signature,
+                publicKey
+            })
+            _accountAddress = accountAddress
+            break
+        }
+        case Platform.Algorand: {
+            result = this.algorandAuthService.verifyMessage({
+                message,
+                signature,
+                publicKey
+            })
+            break
+        }
+        case Platform.Polkadot: {
+            if (!accountAddress) throw new Error("Account address is required")
+            result = this.polkadotAuthService.verifyMessage({
+                message,
+                signature,
+                publicKey
+            })
+            _accountAddress = accountAddress
+            break
+        }
+        case Platform.Near: {
+            if (!accountAddress) throw new Error("Account address is required")
+            result = this.nearAuthService.verifyMessage({
+                message,
+                signature,
+                publicKey
+            })
+            _accountAddress = accountAddress
+            break
+        }
+        default:
+            this.logger.error(`Unknown platform: ${platform}`)
+            result = false
+            break
         }
         if (!result) throw new Error("Signature verification")
 

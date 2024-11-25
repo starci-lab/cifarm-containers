@@ -50,104 +50,104 @@ export class GenerateTestSignatureService {
 
         const platform = chainKeyToPlatform(chainKey)
         switch (platform) {
-            case Platform.Evm: {
-                const { privateKey, address } = this.evmAuthService.getFakeKeyPair(accountNumber)
-                const signature = this.evmAuthService.signMessage(message, privateKey)
-                return {
-                    message,
-                    publicKey: address,
-                    signature,
-                    chainKey,
-                    network,
-                    telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                    botType: defaultBotType,
-                    accountAddress: address
-                }
+        case Platform.Evm: {
+            const { privateKey, address } = this.evmAuthService.getFakeKeyPair(accountNumber)
+            const signature = this.evmAuthService.signMessage(message, privateKey)
+            return {
+                message,
+                publicKey: address,
+                signature,
+                chainKey,
+                network,
+                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
+                botType: defaultBotType,
+                accountAddress: address
             }
-            case Platform.Solana: {
-                const { publicKey, secretKey } =
+        }
+        case Platform.Solana: {
+            const { publicKey, secretKey } =
                     this.solanaAuthService.getFakeKeyPair(accountNumber)
-                const signature = this.solanaAuthService.signMessage(message, encode(secretKey))
-                return {
-                    message,
-                    publicKey: publicKey.toBase58(),
-                    signature,
-                    chainKey,
-                    network,
-                    telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                    botType: defaultBotType,
-                    accountAddress: publicKey.toBase58()
-                }
+            const signature = this.solanaAuthService.signMessage(message, encode(secretKey))
+            return {
+                message,
+                publicKey: publicKey.toBase58(),
+                signature,
+                chainKey,
+                network,
+                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
+                botType: defaultBotType,
+                accountAddress: publicKey.toBase58()
             }
-            case Platform.Aptos: {
-                const { publicKey, privateKey } =
+        }
+        case Platform.Aptos: {
+            const { publicKey, privateKey } =
                     this.aptosAuthService.getFakeKeyPair(accountNumber)
-                const signature = this.aptosAuthService.signMessage(message, privateKey.toString())
-                return {
-                    message,
-                    publicKey: publicKey.toString(),
-                    signature,
-                    chainKey,
-                    network,
-                    telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                    botType: defaultBotType,
-                    accountAddress: this.aptosAuthService.toAddress(publicKey.toString())
-                }
+            const signature = this.aptosAuthService.signMessage(message, privateKey.toString())
+            return {
+                message,
+                publicKey: publicKey.toString(),
+                signature,
+                chainKey,
+                network,
+                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
+                botType: defaultBotType,
+                accountAddress: this.aptosAuthService.toAddress(publicKey.toString())
             }
-            case Platform.Algorand: {
-                const { addr, sk } = this.algorandAuthService.getFakeKeyPair(accountNumber)
-                const signature = this.algorandAuthService.signMessage(
-                    message,
-                    Buffer.from(sk).toString("base64")
-                )
-                return {
-                    message,
-                    publicKey: addr.toString(),
-                    signature,
-                    chainKey,
-                    network,
-                    telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                    botType: defaultBotType,
-                    accountAddress: addr.toString()
-                }
+        }
+        case Platform.Algorand: {
+            const { addr, sk } = this.algorandAuthService.getFakeKeyPair(accountNumber)
+            const signature = this.algorandAuthService.signMessage(
+                message,
+                Buffer.from(sk).toString("base64")
+            )
+            return {
+                message,
+                publicKey: addr.toString(),
+                signature,
+                chainKey,
+                network,
+                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
+                botType: defaultBotType,
+                accountAddress: addr.toString()
             }
-            case Platform.Polkadot: {
-                const { publicKey, privateKey } =
+        }
+        case Platform.Polkadot: {
+            const { publicKey, privateKey } =
                     this.polkadotAuthService.getFakeKeyPair(accountNumber)
 
-                const signature = this.polkadotAuthService.signMessage(
-                    message,
-                    privateKey.toString(),
-                    publicKey.toString()
-                )
+            const signature = this.polkadotAuthService.signMessage(
+                message,
+                privateKey.toString(),
+                publicKey.toString()
+            )
 
-                return {
-                    message,
-                    publicKey: publicKey.toString(),
-                    signature,
-                    chainKey,
-                    network,
-                    telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                    botType: defaultBotType,
-                    accountAddress: publicKey.toString()
-                }
+            return {
+                message,
+                publicKey: publicKey.toString(),
+                signature,
+                chainKey,
+                network,
+                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
+                botType: defaultBotType,
+                accountAddress: publicKey.toString()
             }
-            case Platform.Near: {
-                const { publicKey, secretKey } = this.nearAuthService.getFakeKeyPair(accountNumber)
-                const signature = this.nearAuthService.signMessage(message, secretKey.toString())
-                return {
-                    message,
-                    publicKey: publicKey.toString(),
-                    signature,
-                    chainKey,
-                    network,
-                    telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                    botType: defaultBotType,
-                    accountAddress: `example.${envConfig().chainCredentials[SupportedChainKey.Near].creator[network].accountId}`
-                }
+        }
+        case Platform.Near: {
+            const { publicKey, secretKey } = this.nearAuthService.getFakeKeyPair(accountNumber)
+            const signature = this.nearAuthService.signMessage(message, secretKey.toString())
+            return {
+                message,
+                publicKey: publicKey.toString(),
+                signature,
+                chainKey,
+                network,
+                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
+                botType: defaultBotType,
+                accountAddress: `example.${envConfig().chainCredentials[SupportedChainKey.Near].creator[network].accountId}`
             }
-            default:
-                throw new ChainKeyNotFoundException(chainKey)
+        }
+        default:
+            throw new ChainKeyNotFoundException(chainKey)
         }
     }
 }

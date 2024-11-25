@@ -11,47 +11,47 @@ import { CropCurrentState } from "./enums"
 export class SeedGrowthInfoEntity extends AbstractEntity {
     @Field(() => String)
     @Column({ type: "enum", enum: CropCurrentState })
-    currentStage: CropCurrentState
+        currentStage: CropCurrentState
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    currentStageTimeElapsed: number
+        currentStageTimeElapsed: number
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    totalTimeElapsed: number
+        totalTimeElapsed: number
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    harvestQuantityRemaining: number
+        harvestQuantityRemaining: number
 
     @Field(() => CropEntity)
     @ManyToOne(() => CropEntity, { nullable: true, eager: true })
-    crop: CropEntity
+        crop: CropEntity
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    currentState: number
+        currentState: number
 
     @ManyToMany(() => UserEntity)
     @JoinTable()
-    thiefedBy: Array<UserEntity>
+        thiefedBy: Array<UserEntity>
 
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
-    fullyMatured: boolean
+        fullyMatured: boolean
 
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
-    isPlanted: boolean
+        isPlanted: boolean
 
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
-    isFertilized: boolean
+        isFertilized: boolean
 
     @Field(() => PlacedItemEntity)
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.seedGrowthInfo, {
         onDelete: "CASCADE"
     })
-    placedItem?: PlacedItemEntity
+        placedItem?: PlacedItemEntity
 }

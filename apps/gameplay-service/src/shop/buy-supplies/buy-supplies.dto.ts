@@ -10,12 +10,12 @@ export class BuySuppliesRequest extends UserIdRequest {
         description: "The id of the supply to purchase"
     })
     @IsString()
-    id: string
+        id: string
 
     @ApiProperty({ example: 10, description: "The quantity of supplies to purchase" })
     @IsInt()
     @Min(1)
-    quantity: number
+        quantity: number
 }
 
 export type BuySuppliesResponse = Empty

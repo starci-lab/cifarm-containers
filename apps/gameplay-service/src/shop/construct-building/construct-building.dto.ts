@@ -6,16 +6,16 @@ import { IsString, ValidateNested } from "class-validator"
 export class ConstructBuildingRequest extends UserIdRequest {
     @IsString()
     @ApiProperty({ example: "Coop" })
-    id: string
+        id: string
 
     @ValidateNested()
     @Type(() => Position)
     @ApiProperty({ type: Position })
-    position: Position
+        position: Position
 }
 
 export class ConstructBuildingResponse {
     @IsString()
     @ApiProperty({ example: "placed-item-id" })
-    placedItemId: string
+        placedItemId: string
 }

@@ -5,7 +5,7 @@ import { DeepPartial, QueryRunner } from "typeorm"
 export class UserIdRequest {
     @IsUUID("4")
     @ApiHideProperty()
-    userId: string
+        userId: string
 }
 
 export class EntityRequest<TEntity> {
@@ -28,22 +28,22 @@ export class ArrayEntityWithUserIdRequest<TEntity> extends UserIdRequest {
 export class CreatedResponse {
     @IsUUID("4")
     @ApiProperty({ example: "5a6919c3-6ae3-45de-81eb-f1bbb05a246d" })
-    id: string
+        id: string
 }
 
 export class ArrayResponse<TEntity> {
     @ApiProperty({ type: [Object] })
-    items: Array<TEntity>
+        items: Array<TEntity>
 }
 
 export class CreateRequest<TEntity> {
     @ApiProperty({ type: Object })
-    item: DeepPartial<TEntity>
+        item: DeepPartial<TEntity>
 }
 
 export class CreateWithUserIdRequest<TEntity> extends UserIdRequest {
     @ApiProperty({ type: Object })
-    item: DeepPartial<TEntity>
+        item: DeepPartial<TEntity>
 }
 
 export class QueryRunnerUserIdRequest extends UserIdRequest {
@@ -52,8 +52,8 @@ export class QueryRunnerUserIdRequest extends UserIdRequest {
 
 export class CheckSufficientRequest {
     @ApiProperty({ example: 50, description: "The current value (positive value)" })
-    current: number
+        current: number
 
     @ApiProperty({ example: 50, description: "The required value (positive value)" })
-    required: number
+        required: number
 }

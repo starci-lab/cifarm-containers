@@ -10,20 +10,20 @@ export class BuyAnimalRequest {
         example: "550e8400-e29b-41d4-a716-446655440000",
         description: "The ID of the user"
     })
-    userId: string
+        userId: string
 
     @IsString()
     @ApiProperty({ example: AnimalId.Chicken, description: "The ID of the animal" })
-    id: string
+        id: string
 
     @IsString()
     @ApiProperty({ example: BuildingId.Coop, description: "The ID of the building" })
-    buildingId: string
+        buildingId: string
 
     @ValidateNested()
     @Type(() => Position)
     @ApiProperty({ type: Position })
-    position: Position
+        position: Position
 }
 
 export class BuyAnimalResponse {
@@ -32,5 +32,5 @@ export class BuyAnimalResponse {
         example: "550e8400-e29b-41d4-a716-446655440000",
         description: "The ID of the placed item"
     })
-    placedItemId: string
+        placedItemId: string
 }

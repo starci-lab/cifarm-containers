@@ -19,7 +19,8 @@ import {
 } from "@src/database"
 import { BuySuppliesController } from "./buy-supplies.controller"
 import { BuySuppliesService } from "./buy-supplies.service"
-import { GoldBalanceModule, InventoryModule } from "@src/services"
+import { InventoryModule } from "@src/services/gameplay/inventory"
+import { GoldBalanceModule } from "@src/services/gameplay/wallet"
 
 @Global()
 @Module({

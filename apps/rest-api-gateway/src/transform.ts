@@ -13,10 +13,10 @@ export class TransformedSuccessResponse<Data> implements ITransformedSuccessResp
     @ApiProperty({
         example: HttpStatus.OK
     })
-    status: HttpStatus
+        status: HttpStatus
 
     @ApiProperty({
         example: "Success"
     })
-    message: string
+        message: string
 }

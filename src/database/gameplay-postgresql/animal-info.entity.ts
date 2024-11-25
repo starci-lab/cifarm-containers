@@ -10,47 +10,47 @@ import { AbstractEntity } from "./abstract"
 export class AnimalInfoEntity extends AbstractEntity {
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    currentGrowthTime: number
+        currentGrowthTime: number
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    currentHungryTime: number
+        currentHungryTime: number
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    currentYieldTime: number
+        currentYieldTime: number
 
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
-    hasYielded: boolean
+        hasYielded: boolean
 
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
-    isAdult: boolean
+        isAdult: boolean
 
     @Field(() => AnimalEntity)
     @ManyToOne(() => AnimalEntity, { nullable: true, eager: true })
-    animal: AnimalEntity
+        animal: AnimalEntity
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    currentState: number
+        currentState: number
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    harvestQuantityRemaining: number
+        harvestQuantityRemaining: number
 
     @ManyToMany(() => UserEntity)
     @JoinTable()
-    thiefedBy: Array<UserEntity>
+        thiefedBy: Array<UserEntity>
 
     @Field(() => Boolean)
     @Column({ type: "boolean", nullable: true })
-    alreadySick: boolean
+        alreadySick: boolean
 
     @Field(() => PlacedItemEntity)
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.animalInfo, {
         onDelete: "CASCADE"
     })
-    placedItem?: PlacedItemEntity
+        placedItem?: PlacedItemEntity
 }

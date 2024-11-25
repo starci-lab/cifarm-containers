@@ -11,7 +11,7 @@ export class AddRequest extends EntityRequest<UserEntity> {
         example: 50,
         description: "The amount of gold to add (positive value)"
     })
-    golds: number
+        golds: number
 }
 
 export type AddResponse = DeepPartial<UserEntity>
@@ -23,7 +23,7 @@ export class SubtractRequest extends EntityRequest<UserEntity> {
         example: 50,
         description: "The amount of gold to subtract (positive value)"
     })
-    golds: number
+        golds: number
 }
 
 export type SubtractResponse = DeepPartial<UserEntity>

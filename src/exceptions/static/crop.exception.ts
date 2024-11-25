@@ -1,7 +1,6 @@
 import {
     GrpcNotFoundException,
-    GrpcResourceExhaustedException,
-    GrpcServerExceptionFilter
+    GrpcResourceExhaustedException
 } from "nestjs-grpc-exceptions"
 
 export class CropNotFoundException extends GrpcNotFoundException {

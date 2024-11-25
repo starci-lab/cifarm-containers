@@ -9,19 +9,19 @@ import { AbstractEntity } from "./abstract"
 export class BuildingInfoEntity extends AbstractEntity {
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    currentUpgrade: number
+        currentUpgrade: number
 
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
-    occupancy: number
+        occupancy: number
 
     @Field(() => BuildingEntity)
     @ManyToOne(() => BuildingEntity, { nullable: true, onDelete: "CASCADE" })
-    building: BuildingEntity
+        building: BuildingEntity
 
     @Field(() => PlacedItemEntity)
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.buildingInfo, {
         onDelete: "CASCADE"
     })
-    placedItem?: PlacedItemEntity
+        placedItem?: PlacedItemEntity
 }
