@@ -1,10 +1,10 @@
 export * from "./token.module"
 export * from "./token.service"
 import {
-    AddRequest as AddTokenRequest,
-    AddResponse as AddTokenResponse,
-    SubtractRequest as SubtractTokenRequest,
-    SubtractResponse as SubtractTokenResponse
+    AddParams as AddTokenParams,
+    AddResult as AddTokenResult,
+    SubtractParams as SubtractTokenParams,
+    SubtractResult as SubtractTokenResult
 } from "./token.dto"
 
-export { AddTokenRequest, AddTokenResponse, SubtractTokenRequest, SubtractTokenResponse }
+export { AddTokenParams, AddTokenResult, SubtractTokenParams, SubtractTokenResult }

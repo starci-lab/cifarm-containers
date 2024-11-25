@@ -12,7 +12,7 @@ export class AnimalsService {
     private readonly logger = new Logger(AnimalsService.name)
     constructor(
         @InjectQueue(animalsTimeQueueConstants.NAME) private animalsQueue: Queue,
-        private readonly dataSource: DataSource,
+        private readonly dataSource: DataSource
     ) {}
 
     @Cron("*/1 * * * * *")
@@ -22,7 +22,7 @@ export class AnimalsService {
         const count = await queryRunner.manager.count(AnimalInfoEntity, {
             where: {
                 hasYielded: false,
-                currentState: Not(AnimalCurrentState.Hungry),
+                currentState: Not(AnimalCurrentState.Hungry)
             }
         })
         this.logger.debug(`Found ${count} animals that need to be grown`)
@@ -33,14 +33,14 @@ export class AnimalsService {
         }
         const batchSize = animalsTimeQueueConstants.BATCH_SIZE
         const batchCount = Math.ceil(count / batchSize)
-        
+
         // Create batches
         const batches = Array.from({ length: batchCount }, (_, i) => ({
             name: v4(),
             data: {
                 from: i * batchSize,
-                to: Math.min((i + 1) * batchSize, count) - 1  // Ensure 'to' does not exceed 'count'
-            },
+                to: Math.min((i + 1) * batchSize, count) - 1 // Ensure 'to' does not exceed 'count'
+            }
         }))
         this.logger.verbose(`Adding ${batches.length} batches to the queue`)
         await this.animalsQueue.addBulk(batches)

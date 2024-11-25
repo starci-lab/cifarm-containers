@@ -18,8 +18,8 @@ import { TypeOrmModule } from "@nestjs/typeorm"
         BullModule.forRoot({
             connection: {
                 host: envConfig().database.redis.job.host,
-                port: envConfig().database.redis.job.port,
-            },
+                port: envConfig().database.redis.job.port
+            }
         }),
         TypeOrmModule.forRoot({
             type: "postgres",
@@ -32,7 +32,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
             synchronize: true
         }),
         CropsModule,
-        AnimalsModule,
-    ],
+        AnimalsModule
+    ]
 })
 export class AppModule {}

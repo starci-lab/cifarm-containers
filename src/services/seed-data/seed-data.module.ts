@@ -49,6 +49,7 @@ import {
             PlacedItemTypeEntity
         ])
     ],
-    providers: [SeedDataService]
+    providers: [SeedDataService],
+    exports: [SeedDataService]
 })
 export class SeedDataModule {}

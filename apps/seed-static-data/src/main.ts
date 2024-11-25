@@ -4,8 +4,8 @@ import { envConfig } from "@src/config"
 import { Logger } from "@nestjs/common"
 import { createDatabase } from "@src/utils"
 
-const createGamplayPostgresqlDatabase = async () =>
-    createDatabase({
+const createGamplayPostgresqlDatabase = async () => {
+    await createDatabase({
         type: "postgres",
         host: envConfig().database.postgres.gameplay.host,
         port: envConfig().database.postgres.gameplay.port,
@@ -13,6 +13,7 @@ const createGamplayPostgresqlDatabase = async () =>
         pass: envConfig().database.postgres.gameplay.pass,
         dbName: envConfig().database.postgres.gameplay.dbName
     })
+}
 
 const bootstrap = async () => {
     const logger = new Logger("SeedData")
