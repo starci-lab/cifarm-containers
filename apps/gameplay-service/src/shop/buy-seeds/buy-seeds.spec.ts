@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm"
-import { HarvestCropService } from "./harvest-crop.service"
+import { BuySeedsService } from "./buy-seeds.service"
 import { Test } from "@nestjs/testing"
 import { ConfigModule } from "@nestjs/config"
 import { envConfig } from "@src/config"
@@ -7,24 +7,17 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { createDatabase } from "@src/utils"
 import { v4 } from "uuid"
 import { PlacedItemEntity, UserEntity } from "@src/database"
-import { SeedDataService } from "@apps/seed-data"
 import { Logger } from "@nestjs/common"
+import { SeedDataService } from "@src/services"
 
-describe("HarvestCropService", () => {
-    let service: HarvestCropService
+describe("BuySeedsService", () => {
+    let service: BuySeedsService
     let dataSource: DataSource
     let logger: Logger
+    let seedData: SeedDataService
 
     beforeEach(async () => {
         const mockDbName = v4()
-        await createDatabase({
-            type: "postgres",
-            host: envConfig().database.postgres.gameplay.host,
-            port: envConfig().database.postgres.gameplay.port,
-            user: envConfig().database.postgres.gameplay.user,
-            pass: envConfig().database.postgres.gameplay.pass,
-            dbName: mockDbName
-        })
 
         const module = await Test.createTestingModule({
             imports: [
@@ -48,9 +41,23 @@ describe("HarvestCropService", () => {
             providers: [SeedDataService]
         }).compile()
 
-        logger = new Logger("HarvestCropService:Test")
-        service = module.get(HarvestCropService)
+        await createDatabase({
+            type: "postgres",
+            host: envConfig().database.postgres.gameplay.host,
+            port: envConfig().database.postgres.gameplay.port,
+            user: envConfig().database.postgres.gameplay.user,
+            pass: envConfig().database.postgres.gameplay.pass,
+            dbName: mockDbName
+        })
+
+        console.log("Loaded Config:", envConfig())
+
+        logger = new Logger("BuySeedsService:Test")
+        service = module.get(BuySeedsService)
         dataSource = module.get(DataSource)
+        seedData = module.get(SeedDataService)
+
+        await seedData.seedStaticData(dataSource)
     })
 
     it("Should happy case work", async () => {

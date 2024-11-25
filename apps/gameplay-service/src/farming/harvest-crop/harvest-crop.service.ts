@@ -79,7 +79,7 @@ export class HarvestCropService {
                 ...energyChanges,
                 ...experiencesChanges
             })
-            
+
             // //Get inventory type
             // const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
             //     where: { productId:  }
@@ -106,14 +106,13 @@ export class HarvestCropService {
             //     }
             // })
 
-
             // update seed growth info
             await queryRunner.manager.update(
                 SeedGrowthInfoEntity,
                 placedItemTile.seedGrowthInfo.id,
                 {
                     ...placedItemTile.seedGrowthInfo,
-                    fullyMatured: false,
+                    fullyMatured: false
                 }
             )
 

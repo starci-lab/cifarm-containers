@@ -22,6 +22,10 @@ export class AnimalEntity extends ReadableAbstractEntity {
         isNFT: boolean
 
     @Field(() => Int)
+    @Column({ name: "price", type: "int" })
+        price: number
+
+    @Field(() => Int)
     @Column({ name: "growth_time", type: "int" })
         growthTime: number
 

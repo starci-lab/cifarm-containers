@@ -1,13 +1,10 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity, BuildingEntity, PlacedItemEntity, UserEntity } from "@src/database"
+import { AnimalEntity, UserEntity } from "@src/database"
 import {
     AnimalNotAvailableInShopException,
     AnimalNotFoundException,
-    AnimalTypeMismatchException,
-    BuildingCapacityExceededException,
-    BuyAnimalTransactionFailedException,
-    ParentBuildingNotFoundException
+    BuyAnimalTransactionFailedException
 } from "@src/exceptions"
 import { GoldBalanceService } from "@src/services"
 import { Cache } from "cache-manager"
@@ -17,7 +14,6 @@ import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 @Injectable()
 export class BuyAnimalService {
     private readonly logger = new Logger(BuyAnimalService.name)
-
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
@@ -45,87 +41,78 @@ export class BuyAnimalService {
             throw new AnimalNotAvailableInShopException(request.id)
         }
 
-        const building = await queryRunner.manager.findOne(BuildingEntity, {
-            where: { id: request.buildingId }
-        })
+        // const building = await queryRunner.manager.findOne(BuildingEntity, {
+        //     where: { id: request.buildingId }
+        // })
 
-        if (!building) {
-            throw new ParentBuildingNotFoundException(request.buildingId)
-        }
+        // if (!building) {
+        //     throw new ParentBuildingNotFoundException(request.buildingId)
+        // }
 
-        if (building.type != animal.type) {
-            throw new AnimalTypeMismatchException(building.type, animal.type)
-        }
+        // if (building.type != animal.type) {
+        //     throw new AnimalTypeMismatchException(building.type, animal.type)
+        // }
 
         //get placedItems of the building
-        const placedItems = await queryRunner.manager.find(PlacedItemEntity, {
-            where: {
-                buildingInfo: {
-                    building: {
-                        type: building.type
-                    }
-                }
-            },
-            relations: {
-                buildingInfo: true
-            }
-        })
+        // const placedItems = await queryRunner.manager.find(PlacedItemEntity, {
+        //     where: {
+        //         buildingInfo: {
+        //             building: {
+        //                 type: building.type
+        //             }
+        //         }
+        //     },
+        //     relations: {
+        //         buildingInfo: {
+        //             building: true
+        //         }
+        //     }
+        // })
         // Check if building is full: does not have any placeItems building
-        if (placedItems.length > 0) {
-            throw new BuildingCapacityExceededException("Building is full.")
-        }
-
-        // Check building capacity
-        // const maxCapacity =
-
-        // if (building. >= maxCapacity) {
-        //     throw new BuildingCapacityExceededException("Building is full.")
+        // if (placedItems.length > 0) {
+        //     throw new PlacedItemNotFoundException("Buiding type: " + building.type)
         // }
+
+        const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+            where: { id: request.userId }
+        })
+
+        const totalCost = animal.price
+
+        //Check sufficient gold
+        this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
         // Start transaction
         await queryRunner.startTransaction()
 
         try {
-            // Deduct animal cost from the user's balance
-            const user = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: request.userId }
+            // Subtract gold
+            const goldsChanged = this.goldBalanceService.subtract({
+                entity: user,
+                golds: totalCost
             })
 
-            if (!user) {
-                throw new Error("User not found.")
-            }
+            await queryRunner.manager.update(UserEntity, user.id, {
+                ...goldsChanged
+            })
 
-            // this.goldBalanceService.checkSufficient({
-            //     current: user.golds,
-            //     required: animal.price,
-            // })
-
-            // const updatedGolds = this.goldBalanceService.subtract({
-            //     entity: user,
-            //     golds: animal.price,
-            // })
-
-            // await queryRunner.manager.save(UserEntity, {
-            //     id: request.userId,
-            //     ...updatedGolds,
-            // })
-
-            // Place animal in the building
+            // // Place animal in the building
             // const placedAnimal: DeepPartial<PlacedItemEntity> = {
             //     userId: request.userId,
-            //     parentPlacedItemId: request.buildingId,
-            //     type: "Animal",
+            //     parentId: request.buildingId,
             //     animalInfo: { animal },
-            //     position: request.position,
+            //     x: request.position.x,
+            //     y: request.position.y,
+            //     placedItemTypeId: animal.id,
             // }
 
             // const savedAnimal = await queryRunner.manager.save(PlacedItemEntity, placedAnimal)
 
-            // // Update building occupancy
-            // building.buildingInfo.occupancy += 1
-            await queryRunner.manager.save(building)
+            // // // Update building occupancy
+            // place.occupancy += 1
+            // await queryRunner.manager.save(building)
 
-            await queryRunner.commitTransaction()
+            // await queryRunner.commitTransaction()
 
             // this.logger.log(`Successfully placed animal with id: ${savedAnimal.id}`)
             return { placedItemId: "" }
