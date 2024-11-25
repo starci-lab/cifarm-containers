@@ -1,5 +1,5 @@
+import { gameplayGrpcConstants } from "@apps/gameplay-service/src/app.constants"
 import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
-import { shopGrpcConstants } from "@apps/gameplay-service/src/app.constants"
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { envConfig } from "@src/config"
@@ -20,13 +20,13 @@ import { GameplayController } from "./gameplay.controller"
                 })
             },
             {
-                name: shopGrpcConstants.NAME,
+                name: gameplayGrpcConstants.NAME,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
-                        url: `${envConfig().containers.shopService.host}:${envConfig().containers.shopService.port}`,
-                        package: shopGrpcConstants.PACKAGE,
-                        protoPath: shopGrpcConstants.PROTO_PATH
+                        url: `${envConfig().containers.gameplayService.host}:${envConfig().containers.gameplayService.port}`,
+                        package: gameplayGrpcConstants.PACKAGE,
+                        protoPath: gameplayGrpcConstants.PROTO_PATH
                     }
                 })
             }

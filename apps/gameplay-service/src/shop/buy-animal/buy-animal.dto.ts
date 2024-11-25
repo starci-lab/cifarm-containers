@@ -1,24 +1,17 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { AnimalId, BuildingId } from "@src/database"
-import { Position } from "@src/types"
+import { AnimalId } from "@src/database"
+import { Position, UserIdRequest } from "@src/types"
 import { Type } from "class-transformer"
-import { IsString, IsUUID, ValidateNested } from "class-validator"
+import { IsString, ValidateNested } from "class-validator"
 
-export class BuyAnimalRequest {
-    @IsUUID(4)
-    @ApiProperty({
-        example: "550e8400-e29b-41d4-a716-446655440000",
-        description: "The ID of the user"
-    })
-        userId: string
-
+export class BuyAnimalRequest extends UserIdRequest {
     @IsString()
     @ApiProperty({ example: AnimalId.Chicken, description: "The ID of the animal" })
         id: string
 
     @IsString()
-    @ApiProperty({ example: BuildingId.Coop, description: "The ID of the building" })
-        buildingId: string
+    @ApiProperty({ example: "", description: "The ID of the building" })
+        placedItemBuildingId: string
 
     @ValidateNested()
     @Type(() => Position)

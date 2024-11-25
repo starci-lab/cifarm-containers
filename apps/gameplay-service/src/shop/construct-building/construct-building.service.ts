@@ -67,14 +67,13 @@ export class ConstructBuildingService {
         await queryRunner.startTransaction()
 
         try {
-            // Subtract gold from user balance
+            // Subtract gold
             const goldsChanged = this.goldBalanceService.subtract({
                 entity: user,
                 golds: totalCost
             })
 
-            await queryRunner.manager.save(UserEntity, {
-                id: request.userId,
+            await queryRunner.manager.update(UserEntity, user.id, {
                 ...goldsChanged
             })
 

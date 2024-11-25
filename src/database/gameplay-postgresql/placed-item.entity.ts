@@ -66,6 +66,10 @@ export class PlacedItemEntity extends AbstractEntity {
         placedItems?: Array<PlacedItemEntity>
 
     @Field(() => String, { nullable: true })
+    @Column({ name: "parent_id", nullable: true })
+        parentId?: string
+
+    @Field(() => String, { nullable: true })
     @ManyToOne(() => PlacedItemEntity, (placedItem) => placedItem.id, { nullable: true })
         parent: PlacedItemEntity
 

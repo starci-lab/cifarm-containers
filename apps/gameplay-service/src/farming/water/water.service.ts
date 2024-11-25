@@ -79,7 +79,7 @@ export class WaterService {
                 ...energyChanges,
                 ...experiencesChanges
             })
-            
+
             // update seed growth info
             await queryRunner.manager.update(
                 SeedGrowthInfoEntity,

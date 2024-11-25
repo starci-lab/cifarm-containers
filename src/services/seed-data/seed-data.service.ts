@@ -1,5 +1,4 @@
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
     AnimalEntity,
@@ -36,41 +35,29 @@ import {
     UpgradeEntity,
     UpgradeId
 } from "@src/database"
-import { Cache } from "cache-manager"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 
 @Injectable()
-export class SeedDataService implements OnModuleInit {
+export class SeedDataService {
     private readonly logger = new Logger(SeedDataService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-        @Inject(CACHE_MANAGER)
-        private cacheManager: Cache
-    ) {}
+    constructor() {}
 
-    async onModuleInit() {
-        await this.clearPostgresData()
-        await this.clearRedisCacheData()
-        await this.seedData()
-        // await this.saveDataToRedis()
-    }
-
-    private async clearRedisCacheData() {
-        this.logger.log("Clearing cache data started")
+    public async seedStaticData(dataSource: DataSource) {
+        this.logger.log("Starting static data seeding...")
 
         try {
-            await this.cacheManager.reset()
-            this.logger.log("Cache data cleared successfully")
+            await this.clearData(dataSource)
+            await this.seedEntities(dataSource)
+            this.logger.log("Static data seeding completed successfully.")
         } catch (error) {
-            this.logger.error(`Failed to clear cache data: ${error.message}`)
+            this.logger.error("An error occurred during static data seeding:", error)
             throw error
         }
     }
-
-    private async clearPostgresData() {
+    private async clearData(dataSource: DataSource) {
         this.logger.log("Clearing old data started")
-        const queryRunner: QueryRunner = this.dataSource.createQueryRunner()
+        const queryRunner: QueryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
 
         try {
@@ -100,37 +87,43 @@ export class SeedDataService implements OnModuleInit {
             await queryRunner.release()
         }
     }
-
-    private async seedData() {
-        this.logger.log("Seeding data started")
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    private async seedEntities(dataSource: DataSource) {
+        this.logger.log("Seeding entities...")
 
         try {
-            await queryRunner.startTransaction()
+            const queryRunner = dataSource.createQueryRunner()
+            await queryRunner.connect()
 
-            await Promise.all([
-                this.seedAnimalData(queryRunner),
-                this.seedCropData(queryRunner),
-                this.seedBuildingData(queryRunner),
-                this.seedToolData(queryRunner),
-                this.seedTileData(queryRunner),
-                this.seedSupplyData(queryRunner),
-                this.seedDailyRewardData(queryRunner),
-                this.seedSpinData(queryRunner),
-                this.seedSystemData(queryRunner)
-            ])
+            try {
+                await queryRunner.startTransaction()
 
-            await queryRunner.commitTransaction()
-            this.logger.log("Seeding data finished")
+                // Sequential or parallel calls to seeding methods
+                await Promise.all([
+                    this.seedAnimalData(queryRunner),
+                    this.seedCropData(queryRunner),
+                    this.seedBuildingData(queryRunner),
+                    this.seedToolData(queryRunner),
+                    this.seedTileData(queryRunner),
+                    this.seedSupplyData(queryRunner),
+                    this.seedDailyRewardData(queryRunner),
+                    this.seedSpinData(queryRunner),
+                    this.seedSystemData(queryRunner)
+                ])
+
+                await queryRunner.commitTransaction()
+                this.logger.log("Entities seeded successfully.")
+            } catch (error) {
+                await queryRunner.rollbackTransaction()
+                this.logger.error("Error occurred while seeding entities:", error)
+                throw error
+            } finally {
+                await queryRunner.release()
+            }
         } catch (error) {
-            await queryRunner.rollbackTransaction()
-            this.logger.error("Error seeding data:", error)
-        } finally {
-            await queryRunner.release()
+            this.logger.error("Error occurred during entity seeding:", error)
+            throw error
         }
     }
-
     private async seedSystemData(queryRunner: QueryRunner) {
         const activities: Activities = {
             cureAnimal: {
@@ -281,7 +274,6 @@ export class SeedDataService implements OnModuleInit {
         ]
         await queryRunner.manager.save(AnimalEntity, data)
     }
-
     private async seedCropData(queryRunner: QueryRunner) {
         const data: Array<DeepPartial<CropEntity>> = [
             {
@@ -294,7 +286,7 @@ export class SeedDataService implements OnModuleInit {
                 minHarvestQuantity: 14,
                 maxHarvestQuantity: 20,
                 premium: false,
-                perennial: false,
+                perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
                 maxStack: 16,
@@ -332,7 +324,7 @@ export class SeedDataService implements OnModuleInit {
                 minHarvestQuantity: 16,
                 maxHarvestQuantity: 23,
                 premium: false,
-                perennial: false,
+                perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
                 maxStack: 16,
@@ -370,7 +362,7 @@ export class SeedDataService implements OnModuleInit {
                 minHarvestQuantity: 16,
                 maxHarvestQuantity: 23,
                 premium: false,
-                perennial: false,
+                perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
                 maxStack: 16,
@@ -408,7 +400,7 @@ export class SeedDataService implements OnModuleInit {
                 minHarvestQuantity: 16,
                 maxHarvestQuantity: 23,
                 premium: false,
-                perennial: false,
+                perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
                 maxStack: 16,
@@ -446,7 +438,7 @@ export class SeedDataService implements OnModuleInit {
                 minHarvestQuantity: 16,
                 maxHarvestQuantity: 23,
                 premium: false,
-                perennial: false,
+                perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
                 maxStack: 16,
@@ -484,7 +476,7 @@ export class SeedDataService implements OnModuleInit {
                 minHarvestQuantity: 16,
                 maxHarvestQuantity: 23,
                 premium: false,
-                perennial: false,
+                perennialCount: 3,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
                 maxStack: 16,
@@ -516,7 +508,6 @@ export class SeedDataService implements OnModuleInit {
 
         await queryRunner.manager.save(CropEntity, data)
     }
-
     private async seedBuildingData(queryRunner: QueryRunner) {
         const data: Array<DeepPartial<BuildingEntity>> = [
             {
