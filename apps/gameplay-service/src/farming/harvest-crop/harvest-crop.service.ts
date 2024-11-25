@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
-    CropCurrentState,
     PlacedItemEntity,
     SeedGrowthInfoEntity,
     SystemEntity,
@@ -9,25 +8,26 @@ import {
     UserEntity
 } from "@src/database"
 import { DataSource } from "typeorm"
-import { WaterRequest, WaterResponse } from "./water.dto"
+import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import {
     PlacedItemTileNotFoundException,
-    PlacedItemTileNotNeedWaterException,
+    PlacedItemTileNotFullyMaturedException,
     PlacedItemTileNotPlantedException,
     WaterTransactionFailedException
 } from "@src/exceptions"
-import { EnergyService, LevelService } from "@src/services"
+import { EnergyService, InventoryService, LevelService } from "@src/services"
 
 @Injectable()
-export class WaterService {
-    private readonly logger = new Logger(WaterService.name)
+export class HarvestCropService {
+    private readonly logger = new Logger(HarvestCropService.name)
     constructor(
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        private readonly inventoryService: InventoryService
     ) {}
 
-    async water(request: WaterRequest): Promise<WaterResponse> {
+    async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
@@ -43,8 +43,8 @@ export class WaterService {
         if (placedItemTile.seedGrowthInfo.isPlanted)
             throw new PlacedItemTileNotPlantedException(request.id)
 
-        if (placedItemTile.seedGrowthInfo.currentStage !== CropCurrentState.NeedWater)
-            throw new PlacedItemTileNotNeedWaterException(request.id)
+        if (!placedItemTile.seedGrowthInfo.fullyMatured)
+            throw new PlacedItemTileNotFullyMaturedException(request.id)
 
         const { value } = await queryRunner.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
@@ -80,18 +80,46 @@ export class WaterService {
                 ...experiencesChanges
             })
             
+            // //Get inventory type
+            // const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+            //     where: { productId:  }
+            // })
+
+            // // Get inventory same type
+            // const existingInventories = await queryRunner.manager.find(InventoryEntity, {
+            //     where: {
+            //         userId: request.userId,
+            //         inventoryType: {
+            //             cropId: request.id
+            //         }
+            //     },
+            //     relations: {
+            //         inventoryType: true
+            //     }
+            // })
+            // const updatedInventories = this.inventoryService.add({
+            //     entities: existingInventories,
+            //     userId: request.userId,
+            //     data: {
+            //         inventoryType: inventoryType,
+            //         quantity: 1
+            //     }
+            // })
+
+
             // update seed growth info
             await queryRunner.manager.update(
                 SeedGrowthInfoEntity,
                 placedItemTile.seedGrowthInfo.id,
                 {
                     ...placedItemTile.seedGrowthInfo,
-                    currentStage: CropCurrentState.Normal
+                    fullyMatured: false,
                 }
             )
+
             return {}
         } catch (error) {
-            this.logger.error("Water transaction failed, rolling back...", error)
+            this.logger.error("Harvest crop transaction failed, rolling back...", error)
             await queryRunner.rollbackTransaction()
             throw new WaterTransactionFailedException(error)
         } finally {
