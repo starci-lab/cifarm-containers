@@ -22,7 +22,7 @@ export class AnimalEntity extends ReadableAbstractEntity {
         isNFT: boolean
 
     @Field(() => Int)
-    @Column({ name: "price", type: "int" })
+    @Column({ name: "price", type: "int", nullable: true })
         price: number
 
     @Field(() => Int)

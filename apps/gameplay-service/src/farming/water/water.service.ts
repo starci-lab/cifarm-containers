@@ -32,19 +32,19 @@ export class WaterService {
         await queryRunner.connect()
 
         const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-            where: { id: request.id },
+            where: { id: request.placedItemTileId },
             relations: {
                 seedGrowthInfo: true
             }
         })
 
-        if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.id)
+        if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
 
-        if (placedItemTile.seedGrowthInfo.isPlanted)
-            throw new PlacedItemTileNotPlantedException(request.id)
+        if (!placedItemTile.seedGrowthInfo)
+            throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
 
         if (placedItemTile.seedGrowthInfo.currentStage !== CropCurrentState.NeedWater)
-            throw new PlacedItemTileNotNeedWaterException(request.id)
+            throw new PlacedItemTileNotNeedWaterException(request.placedItemTileId)
 
         const { value } = await queryRunner.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }

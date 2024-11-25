@@ -1,10 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { UserEntity } from "@src/database"
-import { EntityRequest } from "@src/types"
+import { EntityParams } from "@src/types"
 import { IsInt, Min } from "class-validator"
 import { DeepPartial } from "typeorm"
 
-export class AddRequest extends EntityRequest<UserEntity> {
+export class AddParams extends EntityParams<UserEntity> {
     @IsInt()
     @Min(0)
     @ApiProperty({
@@ -14,9 +14,9 @@ export class AddRequest extends EntityRequest<UserEntity> {
         golds: number
 }
 
-export type AddResponse = DeepPartial<UserEntity>
+export type AddResult = DeepPartial<UserEntity>
 
-export class SubtractRequest extends EntityRequest<UserEntity> {
+export class SubtractParams extends EntityParams<UserEntity> {
     @IsInt()
     @Min(0)
     @ApiProperty({
@@ -26,4 +26,4 @@ export class SubtractRequest extends EntityRequest<UserEntity> {
         golds: number
 }
 
-export type SubtractResponse = DeepPartial<UserEntity>
+export type SubtractResult = DeepPartial<UserEntity>

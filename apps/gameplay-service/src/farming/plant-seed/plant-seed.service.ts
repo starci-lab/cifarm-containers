@@ -5,6 +5,7 @@ import {
     InventoryType,
     InventoryTypeEntity,
     PlacedItemEntity,
+    PlacedItemType,
     ProductEntity,
     SeedGrowthInfoEntity,
     SystemEntity,
@@ -12,18 +13,17 @@ import {
     UserEntity
 } from "@src/database"
 import { DataSource } from "typeorm"
-import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
+import { PlantSeedRequest, PlantSeedResponse } from "./plant-seed.dto"
 import {
+    InventoryNotFoundException,
     PlacedItemTileNotFoundException,
-    PlacedItemTileNotFullyMaturedException,
-    PlacedItemTileNotPlantedException,
     WaterTransactionFailedException
 } from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService } from "@src/services"
 
 @Injectable()
-export class HarvestCropService {
-    private readonly logger = new Logger(HarvestCropService.name)
+export class PlantSeedService {
+    private readonly logger = new Logger(PlantSeedService.name)
     constructor(
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
@@ -31,26 +31,36 @@ export class HarvestCropService {
         private readonly inventoryService: InventoryService
     ) {}
 
-    async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {
+    async plantSeed(request: PlantSeedRequest): Promise<PlantSeedResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
-        const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-            where: { id: request.placedItemTileId },
-            relations: {
-                seedGrowthInfo: {
-                    crop: true
+        const inventory = await queryRunner.manager.findOne(InventoryEntity, {
+            where: {
+                id: request.inventorySeedId,
+                inventoryType: {
+                    type: InventoryType.Seed
                 }
+            },
+            relations: {
+                inventoryType: true
             }
         })
+        if (!inventory) throw new InventoryNotFoundException(request.inventorySeedId)
 
+        //check the tile
+        const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
+            where: {
+                id: request.placedItemTileId,
+                placedItemType: {
+                    type: PlacedItemType.Tile
+                }
+            },
+            relations: {
+                placedItemType: true
+            }
+        })
         if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
-
-        if (!placedItemTile.seedGrowthInfo)
-            throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
-
-        if (!placedItemTile.seedGrowthInfo.fullyMatured)
-            throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
 
         const { value } = await queryRunner.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }

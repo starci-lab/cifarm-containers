@@ -23,9 +23,9 @@ export class CropEntity extends ReadableAbstractEntity {
     @Column({ name: "premium", type: "boolean" })
         premium: boolean
 
-    @Field(() => Boolean)
-    @Column({ name: "perennial", type: "boolean" })
-        perennial: boolean
+    @Field(() => Int)
+    @Column({ name: "perennial_count", type: "int4", default: 1 })
+        perennialCount: number
 
     @Field(() => Int)
     @Column({ name: "next_growth_stage_after_harvest", type: "int" })

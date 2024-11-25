@@ -2,10 +2,10 @@ import { Injectable, Logger } from "@nestjs/common"
 import { UserEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import {
-    AddExperiencesRequest,
-    AddExperiencesResponse,
-    GetLevelRequest,
-    GetLevelResponse
+    AddExperiencesParams,
+    AddExperiencesResult,
+    GetLevelParams,
+    GetLevelResult
 } from "./level.dto"
 import { ExperienceCannotBeZeroOrNegativeException, UserNotFoundException } from "@src/exceptions"
 
@@ -30,8 +30,8 @@ export class LevelService {
         return 50 * level + 25 * Math.pow(level - 1, 2)
     }
 
-    public async getLevel(request: GetLevelRequest): Promise<GetLevelResponse> {
-        const user = await this.findUserById(request.userId)
+    public async getLevel(params: GetLevelParams): Promise<GetLevelResult> {
+        const user = await this.findUserById(params.userId)
         return {
             level: user.level,
             experiences: user.experiences,
@@ -39,15 +39,14 @@ export class LevelService {
         }
     }
 
-    public addExperiences(request: AddExperiencesRequest): AddExperiencesResponse {
-        const { entity, experiences } = request
-        
+    public addExperiences(params: AddExperiencesParams): AddExperiencesResult {
+        const { entity, experiences } = params
+
         //ensure the experiences is a positive value
-        if (experiences <= 0) 
-            throw new ExperienceCannotBeZeroOrNegativeException(experiences)
+        if (experiences <= 0) throw new ExperienceCannotBeZeroOrNegativeException(experiences)
 
         const quota = this.computeExperiencesQuota(entity.level)
-        
+
         let current = entity.experiences + experiences
         let level: number = undefined
 

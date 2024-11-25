@@ -3,18 +3,18 @@ import {
     TokenCannotBeZeroOrNegativeException,
     UserInsufficientTokenException
 } from "@src/exceptions"
-import { AddRequest, AddResponse, SubtractRequest, SubtractResponse } from "./token.dto"
-import { CheckSufficientRequest } from "@src/types"
+import { AddParams, AddResult, SubtractParams, SubtractResult } from "./token.dto"
+import { CheckSufficientParams } from "@src/types"
 
 @Injectable()
 export class TokenBalanceService {
     constructor() {}
 
-    public checkSufficient({ current, required }: CheckSufficientRequest) {
+    public checkSufficient({ current, required }: CheckSufficientParams) {
         if (current < required) throw new UserInsufficientTokenException(current, required)
     }
 
-    public add(request: AddRequest): AddResponse {
+    public add(request: AddParams): AddResult {
         if (request.tokens < 0)
             throw new TokenCannotBeZeroOrNegativeException(request.tokens.toString())
 
@@ -23,7 +23,7 @@ export class TokenBalanceService {
         }
     }
 
-    public subtract(request: SubtractRequest): SubtractResponse {
+    public subtract(request: SubtractParams): SubtractResult {
         if (request.tokens < 0)
             throw new TokenCannotBeZeroOrNegativeException(request.tokens.toString())
 

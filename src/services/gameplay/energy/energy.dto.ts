@@ -1,10 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { UserEntity } from "@src/database"
-import { EntityRequest } from "@src/types"
+import { EntityParams } from "@src/types"
 import { IsInt } from "class-validator"
 import { DeepPartial } from "typeorm"
 
-export class AddRequest extends EntityRequest<UserEntity> {
+export class AddParams extends EntityParams<UserEntity> {
     @IsInt()
     @ApiProperty({
         example: 1,
@@ -12,9 +12,9 @@ export class AddRequest extends EntityRequest<UserEntity> {
     })
         energy: number
 }
-export type AddResponse = DeepPartial<UserEntity>
+export type AddResult = DeepPartial<UserEntity>
 
-export class SubstractRequest extends EntityRequest<UserEntity> {
+export class SubstractParams extends EntityParams<UserEntity> {
     @IsInt()
     @ApiProperty({
         example: 3,
@@ -23,20 +23,4 @@ export class SubstractRequest extends EntityRequest<UserEntity> {
         energy: number
 }
 
-export type SubstractResponse = DeepPartial<UserEntity>
-
-export class CheckSufficientRequest {
-    @IsInt()
-    @ApiProperty({
-        example: 3,
-        description: "The current energy value (positive value)"
-    })
-        current: number
-
-    @IsInt()
-    @ApiProperty({
-        example: 3,
-        description: "The energy required (positive value)"
-    })
-        required: number
-}
+export type SubstractResult = DeepPartial<UserEntity>

@@ -1,18 +1,13 @@
 import { Injectable } from "@nestjs/common"
 import { EnergyExceedsMaximumException, EnergyNotEnoughException } from "@src/exceptions"
-import {
-    AddRequest,
-    AddResponse,
-    SubstractRequest,
-    SubstractResponse
-} from "./energy.dto"
-import { CheckSufficientRequest } from "@src/types"
+import { AddParams, AddResult, SubstractParams, SubstractResult } from "./energy.dto"
+import { CheckSufficientParams } from "@src/types"
 
 @Injectable()
 export class EnergyService {
     constructor() {}
 
-    public add(request: AddRequest): AddResponse {
+    public add(request: AddParams): AddResult {
         const { energy, entity } = request
         const maxEnergy = this.getMaxEnergy(entity.level)
         if (request.entity.energy + request.energy > maxEnergy)
@@ -22,7 +17,7 @@ export class EnergyService {
         }
     }
 
-    public substract(request: SubstractRequest): SubstractResponse {
+    public substract(request: SubstractParams): SubstractResult {
         const { energy, entity } = request
         if (entity.energy - energy < 0)
             throw new EnergyExceedsMaximumException(entity.energy - request.energy, 0)
@@ -35,8 +30,7 @@ export class EnergyService {
         return 50 + (level - 1) * 3
     }
 
-    public checkSufficient({ current, required }: CheckSufficientRequest) {
-        if (current < required)
-            throw new EnergyNotEnoughException(current, required)
+    public checkSufficient({ current, required }: CheckSufficientParams) {
+        if (current < required) throw new EnergyNotEnoughException(current, required)
     }
 }
