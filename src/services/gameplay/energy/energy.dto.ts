@@ -24,3 +24,19 @@ export class SubstractRequest extends EntityRequest<UserEntity> {
 }
 
 export type SubstractResponse = DeepPartial<UserEntity>
+
+export class CheckSufficientRequest {
+    @IsInt()
+    @ApiProperty({
+        example: 3,
+        description: "The current energy value (positive value)"
+    })
+        current: number
+
+    @IsInt()
+    @ApiProperty({
+        example: 3,
+        description: "The energy required (positive value)"
+    })
+        required: number
+}

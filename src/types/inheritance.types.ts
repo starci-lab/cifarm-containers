@@ -49,3 +49,11 @@ export class CreateWithUserIdRequest<TEntity> extends UserIdRequest {
 export class QueryRunnerUserIdRequest extends UserIdRequest {
     queryRunner: QueryRunner
 }
+
+export class CheckSufficientRequest {
+    @ApiProperty({ example: 50, description: "The current value (positive value)" })
+    current: number
+
+    @ApiProperty({ example: 50, description: "The required value (positive value)" })
+    required: number
+}

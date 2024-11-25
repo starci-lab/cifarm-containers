@@ -6,6 +6,7 @@ import {
     SubstractRequest,
     SubstractResponse
 } from "./energy.dto"
+import { CheckSufficientRequest } from "@src/types"
 
 @Injectable()
 export class EnergyService {
@@ -34,8 +35,8 @@ export class EnergyService {
         return 50 + (level - 1) * 3
     }
 
-    public checkSufficient(current: number, consume: number) {
-        if (current < consume)
-            throw new EnergyNotEnoughException(current, consume)
+    public checkSufficient({ current, required }: CheckSufficientRequest) {
+        if (current < required)
+            throw new EnergyNotEnoughException(current, required)
     }
 }

@@ -57,7 +57,10 @@ export class WaterService {
             where: { id: request.userId }
         })
 
-        this.energyService.checkSufficient(user.energy, energyConsume)
+        this.energyService.checkSufficient({
+            current: user.energy,
+            required: energyConsume
+        })
 
         // substract energy
         const energyChanges = this.energyService.substract({

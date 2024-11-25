@@ -14,7 +14,7 @@ export class AddRequest extends EntityRequest<UserEntity> {
     golds: number
 }
 
-export type AdResponse = DeepPartial<UserEntity>
+export type AddResponse = DeepPartial<UserEntity>
 
 export class SubtractRequest extends EntityRequest<UserEntity> {
     @IsInt()
@@ -27,21 +27,3 @@ export class SubtractRequest extends EntityRequest<UserEntity> {
 }
 
 export type SubtractResponse = DeepPartial<UserEntity>
-
-export class CheckSufficientRequest {
-    @IsInt()
-    @Min(0)
-    @ApiProperty({
-        example: 50,
-        description: "The amount of gold to check if sufficient (positive value)"
-    })
-    current: number
-
-    @IsInt()
-    @Min(0)
-    @ApiProperty({
-        example: 50,
-        description: "The amount of gold required (positive value)"
-    })
-    required: number
-}

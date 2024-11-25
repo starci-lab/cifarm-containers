@@ -3,8 +3,10 @@ import { GoldCannotBeZeroOrNegativeException, UserInsufficientGoldException } fr
 import {
     AddRequest,
     AddResponse,
-    CheckSufficientRequest,
+    SubtractRequest,
+    SubtractResponse,
 } from "./gold.dto"
+import { CheckSufficientRequest } from "@src/types"
 
 @Injectable()
 export class GoldBalanceService {
@@ -15,7 +17,7 @@ export class GoldBalanceService {
             throw new UserInsufficientGoldException(current, required)
     }
 
-    public add(request: AddGoldRequest): AddGoldResponse {
+    public add(request: AddRequest): AddResponse {
         if (request.golds < 0)
             throw new GoldCannotBeZeroOrNegativeException(request.golds.toString())
 
@@ -24,7 +26,7 @@ export class GoldBalanceService {
         }
     }
 
-    public subtract(request: SubtractGoldRequest): SubtractGoldResponse {
+    public subtract(request: SubtractRequest): SubtractResponse {
         if (request.golds < 0)
             throw new GoldCannotBeZeroOrNegativeException(request.golds.toString())
 
