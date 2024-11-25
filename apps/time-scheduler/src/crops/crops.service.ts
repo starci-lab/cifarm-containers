@@ -8,8 +8,8 @@ import { v4 } from "uuid"
 import { CropCurrentState, SeedGrowthInfoEntity } from "@src/database"
 
 @Injectable()
-export class CropService {
-    private readonly logger = new Logger(CropService.name)
+export class CropsService {
+    private readonly logger = new Logger(CropsService.name)
     constructor(
         @InjectQueue(cropsTimeQueueConstants.NAME) private animalsQueue: Queue,
         private readonly dataSource: DataSource,
@@ -26,6 +26,11 @@ export class CropService {
             }
         })
         this.logger.debug(`Found ${count} crops that need to be grown`)
+        if (count === 0) {
+            this.logger.verbose("No crops to grow")
+            return
+        }
+        this.logger.debug(`Found ${count} crops that need to be grown`)
         //split into 10000 per batch
         const batchSize = cropsTimeQueueConstants.BATCH_SIZE
         const batchCount = Math.ceil(count / batchSize)
@@ -38,7 +43,7 @@ export class CropService {
                 to: Math.min((i + 1) * batchSize, count) - 1  // Ensure 'to' does not exceed 'count'
             },
         }))
-        this.logger.debug(`Adding ${batches.length} batches to the queue`)
+        this.logger.verbose(`Adding ${batches.length} batches to the queue`)
         await this.animalsQueue.addBulk(batches)
     }
 }

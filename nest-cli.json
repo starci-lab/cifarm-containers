@@ -64,7 +64,7 @@
         "tsConfigPath": "apps/graphql-api-gateway/tsconfig.app.json"
       }
     },
-    "time-cronjobs": {
+    "time-scheduler": {
       "type": "application",
       "root": "apps/time-scheduler",
       "entryFile": "main",

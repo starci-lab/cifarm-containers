@@ -8,8 +8,8 @@ import { v4 } from "uuid"
 import { AnimalCurrentState, AnimalInfoEntity } from "@src/database"
 
 @Injectable()
-export class AnimalService {
-    private readonly logger = new Logger(AnimalService.name)
+export class AnimalsService {
+    private readonly logger = new Logger(AnimalsService.name)
     constructor(
         @InjectQueue(animalsTimeQueueConstants.NAME) private animalsQueue: Queue,
         private readonly dataSource: DataSource,
@@ -27,6 +27,10 @@ export class AnimalService {
         })
         this.logger.debug(`Found ${count} animals that need to be grown`)
         //split into 10000 per batch
+        if (count === 0) {
+            this.logger.verbose("No animals to grow")
+            return
+        }
         const batchSize = animalsTimeQueueConstants.BATCH_SIZE
         const batchCount = Math.ceil(count / batchSize)
         
@@ -38,7 +42,7 @@ export class AnimalService {
                 to: Math.min((i + 1) * batchSize, count) - 1  // Ensure 'to' does not exceed 'count'
             },
         }))
-        this.logger.debug(`Adding ${batches.length} batches to the queue`)
+        this.logger.verbose(`Adding ${batches.length} batches to the queue`)
         await this.animalsQueue.addBulk(batches)
     }
 }
