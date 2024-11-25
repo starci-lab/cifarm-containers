@@ -66,11 +66,11 @@
     },
     "time-cronjobs": {
       "type": "application",
-      "root": "apps/time-cronjobs",
+      "root": "apps/time-scheduler",
       "entryFile": "main",
-      "sourceRoot": "apps/time-cronjobs/src",
+      "sourceRoot": "apps/time-scheduler/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/time-cronjobs/tsconfig.app.json"
+        "tsConfigPath": "apps/time-scheduler/tsconfig.app.json"
       }
     },
     "static-subgraph": {

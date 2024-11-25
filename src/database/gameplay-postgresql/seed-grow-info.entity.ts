@@ -33,9 +33,9 @@ export class SeedGrowthInfoEntity extends AbstractEntity {
     @ManyToOne(() => CropEntity, { nullable: true, eager: true })
         crop: CropEntity
 
-    @Field(() => Int)
-    @Column({ type: "int", nullable: true })
-        currentState: number
+    @Field(() => String)
+    @Column({ type: "enum", enum: CropCurrentState })
+        currentState: CropCurrentState
 
     @ManyToMany(() => UserEntity)
     @JoinTable()

@@ -104,6 +104,10 @@ export const envConfig = () => ({
             adapter: {
                 host: process.env.ADAPTER_REDIS_HOST,
                 port: Number(process.env.ADAPTER_REDIS_PORT)
+            },
+            job: {
+                host: process.env.JOB_REDIS_HOST,
+                port: Number(process.env.JOB_REDIS_PORT)
             }
         }
     },
