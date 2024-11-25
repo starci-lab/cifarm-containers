@@ -77,10 +77,14 @@ export class WaterService {
                 ...experiencesChanges
             })
             // update seed growth info
-            await queryRunner.manager.update(SeedGrowthInfoEntity, placedItemTile.seedGrowthInfo.id, {
-                ...placedItemTile.seedGrowthInfo,
-                currentStage: CropCurrentState.Normal
-            })
+            await queryRunner.manager.update(
+                SeedGrowthInfoEntity,
+                placedItemTile.seedGrowthInfo.id,
+                {
+                    ...placedItemTile.seedGrowthInfo,
+                    currentStage: CropCurrentState.Normal
+                }
+            )
             return {}
         } catch (error) {
             this.logger.error("Water transaction failed, rolling back...", error)

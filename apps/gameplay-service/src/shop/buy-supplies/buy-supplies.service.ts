@@ -4,7 +4,7 @@ import { SupplyEntity, InventoryEntity, InventoryTypeEntity, UserEntity } from "
 import {
     BuySuppliesTransactionFailedException,
     SupplyNotAvailableInShopException,
-    SupplyNotFoundException,
+    SupplyNotFoundException
 } from "@src/exceptions"
 import { GoldBalanceService, InventoryService } from "@src/services"
 import { Cache } from "cache-manager"
@@ -78,7 +78,7 @@ export class BuySuppliesService {
                 userId: request.userId,
                 data: {
                     inventoryType: inventoryType,
-                    quantity: request.quantity,
+                    quantity: request.quantity
                 }
             })
 

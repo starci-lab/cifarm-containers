@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InventoryEntity, InventoryTypeEntity } from "@src/database"
 import { DeepPartial } from "typeorm"
-import { AddRequest, AddResponse } from "./inventory.dto"
+import { AddInventoryRequest, AddInventoryResponse } from "./inventory.dto"
 
 @Injectable()
 export class InventoryService {
@@ -9,7 +9,7 @@ export class InventoryService {
 
     constructor() {}
 
-    public add(request: AddRequest): AddResponse {
+    public add(request: AddInventoryRequest): AddInventoryResponse {
         const resultInventories: Array<DeepPartial<InventoryEntity>> = request.entities
 
         let remainingQuantity = request.data.quantity

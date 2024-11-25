@@ -4,7 +4,7 @@ import { EntityRequest } from "@src/types"
 import { IsInt, Min } from "class-validator"
 import { DeepPartial } from "typeorm"
 
-export class AddRequest extends EntityRequest<UserEntity> {
+export class AddGoldRequest extends EntityRequest<UserEntity> {
     @IsInt()
     @Min(0)
     @ApiProperty({
@@ -14,9 +14,9 @@ export class AddRequest extends EntityRequest<UserEntity> {
     golds: number
 }
 
-export type AdResponse = DeepPartial<UserEntity>
+export type AddGoldResponse = DeepPartial<UserEntity>
 
-export class SubtractRequest extends EntityRequest<UserEntity> {
+export class SubtractGoldRequest extends EntityRequest<UserEntity> {
     @IsInt()
     @Min(0)
     @ApiProperty({
@@ -26,7 +26,7 @@ export class SubtractRequest extends EntityRequest<UserEntity> {
     golds: number
 }
 
-export type SubtractResponse = DeepPartial<UserEntity>
+export type SubtractGoldResponse = DeepPartial<UserEntity>
 
 export class CheckSufficientRequest {
     @IsInt()

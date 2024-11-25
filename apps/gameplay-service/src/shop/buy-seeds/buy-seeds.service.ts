@@ -4,7 +4,7 @@ import { CropEntity, InventoryEntity, InventoryTypeEntity, UserEntity } from "@s
 import {
     BuySeedsTransactionFailedException,
     CropNotAvailableInShopException,
-    CropNotFoundException,
+    CropNotFoundException
 } from "@src/exceptions"
 import { GoldBalanceService, InventoryService } from "@src/services"
 import { Cache } from "cache-manager"
@@ -79,7 +79,7 @@ export class BuySeedsService {
                 userId: request.userId,
                 data: {
                     inventoryType: inventoryType,
-                    quantity: request.quantity,
+                    quantity: request.quantity
                 }
             })
 
