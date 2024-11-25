@@ -18,6 +18,10 @@ export class PlacedItemEntity extends AbstractEntity {
     @Column({ name: "y", type: "int" })
         y: number
 
+    @Field(() => String, { nullable: true })
+    @Column({ name: "user_id", nullable: true })
+        userId: string
+
     @Field(() => UserEntity, { nullable: true })
     @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
@@ -26,7 +30,7 @@ export class PlacedItemEntity extends AbstractEntity {
     @Field(() => String, { nullable: true })
     @Column({ name: "inventory_id", type: "varchar", nullable: true })
         inventoryId?: string
-    
+
     @Field(() => SeedGrowthInfoEntity, { nullable: true })
     @OneToOne(() => SeedGrowthInfoEntity, (seedGrowthInfo) => seedGrowthInfo.placedItem, {
         nullable: true,

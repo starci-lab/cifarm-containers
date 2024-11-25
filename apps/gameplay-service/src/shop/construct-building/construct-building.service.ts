@@ -7,10 +7,10 @@ import {
     PlacedItemTypeNotFoundException,
     ConstructBuildingTransactionFailedException
 } from "@src/exceptions"
-import { GoldBalanceService } from "@src/services"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
+import { GoldBalanceService } from "@src/services"
 
 @Injectable()
 export class ConstructBuildingService {
@@ -80,7 +80,7 @@ export class ConstructBuildingService {
 
             // Prepare placed item entity
             const placedItem: DeepPartial<PlacedItemEntity> = {
-                user: { id: request.userId },
+                userId: request.userId,
                 buildingInfo: {
                     building
                 },

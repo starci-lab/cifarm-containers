@@ -1,10 +1,15 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity } from "@src/database"
+import { AnimalEntity, BuildingEntity, PlacedItemEntity, UserEntity } from "@src/database"
 import {
     AnimalNotAvailableInShopException,
-    AnimalNotFoundException
-} from "@src/exceptions/static/animal.exception"
+    AnimalNotFoundException,
+    AnimalTypeMismatchException,
+    BuildingCapacityExceededException,
+    BuyAnimalTransactionFailedException,
+    ParentBuildingNotFoundException
+} from "@src/exceptions"
+import { GoldBalanceService } from "@src/services"
 import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
 import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
@@ -12,67 +17,124 @@ import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 @Injectable()
 export class BuyAnimalService {
     private readonly logger = new Logger(BuyAnimalService.name)
+
     constructor(
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
-        private readonly cacheManager: Cache
+        private readonly cacheManager: Cache,
+        private readonly goldBalanceService: GoldBalanceService
     ) {}
 
     async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {
-        const animal = await this.dataSource.manager.findOne(AnimalEntity, {
+        this.logger.debug(
+            `Starting animal purchase for user ${request.userId}, animal id: ${request.id}`
+        )
+
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
+        const animal = await queryRunner.manager.findOne(AnimalEntity, {
             where: { id: request.id }
         })
 
-        if (!animal) throw new AnimalNotFoundException(request.id)
-        if (!animal.availableInShop) throw new AnimalNotAvailableInShopException(request.id)
+        if (!animal) {
+            throw new AnimalNotFoundException(request.id)
+        }
 
-        // // Fetch parent building details
-        // const building = await this.dataSource.manager.findOne(PlacedItemEntity, {
-        //     where: { buildingInfo: { id: request.buildingId }, userId: request.userId }
-        // })
+        if (!animal.availableInShop) {
+            throw new AnimalNotAvailableInShopException(request.id)
+        }
 
-        // if (!building) throw new GrpcNotFoundException("Parent building not found")
-        // if (building.type !== "Building")
-        //     throw new GrpcAbortedException("Parent item is not a building")
+        const building = await queryRunner.manager.findOne(BuildingEntity, {
+            where: { id: request.buildingId }
+        })
 
-        // // Validate building and animal type compatibility
-        // if (building.buildingInfo.building.type !== animal.type) {
-        //     throw new GrpcAbortedException("Animal type does not match building type")
-        // }
+        if (!building) {
+            throw new ParentBuildingNotFoundException(request.buildingId)
+        }
 
-        // // Check building capacity
+        if (building.type != animal.type) {
+            throw new AnimalTypeMismatchException(building.type, animal.type)
+        }
+
+        //get placedItems of the building
+        const placedItems = await queryRunner.manager.find(PlacedItemEntity, {
+            where: {
+                buildingInfo: {
+                    building: {
+                        type: building.type
+                    }
+                }
+            },
+            relations: {
+                buildingInfo: true
+            }
+        })
+        // Check if building is full: does not have any placeItems building
+        if (placedItems.length > 0) {
+            throw new BuildingCapacityExceededException("Building is full.")
+        }
+
+        // Check building capacity
         // const maxCapacity =
-        //     building.buildingInfo.building.upgrades[building.buildingInfo.currentUpgrade].capacity
-        // if (building.buildingInfo.occupancy >= maxCapacity) {
-        //     throw new GrpcAbortedException("Building is full")
+
+        // if (building. >= maxCapacity) {
+        //     throw new BuildingCapacityExceededException("Building is full.")
         // }
 
-        // await this.walletService.subtractGold(userId, animal.price, {
-        //     name: "Buy animal",
-        //     key
-        // }) // Deduct animal cost from wallet
-        // a
+        // Start transaction
+        await queryRunner.startTransaction()
 
-        // // Place animal in the building
-        // const placedAnimal = this.dataSource.manager.create(PlacedItemEntity, {
-        //     userId,
-        //     referenceKey: key,
-        //     parentPlacedItemKey: BuildingId,
-        //     type: "Animal",
-        //     position,
-        //     animalInfo: { animal }
-        // })
+        try {
+            // Deduct animal cost from the user's balance
+            const user = await queryRunner.manager.findOne(UserEntity, {
+                where: { id: request.userId }
+            })
 
-        // const savedAnimal = await this.dataSource.manager.save(placedAnimal)
+            if (!user) {
+                throw new Error("User not found.")
+            }
 
-        // // Update building occupancy
-        // building.buildingInfo.occupancy += 1
-        // await this.dataSource.manager.save(building)
+            // this.goldBalanceService.checkSufficient({
+            //     current: user.golds,
+            //     required: animal.price,
+            // })
 
-        // this.logger.debug(`Animal placed with key: ${savedAnimal.id}`)
+            // const updatedGolds = this.goldBalanceService.subtract({
+            //     entity: user,
+            //     golds: animal.price,
+            // })
 
-        // return { placedItemAnimalId: savedAnimal.id }
+            // await queryRunner.manager.save(UserEntity, {
+            //     id: request.userId,
+            //     ...updatedGolds,
+            // })
 
-        return
+            // Place animal in the building
+            // const placedAnimal: DeepPartial<PlacedItemEntity> = {
+            //     userId: request.userId,
+            //     parentPlacedItemId: request.buildingId,
+            //     type: "Animal",
+            //     animalInfo: { animal },
+            //     position: request.position,
+            // }
+
+            // const savedAnimal = await queryRunner.manager.save(PlacedItemEntity, placedAnimal)
+
+            // // Update building occupancy
+            // building.buildingInfo.occupancy += 1
+            await queryRunner.manager.save(building)
+
+            await queryRunner.commitTransaction()
+
+            // this.logger.log(`Successfully placed animal with id: ${savedAnimal.id}`)
+            // return { placedItemId: savedAnimal.id }
+        } catch (error) {
+            this.logger.error("Animal purchase transaction failed, rolling back...", error)
+            await queryRunner.rollbackTransaction()
+            throw new BuyAnimalTransactionFailedException(error.message)
+        } finally {
+            await queryRunner.release()
+        }
     }
 }
