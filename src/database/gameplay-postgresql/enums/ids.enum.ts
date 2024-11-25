@@ -100,8 +100,7 @@ export enum ProductId {
 }
 
 export enum SystemId {
-    Activities = "activities",
-    
+    Activities = "activities"
 }
 
 export enum InventoryTypeId {

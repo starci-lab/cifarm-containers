@@ -137,7 +137,7 @@
       "^@src/(.*)": "<rootDir>/src/$1",
       "^@apps/(.*)": "<rootDir>/apps/$1"
     },
-    "collectCoverage": true,
+    "collectCoverage": false,
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   },

@@ -1,11 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { EnergyExceedsMaximumException, EnergyNotEnoughException } from "@src/exceptions"
-import {
-    AddParams,
-    AddResult,
-    SubstractParams,
-    SubstractResult,
-} from "./energy.dto"
+import { AddParams, AddResult, SubstractParams, SubstractResult } from "./energy.dto"
 import { CheckSufficientParams } from "@src/types"
 
 @Injectable()
@@ -36,7 +31,6 @@ export class EnergyService {
     }
 
     public checkSufficient({ current, required }: CheckSufficientParams) {
-        if (current < required)
-            throw new EnergyNotEnoughException(current, required)
+        if (current < required) throw new EnergyNotEnoughException(current, required)
     }
 }

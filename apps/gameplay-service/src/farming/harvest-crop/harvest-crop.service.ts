@@ -46,7 +46,8 @@ export class HarvestCropService {
 
         if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
 
-        if (!placedItemTile.seedGrowthInfo) throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+        if (!placedItemTile.seedGrowthInfo)
+            throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
 
         if (!placedItemTile.seedGrowthInfo.fullyMatured)
             throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
@@ -109,7 +110,7 @@ export class HarvestCropService {
                 where: {
                     userId: request.userId,
                     inventoryTypeId: inventoryType.id
-                },
+                }
             })
 
             const updatedInventories = this.inventoryService.add({
@@ -124,17 +125,24 @@ export class HarvestCropService {
             await queryRunner.manager.save(InventoryEntity, updatedInventories)
 
             //if current perennial count is equal to crop's perennial count, remove the crop, delete the seed growth info
-            if (placedItemTile.seedGrowthInfo.currentPerennialCount >= placedItemTile.seedGrowthInfo.crop.perennialCount) {
-                await queryRunner.manager.remove(SeedGrowthInfoEntity, placedItemTile.seedGrowthInfo)
+            if (
+                placedItemTile.seedGrowthInfo.currentPerennialCount >=
+                placedItemTile.seedGrowthInfo.crop.perennialCount
+            ) {
+                await queryRunner.manager.remove(
+                    SeedGrowthInfoEntity,
+                    placedItemTile.seedGrowthInfo
+                )
             } else {
                 // update seed growth info
                 await queryRunner.manager.update(
                     SeedGrowthInfoEntity,
                     placedItemTile.seedGrowthInfo.id,
                     {
-                        currentPerennialCount: placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
+                        currentPerennialCount:
+                            placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
                         fullyMatured: false,
-                        currentStageTimeElapsed: 0,
+                        currentStageTimeElapsed: 0
                     }
                 )
             }
