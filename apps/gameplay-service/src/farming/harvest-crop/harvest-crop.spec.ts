@@ -10,7 +10,7 @@ import { PlacedItemEntity, UserEntity } from "@src/database"
 import { SeedDataService } from "@apps/seed-data"
 import { Logger } from "@nestjs/common"
 
-describe("HarvestCropService", async () => {
+describe("HarvestCropService", () => {
     let service: HarvestCropService
     let dataSource: DataSource
     let logger: Logger
@@ -31,6 +31,7 @@ describe("HarvestCropService", async () => {
             imports: [
                 ConfigModule.forRoot({
                     load: [envConfig],
+                    envFilePath: [".env.local"],
                     isGlobal: true,
                 }),
                 TypeOrmModule.forRoot({
@@ -56,7 +57,7 @@ describe("HarvestCropService", async () => {
         dataSource = module.get(DataSource)
     })
 
-    describe("Should happy case work", async () => {
+    it("Should happy case work", async () => {
         //create account
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()

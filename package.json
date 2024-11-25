@@ -123,7 +123,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "apps",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -132,8 +132,8 @@
       "**/*.(t|j)s"
     ],
     "moduleNameMapper": {
-      "^@src/(.*)": "../src/$1",
-      "^@apps/(.*)": "<rootdir>/$1"
+      "^@src/(.*)": "<rootDir>/src/$1",
+      "^@apps/(.*)": "<rootDir>/apps/$1"
     },
     "collectCoverage": true,
     "coverageDirectory": "../coverage",
