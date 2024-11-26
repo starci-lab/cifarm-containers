@@ -89,10 +89,10 @@ export class BuySeedsService {
             //Save inventory
             await queryRunner.manager.save(InventoryEntity, updatedInventories)
             await queryRunner.commitTransaction()
-
-            return
+ 
+            return 
         } catch (error) {
-            this.logger.debug("rollback")
+            this.logger.error(JSON.stringify(error.message))
             await queryRunner.rollbackTransaction()
             throw new BuySeedsTransactionFailedException(error)
         } finally {
