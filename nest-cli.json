@@ -64,22 +64,22 @@
         "tsConfigPath": "apps/graphql-api-gateway/tsconfig.app.json"
       }
     },
-    "time-scheduler": {
+    "cron-scheduler": {
       "type": "application",
-      "root": "apps/time-scheduler",
+      "root": "apps/cron-scheduler",
       "entryFile": "main",
-      "sourceRoot": "apps/time-scheduler/src",
+      "sourceRoot": "apps/cron-scheduler/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/time-scheduler/tsconfig.app.json"
+        "tsConfigPath": "apps/cron-scheduler/tsconfig.app.json"
       }
     },
-    "time-worker": {
+    "cron-worker": {
       "type": "application",
       "root": "apps/time-worker",
       "entryFile": "main",
-      "sourceRoot": "apps/time-worker/src",
+      "sourceRoot": "apps/cron-worker/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/time-worker/tsconfig.app.json"
+        "tsConfigPath": "apps/cron-worker/tsconfig.app.json"
       }
     },
     "static-subgraph": {
