@@ -11,9 +11,9 @@ export class AppService implements OnModuleInit {
         private readonly seedDataService: SeedDataService
     ) {}
 
-    onModuleInit() {
+    async onModuleInit() {
         this.logger.debug("SeedStaticData initialized")
-        this.seedDataService.seedStaticData(this.dataSource)
+        await this.seedDataService.seed(this.dataSource)
         this.logger.debug("SeedStaticData finished")
     }
 }

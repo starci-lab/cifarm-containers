@@ -43,7 +43,7 @@ export class SeedDataService {
 
     constructor() {}
 
-    public async seedStaticData(dataSource: DataSource) {
+    public async seed(dataSource: DataSource) {
         this.logger.log("Starting static data seeding...")
 
         try {

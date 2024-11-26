@@ -6,14 +6,12 @@ import { envConfig, Network, SupportedChainKey } from "@src/config"
 import { CropEntity, InventoryEntity, PlacedItemEntity, UserEntity } from "@src/database"
 import { SeedDataModule, SeedDataService } from "@src/services"
 import { createDatabase } from "@src/utils"
+import * as path from "path"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { BuySeedsModule } from "./buy-seeds.module"
-import { BuySeedsService } from "./buy-seeds.service"
-import * as path from "path"
 
 describe("BuySeedsService", () => {
-    let service: BuySeedsService
     let dataSource: DataSource
     let logger: Logger
     let seedData: SeedDataService
@@ -61,12 +59,12 @@ describe("BuySeedsService", () => {
         logger = new Logger("BuySeedsService:Test")
         seedData = module.get(SeedDataService)
         dataSource = module.get(DataSource)
-        service = module.get(BuySeedsService)
+        // service = module.get(BuySeedsService)
 
         console.log(envConfig().database.postgres.gameplay.host)
 
         logger.debug("Seeding static data")
-        await seedData.seedStaticData(dataSource)
+        await seedData.seed(dataSource)
         logger.debug("Seeded static data")
     })
 
