@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { CropsConsumer } from "./crops.service"
+import { CropsWorker } from "./crops.service"
 import {
     AnimalEntity,
     AnimalInfoEntity,
@@ -46,6 +46,6 @@ import { cropsTimeQueueConstants } from "@apps/time-scheduler"
             SystemEntity
         ])
     ],
-    providers: [CropsConsumer]
+    providers: [CropsWorker]
 })
 export class CropsModule {}

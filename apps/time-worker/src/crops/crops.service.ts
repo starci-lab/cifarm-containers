@@ -12,8 +12,8 @@ import {
 } from "@src/database"
 
 @Processor(cropsTimeQueueConstants.NAME)
-export class CropsConsumer extends WorkerHost {
-    private readonly logger = new Logger(CropsConsumer.name)
+export class CropsWorker extends WorkerHost {
+    private readonly logger = new Logger(CropsWorker.name)
 
     constructor(private readonly dataSource: DataSource) {
         super()
