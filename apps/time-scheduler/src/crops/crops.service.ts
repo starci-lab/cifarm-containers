@@ -21,15 +21,19 @@ export class CropsService {
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-        // query crops that are not fully matured and do not need water
-        this.logger.fatal("Checking for crops that need to be grown")
-        const count = await queryRunner.manager.count(SeedGrowthInfoEntity, {
-            where: {
-                fullyMatured: false,
-                currentState: Not(CropCurrentState.NeedWater)
-            }
-        })
-        await queryRunner.release()
+        let count: number
+        try {
+            // query crops that are not fully matured and do not need water
+            this.logger.fatal("Checking for crops that need to be grown")
+            count = await queryRunner.manager.count(SeedGrowthInfoEntity, {
+                where: {
+                    fullyMatured: false,
+                    currentState: Not(CropCurrentState.NeedWater)
+                }
+            })
+        } finally {
+            await queryRunner.release()
+        }
 
         this.logger.debug(`Found ${count} crops that need to be grown`)
         if (count === 0) {

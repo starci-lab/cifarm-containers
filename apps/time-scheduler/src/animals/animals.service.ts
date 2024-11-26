@@ -20,13 +20,17 @@ export class AnimalsService {
     async handle() {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-        const count = await queryRunner.manager.count(AnimalInfoEntity, {
-            where: {
-                hasYielded: false,
-                currentState: Not(AnimalCurrentState.Hungry)
-            }
-        })
-        await queryRunner.release()
+        let count: number
+        try {
+            count = await queryRunner.manager.count(AnimalInfoEntity, {
+                where: {
+                    hasYielded: false,
+                    currentState: Not(AnimalCurrentState.Hungry)
+                }
+            })
+        } finally {
+            await queryRunner.release()
+        }
         
         this.logger.debug(`Found ${count} animals that need to be grown`)
         //split into 10000 per batch

@@ -33,49 +33,48 @@ export class PlantSeedService {
     async plantSeed(request: PlantSeedRequest): Promise<PlantSeedResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
-        const inventory = await queryRunner.manager.findOne(InventoryEntity, {
-            where: {
-                id: request.inventorySeedId,
-                inventoryType: {
-                    type: InventoryType.Seed
-                }
-            },
-            relations: {
-                inventoryType: true
-            }
-        })
-        if (!inventory) throw new InventoryNotFoundException(request.inventorySeedId)
-
-        //check the tile
-        const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-            where: {
-                id: request.placedItemTileId,
-            },
-        })
-        if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
-        if (placedItemTile.seedGrowthInfo)
-            throw new PlacedItemTileAlreadyHasSeedException(request.placedItemTileId)
-
-        const { value } = await queryRunner.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            water: { energyConsume, experiencesGain }
-        } = value as Activities
-
-        const user = await queryRunner.manager.findOne(UserEntity, {
-            where: { id: request.userId }
-        })
-
-        this.energyService.checkSufficient({
-            current: user.energy,
-            required: energyConsume
-        })
-
-        await queryRunner.startTransaction()
         try {
             // substract energy
+            const inventory = await queryRunner.manager.findOne(InventoryEntity, {
+                where: {
+                    id: request.inventorySeedId,
+                    inventoryType: {
+                        type: InventoryType.Seed
+                    }
+                },
+                relations: {
+                    inventoryType: true
+                }
+            })
+            if (!inventory) throw new InventoryNotFoundException(request.inventorySeedId)
+
+            //check the tile
+            const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
+                where: {
+                    id: request.placedItemTileId,
+                },
+            })
+            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (placedItemTile.seedGrowthInfo)
+                throw new PlacedItemTileAlreadyHasSeedException(request.placedItemTileId)
+
+            const { value } = await queryRunner.manager.findOne(SystemEntity, {
+                where: { id: SystemId.Activities }
+            })
+            const {
+                water: { energyConsume, experiencesGain }
+            } = value as Activities
+
+            const user = await queryRunner.manager.findOne(UserEntity, {
+                where: { id: request.userId }
+            })
+
+            this.energyService.checkSufficient({
+                current: user.energy,
+                required: energyConsume
+            })
+
+            await queryRunner.startTransaction()
             const energyChanges = this.energyService.substract({
                 entity: user,
                 energy: energyConsume

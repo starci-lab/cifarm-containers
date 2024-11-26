@@ -34,42 +34,41 @@ export class HarvestCropService {
     async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
-        const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-            where: { id: request.placedItemTileId },
-            relations: {
-                seedGrowthInfo: {
-                    crop: true
-                }
-            }
-        })
-
-        if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
-
-        if (!placedItemTile.seedGrowthInfo)
-            throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
-
-        if (!placedItemTile.seedGrowthInfo.fullyMatured)
-            throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
-
-        const { value } = await queryRunner.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            water: { energyConsume, experiencesGain }
-        } = value as Activities
-
-        const user = await queryRunner.manager.findOne(UserEntity, {
-            where: { id: request.userId }
-        })
-
-        this.energyService.checkSufficient({
-            current: user.energy,
-            required: energyConsume
-        })
-
-        await queryRunner.startTransaction()
         try {
+            const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
+                where: { id: request.placedItemTileId },
+                relations: {
+                    seedGrowthInfo: {
+                        crop: true
+                    }
+                }
+            })
+
+            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+
+            if (!placedItemTile.seedGrowthInfo)
+                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+
+            if (!placedItemTile.seedGrowthInfo.fullyMatured)
+                throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
+
+            const { value } = await queryRunner.manager.findOne(SystemEntity, {
+                where: { id: SystemId.Activities }
+            })
+            const {
+                water: { energyConsume, experiencesGain }
+            } = value as Activities
+
+            const user = await queryRunner.manager.findOne(UserEntity, {
+                where: { id: request.userId }
+            })
+
+            this.energyService.checkSufficient({
+                current: user.energy,
+                required: energyConsume
+            })
+
+            await queryRunner.startTransaction()
             // substract energy
             const energyChanges = this.energyService.substract({
                 entity: user,
