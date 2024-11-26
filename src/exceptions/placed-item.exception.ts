@@ -28,3 +28,9 @@ export class PlacedItemTileNotFullyMaturedException extends GrpcNotFoundExceptio
         super(`Placed item tile not fully matured: ${id}`)
     }
 }
+
+export class PlacedItemTileAlreadyHasSeedException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Placed item tile already has seed: ${id}`)
+    }
+}

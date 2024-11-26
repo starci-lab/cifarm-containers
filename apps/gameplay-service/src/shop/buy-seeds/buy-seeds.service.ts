@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CropEntity, InventoryEntity, InventoryTypeEntity, UserEntity } from "@src/database"
+import { CropEntity, InventoryEntity, InventoryType, InventoryTypeEntity, UserEntity } from "@src/database"
 import {
     BuySeedsTransactionFailedException,
     CropNotAvailableInShopException,
@@ -21,20 +21,17 @@ export class BuySeedsService {
 
     async buySeeds(request: BuySeedsRequest): Promise<BuySeedsResponse> {
         this.logger.debug(
-            `Calling buying seed for user ${request.userId}, id: ${request.id}, quantity: ${request.quantity}`
+            `Calling buying seed for user ${request.userId}, id: ${request.cropId}, quantity: ${request.quantity}`
         )
-
-        console.log("request", request)
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         const crop = await queryRunner.manager.findOne(CropEntity, {
-            where: { id: request.id }
+            where: { id: request.cropId }
         })
-        console.log("crop", crop)
-        if (!crop) throw new CropNotFoundException(request.id)
-        if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.id)
+
+        if (!crop) throw new CropNotFoundException(request.cropId)
+        if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.cropId)
 
         const totalCost = crop.price * request.quantity
 
@@ -61,16 +58,14 @@ export class BuySeedsService {
 
             //Get inventory type
             const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                where: { cropId: request.id }
+                where: { cropId: request.cropId, type: InventoryType.Seed }
             })
 
             // Get inventory same type
             const existingInventories = await queryRunner.manager.find(InventoryEntity, {
                 where: {
                     userId: request.userId,
-                    inventoryType: {
-                        cropId: request.id
-                    }
+                    inventoryTypeId: inventoryType.id,
                 },
                 relations: {
                     inventoryType: true

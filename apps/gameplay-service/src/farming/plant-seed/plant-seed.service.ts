@@ -1,12 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
+    CropEntity,
     InventoryEntity,
     InventoryType,
-    InventoryTypeEntity,
     PlacedItemEntity,
     PlacedItemType,
-    ProductEntity,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
@@ -16,6 +15,7 @@ import { DataSource } from "typeorm"
 import { PlantSeedRequest, PlantSeedResponse } from "./plant-seed.dto"
 import {
     InventoryNotFoundException,
+    PlacedItemTileAlreadyHasSeedException,
     PlacedItemTileNotFoundException,
     WaterTransactionFailedException
 } from "@src/exceptions"
@@ -57,11 +57,13 @@ export class PlantSeedService {
                 }
             },
             relations: {
-                placedItemType: true
+                placedItemType: true,
+                seedGrowthInfo: true
             }
         })
         if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
-
+        if (placedItemTile.seedGrowthInfo) throw new PlacedItemTileAlreadyHasSeedException(request.placedItemTileId)
+        
         const { value } = await queryRunner.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
         })
@@ -96,68 +98,31 @@ export class PlantSeedService {
                 ...experiencesChanges
             })
 
-            //get corresponding inventory type
-            const product = await queryRunner.manager.findOne(ProductEntity, {
-                where: {
-                    crop: {
-                        id: placedItemTile.seedGrowthInfo.crop.id
-                    }
-                },
-                relations: {
-                    crop: true
-                }
+            // update inventory
+            const updatedInventory = this.inventoryService.remove({
+                entity: inventory,
+                quantity: 1
             })
-
-            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                where: {
-                    type: InventoryType.Product,
-                    productId: product.id
-                }
-            })
-
-            // Get inventories same type
-            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
-                where: {
-                    userId: request.userId,
-                    inventoryTypeId: inventoryType.id
-                }
-            })
-
-            const updatedInventories = this.inventoryService.add({
-                entities: existingInventories,
-                userId: request.userId,
-                data: {
-                    inventoryTypeId: inventoryType.id,
-                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
-                }
-            })
-
-            await queryRunner.manager.save(InventoryEntity, updatedInventories)
-
-            //if current perennial count is equal to crop's perennial count, remove the crop, delete the seed growth info
-            if (
-                placedItemTile.seedGrowthInfo.currentPerennialCount >=
-                placedItemTile.seedGrowthInfo.crop.perennialCount
-            ) {
-                await queryRunner.manager.remove(
-                    SeedGrowthInfoEntity,
-                    placedItemTile.seedGrowthInfo
-                )
+            if (this.inventoryService.checkDelete({ entity: updatedInventory })) {
+                await queryRunner.manager.remove(InventoryEntity, updatedInventory)
             } else {
-                // update seed growth info
-                await queryRunner.manager.update(
-                    SeedGrowthInfoEntity,
-                    placedItemTile.seedGrowthInfo.id,
-                    {
-                        currentPerennialCount:
-                            placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
-                        fullyMatured: false,
-                        currentStageTimeElapsed: 0
-                    }
-                )
+                await queryRunner.manager.save(InventoryEntity, updatedInventory)
             }
+            
+            //get the crop
+            const crop = await queryRunner.manager.findOne(CropEntity, {
+                where: { id: inventory.inventoryType.cropId }
+            })
+
+            // create seed growth info
+            await queryRunner.manager.save(SeedGrowthInfoEntity, {
+                id: placedItemTile.id,
+                harvestQuantityRemaining: crop.maxHarvestQuantity,
+            })
+            
             await queryRunner.commitTransaction()
             return {}
+            
         } catch (error) {
             this.logger.error("Harvest crop transaction failed, rolling back...", error)
             await queryRunner.rollbackTransaction()

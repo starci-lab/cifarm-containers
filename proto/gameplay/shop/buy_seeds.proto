@@ -2,9 +2,8 @@ syntax = "proto3";
 
 package gameplay;
 
-message BuySeedsRequest {
-    string id = 1;             
-    string userId = 2;       
+message BuySeedsRequest {          
+    string userId = 1;    
+    string cropId = 2;      
     int32 quantity = 3;  
 }
-

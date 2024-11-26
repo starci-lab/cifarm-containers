@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
 import { CropEntity } from "./crop.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { AbstractEntity } from "./abstract"
@@ -9,32 +9,32 @@ import { CropCurrentState } from "./enums"
 @ObjectType()
 @Entity("seed_growth_info")
 export class SeedGrowthInfoEntity extends AbstractEntity {
-    @Field(() => String)
-    @Column({ type: "enum", enum: CropCurrentState })
-        currentStage: CropCurrentState
+    @Field(() => Int)
+    @Column({ type: "int4", name: "current_stage", default: 1 })
+        currentStage: number
 
     @Field(() => Int)
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "int", name: "current_stage_time_elapsed", default: 0 })
         currentStageTimeElapsed: number
 
     @Field(() => Int)
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "int", name: "total_time_elapsed", default: 0 })
         totalTimeElapsed: number
 
     @Field(() => Int)
-    @Column({ name: "current_perennial_count", type: "int4" })
+    @Column({ name: "current_perennial_count", type: "int4", default: 1 })
         currentPerennialCount: number
 
     @Field(() => Int)
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "int", name: "harvest_quantity_remaining" })
         harvestQuantityRemaining: number
 
     @Field(() => CropEntity)
-    @ManyToOne(() => CropEntity, { nullable: true, eager: true })
+    @ManyToOne(() => CropEntity, { nullable: true })
         crop: CropEntity
 
     @Field(() => String)
-    @Column({ type: "enum", enum: CropCurrentState })
+    @Column({ type: "enum", enum: CropCurrentState, default: CropCurrentState.Normal })
         currentState: CropCurrentState
 
     @ManyToMany(() => UserEntity)
@@ -42,16 +42,24 @@ export class SeedGrowthInfoEntity extends AbstractEntity {
         thiefedBy: Array<UserEntity>
 
     @Field(() => Boolean)
-    @Column({ type: "boolean", nullable: true })
+    @Column({ type: "boolean", default: false })
         fullyMatured: boolean
 
     @Field(() => Boolean)
-    @Column({ type: "boolean", nullable: true })
+    @Column({ type: "boolean", default: false })
         isFertilized: boolean
+
+    @Field(() => String)
+    @Column({ name: "placed_item_id", type: "uuid" })
+        placedItemId: string
 
     @Field(() => PlacedItemEntity)
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.seedGrowthInfo, {
         onDelete: "CASCADE"
+    })
+    @JoinColumn({
+        name: "placed_item_id",
+        referencedColumnName: "id"
     })
         placedItem?: PlacedItemEntity
 }

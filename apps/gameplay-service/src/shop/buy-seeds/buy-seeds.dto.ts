@@ -1,13 +1,14 @@
 // buy-seed.dto.ts
 
 import { ApiProperty } from "@nestjs/swagger"
+import { CropId } from "@src/database"
 import { Empty, UserIdRequest } from "@src/types"
 import { IsInt, IsString, Min } from "class-validator"
 
 export class BuySeedsRequest extends UserIdRequest {
-    @ApiProperty({ example: "Carrot", description: "The id of the seed to purchase" })
+    @ApiProperty({ example: CropId.Carrot, description: "The id of the seed to purchase" })
     @IsString()
-        id: string
+        cropId: string
 
     @ApiProperty({ example: 10, description: "The quantity of seeds to purchase" })
     @IsInt()

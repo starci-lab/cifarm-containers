@@ -38,7 +38,6 @@ export class PlacedItemEntity extends AbstractEntity {
         cascade: true,
         onDelete: "CASCADE"
     })
-    @JoinColumn()
         seedGrowthInfo?: SeedGrowthInfoEntity
 
     @Field(() => AnimalInfoEntity, { nullable: true })
