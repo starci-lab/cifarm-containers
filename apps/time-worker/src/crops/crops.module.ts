@@ -1,20 +1,26 @@
 import { Module } from "@nestjs/common"
-import { BullModule } from "@nestjs/bullmq"
-import { cropsTimeQueueConstants } from "../app.constant"
-import { CropsService } from "./crops.service"
+import { CropsConsumer } from "./crops.service"
 import {
+    AnimalEntity,
+    AnimalInfoEntity,
     BuildingEntity,
     BuildingInfoEntity,
     CropEntity,
+    InventoryEntity,
     InventoryTypeEntity,
+    PlacedItemEntity,
     PlacedItemTypeEntity,
     ProductEntity,
     SeedGrowthInfoEntity,
+    SupplyEntity,
+    SystemEntity,
     TileEntity,
     UpgradeEntity,
     UserEntity
 } from "@src/database"
 import { TypeOrmModule } from "@nestjs/typeorm"
+import { BullModule } from "@nestjs/bullmq"
+import { cropsTimeQueueConstants } from "@apps/time-scheduler"
 
 @Module({
     imports: [
@@ -26,14 +32,20 @@ import { TypeOrmModule } from "@nestjs/typeorm"
             CropEntity,
             UserEntity,
             ProductEntity,
-            InventoryTypeEntity,
             BuildingInfoEntity,
             BuildingEntity,
             UpgradeEntity,
             PlacedItemTypeEntity,
-            TileEntity
+            TileEntity,
+            InventoryTypeEntity,
+            InventoryEntity,
+            PlacedItemEntity,
+            AnimalEntity,
+            AnimalInfoEntity,
+            SupplyEntity,
+            SystemEntity
         ])
     ],
-    providers: [CropsService]
+    providers: [CropsConsumer]
 })
 export class CropsModule {}

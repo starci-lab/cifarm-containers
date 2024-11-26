@@ -1,9 +1,9 @@
 export const animalsTimeQueueConstants = {
-    NAME: "ANIMALS",
+    NAME: "animals",
     BATCH_SIZE: 10000
 }
 
 export const cropsTimeQueueConstants = {
-    NAME: "CROPS",
+    NAME: "crops",
     BATCH_SIZE: 10000
 }

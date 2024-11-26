@@ -5,7 +5,6 @@ import {
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
-    PlacedItemType,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
@@ -52,14 +51,7 @@ export class PlantSeedService {
         const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
             where: {
                 id: request.placedItemTileId,
-                placedItemType: {
-                    type: PlacedItemType.Tile
-                }
             },
-            relations: {
-                placedItemType: true,
-                seedGrowthInfo: true
-            }
         })
         if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
         if (placedItemTile.seedGrowthInfo)
@@ -117,14 +109,14 @@ export class PlantSeedService {
 
             // create seed growth info
             await queryRunner.manager.save(SeedGrowthInfoEntity, {
-                id: placedItemTile.id,
+                placedItemId: placedItemTile.id,
                 harvestQuantityRemaining: crop.maxHarvestQuantity
             })
 
             await queryRunner.commitTransaction()
             return {}
         } catch (error) {
-            this.logger.error("Harvest crop transaction failed, rolling back...", error)
+            this.logger.error("Plant seed transaction failed, rolling back...", error)
             await queryRunner.rollbackTransaction()
             throw new WaterTransactionFailedException(error)
         } finally {

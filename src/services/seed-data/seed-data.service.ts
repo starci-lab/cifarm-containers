@@ -9,6 +9,7 @@ import {
     BuildingId,
     CropEntity,
     CropId,
+    CropRandomness,
     DailyRewardEntity,
     DailyRewardId,
     DailyRewardPossibility,
@@ -175,10 +176,21 @@ export class SeedDataService {
                 experiencesGain: 3
             }
         }
+        const cropRandomness: CropRandomness = {
+            needWater: 0.5,
+            theif2: 0.8,
+            theif3: 0.95,
+            isWeedyOrInfested: 1,
+        }
+
         const data: Array<DeepPartial<SystemEntity>> = [
             {
                 id: SystemId.Activities,
                 value: activities
+            },
+            {
+                id: SystemId.CropRandomness,
+                value: cropRandomness
             }
         ]
         await queryRunner.manager.save(SystemEntity, data)

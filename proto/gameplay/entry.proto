@@ -15,4 +15,5 @@ service GameplayService {
     // Farming methods
     rpc HarvestCrop(HarvestCropRequest) returns (google.protobuf.Empty);
     rpc Water(WaterRequest) returns (google.protobuf.Empty);
+    rpc PlantSeed(PlantSeedRequest) returns (google.protobuf.Empty);
 }

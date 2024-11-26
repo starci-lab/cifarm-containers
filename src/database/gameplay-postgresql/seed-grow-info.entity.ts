@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
 import { CropEntity } from "./crop.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { AbstractEntity } from "./abstract"
@@ -29,18 +29,25 @@ export class SeedGrowthInfoEntity extends AbstractEntity {
     @Column({ type: "int", name: "harvest_quantity_remaining" })
         harvestQuantityRemaining: number
 
+    @Field(() => String)
+    @Column({ name: "crop_id", length: 36 })
+        cropId: string
+
     @Field(() => CropEntity)
-    @ManyToOne(() => CropEntity, { nullable: true })
+    @ManyToOne(() => CropEntity)
+    @JoinColumn({ name: "crop_id", referencedColumnName: "id" })
         crop: CropEntity
 
+    @Index()
     @Field(() => String)
     @Column({ type: "enum", enum: CropCurrentState, default: CropCurrentState.Normal })
         currentState: CropCurrentState
 
-    @ManyToMany(() => UserEntity)
+    @ManyToMany(() => UserEntity) 
     @JoinTable()
         thiefedBy: Array<UserEntity>
 
+    @Index()
     @Field(() => Boolean)
     @Column({ type: "boolean", default: false })
         fullyMatured: boolean

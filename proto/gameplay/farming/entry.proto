@@ -5,3 +5,4 @@ package gameplay;
 import  "../../entities/entry.proto";
 import "./harvest_crop.proto";
 import "./water.proto";
+import "./plant_seed.proto";

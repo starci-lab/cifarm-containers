@@ -29,3 +29,10 @@ export class ActivityInfo {
     experiencesGain: number
     energyConsume: number
 }
+
+export class CropRandomness {
+    theif3: number
+    theif2: number
+    needWater: number
+    isWeedyOrInfested: number           
+}

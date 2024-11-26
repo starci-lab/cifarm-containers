@@ -29,7 +29,8 @@ import { TypeOrmModule } from "@nestjs/typeorm"
             password: envConfig().database.postgres.gameplay.main.pass,
             database: envConfig().database.postgres.gameplay.main.dbName,
             autoLoadEntities: true,
-            synchronize: true
+            synchronize: true,
+            connectTimeoutMS: 2000,
         }),
         CropsModule,
         AnimalsModule

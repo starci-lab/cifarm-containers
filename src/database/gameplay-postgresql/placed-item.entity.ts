@@ -28,7 +28,7 @@ export class PlacedItemEntity extends AbstractEntity {
         user?: UserEntity
 
     @Field(() => String, { nullable: true })
-    @Column({ name: "inventory_id", type: "varchar", nullable: true })
+    @Column({ name: "inventory_id", type: "uuid", nullable: true })
         inventoryId?: string
 
     @Field(() => SeedGrowthInfoEntity, { nullable: true })
@@ -65,7 +65,7 @@ export class PlacedItemEntity extends AbstractEntity {
         placedItems?: Array<PlacedItemEntity>
 
     @Field(() => String, { nullable: true })
-    @Column({ name: "parent_id", nullable: true })
+    @Column({ name: "parent_id", type: "uuid", nullable: true })
         parentId?: string
 
     @Field(() => String, { nullable: true })
@@ -73,7 +73,7 @@ export class PlacedItemEntity extends AbstractEntity {
         parent: PlacedItemEntity
 
     @Field(() => String, { nullable: true })
-    @Column({ name: "placed_item_type_id", nullable: true })
+    @Column({ name: "placed_item_type_id", length: 36, nullable: true })
         placedItemTypeId?: string
 
     @Field(() => PlacedItemTypeEntity, { nullable: true })

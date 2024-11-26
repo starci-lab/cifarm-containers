@@ -6,6 +6,7 @@ import { DataSource, Not } from "typeorm"
 import { animalsTimeQueueConstants } from "../app.constant"
 import { v4 } from "uuid"
 import { AnimalCurrentState, AnimalInfoEntity } from "@src/database"
+import { AnimalsJobData } from "./animals.dto"
 
 @Injectable()
 export class AnimalsService {
@@ -25,6 +26,8 @@ export class AnimalsService {
                 currentState: Not(AnimalCurrentState.Hungry)
             }
         })
+        await queryRunner.release()
+        
         this.logger.debug(`Found ${count} animals that need to be grown`)
         //split into 10000 per batch
         if (count === 0) {
@@ -35,11 +38,14 @@ export class AnimalsService {
         const batchCount = Math.ceil(count / batchSize)
 
         // Create batches
-        const batches = Array.from({ length: batchCount }, (_, i) => ({
+        const batches: Array<{
+            name: string,
+            data: AnimalsJobData
+        }> = Array.from({ length: batchCount }, (_, i) => ({
             name: v4(),
             data: {
                 from: i * batchSize,
-                to: Math.min((i + 1) * batchSize, count) - 1 // Ensure 'to' does not exceed 'count'
+                to: Math.min((i + 1) * batchSize, count)
             }
         }))
         this.logger.verbose(`Adding ${batches.length} batches to the queue`)

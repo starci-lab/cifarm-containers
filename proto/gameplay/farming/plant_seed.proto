@@ -5,6 +5,7 @@ import "google/protobuf/empty.proto";
 package farming;
 
 message PlantSeedRequest {
-    string inventorySeedId = 1;
-    string placedItemTileId = 2;
+    string userId = 1;
+    string inventorySeedId = 2;
+    string placedItemTileId = 3;
 }

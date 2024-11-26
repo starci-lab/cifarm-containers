@@ -92,7 +92,6 @@ export class BuySeedsService {
  
             return 
         } catch (error) {
-            this.logger.error(JSON.stringify(error.message))
             await queryRunner.rollbackTransaction()
             throw new BuySeedsTransactionFailedException(error)
         } finally {
