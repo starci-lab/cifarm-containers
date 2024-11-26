@@ -1,5 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CropEntity, InventoryEntity, InventoryType, InventoryTypeEntity, UserEntity } from "@src/database"
+import {
+    CropEntity,
+    InventoryEntity,
+    InventoryType,
+    InventoryTypeEntity,
+    UserEntity
+} from "@src/database"
 import {
     BuySeedsTransactionFailedException,
     CropNotAvailableInShopException,
@@ -65,7 +71,7 @@ export class BuySeedsService {
             const existingInventories = await queryRunner.manager.find(InventoryEntity, {
                 where: {
                     userId: request.userId,
-                    inventoryTypeId: inventoryType.id,
+                    inventoryTypeId: inventoryType.id
                 },
                 relations: {
                     inventoryType: true
@@ -83,10 +89,10 @@ export class BuySeedsService {
             //Save inventory
             await queryRunner.manager.save(InventoryEntity, updatedInventories)
             await queryRunner.commitTransaction()
-
-            return
+ 
+            return 
         } catch (error) {
-            this.logger.debug("rollback")
+            this.logger.error(JSON.stringify(error.message))
             await queryRunner.rollbackTransaction()
             throw new BuySeedsTransactionFailedException(error)
         } finally {

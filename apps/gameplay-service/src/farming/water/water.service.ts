@@ -43,7 +43,7 @@ export class WaterService {
         if (!placedItemTile.seedGrowthInfo)
             throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
 
-        if (placedItemTile.seedGrowthInfo.currentStage !== CropCurrentState.NeedWater)
+        if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater)
             throw new PlacedItemTileNotNeedWaterException(request.placedItemTileId)
 
         const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -86,7 +86,7 @@ export class WaterService {
                 placedItemTile.seedGrowthInfo.id,
                 {
                     ...placedItemTile.seedGrowthInfo,
-                    currentStage: CropCurrentState.Normal
+                    currentState: CropCurrentState.Normal
                 }
             )
             return {}

@@ -17,7 +17,7 @@ import {
 } from "@src/database"
 import { InventoryModule, LevelModule } from "@src/services"
 import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
-import { HarvestCropService } from "./plant-seed.service"
+import { PlantSeedService } from "./plant-seed.service"
 
 @Global()
 @Module({
@@ -41,7 +41,7 @@ import { HarvestCropService } from "./plant-seed.service"
         LevelModule,
         InventoryModule
     ],
-    providers: [HarvestCropService],
-    exports: [HarvestCropService]
+    providers: [PlantSeedService],
+    exports: [PlantSeedService]
 })
-export class HarvestCropModule {}
+export class PlantSeedModule {}
