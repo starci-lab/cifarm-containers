@@ -4,7 +4,7 @@ import "google/protobuf/empty.proto";
 
 package farming;
 
-message WaterRequest {
+message UseHerbicidedRequest {
     string userId = 1;
     string placedItemTileId = 2;
 }

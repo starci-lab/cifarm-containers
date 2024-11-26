@@ -23,6 +23,19 @@ export class PlacedItemTileNotNeedWaterException extends GrpcNotFoundException {
         super(`Placed item tile not need water: ${id}`)
     }
 }
+
+export class PlacedItemNotNeedUsePestisideException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Placed item not need use pestiside: ${id}`)
+    }
+}
+
+export class PlacedItemNotNeedUseHerbicideException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Placed item not need use herbicide: ${id}`)
+    }
+}
+
 export class PlacedItemTileNotFullyMaturedException extends GrpcNotFoundException {
     constructor(id: string) {
         super(`Placed item tile not fully matured: ${id}`)

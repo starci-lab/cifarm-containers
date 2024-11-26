@@ -29,3 +29,15 @@ export class HaverstCropTransactionFailedException extends GrpcNotFoundException
         super(`Failed to harvest crop due to: ${error}`)
     }
 }
+
+export class UsePestisideTransactionFailedException extends GrpcNotFoundException {
+    constructor(error: Error) {
+        super(`Failed to use pestiside due to: ${error}`)
+    }
+}
+
+export class UseHerbicideTransactionFailedException extends GrpcNotFoundException {
+    constructor(error: Error) {
+        super(`Failed to use herbicide due to: ${error}`)
+    }
+}

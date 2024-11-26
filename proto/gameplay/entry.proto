@@ -16,4 +16,6 @@ service GameplayService {
     rpc HarvestCrop(HarvestCropRequest) returns (google.protobuf.Empty);
     rpc Water(WaterRequest) returns (google.protobuf.Empty);
     rpc PlantSeed(PlantSeedRequest) returns (google.protobuf.Empty);
+    rpc UseHerbicided(UseHerbicidedRequest) returns (google.protobuf.Empty);
+    rpc UsePestiside(UsePestisideRequest) returns (google.protobuf.Empty);
 }

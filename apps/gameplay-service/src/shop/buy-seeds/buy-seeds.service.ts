@@ -48,7 +48,7 @@ export class BuySeedsService {
 
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
-
+            
             // Start transaction
             await queryRunner.startTransaction()
 
