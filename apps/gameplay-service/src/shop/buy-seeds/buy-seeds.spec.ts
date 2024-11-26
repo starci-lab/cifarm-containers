@@ -75,7 +75,7 @@ describe("BuySeedsService", () => {
             where: { id: "carrot" }
         })
 
-        const buySeedRequest = {
+        const buySeedRequest: BuySeedsRequest = {
             cropId: crop.id,
             userId: userBeforeBuydingSeed.id,
             quantity: 1
