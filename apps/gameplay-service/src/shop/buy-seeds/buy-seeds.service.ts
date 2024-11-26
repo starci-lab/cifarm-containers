@@ -86,8 +86,6 @@ export class BuySeedsService {
                 }
             })
 
-            console.log("Updated inventories", updatedInventories)
-
             //Save inventory
             await queryRunner.manager.save(InventoryEntity, updatedInventories)
             await queryRunner.commitTransaction()
