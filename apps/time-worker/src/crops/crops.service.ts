@@ -23,6 +23,8 @@ export class CropsWorker extends WorkerHost {
         this.logger.verbose(`Processing job: ${job.id}`)
         const { from, to } = job.data
 
+        const multiple = 1
+
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -47,8 +49,8 @@ export class CropsWorker extends WorkerHost {
             await queryRunner.startTransaction()
             seedGrowthInfos = seedGrowthInfos.map((seedGrowthInfo) => {
                 // Add time to the seed growth
-                seedGrowthInfo.currentStageTimeElapsed += 1
-                seedGrowthInfo.totalTimeElapsed += 1
+                seedGrowthInfo.currentStageTimeElapsed += multiple
+                seedGrowthInfo.totalTimeElapsed += multiple
 
                 //while the current stage time elapsed is greater than the growth stage duration
                 while (
