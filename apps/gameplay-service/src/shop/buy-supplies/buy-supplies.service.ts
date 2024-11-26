@@ -30,25 +30,25 @@ export class BuySuppliesService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
-        const supply = await queryRunner.manager.findOne(SupplyEntity, {
-            where: { id: request.id }
-        })
-        if (!supply) throw new SupplyNotFoundException(request.id)
-        if (!supply.availableInShop) throw new SupplyNotAvailableInShopException(request.id)
-
-        const totalCost = supply.price * request.quantity
-
-        const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
-            where: { id: request.userId }
-        })
-
-        //Check sufficient gold
-        this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
-
-        // Start transaction
-        await queryRunner.startTransaction()
-
         try {
+            const supply = await queryRunner.manager.findOne(SupplyEntity, {
+                where: { id: request.id }
+            })
+            if (!supply) throw new SupplyNotFoundException(request.id)
+            if (!supply.availableInShop) throw new SupplyNotAvailableInShopException(request.id)
+
+            const totalCost = supply.price * request.quantity
+
+            const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+                where: { id: request.userId }
+            })
+
+            //Check sufficient gold
+            this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
+
+            // Start transaction
+            await queryRunner.startTransaction()
+
             // Subtract gold
             const goldsChanged = this.goldBalanceService.subtract({
                 entity: user,

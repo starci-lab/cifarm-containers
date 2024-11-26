@@ -31,42 +31,42 @@ export class ConstructBuildingService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
-        // Fetch building information
-        const building = await queryRunner.manager.findOne(BuildingEntity, {
-            where: { id: request.id }
-        })
-
-        if (!building) {
-            throw new BuildingNotFoundException(request.id)
-        }
-
-        if (!building.availableInShop) {
-            throw new BuildingNotAvailableInShopException(request.id)
-        }
-
-        // Fetch placed item type
-        const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
-            where: { id: request.id }
-        })
-
-        if (!placedItemType) {
-            throw new PlacedItemTypeNotFoundException(request.id)
-        }
-
-        // Calculate total cost
-        const totalCost = building.price
-
-        const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
-            where: { id: request.userId }
-        })
-
-        //Check sufficient gold
-        this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
-
-        // Start transaction
-        await queryRunner.startTransaction()
-
         try {
+        // Fetch building information
+            const building = await queryRunner.manager.findOne(BuildingEntity, {
+                where: { id: request.id }
+            })
+
+            if (!building) {
+                throw new BuildingNotFoundException(request.id)
+            }
+
+            if (!building.availableInShop) {
+                throw new BuildingNotAvailableInShopException(request.id)
+            }
+
+            // Fetch placed item type
+            const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
+                where: { id: request.id }
+            })
+
+            if (!placedItemType) {
+                throw new PlacedItemTypeNotFoundException(request.id)
+            }
+
+            // Calculate total cost
+            const totalCost = building.price
+
+            const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+                where: { id: request.userId }
+            })
+
+            //Check sufficient gold
+            this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
+
+            // Start transaction
+            await queryRunner.startTransaction()
+
             // Subtract gold
             const goldsChanged = this.goldBalanceService.subtract({
                 entity: user,

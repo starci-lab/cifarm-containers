@@ -31,27 +31,27 @@ export class BuySeedsService {
         )
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
-        const crop = await queryRunner.manager.findOne(CropEntity, {
-            where: { id: request.cropId }
-        })
-
-        if (!crop) throw new CropNotFoundException(request.cropId)
-        if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.cropId)
-
-        const totalCost = crop.price * request.quantity
-
-        const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
-            where: { id: request.userId }
-        })
-
-        //Check sufficient gold
-        this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
-
-        // Start transaction
-        await queryRunner.startTransaction()
-
+        
         try {
+            const crop = await queryRunner.manager.findOne(CropEntity, {
+                where: { id: request.cropId }
+            })
+
+            if (!crop) throw new CropNotFoundException(request.cropId)
+            if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.cropId)
+
+            const totalCost = crop.price * request.quantity
+
+            const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+                where: { id: request.userId }
+            })
+
+            //Check sufficient gold
+            this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
+
+            // Start transaction
+            await queryRunner.startTransaction()
+
             // Subtract gold
             const goldsChanged = this.goldBalanceService.subtract({
                 entity: user,

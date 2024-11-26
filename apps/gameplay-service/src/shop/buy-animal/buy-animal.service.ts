@@ -28,64 +28,64 @@ export class BuyAnimalService {
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
-        const animal = await queryRunner.manager.findOne(AnimalEntity, {
-            where: { id: request.id }
-        })
-
-        if (!animal) {
-            throw new AnimalNotFoundException(request.id)
-        }
-
-        if (!animal.availableInShop) {
-            throw new AnimalNotAvailableInShopException(request.id)
-        }
-
-        // const building = await queryRunner.manager.findOne(BuildingEntity, {
-        //     where: { id: request.buildingId }
-        // })
-
-        // if (!building) {
-        //     throw new ParentBuildingNotFoundException(request.buildingId)
-        // }
-
-        // if (building.type != animal.type) {
-        //     throw new AnimalTypeMismatchException(building.type, animal.type)
-        // }
-
-        //get placedItems of the building
-        // const placedItems = await queryRunner.manager.find(PlacedItemEntity, {
-        //     where: {
-        //         buildingInfo: {
-        //             building: {
-        //                 type: building.type
-        //             }
-        //         }
-        //     },
-        //     relations: {
-        //         buildingInfo: {
-        //             building: true
-        //         }
-        //     }
-        // })
-        // Check if building is full: does not have any placeItems building
-        // if (placedItems.length > 0) {
-        //     throw new PlacedItemNotFoundException("Buiding type: " + building.type)
-        // }
-
-        const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
-            where: { id: request.userId }
-        })
-
-        const totalCost = animal.price
-
-        //Check sufficient gold
-        this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
-
-        // Start transaction
-        await queryRunner.startTransaction()
-
+        
         try {
+            const animal = await queryRunner.manager.findOne(AnimalEntity, {
+                where: { id: request.id }
+            })
+
+            if (!animal) {
+                throw new AnimalNotFoundException(request.id)
+            }
+
+            if (!animal.availableInShop) {
+                throw new AnimalNotAvailableInShopException(request.id)
+            }
+
+            // const building = await queryRunner.manager.findOne(BuildingEntity, {
+            //     where: { id: request.buildingId }
+            // })
+
+            // if (!building) {
+            //     throw new ParentBuildingNotFoundException(request.buildingId)
+            // }
+
+            // if (building.type != animal.type) {
+            //     throw new AnimalTypeMismatchException(building.type, animal.type)
+            // }
+
+            //get placedItems of the building
+            // const placedItems = await queryRunner.manager.find(PlacedItemEntity, {
+            //     where: {
+            //         buildingInfo: {
+            //             building: {
+            //                 type: building.type
+            //             }
+            //         }
+            //     },
+            //     relations: {
+            //         buildingInfo: {
+            //             building: true
+            //         }
+            //     }
+            // })
+            // Check if building is full: does not have any placeItems building
+            // if (placedItems.length > 0) {
+            //     throw new PlacedItemNotFoundException("Buiding type: " + building.type)
+            // }
+
+            const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+                where: { id: request.userId }
+            })
+
+            const totalCost = animal.price
+
+            //Check sufficient gold
+            this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
+
+            // Start transaction
+            await queryRunner.startTransaction()
+
             // Subtract gold
             const goldsChanged = this.goldBalanceService.subtract({
                 entity: user,
