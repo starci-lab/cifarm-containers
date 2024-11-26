@@ -23,11 +23,11 @@ import { TypeOrmModule } from "@nestjs/typeorm"
         }),
         TypeOrmModule.forRoot({
             type: "postgres",
-            host: envConfig().database.postgres.gameplay.host,
-            port: envConfig().database.postgres.gameplay.port,
-            username: envConfig().database.postgres.gameplay.user,
-            password: envConfig().database.postgres.gameplay.pass,
-            database: envConfig().database.postgres.gameplay.dbName,
+            host: envConfig().database.postgres.gameplay.main.host,
+            port: envConfig().database.postgres.gameplay.main.port,
+            username: envConfig().database.postgres.gameplay.main.user,
+            password: envConfig().database.postgres.gameplay.main.pass,
+            database: envConfig().database.postgres.gameplay.main.dbName,
             autoLoadEntities: true,
             synchronize: true
         }),

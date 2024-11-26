@@ -62,8 +62,9 @@ export class PlantSeedService {
             }
         })
         if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
-        if (placedItemTile.seedGrowthInfo) throw new PlacedItemTileAlreadyHasSeedException(request.placedItemTileId)
-        
+        if (placedItemTile.seedGrowthInfo)
+            throw new PlacedItemTileAlreadyHasSeedException(request.placedItemTileId)
+
         const { value } = await queryRunner.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
         })
@@ -108,7 +109,7 @@ export class PlantSeedService {
             } else {
                 await queryRunner.manager.save(InventoryEntity, updatedInventory)
             }
-            
+
             //get the crop
             const crop = await queryRunner.manager.findOne(CropEntity, {
                 where: { id: inventory.inventoryType.cropId }
@@ -117,12 +118,11 @@ export class PlantSeedService {
             // create seed growth info
             await queryRunner.manager.save(SeedGrowthInfoEntity, {
                 id: placedItemTile.id,
-                harvestQuantityRemaining: crop.maxHarvestQuantity,
+                harvestQuantityRemaining: crop.maxHarvestQuantity
             })
-            
+
             await queryRunner.commitTransaction()
             return {}
-            
         } catch (error) {
             this.logger.error("Harvest crop transaction failed, rolling back...", error)
             await queryRunner.rollbackTransaction()

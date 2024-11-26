@@ -89,11 +89,20 @@ export const envConfig = () => ({
         },
         postgres: {
             gameplay: {
-                dbName: process.env.GAMEPLAY_POSTGRES_DBNAME,
-                host: process.env.GAMEPLAY_POSTGRES_HOST,
-                port: Number(process.env.GAMEPLAY_POSTGRES_PORT),
-                user: process.env.GAMEPLAY_POSTGRES_USER,
-                pass: process.env.GAMEPLAY_POSTGRES_PASS
+                main: {
+                    dbName: process.env.GAMEPLAY_POSTGRES_DBNAME,
+                    host: process.env.GAMEPLAY_POSTGRES_HOST,
+                    port: Number(process.env.GAMEPLAY_POSTGRES_PORT),
+                    user: process.env.GAMEPLAY_POSTGRES_USER,
+                    pass: process.env.GAMEPLAY_POSTGRES_PASS
+                },
+                test: {
+                    dbName: process.env.GAMEPLAY_TEST_POSTGRES_DBNAME,
+                    host: process.env.GAMEPLAY_TEST_POSTGRES_HOST,
+                    port: Number(process.env.GAMEPLAY_TEST_POSTGRES_PORT),
+                    user: process.env.GAMEPLAY_TEST_POSTGRES_USER,
+                    pass: process.env.GAMEPLAY_TEST_POSTGRES_PASS
+                }
             }
         },
         redis: {

@@ -109,13 +109,13 @@
         "tsConfigPath": "apps/community-service/tsconfig.app.json"
       }
     },
-    "seed-static-data": {
+    "seed": {
       "type": "application",
-      "root": "apps/seed-static-data",
+      "root": "apps/seed",
       "entryFile": "main",
-      "sourceRoot": "apps/seed-static-data/src",
+      "sourceRoot": "apps/seed/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/seed-static-data/tsconfig.app.json"
+        "tsConfigPath": "apps/seed/tsconfig.app.json"
       }
     }
   }
