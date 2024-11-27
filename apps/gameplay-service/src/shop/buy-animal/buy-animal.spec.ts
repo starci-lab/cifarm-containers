@@ -114,7 +114,7 @@ describe("BuyAnimalService", () => {
         })
 
         const constructBuildingRequest: ConstructBuildingRequest = {
-            id: building.id,
+            buildingId: building.id,
             userId: userBeforeWorkflow.id,
             position: { x: 5, y: 5 }
         }
@@ -173,7 +173,7 @@ describe("BuyAnimalService", () => {
         })
 
         const constructBuildingRequest: ConstructBuildingRequest = {
-            id: building.id,
+            buildingId: building.id,
             userId: userBeforeWorkflow.id,
             position: { x: 5, y: 5 }
         }
@@ -247,7 +247,7 @@ describe("BuyAnimalService", () => {
         })
 
         const constructBuildingRequest: ConstructBuildingRequest = {
-            id: building.id,
+            buildingId: building.id,
             userId: userBeforeWorkflow.id,
             position: { x: 5, y: 5 }
         }
@@ -288,7 +288,7 @@ describe("BuyAnimalService", () => {
         })
 
         const constructBuildingRequest: ConstructBuildingRequest = {
-            id: building.id,
+            buildingId: building.id,
             userId: userBeforeWorkflow.id,
             position: { x: 5, y: 5 }
         }

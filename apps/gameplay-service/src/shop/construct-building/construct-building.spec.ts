@@ -18,7 +18,7 @@ describe("ConstructBuildingService", () => {
     // Test users
     const users: Array<DeepPartial<UserEntity>> = [
         {
-            username: "test_user_1",
+            username: "test_user_construct_building_1",
             chainKey: SupportedChainKey.Solana,
             accountAddress: "0x123456789abcdef",
             network: Network.Mainnet,
@@ -29,7 +29,7 @@ describe("ConstructBuildingService", () => {
             golds: 5000
         },
         {
-            username: "test_user_2",
+            username: "test_user_construct_building_2",
             chainKey: SupportedChainKey.Solana,
             accountAddress: "0x123456789abcdef",
             network: Network.Mainnet,
@@ -77,7 +77,7 @@ describe("ConstructBuildingService", () => {
         })
 
         const constructBuildingRequest: ConstructBuildingRequest = {
-            id: building.id,
+            buildingId: building.id,
             userId: userBeforeConstruction.id,
             position: { x: 10, y: 20 }
         }
@@ -115,7 +115,7 @@ describe("ConstructBuildingService", () => {
         })
 
         const constructBuildingRequest: ConstructBuildingRequest = {
-            id: building.id,
+            buildingId: building.id,
             userId: userBeforeConstruction.id,
             position: { x: 10, y: 20 }
         }

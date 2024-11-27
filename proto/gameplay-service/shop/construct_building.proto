@@ -4,7 +4,7 @@ package gameplay;
 
 message ConstructBuildingRequest {
     string userId = 1;
-    string id = 2;
+    string buildingId = 2;
     Position position = 3;
 }
 

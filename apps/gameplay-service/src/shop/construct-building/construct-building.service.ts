@@ -21,7 +21,7 @@ export class ConstructBuildingService {
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
         this.logger.debug(
-            `Starting building construction for user ${request.userId}, building id: ${request.id}`
+            `Starting building construction for user ${request.userId}, building id: ${request.buildingId}`
         )
 
         const queryRunner = this.dataSource.createQueryRunner()
@@ -30,24 +30,24 @@ export class ConstructBuildingService {
         try {
             // Fetch building information
             const building = await queryRunner.manager.findOne(BuildingEntity, {
-                where: { id: request.id }
+                where: { id: request.buildingId }
             })
 
             if (!building) {
-                throw new BuildingNotFoundException(request.id)
+                throw new BuildingNotFoundException(request.buildingId)
             }
 
             if (!building.availableInShop) {
-                throw new BuildingNotAvailableInShopException(request.id)
+                throw new BuildingNotAvailableInShopException(request.buildingId)
             }
 
             // Fetch placed item type
             const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
-                where: { id: request.id }
+                where: { id: request.buildingId }
             })
 
             if (!placedItemType) {
-                throw new PlacedItemTypeNotFoundException(request.id)
+                throw new PlacedItemTypeNotFoundException(request.buildingId)
             }
 
             // Calculate total cost

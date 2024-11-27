@@ -14,6 +14,10 @@ export class PlacedItemTypeEntity extends ReadableAbstractEntity {
     @Column({ name: "type", type: "enum", enum: PlacedItemType })
         type: PlacedItemType
 
+    @Field(() => String, { nullable: true })
+    @Column({ name: "tile_id", nullable: true })
+        tileId: string
+
     @OneToOne(() => TileEntity, { onDelete: "CASCADE", eager: true, cascade: true })
     @JoinColumn({
         name: "tile_id",
