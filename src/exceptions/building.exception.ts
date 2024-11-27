@@ -53,3 +53,8 @@ export class BuildingNotSameAnimalException extends GrpcNotFoundException {
         super(`Building not same animal: ${id}`)
     }
 }
+export class VerifySignatureCreateUserTransactionFailedException extends GrpcNotFoundException {
+    constructor(error: Error) {
+        super(`Failed to create user due to: ${error}`)
+    }
+}

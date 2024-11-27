@@ -1,12 +1,11 @@
 import { Global, Module } from "@nestjs/common"
-import { TypeOrmModule } from "@nestjs/typeorm"
-import { HealthcheckEntity } from "@src/database"
 import { RequestMessageService } from "./request-message.service"
+import { RequestMessageController } from "./request-message.controller"
 
 @Global()
 @Module({
-    imports: [TypeOrmModule.forFeature([HealthcheckEntity])],
-    controllers: [],
+    imports: [],
+    controllers: [RequestMessageController],
     providers: [RequestMessageService],
     exports: [RequestMessageService]
 })

@@ -6,20 +6,22 @@ import {
     Inject,
     Logger,
     OnModuleInit,
-    Post
+    Post,
+    UseInterceptors
 } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
-import { IAuthService } from "./auth.service"
 import { lastValueFrom } from "rxjs"
 import { ApiResponse, ApiTags } from "@nestjs/swagger"
 import {
     authGrpcConstants,
     GenerateTestSignatureRequest,
     GenerateTestSignatureResponse,
+    IAuthService,
     RequestMessageResponse,
     VerifySignatureRequest,
     VerifySignatureResponse
 } from "@apps/auth-service"
+import { AuthInterceptor } from "./auth.interceptor"
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -55,6 +57,7 @@ export class AuthController implements OnModuleInit {
     @ApiResponse({
         type: VerifySignatureResponse
     })
+    @UseInterceptors(AuthInterceptor)
     @Post("verify-signature")
     public async verifySignature(
         @Body() request: VerifySignatureRequest

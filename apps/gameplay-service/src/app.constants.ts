@@ -4,5 +4,5 @@ export const gameplayGrpcConstants = {
     NAME: "GAMEPLAY_PACKAGE",
     SERVICE: "GameplayService",
     PACKAGE: "gameplay",
-    PROTO_PATH: join(process.cwd(), "proto", "gameplay", "entry.proto")
+    PROTO_PATH: join(process.cwd(), "proto", "gameplay-service", "entry.proto")
 }

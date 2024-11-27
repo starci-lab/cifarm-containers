@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/config"
-import { CacheNotFound } from "@src/exceptions"
+import { CacheNotFound, VerifySignatureCreateUserTransactionFailedException } from "@src/exceptions"
 
 import {
     AlgorandAuthService,
@@ -114,29 +114,44 @@ export class VerifySignatureService {
         }
         if (!result) throw new Error("Signature verification")
 
-        let user = await this.dataSource.manager.findOne(UserEntity, {
-            where: {
-                accountAddress: _accountAddress,
-                chainKey,
-                network
-            }
-        })
-        //if user not found, create user
-        if (!user) {
-            user = await this.dataSource.manager.save(UserEntity, {
-                username: `${chainKey}-${_accountAddress.substring(0, 5)}`,
-                accountAddress: _accountAddress,
-                chainKey,
-                network
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            let user = await queryRunner.manager.findOne(UserEntity, {
+                where: {
+                    accountAddress: _accountAddress,
+                    chainKey,
+                    network
+                }
             })
-        }
-        const { accessToken, refreshToken } = await this.jwtService.createAuthTokenPair({
-            id: user.id
-        })
+            //if user not found, create user
+            if (!user) {
+                await queryRunner.startTransaction()
+                try {
+                    user = await queryRunner.manager.save(UserEntity, {
+                        username: `${chainKey}-${_accountAddress.substring(0, 5)}`,
+                        accountAddress: _accountAddress,
+                        chainKey,
+                        network
+                    })
+                    await queryRunner.commitTransaction()
+                } catch (error) {
+                    this.logger.error("Transaction verify signature failed", error.message)
+                    await queryRunner.rollbackTransaction()
+                    throw new VerifySignatureCreateUserTransactionFailedException(error)
+                }
+                const { accessToken, refreshToken } = await this.jwtService.createAuthTokenPair({
+                    id: user.id
+                })
 
-        return {
-            accessToken,
-            refreshToken
+                return {
+                    userId: user.id,
+                    accessToken,
+                    refreshToken
+                }
+            }
+        } finally {
+            await queryRunner.release()
         }
     }
 }

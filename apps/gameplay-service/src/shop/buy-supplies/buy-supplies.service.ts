@@ -89,7 +89,6 @@ export class BuySuppliesService {
                 // Save inventory
                 await queryRunner.manager.save(InventoryEntity, updatedInventories)
                 await queryRunner.commitTransaction()
-
                 return
             } catch (error) {
                 this.logger.debug("rollback")

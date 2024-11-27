@@ -18,4 +18,7 @@ service GameplayService {
     rpc PlantSeed(PlantSeedRequest) returns (google.protobuf.Empty);
     rpc UseHerbicided(UseHerbicidedRequest) returns (google.protobuf.Empty);
     rpc UsePestiside(UsePestisideRequest) returns (google.protobuf.Empty);
+    
+    // Hooks methods
+    rpc AfterAuthenticated(AfterAuthenticatedRequest) returns (google.protobuf.Empty);  
 }

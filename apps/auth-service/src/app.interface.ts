@@ -1,17 +1,22 @@
+import { Observable } from "rxjs"
 import {
     GenerateTestSignatureRequest,
     GenerateTestSignatureResponse,
+    RequestMessageRequest,
     RequestMessageResponse,
     VerifySignatureRequest,
     VerifySignatureResponse
-} from "@apps/auth-service"
-import { Empty } from "@src/types"
-import { Observable } from "rxjs"
+} from "./auth"
+import { AfterAuthenticatedRequest, AfterAuthenticatedResponse } from "./hooks"
 
 export interface IAuthService {
-    requestMessage(request: Empty): Observable<RequestMessageResponse>
+    // Auth
     generateTestSignature(
         request: GenerateTestSignatureRequest
     ): Observable<GenerateTestSignatureResponse>
     verifySignature(request: VerifySignatureRequest): Observable<VerifySignatureResponse>
+    requestMessage(request: RequestMessageRequest): Observable<RequestMessageResponse>
+
+    // Hooks
+    afterAuthenticated(request: AfterAuthenticatedRequest): Observable<AfterAuthenticatedResponse>
 }
