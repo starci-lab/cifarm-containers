@@ -4,6 +4,7 @@ import { Column, Entity, OneToMany } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { InventoryEntity } from "./inventory.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
+import { DeliveringProductEntity } from "./delivering-product.entity"
 
 @ObjectType()
 @Entity("users")
@@ -81,6 +82,10 @@ export class UserEntity extends AbstractEntity {
         inventories?: Array<InventoryEntity>
 
     @Field(() => [PlacedItemEntity])
-    @OneToMany(() => PlacedItemEntity, (inventory) => inventory.user)
+    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.user)
         placedItems?: Array<PlacedItemEntity>
+
+    @Field(() => [DeliveringProductEntity])
+    @OneToMany(() => DeliveringProductEntity, (deliveringProduct) => deliveringProduct.user)
+        deliveringProducts?: Array<DeliveringProductEntity>
 }

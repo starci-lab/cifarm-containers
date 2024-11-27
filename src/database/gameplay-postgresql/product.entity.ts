@@ -1,10 +1,11 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToOne } from "typeorm"
+import { Column, Entity, OneToMany, OneToOne } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
 import { ProductType } from "./enums"
 import { InventoryTypeEntity } from "./inventory-type.entity"
+import { DeliveringProductEntity } from "./delivering-product.entity"
 
 @ObjectType()
 @Entity("products")
@@ -46,4 +47,8 @@ export class ProductEntity extends ReadableAbstractEntity {
         cascade: ["insert"]
     })
         inventoryType?: InventoryTypeEntity
+
+    @Field(() => [DeliveringProductEntity])
+    @OneToMany(() => DeliveringProductEntity, (deliveringProduct) => deliveringProduct.product)
+        deliveringProducts?: Array<DeliveringProductEntity>
 }
