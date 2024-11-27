@@ -4,7 +4,7 @@ import "google/protobuf/empty.proto";
 import "./hooks/entry.proto";
 import "./auth/entry.proto";
 
-package auth;
+package auth_service;
 
 service AuthService {
     // Auth methods

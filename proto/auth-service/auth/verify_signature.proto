@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package auth;
+package auth_service;
 
 message VerifySignatureRequest {
     string message = 1;  // Message field, like "hello world"

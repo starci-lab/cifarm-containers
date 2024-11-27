@@ -1,7 +1,7 @@
 syntax = "proto3";
 
-package gameplay;
+package auth_service;
 
-import "./request-message.proto";
-import "./generate-test-signature.proto";
-import "./verify-signature.proto";
+import "./request_message.proto";
+import "./generate_test_signature.proto";
+import "./verify_signature.proto";

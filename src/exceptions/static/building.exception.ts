@@ -41,3 +41,9 @@ export class UseHerbicideTransactionFailedException extends GrpcNotFoundExceptio
         super(`Failed to use herbicide due to: ${error}`)
     }
 }
+
+export class VerifySignatureCreateUserTransactionFailedException extends GrpcNotFoundException {
+    constructor(error: Error) {
+        super(`Failed to create user due to: ${error}`)
+    }
+}

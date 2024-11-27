@@ -1,5 +1,5 @@
 syntax = "proto3";
 
-package auth;
+package auth_service;
 
 import "./after-authenticated.proto";
