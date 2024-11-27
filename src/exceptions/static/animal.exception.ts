@@ -39,3 +39,9 @@ export class BuyAnimalTransactionFailedException extends GrpcAbortedException {
         super(`Animal purchase transaction failed: ${message}`)
     }
 }
+
+export class AfterAuthenticatedFirstTimeTransactionFailedException extends GrpcAbortedException {
+    constructor(message: string) {
+        super(`After authenticated first time transaction failed: ${message}`)
+    }
+}

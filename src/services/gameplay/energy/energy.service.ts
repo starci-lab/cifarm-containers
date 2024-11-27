@@ -26,7 +26,7 @@ export class EnergyService {
         }
     }
 
-    private getMaxEnergy(level: number): number {
+    public getMaxEnergy(level: number = 1): number {
         return 50 + (level - 1) * 3
     }
 

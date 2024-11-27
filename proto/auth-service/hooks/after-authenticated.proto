@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package auth;
+
+message AfterAuthenticatedRequest {          
+    string userId = 1;    
+}

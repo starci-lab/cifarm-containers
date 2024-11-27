@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package auth;
+
+import "./after-authenticated.proto";

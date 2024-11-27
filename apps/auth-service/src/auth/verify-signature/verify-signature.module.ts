@@ -9,6 +9,7 @@ import {
     UserEntity
 } from "@src/database"
 import { VerifySignatureService } from "./verify-signature.service"
+import { VerifySignatureController } from "./verify-signature.controller"
 
 @Global()
 @Module({
@@ -22,7 +23,7 @@ import { VerifySignatureService } from "./verify-signature.service"
             BuildingInfoEntity
         ])
     ],
-    controllers: [],
+    controllers: [VerifySignatureController],
     providers: [VerifySignatureService],
     exports: [VerifySignatureService]
 })

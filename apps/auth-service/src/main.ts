@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { authGrpcConstants } from "./constants"
+import { authGrpcConstants } from "./app.constants"
 import { ExceptionFilter } from "@src/filters"
 import { envConfig } from "@src/config"
 

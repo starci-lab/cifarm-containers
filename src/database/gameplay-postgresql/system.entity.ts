@@ -1,6 +1,7 @@
 import { ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
+import { Position } from "@src/types"
 
 @ObjectType()
 @Entity("system")
@@ -35,4 +36,16 @@ export class CropRandomness {
     theif2: number
     needWater: number
     isWeedyOrInfested: number           
+}
+
+export class Positions {
+    //starter tiles
+    tiles: Array<Position>
+    //home
+    home: Position
+}
+
+export class Starter {
+    golds: number
+    positions: Positions
 }

@@ -1,9 +1,9 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
 import { RequestMessageResponse } from "./request-message.dto"
-import { randomUUID } from "crypto"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Cache } from "cache-manager"
+import { v4 } from "uuid"
 
 @Injectable()
 export class RequestMessageService {
@@ -16,7 +16,7 @@ export class RequestMessageService {
     ) {}
 
     public async requestMessage(): Promise<RequestMessageResponse> {
-        const message = randomUUID()
+        const message = v4()
         await this.cacheManager.set(message, true, 60 * 1000)
         return {
             message

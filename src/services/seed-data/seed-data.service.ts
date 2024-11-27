@@ -24,6 +24,7 @@ import {
     SpinEntity,
     SpinId,
     SpinType,
+    Starter,
     SupplyEntity,
     SupplyId,
     SupplyType,
@@ -182,6 +183,41 @@ export class SeedDataService {
             theif3: 0.95,
             isWeedyOrInfested: 1,
         }
+        const starter: Starter = {
+            golds: 1000,
+            positions: {
+                home: {
+                    x: 4,
+                    y: 0
+                },
+                tiles: [
+                    {
+                        x: 0,
+                        y: -1
+                    },
+                    {
+                        x: 0,
+                        y: 0
+                    },
+                    {
+                        x: 0,
+                        y: 1
+                    },
+                    {
+                        x: 1,
+                        y: -1
+                    },
+                    {
+                        x: 1,
+                        y: 0
+                    },
+                    {
+                        x: 1,
+                        y: 1
+                    },
+                ]
+            }
+        }
 
         const data: Array<DeepPartial<SystemEntity>> = [
             {
@@ -191,6 +227,10 @@ export class SeedDataService {
             {
                 id: SystemId.CropRandomness,
                 value: cropRandomness
+            },
+            {
+                id: SystemId.Starter,
+                value: starter,
             }
         ]
         await queryRunner.manager.save(SystemEntity, data)
