@@ -35,7 +35,7 @@ export class BuildingCapacityExceededException extends GrpcAbortedException {
 }
 
 export class BuyAnimalTransactionFailedException extends GrpcAbortedException {
-    constructor(message: string) {
-        super(`Animal purchase transaction failed: ${message}`)
+    constructor(error: Error) {
+        super(`Animal purchase transaction failed: ${error.message}`)
     }
 }

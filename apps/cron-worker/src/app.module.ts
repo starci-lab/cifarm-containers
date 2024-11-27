@@ -13,7 +13,7 @@ import { BullModule } from "@nestjs/bullmq"
             load: [envConfig],
             envFilePath: [".env.local"],
             isGlobal: true
-        }), 
+        }),
         BullModule.forRoot({
             connection: {
                 host: envConfig().database.redis.job.host,
@@ -32,7 +32,7 @@ import { BullModule } from "@nestjs/bullmq"
             synchronize: true,
             connectTimeoutMS: 2000
         }),
-        CropsModule,
+        CropsModule
         //AnimalsModule
     ]
 })

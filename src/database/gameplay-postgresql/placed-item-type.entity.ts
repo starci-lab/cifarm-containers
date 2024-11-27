@@ -28,6 +28,10 @@ export class PlacedItemTypeEntity extends ReadableAbstractEntity {
     })
         building: BuildingEntity
 
+    @Field(() => String, { nullable: true })
+    @Column({ name: "animal_id", nullable: true })
+        animalId: string
+
     @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", eager: true, cascade: true })
     @JoinColumn({
         name: "animal_id",

@@ -31,7 +31,7 @@ export class AnimalsService {
         } finally {
             await queryRunner.release()
         }
-        
+
         this.logger.debug(`Found ${count} animals that need to be grown`)
         //split into 10000 per batch
         if (count === 0) {
@@ -43,7 +43,7 @@ export class AnimalsService {
 
         // Create batches
         const batches: Array<{
-            name: string,
+            name: string
             data: AnimalsJobData
         }> = Array.from({ length: batchCount }, (_, i) => ({
             name: v4(),

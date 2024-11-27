@@ -43,4 +43,4 @@ import { BuyAnimalService } from "./buy-animal.service"
     providers: [BuyAnimalService],
     exports: [BuyAnimalService]
 })
-export class BuyAnimalsModule {}
+export class BuyAnimalModule {}

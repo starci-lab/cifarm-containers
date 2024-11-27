@@ -51,8 +51,8 @@ export class PlantSeedService {
             //check the tile
             const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
                 where: {
-                    id: request.placedItemTileId,
-                },
+                    id: request.placedItemTileId
+                }
             })
             if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
             if (placedItemTile.seedGrowthInfo)

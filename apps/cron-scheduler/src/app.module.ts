@@ -30,7 +30,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
             database: envConfig().database.postgres.gameplay.main.dbName,
             autoLoadEntities: true,
             synchronize: true,
-            connectTimeoutMS: 2000,
+            connectTimeoutMS: 2000
         }),
         CropsModule,
         AnimalsModule

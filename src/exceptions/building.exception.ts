@@ -12,9 +12,15 @@ export class BuildingNotAvailableInShopException extends GrpcNotFoundException {
     }
 }
 
+export class PlacedItemTypeNotBuildingException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Building not a same type with animal: ${id}`)
+    }
+}
+
 export class ConstructBuildingTransactionFailedException extends GrpcNotFoundException {
     constructor(error: Error) {
-        super(`Failed to construct building due to: ${error}`)
+        super(`Failed to construct building due to: ${error.message}`)
     }
 }
 
@@ -39,5 +45,11 @@ export class UsePestisideTransactionFailedException extends GrpcNotFoundExceptio
 export class UseHerbicideTransactionFailedException extends GrpcNotFoundException {
     constructor(error: Error) {
         super(`Failed to use herbicide due to: ${error}`)
+    }
+}
+
+export class BuildingNotSameAnimalException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Building not same animal: ${id}`)
     }
 }
