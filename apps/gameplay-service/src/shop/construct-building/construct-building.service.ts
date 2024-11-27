@@ -66,40 +66,42 @@ export class ConstructBuildingService {
 
             // Start transaction
             await queryRunner.startTransaction()
+            try {
 
-            // Subtract gold
-            const goldsChanged = this.goldBalanceService.subtract({
-                entity: user,
-                golds: totalCost
-            })
+                // Subtract gold
+                const goldsChanged = this.goldBalanceService.subtract({
+                    entity: user,
+                    golds: totalCost
+                })
 
-            await queryRunner.manager.update(UserEntity, user.id, {
-                ...goldsChanged
-            })
+                await queryRunner.manager.update(UserEntity, user.id, {
+                    ...goldsChanged
+                })
 
-            // Prepare placed item entity
-            const placedItem: DeepPartial<PlacedItemEntity> = {
-                userId: request.userId,
-                buildingInfo: {
-                    building
-                },
-                x: request.position.x,
-                y: request.position.y,
-                placedItemTypeId: placedItemType.id
+                // Prepare placed item entity
+                const placedItem: DeepPartial<PlacedItemEntity> = {
+                    userId: request.userId,
+                    buildingInfo: {
+                        building
+                    },
+                    x: request.position.x,
+                    y: request.position.y,
+                    placedItemTypeId: placedItemType.id
+                }
+
+                // Save the placed item in the database
+                const savedBuilding = await queryRunner.manager.save(PlacedItemEntity, placedItem)
+
+                await queryRunner.commitTransaction()
+
+                this.logger.log(`Successfully constructed building with id: ${savedBuilding.id}`)
+
+                return { placedItemId: savedBuilding.id }
+            } catch (error) {
+                this.logger.error("Construction transaction failed, rolling back...", error)
+                await queryRunner.rollbackTransaction()
+                throw new ConstructBuildingTransactionFailedException(error.message)
             }
-
-            // Save the placed item in the database
-            const savedBuilding = await queryRunner.manager.save(PlacedItemEntity, placedItem)
-
-            await queryRunner.commitTransaction()
-
-            this.logger.log(`Successfully constructed building with id: ${savedBuilding.id}`)
-
-            return { placedItemId: savedBuilding.id }
-        } catch (error) {
-            this.logger.error("Construction transaction failed, rolling back...", error)
-            await queryRunner.rollbackTransaction()
-            throw new ConstructBuildingTransactionFailedException(error.message)
         } finally {
             await queryRunner.release()
         }
