@@ -10,13 +10,13 @@ import {
     TileId,
     UserEntity
 } from "@src/database"
+import { UserInsufficientGoldException } from "@src/exceptions"
 import { GoldBalanceService } from "@src/services"
 import * as path from "path"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
 import { BuyTileModule } from "./buy-tile.module"
 import { BuyTileService } from "./buy-tile.service"
-import { PlacedItemIsLimitException, UserInsufficientGoldException } from "@src/exceptions"
 
 describe("BuyTileService", () => {
     let dataSource: DataSource
@@ -87,16 +87,10 @@ describe("BuyTileService", () => {
     })
 
     it("Should buy a tile successfully", async () => {
-        const userBeforePurchase = await dataSource.manager.save(UserEntity, users[0])
-
-        // Fetch a tile
-        const tile = await dataSource.manager.findOne(TileEntity, {
-            where: { id: TileId.BasicTile1, availableInShop: true }
-        })
+        const userBeforeBuyTile = await dataSource.manager.save(UserEntity, users[0])
 
         const buyTileRequest: BuyTileRequest = {
-            tileId: tile.id,
-            userId: userBeforePurchase.id,
+            userId: userBeforeBuyTile.id,
             position: { x: 5, y: 10 }
         }
 
@@ -104,74 +98,87 @@ describe("BuyTileService", () => {
         const response: BuyTileResponse = await service.buyTile(buyTileRequest)
 
         // Verify user's gold was deducted
-        const userAfterPurchase = await dataSource.manager.findOne(UserEntity, {
-            where: { id: userBeforePurchase.id }
+        const userAfterBuyTile = await dataSource.manager.findOne(UserEntity, {
+            where: { id: userBeforeBuyTile.id }
         })
 
-        expect(userAfterPurchase.golds).toBe(users[0].golds - tile.price)
+        const tile = await dataSource.manager.findOne(TileEntity, {
+            where: { id: TileId.BasicTile1 }
+        })
 
-        // Verify placed item was created
+        expect(userAfterBuyTile.golds).toBe(users[0].golds - tile.price)
+
         const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
-            where: { id: response.placedItemId, userId: userBeforePurchase.id }
+            where: { id: response.placedItemId, userId: userBeforeBuyTile.id }
         })
 
         expect(placedItem).toBeDefined()
         expect(placedItem.x).toBe(buyTileRequest.position.x)
         expect(placedItem.y).toBe(buyTileRequest.position.y)
-        expect(placedItem.placedItemTypeId).toBe(tile.id)
+        expect(placedItem.placedItemType.tileId).toBe(TileId.BasicTile1)
     })
 
     it("Should fail when user has insufficient gold", async () => {
-        const userBeforePurchase = await dataSource.manager.save(UserEntity, users[1])
-
-        const tile = await dataSource.manager.findOne(TileEntity, {
-            where: { id: TileId.BasicTile1, availableInShop: true }
-        })
+        const userBeforeBuyTile = await dataSource.manager.save(UserEntity, users[1])
 
         const buyTileRequest: BuyTileRequest = {
-            tileId: tile.id,
-            userId: userBeforePurchase.id,
+            userId: userBeforeBuyTile.id,
             position: { x: 5, y: 10 }
         }
 
+        const tile = await dataSource.manager.findOne(TileEntity, {
+            where: { id: TileId.BasicTile1 }
+        })
+
         await expect(service.buyTile(buyTileRequest)).rejects.toThrow(
-            new UserInsufficientGoldException(userBeforePurchase.golds, tile.price)
+            new UserInsufficientGoldException(userBeforeBuyTile.golds, tile.price)
         )
     })
 
-    it("Should fail when user tries to buy more tiles than the maximum ownership limit", async () => {
-        const userBeforePurchase = await dataSource.manager.save(UserEntity, users[2])
+    it("Should automatically switch to the next tile type after reaching max ownership", async () => {
+        const userBeforeBuyTile = await dataSource.manager.save(UserEntity, users[2])
 
-        // Fetch a tile and its placed item type
-        const tile = await dataSource.manager.findOne(TileEntity, {
-            where: { id: TileId.BasicTile1, availableInShop: true }
+        const basicTile1 = await dataSource.manager.findOne(TileEntity, {
+            where: { id: TileId.BasicTile1 }
         })
 
-        const placedItemType = await dataSource.manager.findOne(PlacedItemTypeEntity, {
-            where: { type: PlacedItemType.Tile, tileId: tile.id }
+        const placedItemType1 = await dataSource.manager.findOne(PlacedItemTypeEntity, {
+            where: { type: PlacedItemType.Tile, tileId: TileId.BasicTile1 }
         })
 
-        // Create placed items to reach the limit
-        const maxOwnership = tile.maxOwnership
-
-        const placedItems = Array.from({ length: maxOwnership }).map(() => ({
-            userId: userBeforePurchase.id,
-            placedItemTypeId: placedItemType.id,
+        const maxOwnershipTile1 = basicTile1.maxOwnership
+        const placedItems1 = Array.from({ length: maxOwnershipTile1 }).map(() => ({
+            userId: userBeforeBuyTile.id,
+            placedItemTypeId: placedItemType1.id,
             x: 5,
             y: 5
         }))
-
-        await dataSource.manager.save(PlacedItemEntity, placedItems)
+        await dataSource.manager.save(PlacedItemEntity, placedItems1)
 
         const buyTileRequest: BuyTileRequest = {
-            tileId: tile.id,
-            userId: userBeforePurchase.id,
+            userId: userBeforeBuyTile.id,
             position: { x: 10, y: 20 }
         }
 
-        await expect(service.buyTile(buyTileRequest)).rejects.toThrow(
-            new PlacedItemIsLimitException(tile.id, maxOwnership)
+        const response: BuyTileResponse = await service.buyTile(buyTileRequest)
+
+        const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
+            where: { id: response.placedItemId, userId: userBeforeBuyTile.id },
+            relations: {
+                placedItemType: {
+                    tile: true
+                }
+            }
+        })
+
+        const userAfterBuyTile = await dataSource.manager.findOne(UserEntity, {
+            where: { id: userBeforeBuyTile.id }
+        })
+
+        expect(userAfterBuyTile.golds).toBe(
+            userBeforeBuyTile.golds - placedItem.placedItemType.tile.price
         )
+        expect(placedItem.placedItemType.tileId).toBe(TileId.BasicTile2)
     })
 
     afterAll(async () => {

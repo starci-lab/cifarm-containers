@@ -4,6 +4,7 @@ import {
     PlacedItemType,
     PlacedItemTypeEntity,
     TileEntity,
+    TileId,
     UserEntity
 } from "@src/database"
 import {
@@ -14,12 +15,14 @@ import {
     TileNotFoundException
 } from "@src/exceptions"
 import { GoldBalanceService } from "@src/services"
-import { DataSource, DeepPartial } from "typeorm"
+import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
 
 @Injectable()
 export class BuyTileService {
     private readonly logger = new Logger(BuyTileService.name)
+
+    private tileOrder = [TileId.BasicTile1, TileId.BasicTile2, TileId.BasicTile3]
 
     constructor(
         private readonly dataSource: DataSource,
@@ -27,37 +30,32 @@ export class BuyTileService {
     ) {}
 
     async buyTile(request: BuyTileRequest): Promise<BuyTileResponse> {
-        this.logger.debug(
-            `Starting tile purchase for user ${request.userId}, tile id: ${request.tileId}`
-        )
+        this.logger.debug(`Starting tile purchase for user ${request.userId}`)
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         try {
-            // Fetch tile information
+            const currentTileId = await this.determineCurrentTileId(request.userId, queryRunner)
+
             const tile = await queryRunner.manager.findOne(TileEntity, {
-                where: { id: request.tileId }
+                where: { id: currentTileId }
             })
 
             if (!tile) {
-                throw new TileNotFoundException(request.tileId)
+                throw new TileNotFoundException(currentTileId)
             }
 
             if (!tile.availableInShop) {
-                throw new TileNotAvailableInShopException(request.tileId)
+                throw new TileNotAvailableInShopException(currentTileId)
             }
 
-            // Fetch placed item type
             const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
-                where: { type: PlacedItemType.Tile, tileId: request.tileId },
-                relations: {
-                    tile: true
-                }
+                where: { type: PlacedItemType.Tile, tileId: currentTileId }
             })
 
             if (!placedItemType) {
-                throw new PlacedItemTypeNotFoundException(request.tileId)
+                throw new PlacedItemTypeNotFoundException(currentTileId)
             }
 
             // Calculate total cost
@@ -69,17 +67,6 @@ export class BuyTileService {
 
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
-
-            //Check max tile limit
-            const placedItems = await queryRunner.manager.find(PlacedItemEntity, {
-                where: { userId: request.userId, placedItemTypeId: placedItemType.id }
-            })
-
-            if (placedItems.length >= placedItemType.tile.maxOwnership)
-                throw new PlacedItemIsLimitException(
-                    request.tileId,
-                    placedItemType.tile.maxOwnership
-                )
 
             // Start transaction
             await queryRunner.startTransaction()
@@ -118,5 +105,33 @@ export class BuyTileService {
         } finally {
             await queryRunner.release()
         }
+    }
+
+    private async determineCurrentTileId(
+        userId: string,
+        queryRunner: QueryRunner
+    ): Promise<string> {
+        for (const tileId of this.tileOrder) {
+            const tile = await queryRunner.manager.findOne(TileEntity, { where: { id: tileId } })
+
+            const placedItemsCount = await queryRunner.manager.count(PlacedItemEntity, {
+                where: {
+                    userId,
+                    placedItemType: {
+                        tileId: tileId,
+                        type: PlacedItemType.Tile
+                    }
+                },
+                relations: {
+                    placedItemType: true
+                }
+            })
+
+            if (placedItemsCount < tile.maxOwnership) {
+                return tileId
+            }
+        }
+
+        throw new PlacedItemIsLimitException(this.tileOrder[this.tileOrder.length - 1])
     }
 }

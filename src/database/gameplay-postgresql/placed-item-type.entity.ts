@@ -18,14 +18,14 @@ export class PlacedItemTypeEntity extends ReadableAbstractEntity {
     @Column({ name: "tile_id", nullable: true })
         tileId: string
 
-    @OneToOne(() => TileEntity, { onDelete: "CASCADE", eager: true, cascade: true })
+    @OneToOne(() => TileEntity, { onDelete: "CASCADE", cascade: true })
     @JoinColumn({
         name: "tile_id",
         referencedColumnName: "id"
     })
         tile: TileEntity
 
-    @OneToOne(() => BuildingEntity, { onDelete: "CASCADE", eager: true, cascade: true })
+    @OneToOne(() => BuildingEntity, { onDelete: "CASCADE", cascade: true })
     @JoinColumn({
         name: "building_id",
         referencedColumnName: "id"
@@ -36,7 +36,7 @@ export class PlacedItemTypeEntity extends ReadableAbstractEntity {
     @Column({ name: "animal_id", nullable: true })
         animalId: string
 
-    @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", eager: true, cascade: true })
+    @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", cascade: true })
     @JoinColumn({
         name: "animal_id",
         referencedColumnName: "id"

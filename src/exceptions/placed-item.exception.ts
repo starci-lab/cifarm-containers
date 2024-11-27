@@ -55,9 +55,7 @@ export class PlacedItemTypeNotFoundException extends GrpcNotFoundException {
 }
 
 export class PlacedItemIsLimitException extends Error {
-    constructor(tileId: string, maxOwnership: number) {
-        super(
-            `Tile with id "${tileId}" has reached its maximum ownership limit of ${maxOwnership}.`
-        )
+    constructor(tileId: string) {
+        super(`Tile with id "${tileId}" has reached its maximum ownership limit.`)
     }
 }
