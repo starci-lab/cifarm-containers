@@ -7,7 +7,6 @@ import {
     VerifySignatureRequest,
     VerifySignatureResponse
 } from "./auth"
-import { AfterAuthenticatedRequest, AfterAuthenticatedResponse } from "./hooks"
 
 export interface IAuthService {
     // Auth
@@ -16,7 +15,4 @@ export interface IAuthService {
     ): Observable<GenerateTestSignatureResponse>
     verifySignature(request: VerifySignatureRequest): Observable<VerifySignatureResponse>
     requestMessage(request: RequestMessageRequest): Observable<RequestMessageResponse>
-
-    // Hooks
-    afterAuthenticated(request: AfterAuthenticatedRequest): Observable<AfterAuthenticatedResponse>
 }

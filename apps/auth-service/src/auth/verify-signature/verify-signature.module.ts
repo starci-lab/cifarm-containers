@@ -3,9 +3,11 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import {
     AnimalInfoEntity,
     BuildingInfoEntity,
+    DeliveringProductEntity,
     InventoryEntity,
     PlacedItemEntity,
     SeedGrowthInfoEntity,
+    SystemEntity,
     UserEntity
 } from "@src/database"
 import { VerifySignatureService } from "./verify-signature.service"
@@ -20,7 +22,9 @@ import { VerifySignatureController } from "./verify-signature.controller"
             PlacedItemEntity,
             SeedGrowthInfoEntity,
             AnimalInfoEntity,
-            BuildingInfoEntity
+            BuildingInfoEntity,
+            DeliveringProductEntity,
+            SystemEntity,
         ])
     ],
     controllers: [VerifySignatureController],

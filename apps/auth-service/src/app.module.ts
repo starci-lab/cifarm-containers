@@ -6,7 +6,6 @@ import { redisStore } from "cache-manager-redis-yet"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { ConfigModule } from "@nestjs/config"
 import { envConfig } from "@src/config"
-import { HooksModule } from "./hooks"
 
 @Module({
     imports: [
@@ -44,7 +43,6 @@ import { HooksModule } from "./hooks"
         BlockchainAuthModule,
         JwtModule,
         AuthModule,
-        HooksModule
     ],
     controllers: [],
     providers: [
