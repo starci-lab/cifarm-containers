@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
-import { HealthcheckModule } from "./healthcheck"
+//import { HealthcheckModule } from "./healthcheck"
 import { AuthModule } from "./auth"
-import { GameplayModule } from "./gameplay"
+//import { GameplayModule } from "./gameplay"
 import { StrategiesModule } from "@src/strategies"
 import { ConfigModule } from "@nestjs/config"
 import { envConfig } from "@src/config"
@@ -16,9 +16,9 @@ import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
             isGlobal: true
         }),
         StrategiesModule,
-        HealthcheckModule,
+        //HealthcheckModule,
         AuthModule,
-        GameplayModule
+        //GameplayModule
     ],
     controllers: [],
     providers: [

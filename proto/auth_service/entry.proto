@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-import "./hooks/entry.proto";
 import "./auth/entry.proto";
 
 package auth_service;
@@ -11,7 +10,4 @@ service AuthService {
     rpc RequestMessage(google.protobuf.Empty) returns (RequestMessageResponse);
     rpc GenerateTestSignature(GenerateTestSignatureRequest) returns (GenerateTestSignatureResponse);
     rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse);
-    
-    // Hooks methods
-    rpc AfterAuthenticated(AfterAuthenticatedRequest) returns (google.protobuf.Empty);  
 }

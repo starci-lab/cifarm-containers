@@ -1,11 +1,12 @@
 import { Module, ValidationPipe } from "@nestjs/common"
 import { APP_PIPE } from "@nestjs/core"
-import { AuthModule, AuthModule as BlockchainAuthModule, JwtModule } from "@src/services"
+import { AuthModule as BlockchainAuthModule, JwtModule } from "@src/services"
 import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { redisStore } from "cache-manager-redis-yet"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { ConfigModule } from "@nestjs/config"
 import { envConfig } from "@src/config"
+import { AuthModule } from "./auth"
 
 @Module({
     imports: [

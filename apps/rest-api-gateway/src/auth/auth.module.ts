@@ -3,7 +3,6 @@ import { ClientsModule, Transport } from "@nestjs/microservices"
 import { AuthController } from "./auth.controller"
 import { authGrpcConstants } from "@apps/auth-service"
 import { envConfig } from "@src/config"
-import { AuthInterceptor } from "./auth.interceptor"
 
 @Module({
     imports: [
@@ -22,6 +21,6 @@ import { AuthInterceptor } from "./auth.interceptor"
         ])
     ],
     controllers: [AuthController],
-    providers: [AuthInterceptor]
+    providers: []
 })
 export class AuthModule {}

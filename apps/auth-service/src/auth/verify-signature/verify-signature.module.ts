@@ -1,17 +1,27 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import {
+    AnimalEntity,
     AnimalInfoEntity,
+    BuildingEntity,
     BuildingInfoEntity,
+    CropEntity,
     DeliveringProductEntity,
     InventoryEntity,
+    InventoryTypeEntity,
     PlacedItemEntity,
+    PlacedItemTypeEntity,
+    ProductEntity,
     SeedGrowthInfoEntity,
+    SupplyEntity,
     SystemEntity,
+    TileEntity,
+    UpgradeEntity,
     UserEntity
 } from "@src/database"
 import { VerifySignatureService } from "./verify-signature.service"
 import { VerifySignatureController } from "./verify-signature.controller"
+import { EnergyModule } from "@src/services"
 
 @Global()
 @Module({
@@ -25,7 +35,17 @@ import { VerifySignatureController } from "./verify-signature.controller"
             BuildingInfoEntity,
             DeliveringProductEntity,
             SystemEntity,
-        ])
+            ProductEntity,
+            CropEntity,
+            InventoryTypeEntity,
+            AnimalEntity,
+            BuildingEntity,
+            UpgradeEntity,
+            PlacedItemTypeEntity,
+            TileEntity,
+            SupplyEntity
+        ]),
+        EnergyModule
     ],
     controllers: [VerifySignatureController],
     providers: [VerifySignatureService],
