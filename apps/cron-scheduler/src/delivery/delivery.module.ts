@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common"
 import { BullModule } from "@nestjs/bullmq"
-import { cropsTimeQueueConstants } from "../app.constant"
-import { CropsService } from "./crops.service"
+import { DeliveryService } from "./delivery.service"
 import {
     BuildingEntity,
     BuildingInfoEntity,
@@ -16,11 +15,12 @@ import {
     UserEntity
 } from "@src/database"
 import { TypeOrmModule } from "@nestjs/typeorm"
+import { deliveryTimeQueueConstants } from "../app.constant"
 
 @Module({
     imports: [
         BullModule.registerQueue({
-            name: cropsTimeQueueConstants.NAME
+            name: deliveryTimeQueueConstants.NAME
         }),
         TypeOrmModule.forFeature([
             SeedGrowthInfoEntity,
@@ -36,6 +36,6 @@ import { TypeOrmModule } from "@nestjs/typeorm"
             DeliveringProductEntity
         ])
     ],
-    providers: [CropsService]
+    providers: [DeliveryService]
 })
-export class CropsModule {}
+export class DeliveryModule {}

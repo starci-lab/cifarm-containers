@@ -20,7 +20,7 @@ import {
 } from "@src/database"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { BullModule } from "@nestjs/bullmq"
-import { cropsTimeQueueConstants } from "@apps/time-scheduler"
+import { cropsTimeQueueConstants } from "@apps/cron-scheduler"
 
 @Module({
     imports: [

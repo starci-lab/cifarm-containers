@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common"
 import { BullModule } from "@nestjs/bullmq"
-import { animalsTimeQueueConstants } from "../app.constant"
 import { AnimalsService } from "./animals.service"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import {
@@ -12,6 +11,7 @@ import {
     TileEntity,
     UserEntity
 } from "@src/database"
+import { animalsTimeQueueConstants } from "@apps/cron-scheduler"
 
 @Module({
     imports: [

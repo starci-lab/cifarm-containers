@@ -3,9 +3,9 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
-import { animalsTimeQueueConstants } from "../app.constant"
 import { v4 } from "uuid"
 import { AnimalCurrentState, AnimalInfoEntity } from "@src/database"
+import { animalsTimeQueueConstants } from "@apps/cron-scheduler"
 
 @Injectable()
 export class AnimalsService {

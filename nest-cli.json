@@ -75,7 +75,7 @@
     },
     "cron-worker": {
       "type": "application",
-      "root": "apps/time-worker",
+      "root": "apps/cron-worker",
       "entryFile": "main",
       "sourceRoot": "apps/cron-worker/src",
       "compilerOptions": {

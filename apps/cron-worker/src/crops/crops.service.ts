@@ -2,7 +2,7 @@ import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { Job } from "bullmq"
 import { DataSource, Not } from "typeorm"
-import { CropsJobData, cropsTimeQueueConstants } from "@apps/time-scheduler"
+import { CropsJobData, cropsTimeQueueConstants } from "@apps/cron-scheduler"
 import {
     CropCurrentState,
     CropRandomness,

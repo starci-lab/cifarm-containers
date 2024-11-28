@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { ProductEntity } from "./product.entity"
 import { UserEntity } from "./user.entity"
@@ -21,6 +21,7 @@ export class DeliveringProductEntity extends AbstractEntity {
 
     // foreign keys
     @Field(() => String, { nullable: true })
+    @Index()
     @Column({ name: "user_id", nullable: true })
         userId: string
 

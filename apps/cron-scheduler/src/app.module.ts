@@ -1,11 +1,12 @@
+import { BullModule } from "@nestjs/bullmq"
 import { Module } from "@nestjs/common"
 import { ConfigModule } from "@nestjs/config"
-import { envConfig } from "@src/config"
-import { BullModule } from "@nestjs/bullmq"
-import { AnimalsModule } from "./animals"
-import { CropsModule } from "./crops"
 import { ScheduleModule } from "@nestjs/schedule"
 import { TypeOrmModule } from "@nestjs/typeorm"
+import { envConfig } from "@src/config"
+import { AnimalsModule } from "./animals"
+import { CropsModule } from "./crops"
+import { DeliveryModule } from "./delivery"
 
 @Module({
     imports: [
@@ -33,7 +34,8 @@ import { TypeOrmModule } from "@nestjs/typeorm"
             connectTimeoutMS: 2000
         }),
         CropsModule,
-        AnimalsModule
+        AnimalsModule,
+        DeliveryModule
     ]
 })
 export class AppModule {}
