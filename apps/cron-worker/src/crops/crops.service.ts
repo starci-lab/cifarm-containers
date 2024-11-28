@@ -11,7 +11,6 @@ import {
     SystemId
 } from "@src/database"
 import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
-import { speedUpConstants } from "@apps/gameplay-service"
 
 @Processor(cropsTimeQueueConstants.NAME)
 export class CropsWorker extends WorkerHost {
@@ -26,16 +25,15 @@ export class CropsWorker extends WorkerHost {
 
     public override async process(job: Job<CropsJobData>): Promise<void> {
         this.logger.verbose(`Processing job: ${job.id}`)
-        const { from, to } = job.data
+        const { from, to, seconds } = job.data
 
+        //redis có khái niệm bảng không
+        //nhiều key vào db mà có thể filter ra tất cả những key đó
         //find the speed up cache
-        const value = await this.cacheManager.get(speedUpConstants.KEY)
-        let multiple = 1
-        if (value) {
-            // kieemr tra kieu du lieu xem redis luu string hay number
-            multiple = Number(value)
-            await this.cacheManager.del(speedUpConstants.KEY)
-        }
+        //NGHIÊN CỨU
+        //là hàm speedUp sẽ add 1 cái key-value vào redis, và việc gọi nhiều hàm speedUp 1 lúc sẽ add nhiều key vào db
+        //(cách anh làm hiện tại - vấn đề là nếu cái mới dc gọi thì cái cũ bị ghi đè)
+        //và hàm process vẫn đọc dc các key-value đó như thường
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -64,8 +62,8 @@ export class CropsWorker extends WorkerHost {
                 await queryRunner.startTransaction()
                 seedGrowthInfos = seedGrowthInfos.map((seedGrowthInfo) => {
                 // Add time to the seed growth
-                    seedGrowthInfo.currentStageTimeElapsed += multiple
-                    seedGrowthInfo.totalTimeElapsed += multiple
+                    seedGrowthInfo.currentStageTimeElapsed += seconds
+                    seedGrowthInfo.totalTimeElapsed += seconds
 
                     //while the current stage time elapsed is greater than the growth stage duration
                     while (

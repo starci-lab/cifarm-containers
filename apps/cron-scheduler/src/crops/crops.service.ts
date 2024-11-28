@@ -1,5 +1,5 @@
 import { InjectQueue } from "@nestjs/bullmq"
-import { Injectable, Logger } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
@@ -7,11 +7,15 @@ import { cropsTimeQueueConstants } from "../app.constant"
 import { v4 } from "uuid"
 import { CropCurrentState, SeedGrowthInfoEntity } from "@src/database"
 import { CropsJobData } from "./crops.dto"
+import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
+import { speedUpConstants } from "@apps/gameplay-service"
 
 @Injectable()
 export class CropsService {
     private readonly logger = new Logger(CropsService.name)
     constructor(
+        @Inject(CACHE_MANAGER)
+        private readonly cacheManager: Cache,
         @InjectQueue(cropsTimeQueueConstants.NAME) private cropsQueue: Queue,
         private readonly dataSource: DataSource
     ) {}
@@ -45,6 +49,14 @@ export class CropsService {
         const batchSize = cropsTimeQueueConstants.BATCH_SIZE
         const batchCount = Math.ceil(count / batchSize)
 
+        const value = await this.cacheManager.get(speedUpConstants.KEY)
+        let time = 1
+        if (value) {
+            // kieemr tra kieu du lieu xem redis luu string hay number
+            time += Number(value)
+            await this.cacheManager.del(speedUpConstants.KEY)
+        }
+
         // Create batches
         const batches: Array<{
             name: string
@@ -53,7 +65,8 @@ export class CropsService {
             name: v4(),
             data: {
                 from: i * batchSize,
-                to: Math.min((i + 1) * batchSize, count) // Ensure 'to' does not exceed 'count'
+                to: Math.min((i + 1) * batchSize, count), // Ensure 'to' does not exceed 'count'
+                seconds: time,
             }
         }))
         this.logger.verbose(`Adding ${batches.length} batches to the queue`)
