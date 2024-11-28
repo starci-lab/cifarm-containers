@@ -18,10 +18,8 @@ import {
     UpgradeEntity,
     UserEntity
 } from "@src/database"
-import { BuySuppliesController } from "./buy-supplies.controller"
-import { BuySuppliesService } from "./buy-supplies.service"
-import { InventoryModule } from "@src/services/gameplay/inventory"
-import { GoldBalanceModule } from "@src/services/gameplay/wallet"
+import { DeliverProductController } from "./deliver-product.controller"
+import { DeliverProductService } from "./deliver-product.service"
 
 @Global()
 @Module({
@@ -43,12 +41,10 @@ import { GoldBalanceModule } from "@src/services/gameplay/wallet"
             BuildingEntity,
             UpgradeEntity,
             DeliveringProductEntity
-        ]),
-        InventoryModule,
-        GoldBalanceModule
+        ])
     ],
-    providers: [BuySuppliesService],
-    exports: [BuySuppliesService],
-    controllers: [BuySuppliesController]
+    providers: [DeliverProductService],
+    exports: [DeliverProductService],
+    controllers: [DeliverProductController]
 })
-export class BuySuppliesModule {}
+export class DeliverProductModule {}

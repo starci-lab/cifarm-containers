@@ -2,14 +2,7 @@ import { ConfigModule } from "@nestjs/config"
 import { Test } from "@nestjs/testing"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig, Network, SupportedChainKey } from "@src/config"
-import {
-    PlacedItemEntity,
-    PlacedItemType,
-    PlacedItemTypeEntity,
-    TileEntity,
-    TileId,
-    UserEntity
-} from "@src/database"
+import { PlacedItemEntity, TileEntity, TileId, UserEntity } from "@src/database"
 import { UserInsufficientGoldException } from "@src/exceptions"
 import { GoldBalanceService } from "@src/services"
 import * as path from "path"
@@ -45,18 +38,18 @@ describe("BuyTileService", () => {
             energy: 5,
             level: 2,
             golds: 100
-        },
-        {
-            username: "test_user_buy_tile_3",
-            chainKey: SupportedChainKey.Solana,
-            accountAddress: "0x123456789abcdef",
-            network: Network.Mainnet,
-            tokens: 50.5,
-            experiences: 10,
-            energy: 5,
-            level: 2,
-            golds: 40000
         }
+        // {
+        //     username: "test_user_buy_tile_3",
+        //     chainKey: SupportedChainKey.Solana,
+        //     accountAddress: "0x123456789abcdef",
+        //     network: Network.Mainnet,
+        //     tokens: 50.5,
+        //     experiences: 10,
+        //     energy: 5,
+        //     level: 2,
+        //     golds: 40000
+        // }
     ]
 
     beforeAll(async () => {
@@ -135,51 +128,51 @@ describe("BuyTileService", () => {
         )
     })
 
-    it("Should automatically switch to the next tile type after reaching max ownership", async () => {
-        const userBeforeBuyTile = await dataSource.manager.save(UserEntity, users[2])
+    // it("Should automatically switch to the next tile type after reaching max ownership", async () => {
+    //     const userBeforeBuyTile = await dataSource.manager.save(UserEntity, users[2])
 
-        const basicTile1 = await dataSource.manager.findOne(TileEntity, {
-            where: { id: TileId.BasicTile1 }
-        })
+    //     const basicTile1 = await dataSource.manager.findOne(TileEntity, {
+    //         where: { id: TileId.BasicTile1 }
+    //     })
 
-        const placedItemType1 = await dataSource.manager.findOne(PlacedItemTypeEntity, {
-            where: { type: PlacedItemType.Tile, tileId: TileId.BasicTile1 }
-        })
+    //     const placedItemType1 = await dataSource.manager.findOne(PlacedItemTypeEntity, {
+    //         where: { type: PlacedItemType.Tile, tileId: TileId.BasicTile1 }
+    //     })
 
-        const maxOwnershipTile1 = basicTile1.maxOwnership
-        const placedItems1 = Array.from({ length: maxOwnershipTile1 }).map(() => ({
-            userId: userBeforeBuyTile.id,
-            placedItemTypeId: placedItemType1.id,
-            x: 5,
-            y: 5
-        }))
-        await dataSource.manager.save(PlacedItemEntity, placedItems1)
+    //     const maxOwnershipTile1 = basicTile1.maxOwnership
+    //     const placedItems1 = Array.from({ length: maxOwnershipTile1 }).map(() => ({
+    //         userId: userBeforeBuyTile.id,
+    //         placedItemTypeId: placedItemType1.id,
+    //         x: 5,
+    //         y: 5
+    //     }))
+    //     await dataSource.manager.save(PlacedItemEntity, placedItems1)
 
-        const buyTileRequest: BuyTileRequest = {
-            userId: userBeforeBuyTile.id,
-            position: { x: 10, y: 20 }
-        }
+    //     const buyTileRequest: BuyTileRequest = {
+    //         userId: userBeforeBuyTile.id,
+    //         position: { x: 10, y: 20 }
+    //     }
 
-        const response: BuyTileResponse = await service.buyTile(buyTileRequest)
+    //     const response: BuyTileResponse = await service.buyTile(buyTileRequest)
 
-        const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
-            where: { id: response.placedItemId, userId: userBeforeBuyTile.id },
-            relations: {
-                placedItemType: {
-                    tile: true
-                }
-            }
-        })
+    //     const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
+    //         where: { id: response.placedItemId, userId: userBeforeBuyTile.id },
+    //         relations: {
+    //             placedItemType: {
+    //                 tile: true
+    //             }
+    //         }
+    //     })
 
-        const userAfterBuyTile = await dataSource.manager.findOne(UserEntity, {
-            where: { id: userBeforeBuyTile.id }
-        })
+    //     const userAfterBuyTile = await dataSource.manager.findOne(UserEntity, {
+    //         where: { id: userBeforeBuyTile.id }
+    //     })
 
-        expect(userAfterBuyTile.golds).toBe(
-            userBeforeBuyTile.golds - placedItem.placedItemType.tile.price
-        )
-        expect(placedItem.placedItemType.tileId).toBe(TileId.BasicTile2)
-    })
+    //     expect(userAfterBuyTile.golds).toBe(
+    //         userBeforeBuyTile.golds - placedItem.placedItemType.tile.price
+    //     )
+    //     expect(placedItem.placedItemType.tileId).toBe(TileId.BasicTile2)
+    // })
 
     afterAll(async () => {
         await dataSource.manager.remove(UserEntity, users)

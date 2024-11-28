@@ -28,7 +28,7 @@ export class InventoryEntity extends AbstractEntity {
         userId: string
 
     @Field(() => UserEntity, { nullable: true })
-    @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "SET NULL", eager: true })
+    @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
         user?: UserEntity
 

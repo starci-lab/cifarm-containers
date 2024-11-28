@@ -261,7 +261,7 @@ export class SeedDataService {
                     inventoryType: {
                         id: ProductId.Egg,
                         asTool: false,
-                        deliverable: false,
+                        deliverable: true,
                         maxStack: 1,
                         placeable: true,
                         type: InventoryType.Product
@@ -304,7 +304,7 @@ export class SeedDataService {
                     inventoryType: {
                         id: ProductId.Milk,
                         asTool: false,
-                        deliverable: false,
+                        deliverable: true,
                         maxStack: 1,
                         placeable: true,
                         type: InventoryType.Product

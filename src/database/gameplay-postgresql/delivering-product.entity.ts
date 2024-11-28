@@ -25,15 +25,18 @@ export class DeliveringProductEntity extends AbstractEntity {
         userId: string
 
     @Field(() => UserEntity, { nullable: true })
-    @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "SET NULL", eager: true })
+    @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
         user?: UserEntity
 
+    @Field(() => String, { nullable: true })
+    @Column({ name: "product_id", nullable: true })
+        productId: string
+
     @Field(() => ProductEntity, { nullable: true })
     @ManyToOne(() => ProductEntity, (user) => user.deliveringProducts, {
-        onDelete: "SET NULL",
-        eager: true
+        onDelete: "SET NULL"
     })
-    @JoinColumn({ name: "user_id", referencedColumnName: "id" })
+    @JoinColumn({ name: "product_id", referencedColumnName: "id" })
         product?: ProductEntity
 }

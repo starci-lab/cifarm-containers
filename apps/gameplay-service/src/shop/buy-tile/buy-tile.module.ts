@@ -4,6 +4,7 @@ import {
     AnimalEntity,
     BuildingEntity,
     CropEntity,
+    DeliveringProductEntity,
     InventoryEntity,
     InventoryTypeEntity,
     PlacedItemEntity,
@@ -39,7 +40,8 @@ import { BuyTileController } from "./buy-tile.controller"
             TileEntity,
             SupplyEntity,
             BuildingEntity,
-            UpgradeEntity
+            UpgradeEntity,
+            DeliveringProductEntity
         ]),
         WalletModule
     ],

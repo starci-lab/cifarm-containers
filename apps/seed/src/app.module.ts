@@ -104,7 +104,8 @@ import { AppService } from "./app.service"
                 SeedGrowthInfoEntity,
                 AnimalInfoEntity,
                 BuildingInfoEntity,
-                PlacedItemTypeEntity
+                PlacedItemTypeEntity,
+                DeliveringProductEntity
             ],
             "test"
         ),

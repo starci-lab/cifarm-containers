@@ -78,7 +78,10 @@ export class UserEntity extends AbstractEntity {
         hasCompletedFirstAuth: boolean
 
     @Field(() => [InventoryEntity])
-    @OneToMany(() => InventoryEntity, (inventory) => inventory.user)
+    @OneToMany(() => InventoryEntity, (inventory) => inventory.user, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
         inventories?: Array<InventoryEntity>
 
     @Field(() => [PlacedItemEntity])
@@ -86,6 +89,9 @@ export class UserEntity extends AbstractEntity {
         placedItems?: Array<PlacedItemEntity>
 
     @Field(() => [DeliveringProductEntity])
-    @OneToMany(() => DeliveringProductEntity, (deliveringProduct) => deliveringProduct.user)
+    @OneToMany(() => DeliveringProductEntity, (deliveringProduct) => deliveringProduct.user, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
         deliveringProducts?: Array<DeliveringProductEntity>
 }
