@@ -6,6 +6,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import {
     AnimalEntity,
     AnimalInfoEntity,
+    DeliveringProductEntity,
     InventoryEntity,
     PlacedItemEntity,
     SupplyEntity,
@@ -25,7 +26,8 @@ import {
             InventoryEntity,
             PlacedItemEntity,
             TileEntity,
-            SupplyEntity
+            SupplyEntity,
+            DeliveringProductEntity
         ])
     ],
     providers: [AnimalsService]

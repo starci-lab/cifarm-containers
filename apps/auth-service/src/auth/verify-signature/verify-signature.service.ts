@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/config"
-import { AfterAuthenticatedFirstTimeTransactionFailedException, CacheNotFound, VerifySignatureCreateUserTransactionFailedException } from "@src/exceptions"
+import { CacheNotFound, VerifySignatureCreateUserTransactionFailedException } from "@src/exceptions"
 
 import {
     AlgorandAuthService,
@@ -175,34 +175,6 @@ export class VerifySignatureService {
                     refreshToken
                 }
             }
-        } finally {
-            await queryRunner.release()
-        }
-    }
-
-    private async afterAuthenticated(user: UserEntity){
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            
-
-            if (!user) {
-                try{
-                    // first auth already completed
-                    //charge full energy
-                   
-                    await queryRunner.commitTransaction()
-                } catch (error) {
-                    this.logger.error("Transaction after authenticated first time failed", error.message)
-                    await queryRunner.rollbackTransaction()
-                    throw new AfterAuthenticatedFirstTimeTransactionFailedException(error.message)
-                }
-            } else {
-                // first auth not yet completed
-                //apply logic later
-            }
-            return {}
         } finally {
             await queryRunner.release()
         }

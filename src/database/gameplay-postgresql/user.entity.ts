@@ -81,7 +81,10 @@ export class UserEntity extends AbstractEntity {
         inventories?: Array<InventoryEntity>
 
     @Field(() => [PlacedItemEntity])
-    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.user)
+    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.user, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
         placedItems?: Array<PlacedItemEntity>
 
     @Field(() => [DeliveringProductEntity])
