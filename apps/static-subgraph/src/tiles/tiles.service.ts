@@ -1,7 +1,7 @@
+import { GetTilesArgs } from "@apps/static-subgraph/src/tiles"
 import { Injectable, Logger } from "@nestjs/common"
 import { TileEntity } from "@src/database"
 import { DataSource } from "typeorm"
-import { GetTilesArgs } from "./tiles.dto"
 
 @Injectable()
 export class TilesService {
