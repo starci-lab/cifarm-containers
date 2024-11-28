@@ -10,8 +10,8 @@ import {
     PlacedItemEntity,
     UserEntity
 } from "@src/database"
+import { BuildingNotSameAnimalException, UserInsufficientGoldException } from "@src/exceptions"
 import { GoldBalanceService } from "@src/services"
-import * as path from "path"
 import { DataSource, DeepPartial } from "typeorm"
 import {
     ConstructBuildingModule,
@@ -22,7 +22,6 @@ import {
 import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 import { BuyAnimalModule } from "./buy-animal.module"
 import { BuyAnimalService } from "./buy-animal.service"
-import { BuildingNotSameAnimalException, UserInsufficientGoldException } from "@src/exceptions"
 
 describe("BuyAnimalService", () => {
     let dataSource: DataSource
@@ -82,7 +81,7 @@ describe("BuyAnimalService", () => {
             imports: [
                 ConfigModule.forRoot({
                     load: [envConfig],
-                    envFilePath: path.join(process.cwd(), ".env.local"),
+                    envFilePath: [".env.local"],
                     isGlobal: true
                 }),
                 TypeOrmModule.forRoot({

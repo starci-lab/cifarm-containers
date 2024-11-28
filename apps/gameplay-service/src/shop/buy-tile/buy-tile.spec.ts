@@ -5,7 +5,6 @@ import { envConfig, Network, SupportedChainKey } from "@src/config"
 import { PlacedItemEntity, TileEntity, TileId, UserEntity } from "@src/database"
 import { UserInsufficientGoldException } from "@src/exceptions"
 import { GoldBalanceService } from "@src/services"
-import * as path from "path"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
 import { BuyTileModule } from "./buy-tile.module"
@@ -57,7 +56,7 @@ describe("BuyTileService", () => {
             imports: [
                 ConfigModule.forRoot({
                     load: [envConfig],
-                    envFilePath: path.join(process.cwd(), ".env.local"),
+                    envFilePath: [".env.local"],
                     isGlobal: true
                 }),
                 TypeOrmModule.forRoot({

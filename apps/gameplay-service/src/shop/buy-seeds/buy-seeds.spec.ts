@@ -4,7 +4,6 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig, Network, SupportedChainKey } from "@src/config"
 import { CropEntity, CropId, InventoryEntity, UserEntity } from "@src/database"
 import { SeedDataModule } from "@src/services"
-import * as path from "path"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuySeedsRequest } from "./buy-seeds.dto"
 import { BuySeedsModule } from "./buy-seeds.module"
@@ -45,7 +44,7 @@ describe("BuySeedsService", () => {
             imports: [
                 ConfigModule.forRoot({
                     load: [envConfig],
-                    envFilePath: path.join(process.cwd(), ".env.local"),
+                    envFilePath: [".env.local"],
                     isGlobal: true
                 }),
                 TypeOrmModule.forRoot({

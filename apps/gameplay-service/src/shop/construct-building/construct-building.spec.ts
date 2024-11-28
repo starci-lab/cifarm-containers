@@ -4,7 +4,6 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig, Network, SupportedChainKey } from "@src/config"
 import { BuildingEntity, BuildingId, PlacedItemEntity, UserEntity } from "@src/database"
 import { GoldBalanceService } from "@src/services"
-import * as path from "path"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
 import { ConstructBuildingModule } from "./construct-building.module"
@@ -46,7 +45,7 @@ describe("ConstructBuildingService", () => {
             imports: [
                 ConfigModule.forRoot({
                     load: [envConfig],
-                    envFilePath: path.join(process.cwd(), ".env.local"),
+                    envFilePath: [".env.local"],
                     isGlobal: true
                 }),
                 TypeOrmModule.forRoot({

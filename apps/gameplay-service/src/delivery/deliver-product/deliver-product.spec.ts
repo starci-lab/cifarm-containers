@@ -4,7 +4,6 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig, Network, SupportedChainKey } from "@src/config"
 import { DeliveringProductEntity, InventoryEntity, ProductId, UserEntity } from "@src/database"
 import { InsufficientInventoryException } from "@src/exceptions"
-import * as path from "path"
 import { DataSource, DeepPartial } from "typeorm"
 import { DeliverProductRequest, DeliverProductResponse } from "./deliver-product.dto"
 import { DeliverProductModule } from "./deliver-product.module"
@@ -62,7 +61,7 @@ describe("DeliverProductService", () => {
             imports: [
                 ConfigModule.forRoot({
                     load: [envConfig],
-                    envFilePath: path.join(process.cwd(), ".env.local"),
+                    envFilePath: [".env.local"],
                     isGlobal: true
                 }),
                 TypeOrmModule.forRoot({
