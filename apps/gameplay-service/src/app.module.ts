@@ -9,6 +9,7 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
 import { ShopModule } from "./shop"
 import { FarmingModule } from "./farming"
+import { DevModule } from "./dev"
 
 @Module({
     imports: [
@@ -44,7 +45,8 @@ import { FarmingModule } from "./farming"
             }
         }),
         ShopModule,
-        FarmingModule
+        FarmingModule,
+        DevModule
     ],
     controllers: [AppController],
     providers: [

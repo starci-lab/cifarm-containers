@@ -1,5 +1,5 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq"
-import { Logger } from "@nestjs/common"
+import { Inject, Logger } from "@nestjs/common"
 import { Job } from "bullmq"
 import { DataSource, Not } from "typeorm"
 import { CropsJobData, cropsTimeQueueConstants } from "@apps/cron-scheduler"
@@ -10,12 +10,17 @@ import {
     SystemEntity,
     SystemId
 } from "@src/database"
+import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
+import { speedUpConstants } from "@apps/gameplay-service"
 
 @Processor(cropsTimeQueueConstants.NAME)
 export class CropsWorker extends WorkerHost {
     private readonly logger = new Logger(CropsWorker.name)
 
-    constructor(private readonly dataSource: DataSource) {
+    constructor(
+        @Inject(CACHE_MANAGER)
+        private readonly cacheManager: Cache,
+        private readonly dataSource: DataSource) {
         super()
     }
 
@@ -23,7 +28,14 @@ export class CropsWorker extends WorkerHost {
         this.logger.verbose(`Processing job: ${job.id}`)
         const { from, to } = job.data
 
-        const multiple = 1
+        //find the speed up cache
+        const value = await this.cacheManager.get(speedUpConstants.KEY)
+        let multiple = 1
+        if (value) {
+            // kieemr tra kieu du lieu xem redis luu string hay number
+            multiple = Number(value)
+            await this.cacheManager.del(speedUpConstants.KEY)
+        }
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
