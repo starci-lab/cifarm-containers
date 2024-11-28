@@ -5,22 +5,22 @@ import { AnimalEntity } from "@src/database"
 import { GetAnimalsArgs } from "./animals.dto"
 import { Cache } from "cache-manager"
 import { Inject } from "@nestjs/common"
-import { CacheInterceptor } from "@nestjs/cache-manager"
+import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
+import TimerInterceptor from "@src/interceptors/timer.interceptor"
 
 @Resolver()
 export class AnimalsResolver {
     private readonly logger = new Logger(AnimalsResolver.name)
 
-    constructor(private readonly animalsService: AnimalsService
-        , @Inject("CACHE_MANAGER") private cacheManager: Cache
-
-    ) { }
+    constructor(private readonly animalsService: AnimalsService) {
+    }
 
     @Query(() => [AnimalEntity], {
         name: "animals"
     })
-    @UseInterceptors(CacheInterceptor)
+    @UseInterceptors(TimerInterceptor, GraphQLCacheInterceptor)
     async getAnimals(@Args("args") args: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
-        return this.animalsService.getAnimals(args)
+        const result = await this.animalsService.getAnimals(args)
+        return result
     }
 }

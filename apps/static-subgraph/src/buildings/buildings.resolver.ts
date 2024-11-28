@@ -3,7 +3,7 @@ import { Resolver, Query, Args } from "@nestjs/graphql"
 import { BuildingsService } from "./buildings.service"
 import { BuildingEntity } from "@src/database"
 import { GetBuildingsArgs } from "./buildings.dto"
-import { CacheInterceptor } from "@nestjs/cache-manager"
+import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
 
 @Resolver()
 export class BuildingsResolver {
@@ -14,7 +14,7 @@ export class BuildingsResolver {
     @Query(() => [BuildingEntity], {
         name: "buildings"
     })
-    @UseInterceptors(CacheInterceptor)
+    @UseInterceptors(GraphQLCacheInterceptor)
     async getBuildings(@Args("args") args: GetBuildingsArgs): Promise<Array<BuildingEntity>> {
         return this.buildingsService.getBuildings(args)
     }

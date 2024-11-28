@@ -17,6 +17,7 @@ import { SuppliesModule } from "@apps/static-subgraph/src/supplies/supplies.modu
 import { TilesModule } from "@apps/static-subgraph/src/tiles/tiles.module"
 import { UsersModule } from "@apps/static-subgraph/src/users"
 import { TileEntity, InventoryTypeEntity, ToolEntity, InventoryEntity, UserEntity, SupplyEntity, SpinEntity, DailyRewardPossibility, DailyRewardEntity, CropEntity, ProductEntity, AnimalEntity, BuildingInfoEntity, AnimalInfoEntity, BuildingEntity, PlacedItemEntity, PlacedItemTypeEntity, SeedGrowthInfoEntity, UpgradeEntity } from "@src/database"
+
 @Module({
     imports: [
         TypeOrmModule.forFeature([
@@ -56,9 +57,10 @@ import { TileEntity, InventoryTypeEntity, ToolEntity, InventoryEntity, UserEntit
                     }
                 })
 
+                const ttl = envConfig().redis.ttl
                 return {
                     store: store as unknown as CacheStore,
-                    ttl: Infinity
+                    ttl: ttl
                 }
             }
         }),

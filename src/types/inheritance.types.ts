@@ -73,4 +73,8 @@ export abstract class PaginatedArgs {
         limit?: number
     @Field(() => Int, { nullable: true, defaultValue: 0 }) //default 0
         offset?: number
+
+    toString(): string {
+        return `PaginatedArgs(limit=${this.limit}, offset=${this.offset})`
+    }
 }

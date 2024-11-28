@@ -200,8 +200,8 @@ type Query {
 }
 
 input GetAnimalsArgs {
-  limit: Int
-  offset: Int
+  limit: Int = 10
+  offset: Int = 0
 }
 
 input GetBuildingsArgs {
