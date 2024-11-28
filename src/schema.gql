@@ -56,6 +56,16 @@ type BuildingInfoEntity {
   placedItem: PlacedItemEntity!
 }
 
+type ProductEntity {
+  isPremium: Boolean!
+  goldAmount: Int!
+  tokenAmount: Float!
+  type: String!
+  crop: CropEntity
+  animal: AnimalEntity
+  inventoryType: InventoryTypeEntity
+}
+
 type CropEntity {
   growthStageDuration: Int!
   growthStages: Int!
@@ -164,7 +174,7 @@ type ToolEntity {
   index: Int!
 }
 
-type DailyRewardPossibility {
+type DailyRewardPossibilityEntity {
   goldAmount: Int
   tokenAmount: Int
   thresholdMin: Float!
@@ -175,7 +185,7 @@ type DailyRewardEntity {
   amount: Int
   day: Int!
   isLastDay: Boolean!
-  dailyRewardPossibilities: [DailyRewardPossibility!]
+  dailyRewardPossibilities: [DailyRewardPossibilityEntity!]
 }
 
 type SpinEntity {
@@ -187,19 +197,40 @@ type SpinEntity {
   thresholdMax: Float!
 }
 
+type SystemEntity {
+  value: JSON!
+}
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
+
 type Query {
   animals(args: GetAnimalsArgs!): [AnimalEntity!]!
+  animal_infos(args: GetAnimalInfosArgs!): [AnimalInfoEntity!]!
   buildings(args: GetBuildingsArgs!): [BuildingEntity!]!
+  building_infos(args: GetBuildingInfosArgs!): [BuildingInfoEntity!]!
   crops(args: GetCropsArgs!): [CropEntity!]!
-  dailyRewards(args: GetDailyRewardsArgs!): [DailyRewardEntity!]!
+  daily_reward_possibilities(args: GetDailyRewardPossibilitiesArgs!): [DailyRewardPossibilityEntity!]!
+  daily_rewards(args: GetDailyRewardsArgs!): [DailyRewardEntity!]!
+  inventories(args: GetInventoriesArgs!): [InventoryEntity!]!
+  products(args: GetProductsArgs!): [ProductEntity!]!
   spins(args: GetSpinsArgs!): [SpinEntity!]!
   supplies(args: GetSuppliesArgs!): [SupplyEntity!]!
+  systems(args: GetSystemsArgs!): [SystemEntity!]!
   tiles(args: GetTilesArgs!): [TileEntity!]!
   tools(args: GetToolsArgs!): [ToolEntity!]!
+  upgrades(args: GetUpgradesArgs!): [UpgradeEntity!]!
   users(args: GetUsersArgs!): [UserEntity!]!
 }
 
 input GetAnimalsArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+input GetAnimalInfosArgs {
   limit: Int = 10
   offset: Int = 0
 }
@@ -209,9 +240,19 @@ input GetBuildingsArgs {
   offset: Int
 }
 
+input GetBuildingInfosArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
 input GetCropsArgs {
   limit: Int
   offset: Int
+}
+
+input GetDailyRewardPossibilitiesArgs {
+  limit: Int = 10
+  offset: Int = 0
 }
 
 input GetDailyRewardsArgs {
@@ -219,22 +260,45 @@ input GetDailyRewardsArgs {
   offset: Int
 }
 
+"""GetInventoriesArgs"""
+input GetInventoriesArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+"""GetProductArgs"""
+input GetProductsArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
 input GetSpinsArgs {
-  limit: Int
-  offset: Int
+  limit: Int = 10
+  offset: Int = 0
 }
 
 input GetSuppliesArgs {
-  limit: Int
-  offset: Int
+  limit: Int = 10
+  offset: Int = 0
+}
+
+input GetSystemsArgs {
+  limit: Int = 10
+  offset: Int = 0
 }
 
 input GetTilesArgs {
-  limit: Int
-  offset: Int
+  limit: Int = 10
+  offset: Int = 0
 }
 
 input GetToolsArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+"""GetUpgradesArgs"""
+input GetUpgradesArgs {
   limit: Int = 10
   offset: Int = 0
 }

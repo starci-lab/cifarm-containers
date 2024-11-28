@@ -5,7 +5,7 @@ import { PlacedItemEntity } from "./placed-item.entity"
 import { AbstractEntity } from "./abstract"
 
 @ObjectType()
-@Entity("building_info")
+@Entity("building_infos")
 export class BuildingInfoEntity extends AbstractEntity {
     @Field(() => Number)
     @Column({ type: "int", nullable: true })

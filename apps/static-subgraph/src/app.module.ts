@@ -6,32 +6,16 @@ import { GraphQLModule } from "@nestjs/graphql"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
-import { ToolsModule } from "@apps/static-subgraph/src/tools"
 // import * as apolloPlugins from "@apollo/server/plugin/disabled"
-import { AnimalsModule } from "@apps/static-subgraph/src/animals/animals.module"
-import { CropsModule } from "@apps/static-subgraph/src/crops/crops.module"
-import { BuildingsModule } from "@apps/static-subgraph/src/buildings/buildings.module"
-import { DailyRewardsModule } from "@apps/static-subgraph/src/daily-rewards/daily-rewards.module"
-import { SpinsModule } from "@apps/static-subgraph/src/spins/spins.module"
-import { SuppliesModule } from "@apps/static-subgraph/src/supplies/supplies.module"
-import { TilesModule } from "@apps/static-subgraph/src/tiles/tiles.module"
-import { UsersModule } from "@apps/static-subgraph/src/users"
-import { TileEntity, InventoryTypeEntity, ToolEntity, InventoryEntity, UserEntity, SupplyEntity, SpinEntity, DailyRewardPossibility, DailyRewardEntity, CropEntity, ProductEntity, AnimalEntity, BuildingInfoEntity, AnimalInfoEntity, BuildingEntity, PlacedItemEntity, PlacedItemTypeEntity, SeedGrowthInfoEntity, UpgradeEntity } from "@src/database"
+import { Entities } from "@src/database"
+import { Modules } from "@apps/static-subgraph/src/"
+import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([
-            AnimalEntity, AnimalInfoEntity,
-            BuildingEntity, BuildingInfoEntity,
-            CropEntity,
-            DailyRewardEntity, DailyRewardPossibility,
-            InventoryEntity, InventoryTypeEntity,
-            PlacedItemEntity, PlacedItemTypeEntity, ProductEntity,
-            SeedGrowthInfoEntity, SpinEntity,
-            SupplyEntity,
-            TileEntity, ToolEntity,
-            UpgradeEntity, UserEntity
-        ]),
+            ...Object.values(Entities)
+        ] as EntityClassOrSchema[]),
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],
@@ -74,15 +58,7 @@ import { TileEntity, InventoryTypeEntity, ToolEntity, InventoryEntity, UserEntit
             }
 
         }),
-        AnimalsModule,
-        BuildingsModule,
-        CropsModule,
-        DailyRewardsModule,
-        SpinsModule,
-        SuppliesModule,
-        TilesModule,
-        ToolsModule,
-        UsersModule
+        ...Object.values(Modules)
     ],
 })
 export class AppModule { }

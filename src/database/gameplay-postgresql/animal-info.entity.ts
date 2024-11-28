@@ -7,7 +7,7 @@ import { AbstractEntity } from "./abstract"
 import { AnimalCurrentState } from "./enums"
 
 @ObjectType()
-@Entity("animal_info")
+@Entity("animal_infos")
 export class AnimalInfoEntity extends AbstractEntity {
     @Field(() => Number)
     @Column({ type: "int", nullable: true })

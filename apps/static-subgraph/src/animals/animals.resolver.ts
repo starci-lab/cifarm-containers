@@ -3,8 +3,6 @@ import { Resolver, Query, Args } from "@nestjs/graphql"
 import { AnimalsService } from "./animals.service"
 import { AnimalEntity } from "@src/database"
 import { GetAnimalsArgs } from "./animals.dto"
-import { Cache } from "cache-manager"
-import { Inject } from "@nestjs/common"
 import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
 import TimerInterceptor from "@src/interceptors/timer.interceptor"
 

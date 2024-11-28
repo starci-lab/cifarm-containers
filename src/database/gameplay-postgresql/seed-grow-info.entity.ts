@@ -7,7 +7,7 @@ import { UserEntity } from "./user.entity"
 import { CropCurrentState } from "./enums"
 
 @ObjectType()
-@Entity("seed_growth_info")
+@Entity("seed_growth_infos")
 export class SeedGrowthInfoEntity extends AbstractEntity {
     @Field(() => Int)
     @Column({ type: "int4", name: "current_stage", default: 1 })

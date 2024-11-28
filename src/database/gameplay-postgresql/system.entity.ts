@@ -1,12 +1,12 @@
-import { ObjectType } from "@nestjs/graphql"
+import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
-
+import JSON from "graphql-type-json"
 @ObjectType()
-@Entity("system")
+@Entity("systems")
 export class SystemEntity extends ReadableAbstractEntity {
-    //activity configure
     @Column({ name: "value", type: "jsonb" })
+    @Field(() => JSON)
         value: object
 }
 
