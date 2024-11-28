@@ -61,7 +61,7 @@ export class CropsWorker extends WorkerHost {
             try {
                 await queryRunner.startTransaction()
                 seedGrowthInfos = seedGrowthInfos.map((seedGrowthInfo) => {
-                // Add time to the seed growth
+                    // Add time to the seed growth
                     seedGrowthInfo.currentStageTimeElapsed += seconds
                     seedGrowthInfo.totalTimeElapsed += seconds
 
