@@ -1,14 +1,15 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { CropsService } from "./crops.service"
 import { CropEntity } from "@src/database"
 import { GetCropsArgs } from "./crops.dto"
-
+import { CacheInterceptor } from "@nestjs/cache-manager"
+@UseInterceptors(CacheInterceptor)
 @Resolver()
 export class CropsResolver {
     private readonly logger = new Logger(CropsResolver.name)
 
-    constructor(private readonly cropsService: CropsService) {}
+    constructor(private readonly cropsService: CropsService) { }
 
     @Query(() => [CropEntity], {
         name: "crops"

@@ -1,9 +1,7 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { DailyRewardEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import { GetDailyRewardsArgs } from "./daily-rewards.dto"
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Cache } from "cache-manager"
 
 @Injectable()
 export class DailyRewardsService {
@@ -11,9 +9,8 @@ export class DailyRewardsService {
 
     constructor(
         private readonly dataSource: DataSource,
-        @Inject(CACHE_MANAGER)
-        private cacheManager: Cache
-    ) {}
+
+    ) { }
 
     async getDailyRewards({
         limit = 10,
@@ -22,7 +19,16 @@ export class DailyRewardsService {
         this.logger.debug(`GetDailyRewards: limit=${limit}, offset=${offset}`)
 
         let dailyRewards: Array<DailyRewardEntity>
-
-        return dailyRewards
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            dailyRewards = await this.dataSource.getRepository(DailyRewardEntity).find({
+                take: limit,
+                skip: offset
+            })
+            return dailyRewards
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

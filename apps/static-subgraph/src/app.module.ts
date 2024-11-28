@@ -16,8 +16,21 @@ import { SpinsModule } from "@apps/static-subgraph/src/spins/spins.module"
 import { SuppliesModule } from "@apps/static-subgraph/src/supplies/supplies.module"
 import { TilesModule } from "@apps/static-subgraph/src/tiles/tiles.module"
 import { UsersModule } from "@apps/static-subgraph/src/users"
+import { TileEntity, InventoryTypeEntity, ToolEntity, InventoryEntity, UserEntity, SupplyEntity, SpinEntity, DailyRewardPossibility, DailyRewardEntity, CropEntity, ProductEntity, AnimalEntity, BuildingInfoEntity, AnimalInfoEntity, BuildingEntity, PlacedItemEntity, PlacedItemTypeEntity, SeedGrowthInfoEntity, UpgradeEntity } from "@src/database"
 @Module({
     imports: [
+        TypeOrmModule.forFeature([
+            AnimalEntity, AnimalInfoEntity,
+            BuildingEntity, BuildingInfoEntity,
+            CropEntity,
+            DailyRewardEntity, DailyRewardPossibility,
+            InventoryEntity, InventoryTypeEntity,
+            PlacedItemEntity, PlacedItemTypeEntity, ProductEntity,
+            SeedGrowthInfoEntity, SpinEntity,
+            SupplyEntity,
+            TileEntity, ToolEntity,
+            UpgradeEntity, UserEntity
+        ]),
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],

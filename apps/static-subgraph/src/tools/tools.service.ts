@@ -13,16 +13,22 @@ export class ToolsService {
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache
-    ) {}
+    ) { }
 
     @UseInterceptors(CacheInterceptor)
     @CacheKey("tools")
     async getTools({ limit = 10, offset = 0 }: GetToolsArgs): Promise<Array<ToolEntity>> {
-        this.logger.debug(`GetTools: limit=${limit}, offset=${offset}`)
-        const tools = await this.dataSource.getRepository(ToolEntity).find({
-            take: limit,
-            skip: offset
-        })
-        return tools
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            this.logger.debug(`GetTools: limit=${limit}, offset=${offset}`)
+            const tools = await this.dataSource.getRepository(ToolEntity).find({
+                take: limit,
+                skip: offset
+            })
+            return tools
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

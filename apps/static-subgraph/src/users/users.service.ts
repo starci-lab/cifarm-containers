@@ -12,11 +12,10 @@ export class UserService {
     ) { }
 
     async getUsers({ limit = 10, offset = 0 }: GetUsersArgs): Promise<Array<UserEntity>> {
+        this.logger.debug(`GetUsers: limit=${limit}, offset=${offset}`)
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            
-            this.logger.debug(`GetUsers: limit=${limit}, offset=${offset}`)
             const users = await this.dataSource.getRepository(UserEntity).find({
                 take: limit,
                 skip: offset

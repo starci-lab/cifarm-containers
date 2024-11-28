@@ -13,13 +13,22 @@ export class SpinsService {
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache
-    ) {}
+    ) { }
 
     async getSpins({ limit = 10, offset = 0 }: GetSpinsArgs): Promise<Array<SpinEntity>> {
         this.logger.debug(`GetSpins: limit=${limit}, offset=${offset}`)
 
         let spins: Array<SpinEntity>
-
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            spins = await this.dataSource.getRepository(SpinEntity).find({
+                take: limit,
+                skip: offset
+            })
+        } finally {
+            await queryRunner.release()
+        }
         return spins
     }
 }
