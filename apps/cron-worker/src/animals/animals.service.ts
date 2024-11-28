@@ -3,7 +3,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
-import { animalsTimeQueueConstants } from "../app.constant"
+import { animalsTimeQueueConstants } from "@apps/cron-scheduler"
 import { v4 } from "uuid"
 import { AnimalCurrentState, AnimalInfoEntity } from "@src/database"
 
