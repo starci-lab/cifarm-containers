@@ -6,8 +6,16 @@ import { GraphQLModule } from "@nestjs/graphql"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
-import { ToolsModule } from "./tools"
-
+import { ToolsModule } from "@apps/static-subgraph/src/tools"
+// import * as apolloPlugins from "@apollo/server/plugin/disabled"
+import { AnimalsModule } from "@apps/static-subgraph/src/animals/animals.module"
+import { CropsModule } from "@apps/static-subgraph/src/crops/crops.module"
+import { BuildingsModule } from "@apps/static-subgraph/src/buildings/buildings.module"
+import { DailyRewardsModule } from "@apps/static-subgraph/src/daily-rewards/daily-rewards.module"
+import { SpinsModule } from "@apps/static-subgraph/src/spins/spins.module"
+import { SuppliesModule } from "@apps/static-subgraph/src/supplies/supplies.module"
+import { TilesModule } from "@apps/static-subgraph/src/tiles/tiles.module"
+import { UsersModule } from "@apps/static-subgraph/src/users"
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -45,21 +53,21 @@ import { ToolsModule } from "./tools"
             driver: ApolloFederationDriver,
             typePaths: ["./**/*.gql"],
             playground: false,
-            // plugins: [ApolloServerPluginInlineTraceDisabled],
+            // plugins: [apolloPlugins.ApolloServerPluginInlineTraceDisabled()],
             buildSchemaOptions: {
                 orphanedTypes: []
             }
+
         }),
-        ToolsModule
-        // AnimalsModule,
-        // CropsModule,
-        // BuildingsModule,
-        // DailyRewardsModule,
-        // SpinsModule,
-        // SuppliesModule,
-        // TilesModule
+        AnimalsModule,
+        BuildingsModule,
+        CropsModule,
+        DailyRewardsModule,
+        SpinsModule,
+        SuppliesModule,
+        TilesModule,
+        ToolsModule,
+        UsersModule
     ],
-    controllers: [],
-    providers: []
 })
-export class AppModule {}
+export class AppModule { }

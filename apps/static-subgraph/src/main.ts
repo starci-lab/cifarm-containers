@@ -5,6 +5,15 @@ import { writeFileSync } from "fs"
 import { printSchema } from "graphql"
 import { join } from "path"
 import { AppModule } from "./app.module"
+import { UserResolver } from "@apps/static-subgraph/src/users"
+import { TilesResolver } from "@apps/static-subgraph/src/tiles"
+import { SuppliesResolver } from "@apps/static-subgraph/src/supplies"
+import { SpinsResolver } from "@apps/static-subgraph/src/spins"
+import { DailyRewardsResolver } from "@apps/static-subgraph/src/daily-rewards"
+import { BuildingsResolver } from "@apps/static-subgraph/src/buildings"
+import { CropsResolver } from "@apps/static-subgraph/src/crops"
+import { AnimalsResolver } from "@apps/static-subgraph/src/animals"
+import { ToolsResolver } from "@apps/static-subgraph/src/tools"
 
 const generateSchema = async () => {
     const app = await NestFactory.create(GraphQLSchemaBuilderModule)
@@ -12,14 +21,15 @@ const generateSchema = async () => {
 
     const gqlSchemaFactory = app.get(GraphQLSchemaFactory)
     const schema = await gqlSchemaFactory.create([
-        // ToolsResolver,
-        // AnimalsResolver,
-        // CropsResolver,
-        // BuildingsResolver,
-        // DailyRewardsResolver,
-        // SpinsResolver,
-        // SuppliesResolver,
-        // TilesResolver
+        AnimalsResolver,
+        BuildingsResolver,
+        CropsResolver,
+        DailyRewardsResolver,
+        SpinsResolver,
+        SuppliesResolver,
+        TilesResolver,
+        ToolsResolver,
+        UserResolver
     ])
 
     writeFileSync(

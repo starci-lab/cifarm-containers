@@ -12,7 +12,7 @@ import { TileEntity } from "./tile.entity"
 @ObjectType()
 @Entity("inventory_types")
 export class InventoryTypeEntity extends ReadableAbstractEntity {
-    @Field(() => InventoryType)
+    @Field(() => String)
     @Column({ name: "type", type: "enum", enum: InventoryType })
         type: InventoryType
 

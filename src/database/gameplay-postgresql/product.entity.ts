@@ -21,7 +21,7 @@ export class ProductEntity extends ReadableAbstractEntity {
     @Column({ name: "token_amount", type: "float" })
         tokenAmount: number
 
-    @Field(() => ProductType)
+    @Field(() => String)
     @Column({ name: "type", type: "enum", enum: ProductType })
         type: ProductType
 

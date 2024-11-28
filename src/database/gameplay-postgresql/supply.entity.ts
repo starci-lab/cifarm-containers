@@ -7,7 +7,7 @@ import { InventoryTypeEntity } from "./inventory-type.entity"
 @ObjectType()
 @Entity("supplies")
 export class SupplyEntity extends ReadableAbstractEntity {
-    @Field(() => SupplyType)
+    @Field(() => String)
     @Column({ name: "type", type: "enum", enum: SupplyType })
         type: SupplyType
 

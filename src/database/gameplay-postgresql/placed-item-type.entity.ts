@@ -10,7 +10,7 @@ import { PlacedItemEntity } from "./placed-item.entity"
 @ObjectType()
 @Entity("placed_item_types")
 export class PlacedItemTypeEntity extends ReadableAbstractEntity {
-    @Field(() => PlacedItemType)
+    @Field(() => String)
     @Column({ name: "type", type: "enum", enum: PlacedItemType })
         type: PlacedItemType
 
