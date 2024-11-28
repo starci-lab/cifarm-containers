@@ -2,9 +2,8 @@ import { ConfigModule } from "@nestjs/config"
 import { Test } from "@nestjs/testing"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig, Network, SupportedChainKey } from "@src/config"
-import { CropEntity, InventoryEntity, UserEntity } from "@src/database"
+import { CropEntity, CropId, InventoryEntity, UserEntity } from "@src/database"
 import { SeedDataModule } from "@src/services"
-import * as path from "path"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuySeedsRequest } from "./buy-seeds.dto"
 import { BuySeedsModule } from "./buy-seeds.module"
@@ -13,7 +12,7 @@ import { BuySeedsService } from "./buy-seeds.service"
 describe("BuySeedsService", () => {
     let dataSource: DataSource
     let service: BuySeedsService
-    
+
     //test users
     const users: Array<DeepPartial<UserEntity>> = [
         {
@@ -45,7 +44,7 @@ describe("BuySeedsService", () => {
             imports: [
                 ConfigModule.forRoot({
                     load: [envConfig],
-                    envFilePath: path.join(process.cwd(), ".env.local"),
+                    envFilePath: [".env.local"],
                     isGlobal: true
                 }),
                 TypeOrmModule.forRoot({
@@ -72,7 +71,7 @@ describe("BuySeedsService", () => {
 
         // Get carrot
         const crop = await dataSource.manager.findOne(CropEntity, {
-            where: { id: "carrot" }
+            where: { id: CropId.Carrot }
         })
 
         const buySeedRequest: BuySeedsRequest = {
@@ -89,7 +88,9 @@ describe("BuySeedsService", () => {
             where: { id: userBeforeBuydingSeed.id }
         })
 
-        expect(userAfterBuyingSeed.golds).toBe(users[0].golds - crop.price * buySeedRequest.quantity)
+        expect(userAfterBuyingSeed.golds).toBe(
+            users[0].golds - crop.price * buySeedRequest.quantity
+        )
 
         // Check inventory
         const inventory = await dataSource.manager.findOne(InventoryEntity, {
@@ -106,7 +107,7 @@ describe("BuySeedsService", () => {
         const userBeforeBuydingSeed = await dataSource.manager.save(UserEntity, users[1])
 
         const crop = await dataSource.manager.findOne(CropEntity, {
-            where: { id: "carrot" }
+            where: { id: CropId.Carrot }
         })
 
         // buySeedFirstRequest

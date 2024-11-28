@@ -7,7 +7,7 @@ import { IsString, ValidateNested } from "class-validator"
 export class BuyAnimalRequest extends UserIdRequest {
     @IsString()
     @ApiProperty({ example: AnimalId.Chicken, description: "The ID of the animal" })
-        id: string
+        animalId: string
 
     @IsString()
     @ApiProperty({ example: "", description: "The ID of the building" })

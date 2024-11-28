@@ -181,7 +181,7 @@ export class SeedDataService {
             needWater: 0.5,
             theif2: 0.8,
             theif3: 0.95,
-            isWeedyOrInfested: 1,
+            isWeedyOrInfested: 1
         }
         const starter: Starter = {
             golds: 1000,
@@ -214,7 +214,7 @@ export class SeedDataService {
                     {
                         x: 1,
                         y: 1
-                    },
+                    }
                 ]
             }
         }
@@ -230,7 +230,7 @@ export class SeedDataService {
             },
             {
                 id: SystemId.Starter,
-                value: starter,
+                value: starter
             }
         ]
         await queryRunner.manager.save(SystemEntity, data)
@@ -261,7 +261,7 @@ export class SeedDataService {
                     inventoryType: {
                         id: ProductId.Egg,
                         asTool: false,
-                        deliverable: false,
+                        deliverable: true,
                         maxStack: 1,
                         placeable: true,
                         type: InventoryType.Product
@@ -304,7 +304,7 @@ export class SeedDataService {
                     inventoryType: {
                         id: ProductId.Milk,
                         asTool: false,
-                        deliverable: false,
+                        deliverable: true,
                         maxStack: 1,
                         placeable: true,
                         type: InventoryType.Product
@@ -572,17 +572,20 @@ export class SeedDataService {
                     {
                         id: UpgradeId.CoopUpgrade1,
                         upgradePrice: 0,
-                        capacity: 3
+                        capacity: 3,
+                        upgradeLevel: 1
                     },
                     {
                         id: UpgradeId.CoopUpgrade2,
                         upgradePrice: 1000,
-                        capacity: 5
+                        capacity: 5,
+                        upgradeLevel: 2
                     },
                     {
                         id: UpgradeId.CoopUpgrade3,
                         upgradePrice: 2000,
-                        capacity: 10
+                        capacity: 10,
+                        upgradeLevel: 3
                     }
                 ],
                 placedItemType: {
@@ -600,17 +603,20 @@ export class SeedDataService {
                     {
                         id: UpgradeId.PastureUpgrade1,
                         upgradePrice: 0,
-                        capacity: 3
+                        capacity: 3,
+                        upgradeLevel: 1
                     },
                     {
                         id: UpgradeId.PastureUpgrade2,
                         upgradePrice: 1000,
-                        capacity: 5
+                        capacity: 5,
+                        upgradeLevel: 2
                     },
                     {
                         id: UpgradeId.PastureUpgrade3,
                         upgradePrice: 2000,
-                        capacity: 10
+                        capacity: 10,
+                        upgradeLevel: 3
                     }
                 ],
                 placedItemType: {

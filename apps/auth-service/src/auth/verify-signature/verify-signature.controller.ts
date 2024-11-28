@@ -4,14 +4,11 @@ import { authGrpcConstants } from "../../app.constants"
 import { VerifySignatureService } from "./verify-signature.service"
 import { VerifySignatureRequest } from "./verify-signature.dto"
 
-
 @Controller()
 export class VerifySignatureController {
     private readonly logger = new Logger(VerifySignatureController.name)
 
-    constructor(
-        private readonly verifySignatureService: VerifySignatureService,
-    ) {}
+    constructor(private readonly verifySignatureService: VerifySignatureService) {}
 
     @GrpcMethod(authGrpcConstants.SERVICE, "VerifySignature")
     public async verifySignature(request: VerifySignatureRequest) {

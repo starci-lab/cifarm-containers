@@ -14,7 +14,7 @@ import {
     PlacedItemNotNeedUseHerbicideException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotPlantedException,
-    UseHerbicideTransactionFailedException,
+    UseHerbicideTransactionFailedException
 } from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/services"
 

@@ -115,7 +115,7 @@ export class VerifySignatureService {
             break
         }
         if (!result) throw new Error("Signature verification")
-        
+
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {

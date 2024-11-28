@@ -44,7 +44,7 @@ import { FarmingModule } from "./farming"
             }
         }),
         ShopModule,
-        FarmingModule,
+        FarmingModule
     ],
     controllers: [AppController],
     providers: [

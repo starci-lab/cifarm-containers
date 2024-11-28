@@ -14,7 +14,7 @@ import {
     PlacedItemNotNeedUsePestisideException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotPlantedException,
-    UsePestisideTransactionFailedException,
+    UsePestisideTransactionFailedException
 } from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/services"
 

@@ -1,16 +1,14 @@
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { BuildingEntity, PlacedItemEntity, PlacedItemTypeEntity, UserEntity } from "@src/database"
 import {
     BuildingNotAvailableInShopException,
     BuildingNotFoundException,
-    PlacedItemTypeNotFoundException,
-    ConstructBuildingTransactionFailedException
+    ConstructBuildingTransactionFailedException,
+    PlacedItemTypeNotFoundException
 } from "@src/exceptions"
-import { Cache } from "cache-manager"
+import { GoldBalanceService } from "@src/services"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
-import { GoldBalanceService } from "@src/services"
 
 @Injectable()
 export class ConstructBuildingService {
@@ -18,40 +16,38 @@ export class ConstructBuildingService {
 
     constructor(
         private readonly dataSource: DataSource,
-        @Inject(CACHE_MANAGER)
-        private readonly cacheManager: Cache,
         private readonly goldBalanceService: GoldBalanceService
     ) {}
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
         this.logger.debug(
-            `Starting building construction for user ${request.userId}, building id: ${request.id}`
+            `Starting building construction for user ${request.userId}, building id: ${request.buildingId}`
         )
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         try {
-        // Fetch building information
+            // Fetch building information
             const building = await queryRunner.manager.findOne(BuildingEntity, {
-                where: { id: request.id }
+                where: { id: request.buildingId }
             })
 
             if (!building) {
-                throw new BuildingNotFoundException(request.id)
+                throw new BuildingNotFoundException(request.buildingId)
             }
 
             if (!building.availableInShop) {
-                throw new BuildingNotAvailableInShopException(request.id)
+                throw new BuildingNotAvailableInShopException(request.buildingId)
             }
 
             // Fetch placed item type
             const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
-                where: { id: request.id }
+                where: { id: request.buildingId }
             })
 
             if (!placedItemType) {
-                throw new PlacedItemTypeNotFoundException(request.id)
+                throw new PlacedItemTypeNotFoundException(request.buildingId)
             }
 
             // Calculate total cost
@@ -67,7 +63,6 @@ export class ConstructBuildingService {
             // Start transaction
             await queryRunner.startTransaction()
             try {
-
                 // Subtract gold
                 const goldsChanged = this.goldBalanceService.subtract({
                     entity: user,
@@ -82,7 +77,9 @@ export class ConstructBuildingService {
                 const placedItem: DeepPartial<PlacedItemEntity> = {
                     userId: request.userId,
                     buildingInfo: {
-                        building
+                        currentUpgrade: 1,
+                        occupancy: 0,
+                        buildingId: building.id
                     },
                     x: request.position.x,
                     y: request.position.y,
@@ -100,7 +97,7 @@ export class ConstructBuildingService {
             } catch (error) {
                 this.logger.error("Construction transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
-                throw new ConstructBuildingTransactionFailedException(error.message)
+                throw new ConstructBuildingTransactionFailedException(error)
             }
         } finally {
             await queryRunner.release()

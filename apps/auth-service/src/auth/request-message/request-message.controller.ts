@@ -3,14 +3,11 @@ import { GrpcMethod } from "@nestjs/microservices"
 import { authGrpcConstants } from "../../app.constants"
 import { RequestMessageService } from "./request-message.service"
 
-
 @Controller()
 export class RequestMessageController {
     private readonly logger = new Logger(RequestMessageController.name)
 
-    constructor(
-        private readonly requestMessageService: RequestMessageService,
-    ) {}
+    constructor(private readonly requestMessageService: RequestMessageService) {}
 
     @GrpcMethod(authGrpcConstants.SERVICE, "RequestMessage")
     public async requestMessage() {

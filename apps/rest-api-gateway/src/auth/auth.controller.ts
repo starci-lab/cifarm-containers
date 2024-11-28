@@ -46,7 +46,6 @@ export class AuthController implements OnModuleInit {
     @ApiResponse({
         type: GenerateTestSignatureResponse
     })
-
     @Post("test-signature")
     public async generateTestSignature(
         @Body() request: GenerateTestSignatureRequest

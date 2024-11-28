@@ -47,3 +47,15 @@ export class PlacedItemTileAlreadyHasSeedException extends GrpcNotFoundException
         super(`Placed item tile already has seed: ${id}`)
     }
 }
+
+export class PlacedItemTypeNotFoundException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Placed item type not found: ${id}`)
+    }
+}
+
+export class PlacedItemIsLimitException extends Error {
+    constructor(tileId: string) {
+        super(`Tile with id "${tileId}" has reached its maximum ownership limit.`)
+    }
+}

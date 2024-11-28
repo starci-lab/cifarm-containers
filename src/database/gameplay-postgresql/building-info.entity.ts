@@ -1,5 +1,5 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, ManyToOne, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm"
 import { BuildingEntity } from "./building.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { AbstractEntity } from "./abstract"
@@ -15,8 +15,13 @@ export class BuildingInfoEntity extends AbstractEntity {
     @Column({ type: "int", nullable: true })
         occupancy: number
 
+    @Field(() => String, { nullable: true })
+    @Column({ name: "building_id", nullable: true })
+        buildingId: string
+
     @Field(() => BuildingEntity)
     @ManyToOne(() => BuildingEntity, { nullable: true, onDelete: "CASCADE" })
+    @JoinColumn({ name: "building_id", referencedColumnName: "id" })
         building: BuildingEntity
 
     @Field(() => PlacedItemEntity)

@@ -31,7 +31,7 @@ export class BuySeedsService {
         )
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-        
+
         try {
             const crop = await queryRunner.manager.findOne(CropEntity, {
                 where: { id: request.cropId }
@@ -48,52 +48,54 @@ export class BuySeedsService {
 
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
-            
+
             // Start transaction
             await queryRunner.startTransaction()
 
-            // Subtract gold
-            const goldsChanged = this.goldBalanceService.subtract({
-                entity: user,
-                golds: totalCost
-            })
+            try {
+                // Subtract gold
+                const goldsChanged = this.goldBalanceService.subtract({
+                    entity: user,
+                    golds: totalCost
+                })
 
-            await queryRunner.manager.update(UserEntity, user.id, {
-                ...goldsChanged
-            })
+                await queryRunner.manager.update(UserEntity, user.id, {
+                    ...goldsChanged
+                })
 
-            //Get inventory type
-            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                where: { cropId: request.cropId, type: InventoryType.Seed }
-            })
+                //Get inventory type
+                const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+                    where: { cropId: request.cropId, type: InventoryType.Seed }
+                })
 
-            // Get inventory same type
-            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
-                where: {
+                // Get inventory same type
+                const existingInventories = await queryRunner.manager.find(InventoryEntity, {
+                    where: {
+                        userId: request.userId,
+                        inventoryTypeId: inventoryType.id
+                    },
+                    relations: {
+                        inventoryType: true
+                    }
+                })
+                const updatedInventories = this.inventoryService.add({
+                    entities: existingInventories,
                     userId: request.userId,
-                    inventoryTypeId: inventoryType.id
-                },
-                relations: {
-                    inventoryType: true
-                }
-            })
-            const updatedInventories = this.inventoryService.add({
-                entities: existingInventories,
-                userId: request.userId,
-                data: {
-                    inventoryType: inventoryType,
-                    quantity: request.quantity
-                }
-            })
+                    data: {
+                        inventoryType: inventoryType,
+                        quantity: request.quantity
+                    }
+                })
 
-            //Save inventory
-            await queryRunner.manager.save(InventoryEntity, updatedInventories)
-            await queryRunner.commitTransaction()
- 
-            return 
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw new BuySeedsTransactionFailedException(error)
+                //Save inventory
+                await queryRunner.manager.save(InventoryEntity, updatedInventories)
+                await queryRunner.commitTransaction()
+
+                return
+            } catch (error) {
+                await queryRunner.rollbackTransaction()
+                throw new BuySeedsTransactionFailedException(error)
+            }
         } finally {
             await queryRunner.release()
         }
