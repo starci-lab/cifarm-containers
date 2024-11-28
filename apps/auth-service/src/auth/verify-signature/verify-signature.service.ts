@@ -1,11 +1,12 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/config"
-import { CacheNotFound, VerifySignatureCreateUserTransactionFailedException } from "@src/exceptions"
+import { AfterAuthenticatedFirstTimeTransactionFailedException, CacheNotFound, VerifySignatureCreateUserTransactionFailedException } from "@src/exceptions"
 
 import {
     AlgorandAuthService,
     AptosAuthService,
+    EnergyService,
     EvmAuthService,
     JwtService,
     NearAuthService,
@@ -13,9 +14,9 @@ import {
     SolanaAuthService
 } from "@src/services"
 import { Cache } from "cache-manager"
-import { DataSource } from "typeorm"
+import { DataSource, DeepPartial } from "typeorm"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { UserEntity } from "@src/database"
+import { PlacedItemEntity, PlacedItemTypeId, Starter, SystemEntity, SystemId, UserEntity } from "@src/database"
 
 @Injectable()
 export class VerifySignatureService {
@@ -31,7 +32,8 @@ export class VerifySignatureService {
         private readonly algorandAuthService: AlgorandAuthService,
         private readonly polkadotAuthService: PolkadotAuthService,
         private readonly nearAuthService: NearAuthService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly energyService: EnergyService
     ) {}
 
     public async verifySignature({
@@ -128,12 +130,35 @@ export class VerifySignatureService {
             if (!user) {
                 await queryRunner.startTransaction()
                 try {
+                    // get starter info
+                    const { value } = await queryRunner.manager.findOne(SystemEntity, {
+                        where: { id: SystemId.Starter }
+                    })
+                    const { golds, positions } = value as Starter
+                    const energy = this.energyService.getMaxEnergy()
+
+                    //home & tiles
+                    const home: DeepPartial<PlacedItemEntity> = {
+                        placedItemTypeId: PlacedItemTypeId.Home,
+                        ...positions.home
+                    }
+                    const tiles: Array<DeepPartial<PlacedItemEntity>> = positions.tiles.map(
+                        (tile) => ({
+                            placedItemTypeId: PlacedItemTypeId.StarterTile,
+                            ...tile
+                        })
+                    )
+
                     user = await queryRunner.manager.save(UserEntity, {
                         username: `${chainKey}-${_accountAddress.substring(0, 5)}`,
                         accountAddress: _accountAddress,
                         chainKey,
-                        network
+                        network,
+                        energy,
+                        golds,
+                        placedItems: [home, ...tiles]
                     })
+
                     await queryRunner.commitTransaction()
                 } catch (error) {
                     this.logger.error("Transaction verify signature failed", error.message)
@@ -150,6 +175,34 @@ export class VerifySignatureService {
                     refreshToken
                 }
             }
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    private async afterAuthenticated(user: UserEntity){
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
+        try {
+            
+
+            if (!user) {
+                try{
+                    // first auth already completed
+                    //charge full energy
+                   
+                    await queryRunner.commitTransaction()
+                } catch (error) {
+                    this.logger.error("Transaction after authenticated first time failed", error.message)
+                    await queryRunner.rollbackTransaction()
+                    throw new AfterAuthenticatedFirstTimeTransactionFailedException(error.message)
+                }
+            } else {
+                // first auth not yet completed
+                //apply logic later
+            }
+            return {}
         } finally {
             await queryRunner.release()
         }

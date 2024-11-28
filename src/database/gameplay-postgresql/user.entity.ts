@@ -71,11 +71,7 @@ export class UserEntity extends AbstractEntity {
     @Field(() => Int)
     @Column({ name: "spin_count", type: "int", default: 0 })
         spinCount: number
-
-    @Field(() => Boolean)
-    @Column({ name: "has_completed_first_auth", type: "boolean", default: false })
-        hasCompletedFirstAuth: boolean
-
+        
     @Field(() => [InventoryEntity])
     @OneToMany(() => InventoryEntity, (inventory) => inventory.user)
         inventories?: Array<InventoryEntity>
