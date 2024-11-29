@@ -1,13 +1,13 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, OneToMany, OneToOne } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
 import { UpgradeEntity } from "./upgrade.entity"
 import { PlacedItemTypeEntity } from "./placed-item-type.entity"
 
 @ObjectType()
 @Entity("buildings")
-export class BuildingEntity extends ReadableAbstractEntity {
+export class BuildingEntity extends StringAbstractEntity {
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })
         availableInShop: boolean

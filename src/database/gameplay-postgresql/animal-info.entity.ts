@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
-import { AbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { AnimalCurrentState } from "./enums"
 import { PlacedItemEntity } from "./placed-item.entity"
@@ -8,7 +8,7 @@ import { UserEntity } from "./user.entity"
 
 @ObjectType()
 @Entity("animal_infos")
-export class AnimalInfoEntity extends AbstractEntity {
+export class AnimalInfoEntity extends StringAbstractEntity {
     @Field(() => Number)
     @Column({ type: "int", default: 0 })
         currentGrowthTime: number

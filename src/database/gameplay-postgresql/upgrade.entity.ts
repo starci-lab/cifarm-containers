@@ -1,11 +1,11 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { BuildingEntity } from "./building.entity"
 
 @ObjectType()
 @Entity("upgrades")
-export class UpgradeEntity extends ReadableAbstractEntity {
+export class UpgradeEntity extends StringAbstractEntity {
     @Field(() => Int)
     @Column({ name: "upgrade_price", type: "int" })
         upgradePrice: number

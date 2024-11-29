@@ -74,7 +74,7 @@ export class BuyTileService {
                 // Subtract gold
                 const goldsChanged = this.goldBalanceService.subtract({
                     entity: user,
-                    golds: totalCost
+                    amount: totalCost
                 })
 
                 await queryRunner.manager.update(UserEntity, user.id, {

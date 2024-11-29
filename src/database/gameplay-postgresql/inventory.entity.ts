@@ -1,12 +1,12 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
-import { AbstractEntity } from "./abstract"
+import { UuidAbstractEntity } from "./abstract"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { UserEntity } from "./user.entity"
 
 @ObjectType()
 @Entity("inventories")
-export class InventoryEntity extends AbstractEntity {
+export class InventoryEntity extends UuidAbstractEntity {
     @Field(() => String)
     @Column({ name: "quantity", type: "int", default: 1 })
         quantity: number

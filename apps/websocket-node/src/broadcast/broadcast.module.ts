@@ -2,23 +2,7 @@ import { Module } from "@nestjs/common"
 import { BroadcastGateway } from "./broadcast.gateway"
 import { WsJwtAuthModule } from "@src/guards"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import {
-    AnimalEntity,
-    AnimalInfoEntity,
-    BuildingEntity,
-    BuildingInfoEntity,
-    CropEntity,
-    DeliveringProductEntity,
-    InventoryEntity,
-    InventoryTypeEntity,
-    PlacedItemEntity,
-    PlacedItemTypeEntity,
-    ProductEntity,
-    SeedGrowthInfoEntity,
-    SupplyEntity,
-    TileEntity,
-    UpgradeEntity
-} from "@src/database"
+import { AnimalEntity, AnimalInfoEntity, BuildingEntity, BuildingInfoEntity, CropEntity, DeliveringProductEntity, InventoryEntity, InventoryTypeEntity, PlacedItemEntity, PlacedItemTypeEntity, ProductEntity, SeedGrowthInfoEntity, SupplyEntity, TileEntity, UpgradeEntity } from "@src/database"
 
 @Module({
     imports: [
@@ -38,7 +22,7 @@ import {
             AnimalInfoEntity,
             BuildingInfoEntity,
             TileEntity,
-            SupplyEntity
+            SupplyEntity,
         ]),
         WsJwtAuthModule
     ],

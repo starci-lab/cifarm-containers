@@ -57,18 +57,6 @@ export enum SupplyId {
     AnimalFeed = "animalFeed"
 }
 
-// Spin Enum
-export enum SpinId {
-    Gold1 = "gold1",
-    Gold2 = "gold2",
-    Gold3 = "gold3",
-    Gold4 = "gold4",
-    Seed1 = CropId.Pineapple,
-    Seed2 = CropId.Watermelon,
-    BasicFertilizer = SupplyId.BasicFertilizer,
-    Token = "token"
-}
-
 // Tile Enum
 export enum TileId {
     StarterTile = "starterTile",
@@ -102,7 +90,8 @@ export enum ProductId {
 export enum SystemId {
     Activities = "activities",
     CropRandomness = "cropRandomness",
-    Starter = "starter"
+    Starter = "starter",
+    SpinInfo = "spinInfo"
 }
 
 export enum InventoryTypeId {

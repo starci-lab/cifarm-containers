@@ -2,13 +2,13 @@ import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
 import { CropEntity } from "./crop.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
-import { AbstractEntity } from "./abstract"
+import { UuidAbstractEntity } from "./abstract"
 import { UserEntity } from "./user.entity"
 import { CropCurrentState } from "./enums"
 
 @ObjectType()
 @Entity("seed_growth_info")
-export class SeedGrowthInfoEntity extends AbstractEntity {
+export class SeedGrowthInfoEntity extends UuidAbstractEntity {
     @Field(() => Int)
     @Column({ type: "int4", name: "current_stage", default: 1 })
         currentStage: number

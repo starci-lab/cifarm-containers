@@ -1,11 +1,11 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, OneToMany } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { DailyRewardPossibilityEntity } from "./daily-reward-possibility.entity"
 
 @ObjectType()
 @Entity("daily_rewards")
-export class DailyRewardEntity extends ReadableAbstractEntity {
+export class DailyRewardEntity extends StringAbstractEntity {
     @Field(() => Int, { nullable: true })
     @Column({ name: "reward_amount", type: "int", nullable: true })
         amount: number

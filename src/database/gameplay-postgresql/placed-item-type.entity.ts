@@ -1,6 +1,6 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { BuildingEntity } from "./building.entity"
 import { PlacedItemType } from "./enums"
@@ -9,7 +9,7 @@ import { PlacedItemEntity } from "./placed-item.entity"
 
 @ObjectType()
 @Entity("placed_item_types")
-export class PlacedItemTypeEntity extends ReadableAbstractEntity {
+export class PlacedItemTypeEntity extends StringAbstractEntity {
     @Field(() => String)
     @Column({ name: "type", type: "enum", enum: PlacedItemType })
         type: PlacedItemType

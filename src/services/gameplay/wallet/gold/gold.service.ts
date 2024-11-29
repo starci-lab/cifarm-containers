@@ -12,18 +12,18 @@ export class GoldBalanceService {
     }
 
     public add(params: AddParams): AddResult {
-        if (params.golds < 0) throw new GoldCannotBeZeroOrNegativeException(params.golds.toString())
+        if (params.amount < 0) throw new GoldCannotBeZeroOrNegativeException(params.amount.toString())
 
         return {
-            golds: params.golds + params.entity.golds
+            golds: params.amount + params.entity.golds
         }
     }
 
     public subtract(params: SubtractParams): SubtractResult {
-        if (params.golds < 0) throw new GoldCannotBeZeroOrNegativeException(params.golds.toString())
+        if (params.amount < 0) throw new GoldCannotBeZeroOrNegativeException(params.amount.toString())
 
         return {
-            golds: params.entity.golds - params.golds
+            golds: params.entity.golds - params.amount
         }
     }
 }

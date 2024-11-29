@@ -1,6 +1,6 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
 import { InventoryType } from "./enums"
@@ -11,7 +11,7 @@ import { TileEntity } from "./tile.entity"
 
 @ObjectType()
 @Entity("inventory_types")
-export class InventoryTypeEntity extends ReadableAbstractEntity {
+export class InventoryTypeEntity extends StringAbstractEntity {
     @Field(() => String)
     @Column({ name: "type", type: "enum", enum: InventoryType })
         type: InventoryType

@@ -2,11 +2,11 @@ import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm"
 import { BuildingEntity } from "./building.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
-import { AbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 
 @ObjectType()
 @Entity("building_info")
-export class BuildingInfoEntity extends AbstractEntity {
+export class BuildingInfoEntity extends StringAbstractEntity {
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
         currentUpgrade: number
