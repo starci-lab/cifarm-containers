@@ -10,6 +10,7 @@ import {
     CropEntity,
     DailyRewardEntity,
     DailyRewardPossibilityEntity,
+    DeliveringProductEntity,
     InventoryEntity,
     InventoryTypeEntity,
     PlacedItemEntity,
@@ -77,7 +78,8 @@ import { AppService } from "./app.service"
                 SeedGrowthInfoEntity,
                 AnimalInfoEntity,
                 BuildingInfoEntity,
-                PlacedItemTypeEntity
+                PlacedItemTypeEntity,
+                DeliveringProductEntity
             ],
             "main"
         ),
@@ -102,7 +104,8 @@ import { AppService } from "./app.service"
                 SeedGrowthInfoEntity,
                 AnimalInfoEntity,
                 BuildingInfoEntity,
-                PlacedItemTypeEntity
+                PlacedItemTypeEntity,
+                DeliveringProductEntity
             ],
             "test"
         ),

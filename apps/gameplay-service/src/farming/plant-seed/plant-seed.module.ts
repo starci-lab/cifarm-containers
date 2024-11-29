@@ -12,12 +12,14 @@ import {
     ProductEntity,
     SeedGrowthInfoEntity,
     SupplyEntity,
+    SystemEntity,
     TileEntity,
     UserEntity
 } from "@src/database"
 import { InventoryModule, LevelModule } from "@src/services"
 import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
 import { PlantSeedService } from "./plant-seed.service"
+import { PlantSeedController } from "./plant-seed.controller"
 
 @Global()
 @Module({
@@ -35,12 +37,14 @@ import { PlantSeedService } from "./plant-seed.service"
             InventoryTypeEntity,
             AnimalEntity,
             TileEntity,
-            SupplyEntity
+            SupplyEntity,
+            SystemEntity
         ]),
         EnergyModule,
         LevelModule,
         InventoryModule
     ],
+    controllers: [PlantSeedController],
     providers: [PlantSeedService],
     exports: [PlantSeedService]
 })

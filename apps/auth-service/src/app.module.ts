@@ -1,15 +1,12 @@
 import { Module, ValidationPipe } from "@nestjs/common"
 import { APP_PIPE } from "@nestjs/core"
-import { GenerateTestSignatureModule } from "./generate-test-signature"
-import { RequestMessageModule } from "./request-message"
-import { AppController } from "./app.controller"
 import { AuthModule as BlockchainAuthModule, JwtModule } from "@src/services"
-import { VerifySignatureModule } from "./verify-signature"
 import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { redisStore } from "cache-manager-redis-yet"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { ConfigModule } from "@nestjs/config"
 import { envConfig } from "@src/config"
+import { AuthModule } from "./auth"
 
 @Module({
     imports: [
@@ -46,11 +43,9 @@ import { envConfig } from "@src/config"
         }),
         BlockchainAuthModule,
         JwtModule,
-        RequestMessageModule,
-        GenerateTestSignatureModule,
-        VerifySignatureModule
+        AuthModule
     ],
-    controllers: [AppController],
+    controllers: [],
     providers: [
         {
             provide: APP_PIPE,

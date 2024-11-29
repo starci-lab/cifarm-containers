@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-import "google/protobuf/empty.proto";
-
-package farming;
-
-message WaterRequest {
-    string placedItemTileId = 1;
-}

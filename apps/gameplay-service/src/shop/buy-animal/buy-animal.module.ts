@@ -6,6 +6,7 @@ import {
     BuildingEntity,
     BuildingInfoEntity,
     CropEntity,
+    DeliveringProductEntity,
     InventoryEntity,
     InventoryTypeEntity,
     PlacedItemEntity,
@@ -37,10 +38,11 @@ import { BuyAnimalService } from "./buy-animal.service"
             TileEntity,
             SupplyEntity,
             BuildingEntity,
-            UpgradeEntity
+            UpgradeEntity,
+            DeliveringProductEntity
         ])
     ],
     providers: [BuyAnimalService],
     exports: [BuyAnimalService]
 })
-export class BuyAnimalsModule {}
+export class BuyAnimalModule {}

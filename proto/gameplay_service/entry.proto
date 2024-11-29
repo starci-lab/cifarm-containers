@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+import "./shop/entry.proto";
+import "./farming/entry.proto";
+
+package gameplay;
+
+service GameplayService {
+    // Shop methods
+    rpc BuySeeds(BuySeedsRequest) returns (google.protobuf.Empty);
+    rpc BuyAnimal(BuyAnimalRequest) returns (BuyAnimalResponse);
+    rpc BuySupplies(BuySuppliesRequest) returns (google.protobuf.Empty);
+    rpc ConstructBuilding(ConstructBuildingRequest) returns (ConstructBuildingResponse);
+    rpc BuyTile (BuyTileRequest) returns (BuyTileResponse);
+
+    // Farming methods
+    rpc HarvestCrop(HarvestCropRequest) returns (google.protobuf.Empty);
+    rpc Water(WaterRequest) returns (google.protobuf.Empty);
+    rpc PlantSeed(PlantSeedRequest) returns (google.protobuf.Empty);
+    rpc UseHerbicide(UseHerbicideRequest) returns (google.protobuf.Empty);
+    rpc UsePesticide(UsePesticideRequest) returns (google.protobuf.Empty);
+    
+}

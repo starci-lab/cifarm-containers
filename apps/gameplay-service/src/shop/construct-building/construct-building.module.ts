@@ -4,6 +4,7 @@ import {
     AnimalEntity,
     BuildingEntity,
     CropEntity,
+    DeliveringProductEntity,
     InventoryEntity,
     InventoryTypeEntity,
     PlacedItemEntity,
@@ -18,8 +19,8 @@ import { AnimalInfoEntity } from "@src/database/gameplay-postgresql/animal-info.
 import { BuildingInfoEntity } from "@src/database/gameplay-postgresql/building-info.entity"
 import { SeedGrowthInfoEntity } from "@src/database/gameplay-postgresql/seed-grow-info.entity"
 import { WalletModule } from "@src/services/gameplay/wallet"
-import { ConstructBuildingService } from "./construct-building.service"
 import { ConstructBuildingController } from "./construct-building.controller"
+import { ConstructBuildingService } from "./construct-building.service"
 
 @Global()
 @Module({
@@ -39,7 +40,8 @@ import { ConstructBuildingController } from "./construct-building.controller"
             TileEntity,
             SupplyEntity,
             BuildingEntity,
-            UpgradeEntity
+            UpgradeEntity,
+            DeliveringProductEntity
         ]),
         WalletModule
     ],

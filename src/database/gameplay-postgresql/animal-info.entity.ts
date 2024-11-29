@@ -1,52 +1,57 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
+import { AbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
+import { AnimalCurrentState } from "./enums"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { UserEntity } from "./user.entity"
-import { AbstractEntity } from "./abstract"
-import { AnimalCurrentState } from "./enums"
 
 @ObjectType()
 @Entity("animal_infos")
 export class AnimalInfoEntity extends AbstractEntity {
     @Field(() => Number)
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "int", default: 0 })
         currentGrowthTime: number
 
     @Field(() => Number)
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "int", default: 0 })
         currentHungryTime: number
 
     @Field(() => Number)
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "int", default: 0 })
         currentYieldTime: number
 
     @Field(() => Boolean)
-    @Column({ type: "boolean", nullable: true })
+    @Column({ type: "boolean", default: false })
         hasYielded: boolean
 
     @Field(() => Boolean)
-    @Column({ type: "boolean", nullable: true })
+    @Column({ type: "boolean", default: false })
         isAdult: boolean
 
+    @Field(() => String)
+    @Column({ name: "animal_id" })
+        animalId: string
+
     @Field(() => AnimalEntity)
-    @ManyToOne(() => AnimalEntity, { nullable: true, eager: true })
+    @ManyToOne(() => AnimalEntity, { nullable: true, onDelete: "CASCADE" })
+    @JoinColumn({ name: "animal_id", referencedColumnName: "id" })
         animal: AnimalEntity
 
     @Field(() => String)
-    @Column({ type: "enum", enum: AnimalCurrentState })
+    @Column({ type: "enum", enum: AnimalCurrentState, default: AnimalCurrentState.Normal })
         currentState: AnimalCurrentState
 
     @Field(() => Int)
     @Column({ type: "int", nullable: true })
-        harvestQuantityRemaining: number
+        harvestQuantityRemaining?: number
 
     @ManyToMany(() => UserEntity)
     @JoinTable()
         thiefedBy: Array<UserEntity>
 
     @Field(() => Boolean)
-    @Column({ type: "boolean", nullable: true })
+    @Column({ type: "boolean", default: false })
         alreadySick: boolean
 
     @Field(() => PlacedItemEntity)

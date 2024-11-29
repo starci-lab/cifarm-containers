@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package gameplay;
+
+import  "../../entities/entry.proto";
+import "./harvest_crop.proto";
+import "./water.proto";
+import "./plant_seed.proto";
+import "./use_pesticide.proto";
+import "./use_herbicide.proto";

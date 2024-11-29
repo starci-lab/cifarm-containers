@@ -4,6 +4,7 @@ import { Column, Entity, OneToMany } from "typeorm"
 import { AbstractEntity } from "./abstract"
 import { InventoryEntity } from "./inventory.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
+import { DeliveringProductEntity } from "./delivering-product.entity"
 
 @ObjectType()
 @Entity("users")
@@ -44,11 +45,52 @@ export class UserEntity extends AbstractEntity {
     @Column({ name: "level", type: "int", default: 1 })
         level: number
 
+    @Field(() => Int)
+    @Column({ name: "tutorial_index", type: "int", default: 0 })
+        tutorialIndex: number
+
+    @Field(() => Int)
+    @Column({ name: "step_index", type: "int", default: 0 })
+        stepIndex: number
+
+    @Field(() => Int)
+    @Column({ name: "daily_reward_streak", type: "int", default: 0 })
+        dailyRewardStreak: number
+
+    @Field(() => Int)
+    @Column({ name: "daily_reward_last_claim_time", type: "int", default: 0 })
+        dailyRewardLastClaimTime: number
+
+    @Field(() => Int)
+    @Column({ name: "daily_reward_number_of_claim", type: "int", default: 0 })
+        dailyRewardNumberOfClaim: number
+
+    @Field(() => Int)
+    @Column({ name: "spin_last_time", type: "int", default: 0 })
+        spinLastTime: number
+
+    @Field(() => Int)
+    @Column({ name: "spin_count", type: "int", default: 0 })
+        spinCount: number
+        
     @Field(() => [InventoryEntity])
-    @OneToMany(() => InventoryEntity, (inventory) => inventory.user)
+    @OneToMany(() => InventoryEntity, (inventory) => inventory.user, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
         inventories?: Array<InventoryEntity>
 
     @Field(() => [PlacedItemEntity])
-    @OneToMany(() => PlacedItemEntity, (inventory) => inventory.user)
+    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.user, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
         placedItems?: Array<PlacedItemEntity>
+
+    @Field(() => [DeliveringProductEntity])
+    @OneToMany(() => DeliveringProductEntity, (deliveringProduct) => deliveringProduct.user, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
+        deliveringProducts?: Array<DeliveringProductEntity>
 }

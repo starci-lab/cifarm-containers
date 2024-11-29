@@ -9,6 +9,7 @@ import {
     BuildingId,
     CropEntity,
     CropId,
+    CropRandomness,
     DailyRewardEntity,
     DailyRewardId,
     DailyRewardPossibilityEntity,
@@ -23,6 +24,7 @@ import {
     SpinEntity,
     SpinId,
     SpinType,
+    Starter,
     SupplyEntity,
     SupplyId,
     SupplyType,
@@ -142,7 +144,7 @@ export class SeedDataService {
                 energyConsume: 1,
                 experiencesGain: 3
             },
-            helpUsePestiside: {
+            helpUsePesticide: {
                 energyConsume: 1,
                 experiencesGain: 3
             },
@@ -166,7 +168,7 @@ export class SeedDataService {
                 energyConsume: 1,
                 experiencesGain: 3
             },
-            usePestiside: {
+            usePesticide: {
                 energyConsume: 1,
                 experiencesGain: 3
             },
@@ -175,10 +177,60 @@ export class SeedDataService {
                 experiencesGain: 3
             }
         }
+        const cropRandomness: CropRandomness = {
+            needWater: 0.5,
+            theif2: 0.8,
+            theif3: 0.95,
+            isWeedyOrInfested: 1
+        }
+        const starter: Starter = {
+            golds: 1000,
+            positions: {
+                home: {
+                    x: 4,
+                    y: 0
+                },
+                tiles: [
+                    {
+                        x: 0,
+                        y: -1
+                    },
+                    {
+                        x: 0,
+                        y: 0
+                    },
+                    {
+                        x: 0,
+                        y: 1
+                    },
+                    {
+                        x: 1,
+                        y: -1
+                    },
+                    {
+                        x: 1,
+                        y: 0
+                    },
+                    {
+                        x: 1,
+                        y: 1
+                    }
+                ]
+            }
+        }
+
         const data: Array<DeepPartial<SystemEntity>> = [
             {
                 id: SystemId.Activities,
                 value: activities
+            },
+            {
+                id: SystemId.CropRandomness,
+                value: cropRandomness
+            },
+            {
+                id: SystemId.Starter,
+                value: starter
             }
         ]
         await queryRunner.manager.save(SystemEntity, data)
@@ -209,7 +261,7 @@ export class SeedDataService {
                     inventoryType: {
                         id: ProductId.Egg,
                         asTool: false,
-                        deliverable: false,
+                        deliverable: true,
                         maxStack: 1,
                         placeable: true,
                         type: InventoryType.Product
@@ -252,7 +304,7 @@ export class SeedDataService {
                     inventoryType: {
                         id: ProductId.Milk,
                         asTool: false,
-                        deliverable: false,
+                        deliverable: true,
                         maxStack: 1,
                         placeable: true,
                         type: InventoryType.Product
@@ -520,17 +572,20 @@ export class SeedDataService {
                     {
                         id: UpgradeId.CoopUpgrade1,
                         upgradePrice: 0,
-                        capacity: 3
+                        capacity: 3,
+                        upgradeLevel: 1
                     },
                     {
                         id: UpgradeId.CoopUpgrade2,
                         upgradePrice: 1000,
-                        capacity: 5
+                        capacity: 5,
+                        upgradeLevel: 2
                     },
                     {
                         id: UpgradeId.CoopUpgrade3,
                         upgradePrice: 2000,
-                        capacity: 10
+                        capacity: 10,
+                        upgradeLevel: 3
                     }
                 ],
                 placedItemType: {
@@ -548,17 +603,20 @@ export class SeedDataService {
                     {
                         id: UpgradeId.PastureUpgrade1,
                         upgradePrice: 0,
-                        capacity: 3
+                        capacity: 3,
+                        upgradeLevel: 1
                     },
                     {
                         id: UpgradeId.PastureUpgrade2,
                         upgradePrice: 1000,
-                        capacity: 5
+                        capacity: 5,
+                        upgradeLevel: 2
                     },
                     {
                         id: UpgradeId.PastureUpgrade3,
                         upgradePrice: 2000,
-                        capacity: 10
+                        capacity: 10,
+                        upgradeLevel: 3
                     }
                 ],
                 placedItemType: {

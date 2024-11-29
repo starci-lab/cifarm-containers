@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package gameplay;
+
+message BuyTileRequest {
+    string userId = 1;
+    Position position = 2;
+}
+
+message BuyTileResponse {
+    string placedItemId = 1;
+}
+

@@ -9,13 +9,13 @@ import {
     Post
 } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
-import { IAuthService } from "./auth.service"
 import { lastValueFrom } from "rxjs"
 import { ApiResponse, ApiTags } from "@nestjs/swagger"
 import {
     authGrpcConstants,
     GenerateTestSignatureRequest,
     GenerateTestSignatureResponse,
+    IAuthService,
     RequestMessageResponse,
     VerifySignatureRequest,
     VerifySignatureResponse

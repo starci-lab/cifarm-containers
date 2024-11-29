@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package farming;
+
+message PlantSeedRequest {
+    string userId = 1;
+    string inventorySeedId = 2;
+    string placedItemTileId = 3;
+}

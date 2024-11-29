@@ -6,6 +6,7 @@ import {
     BuildingEntity,
     BuildingInfoEntity,
     CropEntity,
+    DeliveringProductEntity,
     InventoryEntity,
     InventoryTypeEntity,
     PlacedItemEntity,
@@ -39,7 +40,8 @@ import { GoldBalanceModule, InventoryModule } from "@src/services"
             TileEntity,
             SupplyEntity,
             BuildingEntity,
-            UpgradeEntity
+            UpgradeEntity,
+            DeliveringProductEntity
         ]),
         InventoryModule,
         GoldBalanceModule

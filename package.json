@@ -14,10 +14,11 @@
     "start:prod": "node dist/apps/cifarm-server/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
+    "test:e2e": "jest --config ./e2e/jest.json",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/cifarm-server/test/jest-e2e.json",
+
     "lint-staged": "lint-staged"
   },
   "dependencies": {
@@ -38,7 +39,6 @@
     "@graphql-tools/utils": "9.2.1",
     "@grpc/grpc-js": "1.12.2",
     "@grpc/proto-loader": "0.7.13",
-    "@kubernetes/client-node": "^0.22.2",
     "@metaplex-foundation/mpl-token-metadata": "3.2.1",
     "@metaplex-foundation/umi": "0.9.2",
     "@metaplex-foundation/umi-bundle-defaults": "0.9.2",
@@ -79,7 +79,7 @@
     "lodash.sortby": "4.7.0",
     "lru-cache": "7.18.3",
     "multiformats": "9.9.0",
-    "near-api-js": "5.0.1",
+    "near-api-js": "^4.0.3",
     "near-seed-phrase": "0.2.1",
     "nestjs-grpc-exceptions": "^0.2.2",
     "passport": "0.7.0",
@@ -128,7 +128,7 @@
       "ts"
     ],
     "rootDir": ".",
-    "testRegex": ".*\\.spec\\.ts$",
+    "testRegex": "apps/.*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },

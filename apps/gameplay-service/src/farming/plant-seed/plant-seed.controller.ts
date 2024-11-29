@@ -5,8 +5,8 @@ import { gameplayGrpcConstants } from "../../app.constants"
 import { PlantSeedRequest } from "./plant-seed.dto"
 
 @Controller()
-export class HarvestCropController {
-    private readonly logger = new Logger(HarvestCropController.name)
+export class PlantSeedController {
+    private readonly logger = new Logger(PlantSeedController.name)
 
     constructor(private readonly plantSeedService: PlantSeedService) {}
 

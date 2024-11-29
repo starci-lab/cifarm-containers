@@ -4,7 +4,7 @@ import { envConfig } from "@src/config"
 import { Logger } from "@nestjs/common"
 import { createDatabase } from "@src/utils"
 
-const createGamplayPostgresqlDatabase = async () => {
+const createGameplayPostgresqlDatabase = async () => {
     await createDatabase({
         type: "postgres",
         host: envConfig().database.postgres.gameplay.main.host,
@@ -15,7 +15,7 @@ const createGamplayPostgresqlDatabase = async () => {
     })
 }
 
-const createTestGamplayPostgresqlDatabase = async () => {
+const createTestGameplayPostgresqlDatabase = async () => {
     await createDatabase({
         type: "postgres",
         host: envConfig().database.postgres.gameplay.test.host,
@@ -36,6 +36,6 @@ const bootstrap = async () => {
     await app.close()
 }
 
-Promise.all([createGamplayPostgresqlDatabase(), createTestGamplayPostgresqlDatabase()]).then(() =>
+Promise.all([createGameplayPostgresqlDatabase(), createTestGameplayPostgresqlDatabase()]).then(() =>
     bootstrap()
 )

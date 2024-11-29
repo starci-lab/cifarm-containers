@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package gameplay;
+
+import  "../../entities/entry.proto";
+import "./construct_building.proto";
+import "./buy_seeds.proto";
+import "./buy_supplies.proto";
+import "./buy_animal.proto";
+import "./buy_tile.proto";
+

@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package inventory;
-
-import "google/protobuf/empty.proto";
-import "inventory.dto.proto";
-
-

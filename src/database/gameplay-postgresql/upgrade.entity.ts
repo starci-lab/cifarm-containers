@@ -14,9 +14,12 @@ export class UpgradeEntity extends ReadableAbstractEntity {
     @Column({ name: "capacity", type: "int" })
         capacity: number
 
+    @Field(() => Number)
+    @Column({ name: "upgrade_level", type: "int" })
+        upgradeLevel: number
+
     @Field(() => BuildingEntity)
     @ManyToOne(() => BuildingEntity, (building: BuildingEntity) => building.upgrades)
     @JoinColumn({ name: "building_id", referencedColumnName: "id" })
         building: BuildingEntity
 }
-    

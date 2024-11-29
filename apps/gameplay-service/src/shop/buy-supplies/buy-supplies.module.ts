@@ -6,6 +6,7 @@ import {
     BuildingEntity,
     BuildingInfoEntity,
     CropEntity,
+    DeliveringProductEntity,
     InventoryEntity,
     InventoryTypeEntity,
     PlacedItemEntity,
@@ -40,7 +41,8 @@ import { GoldBalanceModule } from "@src/services/gameplay/wallet"
             TileEntity,
             SupplyEntity,
             BuildingEntity,
-            UpgradeEntity
+            UpgradeEntity,
+            DeliveringProductEntity
         ]),
         InventoryModule,
         GoldBalanceModule
