@@ -55,13 +55,13 @@
         "tsConfigPath": "apps/auth-service/tsconfig.app.json"
       }
     },
-    "graphql-api-gateway": {
+    "graphql-maingraph": {
       "type": "application",
-      "root": "apps/graphql-api-gateway",
+      "root": "apps/graphql-maingraph",
       "entryFile": "main",
-      "sourceRoot": "apps/graphql-api-gateway/src",
+      "sourceRoot": "apps/graphql-maingraph/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/graphql-api-gateway/tsconfig.app.json"
+        "tsConfigPath": "apps/graphql-maingraph/tsconfig.app.json"
       }
     },
     "cron-scheduler": {
@@ -82,13 +82,13 @@
         "tsConfigPath": "apps/cron-worker/tsconfig.app.json"
       }
     },
-    "static-subgraph": {
+    "gameplay-subgraph": {
       "type": "application",
-      "root": "apps/static-subgraph",
+      "root": "apps/gameplay-subgraph",
       "entryFile": "main",
-      "sourceRoot": "apps/static-subgraph/src",
+      "sourceRoot": "apps/gameplay-subgraph/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/static-subgraph/tsconfig.app.json"
+        "tsConfigPath": "apps/gameplay-subgraph/tsconfig.app.json"
       }
     },
     "gameplay-service": {

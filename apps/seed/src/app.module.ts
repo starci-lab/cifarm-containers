@@ -114,4 +114,4 @@ import { AppService } from "./app.service"
     exports: [AppService],
     providers: [AppService]
 })
-export class AppModule {}
+export class AppModule { }
