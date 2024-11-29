@@ -1,1 +1,1 @@
-export * from "./delivery.module"
+export * from "./dev.module"

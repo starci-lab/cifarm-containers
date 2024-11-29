@@ -28,13 +28,13 @@
         "tsConfigPath": "apps/rest-api-gateway/tsconfig.app.json"
       }
     },
-    "websocket-api-gateway": {
+    "websocket-node": {
       "type": "application",
-      "root": "apps/websocket-api-gateway",
+      "root": "apps/websocket-node",
       "entryFile": "main",
-      "sourceRoot": "apps/websocket-api-gateway/src",
+      "sourceRoot": "apps/websocket-node/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/websocket-api-gateway/tsconfig.app.json"
+        "tsConfigPath": "apps/websocket-node/tsconfig.app.json"
       }
     },
     "broadcast-service": {
@@ -55,13 +55,13 @@
         "tsConfigPath": "apps/auth-service/tsconfig.app.json"
       }
     },
-    "graphql-api-gateway": {
+    "graphql-maingraph": {
       "type": "application",
-      "root": "apps/graphql-api-gateway",
+      "root": "apps/graphql-maingraph",
       "entryFile": "main",
-      "sourceRoot": "apps/graphql-api-gateway/src",
+      "sourceRoot": "apps/graphql-maingraph/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/graphql-api-gateway/tsconfig.app.json"
+        "tsConfigPath": "apps/graphql-maingraph/tsconfig.app.json"
       }
     },
     "cron-scheduler": {

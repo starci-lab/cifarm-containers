@@ -75,6 +75,7 @@ export class CropsWorker extends WorkerHost {
                         seedGrowthInfo.currentStage += 1
                         //reset fertilizer after
                         seedGrowthInfo.isFertilized = false
+
                         if (seedGrowthInfo.currentStage <= seedGrowthInfo.crop.growthStages - 2) {
                             if (Math.random() < needWater) {
                                 seedGrowthInfo.currentState = CropCurrentState.NeedWater

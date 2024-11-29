@@ -3,7 +3,7 @@ import { AppModule } from "./app.module"
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
 import { envConfig } from "@src/config"
 import { ExceptionFilter } from "@src/filters"
-
+ 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
     app.enableCors()

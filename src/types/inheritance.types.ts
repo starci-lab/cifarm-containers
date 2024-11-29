@@ -1,11 +1,21 @@
 import { ApiHideProperty, ApiProperty } from "@nestjs/swagger"
-import { IsUUID } from "class-validator"
+import { IsString, IsUUID } from "class-validator"
+import { Socket } from "socket.io"
 import { DeepPartial, QueryRunner } from "typeorm"
 
 export class UserIdRequest {
     @IsUUID("4")
     @ApiHideProperty()
         userId: string
+}
+
+export class UserIdParams {
+    @IsUUID("4")
+        userId: string
+}
+
+export class UserIdWithSocketParams extends UserIdParams {
+    socket: Socket
 }
 
 export class EntityParams<TEntity> {
@@ -62,4 +72,11 @@ export class IdRequest {
     @IsUUID("4")
     @ApiProperty({ example: "5a6919c3-6ae3-45de-81eb-f1bbb05a246d" })
         id: string
+}
+
+export class SocketConnectionParams  {
+    @IsString()
+        clientId: string
+    @IsUUID("4")
+        userId: string
 }

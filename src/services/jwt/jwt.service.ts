@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { JwtService as NestJwtService } from "@nestjs/jwt"
 import { envConfig } from "@src/config"
 import { UserEntity } from "@src/database"
+
 @Injectable()
 export class JwtService {
     private readonly logger = new Logger(JwtService.name)
@@ -22,6 +23,17 @@ export class JwtService {
         return {
             accessToken,
             refreshToken,
+        }
+    }
+
+    public async verifyToken(token: string): Promise<UserLike | null> {
+        try {
+            return await this.jwtService.verifyAsync(token, {
+                secret: envConfig().secrets.jwt.secret,
+            })
+        } catch (ex) {
+            this.logger.error(ex)
+            return null
         }
     }
 }

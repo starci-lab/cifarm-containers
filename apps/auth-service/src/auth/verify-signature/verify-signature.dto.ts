@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsNotEmpty, IsOptional, IsString, IsUUID } from "class-validator"
+import { IsNotEmpty, IsOptional, IsString } from "class-validator"
 import { Network, SupportedChainKey } from "@src/config"
 import { SignedMessage } from "@src/services"
 
@@ -30,10 +30,6 @@ export class VerifySignatureRequest implements SignedMessage {
 }
 
 export class VerifySignatureResponse {
-    @IsUUID(4)
-    @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000", description: "User ID" })
-        userId: string
-
     @IsString()
     @ApiProperty({
         example:
