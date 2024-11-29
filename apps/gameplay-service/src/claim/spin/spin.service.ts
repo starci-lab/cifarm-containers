@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     SpinCooldownException,
-    SpinSlotFewerThan8Exception,
+    SpinSlotsNotEqual8Exception,
     SpinTransactionFailedException,
 } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
@@ -38,13 +38,12 @@ export class SpinService {
 
             // check if during 24-hour period user has already spun
             const now = dayjs()
-            if (now.diff(user.spinLastTime, "millisecond") < timeConstants.DAY) {
+            if (user.spinLastTime && now.diff(user.spinLastTime, "millisecond") < timeConstants.DAY) {
                 throw new SpinCooldownException(now.toDate(), user.spinLastTime)
             }
 
             // Spin the wheel
             const spinSlots = await queryRunner.manager.find(SpinSlotEntity, {
-                take: 8,
                 relations: {
                     spinPrize: true
                 }
@@ -52,7 +51,7 @@ export class SpinService {
 
             //check if slot not equal to 8
             if (spinSlots.length !== 8) {
-                throw new SpinSlotFewerThan8Exception(spinSlots.length)
+                throw new SpinSlotsNotEqual8Exception(spinSlots.length)
             }
 
             //spinnn

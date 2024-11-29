@@ -4,6 +4,7 @@ import "google/protobuf/empty.proto";
 import "./shop/entry.proto";
 import "./farming/entry.proto";
 import "./delivery/entry.proto";
+import "./claim/entry.proto";
 
 package gameplay;
 
@@ -25,4 +26,8 @@ service GameplayService {
     // Delivery methods
     rpc DeliverProduct(DeliverProductRequest) returns (DeliverProductResponse);
     rpc RetainProduct(RetainProductRequest) returns (google.protobuf.Empty);
+
+    // Claim methods
+    rpc ClaimDailyReward(ClaimDailyRewardRequest) returns (google.protobuf.Empty);
+    rpc Spin(SpinRequest) returns (SpinResponse);
 }

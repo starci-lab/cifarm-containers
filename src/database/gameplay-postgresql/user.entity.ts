@@ -59,7 +59,7 @@ export class UserEntity extends UuidAbstractEntity {
 
     @Field(() => Date)
     @Column({ name: "daily_reward_last_claim_time", type: "timestamp without time zone", nullable: true })
-        dailyRewardLastClaimTime: Date
+        dailyRewardLastClaimTime?: Date
 
     @Field(() => Int)
     @Column({ name: "daily_reward_number_of_claim", type: "int", default: 0 })
@@ -67,7 +67,7 @@ export class UserEntity extends UuidAbstractEntity {
 
     @Field(() => Date)
     @Column({ name: "spin_last_time", type: "timestamp without time zone", nullable: true })
-        spinLastTime: Date
+        spinLastTime?: Date
 
     @Field(() => Int)
     @Column({ name: "spin_count", type: "int", default: 0 })

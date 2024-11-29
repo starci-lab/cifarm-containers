@@ -5,7 +5,7 @@ import {
     RetainProductTransactionFailedException
 } from "@src/exceptions"
 import { DataSource } from "typeorm"
-import { RetainProductRequest, RetainProductResponse } from "./Retain-product.dto"
+import { RetainProductRequest, RetainProductResponse } from "./retain-product.dto"
 
 @Injectable()
 export class RetainProductService {

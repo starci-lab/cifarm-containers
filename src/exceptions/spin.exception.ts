@@ -6,9 +6,9 @@ export class SpinCooldownException extends GrpcPermissionDeniedException {
     }
 }  
 
-export class SpinSlotFewerThan8Exception extends GrpcPermissionDeniedException {
+export class SpinSlotsNotEqual8Exception extends GrpcPermissionDeniedException {
     constructor(slots: number) {
-        super(`Spin slot fewer than 8: ${slots}`)
+        super(`Spin slots not equal 8: ${slots}`)
     }
 }
 

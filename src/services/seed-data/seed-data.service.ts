@@ -12,8 +12,6 @@ import {
     CropRandomness,
     DailyRewardEntity,
     DailyRewardId,
-    DailyRewardPossibilityEntity,
-    DailyRewardPossibilityId,
     InventoryType,
     InventoryTypeEntity,
     InventoryTypeId,
@@ -75,7 +73,6 @@ export class SeedDataService {
             await queryRunner.manager.delete(ToolEntity, {})
             await queryRunner.manager.delete(TileEntity, {})
             await queryRunner.manager.delete(SupplyEntity, {})
-            await queryRunner.manager.delete(DailyRewardPossibilityEntity, {})
             await queryRunner.manager.delete(DailyRewardEntity, {})
             await queryRunner.manager.delete(SystemEntity, {})
             await queryRunner.manager.delete(InventoryTypeEntity, {})
@@ -817,64 +814,34 @@ export class SeedDataService {
         const data: Array<DeepPartial<DailyRewardEntity>> = [
             {
                 id: DailyRewardId.Day1,
-                amount: 100,
+                golds: 100,
                 day: 1,
-                isLastDay: false
+                lastDay: false
             },
             {
                 id: DailyRewardId.Day2,
-                amount: 200,
+                golds: 200,
                 day: 2,
-                isLastDay: false
+                lastDay: false
             },
             {
                 id: DailyRewardId.Day3,
-                amount: 300,
+                golds: 300,
                 day: 3,
-                isLastDay: false
+                lastDay: false
             },
             {
                 id: DailyRewardId.Day4,
-                amount: 600,
+                golds: 600,
                 day: 4,
-                isLastDay: false
+                lastDay: false
             },
             {
                 id: DailyRewardId.Day5,
                 day: 5,
-                isLastDay: true,
-                dailyRewardPossibilities: [
-                    {
-                        id: DailyRewardPossibilityId.Possibility1,
-                        goldAmount: 1000,
-                        thresholdMin: 0,
-                        thresholdMax: 0.8
-                    },
-                    {
-                        id: DailyRewardPossibilityId.Possibility2,
-                        goldAmount: 1500,
-                        thresholdMin: 0.8,
-                        thresholdMax: 0.9
-                    },
-                    {
-                        id: DailyRewardPossibilityId.Possibility3,
-                        goldAmount: 2000,
-                        thresholdMin: 0.9,
-                        thresholdMax: 0.95
-                    },
-                    {
-                        id: DailyRewardPossibilityId.Possibility4,
-                        tokenAmount: 3,
-                        thresholdMin: 0.95,
-                        thresholdMax: 0.99
-                    },
-                    {
-                        id: DailyRewardPossibilityId.Possibility5,
-                        tokenAmount: 10,
-                        thresholdMin: 0.99,
-                        thresholdMax: 1
-                    }
-                ]
+                lastDay: true,
+                golds: 1000,
+                tokens: 0.25,
             }
         ]
 

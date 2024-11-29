@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package gameplay;
+
+message ClaimDailyRewardRequest {
+    string userId = 1;
+}

@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+package gameplay;
+
+import "./claim_daily_reward.proto";
+import "./spin.proto";
