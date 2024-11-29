@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package gameplay;
+
+import  "../../entities/entry.proto";
+
+import "./deliver_product.proto";
+import "./retain_product.proto";

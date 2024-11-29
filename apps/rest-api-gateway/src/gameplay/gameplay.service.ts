@@ -9,10 +9,14 @@ import {
     BuyTileResponse,
     ConstructBuildingRequest,
     ConstructBuildingResponse,
+    DeliverProductRequest,
+    DeliverProductResponse,
     HarvestCropRequest,
     HarvestCropResponse,
     PlantSeedRequest,
     PlantSeedResponse,
+    RetainProductRequest,
+    RetainProductResponse,
     UseHerbicideRequest,
     UseHerbicideResponse,
     UsePesticideRequest,
@@ -37,4 +41,6 @@ export interface IGameplayService {
     usePesticide(request: UsePesticideRequest): Observable<UsePesticideResponse>
 
     //Delivery
+    deliverProduct(request: DeliverProductRequest): Observable<DeliverProductResponse>
+    retainProduct(request: RetainProductRequest): Observable<RetainProductResponse>
 }

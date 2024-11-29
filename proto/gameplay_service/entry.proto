@@ -3,6 +3,7 @@ syntax = "proto3";
 import "google/protobuf/empty.proto";
 import "./shop/entry.proto";
 import "./farming/entry.proto";
+import "./delivery/entry.proto";
 
 package gameplay;
 
@@ -20,5 +21,8 @@ service GameplayService {
     rpc PlantSeed(PlantSeedRequest) returns (google.protobuf.Empty);
     rpc UseHerbicide(UseHerbicideRequest) returns (google.protobuf.Empty);
     rpc UsePesticide(UsePesticideRequest) returns (google.protobuf.Empty);
-    
+
+    // Delivery methods
+    rpc DeliverProduct(DeliverProductRequest) returns (DeliverProductResponse);
+    rpc RetainProduct(RetainProductRequest) returns (google.protobuf.Empty);
 }
