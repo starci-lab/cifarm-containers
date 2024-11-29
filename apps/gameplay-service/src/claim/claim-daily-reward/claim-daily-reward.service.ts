@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     DailyRewardAlreadyClaimedTodayException,
     DailyRewardNotEqual5Exception,
-    DailyRewardTransactionFailedException,
+    DailyRewardTransactionFailedException
 } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
 import { ClaimDailyRewardRequest } from "./claim-daily-reward.dto"
@@ -17,7 +17,7 @@ export class ClaimDailyRewardService {
     constructor(
         private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly tokenBalanceService: TokenBalanceService,
+        private readonly tokenBalanceService: TokenBalanceService
     ) {}
 
     async claimDailyReward(request: ClaimDailyRewardRequest) {
@@ -29,7 +29,7 @@ export class ClaimDailyRewardService {
         try {
             // Get latest claim time
             const user = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: request.userId },
+                where: { id: request.userId }
             })
 
             // check if spin last time is same as today
@@ -48,44 +48,43 @@ export class ClaimDailyRewardService {
                 throw new DailyRewardNotEqual5Exception(dailyRewards.length)
             }
 
+            // Update user's daily reward
+            const now = dayjs()
+            const userChanges: DeepPartial<UserEntity> = {
+                dailyRewardLastClaimTime: now.toDate(),
+                dailyRewardStreak: user.dailyRewardStreak + 1
+            }
+
+            let balanceChanges: DeepPartial<UserEntity> = {}
+
+            // Check streak
+            if (user.dailyRewardStreak >= 4) {
+                balanceChanges = {
+                    ...this.goldBalanceService.add({
+                        entity: user,
+                        amount: dailyRewards[4].golds
+                    }),
+                    ...this.tokenBalanceService.add({
+                        entity: user,
+                        amount: dailyRewards[4].tokens
+                    })
+                }
+            } else {
+                balanceChanges = {
+                    ...this.goldBalanceService.add({
+                        entity: user,
+                        amount: dailyRewards[user.dailyRewardStreak].golds
+                    })
+                }
+            }
+
             // Start transaction
             await queryRunner.startTransaction()
-
             try {
-                // Update user's daily reward
-                const now = dayjs()
-                const userChanges: DeepPartial<UserEntity> = {
-                    dailyRewardLastClaimTime: now.toDate(),
-                    dailyRewardStreak: user.dailyRewardStreak + 1
-                }
-
-                let balanceChanges: DeepPartial<UserEntity> = {}
-                
-                // Check streak 
-                if (user.dailyRewardStreak >= 4) {
-                    balanceChanges = {
-                        ...this.goldBalanceService.add({
-                            entity: user,
-                            amount: dailyRewards[4].golds
-                        }),
-                        ...this.tokenBalanceService.add({
-                            entity: user,
-                            amount: dailyRewards[4].tokens
-                        })
-                    }
-                } else {
-                    balanceChanges = {
-                        ...this.goldBalanceService.add({
-                            entity: user,
-                            amount: dailyRewards[user.dailyRewardStreak].golds
-                        }),
-                    }
-                }
-                
                 // Save user
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...userChanges,
-                    ...balanceChanges,
+                    ...balanceChanges
                 })
 
                 await queryRunner.commitTransaction()

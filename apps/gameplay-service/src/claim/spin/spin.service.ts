@@ -73,114 +73,146 @@ export class SpinService {
             const randomIndex = Math.floor(Math.random() * rewardableSlots.length)
             const selectedSlot = rewardableSlots[randomIndex]
 
-            //we than process the reward
-            await queryRunner.startTransaction()
+            // Update user's spin last time
+            const userChanges: DeepPartial<UserEntity> = {
+                spinLastTime: now.toDate(),
+                spinCount: user.spinCount + 1
+            }
 
-            try {
-                // Update user's spin last time
-                const userChanges: DeepPartial<UserEntity> = {
-                    spinLastTime: now.toDate(),
-                    spinCount: user.spinCount + 1
-                }
-
-                let balanceChanges: DeepPartial<UserEntity> = {}
-                // Check type, if golds
-                switch (selectedSlot.spinPrize.type) {
-                case SpinPrizeType.Gold:
-                {
-                    balanceChanges = this.goldBalanceService.add({
-                        entity: user,
-                        amount: selectedSlot.spinPrize.golds,
+            let balanceChanges: DeepPartial<UserEntity> = {}
+            // Check type, if golds
+            switch (selectedSlot.spinPrize.type) {
+            case SpinPrizeType.Gold:
+            {
+                //we than process the reward
+                balanceChanges = this.goldBalanceService.add({
+                    entity: user,
+                    amount: selectedSlot.spinPrize.golds,
+                })
+                await queryRunner.startTransaction()
+                try {
+                    await queryRunner.manager.update(UserEntity, user.id, {
+                        ...userChanges,
+                        ...balanceChanges,
                     })
-                    break
-                }
-                case SpinPrizeType.Seed:
-                {
-                    // Get inventory type
-                    const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                        where: { 
-                            cropId: selectedSlot.spinPrize.cropId,
-                            type: InventoryType.Seed
-                        }
-                    })
-                    // Get inventory same type
-                    const inventories = await queryRunner.manager.find(InventoryEntity, {
-                        where: {
-                            userId: request.userId,
-                            inventoryTypeId: inventoryType.id
-                        },
-                        relations: {
-                            inventoryType: true
-                        }
-                    })
-                    const updatedInventories = this.inventoryService.add({
-                        entities: inventories,
+                    await queryRunner.commitTransaction()
+                } catch (error) {
+                    this.logger.error("Spin transaction failed, rolling back...", error)
+                    await queryRunner.rollbackTransaction()
+                    throw new SpinTransactionFailedException(error)
+                }      
+                break
+            }
+            case SpinPrizeType.Seed:
+            {
+                // Get inventory type
+                const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+                    where: { 
+                        cropId: selectedSlot.spinPrize.cropId,
+                        type: InventoryType.Seed
+                    }
+                })
+                // Get inventory same type
+                const inventories = await queryRunner.manager.find(InventoryEntity, {
+                    where: {
                         userId: request.userId,
-                        data: {
-                            inventoryType: inventoryType,
-                            quantity: selectedSlot.spinPrize.quantity
-                        }
-                    })
-
-                    // Save inventory
-                    await queryRunner.manager.save(InventoryEntity, updatedInventories)
-                    break
-                }
-                case SpinPrizeType.Supply: {
-                    // Get inventory type
-                    const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                        where: { 
-                            cropId: selectedSlot.spinPrize.cropId,
-                            type: InventoryType.Supply
-                        }
-                    })
-                    // Get inventory same type
-                    const inventories = await queryRunner.manager.find(InventoryEntity, {
-                        where: {
-                            userId: request.userId,
-                            inventoryTypeId: inventoryType.id
-                        },
-                        relations: {
-                            inventoryType: true
-                        }
-                    })
-                    const updatedInventories = this.inventoryService.add({
-                        entities: inventories,
-                        userId: request.userId,
-                        data: {
-                            inventoryType: inventoryType,
-                            quantity: selectedSlot.spinPrize.quantity
-                        }
-                    })  
-                    // Save inventory
-                    await queryRunner.manager.save(InventoryEntity, updatedInventories)
-                    break
-                }
-                case SpinPrizeType.Token: {
-                    balanceChanges = this.tokenBalanceService.add({
-                        entity: user,
-                        amount: selectedSlot.spinPrize.tokens
-                    })
-                    break
-                }
-                }
-
-                await queryRunner.manager.update(UserEntity, user.id, {
-                    ...userChanges,
-                    ...balanceChanges,
+                        inventoryTypeId: inventoryType.id
+                    },
+                    relations: {
+                        inventoryType: true
+                    }
+                })
+                const updatedInventories = this.inventoryService.add({
+                    entities: inventories,
+                    userId: request.userId,
+                    data: {
+                        inventoryType: inventoryType,
+                        quantity: selectedSlot.spinPrize.quantity
+                    }
                 })
 
-                await queryRunner.commitTransaction()
-
-                this.logger.log(
-                    `Successfully spun the wheel for user ${request.userId}, selected slot id: ${selectedSlot.id}`
-                )
-                return { spinSlotId: selectedSlot.id }
-            } catch (error) {
-                this.logger.error("Spin transaction failed, rolling back...", error)
-                await queryRunner.rollbackTransaction()
-                throw new SpinTransactionFailedException(error)
+                await queryRunner.startTransaction()
+                try {
+                    // Save user and inventory
+                    await queryRunner.manager.update(UserEntity, user.id, {
+                        ...userChanges,
+                        ...balanceChanges,
+                    })
+                    await queryRunner.manager.save(InventoryEntity, updatedInventories)
+                    await queryRunner.commitTransaction()
+                } catch (error) {
+                    this.logger.error("Spin transaction failed, rolling back...", error)
+                    await queryRunner.rollbackTransaction()
+                    throw new SpinTransactionFailedException(error)
+                }
+                break
             }
+            case SpinPrizeType.Supply: {
+                // Get inventory type
+                const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+                    where: { 
+                        cropId: selectedSlot.spinPrize.cropId,
+                        type: InventoryType.Supply
+                    }
+                })
+                // Get inventory same type
+                const inventories = await queryRunner.manager.find(InventoryEntity, {
+                    where: {
+                        userId: request.userId,
+                        inventoryTypeId: inventoryType.id
+                    },
+                    relations: {
+                        inventoryType: true
+                    }
+                })
+                const updatedInventories = this.inventoryService.add({
+                    entities: inventories,
+                    userId: request.userId,
+                    data: {
+                        inventoryType: inventoryType,
+                        quantity: selectedSlot.spinPrize.quantity
+                    }
+                })  
+                await queryRunner.startTransaction()
+                try {
+                    await queryRunner.manager.update(UserEntity, user.id, {
+                        ...userChanges,
+                        ...balanceChanges,
+                    })
+                    await queryRunner.manager.save(InventoryEntity, updatedInventories)
+                    await queryRunner.commitTransaction()
+                } catch (error) {
+                    this.logger.error("Spin transaction failed, rolling back...", error)
+                    await queryRunner.rollbackTransaction()
+                    throw new SpinTransactionFailedException(error)
+                }
+                break
+            }
+            case SpinPrizeType.Token: {
+                
+                balanceChanges = this.tokenBalanceService.add({
+                    entity: user,
+                    amount: selectedSlot.spinPrize.tokens
+                })
+                await queryRunner.startTransaction()
+                try {
+                    await queryRunner.manager.update(UserEntity, user.id, {
+                        ...userChanges,
+                        ...balanceChanges,
+                    })
+                    await queryRunner.commitTransaction()
+                } catch (error) {
+                    this.logger.error("Spin transaction failed, rolling back...", error)
+                    await queryRunner.rollbackTransaction()
+                    throw new SpinTransactionFailedException(error)
+                }
+                break
+            }
+            }
+            this.logger.log(
+                `Successfully spun the wheel for user ${request.userId}, selected slot id: ${selectedSlot.id}`
+            )
+            return { spinSlotId: selectedSlot.id }
         } finally {
             await queryRunner.release()
         }
