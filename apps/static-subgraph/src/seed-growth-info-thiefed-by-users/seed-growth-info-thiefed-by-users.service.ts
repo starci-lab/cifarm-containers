@@ -11,7 +11,7 @@ export class SeedGrowthInfoThiefedByUsersService {
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache
-    ) { }
+    ) {}
 
     // async getSeedGrowthInfoThiefedByUsers({ limit = 10, offset = 0 }: GetSeedGrowthInfoThiefedByUsersArgs): Promise<Array<SeedGrowthInfoThiefedByUserEntity>> {
     //     this.logger.debug(`GetSeedGrowthInfoThiefedByUsers: limit=${limit}, offset=${offset}`)

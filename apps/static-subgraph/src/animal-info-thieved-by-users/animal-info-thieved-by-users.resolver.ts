@@ -6,8 +6,9 @@ import { Resolver } from "@nestjs/graphql"
 export class AnimalInfoThievedByUsersResolver {
     private readonly logger = new Logger(AnimalInfoThievedByUsersResolver.name)
 
-    constructor(private readonly animalInfoThiefedByUsersService: AnimalInfoThievedByUsersService) {
-    }
+    constructor(
+        private readonly animalInfoThiefedByUsersService: AnimalInfoThievedByUsersService
+    ) {}
 
     // @Query(() => [AnimalInfoEntity], {
     //     name: "animal_infos"

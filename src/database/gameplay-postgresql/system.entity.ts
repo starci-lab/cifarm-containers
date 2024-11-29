@@ -8,7 +8,7 @@ import { Position } from "@src/types"
 export class SystemEntity extends ReadableAbstractEntity {
     @Column({ name: "value", type: "jsonb" })
     @Field(() => JSON)
-    value: object
+        value: object
 }
 
 export class Activities {

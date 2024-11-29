@@ -13,7 +13,6 @@ export class DailyRewardsResolver {
     @Query(() => [DailyRewardEntity], {
         name: "daily_rewards"
     })
-    
     async getDailyRewards(
         @Args("args") args: GetDailyRewardsArgs
     ): Promise<Array<DailyRewardEntity>> {

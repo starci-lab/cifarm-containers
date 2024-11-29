@@ -10,8 +10,7 @@ import TimerInterceptor from "@src/interceptors/timer.interceptor"
 export class AnimalsResolver {
     private readonly logger = new Logger(AnimalsResolver.name)
 
-    constructor(private readonly animalsService: AnimalsService) {
-    }
+    constructor(private readonly animalsService: AnimalsService) {}
 
     @Query(() => [AnimalEntity], {
         name: "animals"

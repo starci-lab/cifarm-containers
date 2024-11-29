@@ -14,7 +14,7 @@ async function connectSubgraph(app: INestApplication<unknown>) {
         await app.listen(envConfig().containers.graphqlApiGateway.port)
     } catch (e) {
         console.error(e)
-        await new Promise(resolve => setTimeout(resolve, 5000))//wait 5 second
+        await new Promise((resolve) => setTimeout(resolve, 5000)) //wait 5 second
         connectSubgraph(app)
     }
 }

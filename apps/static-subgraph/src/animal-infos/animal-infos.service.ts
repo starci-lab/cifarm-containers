@@ -7,21 +7,22 @@ import { DataSource } from "typeorm"
 export class AnimalInfosService {
     private readonly logger = new Logger(AnimalInfosService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
-    async getAnimalInfos({ limit = 10, offset = 0 }: GetAnimalInfosArgs): Promise<Array<AnimalInfoEntity>> {
+    async getAnimalInfos({
+        limit = 10,
+        offset = 0
+    }: GetAnimalInfosArgs): Promise<Array<AnimalInfoEntity>> {
         this.logger.debug(`GetAnimalInfos: limit=${limit}, offset=${offset}`)
 
-        let animalInfos: Array<AnimalInfoEntity> 
+        let animalInfos: Array<AnimalInfoEntity>
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
             animalInfos = await this.dataSource.getRepository(AnimalInfoEntity).find({
                 take: limit,
                 skip: offset,
-                relations: ["placedItem","animal","thiefedBy"]
+                relations: ["placedItem", "animal", "thiefedBy"]
             })
             return animalInfos
         } finally {

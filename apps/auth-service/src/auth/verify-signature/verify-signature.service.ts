@@ -123,7 +123,7 @@ export class VerifySignatureService {
         }
 
         if (!result) throw new Error("Signature verification")
-        
+
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -185,4 +185,3 @@ export class VerifySignatureService {
         }
     }
 }
- 

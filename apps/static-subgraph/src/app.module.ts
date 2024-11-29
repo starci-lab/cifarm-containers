@@ -13,9 +13,7 @@ import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-clas
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([
-            ...Object.values(Entities)
-        ] as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)] as EntityClassOrSchema[]),
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],
@@ -41,7 +39,7 @@ import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-clas
                     }
                 })
 
-                const ttl = envConfig().redis.ttl 
+                const ttl = envConfig().redis.ttl
                 return {
                     store: store as unknown as CacheStore,
                     ttl: ttl
@@ -56,9 +54,8 @@ import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-clas
             buildSchemaOptions: {
                 orphanedTypes: []
             }
-
         }),
         ...Object.values(Modules)
-    ],
+    ]
 })
-export class AppModule { }
+export class AppModule {}

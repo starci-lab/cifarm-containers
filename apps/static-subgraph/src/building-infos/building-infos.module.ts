@@ -4,4 +4,4 @@ import { Module } from "@nestjs/common"
 @Module({
     providers: [BuildingInfosService, BuildingInfosResolver]
 })
-export class BuildingInfosModule { }
+export class BuildingInfosModule {}

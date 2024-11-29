@@ -5,6 +5,4 @@ import { Module } from "@nestjs/common"
 @Module({
     providers: [InventoryService, InventoryResolver]
 })
-export class InventoriesModule { 
-    
-}
+export class InventoriesModule {}

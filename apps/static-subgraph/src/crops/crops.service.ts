@@ -7,9 +7,7 @@ import { GetCropsArgs } from "./crops.dto"
 export class CropsService {
     private readonly logger = new Logger(CropsService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getCrops({ limit = 10, offset = 0 }: GetCropsArgs): Promise<Array<CropEntity>> {
         this.logger.debug(`GetCrops: limit=${limit}, offset=${offset}`)
@@ -21,7 +19,7 @@ export class CropsService {
             crops = await this.dataSource.getRepository(CropEntity).find({
                 take: limit,
                 skip: offset,
-                relations:["inventoryType"]
+                relations: ["inventoryType"]
             })
         } finally {
             await queryRunner.release()

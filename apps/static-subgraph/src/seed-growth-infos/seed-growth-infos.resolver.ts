@@ -13,7 +13,9 @@ export class SeedGrowthInfosResolver {
     @Query(() => [SeedGrowthInfoEntity], {
         name: "seed_growth_infos"
     })
-    async getSeedGrowthInfos(@Args("args") args: GetSeedGrowthInfosArgs): Promise<Array<SeedGrowthInfoEntity>> {
+    async getSeedGrowthInfos(
+        @Args("args") args: GetSeedGrowthInfosArgs
+    ): Promise<Array<SeedGrowthInfoEntity>> {
         return this.seedgrowthinfosService.getSeedGrowthInfos(args)
     }
 }

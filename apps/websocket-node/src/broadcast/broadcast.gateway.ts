@@ -27,9 +27,7 @@ import { PlacedItemEntity } from "@src/database"
 export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
     private readonly logger = new Logger(BroadcastGateway.name)
 
-    constructor(
-        private readonly dataSource: DataSource
-    ) {}
+    constructor(private readonly dataSource: DataSource) {}
 
     afterInit() {
         this.logger.debug("Broadcast gateway initialized")
@@ -56,7 +54,9 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
                     userId
                 }
             })
-            this.server.to(clientId).emit(namespaceConstants[Namespace.Broadcast].events.PLACED_ITEMS, placedItems)
+            this.server
+                .to(clientId)
+                .emit(namespaceConstants[Namespace.Broadcast].events.PLACED_ITEMS, placedItems)
         } finally {
             await queryRunner.release()
         }
@@ -64,10 +64,7 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
 
     @UseGuards(WsJwtAuthGuard, WsUserLinkedGuard)
     @SubscribeMessage(namespaceConstants[Namespace.Broadcast].events.PLACED_ITEMS)
-    public async handlePlacedItems(
-        @WsUser() user: UserLike,
-        @ConnectedSocket() client: Socket
-    ) {
+    public async handlePlacedItems(@WsUser() user: UserLike, @ConnectedSocket() client: Socket) {
         await this.broadcastPlacedItems({
             userId: user.id,
             clientId: client.id

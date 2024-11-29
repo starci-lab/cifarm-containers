@@ -7,7 +7,7 @@ import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { redisStore } from "cache-manager-redis-yet"
 import { BroadcastModule } from "./broadcast"
 @Module({
-    imports: [  
+    imports: [
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],
@@ -24,7 +24,7 @@ import { BroadcastModule } from "./broadcast"
                 })
 
                 return {
-                    store: store as unknown as CacheStore,
+                    store: store as unknown as CacheStore
                 }
             }
         }),
