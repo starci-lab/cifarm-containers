@@ -4,6 +4,7 @@ type UpgradeEntity {
   updatedAt: DateTime!
   upgradePrice: Int!
   capacity: Int!
+  upgradeLevel: Float!
   building: BuildingEntity!
 }
 
@@ -36,53 +37,6 @@ type TileEntity {
   placedItemType: PlacedItemTypeEntity
 }
 
-type UserEntity {
-  username: String!
-  chainKey: String!
-  network: String!
-  accountAddress: String!
-  golds: Int!
-  tokens: Float!
-  experiences: Int!
-  energy: Int!
-  level: Int!
-  inventories: [InventoryEntity!]!
-  placedItems: [PlacedItemEntity!]!
-}
-
-type AnimalInfoEntity {
-  currentGrowthTime: Float!
-  currentHungryTime: Float!
-  currentYieldTime: Float!
-  hasYielded: Boolean!
-  isAdult: Boolean!
-  animal: AnimalEntity!
-  currentState: String!
-  harvestQuantityRemaining: Int!
-  alreadySick: Boolean!
-  placedItem: PlacedItemEntity!
-}
-
-type BuildingInfoEntity {
-  currentUpgrade: Float!
-  occupancy: Float!
-  building: BuildingEntity!
-  placedItem: PlacedItemEntity!
-}
-
-type ProductEntity {
-  id: ID!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  isPremium: Boolean!
-  goldAmount: Int!
-  tokenAmount: Float!
-  type: String!
-  crop: CropEntity
-  animal: AnimalEntity
-  inventoryType: InventoryTypeEntity
-}
-
 type CropEntity {
   id: ID!
   createdAt: DateTime!
@@ -102,12 +56,81 @@ type CropEntity {
   inventoryType: InventoryTypeEntity
 }
 
+type ProductEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isPremium: Boolean!
+  goldAmount: Int!
+  tokenAmount: Float!
+  type: String!
+  crop: CropEntity
+  animal: AnimalEntity
+  inventoryType: InventoryTypeEntity
+  deliveringProducts: [DeliveringProductEntity!]!
+}
+
+type DeliveringProductEntity {
+  quantity: Int!
+  index: Int!
+  premium: Boolean!
+  userId: String
+  user: UserEntity
+  productId: String
+  product: ProductEntity
+}
+
+type UserEntity {
+  username: String!
+  chainKey: String!
+  network: String!
+  accountAddress: String!
+  golds: Int!
+  tokens: Float!
+  experiences: Int!
+  energy: Int!
+  level: Int!
+  tutorialIndex: Int!
+  stepIndex: Int!
+  dailyRewardStreak: Int!
+  dailyRewardLastClaimTime: Int!
+  dailyRewardNumberOfClaim: Int!
+  spinLastTime: Int!
+  spinCount: Int!
+  inventories: [InventoryEntity!]!
+  placedItems: [PlacedItemEntity!]!
+  deliveringProducts: [DeliveringProductEntity!]!
+}
+
+type AnimalInfoEntity {
+  currentGrowthTime: Float!
+  currentHungryTime: Float!
+  currentYieldTime: Float!
+  hasYielded: Boolean!
+  isAdult: Boolean!
+  animalId: String!
+  animal: AnimalEntity!
+  currentState: String!
+  harvestQuantityRemaining: Int!
+  alreadySick: Boolean!
+  placedItem: PlacedItemEntity!
+}
+
+type BuildingInfoEntity {
+  currentUpgrade: Float!
+  occupancy: Float!
+  buildingId: String
+  building: BuildingEntity!
+  placedItem: PlacedItemEntity!
+}
+
 type SeedGrowthInfoEntity {
   currentStage: Int!
   currentStageTimeElapsed: Int!
   totalTimeElapsed: Int!
   currentPerennialCount: Int!
   harvestQuantityRemaining: Int!
+  cropId: String!
   crop: CropEntity!
   currentState: String!
   fullyMatured: Boolean!
@@ -137,6 +160,8 @@ type PlacedItemTypeEntity {
   createdAt: DateTime!
   updatedAt: DateTime!
   type: String!
+  tileId: String
+  animalId: String
   placedItems: [PlacedItemEntity!]
 }
 

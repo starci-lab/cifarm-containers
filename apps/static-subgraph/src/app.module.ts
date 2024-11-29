@@ -41,7 +41,7 @@ import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-clas
                     }
                 })
 
-                const ttl = envConfig().redis.ttl
+                const ttl = envConfig().redis.ttl 
                 return {
                     store: store as unknown as CacheStore,
                     ttl: ttl
