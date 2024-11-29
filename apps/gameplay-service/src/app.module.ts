@@ -9,13 +9,8 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
 import { ShopModule } from "./shop"
 import { FarmingModule } from "./farming"
-<<<<<<< HEAD
-import { DevModule } from "./dev"
- 
-=======
 // import { DevModule } from "./dev"
-
->>>>>>> f7dfa9c09e86eb4704d6cb776c31ec8ea42a87db
+ 
 @Module({
     imports: [
         ConfigModule.forRoot({

@@ -44,7 +44,7 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     @WebSocketServer()
-    private server: Server
+    private readonly server: Server
 
     private async broadcastPlacedItems({ clientId, userId }: BroadcastPlacedItemsParams) {
         //emit placed items to all clients
