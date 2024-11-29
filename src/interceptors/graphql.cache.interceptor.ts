@@ -18,7 +18,7 @@ export class GraphQLCacheInterceptor implements NestInterceptor {
         const args = ctx.getArgs()
         const key = this.generateCacheKey(info.fieldName, args)
         const value = await this.cacheManager.get(key)
-        if (value) {
+        if (value) { //ttl 24h
             this.logger.debug(`Cache hit for key: ${key}`)
             return of(value)
         }

@@ -20,11 +20,12 @@ export class AnimalInfosService {
         try {
             animalInfos = await this.dataSource.getRepository(AnimalInfoEntity).find({
                 take: limit,
-                skip: offset
+                skip: offset,
+                relations: ["placedItem","animal","thiefedBy"]
             })
+            return animalInfos
         } finally {
             await queryRunner.release()
         }
-        return animalInfos
     }
 }

@@ -18,7 +18,8 @@ export class UserService {
         try {
             const users = await this.dataSource.getRepository(UserEntity).find({
                 take: limit,
-                skip: offset
+                skip: offset,
+                relations:["inventories","placedItems"]
             })
             return users
         } finally {

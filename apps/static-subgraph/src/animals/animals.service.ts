@@ -18,9 +18,12 @@ export class AnimalsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            animals = await this.dataSource.getRepository(AnimalEntity).find({
+            animals = await queryRunner.manager.find(AnimalEntity,{
                 take: limit,
-                skip: offset
+                skip: offset,
+                relations:{
+                    product: true,
+                }
             })
         } finally {
             await queryRunner.release()

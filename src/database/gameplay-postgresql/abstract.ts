@@ -1,6 +1,6 @@
 
 
-import { Field, ID } from "@nestjs/graphql"
+import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { ClassConstructor, instanceToPlain, plainToInstance } from "class-transformer"
 import {
     CreateDateColumn,
@@ -33,6 +33,9 @@ export abstract class AbstractEntity {
     }
 }
 
+@ObjectType({
+    isAbstract: true
+})
 export abstract class ReadableAbstractEntity{
     @Field(() => ID)
     @PrimaryColumn({ name: "id", type: "varchar", length: 36 })

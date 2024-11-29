@@ -18,7 +18,8 @@ export class UpgradeService {
         try {
             const upgrades = await this.dataSource.getRepository(UpgradeEntity).find({
                 take: limit,
-                skip: offset
+                skip: offset,
+                relations: ["building"]
             })
             return upgrades
         } finally {

@@ -3,7 +3,7 @@ import { Column, Entity } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
 import JSON from "graphql-type-json"
 @ObjectType()
-@Entity("systems")
+@Entity("system")
 export class SystemEntity extends ReadableAbstractEntity {
     @Column({ name: "value", type: "jsonb" })
     @Field(() => JSON)

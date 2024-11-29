@@ -25,6 +25,7 @@ export class DailyRewardPossibilitiesService {
             dailyRewards = await this.dataSource.getRepository(DailyRewardPossibilityEntity).find({
                 take: limit,
                 skip: offset
+                
             })
             return dailyRewards
         } finally {

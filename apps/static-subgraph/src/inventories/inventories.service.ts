@@ -18,7 +18,8 @@ export class InventoryService {
         try {
             const inventories = await this.dataSource.getRepository(InventoryEntity).find({
                 take: limit,
-                skip: offset
+                skip: offset,
+                relations:["inventoryType"]
             })
             return inventories
         } finally {

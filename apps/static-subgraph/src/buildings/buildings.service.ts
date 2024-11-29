@@ -23,7 +23,8 @@ export class BuildingsService {
         try {
             buildings = await this.dataSource.getRepository(BuildingEntity).find({
                 take: limit,
-                skip: offset
+                skip: offset,
+                relations: ["buildingInfo", "upgrades"]
             })
         } finally {
             await queryRunner.release()

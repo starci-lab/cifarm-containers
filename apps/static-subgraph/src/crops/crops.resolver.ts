@@ -3,9 +3,7 @@ import { Resolver, Query, Args } from "@nestjs/graphql"
 import { CropsService } from "./crops.service"
 import { CropEntity } from "@src/database"
 import { GetCropsArgs } from "./crops.dto"
-import { CacheInterceptor } from "@nestjs/cache-manager"
 import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
-@UseInterceptors(CacheInterceptor)
 @Resolver()
 export class CropsResolver {
     private readonly logger = new Logger(CropsResolver.name)

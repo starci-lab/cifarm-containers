@@ -21,6 +21,7 @@ export class CropsService {
             crops = await this.dataSource.getRepository(CropEntity).find({
                 take: limit,
                 skip: offset,
+                relations:["inventoryType"]
             })
         } finally {
             await queryRunner.release()

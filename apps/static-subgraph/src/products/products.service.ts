@@ -18,7 +18,8 @@ export class ProductService {
         try {
             const products = await this.dataSource.getRepository(ProductEntity).find({
                 take: limit,
-                skip: offset
+                skip: offset,
+                relations: ["crop", "animal"]
             })
             return products
         } finally {

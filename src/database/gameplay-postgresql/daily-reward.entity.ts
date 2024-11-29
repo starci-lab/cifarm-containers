@@ -22,7 +22,7 @@ export class DailyRewardEntity extends ReadableAbstractEntity {
     @OneToMany(
         () => DailyRewardPossibilityEntity,
         (dailyRewardPossibilities) => dailyRewardPossibilities.dailyReward,
-        { cascade: true }
+        { cascade: true },
     )
         dailyRewardPossibilities?: Array<DailyRewardPossibilityEntity>
 }
