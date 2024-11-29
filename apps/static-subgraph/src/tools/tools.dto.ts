@@ -1,9 +1,5 @@
-import { Field, InputType, Int } from "@nestjs/graphql"
+import { InputType } from "@nestjs/graphql"
+import { PaginatedArgs } from "@src/types"
 
 @InputType()
-export class GetToolsArgs {
-    @Field(() => Int, { nullable: true, defaultValue: 10 }) //default 10
-        limit?: number
-    @Field(() => Int, { nullable: true, defaultValue: 0 }) //default 0
-        offset?: number
-}
+export class GetToolsArgs extends PaginatedArgs {}

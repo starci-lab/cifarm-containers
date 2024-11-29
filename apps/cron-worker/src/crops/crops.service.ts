@@ -19,7 +19,8 @@ export class CropsWorker extends WorkerHost {
     constructor(
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-        private readonly dataSource: DataSource) {
+        private readonly dataSource: DataSource
+    ) {
         super()
     }
 
@@ -68,10 +69,10 @@ export class CropsWorker extends WorkerHost {
                     //while the current stage time elapsed is greater than the growth stage duration
                     while (
                         seedGrowthInfo.currentStageTimeElapsed >=
-                    seedGrowthInfo.crop.growthStageDuration
+                        seedGrowthInfo.crop.growthStageDuration
                     ) {
                         seedGrowthInfo.currentStageTimeElapsed -=
-                        seedGrowthInfo.crop.growthStageDuration
+                            seedGrowthInfo.crop.growthStageDuration
                         seedGrowthInfo.currentStage += 1
                         //reset fertilizer after
                         seedGrowthInfo.isFertilized = false
@@ -95,12 +96,12 @@ export class CropsWorker extends WorkerHost {
                     if (seedGrowthInfo.currentStage >= seedGrowthInfo.crop.growthStages) {
                         if (
                             seedGrowthInfo.currentState === CropCurrentState.IsInfested ||
-                        seedGrowthInfo.currentState === CropCurrentState.IsWeedy
+                            seedGrowthInfo.currentState === CropCurrentState.IsWeedy
                         ) {
                             seedGrowthInfo.harvestQuantityRemaining =
-                            (seedGrowthInfo.crop.minHarvestQuantity +
-                                seedGrowthInfo.crop.maxHarvestQuantity) /
-                            2
+                                (seedGrowthInfo.crop.minHarvestQuantity +
+                                    seedGrowthInfo.crop.maxHarvestQuantity) /
+                                2
                         }
                         seedGrowthInfo.fullyMatured = true
                     }

@@ -75,7 +75,7 @@ describe("BuySuppliesService", () => {
         })
 
         const buySuppliesRequest: BuySuppliesRequest = {
-            id: supply.id,
+            supplyId: supply.id,
             userId: userBeforeBuyingSupply.id,
             quantity: 1
         }
@@ -114,7 +114,7 @@ describe("BuySuppliesService", () => {
 
         // First buy request
         const buySuppliesFirstRequest: BuySuppliesRequest = {
-            id: supply.id,
+            supplyId: supply.id,
             userId: userBeforeBuyingSupply.id,
             quantity: 2
         }
@@ -122,7 +122,7 @@ describe("BuySuppliesService", () => {
 
         // Second buy request
         const buySuppliesSecondRequest: BuySuppliesRequest = {
-            id: supply.id,
+            supplyId: supply.id,
             userId: userBeforeBuyingSupply.id,
             quantity: 2
         }

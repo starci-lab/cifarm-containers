@@ -89,8 +89,6 @@ describe("DeliverProductService", () => {
             where: { userId: userBeforeDeliverProduct.id }
         })
 
-        console.log("invenn", inventory)
-
         const deliverProductRequest: DeliverProductRequest = {
             userId: inventory.userId,
             inventoryId: inventory.id,

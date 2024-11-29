@@ -43,7 +43,7 @@ import { AuthModule } from "./auth"
         }),
         BlockchainAuthModule,
         JwtModule,
-        AuthModule,
+        AuthModule
     ],
     controllers: [],
     providers: [

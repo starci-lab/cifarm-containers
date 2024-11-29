@@ -24,9 +24,9 @@ export class PlacedItemTileNotNeedWaterException extends GrpcNotFoundException {
     }
 }
 
-export class PlacedItemNotNeedUsePestisideException extends GrpcNotFoundException {
+export class PlacedItemNotNeedUsePesticideException extends GrpcNotFoundException {
     constructor(id: string) {
-        super(`Placed item not need use pestiside: ${id}`)
+        super(`Placed item not need use Pesticide: ${id}`)
     }
 }
 

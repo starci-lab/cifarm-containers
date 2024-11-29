@@ -53,7 +53,7 @@ export class AnimalEntity extends ReadableAbstractEntity {
     @Column({ name: "premium_harvest_experiences", type: "int" })
         premiumHarvestExperiences: number
 
-    @Field(() => AnimalType)
+    @Field(() => String)
     @Column({ name: "type", type: "enum", enum: AnimalType })
         type: AnimalType
 

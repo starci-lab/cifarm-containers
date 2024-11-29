@@ -7,6 +7,7 @@ import { ConfigModule } from "@nestjs/config"
 import { envConfig } from "@src/config"
 import { APP_INTERCEPTOR } from "@nestjs/core"
 import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
+import { GameplayModule } from "./gameplay"
 
 @Module({
     imports: [
@@ -18,7 +19,7 @@ import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
         StrategiesModule,
         //HealthcheckModule,
         AuthModule,
-        //GameplayModule
+        GameplayModule
     ],
     controllers: [],
     providers: [

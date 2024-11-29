@@ -17,8 +17,8 @@ import {
 } from "@src/database"
 import { InventoryModule, LevelModule } from "@src/services"
 import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
-import { UsePestisideService } from "./use-pestiside.service"
-import { UsePestisideController } from "./use-pestiside.controller"
+import { UsePesticideController } from "./use-pesticide.controller"
+import { UsePesticideService } from "./use-pesticide.service"
 
 @Global()
 @Module({
@@ -42,8 +42,8 @@ import { UsePestisideController } from "./use-pestiside.controller"
         LevelModule,
         InventoryModule
     ],
-    controllers: [UsePestisideController],
-    providers: [UsePestisideService],
-    exports: [UsePestisideService]
+    controllers: [UsePesticideController],
+    providers: [UsePesticideService],
+    exports: [UsePesticideService]
 })
-export class UsePestisideModule {}
+export class UsePesticideModule {}

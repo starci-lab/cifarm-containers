@@ -66,7 +66,7 @@ export class CropsService {
             data: {
                 from: i * batchSize,
                 to: Math.min((i + 1) * batchSize, count), // Ensure 'to' does not exceed 'count'
-                seconds: time,
+                seconds: time
             }
         }))
         this.logger.verbose(`Adding ${batches.length} batches to the queue`)

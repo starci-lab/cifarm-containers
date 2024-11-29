@@ -1,9 +1,7 @@
-import { Injectable, Logger, Inject } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { SupplyEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import { GetSuppliesArgs } from "./supplies.dto"
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Cache } from "cache-manager"
 
 @Injectable()
 export class SuppliesService {
@@ -11,28 +9,21 @@ export class SuppliesService {
 
     constructor(
         private readonly dataSource: DataSource,
-        @Inject(CACHE_MANAGER)
-        private cacheManager: Cache
-    ) {}
+    ) { }
 
     async getSupplies({ limit = 10, offset = 0 }: GetSuppliesArgs): Promise<Array<SupplyEntity>> {
         this.logger.debug(`GetSupplies: limit=${limit}, offset=${offset}`)
-
-        let supplies: Array<SupplyEntity>
-        // const cachedData = await this.cacheManager.get<Array<SupplyEntity>>(REDIS_KEY.SUPPLIES)
-
-        // if (cachedData) {
-        //     this.logger.debug("GetSupplies: Returning data from cache")
-        //     supplies = cachedData.slice(offset, offset + limit)
-        // } else {
-        //     this.logger.debug("GetSupplies: From Database")
-        //     supplies = await this.dataSource.manager.find(SupplyEntity)
-
-        //     await this.cacheManager.set(REDIS_KEY.SUPPLIES, supplies)
-
-        //     supplies = supplies.slice(offset, offset + limit)
-        // }
-
-        return supplies
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const supplies = await this.dataSource.getRepository(SupplyEntity).find({
+                take: limit,
+                skip: offset,
+                relations: ["inventoryType"]
+            })
+            return supplies
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

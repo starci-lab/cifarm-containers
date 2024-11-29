@@ -16,9 +16,9 @@ message PlacedItemEntity {
     
     string type = 8;
     
-    SeedGrowthInfo seed_growth_info = 9; // Optional, nullable SeedGrowthInfo
-    AnimalInfo animal_info = 10; // Optional, nullable AnimalInfo
-    BuildingInfo building_info = 11; // Optional, nullable BuildingInfo
+    SeedGrowthInfo seed_growth_infos = 9; // Optional, nullable SeedGrowthInfo
+    AnimalInfo animal_infos = 10; // Optional, nullable AnimalInfo
+    BuildingInfo building_infos = 11; // Optional, nullable BuildingInfo
     
     string parent_placed_item_key = 12; // Optional, nullable parentPlacedItemKey
 }

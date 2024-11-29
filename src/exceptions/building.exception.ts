@@ -36,9 +36,9 @@ export class HaverstCropTransactionFailedException extends GrpcNotFoundException
     }
 }
 
-export class UsePestisideTransactionFailedException extends GrpcNotFoundException {
+export class UsePesticideTransactionFailedException extends GrpcNotFoundException {
     constructor(error: Error) {
-        super(`Failed to use pestiside due to: ${error}`)
+        super(`Failed to use Pesticide due to: ${error}`)
     }
 }
 

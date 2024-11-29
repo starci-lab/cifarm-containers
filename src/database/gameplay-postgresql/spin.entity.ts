@@ -6,7 +6,7 @@ import { SpinType } from "./enums"
 @ObjectType()
 @Entity("spins")
 export class SpinEntity extends ReadableAbstractEntity {
-    @Field(() => SpinType)
+    @Field(() => String)
     @Column({ name: "spin_type", type: "enum", enum: SpinType })
         type: SpinType
 

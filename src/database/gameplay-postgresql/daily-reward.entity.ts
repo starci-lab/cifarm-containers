@@ -1,7 +1,7 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, OneToMany } from "typeorm"
 import { ReadableAbstractEntity } from "./abstract"
-import { DailyRewardPossibility } from "./daily-reward-possibility.entity"
+import { DailyRewardPossibilityEntity } from "./daily-reward-possibility.entity"
 
 @ObjectType()
 @Entity("daily_rewards")
@@ -18,11 +18,11 @@ export class DailyRewardEntity extends ReadableAbstractEntity {
     @Column({ name: "is_last_day", type: "boolean", default: false })
         isLastDay: boolean
 
-    @Field(() => [DailyRewardPossibility], { nullable: true })
+    @Field(() => [DailyRewardPossibilityEntity], { nullable: true })
     @OneToMany(
-        () => DailyRewardPossibility,
+        () => DailyRewardPossibilityEntity,
         (dailyRewardPossibilities) => dailyRewardPossibilities.dailyReward,
-        { cascade: true }
+        { cascade: true },
     )
-        dailyRewardPossibilities?: Array<DailyRewardPossibility>
+        dailyRewardPossibilities?: Array<DailyRewardPossibilityEntity>
 }

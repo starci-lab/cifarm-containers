@@ -12,7 +12,7 @@ import {
     CropRandomness,
     DailyRewardEntity,
     DailyRewardId,
-    DailyRewardPossibility,
+    DailyRewardPossibilityEntity,
     DailyRewardPossibilityId,
     InventoryType,
     InventoryTypeEntity,
@@ -73,7 +73,7 @@ export class SeedDataService {
                 queryRunner.manager.delete(ToolEntity, {}),
                 queryRunner.manager.delete(TileEntity, {}),
                 queryRunner.manager.delete(SupplyEntity, {}),
-                queryRunner.manager.delete(DailyRewardPossibility, {}),
+                queryRunner.manager.delete(DailyRewardPossibilityEntity, {}),
                 queryRunner.manager.delete(DailyRewardEntity, {}),
                 queryRunner.manager.delete(SpinEntity, {}),
                 queryRunner.manager.delete(SystemEntity, {}),
@@ -144,7 +144,7 @@ export class SeedDataService {
                 energyConsume: 1,
                 experiencesGain: 3
             },
-            helpUsePestiside: {
+            helpUsePesticide: {
                 energyConsume: 1,
                 experiencesGain: 3
             },
@@ -168,7 +168,7 @@ export class SeedDataService {
                 energyConsume: 1,
                 experiencesGain: 3
             },
-            usePestiside: {
+            usePesticide: {
                 energyConsume: 1,
                 experiencesGain: 3
             },

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package gameplay;
+
+message BuyAnimalRequest {
+    string userId = 1;
+    string animalId = 2;
+    string placedItemBuildingId = 3;
+    Position position = 4;
+}
+
+message BuyAnimalResponse {
+    string placedItemId = 1;
+}
+

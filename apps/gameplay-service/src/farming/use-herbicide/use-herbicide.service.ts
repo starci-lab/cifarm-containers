@@ -50,7 +50,7 @@ export class UseHerbicideService {
                 where: { id: SystemId.Activities }
             })
             const {
-                usePestiside: { energyConsume, experiencesGain }
+                usePesticide: { energyConsume, experiencesGain }
             } = value as Activities
 
             const user = await queryRunner.manager.findOne(UserEntity, {
@@ -90,7 +90,7 @@ export class UseHerbicideService {
             )
             return {}
         } catch (error) {
-            this.logger.error("Use pestiside transaction failed, rolling back...", error)
+            this.logger.error("Use Pesticide transaction failed, rolling back...", error)
             await queryRunner.rollbackTransaction()
             throw new UseHerbicideTransactionFailedException(error)
         } finally {

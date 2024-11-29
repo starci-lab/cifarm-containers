@@ -1,3 +1,4 @@
+import { Field, InputType, Int } from "@nestjs/graphql"
 import { ApiHideProperty, ApiProperty } from "@nestjs/swagger"
 import { IsString, IsUUID } from "class-validator"
 import { Socket } from "socket.io"
@@ -72,6 +73,16 @@ export class IdRequest {
     @IsUUID("4")
     @ApiProperty({ example: "5a6919c3-6ae3-45de-81eb-f1bbb05a246d" })
         id: string
+}
+
+@InputType({
+    isAbstract: true
+})
+export abstract class PaginatedArgs {
+    @Field(() => Int, { nullable: true, defaultValue: 10 }) //default 10
+        limit?: number = 10
+    @Field(() => Int, { nullable: true, defaultValue: 0 }) //default 0
+        offset?: number = 0
 }
 
 export class SocketConnectionParams  {

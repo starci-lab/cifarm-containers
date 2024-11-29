@@ -22,7 +22,7 @@ export class BuySuppliesService {
 
     async buySupplies(request: BuySuppliesRequest): Promise<BuySuppliesResponse> {
         this.logger.debug(
-            `Buying supply for user ${request.userId}, id: ${request.id}, quantity: ${request.quantity}`
+            `Buying supply for user ${request.userId}, id: ${request.supplyId}, quantity: ${request.quantity}`
         )
 
         const queryRunner = this.dataSource.createQueryRunner()
@@ -30,10 +30,11 @@ export class BuySuppliesService {
 
         try {
             const supply = await queryRunner.manager.findOne(SupplyEntity, {
-                where: { id: request.id }
+                where: { id: request.supplyId }
             })
-            if (!supply) throw new SupplyNotFoundException(request.id)
-            if (!supply.availableInShop) throw new SupplyNotAvailableInShopException(request.id)
+            if (!supply) throw new SupplyNotFoundException(request.supplyId)
+            if (!supply.availableInShop)
+                throw new SupplyNotAvailableInShopException(request.supplyId)
 
             const totalCost = supply.price * request.quantity
 
@@ -62,7 +63,7 @@ export class BuySuppliesService {
 
                 // Get inventory type
                 const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                    where: { supplyId: request.id }
+                    where: { supplyId: request.supplyId }
                 })
 
                 // Get inventory same type
@@ -70,7 +71,7 @@ export class BuySuppliesService {
                     where: {
                         userId: request.userId,
                         inventoryType: {
-                            supplyId: request.id
+                            supplyId: request.supplyId
                         }
                     },
                     relations: {
