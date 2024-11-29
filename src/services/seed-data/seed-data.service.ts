@@ -144,7 +144,7 @@ export class SeedDataService {
                 energyConsume: 1,
                 experiencesGain: 3
             },
-            helpUsePestiside: {
+            helpUsePesticide: {
                 energyConsume: 1,
                 experiencesGain: 3
             },
@@ -168,7 +168,7 @@ export class SeedDataService {
                 energyConsume: 1,
                 experiencesGain: 3
             },
-            usePestiside: {
+            usePesticide: {
                 energyConsume: 1,
                 experiencesGain: 3
             },

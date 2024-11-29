@@ -9,25 +9,25 @@ import {
     UserEntity
 } from "@src/database"
 import { DataSource } from "typeorm"
-import { UsePestisideRequest, UsePestisideResponse } from "./use-pestiside.dto"
+import { UsePesticideRequest, UsePesticideResponse } from "./use-pesticide.dto"
 import {
-    PlacedItemNotNeedUsePestisideException,
+    PlacedItemNotNeedUsePesticideException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotPlantedException,
-    UsePestisideTransactionFailedException
+    UsePesticideTransactionFailedException
 } from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/services"
 
 @Injectable()
-export class UsePestisideService {
-    private readonly logger = new Logger(UsePestisideService.name)
+export class UsePesticideService {
+    private readonly logger = new Logger(UsePesticideService.name)
     constructor(
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {}
 
-    async usePestiside(request: UsePestisideRequest): Promise<UsePestisideResponse> {
+    async usePesticide(request: UsePesticideRequest): Promise<UsePesticideResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -44,13 +44,13 @@ export class UsePestisideService {
                 throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
 
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested)
-                throw new PlacedItemNotNeedUsePestisideException(request.placedItemTileId)
+                throw new PlacedItemNotNeedUsePesticideException(request.placedItemTileId)
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
             })
             const {
-                usePestiside: { energyConsume, experiencesGain }
+                usePesticide: { energyConsume, experiencesGain }
             } = value as Activities
 
             const user = await queryRunner.manager.findOne(UserEntity, {
@@ -90,9 +90,9 @@ export class UsePestisideService {
             )
             return {}
         } catch (error) {
-            this.logger.error("Use pestiside transaction failed, rolling back...", error)
+            this.logger.error("Use Pesticide transaction failed, rolling back...", error)
             await queryRunner.rollbackTransaction()
-            throw new UsePestisideTransactionFailedException(error)
+            throw new UsePesticideTransactionFailedException(error)
         } finally {
             await queryRunner.release()
         }

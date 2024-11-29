@@ -14,11 +14,11 @@ export class SystemEntity extends ReadableAbstractEntity {
 export class Activities {
     water: ActivityInfo
     feedAnimal: ActivityInfo
-    usePestiside: ActivityInfo
+    usePesticide: ActivityInfo
     useFertilizer: ActivityInfo
     useHerbicide: ActivityInfo
     helpUseHerbicide: ActivityInfo
-    helpUsePestiside: ActivityInfo
+    helpUsePesticide: ActivityInfo
     helpWater: ActivityInfo
     thiefCrop: ActivityInfo
     thiefAnimalProduct: ActivityInfo

@@ -16,7 +16,14 @@ import {
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { PlacedItemEntity, PlacedItemTypeId, Starter, SystemEntity, SystemId, UserEntity } from "@src/database"
+import {
+    PlacedItemEntity,
+    PlacedItemTypeId,
+    Starter,
+    SystemEntity,
+    SystemId,
+    UserEntity
+} from "@src/database"
 
 @Injectable()
 export class VerifySignatureService {

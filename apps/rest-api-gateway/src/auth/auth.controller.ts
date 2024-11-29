@@ -6,7 +6,7 @@ import {
     Inject,
     Logger,
     OnModuleInit,
-    Post,
+    Post
 } from "@nestjs/common"
 import { ClientGrpc } from "@nestjs/microservices"
 import { lastValueFrom } from "rxjs"
