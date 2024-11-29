@@ -21,7 +21,13 @@ import {
     BuyTileRequest,
     BuyTileResponse,
     ConstructBuildingRequest,
-    ConstructBuildingResponse
+    ConstructBuildingResponse,
+    PlantSeedRequest,
+    PlantSeedResponse,
+    UseHerbicideRequest,
+    UseHerbicideResponse,
+    WaterRequest,
+    WaterResponse
 } from "@apps/gameplay-service"
 import { gameplayGrpcConstants } from "@apps/gameplay-service/src/app.constants"
 import { ClientGrpc } from "@nestjs/microservices"
@@ -146,6 +152,96 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing constructBuilding for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.constructBuilding({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({})
+    @Post("/harvest-crop")
+    public async Water(
+        @User() user: UserLike,
+        @Body() request: WaterRequest
+    ): Promise<WaterResponse> {
+        this.logger.debug(`Processing Water for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.havestCrop({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({})
+    @Post("/water")
+    public async water(
+        @User() user: UserLike,
+        @Body() request: WaterRequest
+    ): Promise<WaterResponse> {
+        this.logger.debug(`Processing water plant for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.water({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({})
+    @Post("/plant-seed")
+    public async plantSeed(
+        @User() user: UserLike,
+        @Body() request: PlantSeedRequest
+    ): Promise<PlantSeedResponse> {
+        this.logger.debug(`Processing plant seed for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.plantSeed({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({})
+    @Post("/use-herbicide")
+    public async useHerbicide(
+        @User() user: UserLike,
+        @Body() request: UseHerbicideRequest
+    ): Promise<UseHerbicideResponse> {
+        this.logger.debug(`Processing use herbicide for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.useHerbicide({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({})
+    @Post("/use-pesticide")
+    public async usePesticide(
+        @User() user: UserLike,
+        @Body() request: UseHerbicideRequest
+    ): Promise<UseHerbicideResponse> {
+        this.logger.debug(`Processing use pesticide for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.usePesticide({
                 ...request,
                 userId: user?.id
             })
