@@ -5,4 +5,4 @@ import { BuildingsService } from "./buildings.service"
 @Module({
     providers: [BuildingsService, BuildingsResolver]
 })
-export class BuildingsModule { }
+export class BuildingsModule {}

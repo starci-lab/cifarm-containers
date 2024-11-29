@@ -7,9 +7,7 @@ import { SystemEntity } from "@src/database"
 export class SystemsService {
     private readonly logger = new Logger(SystemsService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getSystems({ limit = 10, offset = 0 }: GetSystemsArgs): Promise<Array<SystemEntity>> {
         this.logger.debug(`GetSystems: limit=${limit}, offset=${offset}`)

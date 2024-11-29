@@ -8,7 +8,7 @@ import { ProductEntity } from "@src/database"
 export class ProductResolver {
     private readonly logger = new Logger(ProductResolver.name)
 
-    constructor(private readonly productsService: ProductService) { }
+    constructor(private readonly productsService: ProductService) {}
     @Query(() => [ProductEntity], {
         name: "products"
     })

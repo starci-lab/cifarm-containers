@@ -8,7 +8,7 @@ import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interce
 export class CropsResolver {
     private readonly logger = new Logger(CropsResolver.name)
 
-    constructor(private readonly cropsService: CropsService) { }
+    constructor(private readonly cropsService: CropsService) {}
 
     @Query(() => [CropEntity], {
         name: "crops"

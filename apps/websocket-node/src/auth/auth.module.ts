@@ -3,9 +3,7 @@ import { AuthGateway } from "./auth.gateway"
 import { WsJwtAuthModule } from "@src/guards"
 
 @Module({
-    imports: [
-        WsJwtAuthModule
-    ],
+    imports: [WsJwtAuthModule],
     controllers: [],
     providers: [AuthGateway]
 })

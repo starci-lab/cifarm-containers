@@ -2,6 +2,4 @@ import { InputType } from "@nestjs/graphql"
 import { PaginatedArgs } from "@src/types"
 
 @InputType()
-export class GetPlacedItemTypesArgs extends PaginatedArgs {
-
-}
+export class GetPlacedItemTypesArgs extends PaginatedArgs {}

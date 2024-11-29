@@ -1,4 +1,4 @@
-import { Injectable, Logger, } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { SeedGrowthInfoEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import { GetSeedGrowthInfosArgs } from "./seed-growth-infos.dto"
@@ -7,11 +7,12 @@ import { GetSeedGrowthInfosArgs } from "./seed-growth-infos.dto"
 export class SeedGrowthInfosService {
     private readonly logger = new Logger(SeedGrowthInfosService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
-    async getSeedGrowthInfos({ limit = 10, offset = 0 }: GetSeedGrowthInfosArgs): Promise<Array<SeedGrowthInfoEntity>> {
+    async getSeedGrowthInfos({
+        limit = 10,
+        offset = 0
+    }: GetSeedGrowthInfosArgs): Promise<Array<SeedGrowthInfoEntity>> {
         this.logger.debug(`GetSeedGrowthInfos: limit=${limit}, offset=${offset}`)
 
         let seedGrowthInfos: Array<SeedGrowthInfoEntity>

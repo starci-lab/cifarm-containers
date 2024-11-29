@@ -5,4 +5,4 @@ import { DailyRewardsService } from "./daily-rewards.service"
 @Module({
     providers: [DailyRewardsService, DailyRewardsResolver]
 })
-export class DailyRewardsModule { }
+export class DailyRewardsModule {}

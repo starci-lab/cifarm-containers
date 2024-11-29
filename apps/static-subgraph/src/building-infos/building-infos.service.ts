@@ -7,9 +7,7 @@ import { DataSource } from "typeorm"
 export class BuildingInfosService {
     private readonly logger = new Logger(BuildingInfosService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getBuildingInfos({
         limit = 10,
@@ -24,7 +22,7 @@ export class BuildingInfosService {
             buildingInfos = await this.dataSource.getRepository(BuildingInfoEntity).find({
                 take: limit,
                 skip: offset,
-                relations: ["building","placedItem"]
+                relations: ["building", "placedItem"]
             })
         } finally {
             await queryRunner.release()

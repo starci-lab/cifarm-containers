@@ -7,9 +7,7 @@ import { GetUsersArgs } from "@apps/static-subgraph/src/users/users.dto"
 export class UserService {
     private readonly logger = new Logger(UserService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getUsers({ limit = 10, offset = 0 }: GetUsersArgs): Promise<Array<UserEntity>> {
         this.logger.debug(`GetUsers: limit=${limit}, offset=${offset}`)
@@ -19,12 +17,11 @@ export class UserService {
             const users = await this.dataSource.getRepository(UserEntity).find({
                 take: limit,
                 skip: offset,
-                relations:["inventories","placedItems"]
+                relations: ["inventories", "placedItems"]
             })
             return users
         } finally {
             await queryRunner.release()
         }
     }
-
 }

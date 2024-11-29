@@ -6,14 +6,12 @@ import { DataSource } from "typeorm"
 export class AnimalInfoThievedByUsersService {
     private readonly logger = new Logger(AnimalInfoThievedByUsersService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     // async getAnimalInfoThiefedByUsers({ limit = 10, offset = 0 }: GetAnimalInfoThiefedByUsersArgs): Promise<Array<AnimalInfoThiefedByUserEntity>> {
     //     this.logger.debug(`GetAnimalInfoThiefedByUsers: limit=${limit}, offset=${offset}`)
 
-    //     let animalInfoThiefedByUsers: Array<AnimalInfoThiefedByUserEntity> 
+    //     let animalInfoThiefedByUsers: Array<AnimalInfoThiefedByUserEntity>
     //     const queryRunner = this.dataSource.createQueryRunner()
     //     await queryRunner.connect()
     //     try {

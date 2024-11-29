@@ -15,7 +15,9 @@ export class PlacedItemTypesResolver {
         name: "placed_item_types"
     })
     @UseInterceptors(GraphQLCacheInterceptor)
-    async getPlacedItemTypes(@Args("args") args: GetPlacedItemTypesArgs): Promise<Array<PlacedItemTypeEntity>> {
+    async getPlacedItemTypes(
+        @Args("args") args: GetPlacedItemTypesArgs
+    ): Promise<Array<PlacedItemTypeEntity>> {
         return this.placeditemtypesService.getPlacedItemTypes(args)
     }
 }

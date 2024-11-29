@@ -18,7 +18,6 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-
     "lint-staged": "lint-staged"
   },
   "dependencies": {
@@ -66,6 +65,7 @@
     "@unique-nft/sdk": "^2.1.2",
     "@unique-nft/sr25519": "^0.0.2",
     "algosdk": "^3.0.0",
+    "axios": "^1.7.8",
     "bip39": "3.1.0",
     "bullmq": "^5.29.1",
     "cache-manager": "5.7.6",

@@ -5,4 +5,4 @@ import { Module } from "@nestjs/common"
 @Module({
     providers: [DailyRewardPossibilitiesService, DailyRewardPossibilitiesResolver]
 })
-export class DailyRewardPossibilitiesModule { }
+export class DailyRewardPossibilitiesModule {}

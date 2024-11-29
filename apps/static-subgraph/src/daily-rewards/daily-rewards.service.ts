@@ -7,10 +7,7 @@ import { GetDailyRewardsArgs } from "./daily-rewards.dto"
 export class DailyRewardsService {
     private readonly logger = new Logger(DailyRewardsService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getDailyRewards({
         limit = 10,

@@ -7,9 +7,7 @@ import { GetSuppliesArgs } from "./supplies.dto"
 export class SuppliesService {
     private readonly logger = new Logger(SuppliesService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getSupplies({ limit = 10, offset = 0 }: GetSuppliesArgs): Promise<Array<SupplyEntity>> {
         this.logger.debug(`GetSupplies: limit=${limit}, offset=${offset}`)

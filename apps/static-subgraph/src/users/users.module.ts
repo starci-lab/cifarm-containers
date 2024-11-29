@@ -5,6 +5,4 @@ import { Module } from "@nestjs/common"
 @Module({
     providers: [UserService, UserResolver]
 })
-export class UsersModule { 
-    
-}
+export class UsersModule {}

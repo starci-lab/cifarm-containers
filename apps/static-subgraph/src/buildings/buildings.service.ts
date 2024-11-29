@@ -7,9 +7,7 @@ import { GetBuildingsArgs } from "./buildings.dto"
 export class BuildingsService {
     private readonly logger = new Logger(BuildingsService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getBuildings({
         limit = 10,

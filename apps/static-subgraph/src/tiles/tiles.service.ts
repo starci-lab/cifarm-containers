@@ -7,9 +7,7 @@ import { DataSource } from "typeorm"
 export class TilesService {
     private readonly logger = new Logger(TilesService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getTiles({ limit = 10, offset = 0 }: GetTilesArgs): Promise<Array<TileEntity>> {
         this.logger.debug(`GetTiles: limit=${limit}, offset=${offset}`)

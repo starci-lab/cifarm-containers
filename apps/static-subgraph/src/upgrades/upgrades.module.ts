@@ -5,4 +5,4 @@ import { Module } from "@nestjs/common"
 @Module({
     providers: [UpgradeService, UpgradeResolver]
 })
-export class UpgradesModule { }
+export class UpgradesModule {}
