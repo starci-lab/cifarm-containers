@@ -11,8 +11,9 @@ export class DailyRewardsResolver {
     constructor(private readonly dailyRewardsService: DailyRewardsService) {}
 
     @Query(() => [DailyRewardEntity], {
-        name: "dailyRewards"
+        name: "daily_rewards"
     })
+    
     async getDailyRewards(
         @Args("args") args: GetDailyRewardsArgs
     ): Promise<Array<DailyRewardEntity>> {

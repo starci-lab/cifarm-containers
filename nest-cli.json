@@ -117,6 +117,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/seed/tsconfig.app.json"
       }
+    },
+    "user-service": {
+      "type": "application",
+      "root": "apps/user-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/user-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/user-service/tsconfig.app.json"
+      }
     }
   }
 }

@@ -145,7 +145,8 @@ export const envConfig = () => ({
     },
     redis: {
         host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT ?? 6379)
+        port: Number(process.env.REDIS_PORT ?? 6379),
+        ttl: Number(process.env.REDIS_TTL)
     },
     secrets: {
         salt: process.env.SALT,

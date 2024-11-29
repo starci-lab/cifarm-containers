@@ -1,23 +1,178 @@
+type UpgradeEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  upgradePrice: Int!
+  capacity: Int!
+  upgradeLevel: Float!
+  building: BuildingEntity!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type BuildingEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  availableInShop: Boolean!
+  type: String
+  maxUpgrade: Int!
+  price: Int
+  upgrades: [UpgradeEntity!]
+  placedItemType: PlacedItemTypeEntity
+}
+
+type TileEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  price: Float!
+  maxOwnership: Int!
+  isNFT: Boolean!
+  availableInShop: Boolean!
+  inventoryType: InventoryTypeEntity
+  placedItemType: PlacedItemTypeEntity
+}
+
+type CropEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  growthStageDuration: Int!
+  growthStages: Int!
+  price: Int!
+  premium: Boolean!
+  perennialCount: Int!
+  nextGrowthStageAfterHarvest: Int!
+  minHarvestQuantity: Int!
+  maxHarvestQuantity: Int!
+  basicHarvestExperiences: Int!
+  premiumHarvestExperiences: Int!
+  availableInShop: Boolean!
+  maxStack: Int!
+  inventoryType: InventoryTypeEntity
+}
+
+type ProductEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  isPremium: Boolean!
+  goldAmount: Int!
+  tokenAmount: Float!
+  type: String!
+  crop: CropEntity
+  animal: AnimalEntity
+  inventoryType: InventoryTypeEntity
+  deliveringProducts: [DeliveringProductEntity!]!
+}
+
+type DeliveringProductEntity {
+  quantity: Int!
+  index: Int!
+  premium: Boolean!
+  userId: String
+  user: UserEntity
+  productId: String
+  product: ProductEntity
+}
+
 type UserEntity {
   username: String!
   chainKey: String!
   network: String!
   accountAddress: String!
   golds: Int!
-  gems: Float!
+  tokens: Float!
+  experiences: Int!
+  energy: Int!
+  level: Int!
+  tutorialIndex: Int!
+  stepIndex: Int!
+  dailyRewardStreak: Int!
+  dailyRewardLastClaimTime: Int!
+  dailyRewardNumberOfClaim: Int!
+  spinLastTime: Int!
+  spinCount: Int!
   inventories: [InventoryEntity!]!
+  placedItems: [PlacedItemEntity!]!
+  deliveringProducts: [DeliveringProductEntity!]!
 }
 
-type InventoryEntity {
-  quantity: String!
-  userId: String!
-  user: UserEntity!
+type AnimalInfoEntity {
+  currentGrowthTime: Float!
+  currentHungryTime: Float!
+  currentYieldTime: Float!
+  hasYielded: Boolean!
+  isAdult: Boolean!
+  animalId: String!
+  animal: AnimalEntity!
+  currentState: String!
+  harvestQuantityRemaining: Int!
+  alreadySick: Boolean!
+  placedItem: PlacedItemEntity!
+}
+
+type BuildingInfoEntity {
+  currentUpgrade: Float!
+  occupancy: Float!
+  buildingId: String
+  building: BuildingEntity!
+  placedItem: PlacedItemEntity!
+}
+
+type SeedGrowthInfoEntity {
+  currentStage: Int!
+  currentStageTimeElapsed: Int!
+  totalTimeElapsed: Int!
+  currentPerennialCount: Int!
+  harvestQuantityRemaining: Int!
+  cropId: String!
+  crop: CropEntity!
+  currentState: String!
+  fullyMatured: Boolean!
+  isFertilized: Boolean!
+  placedItemId: String!
+  placedItem: PlacedItemEntity!
+}
+
+type PlacedItemEntity {
+  x: String!
+  y: String!
+  userId: String
+  user: UserEntity
+  inventoryId: String
+  seedGrowthInfo: SeedGrowthInfoEntity
+  animalInfo: AnimalInfoEntity
+  buildingInfo: BuildingInfoEntity
+  placedItems: [PlacedItemEntity!]!
+  parentId: String
+  parent: String
+  placedItemTypeId: String
+  placedItemType: PlacedItemTypeEntity
+}
+
+type PlacedItemTypeEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  type: String!
+  tileId: String
+  animalId: String
+  placedItems: [PlacedItemEntity!]
 }
 
 type AnimalEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   yieldTime: Int!
   offspringPrice: Int!
   isNFT: Boolean!
+  price: Int!
   growthTime: Int!
   availableInShop: Boolean!
   hungerTime: Int!
@@ -25,98 +180,64 @@ type AnimalEntity {
   maxHarvestQuantity: Int!
   basicHarvestExperiences: Int!
   premiumHarvestExperiences: Int!
-  type: AnimalType!
+  type: String!
   sickChance: Float!
-}
-
-enum AnimalType {
-  Poultry
-  Livestock
-}
-
-type CropEntity {
-  growthStageDuration: Int!
-  growthStages: Int!
-  price: Int!
-  premium: Boolean!
-  perennial: Boolean!
-  nextGrowthStageAfterHarvest: Int!
-  minHarvestQuantity: Int!
-  maxHarvestQuantity: Int!
-  basicHarvestExperiences: Int!
-  premiumHarvestExperiences: Int!
-  availableInShop: Boolean!
-}
-
-type ToolEntity {
-  type: ToolType!
-  availableIn: AvailableIn!
-  index: Int!
-}
-
-enum ToolType {
-  Scythe
-  Steal
-  WaterCan
-  Herbicide
-  Pesticide
-}
-
-enum AvailableIn {
-  Home
-  Neighbor
-  Both
-}
-
-type UpgradeEntity {
-  upgradePrice: Int!
-  capacity: Int!
-}
-
-type BuildingEntity {
-  BuildingId: BuildingIdType!
-  availableInShop: Boolean!
-  type: AnimalType
-  maxUpgrade: Int!
-  price: Int
-  upgrades: [UpgradeEntity!]
-}
-
-enum BuildingIdType {
-  Coop
-  Pasture
-  Home
-}
-
-type TileEntity {
-  type: TileIdType!
-  price: Float!
-  maxOwnership: Int!
-  isNFT: Boolean!
-  availableInShop: Boolean!
-}
-
-enum TileIdType {
-  StarterTile
-  BasicTile1
-  BasicTile2
-  BasicTile3
-  FertileTile
+  inventoryType: InventoryTypeEntity
+  placedItemType: PlacedItemTypeEntity
 }
 
 type SupplyEntity {
-  type: SupplyType!
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  type: String!
   price: Float!
   availableInShop: Boolean!
+  maxStack: Int!
   fertilizerEffectTimeReduce: Int
+  inventoryType: InventoryTypeEntity
 }
 
-enum SupplyType {
-  BasicFertilizer
-  AnimalFeed
+type InventoryTypeEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  type: String!
+  placeable: Boolean!
+  deliverable: Boolean!
+  asTool: Boolean!
+  maxStack: Float!
+  cropId: String
+  animalId: String
+  supplyId: String
+  productId: String
+  tileId: String
+  inventories: [InventoryEntity!]
 }
 
-type DailyRewardPossibility {
+type InventoryEntity {
+  quantity: String!
+  tokenId: String
+  premium: Boolean!
+  isPlaced: Boolean!
+  userId: String
+  user: UserEntity
+  inventoryTypeId: String
+  inventoryType: InventoryTypeEntity!
+}
+
+type ToolEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  availableIn: String!
+  index: Int!
+}
+
+type DailyRewardPossibilityEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   goldAmount: Int
   tokenAmount: Int
   thresholdMin: Float!
@@ -124,14 +245,20 @@ type DailyRewardPossibility {
 }
 
 type DailyRewardEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   amount: Int
   day: Int!
   isLastDay: Boolean!
-  dailyRewardPossibilities: [DailyRewardPossibility!]
+  dailyRewardPossibilities: [DailyRewardPossibilityEntity!]
 }
 
 type SpinEntity {
-  type: SpinType!
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  type: String!
   goldAmount: Int
   quantity: Int
   tokenAmount: Int
@@ -139,37 +266,49 @@ type SpinEntity {
   thresholdMax: Float!
 }
 
-enum SpinType {
-  Gold
-  Seed
-  Supply
-  Token
+type SystemEntity {
+  id: ID!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  value: JSON!
 }
+
+"""
+The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
+"""
+scalar JSON
 
 type Query {
   animals(args: GetAnimalsArgs!): [AnimalEntity!]!
-  crops(args: GetCropsArgs!): [CropEntity!]!
-  tools(args: GetToolsArgs!): [ToolEntity!]!
+  animal_infos(args: GetAnimalInfosArgs!): [AnimalInfoEntity!]!
   buildings(args: GetBuildingsArgs!): [BuildingEntity!]!
-  dailyRewards(args: GetDailyRewardsArgs!): [DailyRewardEntity!]!
+  building_infos(args: GetBuildingInfosArgs!): [BuildingInfoEntity!]!
+  crops(args: GetCropsArgs!): [CropEntity!]!
+  daily_reward_possibilities(args: GetDailyRewardPossibilitiesArgs!): [DailyRewardPossibilityEntity!]!
+  daily_rewards(args: GetDailyRewardsArgs!): [DailyRewardEntity!]!
+  inventories(args: GetInventoriesArgs!): [InventoryEntity!]!
+  inventory_types(args: GetInventoryTypesArgs!): [InventoryTypeEntity!]!
+  placed_item_types(args: GetPlacedItemTypesArgs!): [PlacedItemTypeEntity!]!
+  placeditems(args: GetPlacedItemsArgs!): [PlacedItemEntity!]!
+  products(args: GetProductsArgs!): [ProductEntity!]!
+  seed_growth_infos(args: GetSeedGrowthInfosArgs!): [SeedGrowthInfoEntity!]!
   spins(args: GetSpinsArgs!): [SpinEntity!]!
   supplies(args: GetSuppliesArgs!): [SupplyEntity!]!
+  systems(args: GetSystemsArgs!): [SystemEntity!]!
   tiles(args: GetTilesArgs!): [TileEntity!]!
+  tools(args: GetToolsArgs!): [ToolEntity!]!
+  upgrades(args: GetUpgradesArgs!): [UpgradeEntity!]!
+  users(args: GetUsersArgs!): [UserEntity!]!
 }
 
 input GetAnimalsArgs {
-  limit: Int
-  offset: Int
+  limit: Int = 10
+  offset: Int = 0
 }
 
-input GetCropsArgs {
-  limit: Int
-  offset: Int
-}
-
-input GetToolsArgs {
-  limit: Int
-  offset: Int
+input GetAnimalInfosArgs {
+  limit: Int = 10
+  offset: Int = 0
 }
 
 input GetBuildingsArgs {
@@ -177,22 +316,92 @@ input GetBuildingsArgs {
   offset: Int
 }
 
+input GetBuildingInfosArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+input GetCropsArgs {
+  limit: Int
+  offset: Int
+}
+
+input GetDailyRewardPossibilitiesArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
 input GetDailyRewardsArgs {
   limit: Int
   offset: Int
 }
 
+"""GetInventoriesArgs"""
+input GetInventoriesArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+"""GetInventoryTypesArgs"""
+input GetInventoryTypesArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+input GetPlacedItemTypesArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+input GetPlacedItemsArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+"""GetProductArgs"""
+input GetProductsArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+input GetSeedGrowthInfosArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
 input GetSpinsArgs {
-  limit: Int
-  offset: Int
+  limit: Int = 10
+  offset: Int = 0
 }
 
 input GetSuppliesArgs {
-  limit: Int
-  offset: Int
+  limit: Int = 10
+  offset: Int = 0
+}
+
+input GetSystemsArgs {
+  limit: Int = 10
+  offset: Int = 0
 }
 
 input GetTilesArgs {
-  limit: Int
-  offset: Int
+  limit: Int = 10
+  offset: Int = 0
+}
+
+input GetToolsArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+"""GetUpgradesArgs"""
+input GetUpgradesArgs {
+  limit: Int = 10
+  offset: Int = 0
+}
+
+"""GetUsersArgs"""
+input GetUsersArgs {
+  limit: Int = 10
+  offset: Int = 0
 }

@@ -6,7 +6,7 @@ import { AvailableInType } from "./enums"
 @ObjectType()
 @Entity("tools")
 export class ToolEntity extends ReadableAbstractEntity {
-    @Field(() => AvailableInType)
+    @Field(() => String)
     @Column({ name: "available_in", type: "enum", enum: AvailableInType })
         availableIn: AvailableInType
     

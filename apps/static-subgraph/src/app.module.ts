@@ -6,10 +6,16 @@ import { GraphQLModule } from "@nestjs/graphql"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
-import { ToolsModule } from "./tools"
+// import * as apolloPlugins from "@apollo/server/plugin/disabled"
+import { Entities } from "@src/database"
+import { Modules } from "@apps/static-subgraph/src/"
+import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 
 @Module({
     imports: [
+        TypeOrmModule.forFeature([
+            ...Object.values(Entities)
+        ] as EntityClassOrSchema[]),
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],
@@ -35,9 +41,10 @@ import { ToolsModule } from "./tools"
                     }
                 })
 
+                const ttl = envConfig().redis.ttl 
                 return {
                     store: store as unknown as CacheStore,
-                    ttl: Infinity
+                    ttl: ttl
                 }
             }
         }),
@@ -45,21 +52,13 @@ import { ToolsModule } from "./tools"
             driver: ApolloFederationDriver,
             typePaths: ["./**/*.gql"],
             playground: false,
-            // plugins: [ApolloServerPluginInlineTraceDisabled],
+            // plugins: [apolloPlugins.ApolloServerPluginInlineTraceDisabled()],
             buildSchemaOptions: {
                 orphanedTypes: []
             }
+
         }),
-        ToolsModule
-        // AnimalsModule,
-        // CropsModule,
-        // BuildingsModule,
-        // DailyRewardsModule,
-        // SpinsModule,
-        // SuppliesModule,
-        // TilesModule
+        ...Object.values(Modules)
     ],
-    controllers: [],
-    providers: []
 })
-export class AppModule {}
+export class AppModule { }

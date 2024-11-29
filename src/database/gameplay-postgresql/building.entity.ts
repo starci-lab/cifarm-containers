@@ -12,7 +12,7 @@ export class BuildingEntity extends ReadableAbstractEntity {
     @Column({ name: "available_in_shop", type: "boolean" })
         availableInShop: boolean
 
-    @Field(() => AnimalType, { nullable: true })
+    @Field(() => String, { nullable: true })
     @Column({ name: "type", type: "enum", enum: AnimalType, nullable: true })
         type?: AnimalType
 

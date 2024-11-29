@@ -5,7 +5,7 @@ import { DailyRewardEntity } from "./daily-reward.entity"
 
 @ObjectType()
 @Entity("daily_reward_possibilities")
-export class DailyRewardPossibility extends ReadableAbstractEntity{
+export class DailyRewardPossibilityEntity extends ReadableAbstractEntity{
     @Field(() => Int, { nullable: true })
     @Column({ name: "gold_amount", type: "int", nullable: true })
         goldAmount?: number
