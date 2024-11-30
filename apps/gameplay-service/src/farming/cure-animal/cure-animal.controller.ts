@@ -10,7 +10,7 @@ export class CureAnimalController {
 
     constructor(private readonly cureAnimalService: CureAnimalService) {}
 
-    @GrpcMethod(grpcConfig.gameplay.service.service, "CureAnimal")
+    @GrpcMethod(grpcConfig.gameplay.service, "CureAnimal")
     public async cureAnimal(request: CureAnimalRequest) {
         this.logger.debug("Cure Animal request received")
         return this.cureAnimalService.cureAnimal(request)
