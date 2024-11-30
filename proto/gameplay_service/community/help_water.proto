@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package gameplay;
+
+message HelpWaterRequest {
+    string userId = 1;
+    string neighborUserId = 2;
+}

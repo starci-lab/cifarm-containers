@@ -20,7 +20,7 @@ const bootstrap = async () => {
             }
         }
     )
-
+ 
     const redisIoAdapter = new RedisIoAdapter(app)
     await redisIoAdapter.connectToRedis()
     app.useWebSocketAdapter(redisIoAdapter)

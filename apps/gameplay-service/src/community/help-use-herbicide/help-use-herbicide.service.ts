@@ -1,61 +1,80 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
+import {
+    HelpUseHerbicideTransactionFailedException,
+    PlacedItemTileNotFoundException,
+    PlacedItemTileNotNeedUseHerbicideException,
+    PlacedItemTileNotPlantedException,
+} from "@src/exceptions"
+import { DataSource } from "typeorm"
 import {
     Activities,
     CropCurrentState,
     PlacedItemEntity,
+    PlacedItemType,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/database"
-import { DataSource } from "typeorm"
-import { UsePesticideRequest, UsePesticideResponse } from "./use-pesticide.dto"
-import {
-    PlacedItemTileNotNeedUsePesticideException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotPlantedException,
-    UsePesticideTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/services"
+import { HelpUseHerbicideRequest, HelpUseHerbicideResponse } from "./help-use-herbicide.dto"
+import { ClientKafka } from "@nestjs/microservices"
+import { kafkaConfig } from "@src/config"
 
 @Injectable()
-export class UsePesticideService {
-    private readonly logger = new Logger(UsePesticideService.name)
+export class HelpUseHerbicideService {
+    private readonly logger = new Logger(HelpUseHerbicideService.name)
+
     constructor(
+        @Inject(kafkaConfig.broadcastPlacedItems.name)
+        private readonly clientKafka: ClientKafka,
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {}
 
-    async usePesticide(request: UsePesticideRequest): Promise<UsePesticideResponse> {
+    async helpUseHerbicide(request: HelpUseHerbicideRequest): Promise<HelpUseHerbicideResponse> {
+        this.logger.debug(`Help use herbicide for user ${request.neighborUserId}`)
+
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
+
         try {
+            // get placed item
             const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { 
-                    userId: request.userId,
-                    id: request.placedItemTileId 
+                where: {
+                    userId: request.neighborUserId,
+                    id: request.placedItemTileId,
+                    placedItemType: {
+                        type: PlacedItemType.Tile
+                    }
                 },
                 relations: {
-                    seedGrowthInfo: true
+                    seedGrowthInfo: true,
+                    placedItemType: true
                 }
             })
 
-            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemTile) {
+                throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            }
 
-            if (!placedItemTile.seedGrowthInfo)
+            if (!placedItemTile.seedGrowthInfo) {
                 throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+            }
 
-            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested)
-                throw new PlacedItemTileNotNeedUsePesticideException(request.placedItemTileId)
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
+                throw new PlacedItemTileNotNeedUseHerbicideException(request.placedItemTileId)
+            }
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
             })
             const {
-                helpUsePesticide: { energyConsume, experiencesGain }
+                helpWater: { energyConsume, experiencesGain }
             } = value as Activities
-
+            
+            //get user
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
             })
@@ -70,6 +89,7 @@ export class UsePesticideService {
                 entity: user,
                 energy: energyConsume
             })
+            
             const experiencesChanges = this.levelService.addExperiences({
                 entity: user,
                 experiences: experiencesGain
@@ -83,26 +103,30 @@ export class UsePesticideService {
                     ...experiencesChanges
                 })
 
-                // update seed growth info
+                // update crop info
                 await queryRunner.manager.update(
                     SeedGrowthInfoEntity,
                     placedItemTile.seedGrowthInfo.id,
                     {
-                        ...placedItemTile.seedGrowthInfo,
                         currentState: CropCurrentState.Normal
                     }
                 )
 
                 await queryRunner.commitTransaction()
-                return {}
             } catch (error) {
-                this.logger.error("Use Pesticide transaction failed, rolling back...", error)
+                this.logger.error(`Help use herbicide failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new UsePesticideTransactionFailedException(error)
+                throw new HelpUseHerbicideTransactionFailedException(error)
             } 
-        }
-        finally {
+
+            this.clientKafka.emit(
+                kafkaConfig.broadcastPlacedItems.pattern, {
+                    userId: request.neighborUserId
+                })
+
+            return {}
+        } finally {
             await queryRunner.release()
-        }
+        }   
     }
 }
