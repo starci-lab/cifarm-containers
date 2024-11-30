@@ -73,7 +73,7 @@ export class UserEntity extends UuidAbstractEntity {
     @Field(() => Int)
     @Column({ name: "spin_count", type: "int", default: 0 })
         spinCount: number
-        
+
     @Field(() => [InventoryEntity])
     @OneToMany(() => InventoryEntity, (inventory) => inventory.user, {
         cascade: true,
@@ -96,16 +96,16 @@ export class UserEntity extends UuidAbstractEntity {
         deliveringProducts?: Array<DeliveringProductEntity>
 
     @Field(() => [UserEntity])
-    @OneToMany(() => FollowRecordEntity, userFollowing => userFollowing.followeeId, {
+    @OneToMany(() => FollowRecordEntity, (userFollowing) => userFollowing.followeeId, {
         cascade: true,
         onDelete: "CASCADE"
     })
-        followingRecords: FollowRecordEntity[]
+        followingRecords: Array<FollowRecordEntity>
 
     @Field(() => [UserEntity])
-    @OneToMany(() => FollowRecordEntity, userFollowing => userFollowing.followerId, {
+    @OneToMany(() => FollowRecordEntity, (userFollowing) => userFollowing.followerId, {
         cascade: true,
         onDelete: "CASCADE"
     })
-        followedRecords: FollowRecordEntity[]
+        followedRecords: Array<FollowRecordEntity>
 }
