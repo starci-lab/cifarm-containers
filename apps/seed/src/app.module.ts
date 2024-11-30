@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common"
 import { AppService } from "./app.service"
 import {
+    cacheRegisterAsync,
     configForRoot,
     TypeOrmDbType,
     typeOrmForRoot
@@ -12,6 +13,7 @@ import { SeedDataModule } from "./seed-data"
         configForRoot(),
         typeOrmForRoot(),
         typeOrmForRoot(TypeOrmDbType.Test),
+        cacheRegisterAsync(),
         SeedDataModule
     ],
     exports: [AppService],
