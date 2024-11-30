@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
+import { Column, Entity, OneToMany, OneToOne } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { ProductEntity } from "./product.entity"
@@ -56,12 +56,13 @@ export class CropEntity extends StringAbstractEntity {
     @Column({ name: "maxStack", type: "int", default: 16 })
         maxStack: number
 
-    @OneToOne(() => ProductEntity, { onDelete: "CASCADE", eager: true, cascade: true })
-    @JoinColumn({
-        name: "product_id",
-        referencedColumnName: "id"
+    @Field(() => ProductEntity, { nullable: true })
+    @OneToOne(() => ProductEntity, (product) => product.crop, {
+        nullable: true,
+        onDelete: "CASCADE",
+        cascade: ["insert"]
     })
-        product: ProductEntity
+        product?: ProductEntity
 
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.crop, {

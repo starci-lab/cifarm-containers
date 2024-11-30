@@ -3,7 +3,8 @@ export enum CropCurrentState {
     Normal = "normal",
     NeedWater = "needWater",
     IsWeedy = "isWeedy",
-    IsInfested = "isInfested"
+    IsInfested = "isInfested",
+    IsFertilized = "isFertilized"
 }
 
 // Animal Current State Enum

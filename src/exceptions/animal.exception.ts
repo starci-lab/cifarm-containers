@@ -45,3 +45,9 @@ export class AfterAuthenticatedFirstTimeTransactionFailedException extends GrpcA
         super(`After authenticated first time transaction failed: ${message}`)
     }
 }
+
+export class AnimalNotCurrentlyYieldingException extends GrpcAbortedException {
+    constructor(id: string) {
+        super(`Animal not currently yielding: ${id}`)
+    }
+}

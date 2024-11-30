@@ -1,5 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToMany, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
@@ -26,19 +26,27 @@ export class ProductEntity extends StringAbstractEntity {
     @Column({ name: "type", type: "enum", enum: ProductType })
         type: ProductType
 
-    @Field(() => CropEntity, { nullable: true })
-    @OneToOne(() => CropEntity, (crop) => crop.product, {
-        nullable: true,
-        onDelete: "CASCADE"
-    })
-        crop?: CropEntity
+    @Field(() => String, { nullable: true })
+    @Column({ name: "crop_id", nullable: true })
+        cropId: string
 
-    @Field(() => AnimalEntity, { nullable: true })
-    @OneToOne(() => AnimalEntity, (animal) => animal.product, {
-        nullable: true,
-        onDelete: "CASCADE"
+    @OneToOne(() => CropEntity, { onDelete: "CASCADE", cascade: true })
+    @JoinColumn({
+        name: "crop_id",
+        referencedColumnName: "id"
     })
-        animal?: AnimalEntity
+        crop: CropEntity
+
+    @Field(() => String, { nullable: true })
+    @Column({ name: "animal_id", nullable: true })
+        animalId: string
+
+    @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", cascade: true })
+    @JoinColumn({
+        name: "animal_id",
+        referencedColumnName: "id"
+    })
+        animal: AnimalEntity
 
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.product, {
