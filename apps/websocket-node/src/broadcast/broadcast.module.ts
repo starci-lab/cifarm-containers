@@ -2,7 +2,23 @@ import { Module } from "@nestjs/common"
 import { BroadcastGateway } from "./broadcast.gateway"
 import { WsJwtAuthModule } from "@src/guards"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { AnimalEntity, AnimalInfoEntity, BuildingEntity, BuildingInfoEntity, CropEntity, DeliveringProductEntity, InventoryEntity, InventoryTypeEntity, PlacedItemEntity, PlacedItemTypeEntity, ProductEntity, SeedGrowthInfoEntity, SupplyEntity, TileEntity, UpgradeEntity } from "@src/database"
+import {
+    AnimalEntity,
+    AnimalInfoEntity,
+    BuildingEntity,
+    BuildingInfoEntity,
+    CropEntity,
+    DeliveringProductEntity,
+    InventoryEntity,
+    InventoryTypeEntity,
+    PlacedItemEntity,
+    PlacedItemTypeEntity,
+    ProductEntity,
+    SeedGrowthInfoEntity,
+    SupplyEntity,
+    TileEntity,
+    UpgradeEntity
+} from "@src/database"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { kafkaConfig, envConfig } from "@src/config"
 import { v4 } from "uuid"
@@ -26,7 +42,7 @@ import { BroadcastController } from "./broadcast.controller"
             AnimalInfoEntity,
             BuildingInfoEntity,
             TileEntity,
-            SupplyEntity,
+            SupplyEntity
         ]),
         WsJwtAuthModule,
         ClientsModule.register([
@@ -42,8 +58,8 @@ import { BroadcastController } from "./broadcast.controller"
                         groupId: kafkaConfig().broadcastPlacedItems.groupId
                     }
                 }
-            },
-        ]),
+            }
+        ])
     ],
     controllers: [BroadcastController],
     providers: [BroadcastGateway]

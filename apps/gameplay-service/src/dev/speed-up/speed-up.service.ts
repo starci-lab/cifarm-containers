@@ -14,7 +14,7 @@ export class SpeedUpService {
 
     async speedUp(request: SpeedUpRequest): Promise<SpeedUpResponse> {
         this.logger.debug(`Speeding up growth time with time ${request.time}`)
-        await this.cacheManager.set(speedUpConstants.KEY, request.time)
+        await this.cacheManager.set(speedUpConstants.key, request.time)
         return {}
     }
 }
