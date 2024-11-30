@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { gameplayGrpcConstants } from "../../app.constants"
+import { gameplayGrpcConstants } from "../../config"
 import { HelpWaterService } from "./help-water.service"
 import { HelpWaterRequest } from "./help-water.dto"
 
@@ -10,7 +10,7 @@ export class HelpWaterController {
 
     constructor(private readonly helpWaterService: HelpWaterService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.SERVICE, "HelpWater")
+    @GrpcMethod(gameplayGrpcConstants.service, "HelpWater")
     public async helpWater(request: HelpWaterRequest) {
         this.logger.debug("HelpWater called")
         return this.helpWaterService.helpWater(request)

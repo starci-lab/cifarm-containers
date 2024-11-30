@@ -9,7 +9,7 @@ export class AppController {
 
     constructor(private readonly doHealthcheckService: DoHealthcheckService) {}
 
-    @GrpcMethod(healthcheckGrpcConstants.SERVICE, "DoHealthcheck")
+    @GrpcMethod(healthcheckGrpcConstants.service, "DoHealthcheck")
     public async doHealthcheck(): Promise<DoHealthcheckResponse> {
         this.logger.debug("DoHealthcheck called")
         return await this.doHealthcheckService.doHealthcheck()

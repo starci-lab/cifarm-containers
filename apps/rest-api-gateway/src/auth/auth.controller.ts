@@ -30,7 +30,7 @@ export class AuthController implements OnModuleInit {
 
     private authService: IAuthService
     onModuleInit() {
-        this.authService = this.client.getService<IAuthService>(authGrpcConstants.SERVICE)
+        this.authService = this.client.getService<IAuthService>(authGrpcConstants.service)
     }
 
     @HttpCode(HttpStatus.OK)

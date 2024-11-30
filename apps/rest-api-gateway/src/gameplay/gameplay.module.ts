@@ -1,4 +1,4 @@
-import { gameplayGrpcConstants } from "@apps/gameplay-service/src/app.constants"
+import { gameplayGrpcConstants } from "@apps/gameplay-service/src/config"
 import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"

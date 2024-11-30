@@ -10,7 +10,7 @@ export class VerifySignatureController {
 
     constructor(private readonly verifySignatureService: VerifySignatureService) {}
 
-    @GrpcMethod(authGrpcConstants.SERVICE, "VerifySignature")
+    @GrpcMethod(authGrpcConstants.service, "VerifySignature")
     public async verifySignature(request: VerifySignatureRequest) {
         this.logger.debug("VerifySignature called")
         return this.verifySignatureService.verifySignature(request)

@@ -31,7 +31,7 @@ import {
     WaterRequest,
     WaterResponse
 } from "@apps/gameplay-service"
-import { gameplayGrpcConstants } from "@apps/gameplay-service/src/app.constants"
+import { gameplayGrpcConstants } from "@apps/gameplay-service/src/config"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { User } from "@src/decorators"
@@ -56,10 +56,10 @@ export class GameplayController implements OnModuleInit {
 
     onModuleInit() {
         this.healthcheckService = this.healthCheckServiceClient.getService<IHealthcheckService>(
-            healthcheckGrpcConstants.SERVICE
+            healthcheckGrpcConstants.service
         )
         this.gameplayService = this.gameplayServiceClient.getService<IGameplayService>(
-            gameplayGrpcConstants.SERVICE
+            gameplayGrpcConstants.service
         )
     }
 

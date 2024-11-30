@@ -1,6 +1,6 @@
 import { Body, Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { gameplayGrpcConstants } from "../../app.constants"
+import { gameplayGrpcConstants } from "../../config"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"
 import { UpgradeBuildingService } from "./upgrade-building.service"
 
@@ -10,7 +10,7 @@ export class UpgradeBuildingController {
 
     constructor(private readonly UpgradeBuildingService: UpgradeBuildingService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.SERVICE, "UpgradeBuilding")
+    @GrpcMethod(gameplayGrpcConstants.service, "UpgradeBuilding")
     public async upgradeBuilding(
         @Body() request: UpgradeBuildingRequest
     ): Promise<UpgradeBuildingResponse> {

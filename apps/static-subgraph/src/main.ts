@@ -5,7 +5,7 @@ import { writeFileSync } from "fs"
 import { printSchema } from "graphql"
 import { join } from "path"
 import { AppModule } from "./app.module"
-import { Resolvers } from "@apps/static-subgraph/src/"
+import * as Resolvers from "./resolvers"
 
 const generateSchema = async () => {
     const app = await NestFactory.create(GraphQLSchemaBuilderModule)

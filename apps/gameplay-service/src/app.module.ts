@@ -7,12 +7,7 @@ import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
-import { ShopModule } from "./shop"
-import { FarmingModule } from "./farming"
-import { SpinModule } from "./claim/spin"
-// import { DevModule } from "./dev"
-import { CommunityModule } from "./community"
-
+import * as Modules from "./modules"
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -46,11 +41,7 @@ import { CommunityModule } from "./community"
                 }
             }
         }),
-        ShopModule,
-        CommunityModule,
-        FarmingModule,
-        // DevModule
-        SpinModule
+        ...Object.values(Modules)
     ],
     controllers: [AppController],
     providers: [

@@ -1,4 +1,7 @@
-export { AnimalsResolver } from "@apps/static-subgraph/src/animals"
+//chỉ dùng alias (@) khi mà service khác xài hàng của service này,
+// còn nếu mà import bên trong service thì xài relative
+//file build nếu import từ alias thì nó sẽ lấy toàn module để nó build
+export { AnimalsResolver } from "./animals"
 export { AnimalInfosResolver } from "@apps/static-subgraph/src/animal-infos"
 export { AnimalInfoThievedByUsersResolver } from "@apps/static-subgraph/src/animal-info-thieved-by-users"
 export { BuildingsResolver } from "@apps/static-subgraph/src/buildings"

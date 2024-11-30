@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
 import { SpeedUpRequest, SpeedUpResponse } from "./speed-up.dto"
-import { speedUpConstants } from "../../app.constants"
+import { speedUpConstants } from "../../config"
 
 @Injectable()
 export class SpeedUpService {

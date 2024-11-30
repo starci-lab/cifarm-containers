@@ -1,2 +1,2 @@
-export * as Modules from "./modules"
+export * as Modules from "./app.modules"
 export * as Resolvers from "./resolvers"
