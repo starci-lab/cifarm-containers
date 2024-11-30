@@ -3,19 +3,14 @@ import { Module } from "@nestjs/common"
 import { AuthModule } from "./auth"
 //import { GameplayModule } from "./gameplay"
 import { StrategiesModule } from "@src/strategies"
-import { ConfigModule } from "@nestjs/config"
-import { envConfig } from "@src/config"
 import { APP_INTERCEPTOR } from "@nestjs/core"
 import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
 import { GameplayModule } from "./gameplay"
+import { configForRoot } from "@src/dynamic-modules"
 
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            load: [envConfig],
-            envFilePath: [".env.local"],
-            isGlobal: true
-        }),
+        configForRoot(),
         StrategiesModule,
         //HealthcheckModule,
         AuthModule,

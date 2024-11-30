@@ -1,14 +1,12 @@
 import { Global, Module } from "@nestjs/common"
-import { TypeOrmModule } from "@nestjs/typeorm"
-import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 import { PlaceTileController } from "./place-tile.controller"
 import { PlaceTileService } from "./place-tile.service"
-import * as Entities from "@src/database/gameplay-postgresql"
+import { typeOrmForFeature } from "@src/dynamic-modules"
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([...Object.values(Entities)] as Array<EntityClassOrSchema>)
+        typeOrmForFeature(),
     ],
     controllers: [PlaceTileController],
     providers: [PlaceTileService],
