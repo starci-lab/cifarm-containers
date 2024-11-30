@@ -6,7 +6,6 @@ import { createDatabase } from "@src/utils"
 
 const createGameplayPostgresqlDatabase = async () => {
     await createDatabase({
-        type: "postgres",
         host: envConfig().database.postgres.gameplay.main.host,
         port: envConfig().database.postgres.gameplay.main.port,
         user: envConfig().database.postgres.gameplay.main.user,
@@ -17,7 +16,6 @@ const createGameplayPostgresqlDatabase = async () => {
 
 const createTestGameplayPostgresqlDatabase = async () => {
     await createDatabase({
-        type: "postgres",
         host: envConfig().database.postgres.gameplay.test.host,
         port: envConfig().database.postgres.gameplay.test.port,
         user: envConfig().database.postgres.gameplay.test.user,
