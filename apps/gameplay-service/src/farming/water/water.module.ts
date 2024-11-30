@@ -9,7 +9,7 @@ import { WaterService } from "./water.service"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([...Object.values(Entities)]  as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         EnergyModule,
         LevelModule,
         InventoryModule

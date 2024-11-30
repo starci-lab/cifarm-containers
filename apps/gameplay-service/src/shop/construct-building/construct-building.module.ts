@@ -9,7 +9,7 @@ import { ConstructBuildingService } from "./construct-building.service"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([...Object.values(Entities)]  as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         WalletModule
     ],
     controllers: [ConstructBuildingController],

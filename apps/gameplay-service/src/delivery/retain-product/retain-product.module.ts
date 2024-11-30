@@ -8,7 +8,7 @@ import * as Entities from "@src/database/gameplay-postgresql"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([...Object.values(Entities)]  as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
     ],
     providers: [RetainProductService],
     exports: [RetainProductService],

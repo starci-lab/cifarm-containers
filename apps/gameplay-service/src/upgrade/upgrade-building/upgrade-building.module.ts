@@ -9,7 +9,7 @@ import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-clas
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([...Object.values(Entities)]  as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         WalletModule
     ],
     controllers: [UpgradeBuildingController],

@@ -13,7 +13,7 @@ import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-clas
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([...Object.values(Entities)] as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)] as Array<EntityClassOrSchema>),
         ConfigModule.forRoot({
             load: [envConfig],
             envFilePath: [".env.local"],

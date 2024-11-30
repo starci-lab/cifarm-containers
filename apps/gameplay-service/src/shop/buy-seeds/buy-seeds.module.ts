@@ -9,7 +9,7 @@ import { BuySeedsService } from "./buy-seeds.service"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([...Object.values(Entities)]  as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         InventoryModule,
         GoldBalanceModule
     ],

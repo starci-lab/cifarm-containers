@@ -11,7 +11,7 @@ import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-clas
         BullModule.registerQueue({
             name: animalsTimeQueueConstants.NAME
         }),
-        TypeOrmModule.forFeature([...Object.values(Entities)]  as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
     ],
     providers: [AnimalsService]
 })

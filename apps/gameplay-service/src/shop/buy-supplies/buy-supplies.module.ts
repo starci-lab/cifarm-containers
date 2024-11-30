@@ -11,7 +11,7 @@ import { BuySuppliesService } from "./buy-supplies.service"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([...Object.values(Entities)]  as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         InventoryModule,
         GoldBalanceModule
     ],

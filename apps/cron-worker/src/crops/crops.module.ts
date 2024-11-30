@@ -11,7 +11,7 @@ import * as Entities from "@src/database/gameplay-postgresql"
         BullModule.registerQueue({
             name: cropsTimeQueueConstants.NAME
         }),
-        TypeOrmModule.forFeature([...Object.values(Entities)]  as EntityClassOrSchema[]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
     ],
     providers: [CropsWorker]
 })
