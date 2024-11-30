@@ -19,7 +19,6 @@ import {
     UserEntity
 } from "@src/database"
 import { BuyAnimalService } from "./buy-animal.service"
-import { BuyAnimalController } from "./buy-animal.controller"
 
 @Global()
 @Module({
@@ -43,7 +42,6 @@ import { BuyAnimalController } from "./buy-animal.controller"
             DeliveringProductEntity
         ])
     ],
-    controllers: [BuyAnimalController],
     providers: [BuyAnimalService],
     exports: [BuyAnimalService]
 })

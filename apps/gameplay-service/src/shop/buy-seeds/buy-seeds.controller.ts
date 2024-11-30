@@ -11,7 +11,7 @@ export class BuySeedsController {
     constructor(private readonly buySeedService: BuySeedsService) {}
 
     @GrpcMethod(gameplayGrpcConstants.SERVICE, "BuySeeds")
-    public async buySeed(request: BuySeedsRequest) {
+    public async buySeeds(request: BuySeedsRequest) {
         this.logger.debug("BuySeeds called")
         return this.buySeedService.buySeeds(request)
     }

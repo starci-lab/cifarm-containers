@@ -5,14 +5,14 @@ import { BuyAnimalRequest } from "./buy-animal.dto"
 import { BuyAnimalService } from "./buy-animal.service"
 
 @Controller()
-export class BuyAnimalController {
-    private readonly logger = new Logger(BuyAnimalController.name)
+export class BuyAnimalsController {
+    private readonly logger = new Logger(BuyAnimalsController.name)
 
     constructor(private readonly buyAnimalService: BuyAnimalService) {}
 
     @GrpcMethod(gameplayGrpcConstants.SERVICE, "BuyAnimal")
-    public async buyAnimal(request: BuyAnimalRequest) {
-        this.logger.debug("BuyAnimal called")
+    public async buySupply(request: BuyAnimalRequest) {
+        this.logger.debug("BuyAnimals called")
         return this.buyAnimalService.buyAnimal(request)
     }
 }
