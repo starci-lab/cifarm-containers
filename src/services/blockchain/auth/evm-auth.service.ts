@@ -33,7 +33,7 @@ export class EvmAuthService {
 
     public getFakeKeyPair(accountNumber: number) {
         return HDNodeWallet.fromMnemonic(
-            Mnemonic.fromPhrase(fakeConfig().mnemonic),
+            Mnemonic.fromPhrase(fakeConfig.mnemonic),
             `m/44'/60'/${accountNumber}'/0/0`,
         )
     }

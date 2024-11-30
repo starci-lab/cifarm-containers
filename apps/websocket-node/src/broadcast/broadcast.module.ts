@@ -2,52 +2,20 @@ import { Module } from "@nestjs/common"
 import { BroadcastGateway } from "./broadcast.gateway"
 import { WsJwtAuthModule } from "@src/guards"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import {
-    AnimalEntity,
-    AnimalInfoEntity,
-    BuildingEntity,
-    BuildingInfoEntity,
-    CropEntity,
-    DeliveringProductEntity,
-    InventoryEntity,
-    InventoryTypeEntity,
-    PlacedItemEntity,
-    PlacedItemTypeEntity,
-    ProductEntity,
-    SeedGrowthInfoEntity,
-    SupplyEntity,
-    TileEntity,
-    UpgradeEntity
-} from "@src/database"
 import { ClientsModule, Transport } from "@nestjs/microservices"
-import { kafkaConfig, envConfig } from "@src/config"
+import { envConfig, kafkaConfig } from "@src/config"
 import { v4 } from "uuid"
 import { BroadcastController } from "./broadcast.controller"
+import * as Entities from "@src/database"
+import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([
-            // Add entities here
-            PlacedItemEntity,
-            InventoryEntity,
-            DeliveringProductEntity,
-            ProductEntity,
-            CropEntity,
-            BuildingEntity,
-            UpgradeEntity,
-            PlacedItemTypeEntity,
-            InventoryTypeEntity,
-            AnimalEntity,
-            SeedGrowthInfoEntity,
-            AnimalInfoEntity,
-            BuildingInfoEntity,
-            TileEntity,
-            SupplyEntity
-        ]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         WsJwtAuthModule,
         ClientsModule.register([
             {
-                name: kafkaConfig().broadcastPlacedItems.name,
+                name: kafkaConfig.broadcastPlacedItems.name,
                 transport: Transport.KAFKA,
                 options: {
                     client: {
@@ -55,7 +23,7 @@ import { BroadcastController } from "./broadcast.controller"
                         brokers: Object.values(envConfig().kafka.brokers)
                     },
                     consumer: {
-                        groupId: kafkaConfig().broadcastPlacedItems.groupId
+                        groupId: kafkaConfig.broadcastPlacedItems.groupId
                     }
                 }
             }

@@ -15,7 +15,7 @@ const bootstrap = async () => {
                     brokers: Object.values(envConfig().kafka.brokers),
                 },
                 consumer: {
-                    groupId: kafkaConfig().broadcastPlacedItems.groupId,
+                    groupId: kafkaConfig.broadcastPlacedItems.groupId,
                 },
             }
         }

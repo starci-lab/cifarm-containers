@@ -31,15 +31,14 @@ import {
     WaterRequest,
     WaterResponse
 } from "@apps/gameplay-service"
-import { gameplayGrpcConstants } from "@apps/gameplay-service/src/config"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { User } from "@src/decorators"
 import { RestJwtAuthGuard } from "@src/guards"
 import { UserLike } from "@src/services"
 import { lastValueFrom } from "rxjs"
-import { IHealthcheckService } from "../healthcheck"
 import { IGameplayService } from "./gameplay.service"
+import { grpcConfig } from "@src/config"
 
 @ApiTags("Gameplay")
 @Controller("gameplay")
@@ -48,18 +47,14 @@ export class GameplayController implements OnModuleInit {
 
     constructor(
         @Inject(healthcheckGrpcConstants.name) private healthCheckServiceClient: ClientGrpc,
-        @Inject(gameplayGrpcConstants.name) private gameplayServiceClient: ClientGrpc
+        @Inject(grpcConfig.gameplay.name) private gameplayServiceClient: ClientGrpc
     ) {}
 
-    private healthcheckService: IHealthcheckService
     private gameplayService: IGameplayService
 
     onModuleInit() {
-        this.healthcheckService = this.healthCheckServiceClient.getService<IHealthcheckService>(
-            healthcheckGrpcConstants.service
-        )
         this.gameplayService = this.gameplayServiceClient.getService<IGameplayService>(
-            gameplayGrpcConstants.service
+            grpcConfig.gameplay.service
         )
     }
 

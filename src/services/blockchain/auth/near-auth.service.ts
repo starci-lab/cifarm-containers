@@ -28,7 +28,7 @@ export class NearAuthService {
 
     public getFakeKeyPair(accountNumber: number) {
         return parseSeedPhrase(
-            fakeConfig().mnemonic,
+            fakeConfig.mnemonic,
             `m/44'/397'/0'/${accountNumber}'`
         )
     }

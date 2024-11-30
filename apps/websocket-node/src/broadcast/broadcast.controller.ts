@@ -10,7 +10,7 @@ export class BroadcastController {
 
     constructor(private readonly broadcastGateway: BroadcastGateway) {}
 
-    @MessagePattern(kafkaConfig().broadcastPlacedItems.pattern)
+    @MessagePattern(kafkaConfig.broadcastPlacedItems.pattern)
     public async broadcastPlacedItems(params: BroadcastPlacedItemsParams) {
         this.logger.debug(`Broadcasting placed items for user ${params.userId}`)
         return this.broadcastGateway.broadcastPlacedItems(params)

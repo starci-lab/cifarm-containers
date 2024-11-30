@@ -40,7 +40,7 @@ export class AptosAuthService {
 
     public getFakeKeyPair(accountNumber: number) {
         return Account.fromDerivationPath({
-            mnemonic: fakeConfig().mnemonic,
+            mnemonic: fakeConfig.mnemonic,
             path: `m/44'/637'/${accountNumber}'/0'/0'`,
         })
     }

@@ -1,8 +1,8 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { gameplayGrpcConstants } from "../../config"
 import { VerifySignatureRequest } from "./verify-signature.dto"
 import { VerifySignatureService } from "./verify-signature.service"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class VerifySignatureController {
@@ -10,7 +10,7 @@ export class VerifySignatureController {
 
     constructor(private readonly verifySignatureService: VerifySignatureService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "VerifySignature")
+    @GrpcMethod(grpcConfig.gameplay.service, "VerifySignature")
     public async verifySignature(request: VerifySignatureRequest) {
         this.logger.debug("VerifySignature called")
         return this.verifySignatureService.verifySignature(request)

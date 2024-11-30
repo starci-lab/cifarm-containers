@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { GenerateTestSignatureRequest } from "./generate-test-signature.dto"
 import { GenerateTestSignatureService } from "./generate-test-signature.service"
-import { gameplayGrpcConstants } from "../../config"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class GenerateTestSignatureController {
@@ -10,7 +10,7 @@ export class GenerateTestSignatureController {
 
     constructor(private readonly generateTestSignatureService: GenerateTestSignatureService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "GenerateTestSignature")
+    @GrpcMethod(grpcConfig.gameplay.service, "GenerateTestSignature")
     public async generateTestSignature(request: GenerateTestSignatureRequest) {
         this.logger.debug("GenerateTestSignature called")
         return this.generateTestSignatureService.generateTestSignature(request)

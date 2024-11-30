@@ -41,7 +41,7 @@ export class SolanaAuthService {
 
     public getFakeKeyPair(accountNumber: number) {
         const seed = mnemonicToSeedSync(
-            fakeConfig().mnemonic,
+            fakeConfig.mnemonic,
             accountNumber.toString(),
         )
         return Keypair.fromSeed(seed.subarray(0, 32))
