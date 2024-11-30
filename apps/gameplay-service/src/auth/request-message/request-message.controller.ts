@@ -1,7 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { authGrpcConstants } from "../../app.constants"
 import { RequestMessageService } from "./request-message.service"
+import { gameplayGrpcConstants } from "../../config"
 
 @Controller()
 export class RequestMessageController {
@@ -9,7 +9,7 @@ export class RequestMessageController {
 
     constructor(private readonly requestMessageService: RequestMessageService) {}
 
-    @GrpcMethod(authGrpcConstants.service, "RequestMessage")
+    @GrpcMethod(gameplayGrpcConstants.service, "RequestMessage")
     public async requestMessage() {
         this.logger.debug("RequestMessage called")
         return this.requestMessageService.requestMessage()

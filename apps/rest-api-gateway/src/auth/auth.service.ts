@@ -6,7 +6,7 @@ import {
     RequestMessageResponse,
     VerifySignatureRequest,
     VerifySignatureResponse
-} from "./auth"
+} from "@apps/gameplay-service"
 
 export interface IAuthService {
     // Auth

@@ -5,10 +5,16 @@ import "./shop/entry.proto";
 import "./farming/entry.proto";
 import "./delivery/entry.proto";
 import "./claim/entry.proto";
+import "./auth/entry.proto";
 
 package gameplay;
 
 service GameplayService {
+    // Auth methods
+    rpc RequestMessage(google.protobuf.Empty) returns (RequestMessageResponse);
+    rpc GenerateTestSignature(GenerateTestSignatureRequest) returns (GenerateTestSignatureResponse);
+    rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse);
+
     // Shop methods
     rpc BuySeeds(BuySeedsRequest) returns (google.protobuf.Empty);
     rpc BuyAnimal(BuyAnimalRequest) returns (BuyAnimalResponse);

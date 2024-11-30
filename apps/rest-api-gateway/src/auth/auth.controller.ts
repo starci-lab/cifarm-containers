@@ -11,26 +11,18 @@ import {
 import { ClientGrpc } from "@nestjs/microservices"
 import { lastValueFrom } from "rxjs"
 import { ApiResponse, ApiTags } from "@nestjs/swagger"
-import {
-    authGrpcConstants,
-    GenerateTestSignatureRequest,
-    GenerateTestSignatureResponse,
-    IAuthService,
-    RequestMessageResponse,
-    VerifySignatureRequest,
-    VerifySignatureResponse
-} from "@apps/auth-service"
-
+import { gameplayGrpcConstants, GenerateTestSignatureRequest, GenerateTestSignatureResponse, RequestMessageResponse, VerifySignatureRequest, VerifySignatureResponse } from "@apps/gameplay-service"
+import { IAuthService } from "./auth.service"
 @ApiTags("Auth")
 @Controller("auth")
 export class AuthController implements OnModuleInit {
     private readonly logger = new Logger(AuthController.name)
 
-    constructor(@Inject(authGrpcConstants.name) private client: ClientGrpc) {}
+    constructor(@Inject(gameplayGrpcConstants.name) private gameplayServiceClient: ClientGrpc) {}
 
     private authService: IAuthService
     onModuleInit() {
-        this.authService = this.client.getService<IAuthService>(authGrpcConstants.service)
+        this.authService = this.gameplayServiceClient.getService<IAuthService>(gameplayGrpcConstants.service)
     }
 
     @HttpCode(HttpStatus.OK)
