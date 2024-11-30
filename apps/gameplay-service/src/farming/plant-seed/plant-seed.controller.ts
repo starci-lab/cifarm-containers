@@ -1,8 +1,8 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { PlantSeedService } from "./plant-seed.service"
-import { gameplayGrpcConstants } from "../../config"
 import { PlantSeedRequest } from "./plant-seed.dto"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class PlantSeedController {
@@ -10,7 +10,7 @@ export class PlantSeedController {
 
     constructor(private readonly plantSeedService: PlantSeedService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "PlantSeed")
+    @GrpcMethod(grpcConfig.gameplay.service, "PlantSeed")
     public async plantSeed(request: PlantSeedRequest) {
         this.logger.debug("PlantSeed called")
         return this.plantSeedService.plantSeed(request)

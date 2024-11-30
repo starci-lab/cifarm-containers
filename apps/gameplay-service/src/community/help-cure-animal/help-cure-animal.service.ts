@@ -19,15 +19,14 @@ import { EnergyService, LevelService } from "@src/services"
 import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
 import { ClientKafka } from "@nestjs/microservices"
 import { kafkaConfig } from "@src/config"
-import { v4 } from "uuid"
 
 @Injectable()
 export class HelpCureAnimalService {
     private readonly logger = new Logger(HelpCureAnimalService.name)
 
     constructor(
-        @Inject(kafkaConfig().broadcastPlacedItems.name)
-        private readonly broadcastPlacedItemsClientKafka: ClientKafka,
+        @Inject(kafkaConfig.broadcastPlacedItems.name)
+        private readonly clientKafka: ClientKafka,
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
@@ -109,10 +108,11 @@ export class HelpCureAnimalService {
                 throw new HelpCureAnimalTransactionFailedException(error)
             }
 
-            this.broadcastPlacedItemsClientKafka.emit(v4(), {
-                userId: request.neighborUserId
-            })
-            
+            this.clientKafka.emit(
+                kafkaConfig.broadcastPlacedItems.pattern, {
+                    userId: request.neighborUserId
+                })
+
             return {}
         } finally {
             await queryRunner.release()

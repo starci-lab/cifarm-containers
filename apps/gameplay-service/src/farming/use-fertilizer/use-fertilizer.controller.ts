@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { gameplayGrpcConstants } from "../../config"
+import { grpcConfig.gameplay.service } from "../../config"
 import { UseFertilizerRequest } from "./use-fertilizer.dto"
 import { UseFertilizerService } from "./use-fertilizer.service"
 
@@ -10,7 +10,7 @@ export class UseFertilizerController {
 
     constructor(private readonly useFertilizerService: UseFertilizerService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "UseFertilizer")
+    @GrpcMethod(grpcConfig.gameplay.service.service, "UseFertilizer")
     public async useFertilizer(request: UseFertilizerRequest) {
         this.logger.debug("Use Fertilizer request called")
         return this.useFertilizerService.useFertilizer(request)

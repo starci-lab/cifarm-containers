@@ -1,8 +1,8 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { gameplayGrpcConstants } from "../../config"
 import { PlaceTileRequest, PlaceTileResponse } from "./place-tile.dto"
 import { PlaceTileService } from "./place-tile.service"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class PlaceTileController {
@@ -10,7 +10,7 @@ export class PlaceTileController {
 
     constructor(private readonly placeTileService: PlaceTileService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "PlaceTile")
+    @GrpcMethod(grpcConfig.gameplay.service, "PlaceTile")
     public async placeTile(request: PlaceTileRequest): Promise<PlaceTileResponse> {
         this.logger.debug("Place Tile request received")
         return this.placeTileService.placeTile(request)

@@ -1,8 +1,8 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { HarvestCropService } from "./harvest-crop.service"
-import { gameplayGrpcConstants } from "../../config"
 import { HarvestCropRequest } from "./harvest-crop.dto"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class HarvestCropController {
@@ -10,7 +10,7 @@ export class HarvestCropController {
 
     constructor(private readonly harvestCropService: HarvestCropService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "HarvestCrop")
+    @GrpcMethod(grpcConfig.gameplay.service, "HarvestCrop")
     public async water(request: HarvestCropRequest) {
         this.logger.debug("Harvest crop request called")
         return this.harvestCropService.harvestCrop(request)

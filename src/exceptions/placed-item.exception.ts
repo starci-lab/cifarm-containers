@@ -24,15 +24,15 @@ export class PlacedItemTileNotNeedWaterException extends GrpcNotFoundException {
     }
 }
 
-export class PlacedItemNotNeedUsePesticideException extends GrpcNotFoundException {
+export class PlacedItemTileNotNeedUsePesticideException extends GrpcNotFoundException {
     constructor(id: string) {
-        super(`Placed item not need use Pesticide: ${id}`)
+        super(`Placed item tile not need use Pesticide: ${id}`)
     }
 }
 
-export class PlacedItemNotNeedUseHerbicideException extends GrpcNotFoundException {
+export class PlacedItemTileNotNeedUseHerbicideException extends GrpcNotFoundException {
     constructor(id: string) {
-        super(`Placed item not need use herbicide: ${id}`)
+        super(`Placed item tile not need use herbicide: ${id}`)
     }
 }
 
@@ -135,5 +135,16 @@ export class PlacedItemNotNeedCureException extends GrpcNotFoundException {
 export class CureAnimalTransactionFailedException extends GrpcPermissionDeniedException {
     constructor(error: Error) {
         super(`Failed to cure animal: ${error.message}`)
+    }
+}
+export class HelpUsePesticideTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Failed to help use pesticide: ${error.message}`)
+    }
+}
+
+export class HelpUseHerbicideTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Failed to help use herbicide: ${error.message}`)
     }
 }

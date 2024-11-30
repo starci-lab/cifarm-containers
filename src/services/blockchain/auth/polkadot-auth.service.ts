@@ -42,7 +42,7 @@ export class PolkadotAuthService {
 
     public getFakeKeyPair(accountNumber: number) {
         const seed = mnemonicToMiniSecret(
-            fakeConfig().mnemonic,
+            fakeConfig.mnemonic,
             accountNumber.toString(),
         )
         const { publicKey, secretKey } = sr25519PairFromSeed(seed)

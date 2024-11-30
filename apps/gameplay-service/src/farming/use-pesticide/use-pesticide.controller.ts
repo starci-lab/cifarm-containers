@@ -1,8 +1,8 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { gameplayGrpcConstants } from "../../config"
 import { UsePesticideRequest } from "./use-pesticide.dto"
 import { UsePesticideService } from "./use-pesticide.service"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class UsePesticideController {
@@ -10,7 +10,7 @@ export class UsePesticideController {
 
     constructor(private readonly usePesticideService: UsePesticideService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "UsePesticide")
+    @GrpcMethod(grpcConfig.gameplay.service, "UsePesticide")
     public async usePesticide(request: UsePesticideRequest) {
         this.logger.debug("Use pesticide request called")
         return this.usePesticideService.usePesticide(request)

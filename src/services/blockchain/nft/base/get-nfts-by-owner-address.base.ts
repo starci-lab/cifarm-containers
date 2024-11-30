@@ -54,7 +54,7 @@ export const _getEvmNftsByOwnerAddress = async (
     { ipfsService }: GetNftsByOwnerAddressServices,
 ): Promise<GetNftsByOwnerAddressResult> => {
     const nftCollectionId =
-    blockchainConfig()[chainKey].nftCollections[nftCollectionKey][network]
+    blockchainConfig[chainKey].nftCollections[nftCollectionKey][network]
         .collectionId
 
     const rpc = evmHttpRpcUrl(chainKey, network)
@@ -128,7 +128,7 @@ export const _getSolanaNftsByOwnerAddress = async (
     { ipfsService }: GetNftsByOwnerAddressServices,
 ): Promise<GetNftsByOwnerAddressResult> => {
     const nftCollectionId =
-    blockchainConfig()[chainKey].nftCollections[nftCollectionKey][network]
+    blockchainConfig[chainKey].nftCollections[nftCollectionKey][network]
         .collectionId
 
     const rpc = solanaHttpRpcUrl(chainKey, network)
@@ -182,7 +182,7 @@ export const _getAptosNftsByOwnerAddress = async (
     { ipfsService }: GetNftsByOwnerAddressServices,
 ): Promise<GetNftsByOwnerAddressResult> => {
     const nftCollectionId =
-    blockchainConfig()[nftCollectionKey].nftCollections[nftCollectionKey][
+    blockchainConfig[nftCollectionKey].nftCollections[nftCollectionKey][
         network
     ].collectionId
 
@@ -232,7 +232,7 @@ export const _getAlgorandNftsByOwnerAddress = async (
     { ipfsService }: GetNftsByOwnerAddressServices,
 ): Promise<GetNftsByOwnerAddressResult> => {
     const nftCollectionId =
-    blockchainConfig().algorand.nftCollections[nftCollectionKey][network]
+    blockchainConfig.algorand.nftCollections[nftCollectionKey][network]
         .collectionId
 
     const client = algorandAlgodClient(network)
@@ -279,7 +279,7 @@ export const _getPolkadotUniqueNetworkNftsByOwnerAddress = async ({
     take,
 }: GetNftsByOwnerAddressParams): Promise<GetNftsByOwnerAddressResult> => {
     const nftCollectionId =
-    blockchainConfig().polkadotUniqueNetwork.nftCollections[nftCollectionKey][
+    blockchainConfig.polkadotUniqueNetwork.nftCollections[nftCollectionKey][
         network
     ].collectionId
 
@@ -326,7 +326,7 @@ export const _getNearNftsByOwnerAddress = async ({
     take,
 }: GetNftsByOwnerAddressParams): Promise<GetNftsByOwnerAddressResult> => {
     const nftCollectionId =
-    blockchainConfig().near.nftCollections[nftCollectionKey][network]
+    blockchainConfig.near.nftCollections[nftCollectionKey][network]
         .collectionId
 
     const client = await nearClient(network)

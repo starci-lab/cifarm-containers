@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { RetainProductService } from "./retain-product.service"
 import { RetainProductRequest } from "./retain-product.dto"
-import { gameplayGrpcConstants } from "../../config"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class RetainProductController {
@@ -10,7 +10,7 @@ export class RetainProductController {
 
     constructor(private readonly retainProductService: RetainProductService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "RetainProduct")
+    @GrpcMethod(grpcConfig.gameplay.service, "RetainProduct")
     public async buySeed(request: RetainProductRequest) {
         this.logger.debug("RetainProduct called")
         return this.retainProductService.retainProduct(request)
