@@ -1,23 +1,7 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import {
-    AnimalEntity,
-    BuildingEntity,
-    CropEntity,
-    DeliveringProductEntity,
-    InventoryEntity,
-    InventoryTypeEntity,
-    PlacedItemEntity,
-    PlacedItemTypeEntity,
-    ProductEntity,
-    SupplyEntity,
-    TileEntity,
-    UpgradeEntity,
-    UserEntity
-} from "@src/database"
-import { AnimalInfoEntity } from "@src/database/gameplay-postgresql/animal-info.entity"
-import { BuildingInfoEntity } from "@src/database/gameplay-postgresql/building-info.entity"
-import { SeedGrowthInfoEntity } from "@src/database/gameplay-postgresql/seed-grow-info.entity"
+import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
+import * as Entities from "@src/database/gameplay-postgresql"
 import { WalletModule } from "@src/services/gameplay/wallet"
 import { ConstructBuildingController } from "./construct-building.controller"
 import { ConstructBuildingService } from "./construct-building.service"
@@ -25,24 +9,7 @@ import { ConstructBuildingService } from "./construct-building.service"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([
-            UserEntity,
-            InventoryEntity,
-            CropEntity,
-            ProductEntity,
-            PlacedItemEntity,
-            SeedGrowthInfoEntity,
-            AnimalInfoEntity,
-            BuildingInfoEntity,
-            PlacedItemTypeEntity,
-            InventoryTypeEntity,
-            AnimalEntity,
-            TileEntity,
-            SupplyEntity,
-            BuildingEntity,
-            UpgradeEntity,
-            DeliveringProductEntity
-        ]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         WalletModule
     ],
     controllers: [ConstructBuildingController],

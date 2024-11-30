@@ -1,7 +1,10 @@
-import { InventoryTypeResolver, InventoryTypeService } from "@apps/gameplay-subgraph/src/inventory-types"
+import {
+    InventoryTypeResolver,
+    InventoryTypeService
+} from "./index"
 import { Module } from "@nestjs/common"
 
 @Module({
     providers: [InventoryTypeService, InventoryTypeResolver]
 })
-export class InventoryTypesModule { }
+export class InventoryTypesModule {}

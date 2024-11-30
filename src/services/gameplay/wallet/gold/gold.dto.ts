@@ -11,7 +11,7 @@ export class AddParams extends EntityParams<UserEntity> {
         example: 50,
         description: "The amount of gold to add (positive value)"
     })
-        golds: number
+        amount: number
 }
 
 export type AddResult = DeepPartial<UserEntity>
@@ -23,7 +23,7 @@ export class SubtractParams extends EntityParams<UserEntity> {
         example: 50,
         description: "The amount of gold to subtract (positive value)"
     })
-        golds: number
+        amount: number
 }
 
 export type SubtractResult = DeepPartial<UserEntity>

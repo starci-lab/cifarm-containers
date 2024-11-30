@@ -9,7 +9,7 @@ import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interce
 export class UpgradeResolver {
     private readonly logger = new Logger(UpgradeResolver.name)
 
-    constructor(private readonly upgradesService: UpgradeService) { }
+    constructor(private readonly upgradesService: UpgradeService) {}
     @Query(() => [UpgradeEntity], {
         name: "upgrades"
     })

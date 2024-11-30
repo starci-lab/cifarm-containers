@@ -7,9 +7,7 @@ import { DataSource } from "typeorm"
 export class BuildingInfosService {
     private readonly logger = new Logger(BuildingInfosService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getBuildingInfos({
         limit = 10,

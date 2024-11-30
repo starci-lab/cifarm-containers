@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package auth;
+package auth_service;
 
 message GenerateTestSignatureRequest {
     string chainKey = 1;   // Optional field

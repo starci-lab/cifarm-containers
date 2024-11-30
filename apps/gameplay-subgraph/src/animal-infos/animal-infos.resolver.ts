@@ -8,9 +8,8 @@ import { AnimalInfoEntity } from "@src/database"
 export class AnimalInfosResolver {
     private readonly logger = new Logger(AnimalInfosResolver.name)
 
-    constructor(private readonly animalInfosService: AnimalInfosService) {
-    }
-
+    constructor(private readonly animalInfosService: AnimalInfosService) {}
+    
     @Query(() => [AnimalInfoEntity], {
         name: "animal_infos"
     })

@@ -121,6 +121,7 @@ export class VerifySignatureService {
             result = false
             break
         }
+
         if (!result) throw new Error("Signature verification")
 
         const queryRunner = this.dataSource.createQueryRunner()
@@ -165,22 +166,19 @@ export class VerifySignatureService {
                         golds,
                         placedItems: [home, ...tiles]
                     })
-
                     await queryRunner.commitTransaction()
                 } catch (error) {
                     this.logger.error("Transaction verify signature failed", error.message)
                     await queryRunner.rollbackTransaction()
                     throw new VerifySignatureCreateUserTransactionFailedException(error)
                 }
-                const { accessToken, refreshToken } = await this.jwtService.createAuthTokenPair({
-                    id: user.id
-                })
-
-                return {
-                    userId: user.id,
-                    accessToken,
-                    refreshToken
-                }
+            }
+            const { accessToken, refreshToken } = await this.jwtService.createAuthTokenPair({
+                id: user.id
+            })
+            return {
+                accessToken,
+                refreshToken
             }
         } finally {
             await queryRunner.release()

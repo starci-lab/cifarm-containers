@@ -1,12 +1,28 @@
 import { Field, InputType, Int } from "@nestjs/graphql"
 import { ApiHideProperty, ApiProperty } from "@nestjs/swagger"
-import { IsUUID } from "class-validator"
+import { IsString, IsUUID } from "class-validator"
+import { Socket } from "socket.io"
 import { DeepPartial, QueryRunner } from "typeorm"
 
 export class UserIdRequest {
     @IsUUID("4")
     @ApiHideProperty()
         userId: string
+}
+
+export class NeighborAndUserIdRequest extends UserIdRequest {
+    @IsUUID("4")
+    @ApiProperty({ example: "e1f98d80-1f3f-43f5-b2d3-7436fded7d26" })
+        neighborUserId: string
+}
+
+export class UserIdParams {
+    @IsUUID("4")
+        userId: string
+}
+
+export class UserIdWithSocketParams extends UserIdParams {
+    socket: Socket
 }
 
 export class EntityParams<TEntity> {
@@ -73,4 +89,11 @@ export abstract class PaginatedArgs {
         limit?: number = 10
     @Field(() => Int, { nullable: true, defaultValue: 0 }) //default 0
         offset?: number = 0
+}
+
+export class SocketConnectionParams  {
+    @IsString()
+        clientId: string
+    @IsUUID("4")
+        userId: string
 }

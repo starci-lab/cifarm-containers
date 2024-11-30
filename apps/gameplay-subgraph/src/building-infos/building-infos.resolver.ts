@@ -13,7 +13,9 @@ export class BuildingInfosResolver {
     @Query(() => [BuildingInfoEntity], {
         name: "building_infos"
     })
-    async getBuildingInfos(@Args("args") args: GetBuildingInfosArgs): Promise<Array<BuildingInfoEntity>> {
+    async getBuildingInfos(
+        @Args("args") args: GetBuildingInfosArgs
+    ): Promise<Array<BuildingInfoEntity>> {
         return this.buildingInfosService.getBuildingInfos(args)
     }
 }

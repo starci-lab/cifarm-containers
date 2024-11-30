@@ -1,45 +1,16 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import {
-    AnimalEntity,
-    AnimalInfoEntity,
-    BuildingInfoEntity,
-    CropEntity,
-    InventoryEntity,
-    InventoryTypeEntity,
-    PlacedItemEntity,
-    PlacedItemTypeEntity,
-    ProductEntity,
-    SeedGrowthInfoEntity,
-    SupplyEntity,
-    SystemEntity,
-    TileEntity,
-    UserEntity
-} from "@src/database"
+import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 import { InventoryModule, LevelModule } from "@src/services"
 import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
-import { PlantSeedService } from "./plant-seed.service"
 import { PlantSeedController } from "./plant-seed.controller"
+import { PlantSeedService } from "./plant-seed.service"
+import * as Entities from "@src/database/gameplay-postgresql"
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([
-            UserEntity,
-            InventoryEntity,
-            CropEntity,
-            ProductEntity,
-            PlacedItemEntity,
-            SeedGrowthInfoEntity,
-            AnimalInfoEntity,
-            BuildingInfoEntity,
-            PlacedItemTypeEntity,
-            InventoryTypeEntity,
-            AnimalEntity,
-            TileEntity,
-            SupplyEntity,
-            SystemEntity
-        ]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         EnergyModule,
         LevelModule,
         InventoryModule

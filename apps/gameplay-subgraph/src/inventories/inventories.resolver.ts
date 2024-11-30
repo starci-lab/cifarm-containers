@@ -8,7 +8,7 @@ import { InventoryEntity } from "@src/database"
 export class InventoryResolver {
     private readonly logger = new Logger(InventoryResolver.name)
 
-    constructor(private readonly inventoriesService: InventoryService) { }
+    constructor(private readonly inventoriesService: InventoryService) {}
     @Query(() => [InventoryEntity], {
         name: "inventories"
     })

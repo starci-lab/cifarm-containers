@@ -22,6 +22,8 @@ import {
     BuyTileResponse,
     ConstructBuildingRequest,
     ConstructBuildingResponse,
+    DeliverProductRequest,
+    DeliverProductResponse,
     PlantSeedRequest,
     PlantSeedResponse,
     UseHerbicideRequest,
@@ -29,7 +31,7 @@ import {
     WaterRequest,
     WaterResponse
 } from "@apps/gameplay-service"
-import { gameplayGrpcConstants } from "@apps/gameplay-service/src/app.constants"
+import { gameplayGrpcConstants } from "@apps/gameplay-service/src/config"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { User } from "@src/decorators"
@@ -54,10 +56,10 @@ export class GameplayController implements OnModuleInit {
 
     onModuleInit() {
         this.healthcheckService = this.healthCheckServiceClient.getService<IHealthcheckService>(
-            healthcheckGrpcConstants.SERVICE
+            healthcheckGrpcConstants.service
         )
         this.gameplayService = this.gameplayServiceClient.getService<IGameplayService>(
-            gameplayGrpcConstants.SERVICE
+            gameplayGrpcConstants.service
         )
     }
 
@@ -242,6 +244,45 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing use pesticide for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.usePesticide({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    // Delivery
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: DeliverProductResponse
+    })
+    @Post("/deliver-product")
+    public async deliverProduct(
+        @User() user: UserLike,
+        @Body() request: DeliverProductRequest
+    ): Promise<DeliverProductResponse> {
+        this.logger.debug(`Processing deliver product for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.deliverProduct({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({})
+    @Post("/retain-product")
+    public async retainProduct(
+        @User() user: UserLike,
+        @Body() request: DeliverProductRequest
+    ): Promise<DeliverProductResponse> {
+        this.logger.debug(`Processing retain product for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.deliverProduct({
                 ...request,
                 userId: user?.id
             })

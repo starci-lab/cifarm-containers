@@ -10,7 +10,7 @@ export class GenerateTestSignatureController {
 
     constructor(private readonly generateTestSignatureService: GenerateTestSignatureService) {}
 
-    @GrpcMethod(authGrpcConstants.SERVICE, "GenerateTestSignature")
+    @GrpcMethod(authGrpcConstants.service, "GenerateTestSignature")
     public async generateTestSignature(request: GenerateTestSignatureRequest) {
         this.logger.debug("GenerateTestSignature called")
         return this.generateTestSignatureService.generateTestSignature(request)

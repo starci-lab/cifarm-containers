@@ -1,11 +1,11 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { AvailableInType } from "./enums"
 
 @ObjectType()
 @Entity("tools")
-export class ToolEntity extends ReadableAbstractEntity {
+export class ToolEntity extends StringAbstractEntity {
     @Field(() => String)
     @Column({ name: "available_in", type: "enum", enum: AvailableInType })
         availableIn: AvailableInType

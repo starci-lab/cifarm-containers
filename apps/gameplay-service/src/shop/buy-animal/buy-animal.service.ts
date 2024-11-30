@@ -96,6 +96,28 @@ export class BuyAnimalService {
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
+            const placedItemAnimal: DeepPartial<PlacedItemEntity> = {
+                userId: request.userId,
+                animalInfo: {
+                    animalId: request.animalId
+                },
+                x: request.position.x,
+                y: request.position.y,
+                placedItemTypeId: placedItemType.id,
+                parentId: placedItemBuilding.id
+            }
+
+            const maxCapacity =
+                placedItemBuilding.buildingInfo.building.upgrades[
+                    placedItemBuilding.buildingInfo.currentUpgrade
+                ].capacity
+
+            //Check occupancy
+            if (placedItemBuilding.buildingInfo.occupancy >= maxCapacity)
+                throw new BuildingCapacityExceededException(placedItemBuilding.id)
+
+            placedItemBuilding.buildingInfo.occupancy += 1
+
             // Start transaction
             await queryRunner.startTransaction()
 
@@ -103,34 +125,12 @@ export class BuyAnimalService {
                 // Subtract gold
                 const goldsChanged = this.goldBalanceService.subtract({
                     entity: user,
-                    golds: totalCost
+                    amount: totalCost
                 })
 
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...goldsChanged
                 })
-
-                const placedItemAnimal: DeepPartial<PlacedItemEntity> = {
-                    userId: request.userId,
-                    animalInfo: {
-                        animalId: request.animalId
-                    },
-                    x: request.position.x,
-                    y: request.position.y,
-                    placedItemTypeId: placedItemType.id,
-                    parentId: placedItemBuilding.id
-                }
-
-                const maxCapacity =
-                    placedItemBuilding.buildingInfo.building.upgrades[
-                        placedItemBuilding.buildingInfo.currentUpgrade
-                    ].capacity
-
-                //Check occupancy
-                if (placedItemBuilding.buildingInfo.occupancy >= maxCapacity)
-                    throw new BuildingCapacityExceededException(placedItemBuilding.id)
-
-                placedItemBuilding.buildingInfo.occupancy += 1
 
                 const [savedPlacedItemAnimal] = await queryRunner.manager.save(PlacedItemEntity, [
                     placedItemAnimal,

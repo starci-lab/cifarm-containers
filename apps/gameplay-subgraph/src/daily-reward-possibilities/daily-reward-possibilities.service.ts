@@ -7,10 +7,7 @@ import { DataSource } from "typeorm"
 export class DailyRewardPossibilitiesService {
     private readonly logger = new Logger(DailyRewardPossibilitiesService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getDailyRewardPossibilities({
         limit = 10,
@@ -24,10 +21,14 @@ export class DailyRewardPossibilitiesService {
         try {
             dailyRewards = await queryRunner.manager.find(DailyRewardPossibilityEntity, {
                 take: limit,
+<<<<<<< HEAD:apps/gameplay-subgraph/src/daily-reward-possibilities/daily-reward-possibilities.service.ts
                 skip: offset,
                 relations: {
                     dailyReward: true,
                 }
+=======
+                skip: offset
+>>>>>>> f9c45204f39ad3d2d2a36bea9f7f920c9ee7c2fd:apps/static-subgraph/src/daily-reward-possibilities/daily-reward-possibilities.service.ts
             })
             return dailyRewards
         } finally {

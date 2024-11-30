@@ -68,26 +68,26 @@ export class BuyTileService {
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
+            // Prepare placed item entity
+            const placedItem: DeepPartial<PlacedItemEntity> = {
+                userId: request.userId,
+                x: request.position.x,
+                y: request.position.y,
+                placedItemTypeId: placedItemType.id
+            }
+
             // Start transaction
             await queryRunner.startTransaction()
             try {
                 // Subtract gold
                 const goldsChanged = this.goldBalanceService.subtract({
                     entity: user,
-                    golds: totalCost
+                    amount: totalCost
                 })
 
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...goldsChanged
                 })
-
-                // Prepare placed item entity
-                const placedItem: DeepPartial<PlacedItemEntity> = {
-                    userId: request.userId,
-                    x: request.position.x,
-                    y: request.position.y,
-                    placedItemTypeId: placedItemType.id
-                }
 
                 // Save the placed item in the database
                 const savedTile = await queryRunner.manager.save(PlacedItemEntity, placedItem)

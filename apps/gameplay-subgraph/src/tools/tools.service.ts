@@ -13,7 +13,7 @@ export class ToolsService {
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache
-    ) { }
+    ) {}
 
     @UseInterceptors(CacheInterceptor)
     @CacheKey("tools")

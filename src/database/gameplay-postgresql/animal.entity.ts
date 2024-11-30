@@ -1,6 +1,6 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { PlacedItemTypeEntity } from "./placed-item-type.entity"
@@ -8,7 +8,7 @@ import { ProductEntity } from "./product.entity"
 
 @ObjectType()
 @Entity("animals")
-export class AnimalEntity extends ReadableAbstractEntity {
+export class AnimalEntity extends StringAbstractEntity {
     @Field(() => Int)
     @Column({ name: "yield_time", type: "int" })
         yieldTime: number

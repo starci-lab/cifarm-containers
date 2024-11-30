@@ -13,7 +13,7 @@ export class SpinsService {
         private readonly dataSource: DataSource,
         @Inject(CACHE_MANAGER)
         private cacheManager: Cache
-    ) { }
+    ) {}
 
     async getSpins({ limit = 10, offset = 0 }: GetSpinsArgs): Promise<Array<SpinEntity>> {
         this.logger.debug(`GetSpins: limit=${limit}, offset=${offset}`)

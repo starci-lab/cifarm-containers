@@ -7,11 +7,12 @@ import { DataSource } from "typeorm"
 export class InventoryTypeService {
     private readonly logger = new Logger(InventoryTypeService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
-    async getInventoryTypes({ limit = 10, offset = 0 }: GetInventoryTypesArgs): Promise<Array<InventoryTypeEntity>> {
+    async getInventoryTypes({
+        limit = 10,
+        offset = 0
+    }: GetInventoryTypesArgs): Promise<Array<InventoryTypeEntity>> {
         this.logger.debug(`GetInventoryTypes: limit=${limit}, offset=${offset}`)
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -33,5 +34,4 @@ export class InventoryTypeService {
             await queryRunner.release()
         }
     }
-
 }

@@ -62,7 +62,6 @@ export class UsePesticideService {
                 required: energyConsume
             })
 
-            await queryRunner.startTransaction()
             // substract energy
             const energyChanges = this.energyService.substract({
                 entity: user,
@@ -73,27 +72,33 @@ export class UsePesticideService {
                 experiences: experiencesGain
             })
 
+            await queryRunner.startTransaction()
+            try {
             // update user
-            await queryRunner.manager.update(UserEntity, user.id, {
-                ...energyChanges,
-                ...experiencesChanges
-            })
+                await queryRunner.manager.update(UserEntity, user.id, {
+                    ...energyChanges,
+                    ...experiencesChanges
+                })
 
-            // update seed growth info
-            await queryRunner.manager.update(
-                SeedGrowthInfoEntity,
-                placedItemTile.seedGrowthInfo.id,
-                {
-                    ...placedItemTile.seedGrowthInfo,
-                    currentState: CropCurrentState.Normal
-                }
-            )
-            return {}
-        } catch (error) {
-            this.logger.error("Use Pesticide transaction failed, rolling back...", error)
-            await queryRunner.rollbackTransaction()
-            throw new UsePesticideTransactionFailedException(error)
-        } finally {
+                // update seed growth info
+                await queryRunner.manager.update(
+                    SeedGrowthInfoEntity,
+                    placedItemTile.seedGrowthInfo.id,
+                    {
+                        ...placedItemTile.seedGrowthInfo,
+                        currentState: CropCurrentState.Normal
+                    }
+                )
+
+                await queryRunner.commitTransaction()
+                return {}
+            } catch (error) {
+                this.logger.error("Use Pesticide transaction failed, rolling back...", error)
+                await queryRunner.rollbackTransaction()
+                throw new UsePesticideTransactionFailedException(error)
+            } 
+        }
+        finally {
             await queryRunner.release()
         }
     }

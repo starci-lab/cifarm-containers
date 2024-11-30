@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package gameplay;
+
+message SpinRequest {
+    string userId = 1;
+}
+
+message SpinResponse {
+    string spinSlotId = 1;
+}

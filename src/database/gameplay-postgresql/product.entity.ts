@@ -1,6 +1,6 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, OneToMany, OneToOne } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
 import { ProductType } from "./enums"
@@ -9,7 +9,7 @@ import { DeliveringProductEntity } from "./delivering-product.entity"
 
 @ObjectType()
 @Entity("products")
-export class ProductEntity extends ReadableAbstractEntity {
+export class ProductEntity extends StringAbstractEntity {
     @Field(() => Boolean)
     @Column({ name: "is_premium", type: "boolean" })
         isPremium: boolean

@@ -1,28 +1,24 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToMany } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
-import { DailyRewardPossibilityEntity } from "./daily-reward-possibility.entity"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Column, Entity } from "typeorm"
+import { StringAbstractEntity } from "./abstract"
 
 @ObjectType()
 @Entity("daily_rewards")
-export class DailyRewardEntity extends ReadableAbstractEntity {
+export class DailyRewardEntity extends StringAbstractEntity {
     @Field(() => Int, { nullable: true })
-    @Column({ name: "reward_amount", type: "int", nullable: true })
-        amount: number
+    @Column({ name: "golds", type: "int", nullable: true })
+        golds: number
+
+    // Extra tokens, only claim in last day
+    @Field(() => Float, { nullable: true })
+    @Column({ name: "tokens", type: "float", nullable: true })
+        tokens: number
 
     @Field(() => Int)
     @Column({ name: "reward_day", type: "int" })
         day: number
 
     @Field(() => Boolean)
-    @Column({ name: "is_last_day", type: "boolean", default: false })
-        isLastDay: boolean
-
-    @Field(() => [DailyRewardPossibilityEntity], { nullable: true })
-    @OneToMany(
-        () => DailyRewardPossibilityEntity,
-        (dailyRewardPossibilities) => dailyRewardPossibilities.dailyReward,
-        { cascade: true },
-    )
-        dailyRewardPossibilities?: Array<DailyRewardPossibilityEntity>
+    @Column({ name: "last_day", type: "boolean", default: false })
+        lastDay: boolean
 }

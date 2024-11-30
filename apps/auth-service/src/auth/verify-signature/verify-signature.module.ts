@@ -1,50 +1,15 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import {
-    AnimalEntity,
-    AnimalInfoEntity,
-    BuildingEntity,
-    BuildingInfoEntity,
-    CropEntity,
-    DeliveringProductEntity,
-    InventoryEntity,
-    InventoryTypeEntity,
-    PlacedItemEntity,
-    PlacedItemTypeEntity,
-    ProductEntity,
-    SeedGrowthInfoEntity,
-    SupplyEntity,
-    SystemEntity,
-    TileEntity,
-    UpgradeEntity,
-    UserEntity
-} from "@src/database"
-import { VerifySignatureService } from "./verify-signature.service"
-import { VerifySignatureController } from "./verify-signature.controller"
+import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
+import * as Entities from "@src/database"
 import { EnergyModule } from "@src/services"
+import { VerifySignatureController } from "./verify-signature.controller"
+import { VerifySignatureService } from "./verify-signature.service"
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([
-            UserEntity,
-            InventoryEntity,
-            PlacedItemEntity,
-            SeedGrowthInfoEntity,
-            AnimalInfoEntity,
-            BuildingInfoEntity,
-            DeliveringProductEntity,
-            SystemEntity,
-            ProductEntity,
-            CropEntity,
-            InventoryTypeEntity,
-            AnimalEntity,
-            BuildingEntity,
-            UpgradeEntity,
-            PlacedItemTypeEntity,
-            TileEntity,
-            SupplyEntity
-        ]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         EnergyModule
     ],
     controllers: [VerifySignatureController],

@@ -9,7 +9,7 @@ export class RequestMessageController {
 
     constructor(private readonly requestMessageService: RequestMessageService) {}
 
-    @GrpcMethod(authGrpcConstants.SERVICE, "RequestMessage")
+    @GrpcMethod(authGrpcConstants.service, "RequestMessage")
     public async requestMessage() {
         this.logger.debug("RequestMessage called")
         return this.requestMessageService.requestMessage()

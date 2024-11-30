@@ -6,7 +6,9 @@ import { SeedGrowthInfoThiefedByUsersService } from "./seed-growth-info-thiefed-
 export class SeedGrowthInfoThiefedByUsersResolver {
     private readonly logger = new Logger(SeedGrowthInfoThiefedByUsersResolver.name)
 
-    constructor(private readonly seedgrowthinfothiefedbyusersService: SeedGrowthInfoThiefedByUsersService) {}
+    constructor(
+        private readonly seedgrowthinfothiefedbyusersService: SeedGrowthInfoThiefedByUsersService
+    ) {}
 
     // @Query(() => [SeedGrowthInfoThiefedByUserEntity], {
     //     name: "seedgrowthinfothiefedbyusers"

@@ -15,25 +15,25 @@ export class TokenBalanceService {
     }
 
     public add(request: AddParams): AddResult {
-        if (request.tokens < 0)
-            throw new TokenCannotBeZeroOrNegativeException(request.tokens.toString())
+        if (request.amount < 0)
+            throw new TokenCannotBeZeroOrNegativeException(request.amount.toString())
 
         return {
-            tokens: request.tokens + request.entity.tokens
+            tokens: request.amount + request.entity.tokens
         }
     }
 
     public subtract(request: SubtractParams): SubtractResult {
-        if (request.tokens < 0)
-            throw new TokenCannotBeZeroOrNegativeException(request.tokens.toString())
+        if (request.amount < 0)
+            throw new TokenCannotBeZeroOrNegativeException(request.amount.toString())
 
         this.checkSufficient({
             current: request.entity.tokens,
-            required: request.tokens
+            required: request.amount
         })
 
         return {
-            tokens: request.entity.tokens - request.tokens
+            tokens: request.entity.tokens - request.amount
         }
     }
 }

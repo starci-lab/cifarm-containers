@@ -7,9 +7,7 @@ import { DataSource } from "typeorm"
 export class UpgradeService {
     private readonly logger = new Logger(UpgradeService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getUpgrades({ limit = 10, offset = 0 }: GetUpgradesArgs): Promise<Array<UpgradeEntity>> {
         this.logger.debug(`GetUpgrades: limit=${limit}, offset=${offset}`)
@@ -28,5 +26,4 @@ export class UpgradeService {
             await queryRunner.release()
         }
     }
-
 }

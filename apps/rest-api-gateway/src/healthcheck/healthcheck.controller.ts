@@ -15,7 +15,7 @@ export class HealthcheckController implements OnModuleInit {
     private healthcheckService: IHealthcheckService
     onModuleInit() {
         this.healthcheckService = this.client.getService<IHealthcheckService>(
-            healthcheckGrpcConstants.SERVICE
+            healthcheckGrpcConstants.service
         )
     }
 

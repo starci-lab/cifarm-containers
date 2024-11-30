@@ -12,8 +12,6 @@ import {
     CropRandomness,
     DailyRewardEntity,
     DailyRewardId,
-    DailyRewardPossibilityEntity,
-    DailyRewardPossibilityId,
     InventoryType,
     InventoryTypeEntity,
     InventoryTypeId,
@@ -21,9 +19,10 @@ import {
     PlacedItemTypeId,
     ProductId,
     ProductType,
-    SpinEntity,
-    SpinId,
-    SpinType,
+    AppearanceChance,
+    SpinPrizeEntity,
+    SpinPrizeType,
+    SpinSlotEntity,
     Starter,
     SupplyEntity,
     SupplyId,
@@ -35,7 +34,8 @@ import {
     ToolEntity,
     ToolId,
     UpgradeEntity,
-    UpgradeId
+    UpgradeId,
+    SpinInfo,
 } from "@src/database"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 
@@ -64,22 +64,19 @@ export class SeedDataService {
 
         try {
             await queryRunner.startTransaction()
-
-            await Promise.all([
-                queryRunner.manager.delete(AnimalEntity, {}),
-                queryRunner.manager.delete(CropEntity, {}),
-                queryRunner.manager.delete(UpgradeEntity, {}),
-                queryRunner.manager.delete(BuildingEntity, {}),
-                queryRunner.manager.delete(ToolEntity, {}),
-                queryRunner.manager.delete(TileEntity, {}),
-                queryRunner.manager.delete(SupplyEntity, {}),
-                queryRunner.manager.delete(DailyRewardPossibilityEntity, {}),
-                queryRunner.manager.delete(DailyRewardEntity, {}),
-                queryRunner.manager.delete(SpinEntity, {}),
-                queryRunner.manager.delete(SystemEntity, {}),
-                queryRunner.manager.delete(InventoryTypeEntity, {})
-            ])
-
+            
+            await queryRunner.manager.delete(AnimalEntity, {})
+            await queryRunner.manager.delete(SpinPrizeEntity, {})
+            await queryRunner.manager.delete(CropEntity, {})
+            await queryRunner.manager.delete(UpgradeEntity, {})
+            await queryRunner.manager.delete(BuildingEntity, {})
+            await queryRunner.manager.delete(ToolEntity, {})
+            await queryRunner.manager.delete(TileEntity, {})
+            await queryRunner.manager.delete(SupplyEntity, {})
+            await queryRunner.manager.delete(DailyRewardEntity, {})
+            await queryRunner.manager.delete(SystemEntity, {})
+            await queryRunner.manager.delete(InventoryTypeEntity, {})
+ 
             await queryRunner.commitTransaction()
             this.logger.log("Clearing old data finished")
         } catch (error) {
@@ -87,7 +84,7 @@ export class SeedDataService {
             this.logger.error("Error clearing data:", error)
         } finally {
             await queryRunner.release()
-        }
+        }  
     }
     private async seedEntities(dataSource: DataSource) {
         this.logger.log("Seeding entities...")
@@ -100,17 +97,16 @@ export class SeedDataService {
                 await queryRunner.startTransaction()
 
                 // Sequential or parallel calls to seeding methods
-                await Promise.all([
-                    this.seedAnimalData(queryRunner),
-                    this.seedCropData(queryRunner),
-                    this.seedBuildingData(queryRunner),
-                    this.seedToolData(queryRunner),
-                    this.seedTileData(queryRunner),
-                    this.seedSupplyData(queryRunner),
-                    this.seedDailyRewardData(queryRunner),
-                    this.seedSpinData(queryRunner),
-                    this.seedSystemData(queryRunner)
-                ])
+                await this.seedAnimalData(queryRunner)
+                await this.seedCropData(queryRunner)
+                await this.seedBuildingData(queryRunner)
+                await this.seedToolData(queryRunner)
+                await this.seedTileData(queryRunner)
+                await this.seedSupplyData(queryRunner)
+                await this.seedDailyRewardData(queryRunner)
+                await this.seedSystemData(queryRunner)
+                await this.seedSpinPrizeData(queryRunner)
+                await this.seedSpinSlotData(queryRunner)
 
                 await queryRunner.commitTransaction()
                 this.logger.log("Entities seeded successfully.")
@@ -218,7 +214,30 @@ export class SeedDataService {
                 ]
             }
         }
-
+        const spinInfo: SpinInfo = {
+            appearanceChanceSlots: {
+                [AppearanceChance.Common]: {
+                    count: 4,
+                    thresholdMin: 0,
+                    thresholdMax: 0.8
+                },
+                [AppearanceChance.Uncommon]: {
+                    count: 2,
+                    thresholdMin: 0.8,
+                    thresholdMax: 0.95
+                },
+                [AppearanceChance.Rare]: {
+                    count: 1,
+                    thresholdMin: 0.95,
+                    thresholdMax: 0.99
+                }, 
+                [AppearanceChance.VeryRare]: {
+                    count: 1,
+                    thresholdMin: 0.99,
+                    thresholdMax: 1
+                }   
+            }
+        }
         const data: Array<DeepPartial<SystemEntity>> = [
             {
                 id: SystemId.Activities,
@@ -231,6 +250,10 @@ export class SeedDataService {
             {
                 id: SystemId.Starter,
                 value: starter
+            },
+            {
+                id: SystemId.SpinInfo,
+                value: spinInfo
             }
         ]
         await queryRunner.manager.save(SystemEntity, data)
@@ -791,129 +814,235 @@ export class SeedDataService {
         const data: Array<DeepPartial<DailyRewardEntity>> = [
             {
                 id: DailyRewardId.Day1,
-                amount: 100,
+                golds: 100,
                 day: 1,
-                isLastDay: false
+                lastDay: false
             },
             {
                 id: DailyRewardId.Day2,
-                amount: 200,
+                golds: 200,
                 day: 2,
-                isLastDay: false
+                lastDay: false
             },
             {
                 id: DailyRewardId.Day3,
-                amount: 300,
+                golds: 300,
                 day: 3,
-                isLastDay: false
+                lastDay: false
             },
             {
                 id: DailyRewardId.Day4,
-                amount: 600,
+                golds: 600,
                 day: 4,
-                isLastDay: false
+                lastDay: false
             },
             {
                 id: DailyRewardId.Day5,
                 day: 5,
-                isLastDay: true,
-                dailyRewardPossibilities: [
-                    {
-                        id: DailyRewardPossibilityId.Possibility1,
-                        goldAmount: 1000,
-                        thresholdMin: 0,
-                        thresholdMax: 0.8
-                    },
-                    {
-                        id: DailyRewardPossibilityId.Possibility2,
-                        goldAmount: 1500,
-                        thresholdMin: 0.8,
-                        thresholdMax: 0.9
-                    },
-                    {
-                        id: DailyRewardPossibilityId.Possibility3,
-                        goldAmount: 2000,
-                        thresholdMin: 0.9,
-                        thresholdMax: 0.95
-                    },
-                    {
-                        id: DailyRewardPossibilityId.Possibility4,
-                        tokenAmount: 3,
-                        thresholdMin: 0.95,
-                        thresholdMax: 0.99
-                    },
-                    {
-                        id: DailyRewardPossibilityId.Possibility5,
-                        tokenAmount: 10,
-                        thresholdMin: 0.99,
-                        thresholdMax: 1
-                    }
-                ]
+                lastDay: true,
+                golds: 1000,
+                tokens: 0.25,
             }
         ]
 
         await queryRunner.manager.save(DailyRewardEntity, data)
     }
-    private async seedSpinData(queryRunner: QueryRunner) {
-        const data: Array<DeepPartial<SpinEntity>> = [
+
+    private async seedSpinPrizeData(queryRunner: QueryRunner) {
+        const data: Array<DeepPartial<SpinPrizeEntity>> = [
             {
-                id: SpinId.Gold1,
-                type: SpinType.Gold,
-                goldAmount: 100,
-                thresholdMin: 0,
-                thresholdMax: 0.2
+                type: SpinPrizeType.Gold,
+                appearanceChance: AppearanceChance.Common,
+                golds: 100,
             },
             {
-                id: SpinId.Gold2,
-                type: SpinType.Gold,
-                goldAmount: 250,
-                thresholdMin: 0.2,
-                thresholdMax: 0.35
+                type: SpinPrizeType.Gold,
+                appearanceChance: AppearanceChance.Common,
+                golds: 200,
             },
             {
-                id: SpinId.Gold3,
-                type: SpinType.Gold,
-                goldAmount: 500,
-                thresholdMin: 0.35,
-                thresholdMax: 0.45
+                type: SpinPrizeType.Gold,
+                appearanceChance: AppearanceChance.Common,
+                golds: 300,
             },
             {
-                id: SpinId.Gold4,
-                type: SpinType.Gold,
-                goldAmount: 200,
-                thresholdMin: 0.45,
-                thresholdMax: 0.5
+                type: SpinPrizeType.Gold,
+                appearanceChance: AppearanceChance.Uncommon,
+                golds: 500,
             },
             {
-                id: SpinId.Seed1,
-                type: SpinType.Seed,
+                type: SpinPrizeType.Gold,
+                appearanceChance: AppearanceChance.Uncommon,
+                golds: 1000,
+            },
+            {
+                type: SpinPrizeType.Gold,
+                appearanceChance: AppearanceChance.Rare,
+                golds: 2000,
+            },
+            {
+                type: SpinPrizeType.Seed,
+                appearanceChance: AppearanceChance.Common,
+                cropId: CropId.Carrot,
+                quantity: 3,
+            }, 
+            {
+                type: SpinPrizeType.Seed,
+                appearanceChance: AppearanceChance.Uncommon,
+                cropId: CropId.Pineapple,
+                quantity: 3,
+            },
+            {
+                type: SpinPrizeType.Seed,
+                appearanceChance: AppearanceChance.Uncommon,
+                cropId: CropId.Cucumber,
+                quantity: 3,
+            },
+            {
+                type: SpinPrizeType.Seed,
+                appearanceChance: AppearanceChance.Uncommon,
+                cropId: CropId.Potato,
+                quantity: 3,
+            },
+            {
+                type: SpinPrizeType.Seed,
+                appearanceChance: AppearanceChance.Uncommon,
+                cropId: CropId.Watermelon,
+                quantity: 3,
+            },
+            {
+                type: SpinPrizeType.Seed,
+                appearanceChance: AppearanceChance.Uncommon,
+                cropId: CropId.BellPepper,
+                quantity: 3,
+            },
+            {
+                type: SpinPrizeType.Supply,
+                appearanceChance: AppearanceChance.Uncommon,
+                supplyId: SupplyId.BasicFertilizer,
                 quantity: 2,
-                thresholdMin: 0.5,
-                thresholdMax: 0.65
             },
             {
-                id: SpinId.Seed2,
-                type: SpinType.Seed,
-                quantity: 2,
-                thresholdMin: 0.65,
-                thresholdMax: 0.8
+                type: SpinPrizeType.Supply,
+                appearanceChance: AppearanceChance.Uncommon,
+                supplyId: SupplyId.BasicFertilizer,
+                quantity: 3,
             },
             {
-                id: SpinId.BasicFertilizer,
-                type: SpinType.Supply,
+                type: SpinPrizeType.Supply,
+                appearanceChance: AppearanceChance.Uncommon,
+                supplyId: SupplyId.BasicFertilizer,
                 quantity: 4,
-                thresholdMin: 0.8,
-                thresholdMax: 0.99
             },
             {
-                id: SpinId.Token,
-                type: SpinType.Token,
-                tokenAmount: 15,
-                thresholdMin: 0.99,
-                thresholdMax: 1
+                type: SpinPrizeType.Supply,
+                appearanceChance: AppearanceChance.Uncommon,
+                supplyId: SupplyId.BasicFertilizer,
+                quantity: 5,
+            },
+            {
+                type: SpinPrizeType.Supply,
+                appearanceChance: AppearanceChance.Uncommon,
+                supplyId: SupplyId.AnimalFeed,
+                quantity: 2,
+            },
+            {
+                type: SpinPrizeType.Supply,
+                appearanceChance: AppearanceChance.Uncommon,
+                supplyId: SupplyId.AnimalFeed,
+                quantity: 3,
+            },
+            {
+                type: SpinPrizeType.Supply,
+                appearanceChance: AppearanceChance.Uncommon,
+                supplyId: SupplyId.AnimalFeed,
+                quantity: 4,
+            },
+            {
+                type: SpinPrizeType.Supply,
+                appearanceChance: AppearanceChance.Uncommon,
+                supplyId: SupplyId.AnimalFeed,
+                quantity: 5,
+            },
+            {
+                type: SpinPrizeType.Token,
+                appearanceChance: AppearanceChance.VeryRare,
+                tokens: 5,
+            },
+            {
+                type: SpinPrizeType.Token,
+                appearanceChance: AppearanceChance.VeryRare,
+                tokens: 10,
+            },
+            {
+                type: SpinPrizeType.Token,
+                appearanceChance: AppearanceChance.VeryRare,
+                tokens: 15,
+            },
+            {
+                type: SpinPrizeType.Token,
+                appearanceChance: AppearanceChance.VeryRare,
+                tokens: 20,
             }
         ]
 
-        await queryRunner.manager.save(SpinEntity, data)
+        await queryRunner.manager.save(SpinPrizeEntity, data)
     }
+
+    private async seedSpinSlotData(queryRunner: QueryRunner) {
+        // get system data
+        const { value } = await queryRunner.manager.findOne(SystemEntity, {
+            where: {
+                id: SystemId.SpinInfo
+            }
+        })
+        const { appearanceChanceSlots } = value as SpinInfo
+
+        const commonPrizes = await queryRunner.manager.find(SpinPrizeEntity, {
+            where: {
+                appearanceChance: AppearanceChance.Common,
+            },
+            take: appearanceChanceSlots[AppearanceChance.Common].count
+        })
+        //get all uncommon prizes
+        const uncommonPrizes = await queryRunner.manager.find(SpinPrizeEntity, {
+            where: {
+                appearanceChance: AppearanceChance.Uncommon
+            },
+            take: appearanceChanceSlots[AppearanceChance.Uncommon].count
+        })
+        //get all rare prizes
+        const rarePrizes = await queryRunner.manager.find(SpinPrizeEntity, {
+            where: {
+                appearanceChance: AppearanceChance.Rare
+            },
+            take: appearanceChanceSlots[AppearanceChance.Rare].count
+        })
+        //get all very rare prizes
+        const veryRarePrizes = await queryRunner.manager.find(SpinPrizeEntity, {
+            where: {
+                appearanceChance: AppearanceChance.VeryRare
+            },
+            take: appearanceChanceSlots[AppearanceChance.VeryRare].count
+        })
+        const data: Array<DeepPartial<SpinSlotEntity>> = [
+            ...commonPrizes.map((prize) => ({
+                spinPrizeId: prize.id,
+            })),
+            ...uncommonPrizes.map((prize) => ({
+                prize,
+                spinPrizeId: prize.id,
+            })),
+            ...rarePrizes.map((prize) => ({
+                prize,
+                spinPrizeId: prize.id,
+            })), 
+            ...veryRarePrizes.map((prize) => ({
+                prize,
+                spinPrizeId: prize.id,
+            }))
+        ]
+        await queryRunner.manager.save(SpinSlotEntity, data)
+    }
+
 }

@@ -1,14 +1,14 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Network, SupportedChainKey } from "@src/config"
 import { Column, Entity, OneToMany } from "typeorm"
-import { AbstractEntity } from "./abstract"
+import { UuidAbstractEntity } from "./abstract"
 import { InventoryEntity } from "./inventory.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { DeliveringProductEntity } from "./delivering-product.entity"
 
 @ObjectType()
 @Entity("users")
-export class UserEntity extends AbstractEntity {
+export class UserEntity extends UuidAbstractEntity {
     @Field(() => String)
     @Column({ name: "username", type: "varchar", length: 50 })
         username: string
@@ -57,17 +57,17 @@ export class UserEntity extends AbstractEntity {
     @Column({ name: "daily_reward_streak", type: "int", default: 0 })
         dailyRewardStreak: number
 
-    @Field(() => Int)
-    @Column({ name: "daily_reward_last_claim_time", type: "int", default: 0 })
-        dailyRewardLastClaimTime: number
+    @Field(() => Date)
+    @Column({ name: "daily_reward_last_claim_time", type: "timestamp without time zone", nullable: true })
+        dailyRewardLastClaimTime?: Date
 
     @Field(() => Int)
     @Column({ name: "daily_reward_number_of_claim", type: "int", default: 0 })
         dailyRewardNumberOfClaim: number
 
-    @Field(() => Int)
-    @Column({ name: "spin_last_time", type: "int", default: 0 })
-        spinLastTime: number
+    @Field(() => Date)
+    @Column({ name: "spin_last_time", type: "timestamp without time zone", nullable: true })
+        spinLastTime?: Date
 
     @Field(() => Int)
     @Column({ name: "spin_count", type: "int", default: 0 })

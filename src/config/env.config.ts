@@ -167,6 +167,11 @@ export const envConfig = () => ({
             password: process.env.ADMIN_PASSWORD
         }
     },
+    kafka: {
+        brokers: {
+            broker1: process.env.KAFKA_BROKER_1
+        },
+    },
     chainCredentials: {
         [SupportedChainKey.Near]: {
             tokenMinter: {

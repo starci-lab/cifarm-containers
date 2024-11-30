@@ -7,9 +7,7 @@ import { DataSource } from "typeorm"
 export class ProductService {
     private readonly logger = new Logger(ProductService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getProducts({ limit = 10, offset = 0 }: GetProductsArgs): Promise<Array<ProductEntity>> {
         this.logger.debug(`GetProducts: limit=${limit}, offset=${offset}`)
@@ -29,5 +27,4 @@ export class ProductService {
             await queryRunner.release()
         }
     }
-
 }

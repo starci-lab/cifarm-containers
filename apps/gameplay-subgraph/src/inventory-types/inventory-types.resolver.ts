@@ -9,12 +9,14 @@ import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interce
 export class InventoryTypeResolver {
     private readonly logger = new Logger(InventoryTypeResolver.name)
 
-    constructor(private readonly inventoryTypesService: InventoryTypeService) { }
+    constructor(private readonly inventoryTypesService: InventoryTypeService) {}
     @Query(() => [InventoryTypeEntity], {
         name: "inventory_types"
     })
     @UseInterceptors(GraphQLCacheInterceptor)
-    async getInventoryTypes(@Args("args") args: GetInventoryTypesArgs): Promise<Array<InventoryTypeEntity>> {
+    async getInventoryTypes(
+        @Args("args") args: GetInventoryTypesArgs
+    ): Promise<Array<InventoryTypeEntity>> {
         this.logger.debug(`getInventoryTypes: args=${JSON.stringify(args)}`)
         return this.inventoryTypesService.getInventoryTypes(args)
     }

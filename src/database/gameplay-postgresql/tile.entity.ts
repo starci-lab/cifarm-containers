@@ -1,12 +1,12 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, OneToOne } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { StringAbstractEntity } from "./abstract"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { PlacedItemTypeEntity } from "./placed-item-type.entity"
 
 @ObjectType()
 @Entity("tiles")
-export class TileEntity extends ReadableAbstractEntity {
+export class TileEntity extends StringAbstractEntity {
     @Field(() => Float)
     @Column({ name: "price", type: "float" })
         price: number

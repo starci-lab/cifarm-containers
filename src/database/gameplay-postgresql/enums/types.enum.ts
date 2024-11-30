@@ -24,7 +24,7 @@ export enum SupplyType {
 }
 
 // Spin Type Enum
-export enum SpinType {
+export enum SpinPrizeType {
     Gold = "gold",
     Seed = "seed",
     Supply = "supply",
@@ -47,3 +47,11 @@ export enum PlacedItemType {
     Building = "building",
     Animal = "animal"
 }
+
+// AppearanceChance Enum
+export enum AppearanceChance {
+    Common = "common",
+    Uncommon = "uncommon",
+    Rare = "rare",
+    VeryRare = "veryRare"  
+} 

@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package gameplay;
+
+message RetainProductRequest {
+    string userId = 1;
+    string deliveringProductId = 2;
+}

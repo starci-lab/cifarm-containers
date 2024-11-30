@@ -1,49 +1,17 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import {
-    AnimalEntity,
-    AnimalInfoEntity,
-    BuildingEntity,
-    BuildingInfoEntity,
-    CropEntity,
-    DeliveringProductEntity,
-    InventoryEntity,
-    InventoryTypeEntity,
-    PlacedItemEntity,
-    PlacedItemTypeEntity,
-    ProductEntity,
-    SeedGrowthInfoEntity,
-    SupplyEntity,
-    TileEntity,
-    UpgradeEntity,
-    UserEntity
-} from "@src/database"
-import { BuySuppliesController } from "./buy-supplies.controller"
-import { BuySuppliesService } from "./buy-supplies.service"
+import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
+import * as Entities from "@src/database/gameplay-postgresql"
 import { InventoryModule } from "@src/services/gameplay/inventory"
 import { GoldBalanceModule } from "@src/services/gameplay/wallet"
+import { BuySuppliesController } from "./buy-supplies.controller"
+import { BuySuppliesService } from "./buy-supplies.service"
+
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([
-            UserEntity,
-            InventoryEntity,
-            CropEntity,
-            ProductEntity,
-            PlacedItemEntity,
-            SeedGrowthInfoEntity,
-            AnimalInfoEntity,
-            BuildingInfoEntity,
-            PlacedItemTypeEntity,
-            InventoryTypeEntity,
-            AnimalEntity,
-            TileEntity,
-            SupplyEntity,
-            BuildingEntity,
-            UpgradeEntity,
-            DeliveringProductEntity
-        ]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
         InventoryModule,
         GoldBalanceModule
     ],

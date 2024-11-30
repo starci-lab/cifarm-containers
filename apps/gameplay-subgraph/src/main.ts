@@ -12,9 +12,7 @@ const generateSchema = async () => {
     await app.init()
 
     const gqlSchemaFactory = app.get(GraphQLSchemaFactory)
-    const schema = await gqlSchemaFactory.create([
-        ...Object.values(Resolvers)
-    ])
+    const schema = await gqlSchemaFactory.create([...Object.values(Resolvers)])
 
     writeFileSync(
         join(

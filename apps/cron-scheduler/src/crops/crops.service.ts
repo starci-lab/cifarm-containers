@@ -49,12 +49,12 @@ export class CropsService {
         const batchSize = cropsTimeQueueConstants.BATCH_SIZE
         const batchCount = Math.ceil(count / batchSize)
 
-        const value = await this.cacheManager.get(speedUpConstants.KEY)
+        const value = await this.cacheManager.get(speedUpConstants.key)
         let time = 1
         if (value) {
             // kieemr tra kieu du lieu xem redis luu string hay number
             time += Number(value)
-            await this.cacheManager.del(speedUpConstants.KEY)
+            await this.cacheManager.del(speedUpConstants.key)
         }
 
         // Create batches

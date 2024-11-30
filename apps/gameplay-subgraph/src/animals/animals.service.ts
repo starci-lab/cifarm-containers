@@ -7,9 +7,7 @@ import { GetAnimalsArgs } from "./"
 export class AnimalsService {
     private readonly logger = new Logger(AnimalsService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
     async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         this.logger.debug(`GetAnimals: limit=${limit}, offset=${offset}`)

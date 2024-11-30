@@ -8,7 +8,7 @@ import { UserEntity } from "@src/database"
 export class UserResolver {
     private readonly logger = new Logger(UserResolver.name)
 
-    constructor(private readonly usersService: UserService) { }
+    constructor(private readonly usersService: UserService) {}
     @Query(() => [UserEntity], {
         name: "users"
     })

@@ -7,11 +7,12 @@ import { DataSource } from "typeorm"
 export class PlacedItemTypesService {
     private readonly logger = new Logger(PlacedItemTypesService.name)
 
-    constructor(
-        private readonly dataSource: DataSource,
-    ) { }
+    constructor(private readonly dataSource: DataSource) {}
 
-    async getPlacedItemTypes({ limit = 10, offset = 0 }: GetPlacedItemTypesArgs): Promise<Array<PlacedItemTypeEntity>> {
+    async getPlacedItemTypes({
+        limit = 10,
+        offset = 0
+    }: GetPlacedItemTypesArgs): Promise<Array<PlacedItemTypeEntity>> {
         this.logger.debug(`GetPlacedItemTypes: limit=${limit}, offset=${offset}`)
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

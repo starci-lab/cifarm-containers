@@ -1,12 +1,13 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToOne } from "typeorm"
-import { ReadableAbstractEntity } from "./abstract"
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
+import { StringAbstractEntity } from "./abstract"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { ProductEntity } from "./product.entity"
+import { SpinPrizeEntity } from "./spin-prize.entity"
 
 @ObjectType()
 @Entity("crops")
-export class CropEntity extends ReadableAbstractEntity {
+export class CropEntity extends StringAbstractEntity {
     @Field(() => Int)
     @Column({ name: "growth_stage_duration", type: "int" })
         growthStageDuration: number
@@ -69,4 +70,12 @@ export class CropEntity extends ReadableAbstractEntity {
         cascade: ["insert"]
     })
         inventoryType?: InventoryTypeEntity
+
+    @Field(() => [SpinPrizeEntity], { nullable: true })
+    @OneToMany(() => SpinPrizeEntity, (spinPrize) => spinPrize.crop, {
+        nullable: true,
+        onDelete: "CASCADE",
+        cascade: ["insert"]
+    })
+        spinPrizes?: Array<SpinPrizeEntity>
 }

@@ -1,0 +1,13 @@
+services:
+  server:
+    build:
+      context: ../..
+      dockerfile: apps/websocket-node/Dockerfile
+    env_file:
+      - ../../.env.docker
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3003:3003"
+
+#docker compose -f apps/websocket-node/compose.yaml up -d --build
