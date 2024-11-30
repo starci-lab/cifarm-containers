@@ -11,6 +11,7 @@ import { ShopModule } from "./shop"
 import { FarmingModule } from "./farming"
 import { SpinModule } from "./claim/spin"
 // import { DevModule } from "./dev"
+import { CommunityModule } from './community/community.module'
 
 @Module({
     imports: [
@@ -46,6 +47,7 @@ import { SpinModule } from "./claim/spin"
             }
         }),
         ShopModule,
+        CommunityModule,
         FarmingModule,
         // DevModule
         SpinModule
