@@ -2,7 +2,7 @@ import { ConfigModule } from "@nestjs/config"
 import { Test } from "@nestjs/testing"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig, Network, SupportedChainKey } from "@src/config"
-import { DeliveringProductEntity, UserEntity } from "@src/database"
+import { DeliveringProductEntity, ProductId, UserEntity } from "@src/database"
 import { DeliveringProductNotFoundException } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
 import { RetainProductRequest, RetainProductResponse } from "./retain-product.dto"
@@ -83,8 +83,13 @@ describe("RetainProductService", () => {
     it("Should retain a delivering product successfully", async () => {
         const userBeforeRetainProduct = await dataSource.manager.save(UserEntity, users[0])
 
-        const deliveringProduct = await dataSource.manager.findOne(DeliveringProductEntity, {
-            where: { userId: userBeforeRetainProduct.id }
+        //Insert delivering product
+        const deliveringProduct = await dataSource.manager.save(DeliveringProductEntity, {
+            userId: userBeforeRetainProduct.id,
+            quantity: 5,
+            premium: false,
+            productId: ProductId.Egg,
+            index: 1,
         })
 
         const retainProductRequest: RetainProductRequest = {

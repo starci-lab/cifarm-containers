@@ -1,12 +1,12 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm"
+import { UuidAbstractEntity } from "./abstract"
 import { BuildingEntity } from "./building.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
-import { StringAbstractEntity } from "./abstract"
 
 @ObjectType()
 @Entity("building_info")
-export class BuildingInfoEntity extends StringAbstractEntity {
+export class BuildingInfoEntity extends UuidAbstractEntity {
     @Field(() => Number)
     @Column({ type: "int", nullable: true })
         currentUpgrade: number

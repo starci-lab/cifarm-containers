@@ -7,7 +7,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
 // import * as apolloPlugins from "@apollo/server/plugin/disabled"
-import { Entities } from "@src/database"
+import * as Entities from "@src/database"
 import { Modules } from "@apps/static-subgraph/src/"
 import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 

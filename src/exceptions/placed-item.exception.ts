@@ -1,4 +1,4 @@
-import { GrpcNotFoundException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
+import { GrpcAbortedException, GrpcNotFoundException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
 
 export class PlacedItemNotFoundException extends GrpcNotFoundException {
     constructor(id: string) {
@@ -81,5 +81,23 @@ export class HelpCureAnimalTransactionFailedException extends GrpcPermissionDeni
 export class HelpWaterTransactionFailedException extends GrpcPermissionDeniedException {
     constructor(error: Error) {
         super(`Failed to help water: ${error.message}`)
+    }
+}
+
+export class BuildingAlreadyMaxUpgradeException extends GrpcAbortedException {
+    constructor(placedItemId: string) {
+        super(`Building already at maximum upgrade level for placed item: ${placedItemId}`)
+    }
+}
+
+export class BuildingNextUpgradeNotFoundException extends GrpcNotFoundException {
+    constructor(placedItemId: string) {
+        super(`Building next upgrade not found for placed item: ${placedItemId}`)
+    }
+}
+
+export class UpgradeBuildingTransactionFailedException extends GrpcAbortedException {
+    constructor(error: Error) {
+        super(`Upgrade building transaction failed: ${error.message}`)
     }
 }

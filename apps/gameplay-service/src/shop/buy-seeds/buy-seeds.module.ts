@@ -1,48 +1,15 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import {
-    AnimalEntity,
-    AnimalInfoEntity,
-    BuildingEntity,
-    BuildingInfoEntity,
-    CropEntity,
-    DeliveringProductEntity,
-    InventoryEntity,
-    InventoryTypeEntity,
-    PlacedItemEntity,
-    PlacedItemTypeEntity,
-    ProductEntity,
-    SeedGrowthInfoEntity,
-    SupplyEntity,
-    TileEntity,
-    UpgradeEntity,
-    UserEntity
-} from "@src/database"
+import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
+import * as Entities from "@src/database/gameplay-postgresql"
+import { GoldBalanceModule, InventoryModule } from "@src/services"
 import { BuySeedsController } from "./buy-seeds.controller"
 import { BuySeedsService } from "./buy-seeds.service"
-import { GoldBalanceModule, InventoryModule } from "@src/services"
 
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([
-            UserEntity,
-            InventoryEntity,
-            CropEntity,
-            ProductEntity,
-            PlacedItemEntity,
-            SeedGrowthInfoEntity,
-            AnimalInfoEntity,
-            BuildingInfoEntity,
-            PlacedItemTypeEntity,
-            InventoryTypeEntity,
-            AnimalEntity,
-            TileEntity,
-            SupplyEntity,
-            BuildingEntity,
-            UpgradeEntity,
-            DeliveringProductEntity
-        ]),
+        TypeOrmModule.forFeature([...Object.values(Entities)]  as EntityClassOrSchema[]),
         InventoryModule,
         GoldBalanceModule
     ],
