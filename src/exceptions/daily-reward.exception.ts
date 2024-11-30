@@ -17,3 +17,9 @@ export class DailyRewardTransactionFailedException extends GrpcResourceExhausted
         super(`Daily reward transaction failed: ${error.message}`)
     }
 }
+
+export class UpdateTutorialTransactionFailedException extends GrpcResourceExhaustedException {
+    constructor(error: Error) {
+        super(`Update tutorial transaction failed: ${error.message}`)
+    }
+}

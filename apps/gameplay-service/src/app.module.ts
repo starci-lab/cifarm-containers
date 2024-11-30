@@ -10,6 +10,7 @@ import { ShopModule } from "./shop"
 import { DevModule } from "./dev"
 import { DeliveryModule } from "./delivery"
 import { FarmingModule } from "./farming"
+import { ProfileModule } from "./profile"
 @Module({
     imports: [
         configForRoot(),
@@ -22,6 +23,7 @@ import { FarmingModule } from "./farming"
         DevModule,
         FarmingModule,
         ShopModule,
+        ProfileModule
     ],
     controllers: [AppController],
     providers: [
