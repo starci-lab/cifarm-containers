@@ -13,6 +13,6 @@ export class TheifCropController {
     @GrpcMethod(grpcConfig.gameplay.service, "TheifCrop")
     public async theifCrop(request: TheifCropRequest) {
         this.logger.debug("TheifCrop request called")
-        return this.helpUseHerbicideService.helpUseHerbicide(request)
+        return this.theifCropService.theifCrop(request)
     }
 }

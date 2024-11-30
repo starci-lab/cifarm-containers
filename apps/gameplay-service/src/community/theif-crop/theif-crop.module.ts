@@ -1,13 +1,13 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { HelpUseHerbicideController } from "./theif-crop.controller"
-import { HelpUseHerbicideService } from "./theif-crop.service"
 import { EnergyModule, InventoryModule, LevelModule, TheifModule } from "@src/services"
 import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 import * as Entities from "@src/database"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { kafkaConfig, envConfig } from "@src/config"
 import { v4 } from "uuid"
+import { TheifCropController } from "./theif-crop.controller"
+import { TheifCropService } from "./theif-crop.service"
 
 @Global()
 @Module({
@@ -34,8 +34,8 @@ import { v4 } from "uuid"
         TheifModule,
         InventoryModule
     ],
-    providers: [HelpUseHerbicideService],
-    exports: [HelpUseHerbicideService],
-    controllers: [HelpUseHerbicideController]
+    providers: [TheifCropService],
+    exports: [TheifCropService],
+    controllers: [TheifCropController]
 })
-export class HelpUseHerbicideModule {}
+export class TheifCropModule {}

@@ -1,16 +1,14 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import {
     HaverstQuantityRemainingEqualMinHarvestQuantityException,
-    HelpUseHerbicideTransactionFailedException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotFullyMaturedException,
-    PlacedItemTileNotNeedUseHerbicideException,
-    PlacedItemTileNotPlantedException
+    PlacedItemTileNotPlantedException,
+    TheifCropTransactionFailedException
 } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import {
     Activities,
-    CropCurrentState,
     CropRandomness,
     InventoryEntity,
     InventoryType,
@@ -58,9 +56,7 @@ export class TheifCropService {
                     }
                 },
                 relations: {
-                    seedGrowthInfo: {
-                        crop: true
-                    },
+                    seedGrowthInfo: true,
                     placedItemType: true
                 }
             })
@@ -124,8 +120,11 @@ export class TheifCropService {
                 where: {
                     type: InventoryType.Product,
                     product: {
-                        
+                        cropId: placedItemTile.seedGrowthInfo.crop.id
                     }
+                },
+                relations: {
+                    product: true
                 }
             })
 
@@ -164,20 +163,23 @@ export class TheifCropService {
                     ...experiencesChanges
                 })
 
-                // update crop info
+                // update inventories
+                await queryRunner.manager.save(InventoryEntity, updatedInventories)
+
+                // update seed growth info
                 await queryRunner.manager.update(
                     SeedGrowthInfoEntity,
                     placedItemTile.seedGrowthInfo.id,
                     {
-                        currentState: CropCurrentState.Normal
+                        harvestQuantityRemaining:
+                            placedItemTile.seedGrowthInfo.harvestQuantityRemaining - actualQuantity
                     }
                 )
-
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error(`Help use herbicide failed: ${error}`)
+                this.logger.error(`Theif crop transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new HelpUseHerbicideTransactionFailedException(error)
+                throw new TheifCropTransactionFailedException(error)
             }
 
             this.clientKafka.emit(kafkaConfig.broadcastPlacedItems.pattern, {

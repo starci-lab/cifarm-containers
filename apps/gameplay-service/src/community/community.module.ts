@@ -4,6 +4,7 @@ import { HelpCureAnimalModule } from "./help-cure-animal"
 import { HelpUsePesticideModule } from "./help-use-pesticide"
 import { HelpWaterModule } from "./help-water"
 import { HelpUseHerbicideModule } from "./help-use-herbicide"
+import { TheifCropModule } from "./theif-crop"
 
 @Module({
     imports: [
@@ -11,7 +12,8 @@ import { HelpUseHerbicideModule } from "./help-use-herbicide"
         HelpCureAnimalModule,
         HelpWaterModule,
         HelpUsePesticideModule,
-        HelpUseHerbicideModule
+        HelpUseHerbicideModule,
+        TheifCropModule
     ]
 })
 export class CommunityModule {}

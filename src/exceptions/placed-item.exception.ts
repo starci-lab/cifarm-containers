@@ -158,3 +158,9 @@ export class HaverstQuantityRemainingEqualMinHarvestQuantityException extends Gr
         super(`Harvest quantity remaining equal min harvest quantity: ${minHarvestQuantity}`)
     }
 }
+
+export class TheifCropTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Theif crop transaction failed: ${error.message}`)
+    }
+}
