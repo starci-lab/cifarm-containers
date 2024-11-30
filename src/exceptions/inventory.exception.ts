@@ -31,3 +31,47 @@ export class InventoryTypeNotDeliverableException extends GrpcAbortedException {
         )
     }
 }
+
+//InventoryTypeNotSupplyException
+export class InventoryTypeNotSupplyException extends GrpcInvalidArgumentException {
+    constructor(inventoryId: string) {
+        super(
+            `Inventory with ID ${inventoryId} cannot be used as its type is not supply.`
+        )
+    }
+}
+
+//InventoryAlreadyPlacedException,
+export class InventoryAlreadyPlacedException extends GrpcInvalidArgumentException {
+    constructor(inventoryId: string) {
+        super(
+            `Inventory with ID ${inventoryId} is already placed.`
+        )
+    }
+}
+
+//InventoryTypeNotTileException
+export class InventoryTypeNotTileException extends GrpcInvalidArgumentException {
+    constructor(inventoryId: string) {
+        super(
+            `Inventory with ID ${inventoryId} is not a tile.`
+        )
+    }
+}
+
+export class PlaceTileTransactionFailedException extends GrpcAbortedException {
+    constructor(error: Error) {
+        super(
+            `Failed to place tile. ${error.message}`
+        )
+    }
+}
+
+// InventoryNotTypePlacedException
+export class InventoryNotTypePlacedException extends GrpcInvalidArgumentException {
+    constructor(inventoryId: string) {
+        super(
+            `Inventory with ID ${inventoryId} is not placed.`
+        )
+    }
+}

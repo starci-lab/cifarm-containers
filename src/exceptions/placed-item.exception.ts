@@ -106,6 +106,41 @@ export class UpgradeBuildingTransactionFailedException extends GrpcAbortedExcept
     }
 }
 
+export class PlacedItemNotNeedUseFertilizerException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Placed item not need use fertilizer: ${id}`)
+    }
+}
+
+export class UseFertilizerTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Failed to use fertilizer: ${error.message}`)
+    }
+}
+
+export class PlacedItemNotNeedFeedingException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Placed item not need feeding: ${id}`)
+    }
+}
+
+export class FeedAnimalTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Failed to feed animal: ${error.message}`)
+    }
+}
+
+export class PlacedItemNotNeedCureException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Placed item not need cure: ${id}`)
+    }
+}
+
+export class CureAnimalTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Failed to cure animal: ${error.message}`)
+    }
+}
 export class HelpUsePesticideTransactionFailedException extends GrpcPermissionDeniedException {
     constructor(error: Error) {
         super(`Failed to help use pesticide: ${error.message}`)

@@ -281,6 +281,7 @@ export class SeedDataService {
                     goldAmount: 8,
                     tokenAmount: 0.04,
                     type: ProductType.Animal,
+                    animalId: AnimalId.Chicken,
                     inventoryType: {
                         id: ProductId.Egg,
                         asTool: false,
@@ -324,6 +325,7 @@ export class SeedDataService {
                     goldAmount: 8,
                     tokenAmount: 0.04,
                     type: ProductType.Animal,
+                    animalId: AnimalId.Cow,
                     inventoryType: {
                         id: ProductId.Milk,
                         asTool: false,
@@ -371,6 +373,7 @@ export class SeedDataService {
                     goldAmount: 4,
                     tokenAmount: 0.02,
                     type: ProductType.Crop,
+                    cropId: CropId.Carrot,
                     inventoryType: {
                         id: ProductId.Carrot,
                         asTool: false,
@@ -409,6 +412,7 @@ export class SeedDataService {
                     goldAmount: 8,
                     tokenAmount: 0.04,
                     type: ProductType.Crop,
+                    cropId: CropId.Potato,
                     inventoryType: {
                         id: ProductId.Potato,
                         asTool: false,
@@ -447,6 +451,7 @@ export class SeedDataService {
                     goldAmount: 8,
                     tokenAmount: 0.04,
                     type: ProductType.Crop,
+                    cropId: CropId.Cucumber,
                     inventoryType: {
                         id: ProductId.Cucumber,
                         asTool: false,
@@ -485,6 +490,7 @@ export class SeedDataService {
                     goldAmount: 8,
                     tokenAmount: 0.04,
                     type: ProductType.Crop,
+                    cropId: CropId.Pineapple,
                     inventoryType: {
                         id: ProductId.Pineapple,
                         asTool: false,
@@ -523,6 +529,7 @@ export class SeedDataService {
                     goldAmount: 8,
                     tokenAmount: 0.04,
                     type: ProductType.Crop,
+                    cropId: CropId.Watermelon,
                     inventoryType: {
                         id: ProductId.Watermelon,
                         asTool: false,
@@ -561,6 +568,7 @@ export class SeedDataService {
                     goldAmount: 8,
                     tokenAmount: 0.04,
                     type: ProductType.Crop,
+                    cropId: CropId.BellPepper,
                     inventoryType: {
                         id: ProductId.BellPepper,
                         asTool: false,
