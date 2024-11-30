@@ -12,7 +12,7 @@ import { AnimalsJobData } from "./animals.dto"
 export class AnimalsService {
     private readonly logger = new Logger(AnimalsService.name)
     constructor(
-        @InjectQueue(animalsTimeQueueConstants.NAME) private animalsQueue: Queue,
+        @InjectQueue(animalsTimeQueueConstants.name) private animalsQueue: Queue,
         private readonly dataSource: DataSource
     ) {}
 

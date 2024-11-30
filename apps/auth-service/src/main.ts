@@ -10,8 +10,8 @@ const bootstrap = async () => {
         transport: Transport.GRPC,
         options: {
             url: `0.0.0.0:${envConfig().containers.authService.port}`,
-            package: authGrpcConstants.PACKAGE,
-            protoPath: authGrpcConstants.PROTO_PATH
+            package: authGrpcConstants.package,
+            protoPath: authGrpcConstants.protoPath
         }
     })
 

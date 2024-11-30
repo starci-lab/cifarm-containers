@@ -47,8 +47,8 @@ export class GameplayController implements OnModuleInit {
     private readonly logger = new Logger(GameplayController.name)
 
     constructor(
-        @Inject(healthcheckGrpcConstants.NAME) private healthCheckServiceClient: ClientGrpc,
-        @Inject(gameplayGrpcConstants.NAME) private gameplayServiceClient: ClientGrpc
+        @Inject(healthcheckGrpcConstants.name) private healthCheckServiceClient: ClientGrpc,
+        @Inject(gameplayGrpcConstants.name) private gameplayServiceClient: ClientGrpc
     ) {}
 
     private healthcheckService: IHealthcheckService

@@ -8,13 +8,13 @@ import { envConfig } from "@src/config"
     imports: [
         ClientsModule.registerAsync([
             {
-                name: authGrpcConstants.NAME,
+                name: authGrpcConstants.name,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
                         url: `${envConfig().containers.authService.host}:${envConfig().containers.authService.port}`,
-                        package: authGrpcConstants.PACKAGE,
-                        protoPath: authGrpcConstants.PROTO_PATH
+                        package: authGrpcConstants.package,
+                        protoPath: authGrpcConstants.protoPath
                     }
                 })
             }
