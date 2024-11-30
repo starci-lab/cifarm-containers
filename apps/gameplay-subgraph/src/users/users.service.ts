@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { UserEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import { GetUsersArgs } from "./"
+import { UserEntity } from "@src/database/gameplay-postgresql"
 
 @Injectable()
 export class UserService {

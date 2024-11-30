@@ -19,14 +19,10 @@ export class CropsService {
             crops = await queryRunner.manager.find(CropEntity, {
                 take: limit,
                 skip: offset,
-<<<<<<< HEAD:apps/gameplay-subgraph/src/crops/crops.service.ts
                 relations: {
                     inventoryType: true,
                     product: true,
                 }
-=======
-                relations: ["inventoryType"]
->>>>>>> f9c45204f39ad3d2d2a36bea9f7f920c9ee7c2fd:apps/static-subgraph/src/crops/crops.service.ts
             })
         } finally {
             await queryRunner.release()

@@ -22,15 +22,11 @@ export class AnimalInfosService {
             animalInfos = await queryRunner.manager.find(AnimalInfoEntity, {
                 take: limit,
                 skip: offset,
-<<<<<<< HEAD:apps/gameplay-subgraph/src/animal-infos/animal-infos.service.ts
                 relations: {
                     animal: true,
                     placedItem: true,
                     thiefedBy: true,
                 }
-=======
-                relations: ["placedItem", "animal", "thiefedBy"]
->>>>>>> f9c45204f39ad3d2d2a36bea9f7f920c9ee7c2fd:apps/static-subgraph/src/animal-infos/animal-infos.service.ts
             })
             return animalInfos
         } finally {

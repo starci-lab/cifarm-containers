@@ -1,1 +1,1 @@
-export * as Entities  from "./gameplay-postgresql"
+export * from "./gameplay-postgresql"
