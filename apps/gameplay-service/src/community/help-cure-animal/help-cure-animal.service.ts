@@ -1,58 +1,71 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
+    HelpCureAnimalTransactionFailedException,
+    PlacedItemAnimalNotFoundException,
+    PlacedItemAnimalNotSickException,
+} from "@src/exceptions"
+import { DataSource } from "typeorm"
+import {
     Activities,
-    CropCurrentState,
+    AnimalCurrentState,
+    AnimalInfoEntity,
     PlacedItemEntity,
-    SeedGrowthInfoEntity,
+    PlacedItemType,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/database"
-import { DataSource } from "typeorm"
-import { UsePesticideRequest, UsePesticideResponse } from "./use-pesticide.dto"
-import {
-    PlacedItemNotNeedUsePesticideException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotPlantedException,
-    UsePesticideTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/services"
+import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
 
 @Injectable()
-export class UsePesticideService {
-    private readonly logger = new Logger(UsePesticideService.name)
+export class HelpCureAnimalService {
+    private readonly logger = new Logger(HelpCureAnimalService.name)
+
     constructor(
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {}
 
-    async usePesticide(request: UsePesticideRequest): Promise<UsePesticideResponse> {
+    async helpCureAnimal(request: HelpCureAnimalRequest): Promise<HelpCureAnimalResponse> {
+        this.logger.debug(`Help cure animal for user ${request.neighborUserId}`)
+
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
+
         try {
-            const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemTileId },
+            // get placed item
+            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
+                where: {
+                    userId: request.neighborUserId,
+                    id: request.placedItemAnimalId,
+                    placedItemType: {
+                        type: PlacedItemType.Animal
+                    }
+                },
                 relations: {
-                    seedGrowthInfo: true
+                    animalInfo: true,
+                    placedItemType: true
                 }
             })
 
-            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemAnimal || !placedItemAnimal.animalInfo) {
+                throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
+            }
 
-            if (!placedItemTile.seedGrowthInfo)
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
-
-            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested)
-                throw new PlacedItemNotNeedUsePesticideException(request.placedItemTileId)
+            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
+                throw new PlacedItemAnimalNotSickException(request.placedItemAnimalId)
+            }
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
             })
             const {
-                usePesticide: { energyConsume, experiencesGain }
+                helpCureAnimal: { energyConsume, experiencesGain }
             } = value as Activities
-
+            
+            //get user
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
             })
@@ -80,25 +93,23 @@ export class UsePesticideService {
                     ...experiencesChanges
                 })
 
-                // update seed growth info
+                // update animal info
                 await queryRunner.manager.update(
-                    SeedGrowthInfoEntity,
-                    placedItemTile.seedGrowthInfo.id,
+                    AnimalInfoEntity,
+                    placedItemAnimal.animalInfo.id,
                     {
-                        ...placedItemTile.seedGrowthInfo,
-                        currentState: CropCurrentState.Normal
+                        currentState: AnimalCurrentState.Normal
                     }
                 )
 
                 await queryRunner.commitTransaction()
                 return {}
             } catch (error) {
-                this.logger.error("Use Pesticide transaction failed, rolling back...", error)
+                this.logger.error("Help cure animal transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
-                throw new UsePesticideTransactionFailedException(error)
+                throw new HelpCureAnimalTransactionFailedException(error)
             } 
-        }
-        finally {
+        } finally {
             await queryRunner.release()
         }
     }

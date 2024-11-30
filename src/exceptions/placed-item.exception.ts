@@ -1,4 +1,4 @@
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcNotFoundException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
 
 export class PlacedItemNotFoundException extends GrpcNotFoundException {
     constructor(id: string) {
@@ -57,5 +57,29 @@ export class PlacedItemTypeNotFoundException extends GrpcNotFoundException {
 export class PlacedItemIsLimitException extends Error {
     constructor(tileId: string) {
         super(`Tile with id "${tileId}" has reached its maximum ownership limit.`)
+    }
+}
+
+export class PlacedItemAnimalNotFoundException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Placed item animal not found: ${id}`)
+    }
+}
+
+export class PlacedItemAnimalNotSickException extends GrpcNotFoundException {
+    constructor(id: string) {
+        super(`Placed item animal not sick: ${id}`)
+    }
+}
+
+export class HelpCureAnimalTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Failed to help cure animal: ${error.message}`)
+    }
+}
+
+export class HelpWaterTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Failed to help water: ${error.message}`)
     }
 }

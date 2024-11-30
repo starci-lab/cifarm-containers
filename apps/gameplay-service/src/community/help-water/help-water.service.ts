@@ -1,58 +1,76 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
+    HelpWaterTransactionFailedException,
+    PlacedItemTileNotFoundException,
+    PlacedItemTileNotNeedWaterException,
+    PlacedItemTileNotPlantedException,
+} from "@src/exceptions"
+import { DataSource } from "typeorm"
+import {
     Activities,
     CropCurrentState,
     PlacedItemEntity,
+    PlacedItemType,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/database"
-import { DataSource } from "typeorm"
-import { UsePesticideRequest, UsePesticideResponse } from "./use-pesticide.dto"
-import {
-    PlacedItemNotNeedUsePesticideException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotPlantedException,
-    UsePesticideTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/services"
+import { HelpWaterRequest, HelpWaterResponse } from "./help-water.dto"
 
 @Injectable()
-export class UsePesticideService {
-    private readonly logger = new Logger(UsePesticideService.name)
+export class HelpWaterService {
+    private readonly logger = new Logger(HelpWaterService.name)
+
     constructor(
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {}
 
-    async usePesticide(request: UsePesticideRequest): Promise<UsePesticideResponse> {
+    async helpWater(request: HelpWaterRequest): Promise<HelpWaterResponse> {
+        this.logger.debug(`Help water for user ${request.neighborUserId}`)
+
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
+
         try {
+            // get placed item
             const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemTileId },
+                where: {
+                    userId: request.neighborUserId,
+                    id: request.placedItemTileId,
+                    placedItemType: {
+                        type: PlacedItemType.Tile
+                    }
+                },
                 relations: {
-                    seedGrowthInfo: true
+                    seedGrowthInfo: true,
+                    placedItemType: true
                 }
             })
 
-            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemTile) {
+                throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            }
 
-            if (!placedItemTile.seedGrowthInfo)
+            if (!placedItemTile.seedGrowthInfo) {
                 throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+            }
 
-            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested)
-                throw new PlacedItemNotNeedUsePesticideException(request.placedItemTileId)
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
+                throw new PlacedItemTileNotNeedWaterException(request.placedItemTileId)
+            }
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
             })
             const {
-                usePesticide: { energyConsume, experiencesGain }
+                helpWater: { energyConsume, experiencesGain }
             } = value as Activities
-
+            
+            //get user
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
             })
@@ -67,6 +85,7 @@ export class UsePesticideService {
                 entity: user,
                 energy: energyConsume
             })
+            
             const experiencesChanges = this.levelService.addExperiences({
                 entity: user,
                 experiences: experiencesGain
@@ -80,12 +99,11 @@ export class UsePesticideService {
                     ...experiencesChanges
                 })
 
-                // update seed growth info
+                // update crop info
                 await queryRunner.manager.update(
                     SeedGrowthInfoEntity,
                     placedItemTile.seedGrowthInfo.id,
                     {
-                        ...placedItemTile.seedGrowthInfo,
                         currentState: CropCurrentState.Normal
                     }
                 )
@@ -93,12 +111,11 @@ export class UsePesticideService {
                 await queryRunner.commitTransaction()
                 return {}
             } catch (error) {
-                this.logger.error("Use Pesticide transaction failed, rolling back...", error)
+                this.logger.error(`Failed to help water for user ${request.neighborUserId}`)
                 await queryRunner.rollbackTransaction()
-                throw new UsePesticideTransactionFailedException(error)
+                throw new HelpWaterTransactionFailedException(error)
             } 
-        }
-        finally {
+        } finally {
             await queryRunner.release()
         }
     }

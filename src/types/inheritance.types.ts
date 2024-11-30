@@ -10,6 +10,12 @@ export class UserIdRequest {
         userId: string
 }
 
+export class NeighborAndUserIdRequest extends UserIdRequest {
+    @IsUUID("4")
+    @ApiProperty({ example: "e1f98d80-1f3f-43f5-b2d3-7436fded7d26" })
+        neighborUserId: string
+}
+
 export class UserIdParams {
     @IsUUID("4")
         userId: string
