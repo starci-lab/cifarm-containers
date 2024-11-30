@@ -5,3 +5,4 @@ package gameplay;
 import "./help_use_pesticide.proto";
 import "./help_water.proto";
 import "./help_cure_animal.proto";
+import "./follow.proto";
