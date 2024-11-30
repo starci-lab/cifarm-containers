@@ -1,33 +1,33 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import {
     HaverstQuantityRemainingEqualMinHarvestQuantityException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotFullyMaturedException,
-    PlacedItemTileNotPlantedException,
-    TheifCropTransactionFailedException
+    PlacedItemAnimalNotCurrentlyYieldingException,
+    PlacedItemAnimalNotFoundException,
+    TheifAnimalProductTransactionFailedException
 } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import {
     Activities,
+    AnimalInfoEntity,
     CropRandomness,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
     PlacedItemEntity,
     PlacedItemType,
-    SeedGrowthInfoEntity,
+    ProductType,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/database"
 import { EnergyService, InventoryService, LevelService, TheifService } from "@src/services"
-import { TheifCropRequest, TheifCropResponse } from "./theif-crop.dto"
 import { ClientKafka } from "@nestjs/microservices"
 import { kafkaConfig } from "@src/config"
+import { TheifAnimalProductRequest, TheifAnimalProductResponse } from "./theif-animal-product.dto"
 
 @Injectable()
-export class TheifCropService {
-    private readonly logger = new Logger(TheifCropService.name)
+export class TheifAnimalProductService {
+    private readonly logger = new Logger(TheifAnimalProductService.name)
 
     constructor(
         @Inject(kafkaConfig.broadcastPlacedItems.name)
@@ -36,49 +36,47 @@ export class TheifCropService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly theifService: TheifService,
-        private readonly inventoryService: InventoryService,
+        private readonly inventoryService: InventoryService
     ) {}
 
-    async theifCrop(request: TheifCropRequest): Promise<TheifCropResponse> {
-        this.logger.debug(`Theif crop for user ${request.neighborUserId}`)
+    async theifAnimalProduct(
+        request: TheifAnimalProductRequest
+    ): Promise<TheifAnimalProductResponse> {
+        this.logger.debug(`Theif animal product for user ${request.neighborUserId}`)
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         try {
             // get placed item
-            const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
                 where: {
                     userId: request.neighborUserId,
-                    id: request.placedItemTileId,
+                    id: request.placedItemAnimalId,
                     placedItemType: {
-                        type: PlacedItemType.Tile
+                        type: PlacedItemType.Animal
                     }
                 },
                 relations: {
-                    seedGrowthInfo: true,
+                    animalInfo: true,
                     placedItemType: true
                 }
             })
 
-            if (!placedItemTile) {
-                throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemAnimal) {
+                throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
             }
 
-            if (!placedItemTile.seedGrowthInfo) {
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
-            }
-
-            if (!placedItemTile.seedGrowthInfo.fullyMatured) {
-                throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
+            if (!placedItemAnimal.animalInfo.hasYielded) {
+                throw new PlacedItemAnimalNotCurrentlyYieldingException(request.placedItemAnimalId)
             }
 
             if (
-                placedItemTile.seedGrowthInfo.harvestQuantityRemaining ===
-                placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
+                placedItemAnimal.animalInfo.harvestQuantityRemaining ===
+                placedItemAnimal.animalInfo.animal.minHarvestQuantity
             ) {
                 throw new HaverstQuantityRemainingEqualMinHarvestQuantityException(
-                    placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
+                    placedItemAnimal.seedGrowthInfo.crop.minHarvestQuantity
                 )
             }
 
@@ -86,7 +84,7 @@ export class TheifCropService {
                 where: { id: SystemId.Activities }
             })
             const {
-                thiefCrop: { energyConsume, experiencesGain }
+                thiefAnimalProduct: { energyConsume, experiencesGain }
             } = activitiesValue as Activities
 
             //get user
@@ -111,8 +109,8 @@ export class TheifCropService {
             //get the actual quantity
             const actualQuantity = Math.min(
                 computedQuantity,
-                placedItemTile.seedGrowthInfo.harvestQuantityRemaining -
-                    placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
+                placedItemAnimal.seedGrowthInfo.harvestQuantityRemaining -
+                    placedItemAnimal.seedGrowthInfo.crop.minHarvestQuantity
             )
 
             // get inventories
@@ -120,7 +118,8 @@ export class TheifCropService {
                 where: {
                     type: InventoryType.Product,
                     product: {
-                        cropId: placedItemTile.seedGrowthInfo.crop.id
+                        type: ProductType.Animal,
+                        animalId: placedItemAnimal.animalInfo.animal.id
                     }
                 },
                 relations: {
@@ -140,7 +139,7 @@ export class TheifCropService {
                 userId: request.userId,
                 data: {
                     inventoryTypeId: inventoryType.id,
-                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
+                    quantity: placedItemAnimal.seedGrowthInfo.harvestQuantityRemaining
                 }
             })
 
@@ -167,19 +166,15 @@ export class TheifCropService {
                 await queryRunner.manager.save(InventoryEntity, updatedInventories)
 
                 // update seed growth info
-                await queryRunner.manager.update(
-                    SeedGrowthInfoEntity,
-                    placedItemTile.seedGrowthInfo.id,
-                    {
-                        harvestQuantityRemaining:
-                            placedItemTile.seedGrowthInfo.harvestQuantityRemaining - actualQuantity
-                    }
-                )
+                await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
+                    harvestQuantityRemaining:
+                        placedItemAnimal.animalInfo.harvestQuantityRemaining - actualQuantity
+                })
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error(`Theif crop transaction failed: ${error}`)
+                this.logger.error(`Theif animal product transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new TheifCropTransactionFailedException(error)
+                throw new TheifAnimalProductTransactionFailedException(error)
             }
 
             this.clientKafka.emit(kafkaConfig.broadcastPlacedItems.pattern, {

@@ -1,0 +1,5 @@
+export * from "./theif-animal-product.dto"
+export * from "./theif-animal-productmodule"
+export * from "./theif-animal-product.service"
+export * from "./theif-animal-product.controller"
+//export * from "./claim.spec"

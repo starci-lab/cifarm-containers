@@ -164,3 +164,15 @@ export class TheifCropTransactionFailedException extends GrpcPermissionDeniedExc
         super(`Theif crop transaction failed: ${error.message}`)
     }
 }
+
+export class TheifAnimalProductTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Theif animal product transaction failed: ${error.message}`)
+    }
+}
+
+export class PlacedItemAnimalNotCurrentlyYieldingException extends GrpcAbortedException {
+    constructor(id: string) {
+        super(`Placed item animal not currently yielding: ${id}`)
+    }
+}
