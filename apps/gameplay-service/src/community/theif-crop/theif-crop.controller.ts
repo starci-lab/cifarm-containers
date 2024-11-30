@@ -1,18 +1,18 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { HelpUseHerbicideService } from "./theif-crop.service"
-import { HelpUseHerbicideRequest } from "./theif-crop.dto"
+import { TheifCropService } from "./theif-crop.service"
 import { grpcConfig } from "@src/config"
+import { TheifCropRequest } from "./theif-crop.dto"
 
 @Controller()
-export class HelpUseHerbicideController {
-    private readonly logger = new Logger(HelpUseHerbicideController.name)
+export class TheifCropController {
+    private readonly logger = new Logger(TheifCropController.name)
 
-    constructor(private readonly helpUseHerbicideService: HelpUseHerbicideService) {}
+    constructor(private readonly theifCropService : TheifCropService) {}
 
-    @GrpcMethod(grpcConfig.gameplay.service, "HelpUseHerbicide")
-    public async helpUseHerbicide(request: HelpUseHerbicideRequest) {
-        this.logger.debug("HelpUseHerbicide request called")
+    @GrpcMethod(grpcConfig.gameplay.service, "TheifCrop")
+    public async theifCrop(request: TheifCropRequest) {
+        this.logger.debug("TheifCrop request called")
         return this.helpUseHerbicideService.helpUseHerbicide(request)
     }
 }

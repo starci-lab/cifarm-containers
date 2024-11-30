@@ -1,4 +1,8 @@
-import { GrpcAbortedException, GrpcNotFoundException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
+import {
+    GrpcAbortedException,
+    GrpcNotFoundException,
+    GrpcPermissionDeniedException
+} from "nestjs-grpc-exceptions"
 
 export class PlacedItemNotFoundException extends GrpcNotFoundException {
     constructor(id: string) {
@@ -111,5 +115,11 @@ export class HelpUsePesticideTransactionFailedException extends GrpcPermissionDe
 export class HelpUseHerbicideTransactionFailedException extends GrpcPermissionDeniedException {
     constructor(error: Error) {
         super(`Failed to help use herbicide: ${error.message}`)
+    }
+}
+
+export class HaverstQuantityRemainingEqualMinHarvestQuantityException extends GrpcNotFoundException {
+    constructor(minHarvestQuantity: number) {
+        super(`Harvest quantity remaining equal min harvest quantity: ${minHarvestQuantity}`)
     }
 }

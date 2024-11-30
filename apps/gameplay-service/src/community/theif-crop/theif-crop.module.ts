@@ -2,7 +2,7 @@ import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { HelpUseHerbicideController } from "./theif-crop.controller"
 import { HelpUseHerbicideService } from "./theif-crop.service"
-import { EnergyModule, LevelModule } from "@src/services"
+import { EnergyModule, InventoryModule, LevelModule, TheifModule } from "@src/services"
 import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
 import * as Entities from "@src/database"
 import { ClientsModule, Transport } from "@nestjs/microservices"
@@ -30,7 +30,9 @@ import { v4 } from "uuid"
             }
         ]),
         EnergyModule,
-        LevelModule
+        LevelModule,
+        TheifModule,
+        InventoryModule
     ],
     providers: [HelpUseHerbicideService],
     exports: [HelpUseHerbicideService],

@@ -1,14 +1,20 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import {
+    HaverstQuantityRemainingEqualMinHarvestQuantityException,
     HelpUseHerbicideTransactionFailedException,
     PlacedItemTileNotFoundException,
+    PlacedItemTileNotFullyMaturedException,
     PlacedItemTileNotNeedUseHerbicideException,
-    PlacedItemTileNotPlantedException,
+    PlacedItemTileNotPlantedException
 } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import {
     Activities,
     CropCurrentState,
+    CropRandomness,
+    InventoryEntity,
+    InventoryType,
+    InventoryTypeEntity,
     PlacedItemEntity,
     PlacedItemType,
     SeedGrowthInfoEntity,
@@ -16,7 +22,7 @@ import {
     SystemId,
     UserEntity
 } from "@src/database"
-import { EnergyService, LevelService } from "@src/services"
+import { EnergyService, InventoryService, LevelService, TheifService } from "@src/services"
 import { TheifCropRequest, TheifCropResponse } from "./theif-crop.dto"
 import { ClientKafka } from "@nestjs/microservices"
 import { kafkaConfig } from "@src/config"
@@ -30,11 +36,13 @@ export class TheifCropService {
         private readonly clientKafka: ClientKafka,
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        private readonly theifService: TheifService,
+        private readonly inventoryService: InventoryService,
     ) {}
 
-    async helpUseHerbicide(request: TheifCropRequest): Promise<TheifCropResponse> {
-        this.logger.debug(`Help use herbicide for user ${request.neighborUserId}`)
+    async theifCrop(request: TheifCropRequest): Promise<TheifCropResponse> {
+        this.logger.debug(`Theif crop for user ${request.neighborUserId}`)
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -50,7 +58,9 @@ export class TheifCropService {
                     }
                 },
                 relations: {
-                    seedGrowthInfo: true,
+                    seedGrowthInfo: {
+                        crop: true
+                    },
                     placedItemType: true
                 }
             })
@@ -63,17 +73,26 @@ export class TheifCropService {
                 throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
             }
 
-            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
-                throw new PlacedItemTileNotNeedUseHerbicideException(request.placedItemTileId)
+            if (!placedItemTile.seedGrowthInfo.fullyMatured) {
+                throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
             }
 
-            const { value } = await queryRunner.manager.findOne(SystemEntity, {
+            if (
+                placedItemTile.seedGrowthInfo.harvestQuantityRemaining ===
+                placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
+            ) {
+                throw new HaverstQuantityRemainingEqualMinHarvestQuantityException(
+                    placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
+                )
+            }
+
+            const { value: activitiesValue } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
             })
             const {
-                helpWater: { energyConsume, experiencesGain }
-            } = value as Activities
-            
+                thiefCrop: { energyConsume, experiencesGain }
+            } = activitiesValue as Activities
+
             //get user
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
@@ -84,12 +103,54 @@ export class TheifCropService {
                 required: energyConsume
             })
 
+            const { value } = await queryRunner.manager.findOne(SystemEntity, {
+                where: { id: SystemId.CropRandomness }
+            })
+            const { theif2, theif3 } = value as CropRandomness
+            const { value: computedQuantity } = this.theifService.compute({
+                theif2,
+                theif3
+            })
+
+            //get the actual quantity
+            const actualQuantity = Math.min(
+                computedQuantity,
+                placedItemTile.seedGrowthInfo.harvestQuantityRemaining -
+                    placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
+            )
+
+            // get inventories
+            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+                where: {
+                    type: InventoryType.Product,
+                    product: {
+                        
+                    }
+                }
+            })
+
+            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
+                where: {
+                    userId: request.userId,
+                    inventoryTypeId: inventoryType.id
+                }
+            })
+
+            const updatedInventories = this.inventoryService.add({
+                entities: existingInventories,
+                userId: request.userId,
+                data: {
+                    inventoryTypeId: inventoryType.id,
+                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
+                }
+            })
+
             // substract energy
             const energyChanges = this.energyService.substract({
                 entity: user,
                 energy: energyConsume
             })
-            
+
             const experiencesChanges = this.levelService.addExperiences({
                 entity: user,
                 experiences: experiencesGain
@@ -97,7 +158,7 @@ export class TheifCropService {
 
             await queryRunner.startTransaction()
             try {
-            // update user
+                // update user
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...energyChanges,
                     ...experiencesChanges
@@ -117,16 +178,15 @@ export class TheifCropService {
                 this.logger.error(`Help use herbicide failed: ${error}`)
                 await queryRunner.rollbackTransaction()
                 throw new HelpUseHerbicideTransactionFailedException(error)
-            } 
+            }
 
-            this.clientKafka.emit(
-                kafkaConfig.broadcastPlacedItems.pattern, {
-                    userId: request.neighborUserId
-                })
+            this.clientKafka.emit(kafkaConfig.broadcastPlacedItems.pattern, {
+                userId: request.neighborUserId
+            })
 
             return {}
         } finally {
             await queryRunner.release()
-        }   
+        }
     }
 }
