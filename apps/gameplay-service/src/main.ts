@@ -13,7 +13,6 @@ const bootstrap = async () => {
             protoPath: gameplayGrpcConstants.PROTO_PATH
         }
     })
-
     await app.listen()
 }
 bootstrap()

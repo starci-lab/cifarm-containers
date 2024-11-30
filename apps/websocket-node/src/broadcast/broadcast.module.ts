@@ -3,6 +3,10 @@ import { BroadcastGateway } from "./broadcast.gateway"
 import { WsJwtAuthModule } from "@src/guards"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { AnimalEntity, AnimalInfoEntity, BuildingEntity, BuildingInfoEntity, CropEntity, DeliveringProductEntity, InventoryEntity, InventoryTypeEntity, PlacedItemEntity, PlacedItemTypeEntity, ProductEntity, SeedGrowthInfoEntity, SupplyEntity, TileEntity, UpgradeEntity } from "@src/database"
+import { ClientsModule, Transport } from "@nestjs/microservices"
+import { kafkaConfig, envConfig } from "@src/config"
+import { v4 } from "uuid"
+import { BroadcastController } from "./broadcast.controller"
 
 @Module({
     imports: [
@@ -24,9 +28,24 @@ import { AnimalEntity, AnimalInfoEntity, BuildingEntity, BuildingInfoEntity, Cro
             TileEntity,
             SupplyEntity,
         ]),
-        WsJwtAuthModule
+        WsJwtAuthModule,
+        ClientsModule.register([
+            {
+                name: kafkaConfig().broadcastPlacedItems.name,
+                transport: Transport.KAFKA,
+                options: {
+                    client: {
+                        clientId: v4(),
+                        brokers: Object.values(envConfig().kafka.brokers)
+                    },
+                    consumer: {
+                        groupId: kafkaConfig().broadcastPlacedItems.groupId
+                    }
+                }
+            },
+        ]),
     ],
-    controllers: [],
+    controllers: [BroadcastController],
     providers: [BroadcastGateway]
 })
 export class BroadcastModule {}

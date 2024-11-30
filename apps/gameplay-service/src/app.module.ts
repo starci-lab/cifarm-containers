@@ -11,7 +11,7 @@ import { ShopModule } from "./shop"
 import { FarmingModule } from "./farming"
 import { SpinModule } from "./claim/spin"
 // import { DevModule } from "./dev"
-import { CommunityModule } from './community/community.module'
+import { CommunityModule } from "./community"
 
 @Module({
     imports: [

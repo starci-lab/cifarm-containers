@@ -7,7 +7,6 @@ import {
 import { DataSource, DeepPartial } from "typeorm"
 import { SpinRequest, SpinResponse } from "./spin.dto"
 import { AppearanceChance, InventoryEntity, InventoryType, InventoryTypeEntity, SpinInfo, SpinPrizeType, SpinSlotEntity, SystemEntity, SystemId, UserEntity } from "@src/database"
-import { timeConstants } from "@src/constants"
 import dayjs from "dayjs"
 import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/services"
 
@@ -38,7 +37,7 @@ export class SpinService {
 
             // check if during 24-hour period user has already spun
             const now = dayjs()
-            if (user.spinLastTime && now.diff(user.spinLastTime, "millisecond") < timeConstants.DAY) {
+            if (user.spinLastTime && now.diff(user.spinLastTime, "day") < 1) {
                 throw new SpinCooldownException(now.toDate(), user.spinLastTime)
             }
 
