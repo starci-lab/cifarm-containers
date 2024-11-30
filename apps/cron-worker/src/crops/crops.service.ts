@@ -12,7 +12,7 @@ import {
 } from "@src/database"
 import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
 
-@Processor(cropsTimeQueueConstants.NAME)
+@Processor(cropsTimeQueueConstants.name)
 export class CropsWorker extends WorkerHost {
     private readonly logger = new Logger(CropsWorker.name)
 

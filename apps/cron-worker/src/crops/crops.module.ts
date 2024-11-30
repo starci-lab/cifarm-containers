@@ -9,7 +9,7 @@ import * as Entities from "@src/database/gameplay-postgresql"
 @Module({
     imports: [
         BullModule.registerQueue({
-            name: cropsTimeQueueConstants.NAME
+            name: cropsTimeQueueConstants.name
         }),
         TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
     ],

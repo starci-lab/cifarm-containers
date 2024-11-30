@@ -13,7 +13,7 @@ export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
 
     constructor(
-        @InjectQueue(deliveryTimeQueueConstants.NAME) private deliveryQueue: Queue,
+        @InjectQueue(deliveryTimeQueueConstants.name) private deliveryQueue: Queue,
         private readonly dataSource: DataSource
     ) {}
 

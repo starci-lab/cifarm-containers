@@ -10,7 +10,9 @@ export class DoHealthcheckService {
     constructor(private readonly dataSource: DataSource) {}
 
     public async doHealthcheck(): Promise<DoHealthcheckResponse> {
-        await this.dataSource.manager.save(HealthcheckEntity, {})
+        await this.dataSource.manager.save(HealthcheckEntity, {
+            message: "ok"
+        })
         return {
             message: "ok"
         }

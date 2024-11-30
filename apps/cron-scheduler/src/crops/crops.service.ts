@@ -16,7 +16,7 @@ export class CropsService {
     constructor(
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-        @InjectQueue(cropsTimeQueueConstants.NAME) private cropsQueue: Queue,
+        @InjectQueue(cropsTimeQueueConstants.name) private cropsQueue: Queue,
         private readonly dataSource: DataSource
     ) {}
 

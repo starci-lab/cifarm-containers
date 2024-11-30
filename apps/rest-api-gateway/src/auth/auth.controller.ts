@@ -26,7 +26,7 @@ import {
 export class AuthController implements OnModuleInit {
     private readonly logger = new Logger(AuthController.name)
 
-    constructor(@Inject(authGrpcConstants.NAME) private client: ClientGrpc) {}
+    constructor(@Inject(authGrpcConstants.name) private client: ClientGrpc) {}
 
     private authService: IAuthService
     onModuleInit() {

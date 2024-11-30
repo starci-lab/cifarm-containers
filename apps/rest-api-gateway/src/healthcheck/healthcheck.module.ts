@@ -7,13 +7,13 @@ import { HealthcheckController } from "./healthcheck.controller"
     imports: [
         ClientsModule.registerAsync([
             {
-                name: healthcheckGrpcConstants.NAME,
+                name: healthcheckGrpcConstants.name,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
                         url: "0.0.0.0:3002",
-                        package: healthcheckGrpcConstants.PACKAGE,
-                        protoPath: healthcheckGrpcConstants.PROTO_PATH
+                        package: healthcheckGrpcConstants.package,
+                        protoPath: healthcheckGrpcConstants.protoPath
                     }
                 })
             }

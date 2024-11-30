@@ -9,24 +9,24 @@ import { GameplayController } from "./gameplay.controller"
     imports: [
         ClientsModule.registerAsync([
             {
-                name: healthcheckGrpcConstants.NAME,
+                name: healthcheckGrpcConstants.name,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
                         url: "0.0.0.0:3002",
-                        package: healthcheckGrpcConstants.PACKAGE,
-                        protoPath: healthcheckGrpcConstants.PROTO_PATH
+                        package: healthcheckGrpcConstants.package,
+                        protoPath: healthcheckGrpcConstants.protoPath
                     }
                 })
             },
             {
-                name: gameplayGrpcConstants.NAME,
+                name: gameplayGrpcConstants.name,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
                         url: `${envConfig().containers.gameplayService.host}:${envConfig().containers.gameplayService.port}`,
-                        package: gameplayGrpcConstants.PACKAGE,
-                        protoPath: gameplayGrpcConstants.PROTO_PATH
+                        package: gameplayGrpcConstants.package,
+                        protoPath: gameplayGrpcConstants.protoPath
                     }
                 })
             }
