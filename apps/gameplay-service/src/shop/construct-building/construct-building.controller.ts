@@ -14,8 +14,7 @@ export class ConstructBuildingController {
     public async constructBuilding(
         @Body() request: ConstructBuildingRequest
     ): Promise<ConstructBuildingResponse> {
-        console.log("324342")
-        this.logger.log(`Received request to construct building: ${JSON.stringify(request)}`)
+        this.logger.debug(`Received request to construct building: ${JSON.stringify(request)}`)
         return await this.constructBuildingService.constructBuilding(request)
     }
 }

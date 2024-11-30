@@ -11,7 +11,7 @@ export class BuySuppliesController {
     constructor(private readonly buySupplyService: BuySuppliesService) {}
 
     @GrpcMethod(gameplayGrpcConstants.SERVICE, "BuySupplies")
-    public async buySupply(request: BuySuppliesRequest) {
+    public async buySupplies(request: BuySuppliesRequest) {
         this.logger.debug("BuySupplies called")
         return this.buySupplyService.buySupplies(request)
     }

@@ -60,6 +60,19 @@ export class ConstructBuildingService {
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
+            // Prepare placed item entity
+            const placedItem: DeepPartial<PlacedItemEntity> = {
+                userId: request.userId,
+                buildingInfo: {
+                    currentUpgrade: 1,
+                    occupancy: 0,
+                    buildingId: building.id
+                },
+                x: request.position.x,
+                y: request.position.y,
+                placedItemTypeId: placedItemType.id
+            }
+
             // Start transaction
             await queryRunner.startTransaction()
             try {
@@ -72,19 +85,6 @@ export class ConstructBuildingService {
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...goldsChanged
                 })
-
-                // Prepare placed item entity
-                const placedItem: DeepPartial<PlacedItemEntity> = {
-                    userId: request.userId,
-                    buildingInfo: {
-                        currentUpgrade: 1,
-                        occupancy: 0,
-                        buildingId: building.id
-                    },
-                    x: request.position.x,
-                    y: request.position.y,
-                    placedItemTypeId: placedItemType.id
-                }
 
                 // Save the placed item in the database
                 const savedBuilding = await queryRunner.manager.save(PlacedItemEntity, placedItem)

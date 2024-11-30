@@ -47,6 +47,32 @@ export class BuySuppliesService {
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
+            // Get inventory type
+            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+                where: { supplyId: request.supplyId }
+            })
+
+            // Get inventory same type
+            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
+                where: {
+                    userId: request.userId,
+                    inventoryType: {
+                        supplyId: request.supplyId
+                    }
+                },
+                relations: {
+                    inventoryType: true
+                }
+            })
+            const updatedInventories = this.inventoryService.add({
+                entities: existingInventories,
+                userId: request.userId,
+                data: {
+                    inventoryType: inventoryType,
+                    quantity: request.quantity
+                }
+            })
+
             // Start transaction
             await queryRunner.startTransaction()
 
@@ -59,32 +85,6 @@ export class BuySuppliesService {
 
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...goldsChanged
-                })
-
-                // Get inventory type
-                const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                    where: { supplyId: request.supplyId }
-                })
-
-                // Get inventory same type
-                const existingInventories = await queryRunner.manager.find(InventoryEntity, {
-                    where: {
-                        userId: request.userId,
-                        inventoryType: {
-                            supplyId: request.supplyId
-                        }
-                    },
-                    relations: {
-                        inventoryType: true
-                    }
-                })
-                const updatedInventories = this.inventoryService.add({
-                    entities: existingInventories,
-                    userId: request.userId,
-                    data: {
-                        inventoryType: inventoryType,
-                        quantity: request.quantity
-                    }
                 })
 
                 // Save inventory
