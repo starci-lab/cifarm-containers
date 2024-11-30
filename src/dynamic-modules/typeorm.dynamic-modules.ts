@@ -26,7 +26,7 @@ import {
     HealthcheckEntity
 } from "@src/database"
 
-export enum DbType {
+export enum TypeOrmDbType {
     Main,
     Test
 }
@@ -42,16 +42,16 @@ export interface TypeORMConfig {
 
 export const TEST_NAME = "test"
 
-export const typeOrmForRoot = (type: DbType = DbType.Main): DynamicModule => {
-    const map: Record<DbType, TypeORMConfig> = {
-        [DbType.Main]: {
+export const typeOrmForRoot = (type: TypeOrmDbType = TypeOrmDbType.Main): DynamicModule => {
+    const map: Record<TypeOrmDbType, TypeORMConfig> = {
+        [TypeOrmDbType.Main]: {
             host: envConfig().database.postgres.gameplay.main.host,
             port: envConfig().database.postgres.gameplay.main.port,
             username: envConfig().database.postgres.gameplay.main.user,
             password: envConfig().database.postgres.gameplay.main.pass,
             database: envConfig().database.postgres.gameplay.main.dbName,
         },
-        [DbType.Test]: {
+        [TypeOrmDbType.Test]: {
             host: envConfig().database.postgres.gameplay.test.host,
             port: envConfig().database.postgres.gameplay.test.port,
             username: envConfig().database.postgres.gameplay.test.user,
@@ -70,10 +70,10 @@ export const typeOrmForRoot = (type: DbType = DbType.Main): DynamicModule => {
     })
 }
 
-export const typeOrmForFeature = (type: DbType = DbType.Main): DynamicModule => {
-    const map: Record<DbType, string> = {
-        [DbType.Main]: undefined,
-        [DbType.Test]: TEST_NAME
+export const typeOrmForFeature = (type: TypeOrmDbType = TypeOrmDbType.Main): DynamicModule => {
+    const map: Record<TypeOrmDbType, string> = {
+        [TypeOrmDbType.Main]: undefined,
+        [TypeOrmDbType.Test]: TEST_NAME
     }
 
     return TypeOrmModule.forFeature(
