@@ -1,12 +1,15 @@
 import { InjectQueue } from "@nestjs/bullmq"
 import { Injectable, Logger } from "@nestjs/common"
-import { Cron, CronExpression } from "@nestjs/schedule"
+import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
-import { DeliveryJobData, UserWithDeliveringProducts } from "./delivery.dto"
+import { DeliveryJobData } from "./delivery.dto"
 import { DeliveringProductEntity } from "@src/database"
 import { bullConfig, BullQueueName } from "@src/config"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+dayjs.extend(utc)
 
 @Injectable()
 export class DeliveryService {
@@ -18,62 +21,64 @@ export class DeliveryService {
     ) {}
     
 
-    // @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
-    @Cron("*/1 * * * * *")
-    async handle() {
+    @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
+    public async handle() {
+        const utcNow = dayjs().utc()
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
-        let userGroups: Array<UserWithDeliveringProducts> = []
-
         try {
             this.logger.debug("Fetching distinct users with delivering products.")
 
-            const rawUserGroups = await queryRunner.manager
-                .createQueryBuilder(DeliveringProductEntity, "deliveringProduct")
-                .select("count(deliveringProduct.id)")
-                .groupBy("deliveringProduct.userId")
-                .getRawMany()
-
-            userGroups = rawUserGroups.map((raw) => ({
-                userId: raw.userId,
-                deliveringProducts: raw.deliveringProducts,
-            }))
+            const { count } = await queryRunner.manager
+                .createQueryBuilder()
+                .select("user_id")
+                .from(DeliveringProductEntity, "delivering_products")
+                .groupBy("user_id")
+                .having("COUNT(id) > 0")
+                .getRawOne()
             
-            this.logger.debug(`Found ${userGroups.length} users with delivering products.`)
+            const batchSize = bullConfig[BullQueueName.Animal].batchSize
+            const batchCount = Math.ceil(count / batchSize)
 
-            if (userGroups.length === 0) {
-                this.logger.verbose("No users with delivering products to process.")
-                return 
+            const promises: Array<Promise<void>> = []
+            const batches: Array<{
+                name: string
+                data: DeliveryJobData
+            }> = []
+
+            for (let i = 0; i < batchCount; i++) {
+                promises.push(
+                    (async () => {
+                        const skip = i * batchSize
+                        const take = Math.min((i + 1) * batchSize, count)
+
+                        const rawUserIds = await queryRunner.manager
+                            .createQueryBuilder()
+                            .select("user_id")
+                            .from(DeliveringProductEntity, "delivering_products")
+                            .groupBy("user_id")
+                            .having("COUNT(id) > 0")
+                            .skip(skip)
+                            .take(take)
+                            .getRawMany()   
+                        batches.push({
+                            name: v4(),
+                            data: {
+                                userIds: rawUserIds.map((rawUserId) => rawUserId.user_id),
+                                utcTime: utcNow.valueOf()
+                            }
+                        })
+                    })()
+                )
             }
+            await Promise.all(promises)
 
+            this.logger.verbose(`Adding ${batches.length} batches to the queue`)
+            await this.deliveryQueue.addBulk(batches)
         } finally {
             await queryRunner.release()
         }
-
-
-
-        //split into 1000 per batch
-        const batchSize = bullConfig[BullQueueName.Delivery].batchSize
-        const batchCount = Math.ceil(userGroups.length / batchSize)
-
-        // Create batches
-        const batches: Array<{
-            name: string
-            data: DeliveryJobData
-        }> = Array.from({ length: batchCount }, (_, i) => ({
-            name: v4(),
-            data: {
-                users: userGroups.slice(i * batchSize, Math.min((i + 1) * batchSize, userGroups.length))
-            }
-        }))
-        this.logger.verbose(`Adding ${batches.length} batches to the queue.`)
-
-        const jobs = await this.deliveryQueue.addBulk(batches)
-
-        this.logger.verbose(
-            `Successfully added ${jobs.length} jobs to the queue. First job ID: ${jobs[0]?.name}`
-        )
     }
 }
