@@ -1,4 +1,3 @@
-import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
 import {
     Body,
     Controller,
@@ -37,7 +36,7 @@ import { User } from "@src/decorators"
 import { RestJwtAuthGuard } from "@src/guards"
 import { UserLike } from "@src/services"
 import { lastValueFrom } from "rxjs"
-import { IGameplayService } from "./gameplay.service"
+import { IGameplayService } from "@apps/gameplay-service"
 import { grpcConfig } from "@src/config"
 
 @ApiTags("Gameplay")
@@ -46,7 +45,6 @@ export class GameplayController implements OnModuleInit {
     private readonly logger = new Logger(GameplayController.name)
 
     constructor(
-        @Inject(healthcheckGrpcConstants.name) private healthCheckServiceClient: ClientGrpc,
         @Inject(grpcConfig.gameplay.name) private gameplayServiceClient: ClientGrpc
     ) {}
 

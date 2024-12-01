@@ -1,4 +1,3 @@
-import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { envConfig, grpcConfig } from "@src/config"
@@ -7,17 +6,6 @@ import { GameplayController } from "./gameplay.controller"
 @Module({
     imports: [
         ClientsModule.registerAsync([
-            {
-                name: healthcheckGrpcConstants.name,
-                useFactory: async () => ({
-                    transport: Transport.GRPC,
-                    options: {
-                        url: "0.0.0.0:3002",
-                        package: healthcheckGrpcConstants.package,
-                        protoPath: healthcheckGrpcConstants.protoPath
-                    }
-                })
-            },
             {
                 name: grpcConfig.gameplay.name,
                 useFactory: async () => ({
