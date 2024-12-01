@@ -118,9 +118,9 @@ export class UseFertilizerTransactionFailedException extends GrpcPermissionDenie
     }
 }
 
-export class PlacedItemNotNeedFeedingException extends GrpcNotFoundException {
+export class PlacedItemAnimalNotNeedFeedingException extends GrpcNotFoundException {
     constructor(id: string) {
-        super(`Placed item not need feeding: ${id}`)
+        super(`Placed item animal not need feeding: ${id}`)
     }
 }
 

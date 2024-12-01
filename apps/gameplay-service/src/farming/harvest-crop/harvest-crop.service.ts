@@ -68,7 +68,6 @@ export class HarvestCropService {
                 required: energyConsume
             })
 
-            await queryRunner.startTransaction()
             // substract energy
             const energyChanges = this.energyService.substract({
                 entity: user,
@@ -77,12 +76,6 @@ export class HarvestCropService {
             const experiencesChanges = this.levelService.addExperiences({
                 entity: user,
                 experiences: experiencesGain
-            })
-
-            // update user
-            await queryRunner.manager.update(UserEntity, user.id, {
-                ...energyChanges,
-                ...experiencesChanges
             })
 
             //get corresponding inventory type
@@ -119,6 +112,14 @@ export class HarvestCropService {
                     inventoryTypeId: inventoryType.id,
                     quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
                 }
+            })
+
+            await queryRunner.startTransaction()
+            
+            // update user
+            await queryRunner.manager.update(UserEntity, user.id, {
+                ...energyChanges,
+                ...experiencesChanges
             })
 
             await queryRunner.manager.save(InventoryEntity, updatedInventories)

@@ -74,7 +74,6 @@ export class PlantSeedService {
                 required: energyConsume
             })
 
-            await queryRunner.startTransaction()
             const energyChanges = this.energyService.substract({
                 entity: user,
                 energy: energyConsume
@@ -84,17 +83,12 @@ export class PlantSeedService {
                 experiences: experiencesGain
             })
 
-            // update user
-            await queryRunner.manager.update(UserEntity, user.id, {
-                ...energyChanges,
-                ...experiencesChanges
-            })
-
             // update inventory
             const updatedInventory = this.inventoryService.remove({
                 entity: inventory,
                 quantity: 1
             })
+
             if (this.inventoryService.checkDelete({ entity: updatedInventory })) {
                 await queryRunner.manager.remove(InventoryEntity, updatedInventory)
             } else {
@@ -106,18 +100,27 @@ export class PlantSeedService {
                 where: { id: inventory.inventoryType.cropId }
             })
 
-            // create seed growth info
-            await queryRunner.manager.save(SeedGrowthInfoEntity, {
-                placedItemId: placedItemTile.id,
-                harvestQuantityRemaining: crop.maxHarvestQuantity
-            })
+            await queryRunner.startTransaction()
+            try {
+            // update user
+                await queryRunner.manager.update(UserEntity, user.id, {
+                    ...energyChanges,
+                    ...experiencesChanges
+                })
+           
+                // create seed growth info
+                await queryRunner.manager.save(SeedGrowthInfoEntity, {
+                    placedItemId: placedItemTile.id,
+                    harvestQuantityRemaining: crop.maxHarvestQuantity
+                })
 
-            await queryRunner.commitTransaction()
+                await queryRunner.commitTransaction()
+            } catch (error) {
+                this.logger.error("Plant seed transaction failed, rolling back...", error)
+                await queryRunner.rollbackTransaction()
+                throw new WaterTransactionFailedException(error)
+            }
             return {}
-        } catch (error) {
-            this.logger.error("Plant seed transaction failed, rolling back...", error)
-            await queryRunner.rollbackTransaction()
-            throw new WaterTransactionFailedException(error)
         } finally {
             await queryRunner.release()
         }
