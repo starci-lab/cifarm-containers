@@ -43,7 +43,7 @@ export class CropWorker extends WorkerHost {
                 skip,
                 take,
                 order: {
-                    createdAt: "ASC"
+                    updatedAt: "ASC"
                 }
             })
             const system = await queryRunner.manager.findOne(SystemEntity, {
