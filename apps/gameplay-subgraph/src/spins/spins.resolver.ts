@@ -11,9 +11,17 @@ export class SpinsResolver {
     constructor(private readonly spinsService: SpinsService) {}
 
     @Query(() => [SpinSlotEntity], {
-        name: "spins"
+        name: "spin_slots"
     })
     async getSpins(@Args("args") args: GetSpinsArgs): Promise<Array<SpinSlotEntity>> {
         return this.spinsService.getSpins(args)
+    }
+
+    @Query(() => SpinSlotEntity, {
+        name: "spin_slot"
+    })
+    async getSpinSlotById(@Args("id") id: string): Promise<SpinSlotEntity | null> {
+        this.logger.debug(`getSpinSlotById: id=${id}`)
+        return this.spinsService.getSpinSlotById(id)
     }
 }

@@ -24,14 +24,14 @@ import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
 import { UsersModule } from "./users"
-
+import { AnimalInfoThievedByUsersModule } from "./animal-info-thieved-by-users"
 @Module({
     imports: [
         configForRoot(),
         typeOrmForRoot(),
         cacheRegisterAsync(),
         graphqlGameplaySubgraphForRoot(),
-        //AnimalInfoThievedByUsersModule,
+        AnimalInfoThievedByUsersModule,
         AnimalInfosModule,
         AnimalsModule,
         BuildingInfosModule,

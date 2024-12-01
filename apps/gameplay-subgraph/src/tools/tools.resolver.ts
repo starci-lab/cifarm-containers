@@ -19,4 +19,12 @@ export class ToolsResolver {
         this.logger.debug(`getTools: args=${JSON.stringify(args)}`)
         return this.toolsService.getTools(args)
     }
+
+    @Query(() => ToolEntity, {
+        name: "tool"
+    })
+    async getToolById(@Args("id") id: string): Promise<ToolEntity | null> {
+        this.logger.debug(`getToolById: id=${id}`)
+        return this.toolsService.getToolById(id)
+    }
 }

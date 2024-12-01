@@ -1,11 +1,15 @@
-import { GetTilesArgs } from "./"
 import { Injectable, Logger } from "@nestjs/common"
-import { TileEntity } from "@src/database"
 import { DataSource } from "typeorm"
+import { GetTilesArgs } from "./"
+import { TileEntity } from "@src/database"
 
 @Injectable()
 export class TilesService {
     private readonly logger = new Logger(TilesService.name)
+
+    private readonly relations = {
+        // Add relations here as needed
+    }
 
     constructor(private readonly dataSource: DataSource) {}
 
@@ -14,11 +18,27 @@ export class TilesService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const tiles = await queryRunner.manager.find(TileEntity,{
+            const tiles = await queryRunner.manager.find(TileEntity, {
                 take: limit,
-                skip: offset
+                skip: offset,
+                relations: this.relations
             })
             return tiles
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    async getTileById(id: string): Promise<TileEntity | null> {
+        this.logger.debug(`GetTileById: id=${id}`)
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const tile = await queryRunner.manager.findOne(TileEntity, {
+                where: { id },
+                relations: this.relations
+            })
+            return tile
         } finally {
             await queryRunner.release()
         }

@@ -18,4 +18,12 @@ export class PlacedItemsResolver {
     async getPlacedItems(@Args("args") args: GetPlacedItemsArgs): Promise<Array<PlacedItemEntity>> {
         return this.placeditemsService.getPlacedItems(args)
     }
+
+    @Query(() => PlacedItemEntity, {
+        name: "placeditem"
+    })
+    async getPlacedItemById(@Args("id") id: string): Promise<PlacedItemEntity> {
+        this.logger.debug(`getPlacedItemById: id=${id}`)
+        return this.placeditemsService.getPlacedItemById(id)
+    }
 }

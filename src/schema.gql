@@ -256,35 +256,37 @@ type ToolEntity {
 }
 
 type Query {
-  animals(args: GetAnimalsArgs!): [AnimalEntity!]!
-  animal_infos(args: GetAnimalInfosArgs!): [AnimalInfoEntity!]!
+  animals(id: String!): AnimalEntity!
+  animal_infos(id: String!): AnimalInfoEntity!
   buildings(args: GetBuildingsArgs!): [BuildingEntity!]!
+  building(id: String!): BuildingEntity!
   building_infos(args: GetBuildingInfosArgs!): [BuildingInfoEntity!]!
+  building_info(id: String!): BuildingInfoEntity!
   crops(args: GetCropsArgs!): [CropEntity!]!
+  crop(id: String!): CropEntity!
   daily_rewards(args: GetDailyRewardsArgs!): [DailyRewardEntity!]!
   inventories(args: GetInventoriesArgs!): [InventoryEntity!]!
+  inventory(id: String!): InventoryEntity!
   inventory_types(args: GetInventoryTypesArgs!): [InventoryTypeEntity!]!
+  inventory_type(id: String!): InventoryTypeEntity!
   placed_item_types(args: GetPlacedItemTypesArgs!): [PlacedItemTypeEntity!]!
+  placed_item_type(id: String!): PlacedItemTypeEntity!
   placeditems(args: GetPlacedItemsArgs!): [PlacedItemEntity!]!
+  placeditem(id: String!): PlacedItemEntity!
   products(args: GetProductsArgs!): [ProductEntity!]!
+  product(id: String!): ProductEntity!
   seed_growth_infos(id: String!): SeedGrowthInfoEntity!
-  spins(args: GetSpinsArgs!): [SpinSlotEntity!]!
+  spin_slots(args: GetSpinsArgs!): [SpinSlotEntity!]!
+  spin_slot(id: String!): SpinSlotEntity!
   supplies(args: GetSuppliesArgs!): [SupplyEntity!]!
   systems(args: GetSystemsArgs!): [SystemEntity!]!
   tiles(args: GetTilesArgs!): [TileEntity!]!
   tools(args: GetToolsArgs!): [ToolEntity!]!
+  tool(id: String!): ToolEntity!
   upgrades(args: GetUpgradesArgs!): [UpgradeEntity!]!
+  upgrade(id: String!): UpgradeEntity!
   users(args: GetUsersArgs!): [UserEntity!]!
-}
-
-input GetAnimalsArgs {
-  limit: Int = 10
-  offset: Int = 0
-}
-
-input GetAnimalInfosArgs {
-  limit: Int = 10
-  offset: Int = 0
+  user(id: String!): UserEntity!
 }
 
 input GetBuildingsArgs {

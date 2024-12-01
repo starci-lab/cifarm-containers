@@ -5,7 +5,14 @@ import { DataSource } from "typeorm"
 
 @Injectable()
 export class AnimalInfosService {
+   
     private readonly logger = new Logger(AnimalInfosService.name)
+
+    private readonly relations = {
+        animal: true,
+        placedItem: true,
+        thiefedBy: true,
+    }
 
     constructor(private readonly dataSource: DataSource) {}
 
@@ -22,13 +29,25 @@ export class AnimalInfosService {
             animalInfos = await queryRunner.manager.find(AnimalInfoEntity, {
                 take: limit,
                 skip: offset,
-                relations: {
-                    animal: true,
-                    placedItem: true,
-                    thiefedBy: true,
-                }
+                relations: this.relations
             })
             return animalInfos
+        } finally {
+            await queryRunner.release()
+        }
+    }
+    async getAnimalInfoById(id: string) {
+        this.logger.debug(`GetAnimalInfos: id=${id}`)
+
+        let animalInfo: AnimalInfoEntity
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            animalInfo = await queryRunner.manager.findOne(AnimalInfoEntity, {
+                where: { id },
+                relations:this.relations
+            })
+            return animalInfo
         } finally {
             await queryRunner.release()
         }

@@ -15,17 +15,29 @@ export class DailyRewardsService {
     }: GetDailyRewardsArgs): Promise<Array<DailyRewardEntity>> {
         this.logger.debug(`GetDailyRewards: limit=${limit}, offset=${offset}`)
 
-        let dailyRewards: Array<DailyRewardEntity>
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            dailyRewards = await queryRunner.manager.find(DailyRewardEntity, {
+            return await queryRunner.manager.find(DailyRewardEntity, {
                 take: limit,
                 skip: offset,
-                relations: {
-                }
+                relations: {}
             })
-            return dailyRewards
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    async getDailyRewardById(id: string): Promise<DailyRewardEntity> {
+        this.logger.debug(`GetDailyRewardById: id=${id}`)
+
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            return await queryRunner.manager.findOne(DailyRewardEntity, {
+                where: { id },
+                relations: {}
+            })
         } finally {
             await queryRunner.release()
         }

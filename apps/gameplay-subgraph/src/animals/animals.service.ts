@@ -5,7 +5,14 @@ import { GetAnimalsArgs } from "./"
 
 @Injectable()
 export class AnimalsService {
+    
     private readonly logger = new Logger(AnimalsService.name)
+
+    private readonly relations = {
+        product: true,
+        inventoryType: true,
+        placedItemType: true,
+    }
 
     constructor(private readonly dataSource: DataSource) {}
 
@@ -19,15 +26,29 @@ export class AnimalsService {
             animals = await queryRunner.manager.find(AnimalEntity, {
                 take: limit,
                 skip: offset,
-                relations: {
-                    product: true,
-                    inventoryType: true,
-                    placedItemType: true,
-                }
+                relations: this.relations
             })
         } finally {
             await queryRunner.release()
         }
         return animals
+    }
+    async getAnimalById(id: string) {
+        this.logger.debug(`GetAnimals: id=${id}`)
+
+        let animal: AnimalEntity
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            animal = await queryRunner.manager.findOne(AnimalEntity, {
+                where: {
+                    id
+                },
+                relations: this.relations
+            })
+        } finally {
+            await queryRunner.release()
+        }
+        return animal
     }
 }

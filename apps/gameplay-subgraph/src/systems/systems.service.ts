@@ -7,6 +7,10 @@ import { SystemEntity } from "@src/database"
 export class SystemsService {
     private readonly logger = new Logger(SystemsService.name)
 
+    private readonly relations = {
+        // Add relations here as needed, e.g., related entities
+    }
+
     constructor(private readonly dataSource: DataSource) {}
 
     async getSystems({ limit = 10, offset = 0 }: GetSystemsArgs): Promise<Array<SystemEntity>> {
@@ -16,13 +20,29 @@ export class SystemsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            systems = await queryRunner.manager.find(SystemEntity,{
+            systems = await queryRunner.manager.find(SystemEntity, {
                 take: limit,
-                skip: offset
+                skip: offset,
+                relations: this.relations
             })
         } finally {
             await queryRunner.release()
         }
         return systems
+    }
+
+    async getSystemById(id: string): Promise<SystemEntity | null> {
+        this.logger.debug(`GetSystemById: id=${id}`)
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const system = await queryRunner.manager.findOne(SystemEntity, {
+                where: { id },
+                relations: this.relations
+            })
+            return system
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

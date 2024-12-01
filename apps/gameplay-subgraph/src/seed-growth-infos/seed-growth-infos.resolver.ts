@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common"
+import { Logger, ParseUUIDPipe, UsePipes } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
 import { SeedGrowthInfoEntity } from "@src/database"
 import { GetSeedGrowthInfosArgs } from "./"
@@ -21,6 +21,7 @@ export class SeedGrowthInfosResolver {
     @Query(() => SeedGrowthInfoEntity, {
         name: "seed_growth_infos"
     })
+    @UsePipes(ParseUUIDPipe)
     async getSeedGrowthInfoByID(
         @Args("id") id: string 
     ): Promise<SeedGrowthInfoEntity> {

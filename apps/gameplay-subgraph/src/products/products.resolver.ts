@@ -9,11 +9,20 @@ export class ProductResolver {
     private readonly logger = new Logger(ProductResolver.name)
 
     constructor(private readonly productsService: ProductService) {}
+
     @Query(() => [ProductEntity], {
         name: "products"
     })
     async getProducts(@Args("args") args: GetProductsArgs): Promise<Array<ProductEntity>> {
         this.logger.debug(`getProducts: args=${JSON.stringify(args)}`)
         return this.productsService.getProducts(args)
+    }
+
+    @Query(() => ProductEntity, {
+        name: "product"
+    })
+    async getProductById(@Args("id") id: string): Promise<ProductEntity | null> {
+        this.logger.debug(`getProductById: id=${id}`)
+        return this.productsService.getProductById(id)
     }
 }

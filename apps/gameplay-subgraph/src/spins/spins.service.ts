@@ -1,18 +1,18 @@
-import { Injectable, Logger, Inject } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { SpinSlotEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import { GetSpinsArgs } from "./"
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Cache } from "cache-manager"
 
 @Injectable()
 export class SpinsService {
     private readonly logger = new Logger(SpinsService.name)
 
+    private readonly relations = {
+        spinPrize: true,
+    }
+
     constructor(
         private readonly dataSource: DataSource,
-        @Inject(CACHE_MANAGER)
-        private cacheManager: Cache
     ) {}
 
     async getSpins({ limit = 10, offset = 0 }: GetSpinsArgs): Promise<Array<SpinSlotEntity>> {
@@ -22,16 +22,29 @@ export class SpinsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            spins = await queryRunner.manager.find(SpinSlotEntity,{
+            spins = await queryRunner.manager.find(SpinSlotEntity, {
                 take: limit,
                 skip: offset,
-                relations: {
-                    spinPrize: true,
-                }
+                relations: this.relations
             })
         } finally {
             await queryRunner.release()
         }
         return spins
+    }
+
+    async getSpinSlotById(id: string): Promise<SpinSlotEntity | null> {
+        this.logger.debug(`GetSpinSlotById: id=${id}`)
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const spinSlot = await queryRunner.manager.findOne(SpinSlotEntity, {
+                where: { id },
+                relations: this.relations
+            })
+            return spinSlot
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

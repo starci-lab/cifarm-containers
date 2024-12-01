@@ -10,6 +10,7 @@ export class InventoryTypeResolver {
     private readonly logger = new Logger(InventoryTypeResolver.name)
 
     constructor(private readonly inventoryTypesService: InventoryTypeService) {}
+
     @Query(() => [InventoryTypeEntity], {
         name: "inventory_types"
     })
@@ -19,5 +20,13 @@ export class InventoryTypeResolver {
     ): Promise<Array<InventoryTypeEntity>> {
         this.logger.debug(`getInventoryTypes: args=${JSON.stringify(args)}`)
         return this.inventoryTypesService.getInventoryTypes(args)
+    }
+
+    @Query(() => InventoryTypeEntity, {
+        name: "inventory_type"
+    })
+    async getInventoryTypeById(@Args("id") id: string): Promise<InventoryTypeEntity> {
+        this.logger.debug(`getInventoryTypeById: id=${id}`)
+        return this.inventoryTypesService.getInventoryTypeById(id)
     }
 }

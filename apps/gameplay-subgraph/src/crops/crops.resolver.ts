@@ -4,6 +4,7 @@ import { CropsService } from "./crops.service"
 import { CropEntity } from "@src/database"
 import { GetCropsArgs } from "./"
 import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
+
 @Resolver()
 export class CropsResolver {
     private readonly logger = new Logger(CropsResolver.name)
@@ -17,5 +18,14 @@ export class CropsResolver {
     async getCrops(@Args("args") args: GetCropsArgs): Promise<Array<CropEntity>> {
         this.logger.debug(`getCrops: args=${JSON.stringify(args)}`)
         return this.cropsService.getCrops(args)
+    }
+
+    @Query(() => CropEntity, {
+        name: "crop"
+    })
+    @UseInterceptors(GraphQLCacheInterceptor)
+    async getCropById(@Args("id") id: string): Promise<CropEntity> {
+        this.logger.debug(`getCropById: id=${id}`)
+        return this.cropsService.getCropById(id)
     }
 }

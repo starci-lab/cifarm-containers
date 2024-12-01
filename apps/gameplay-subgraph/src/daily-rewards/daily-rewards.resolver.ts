@@ -18,4 +18,12 @@ export class DailyRewardsResolver {
     ): Promise<Array<DailyRewardEntity>> {
         return this.dailyRewardsService.getDailyRewards(args)
     }
+
+    @Query(() => DailyRewardEntity, {
+        name: "daily_reward"
+    })
+    async getDailyRewardById(@Args("id") id: string): Promise<DailyRewardEntity> {
+        this.logger.debug(`getDailyRewardById: id=${id}`)
+        return this.dailyRewardsService.getDailyRewardById(id)
+    }
 }

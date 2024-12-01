@@ -12,11 +12,10 @@ export class CropsService {
     async getCrops({ limit = 10, offset = 0 }: GetCropsArgs): Promise<Array<CropEntity>> {
         this.logger.debug(`GetCrops: limit=${limit}, offset=${offset}`)
 
-        let crops: Array<CropEntity>
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            crops = await queryRunner.manager.find(CropEntity, {
+            return await queryRunner.manager.find(CropEntity, {
                 take: limit,
                 skip: offset,
                 relations: {
@@ -27,6 +26,23 @@ export class CropsService {
         } finally {
             await queryRunner.release()
         }
-        return crops
+    }
+
+    async getCropById(id: string): Promise<CropEntity> {
+        this.logger.debug(`GetCropById: id=${id}`)
+
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            return await queryRunner.manager.findOne(CropEntity, {
+                where: { id },
+                relations: {
+                    inventoryType: true,
+                    product: true,
+                }
+            })
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

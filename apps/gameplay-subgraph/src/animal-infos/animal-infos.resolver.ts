@@ -13,9 +13,15 @@ export class AnimalInfosResolver {
     @Query(() => [AnimalInfoEntity], {
         name: "animal_infos"
     })
-    // @UseInterceptors(TimerInterceptor, GraphQLCacheInterceptor)
     async getAnimalInfos(@Args("args") args: GetAnimalInfosArgs): Promise<Array<AnimalInfoEntity>> {
         const result = await this.animalInfosService.getAnimalInfos(args)
+        return result
+    }
+    @Query(() => AnimalInfoEntity, {
+        name: "animal_infos"
+    })
+    async getAnimalInfoById(@Args("id") id: string): Promise<AnimalInfoEntity> {
+        const result = await this.animalInfosService.getAnimalInfoById(id)
         return result
     }
 }

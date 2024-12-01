@@ -18,4 +18,12 @@ export class TilesResolver {
     async getTiles(@Args("args") args: GetTilesArgs): Promise<Array<TileEntity>> {
         return this.tilesService.getTiles(args)
     }
+
+    @Query(() => TileEntity, {
+        name: "tile"
+    })
+    async getTileById(@Args("id") id: string): Promise<TileEntity | null> {
+        this.logger.debug(`getTileById: id=${id}`)
+        return this.tilesService.getTileById(id)
+    }
 }

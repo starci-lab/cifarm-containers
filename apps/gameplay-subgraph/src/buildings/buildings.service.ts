@@ -7,6 +7,11 @@ import { GetBuildingsArgs } from "./"
 export class BuildingsService {
     private readonly logger = new Logger(BuildingsService.name)
 
+    private readonly relations = {
+        placedItemType: true,
+        upgrades: true
+    }
+
     constructor(private readonly dataSource: DataSource) {}
 
     async getBuildings({
@@ -15,21 +20,31 @@ export class BuildingsService {
     }: GetBuildingsArgs): Promise<Array<BuildingEntity>> {
         this.logger.debug(`GetBuildings: limit=${limit}, offset=${offset}`)
 
-        let buildings: Array<BuildingEntity>
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            buildings = await queryRunner.manager.find(BuildingEntity, {
+            return await queryRunner.manager.find(BuildingEntity, {
                 take: limit,
                 skip: offset,
-                relations: {
-                    placedItemType: true,
-                    upgrades: true
-                }
+                relations: this.relations
             })
         } finally {
             await queryRunner.release()
         }
-        return buildings
+    }
+
+    async getBuildingById(id: string): Promise<BuildingEntity> {
+        this.logger.debug(`GetBuildingById: id=${id}`)
+
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            return await queryRunner.manager.findOne(BuildingEntity, {
+                where: { id },
+                relations: this.relations
+            })
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

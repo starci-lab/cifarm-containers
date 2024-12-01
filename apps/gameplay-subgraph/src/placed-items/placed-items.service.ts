@@ -7,6 +7,15 @@ import { DataSource } from "typeorm"
 export class PlacedItemsService {
     private readonly logger = new Logger(PlacedItemsService.name)
 
+    private readonly relations = {
+        parent: true,
+        placedItemType: true,
+        seedGrowthInfo: true,
+        animalInfo: true,
+        buildingInfo: true,
+        placedItems: true,
+    }
+
     constructor(private readonly dataSource: DataSource) {}
 
     async getPlacedItems({
@@ -20,16 +29,23 @@ export class PlacedItemsService {
             const placedItems = await queryRunner.manager.find(PlacedItemEntity, {
                 take: limit,
                 skip: offset,
-                relations: {
-                    parent: true,
-                    placedItemType: true,
-                    seedGrowthInfo: true,
-                    animalInfo: true,
-                    buildingInfo: true,
-                    placedItems: true,
-                }
+                relations: this.relations
             })
             return placedItems
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    async getPlacedItemById(id: string): Promise<PlacedItemEntity> {
+        this.logger.debug(`GetPlacedItemById: id=${id}`)
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            return await queryRunner.manager.findOne(PlacedItemEntity, {
+                where: { id },
+                relations: this.relations
+            })
         } finally {
             await queryRunner.release()
         }
