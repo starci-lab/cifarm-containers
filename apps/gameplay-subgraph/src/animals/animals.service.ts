@@ -33,6 +33,7 @@ export class AnimalsService {
         }
         return animals
     }
+
     async getAnimalById(id: string) {
         this.logger.debug(`GetAnimals: id=${id}`)
 

@@ -24,6 +24,7 @@ export class ToolsResolver {
         name: "tool",
         nullable:true
     })
+    @UseInterceptors(GraphQLCacheInterceptor)
     async getToolById(@Args("id") id: string): Promise<ToolEntity | null> {
         this.logger.debug(`getToolById: id=${id}`)
         return this.toolsService.getToolById(id)

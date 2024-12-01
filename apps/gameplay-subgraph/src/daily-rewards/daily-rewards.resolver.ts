@@ -19,10 +19,10 @@ export class DailyRewardsResolver {
         return this.dailyRewardsService.getDailyRewards(args)
     }
 
-     @Query(() => DailyRewardEntity, {
-         name: "daily_reward",
-         nullable:true
-     })
+    @Query(() => DailyRewardEntity, {
+        name: "daily_reward",
+        nullable:true
+    })
     async getDailyRewardById(@Args("id") id: string): Promise<DailyRewardEntity> {
         this.logger.debug(`getDailyRewardById: id=${id}`)
         return this.dailyRewardsService.getDailyRewardById(id)

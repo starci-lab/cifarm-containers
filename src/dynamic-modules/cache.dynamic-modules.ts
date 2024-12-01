@@ -4,6 +4,7 @@ import { envConfig } from "@src/config"
 import { redisStore } from "cache-manager-redis-yet"
 
 export const cacheRegisterAsync = () : DynamicModule => {
+    const ttl = envConfig().redis.ttl
     return CacheModule.registerAsync({
         isGlobal: true,
         useFactory: async () => {
@@ -13,10 +14,9 @@ export const cacheRegisterAsync = () : DynamicModule => {
                     port: envConfig().database.redis.cache.port
                 }
             })
-
             return {
                 store: store as unknown as CacheStore,
-                ttl: 3 * 60000 // 3 minutes (milliseconds)
+                ttl: ttl + Math.random()*180000 // 3 minutes (milliseconds)
             }
         }
     })

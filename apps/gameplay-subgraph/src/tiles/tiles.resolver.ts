@@ -19,10 +19,11 @@ export class TilesResolver {
         return this.tilesService.getTiles(args)
     }
 
-     @Query(() => TileEntity, {
-         name: "tile",
-         nullable:true
-     })
+    @Query(() => TileEntity, {
+        name: "tile",
+        nullable:true
+    })
+    @UseInterceptors(GraphQLCacheInterceptor)
     async getTileById(@Args("id") id: string): Promise<TileEntity | null> {
         this.logger.debug(`getTileById: id=${id}`)
         return this.tilesService.getTileById(id)

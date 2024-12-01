@@ -20,10 +20,10 @@ export class CropsResolver {
         return this.cropsService.getCrops(args)
     }
 
-     @Query(() => CropEntity, {
-         name: "crop",
-         nullable:true
-     })
+    @Query(() => CropEntity, {
+        name: "crop",
+        nullable:true
+    })
     @UseInterceptors(GraphQLCacheInterceptor)
     async getCropById(@Args("id") id: string): Promise<CropEntity> {
         this.logger.debug(`getCropById: id=${id}`)

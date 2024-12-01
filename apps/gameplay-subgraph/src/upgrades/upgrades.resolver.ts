@@ -20,10 +20,11 @@ export class UpgradeResolver {
         return this.upgradesService.getUpgrades(args)
     }
 
-     @Query(() => UpgradeEntity, {
-         name: "upgrade",
-         nullable:true
-     })
+    @Query(() => UpgradeEntity, {
+        name: "upgrade",
+        nullable:true
+    })
+    @UseInterceptors(GraphQLCacheInterceptor)
     async getUpgradeById(@Args("id") id: string): Promise<UpgradeEntity | null> {
         this.logger.debug(`getUpgradeById: id=${id}`)
         return this.upgradesService.getUpgradeById(id)

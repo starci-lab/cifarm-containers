@@ -18,6 +18,7 @@ export class BuildingsResolver {
     ): Promise<Array<BuildingEntity>> {
         return this.buildingsService.getBuildings(args)
     }
+    
     @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => BuildingEntity, { name: "building" })
     async getBuildingById(
