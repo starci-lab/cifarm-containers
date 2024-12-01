@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalInfoEntity, InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity } from "@src/database"
+import { AnimalInfoEntity, InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity, ProductType } from "@src/database"
 import { AnimalNotCurrentlyYieldingException, PlacedItemAnimalNotFoundException } from "@src/exceptions"
 import { InventoryService } from "@src/services"
 import { DataSource } from "typeorm"
@@ -49,6 +49,7 @@ export class CollectAnimalProductService {
             const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
                 where: { product: 
                     {
+                        type: ProductType.Animal,
                         animalId: animalInfo.animalId
                     }, 
                 type: InventoryType.Product 
