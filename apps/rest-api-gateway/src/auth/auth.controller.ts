@@ -26,11 +26,11 @@ import {
 export class AuthController implements OnModuleInit {
     private readonly logger = new Logger(AuthController.name)
 
-    constructor(@Inject(grpcConfig.gameplay.name) private gameplayServiceClient: ClientGrpc) {}
+    constructor(@Inject(grpcConfig.gameplay.name) private grpcClient: ClientGrpc) {}
 
     private gameplayService: IGameplayService
     onModuleInit() {
-        this.gameplayService = this.gameplayServiceClient.getService<IGameplayService>(
+        this.gameplayService = this.grpcClient.getService<IGameplayService>(
             grpcConfig.gameplay.service
         )
     } 

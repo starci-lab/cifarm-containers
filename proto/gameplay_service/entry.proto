@@ -8,7 +8,7 @@ import "./claim/entry.proto";
 import "./auth/entry.proto";
 import "./community/entry.proto";
 
-package gameplay;
+package gameplay_service;
 
 service GameplayService {
     // Auth methods

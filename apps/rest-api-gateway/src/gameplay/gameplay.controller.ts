@@ -45,13 +45,13 @@ export class GameplayController implements OnModuleInit {
     private readonly logger = new Logger(GameplayController.name)
 
     constructor(
-        @Inject(grpcConfig.gameplay.name) private gameplayServiceClient: ClientGrpc
+        @Inject(grpcConfig.gameplay.name) private grpcClient: ClientGrpc
     ) {}
 
     private gameplayService: IGameplayService
 
     onModuleInit() {
-        this.gameplayService = this.gameplayServiceClient.getService<IGameplayService>(
+        this.gameplayService = this.grpcClient.getService<IGameplayService>(
             grpcConfig.gameplay.service
         )
     }

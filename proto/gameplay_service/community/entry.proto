@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package gameplay;
+package gameplay_service;
 
 import "./help_use_pesticide.proto";
 import "./help_water.proto";

@@ -53,5 +53,5 @@ import { UsersModule } from "./users"
         UpgradesModule,
         UsersModule
     ]
-})
+}) 
 export class AppModule {}

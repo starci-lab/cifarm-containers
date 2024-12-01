@@ -36,6 +36,15 @@ export class JwtService {
             return null
         }
     }
+
+    public async decodeToken(token: string): Promise<UserLike | null> {
+        try {
+            return this.jwtService.decode(token) as UserLike
+        } catch (ex) {
+            this.logger.error(ex)
+            return null
+        }
+    }
 }
 
 export type UserLike = Partial<UserEntity> & { id: string };

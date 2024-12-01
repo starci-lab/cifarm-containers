@@ -15,7 +15,7 @@ import { envConfig, grpcConfig } from "@src/config"
                         package: grpcConfig.gameplay.package,
                         protoPath: grpcConfig.gameplay.protoPath
                     }
-                })
+                })  
             }
         ])
     ],
