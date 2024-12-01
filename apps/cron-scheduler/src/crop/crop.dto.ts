@@ -3,12 +3,18 @@ import { IsInt } from "class-validator"
 
 export class CropJobData {
     @IsInt()
-    @ApiProperty({ example: 1, description: "From index" })
-        from: number
+    @ApiProperty({ example: 0, description: "Number of items to skip in the paginated request" })
+        skip: number
+
     @IsInt()
-    @ApiProperty({ example: 10, description: "To index" })
-        to: number
+    @ApiProperty({ example: 5, description: "Number of items to take in the paginated request" })
+        take: number
+
     @IsInt()
-    @ApiProperty({ example: 1, description: "Number of crops" })
-        seconds: number
+    @ApiProperty({ example: 1, description: "Seconds to grow" })
+        growthTime: number
+
+    @IsInt()
+    @ApiProperty({ example: 1, description: "Time to grow" })
+        utcTime: number
 }

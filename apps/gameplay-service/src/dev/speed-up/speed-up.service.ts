@@ -24,10 +24,16 @@ export class SpeedUpService {
 
             await queryRunner.startTransaction()
             try {
-                await queryRunner.manager.save(CollectionEntity, {
-                    collection: Collection.SpeedUp,
-                    data
-                })
+                await queryRunner.manager.save(CollectionEntity, [
+                    {
+                        collection: Collection.CropSpeedUp,
+                        data
+                    },
+                    {
+                        collection: Collection.AnimalSpeedUp,
+                        data
+                    }
+                ])
                 await queryRunner.commitTransaction()
             } catch (error) {
                 this.logger.error(error)

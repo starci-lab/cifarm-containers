@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { Job } from "bullmq"
-import { DataSource, Not } from "typeorm"
+import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import {
     CropCurrentState,
     CropRandomness,
@@ -12,6 +12,9 @@ import {
 import { CropsWorkerProcessTransactionFailedException } from "@src/exceptions"
 import { bullConfig, BullQueueName } from "@src/config"
 import { CropJobData } from "@apps/cron-scheduler"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+dayjs.extend(utc)
 
 @Processor(bullConfig[BullQueueName.Crop].name)
 export class CropWorker extends WorkerHost {
@@ -22,8 +25,8 @@ export class CropWorker extends WorkerHost {
     }
 
     public override async process(job: Job<CropJobData>): Promise<void> {
-        this.logger.verbose(`Processing job: ${job.id} - data: ${JSON.stringify(job.data)}`)
-        const { from, to, seconds } = job.data
+        this.logger.verbose(`Processing job: ${job.id}`)
+        const { growthTime, skip, take, utcTime } = job.data
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -31,13 +34,14 @@ export class CropWorker extends WorkerHost {
             let seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
                 where: {
                     fullyMatured: false,
-                    currentState: Not(CropCurrentState.NeedWater)
+                    currentState: Not(CropCurrentState.NeedWater),
+                    updatedAt: LessThanOrEqual(dayjs(utcTime).utc().toDate())
                 },
                 relations: {
                     crop: true
                 },
-                skip: from,
-                take: to - from,
+                skip,
+                take,
                 order: {
                     createdAt: "ASC"
                 }
@@ -50,8 +54,8 @@ export class CropWorker extends WorkerHost {
             const { needWater, isWeedyOrInfested } = system.value as CropRandomness
             seedGrowthInfos = seedGrowthInfos.map((seedGrowthInfo) => {
                 // Add time to the seed growth
-                seedGrowthInfo.currentStageTimeElapsed += seconds
-                seedGrowthInfo.totalTimeElapsed += seconds
+                seedGrowthInfo.currentStageTimeElapsed += growthTime
+                seedGrowthInfo.totalTimeElapsed += growthTime
 
                 //while the current stage time elapsed is greater than the growth stage duration
                 while (

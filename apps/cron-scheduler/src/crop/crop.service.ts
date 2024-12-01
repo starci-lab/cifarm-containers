@@ -7,6 +7,9 @@ import { v4 } from "uuid"
 import { Collection, CollectionEntity, CropCurrentState, SeedGrowthInfoEntity, SpeedUpData } from "@src/database"
 import { CropJobData } from "./crop.dto"
 import { bullConfig, BullQueueName } from "@src/config"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+dayjs.extend(utc)
 
 @Injectable()
 export class CropService {
@@ -28,12 +31,12 @@ export class CropService {
             count = await queryRunner.manager.count(SeedGrowthInfoEntity, {
                 where: {
                     fullyMatured: false,
-                    currentState: Not(CropCurrentState.NeedWater)
+                    currentState: Not(CropCurrentState.NeedWater),
                 }
             })
             const speedUps = await queryRunner.manager.find(CollectionEntity, {
                 where: {
-                    collection: Collection.SpeedUp
+                    collection: Collection.CropSpeedUp
                 }
             })
         
@@ -47,13 +50,13 @@ export class CropService {
             const batchSize = bullConfig[BullQueueName.Crop].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
-            let time = 1
+            let growthTime = 1
             if (speedUps.length) {
                 for (const { data } of speedUps)
                 {
                     const { time : additionalTime } = data as SpeedUpData
                     console.log(additionalTime)
-                    time += Number(additionalTime)
+                    growthTime += Number(additionalTime)
                 }
             }
 
@@ -64,9 +67,10 @@ export class CropService {
         }> = Array.from({ length: batchCount }, (_, i) => ({
             name: v4(),
             data: {
-                from: i * batchSize,
-                to: Math.min((i + 1) * batchSize, count), // Ensure 'to' does not exceed 'count'
-                seconds: time
+                skip: i * batchSize,
+                take: Math.min((i + 1) * batchSize, count),
+                growthTime,
+                utcTime: dayjs().utc().valueOf()
             }
         }))
             this.logger.verbose(`Adding ${batches.length} batches to the queue`)
@@ -76,7 +80,7 @@ export class CropService {
             await queryRunner.startTransaction()
             try {
                 await queryRunner.manager.delete(CollectionEntity, {
-                    collection: Collection.SpeedUp
+                    collection: Collection.CropSpeedUp
                 })
                 await queryRunner.commitTransaction()
             } catch (error) {

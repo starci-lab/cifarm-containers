@@ -1,9 +1,12 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsInt } from "class-validator"
+import { IsArray, IsInt } from "class-validator"
 
 export class DeliveryJobData {
-    @IsInt()
-    @ApiProperty({ description: "List user id who need to sell delivering products" })
+    @IsArray()
+    @ApiProperty({ example: [
+        "0f0f9f1c-b1b3-4e92-9f27-4538b7c520f0", 
+        "2e0f9f1c-b1b3-4e92-9f27-4538b7c520f0"
+    ], description: "User ids" })
         userIds: Array<string>
 
     @IsInt()
