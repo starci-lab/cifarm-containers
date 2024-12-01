@@ -108,7 +108,6 @@ export class UseFertilizerService {
                     SeedGrowthInfoEntity,
                     placedItemTile.seedGrowthInfo.id,
                     {
-                        ...placedItemTile.seedGrowthInfo,
                         currentState: CropCurrentState.IsFertilized
                     }
                 )

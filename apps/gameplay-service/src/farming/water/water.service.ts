@@ -65,7 +65,6 @@ export class WaterService {
                 required: energyConsume
             })
 
-            await queryRunner.startTransaction()
             // substract energy
             const energyChanges = this.energyService.substract({
                 entity: user,
@@ -75,27 +74,31 @@ export class WaterService {
                 entity: user,
                 experiences: experiencesGain
             })
-
+            
+            await queryRunner.startTransaction()
+            try {
             // update user
-            await queryRunner.manager.update(UserEntity, user.id, {
-                ...energyChanges,
-                ...experiencesChanges
-            })
+                await queryRunner.manager.update(UserEntity, user.id, {
+                    ...energyChanges,
+                    ...experiencesChanges
+                })
 
-            // update seed growth info
-            await queryRunner.manager.update(
-                SeedGrowthInfoEntity,
-                placedItemTile.seedGrowthInfo.id,
-                {
-                    ...placedItemTile.seedGrowthInfo,
-                    currentState: CropCurrentState.Normal
-                }
-            )
+                // update seed growth info
+                await queryRunner.manager.update(
+                    SeedGrowthInfoEntity,
+                    placedItemTile.seedGrowthInfo.id,
+                    {
+                        ...placedItemTile.seedGrowthInfo,
+                        currentState: CropCurrentState.Normal
+                    }
+                )
+            }
+            catch (error) {
+                this.logger.error("Water transaction failed, rolling back...", error)
+                await queryRunner.rollbackTransaction()
+                throw new WaterTransactionFailedException(error)
+            }  
             return {}
-        } catch (error) {
-            this.logger.error("Water transaction failed, rolling back...", error)
-            await queryRunner.rollbackTransaction()
-            throw new WaterTransactionFailedException(error)
         } finally {
             await queryRunner.release()
         }

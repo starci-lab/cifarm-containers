@@ -2,19 +2,20 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
     AnimalCurrentState,
+    AnimalInfoEntity,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
     SystemEntity,
     SystemId,
-    UserEntity,
+    UserEntity
 } from "@src/database"
 import {
     InventoryNotFoundException,
     InventoryTypeNotSupplyException,
     PlacedItemAnimalNotFoundException,
-    PlacedItemNotNeedFeedingException,
     FeedAnimalTransactionFailedException,
+    PlacedItemAnimalNotNeedFeedingException
 } from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/services"
 import { DataSource } from "typeorm"
@@ -35,49 +36,58 @@ export class FeedAnimalService {
         await queryRunner.connect()
 
         try {
-            const placedAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemAnimalId },
-                relations: {
-                    animalInfo: true,
+            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
+                where: {
+                    id: request.placedItemAnimalId,
+                    userId: request.userId
                 },
+                relations: {
+                    animalInfo: true
+                }
             })
 
-            if (!placedAnimal) throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
+            if (!placedItemAnimal)
+                throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
 
-            if (placedAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry)
-                throw new PlacedItemNotNeedFeedingException(request.placedItemAnimalId)
+            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry)
+                throw new PlacedItemAnimalNotNeedFeedingException(request.placedItemAnimalId)
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
-                where: { id: SystemId.Activities },
+                where: { id: SystemId.Activities }
             })
             const {
-                feedAnimal: { energyConsume, experiencesGain },
+                feedAnimal: { energyConsume, experiencesGain }
             } = value as Activities
 
             const user = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: request.userId },
+                where: { id: request.userId }
             })
 
             this.energyService.checkSufficient({
                 current: user.energy,
-                required: energyConsume,
+                required: energyConsume
             })
 
             // Subtract energy
             const energyChanges = this.energyService.substract({
                 entity: user,
-                energy: energyConsume,
+                energy: energyConsume
+            })
+            // Update user energy and experience
+            const experiencesChanges = this.levelService.addExperiences({
+                entity: user,
+                experiences: experiencesGain
             })
 
             // Inventory
             const inventory = await queryRunner.manager.findOne(InventoryEntity, {
                 where: {
                     userId: user.id,
-                    id: request.inventoryAnimalFeedId,
+                    id: request.inventoryAnimalFeedId
                 },
                 relations: {
-                    inventoryType: true,
-                },
+                    inventoryType: true
+                }
             })
 
             if (!inventory) throw new InventoryNotFoundException(request.inventoryAnimalFeedId)
@@ -89,28 +99,18 @@ export class FeedAnimalService {
             try {
                 // Decrease inventory
                 await queryRunner.manager.update(InventoryEntity, inventory.id, {
-                    quantity: inventory.quantity - 1,
-                })
-
-                // Update user energy and experience
-                const experiencesChanges = this.levelService.addExperiences({
-                    entity: user,
-                    experiences: experiencesGain,
+                    quantity: inventory.quantity - 1
                 })
 
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...energyChanges,
-                    ...experiencesChanges,
+                    ...experiencesChanges
                 })
 
                 // Update animal state
-                await queryRunner.manager.update(PlacedItemEntity, placedAnimal.id, {
-                    ...placedAnimal,
-                    animalInfo: {
-                        ...placedAnimal.animalInfo,
-                        currentState: AnimalCurrentState.Normal,
-                        currentHungryTime: 0,
-                    },
+                await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
+                    currentState: AnimalCurrentState.Normal,
+                    currentHungryTime: 0
                 })
 
                 await queryRunner.commitTransaction()

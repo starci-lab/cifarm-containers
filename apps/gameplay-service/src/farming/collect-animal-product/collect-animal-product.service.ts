@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity } from "@src/database"
+import { AnimalInfoEntity, InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity } from "@src/database"
 import { AnimalNotCurrentlyYieldingException, PlacedItemAnimalNotFoundException } from "@src/exceptions"
 import { InventoryService } from "@src/services"
 import { DataSource } from "typeorm"
@@ -23,8 +23,11 @@ export class CollectAnimalProductService {
         await queryRunner.connect()
 
         try {
-            const placedItem = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemAnimalId },
+            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
+                where: { 
+                    id: request.placedItemAnimalId,
+                    userId: request.userId,
+                },
                 relations: {
                     animalInfo: {
                         animal: true
@@ -32,19 +35,15 @@ export class CollectAnimalProductService {
                 }
             })
     
-            if (!placedItem) {
+            if (!placedItemAnimal) {
                 throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
             }
     
-            const animalInfo = placedItem.animalInfo
+            const animalInfo = placedItemAnimal.animalInfo
     
             if (!animalInfo || !animalInfo.hasYielded) {
                 throw new AnimalNotCurrentlyYieldingException(request.placedItemAnimalId)
             }
-    
-            // Reset the animal's yield status
-            animalInfo.hasYielded = false
-            placedItem.animalInfo = animalInfo
 
             //Get inventory type
             const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
@@ -87,7 +86,11 @@ export class CollectAnimalProductService {
                 const savedInventory = await queryRunner.manager.save(InventoryEntity, updatedInventories)
     
                 // Save updated placed item
-                await queryRunner.manager.save(PlacedItemEntity, placedItem)
+                await queryRunner.manager.update(AnimalInfoEntity, 
+                    placedItemAnimal.animalInfo.id, 
+                    {
+                        hasYielded: false,
+                    })
     
                 // Commit transaction
                 await queryRunner.commitTransaction()
