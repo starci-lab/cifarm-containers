@@ -88,7 +88,6 @@ export class UsePesticideService {
                     SeedGrowthInfoEntity,
                     placedItemTile.seedGrowthInfo.id,
                     {
-                        ...placedItemTile.seedGrowthInfo,
                         currentState: CropCurrentState.Normal
                     }
                 )

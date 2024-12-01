@@ -30,6 +30,12 @@ export class WaterTransactionFailedException extends GrpcNotFoundException {
     }
 }
 
+export class PlantSeedTransactionFailedException extends GrpcNotFoundException {
+    constructor(error: Error) {
+        super(`Failed to plant seed due to: ${error}`)
+    }
+}
+
 export class HaverstCropTransactionFailedException extends GrpcNotFoundException {
     constructor(error: Error) {
         super(`Failed to harvest crop due to: ${error}`)

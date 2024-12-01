@@ -1,21 +1,17 @@
 import { InjectQueue } from "@nestjs/bullmq"
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
 import { cropsTimeQueueConstants } from "../app.constant"
 import { v4 } from "uuid"
-import { CropCurrentState, SeedGrowthInfoEntity } from "@src/database"
+import { Collection, CollectionEntity, CropCurrentState, SeedGrowthInfoEntity, SpeedUpData } from "@src/database"
 import { CropsJobData } from "./crops.dto"
-import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
-import { speedUpConstants } from "@apps/gameplay-service"
 
 @Injectable()
 export class CropsService {
     private readonly logger = new Logger(CropsService.name)
     constructor(
-        @Inject(CACHE_MANAGER)
-        private readonly cacheManager: Cache,
         @InjectQueue(cropsTimeQueueConstants.name) private cropsQueue: Queue,
         private readonly dataSource: DataSource
     ) {}
@@ -35,30 +31,34 @@ export class CropsService {
                     currentState: Not(CropCurrentState.NeedWater)
                 }
             })
-        } finally {
-            await queryRunner.release()
-        }
+            const speedUps = await queryRunner.manager.find(CollectionEntity, {
+                where: {
+                    collection: Collection.SpeedUp
+                }
+            })
+        
+            this.logger.debug(`Found ${count} crops that need to be grown`)
+            if (count === 0) {
+                this.logger.verbose("No crops to grow")
+                return
+            }
 
-        this.logger.debug(`Found ${count} crops that need to be grown`)
-        if (count === 0) {
-            this.logger.verbose("No crops to grow")
-            return
-        }
+            //split into 10000 per batch
+            const batchSize = cropsTimeQueueConstants.BATCH_SIZE
+            const batchCount = Math.ceil(count / batchSize)
 
-        //split into 10000 per batch
-        const batchSize = cropsTimeQueueConstants.BATCH_SIZE
-        const batchCount = Math.ceil(count / batchSize)
+            let time = 1
+            if (speedUps.length) {
+                for (const { data } of speedUps)
+                {
+                    const { time : additionalTime } = data as SpeedUpData
+                    console.log(additionalTime)
+                    time += Number(additionalTime)
+                }
+            }
 
-        const value = await this.cacheManager.get(speedUpConstants.key)
-        let time = 1
-        if (value) {
-            // kieemr tra kieu du lieu xem redis luu string hay number
-            time += Number(value)
-            await this.cacheManager.del(speedUpConstants.key)
-        }
-
-        // Create batches
-        const batches: Array<{
+            // Create batches
+            const batches: Array<{
             name: string
             data: CropsJobData
         }> = Array.from({ length: batchCount }, (_, i) => ({
@@ -69,8 +69,23 @@ export class CropsService {
                 seconds: time
             }
         }))
-        this.logger.verbose(`Adding ${batches.length} batches to the queue`)
-        const jobs = await this.cropsQueue.addBulk(batches)
-        this.logger.verbose(`Added ${jobs.at(0).name} jobs to the queue`)
+            this.logger.verbose(`Adding ${batches.length} batches to the queue`)
+            const jobs = await this.cropsQueue.addBulk(batches)
+            this.logger.verbose(`Added ${jobs.at(0).name} jobs to the queue`)
+
+            await queryRunner.startTransaction()
+            try {
+                await queryRunner.manager.delete(CollectionEntity, {
+                    collection: Collection.SpeedUp
+                })
+                await queryRunner.commitTransaction()
+            } catch (error) {
+                this.logger.error(`Error deleting speed up collection: ${error}`)
+                await queryRunner.rollbackTransaction()
+                throw error
+            }
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

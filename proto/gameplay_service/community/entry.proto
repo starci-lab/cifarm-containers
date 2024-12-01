@@ -6,3 +6,5 @@ import "./help_use_pesticide.proto";
 import "./help_water.proto";
 import "./help_cure_animal.proto";
 import "./follow.proto";
+import "./theif_crop.proto";
+import "./theif_animal_product.proto";

@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { CureAnimalRequest } from "./cure-animal.dto"
 import { CureAnimalService } from "./cure-animal.service"
-import { grpcConfig } from "@src/config"
+import { grpcConfig, GrpcServiceName } from "@src/config"
 
 @Controller()
 export class CureAnimalController {
@@ -10,7 +10,7 @@ export class CureAnimalController {
 
     constructor(private readonly cureAnimalService: CureAnimalService) {}
 
-    @GrpcMethod(grpcConfig.gameplay.service, "CureAnimal")
+    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "CureAnimal")
     public async cureAnimal(request: CureAnimalRequest) {
         this.logger.debug("Cure Animal request received")
         return this.cureAnimalService.cureAnimal(request)

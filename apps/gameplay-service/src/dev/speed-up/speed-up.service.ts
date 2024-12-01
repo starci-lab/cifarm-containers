@@ -1,20 +1,42 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
-import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
+import { Injectable, Logger } from "@nestjs/common"
 import { SpeedUpRequest, SpeedUpResponse } from "./speed-up.dto"
-import { CacheKey } from "@src/config"
+import { DataSource } from "typeorm"
+import { SpeedUpTransactionFailedException } from "@src/exceptions"
+import { Collection, CollectionEntity, SpeedUpData } from "@src/database"
 
 @Injectable()
 export class SpeedUpService {
     private readonly logger = new Logger(SpeedUpService.name)
 
     constructor(
-        @Inject(CACHE_MANAGER)
-        private readonly cacheManager: Cache
+        private readonly dataSource: DataSource
     ) {}
 
     async speedUp(request: SpeedUpRequest): Promise<SpeedUpResponse> {
         this.logger.debug(`Speeding up growth time with time ${request.time}`)
-        await this.cacheManager.set(CacheKey.SpeedUp, request.time)
-        return {}
+        
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const data: SpeedUpData = {
+                time: request.time
+            }
+
+            await queryRunner.startTransaction()
+            try {
+                await queryRunner.manager.save(CollectionEntity, {
+                    collection: Collection.SpeedUp,
+                    data
+                })
+                await queryRunner.commitTransaction()
+            } catch (error) {
+                this.logger.error(error)
+                await queryRunner.rollbackTransaction()
+                throw new SpeedUpTransactionFailedException(error)
+            }
+            return {}
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

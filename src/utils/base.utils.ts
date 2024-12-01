@@ -23,3 +23,7 @@ export const waitFor = (observeVariable: boolean, delay: number = 100): Promise<
         }, delay)
     })
 }
+
+export const sleep = (ms: number): Promise<void> => {
+    return new Promise((resolve) => setTimeout(resolve, ms))
+}

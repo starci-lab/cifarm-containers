@@ -17,3 +17,9 @@ export class SpinTransactionFailedException extends GrpcPermissionDeniedExceptio
         super(`Spin transaction failed: ${error.message}`)
     }
 }
+
+export class SpeedUpTransactionFailedException extends GrpcPermissionDeniedException {
+    constructor(error: Error) {
+        super(`Speed up transaction failed: ${error.message}`)
+    }
+}

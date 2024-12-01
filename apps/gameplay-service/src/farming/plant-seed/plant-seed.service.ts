@@ -16,7 +16,7 @@ import {
     InventoryNotFoundException,
     PlacedItemTileAlreadyHasSeedException,
     PlacedItemTileNotFoundException,
-    WaterTransactionFailedException
+    PlantSeedTransactionFailedException,
 } from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService } from "@src/services"
 
@@ -84,16 +84,10 @@ export class PlantSeedService {
             })
 
             // update inventory
-            const updatedInventory = this.inventoryService.remove({
+            const quantityChanges = this.inventoryService.remove({
                 entity: inventory,
                 quantity: 1
             })
-
-            if (this.inventoryService.checkDelete({ entity: updatedInventory })) {
-                await queryRunner.manager.remove(InventoryEntity, updatedInventory)
-            } else {
-                await queryRunner.manager.save(InventoryEntity, updatedInventory)
-            }
 
             //get the crop
             const crop = await queryRunner.manager.findOne(CropEntity, {
@@ -102,23 +96,33 @@ export class PlantSeedService {
 
             await queryRunner.startTransaction()
             try {
-            // update user
+                // update user
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...energyChanges,
                     ...experiencesChanges
                 })
-           
+
+                // update inventory
+                if (!quantityChanges.quantity) {
+                    await queryRunner.manager.remove(InventoryEntity, inventory)
+                } else {
+                    await queryRunner.manager.update(InventoryEntity, inventory.id, {
+                        ...quantityChanges
+                    })
+                }
+
                 // create seed growth info
                 await queryRunner.manager.save(SeedGrowthInfoEntity, {
                     placedItemId: placedItemTile.id,
-                    harvestQuantityRemaining: crop.maxHarvestQuantity
+                    harvestQuantityRemaining: crop.maxHarvestQuantity,
+                    cropId: crop.id
                 })
 
                 await queryRunner.commitTransaction()
             } catch (error) {
                 this.logger.error("Plant seed transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
-                throw new WaterTransactionFailedException(error)
+                throw new PlantSeedTransactionFailedException(error)
             }
             return {}
         } finally {

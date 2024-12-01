@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
-import { envConfig, grpcConfig } from "@src/config"
+import { envConfig, grpcConfig, GrpcServiceName } from "@src/config"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 
 const bootstrap = async () => {
@@ -8,10 +8,11 @@ const bootstrap = async () => {
         transport: Transport.GRPC,
         options: {
             url: `${envConfig().containers.gameplayService.host}:${envConfig().containers.gameplayService.port}`,
-            package: grpcConfig.gameplay.package,
-            protoPath: grpcConfig.gameplay.protoPath
+            package: grpcConfig[GrpcServiceName.Gameplay].package,
+            protoPath: grpcConfig[GrpcServiceName.Gameplay].protoPath
         }
     })
     await app.listen()
-}
+} 
 bootstrap()
+  

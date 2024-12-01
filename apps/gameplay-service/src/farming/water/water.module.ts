@@ -3,6 +3,7 @@ import { InventoryModule, LevelModule } from "@src/services"
 import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
 import { WaterService } from "./water.service"
 import { typeOrmForFeature } from "@src/dynamic-modules"
+import { WaterController } from "./water.controller"
 
 @Global()
 @Module({
@@ -13,6 +14,7 @@ import { typeOrmForFeature } from "@src/dynamic-modules"
         InventoryModule
     ],
     providers: [WaterService],
-    exports: [WaterService]
+    exports: [WaterService],
+    controllers: [WaterController],
 })
 export class WaterModule {}

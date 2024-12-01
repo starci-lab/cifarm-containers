@@ -56,7 +56,9 @@ export class TheifCropService {
                     }
                 },
                 relations: {
-                    seedGrowthInfo: true,
+                    seedGrowthInfo: {
+                        crop: true
+                    },
                     placedItemType: true
                 }
             })
@@ -134,13 +136,14 @@ export class TheifCropService {
                     inventoryTypeId: inventoryType.id
                 }
             })
-
+            console.log(existingInventories)
+            
             const updatedInventories = this.inventoryService.add({
                 entities: existingInventories,
                 userId: request.userId,
                 data: {
-                    inventoryTypeId: inventoryType.id,
-                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
+                    inventoryType,
+                    quantity: actualQuantity
                 }
             })
 

@@ -25,6 +25,8 @@ import {
     DeliverProductResponse,
     PlantSeedRequest,
     PlantSeedResponse,
+    TheifCropRequest,
+    TheifCropResponse,
     UseHerbicideRequest,
     UseHerbicideResponse,
     WaterRequest,
@@ -37,7 +39,7 @@ import { RestJwtAuthGuard } from "@src/guards"
 import { UserLike } from "@src/services"
 import { lastValueFrom } from "rxjs"
 import { IGameplayService } from "@apps/gameplay-service"
-import { grpcConfig } from "@src/config"
+import { grpcConfig, GrpcServiceName } from "@src/config"
 
 @ApiTags("Gameplay")
 @Controller("gameplay")
@@ -45,14 +47,14 @@ export class GameplayController implements OnModuleInit {
     private readonly logger = new Logger(GameplayController.name)
 
     constructor(
-        @Inject(grpcConfig.gameplay.name) private grpcClient: ClientGrpc
+        @Inject(grpcConfig[GrpcServiceName.Gameplay].name) private grpcClient: ClientGrpc
     ) {}
 
     private gameplayService: IGameplayService
 
     onModuleInit() {
         this.gameplayService = this.grpcClient.getService<IGameplayService>(
-            grpcConfig.gameplay.service
+            grpcConfig[GrpcServiceName.Gameplay].service
         )
     }
 
@@ -184,7 +186,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.water({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -276,6 +278,24 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing retain product for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.deliverProduct({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({})
+    @Post("/theif-crop")
+    public async theifCrop(
+        @User() user: UserLike,
+        @Body() request: TheifCropRequest
+    ): Promise<TheifCropResponse> {
+        this.logger.debug(`Processing theif crop for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.theifCrop({
                 ...request,
                 userId: user?.id
             })

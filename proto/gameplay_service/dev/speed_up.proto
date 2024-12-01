@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message SpeedUpRequest {
+    int32 time = 1;
+}

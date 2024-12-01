@@ -45,6 +45,7 @@ import {
     TheifAnimalProductRequest,
     TheifAnimalProductResponse
 } from "./community/theif-animal-product"
+import { SpeedUpRequest, SpeedUpResponse } from "./dev/speed-up"
 
 export interface IGameplayService {
     // Auth
@@ -78,4 +79,7 @@ export interface IGameplayService {
     helpUsePesticide(request: HelpUsePesticideRequest): Observable<HelpUsePesticideResponse>
     theifCrop(request: TheifCropRequest): Observable<TheifCropResponse>
     theifAnimalProduct(request: TheifAnimalProductRequest): Observable<TheifAnimalProductResponse>
+
+    //Dev
+    speedUp(request: SpeedUpRequest): Observable<SpeedUpResponse>
 }

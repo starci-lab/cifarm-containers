@@ -94,7 +94,7 @@ export class UseFertilizerService {
             await queryRunner.startTransaction()
             try {
                 //Decrease invetory
-                await queryRunner.manager.update(InventoryEntity, inventory.id,{
+                await queryRunner.manager.update(InventoryEntity, inventory.id, {
                     quantity: inventory.quantity - 1
                 })
 
