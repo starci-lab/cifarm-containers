@@ -6,10 +6,12 @@ import { HelpWaterModule } from "./help-water"
 import { HelpUseHerbicideModule } from "./help-use-herbicide"
 import { TheifCropModule } from "./theif-crop"
 import { TheifAnimalProductModule } from "./theif-animal-product"
+import { UnfollowModule } from "./unfollow/unfollow.module"
 
 @Module({
     imports: [
         FollowModule,
+        UnfollowModule,
         HelpCureAnimalModule,
         HelpWaterModule,
         HelpUsePesticideModule,
