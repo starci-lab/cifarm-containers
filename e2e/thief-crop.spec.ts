@@ -35,9 +35,13 @@ import { DataSource } from "typeorm"
 import { console } from "inspector"
 
 describe("Theif crop flow", () => {
-    let accessToken: string
-    let dataSource: DataSource
     let user: UserLike
+    let accessToken: string
+    
+    let theifUser: UserLike
+    let theifAccessToken: string
+
+    let dataSource: DataSource
     let jwtService: JwtService
     let gameplayService: IGameplayService
     
@@ -67,9 +71,21 @@ describe("Theif crop flow", () => {
         const { data: verifySignatureData } = await authAxios().post("/verify-signature", data)
 
         accessToken = verifySignatureData.accessToken
-    
         //decode accessToken to get user
         user = await jwtService.decodeToken(accessToken)
+
+
+        //sign in theif
+        const { data: dataTheif } = await authAxios().post("/test-signature", {
+            chainKey: SupportedChainKey.Avalanche,
+            accountNumber: 1,
+            network: Network.Testnet
+        })
+        const { data: verifySignatureDataTheif } = await authAxios().post("/verify-signature", dataTheif)
+        accessToken = verifySignatureDataTheif.accessToken
+
+        theifAccessToken = verifySignatureDataTheif.accessToken
+        theifUser = await jwtService.decodeToken(theifAccessToken)
     })
 
     it("Should theif flow success", async () => {
@@ -246,17 +262,8 @@ describe("Theif crop flow", () => {
         })
         expect(seedGrowthInfoSeventhCheck.fullyMatured).toBe(true) 
 
-        //thef the crop, using other user, re-authenticate again
-        const { data } = await authAxios().post("/test-signature", {
-            chainKey: SupportedChainKey.Avalanche,
-            accountNumber: 2,
-            network: Network.Testnet
-        })
-        const { data: verifySignatureData } = await authAxios().post("/verify-signature", data)
-        const theifAxios = gameplayAxios(verifySignatureData.accessToken)
-
-        //get the user
-        const theifUser = await jwtService.decodeToken(verifySignatureData.accessToken)
+        //create theif axios
+        const theifAxios = gameplayAxios(theifAccessToken)
 
         //process theif
         const { data: theifCropResponseData } = await theifAxios.post("/theif-crop", {
@@ -289,11 +296,10 @@ describe("Theif crop flow", () => {
         })
 
         expect(theifInventory.quantity).toBe(theifCropResponseData.quantity)
-
-        await dataSource.manager.remove(UserEntity, theifUser)
     })
 
     afterAll(async () => {
         await dataSource.manager.remove(UserEntity, user)
+        await dataSource.manager.remove(UserEntity, theifUser)
     })
 })
