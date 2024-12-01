@@ -5,7 +5,7 @@ import {
     DailyRewardTransactionFailedException
 } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
-import { ClaimDailyRewardRequest } from "./claim-daily-reward.dto"
+import { ClaimDailyRewardRequest, ClaimDailyRewardResponse } from "./claim-daily-reward.dto"
 import { DailyRewardEntity, UserEntity } from "@src/database"
 import dayjs from "dayjs"
 import { GoldBalanceService, TokenBalanceService } from "@src/services"
@@ -20,7 +20,7 @@ export class ClaimDailyRewardService {
         private readonly tokenBalanceService: TokenBalanceService
     ) {}
 
-    async claimDailyReward(request: ClaimDailyRewardRequest) {
+    async claimDailyReward(request: ClaimDailyRewardRequest): Promise<ClaimDailyRewardResponse> {
         this.logger.debug(`Starting claim daily reward for user ${request.userId}`)
 
         const queryRunner = this.dataSource.createQueryRunner()
@@ -95,6 +95,8 @@ export class ClaimDailyRewardService {
                 await queryRunner.rollbackTransaction()
                 throw new DailyRewardTransactionFailedException(error)
             }
+
+            return {}
         } finally {
             await queryRunner.release()
         }

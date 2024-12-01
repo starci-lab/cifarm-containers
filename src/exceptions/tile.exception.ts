@@ -11,9 +11,3 @@ export class TileNotFoundException extends GrpcNotFoundException {
         super(`Tile with id "${id}" not found`)
     }
 }
-
-export class BuyTileTransactionFailedException extends GrpcNotFoundException {
-    constructor(error: string | Error) {
-        super(`Tile purchase transaction failed: ${error instanceof Error ? error.message : error}`)
-    }
-}

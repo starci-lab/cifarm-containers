@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/config"
-import { CacheNotFound, VerifySignatureCreateUserTransactionFailedException } from "@src/exceptions"
+import { CacheNotFound, VerifySignatureTransactionFailedException } from "@src/exceptions"
 
 import {
     AlgorandAuthService,
@@ -170,7 +170,7 @@ export class VerifySignatureService {
                 } catch (error) {
                     this.logger.error("Transaction verify signature failed", error.message)
                     await queryRunner.rollbackTransaction()
-                    throw new VerifySignatureCreateUserTransactionFailedException(error)
+                    throw new VerifySignatureTransactionFailedException(error)
                 }
             }
             const { accessToken, refreshToken } = await this.jwtService.createAuthTokenPair({

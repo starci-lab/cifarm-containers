@@ -118,34 +118,31 @@ export class BuyAnimalService {
 
             placedItemBuilding.buildingInfo.occupancy += 1
 
+            // Subtract gold
+            const goldsChanged = this.goldBalanceService.subtract({
+                entity: user,
+                amount: totalCost
+            })
+
             // Start transaction
             await queryRunner.startTransaction()
-
             try {
-                // Subtract gold
-                const goldsChanged = this.goldBalanceService.subtract({
-                    entity: user,
-                    amount: totalCost
-                })
-
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...goldsChanged
                 })
 
-                const [savedPlacedItemAnimal] = await queryRunner.manager.save(PlacedItemEntity, [
+                await queryRunner.manager.save(PlacedItemEntity, [
                     placedItemAnimal,
                     placedItemBuilding
                 ])
 
                 await queryRunner.commitTransaction()
-
-                this.logger.log(`Successfully placed animal with id: ${savedPlacedItemAnimal.id}`)
-                return { placedItemId: savedPlacedItemAnimal.id }
             } catch (error) {
                 this.logger.error("Animal purchase transaction failed, rolling back...")
                 await queryRunner.rollbackTransaction()
                 throw new BuyAnimalTransactionFailedException(error)
             }
+            return {}
         } finally {
             await queryRunner.release()
         }

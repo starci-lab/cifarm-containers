@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsUUID } from "class-validator"
-import { Empty, UserIdRequest } from "@src/types"
+import { UserIdRequest } from "@src/types"
 
 export class CureAnimalRequest extends UserIdRequest {
     @IsUUID()
@@ -8,4 +8,4 @@ export class CureAnimalRequest extends UserIdRequest {
         placedItemAnimalId: string
 }
 
-export type CureAnimalResponse = Empty
+export class CureAnimalResponse {}

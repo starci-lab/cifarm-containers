@@ -3,16 +3,16 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
-import { cropsTimeQueueConstants } from "../app.constant"
 import { v4 } from "uuid"
 import { Collection, CollectionEntity, CropCurrentState, SeedGrowthInfoEntity, SpeedUpData } from "@src/database"
-import { CropsJobData } from "./crops.dto"
+import { CropJobData } from "./crop.dto"
+import { bullConfig, BullQueueName } from "@src/config"
 
 @Injectable()
-export class CropsService {
-    private readonly logger = new Logger(CropsService.name)
+export class CropService {
+    private readonly logger = new Logger(CropService.name)
     constructor(
-        @InjectQueue(cropsTimeQueueConstants.name) private cropsQueue: Queue,
+        @InjectQueue(bullConfig[BullQueueName.Crop].name) private cropQueue: Queue,
         private readonly dataSource: DataSource
     ) {}
 
@@ -44,7 +44,7 @@ export class CropsService {
             }
 
             //split into 10000 per batch
-            const batchSize = cropsTimeQueueConstants.BATCH_SIZE
+            const batchSize = bullConfig[BullQueueName.Crop].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
             let time = 1
@@ -60,7 +60,7 @@ export class CropsService {
             // Create batches
             const batches: Array<{
             name: string
-            data: CropsJobData
+            data: CropJobData
         }> = Array.from({ length: batchCount }, (_, i) => ({
             name: v4(),
             data: {
@@ -70,7 +70,7 @@ export class CropsService {
             }
         }))
             this.logger.verbose(`Adding ${batches.length} batches to the queue`)
-            const jobs = await this.cropsQueue.addBulk(batches)
+            const jobs = await this.cropQueue.addBulk(batches)
             this.logger.verbose(`Added ${jobs.at(0).name} jobs to the queue`)
 
             await queryRunner.startTransaction()

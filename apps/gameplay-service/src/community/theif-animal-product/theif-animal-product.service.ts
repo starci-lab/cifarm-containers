@@ -3,7 +3,7 @@ import {
     HaverstQuantityRemainingEqualMinHarvestQuantityException,
     PlacedItemAnimalNotCurrentlyYieldingException,
     PlacedItemAnimalNotFoundException,
-    TheifAnimalProductTransactionFailedException
+    ThiefAnimalProductTransactionFailedException
 } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import {
@@ -174,7 +174,7 @@ export class TheifAnimalProductService {
             } catch (error) {
                 this.logger.error(`Theif animal product transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new TheifAnimalProductTransactionFailedException(error)
+                throw new ThiefAnimalProductTransactionFailedException(error)
             }
 
             this.clientKafka.emit(kafkaConfig.broadcastPlacedItems.pattern, {

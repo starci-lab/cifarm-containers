@@ -11,15 +11,3 @@ export class DailyRewardNotEqual5Exception extends GrpcResourceExhaustedExceptio
         super(`Daily reward not equal 5: ${dailyReward}`)
     }
 }
-
-export class DailyRewardTransactionFailedException extends GrpcResourceExhaustedException {
-    constructor(error: Error) {
-        super(`Daily reward transaction failed: ${error.message}`)
-    }
-}
-
-export class UpdateTutorialTransactionFailedException extends GrpcResourceExhaustedException {
-    constructor(error: Error) {
-        super(`Update tutorial transaction failed: ${error.message}`)
-    }
-}

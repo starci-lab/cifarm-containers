@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Position, UserIdRequest } from "@src/types"
 import { Type } from "class-transformer"
-import { IsString, ValidateNested } from "class-validator"
+import { ValidateNested } from "class-validator"
 
 export class BuyTileRequest extends UserIdRequest {
     @ValidateNested()
@@ -10,8 +10,4 @@ export class BuyTileRequest extends UserIdRequest {
         position: Position
 }
 
-export class BuyTileResponse {
-    @IsString()
-    @ApiProperty({ example: "placed-item-id" })
-        placedItemId: string
-}
+export class BuyTileResponse {}

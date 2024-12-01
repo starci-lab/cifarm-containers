@@ -4,7 +4,7 @@ import {
     PlacedItemTileNotFoundException,
     PlacedItemTileNotFullyMaturedException,
     PlacedItemTileNotPlantedException,
-    TheifCropTransactionFailedException
+    ThiefCropTransactionFailedException
 } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import {
@@ -182,7 +182,7 @@ export class TheifCropService {
             } catch (error) {
                 this.logger.error(`Theif crop transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new TheifCropTransactionFailedException(error)
+                throw new ThiefCropTransactionFailedException(error)
             }
 
             this.clientKafka.emit(kafkaConfig.broadcastPlacedItems.pattern, {

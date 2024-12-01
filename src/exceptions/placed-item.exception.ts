@@ -76,18 +76,6 @@ export class PlacedItemAnimalNotSickException extends GrpcNotFoundException {
     }
 }
 
-export class HelpCureAnimalTransactionFailedException extends GrpcPermissionDeniedException {
-    constructor(error: Error) {
-        super(`Failed to help cure animal: ${error.message}`)
-    }
-}
-
-export class HelpWaterTransactionFailedException extends GrpcPermissionDeniedException {
-    constructor(error: Error) {
-        super(`Failed to help water: ${error.message}`)
-    }
-}
-
 export class BuildingAlreadyMaxUpgradeException extends GrpcAbortedException {
     constructor(placedItemId: string) {
         super(`Building already at maximum upgrade level for placed item: ${placedItemId}`)
@@ -100,21 +88,9 @@ export class BuildingNextUpgradeNotFoundException extends GrpcNotFoundException 
     }
 }
 
-export class UpgradeBuildingTransactionFailedException extends GrpcAbortedException {
-    constructor(error: Error) {
-        super(`Upgrade building transaction failed: ${error.message}`)
-    }
-}
-
 export class PlacedItemNotNeedUseFertilizerException extends GrpcNotFoundException {
     constructor(id: string) {
         super(`Placed item not need use fertilizer: ${id}`)
-    }
-}
-
-export class UseFertilizerTransactionFailedException extends GrpcPermissionDeniedException {
-    constructor(error: Error) {
-        super(`Failed to use fertilizer: ${error.message}`)
     }
 }
 
@@ -136,11 +112,6 @@ export class PlacedItemNotNeedCureException extends GrpcNotFoundException {
     }
 }
 
-export class CureAnimalTransactionFailedException extends GrpcPermissionDeniedException {
-    constructor(error: Error) {
-        super(`Failed to cure animal: ${error.message}`)
-    }
-}
 export class HelpUsePesticideTransactionFailedException extends GrpcPermissionDeniedException {
     constructor(error: Error) {
         super(`Failed to help use pesticide: ${error.message}`)
@@ -156,18 +127,6 @@ export class HelpUseHerbicideTransactionFailedException extends GrpcPermissionDe
 export class HaverstQuantityRemainingEqualMinHarvestQuantityException extends GrpcNotFoundException {
     constructor(minHarvestQuantity: number) {
         super(`Harvest quantity remaining equal min harvest quantity: ${minHarvestQuantity}`)
-    }
-}
-
-export class TheifCropTransactionFailedException extends GrpcPermissionDeniedException {
-    constructor(error: Error) {
-        super(`Theif crop transaction failed: ${error.message}`)
-    }
-}
-
-export class TheifAnimalProductTransactionFailedException extends GrpcPermissionDeniedException {
-    constructor(error: Error) {
-        super(`Theif animal product transaction failed: ${error.message}`)
     }
 }
 

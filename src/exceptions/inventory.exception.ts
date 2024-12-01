@@ -59,14 +59,6 @@ export class InventoryTypeNotTileException extends GrpcInvalidArgumentException 
     }
 }
 
-export class PlaceTileTransactionFailedException extends GrpcAbortedException {
-    constructor(error: Error) {
-        super(
-            `Failed to place tile. ${error.message}`
-        )
-    }
-}
-
 // InventoryNotTypePlacedException
 export class InventoryNotTypePlacedException extends GrpcInvalidArgumentException {
     constructor(inventoryId: string) {

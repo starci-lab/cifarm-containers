@@ -16,7 +16,6 @@ export class RequestMessageService {
     ) {}
 
     public async requestMessage(): Promise<RequestMessageResponse> {
-        this.logger.debug("RequestMessage called")
         const message = v4()
         await this.cacheManager.set(message, true, 60 * 1000)
         return {

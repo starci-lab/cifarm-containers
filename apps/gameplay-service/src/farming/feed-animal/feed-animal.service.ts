@@ -114,12 +114,12 @@ export class FeedAnimalService {
                 })
 
                 await queryRunner.commitTransaction()
-                return {}
             } catch (error) {
                 this.logger.error("Feed Animal transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
                 throw new FeedAnimalTransactionFailedException(error)
             }
+            return {}
         } finally {
             await queryRunner.release()
         }

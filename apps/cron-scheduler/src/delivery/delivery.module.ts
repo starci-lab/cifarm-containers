@@ -1,14 +1,11 @@
 import { Module } from "@nestjs/common"
-import { BullModule } from "@nestjs/bullmq"
 import { DeliveryService } from "./delivery.service"
-import { deliveryTimeQueueConstants } from "../app.constant"
-import { typeOrmForFeature } from "@src/dynamic-modules"
+import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
+import { BullQueueName } from "@src/config"
 
 @Module({
     imports: [
-        BullModule.registerQueue({
-            name: deliveryTimeQueueConstants.name
-        }),
+        bullRegisterQueue(BullQueueName.Delivery),
         typeOrmForFeature(),
     ],
     providers: [DeliveryService]
