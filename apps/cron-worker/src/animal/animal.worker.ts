@@ -8,8 +8,8 @@ import { AnimalCurrentState, AnimalInfoEntity } from "@src/database"
 import { bullConfig, BullQueueName } from "@src/config"
 
 @Injectable()
-export class AnimalService {
-    private readonly logger = new Logger(AnimalService.name)
+export class AnimalWorker {
+    private readonly logger = new Logger(AnimalWorker.name)
     constructor(
         @InjectQueue(bullConfig[BullQueueName.Animal].name) private animalQueue: Queue,
         private readonly dataSource: DataSource
