@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { AnimalService } from "./animal.service"
+import { AnimalWorker } from "./animal.worker"
 import { BullQueueName } from "@src/config"
 import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
 
@@ -8,6 +8,6 @@ import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
         typeOrmForFeature(),
         bullRegisterQueue(BullQueueName.Animal),
     ],
-    providers: [AnimalService]
+    providers: [AnimalWorker]
 })
-export class AnimalsModule {}
+export class AnimalModule {}
