@@ -1,8 +1,8 @@
 import { Body, Controller, Logger } from "@nestjs/common"
 import { BuyTileService } from "./buy-tile.service"
 import { GrpcMethod } from "@nestjs/microservices"
-import { gameplayGrpcConstants } from "../../config"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class BuyTileController {
@@ -10,7 +10,7 @@ export class BuyTileController {
 
     constructor(private readonly buyTileService: BuyTileService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "BuyTile")
+    @GrpcMethod(grpcConfig.gameplay.service, "BuyTile")
     public async buyTile(@Body() request: BuyTileRequest): Promise<BuyTileResponse> {
         this.logger.log(`Received request to buy tile: ${JSON.stringify(request)}`)
         return await this.buyTileService.buyTile(request)

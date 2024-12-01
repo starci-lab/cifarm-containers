@@ -1,16 +1,16 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { InjectDataSource } from "@nestjs/typeorm"
-import { SeedDataService } from "@src/services"
+import { TEST_NAME } from "@src/dynamic-modules"
 import { DataSource } from "typeorm"
+import { SeedDataService } from "./seed-data"
 
 @Injectable()
 export class AppService implements OnModuleInit {
     private readonly logger = new Logger(AppService.name)
 
     constructor(
-        @InjectDataSource("main")
         private readonly dataSourceMain: DataSource,
-        @InjectDataSource("test")
+        @InjectDataSource(TEST_NAME)
         private readonly dataSourceTest: DataSource,
         private readonly seedDataService: SeedDataService
     ) {}

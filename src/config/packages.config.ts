@@ -3,7 +3,7 @@ import { join } from "path"
 const BUILD_FOLDER = "cifarm-build/Build"
 const FILE_NAME = "cifarm-build"
  
-export const packageConfig = () => ({
+export const packageConfig = {
     loader: {
         filename: `${FILE_NAME}.loader.js`,
         url: join(process.cwd(), BUILD_FOLDER, `${FILE_NAME}.loader.js`),
@@ -21,4 +21,4 @@ export const packageConfig = () => ({
         filename: `${FILE_NAME}.wasm.unityweb`,
         url: join(process.cwd(), BUILD_FOLDER, `${FILE_NAME}.wasm.unityweb`),
     } 
-})
+}

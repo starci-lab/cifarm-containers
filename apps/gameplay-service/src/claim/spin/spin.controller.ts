@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { SpinService } from "./spin.service"
 import { SpinRequest } from "./spin.dto"
-import { gameplayGrpcConstants } from "../../config"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class SpinController {
@@ -10,7 +10,7 @@ export class SpinController {
 
     constructor(private readonly spinService: SpinService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "Spin")
+    @GrpcMethod(grpcConfig.gameplay.service, "Spin")
     public async spin(request: SpinRequest) {
         this.logger.debug("Spin called")
         return this.spinService.spin(request)

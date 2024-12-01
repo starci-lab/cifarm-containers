@@ -20,7 +20,7 @@ import { deliveryTimeQueueConstants } from "../app.constant"
 @Module({
     imports: [
         BullModule.registerQueue({
-            name: deliveryTimeQueueConstants.NAME
+            name: deliveryTimeQueueConstants.name
         }),
         TypeOrmModule.forFeature([
             SeedGrowthInfoEntity,

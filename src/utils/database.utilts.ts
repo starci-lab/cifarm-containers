@@ -1,10 +1,7 @@
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 
-export type DbType = "postgres"
-
-export interface CreateDatabaseParams<DbType> {
-    type: DbType
+export interface CreateDatabaseParams {
     host: string
     port: number
     user: string
@@ -12,16 +9,15 @@ export interface CreateDatabaseParams<DbType> {
     dbName?: string
 }
 
-export const createDatabase = async <DbType>({
+export const createDatabase = async ({
     host,
     pass,
     port,
-    type,
     user,
     dbName = v4()
-}: CreateDatabaseParams<DbType>) => {
+}: CreateDatabaseParams) => {
     const postgres = new DataSource({
-        type: type as unknown as "postgres",
+        type: "postgres",
         host,
         port,
         username: user,
@@ -33,16 +29,15 @@ export const createDatabase = async <DbType>({
     await dataSource.createQueryRunner().createDatabase(dbName, true)
 }
 
-export const deleteDatabase = async <DbType>({
+export const deleteDatabase = async ({
     host,
     pass,
     port,
-    type,
     user,
     dbName = v4()
-}: CreateDatabaseParams<DbType>) => {
+}: CreateDatabaseParams) => {
     const postgres = new DataSource({
-        type: type as unknown as "postgres",
+        type: "postgres",
         host,
         port,
         username: user,

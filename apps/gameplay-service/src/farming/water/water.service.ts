@@ -32,7 +32,10 @@ export class WaterService {
         await queryRunner.connect()
         try {
             const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemTileId },
+                where: { 
+                    userId: request.userId,
+                    id: request.placedItemTileId 
+                },
                 relations: {
                     seedGrowthInfo: true
                 }

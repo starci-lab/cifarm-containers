@@ -1,47 +1,29 @@
-import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { Module } from "@nestjs/common"
-import { ConfigModule } from "@nestjs/config"
 import { APP_FILTER } from "@nestjs/core"
-import { TypeOrmModule } from "@nestjs/typeorm"
-import { envConfig } from "@src/config"
-import { redisStore } from "cache-manager-redis-yet"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
-import * as Modules from "./modules"
+import { cacheRegisterAsync, configForRoot, typeOrmForRoot } from "@src/dynamic-modules"
+import { AuthModule } from "@src/services"
+import { CommunityModule } from "./community"
+import { ClaimModule } from "./claim"
+import { ShopModule } from "./shop"
+import { DevModule } from "./dev"
+import { DeliveryModule } from "./delivery"
+import { FarmingModule } from "./farming"
+import { ProfileModule } from "./profile"
 @Module({
     imports: [
-        ConfigModule.forRoot({
-            load: [envConfig],
-            envFilePath: [".env.local"],
-            isGlobal: true
-        }),
-        TypeOrmModule.forRoot({
-            type: "postgres",
-            host: envConfig().database.postgres.gameplay.main.host,
-            port: envConfig().database.postgres.gameplay.main.port,
-            username: envConfig().database.postgres.gameplay.main.user,
-            password: envConfig().database.postgres.gameplay.main.pass,
-            database: envConfig().database.postgres.gameplay.main.dbName,
-            autoLoadEntities: true,
-            synchronize: true
-        }),
-        CacheModule.registerAsync({
-            isGlobal: true,
-            useFactory: async () => {
-                const store = await redisStore({
-                    socket: {
-                        host: envConfig().database.redis.cache.host,
-                        port: envConfig().database.redis.cache.port
-                    }
-                })
-
-                return {
-                    store: store as unknown as CacheStore,
-                    ttl: 3 * 60000 // 3 minutes (milliseconds)
-                }
-            }
-        }),
-        ...Object.values(Modules)
+        configForRoot(),
+        typeOrmForRoot(),
+        cacheRegisterAsync(),
+        AuthModule,
+        ClaimModule,
+        CommunityModule,
+        DeliveryModule,
+        DevModule,
+        FarmingModule,
+        ShopModule,
+        ProfileModule
     ],
     controllers: [AppController],
     providers: [

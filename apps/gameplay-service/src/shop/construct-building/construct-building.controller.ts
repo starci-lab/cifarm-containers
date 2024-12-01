@@ -1,8 +1,8 @@
 import { Body, Controller, Logger } from "@nestjs/common"
 import { ConstructBuildingService } from "./construct-building.service"
 import { GrpcMethod } from "@nestjs/microservices"
-import { gameplayGrpcConstants } from "../../config"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
+import { grpcConfig } from "@src/config"
 
 @Controller()
 export class ConstructBuildingController {
@@ -10,7 +10,7 @@ export class ConstructBuildingController {
 
     constructor(private readonly constructBuildingService: ConstructBuildingService) {}
 
-    @GrpcMethod(gameplayGrpcConstants.service, "ConstructBuilding")
+    @GrpcMethod(grpcConfig.gameplay.service, "ConstructBuilding")
     public async constructBuilding(
         @Body() request: ConstructBuildingRequest
     ): Promise<ConstructBuildingResponse> {

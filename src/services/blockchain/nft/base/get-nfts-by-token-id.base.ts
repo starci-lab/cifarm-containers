@@ -42,7 +42,7 @@ export const _getEvmNftByTokenId = async (
     { ipfsService }: GetNftByTokenIdServices,
 ): Promise<NftData> => {
     const nftCollectionId =
-    blockchainConfig()[chainKey].nftCollections[nftCollectionKey][network]
+    blockchainConfig[chainKey].nftCollections[nftCollectionKey][network]
         .collectionId
 
     const rpc = evmHttpRpcUrl(chainKey, network)
@@ -157,7 +157,7 @@ export const _getPolkadotUniqueNetworkNftByTokenId = async ({
     nftCollectionKey,
 }: GetNftByTokenIdParams): Promise<NftData> => {
     const nftCollectionId =
-    blockchainConfig().polkadotUniqueNetwork.nftCollections[nftCollectionKey][
+    blockchainConfig.polkadotUniqueNetwork.nftCollections[nftCollectionKey][
         network
     ].collectionId
 
@@ -191,7 +191,7 @@ export const _getNearNftByTokenId = async ({
     nftCollectionKey,
 }: GetNftByTokenIdParams): Promise<NftData> => {
     const nftCollectionId =
-    blockchainConfig().near.nftCollections[nftCollectionKey][network]
+    blockchainConfig.near.nftCollections[nftCollectionKey][network]
         .collectionId
 
     const client = await nearClient(network)

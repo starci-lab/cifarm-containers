@@ -20,7 +20,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 @Module({
     imports: [
         BullModule.registerQueue({
-            name: cropsTimeQueueConstants.NAME
+            name: cropsTimeQueueConstants.name
         }),
         TypeOrmModule.forFeature([
             SeedGrowthInfoEntity,

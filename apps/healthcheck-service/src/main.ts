@@ -9,8 +9,8 @@ const bootstrap = async () => {
         transport: Transport.GRPC,
         options: {
             url: "0.0.0.0:3002",
-            package: healthcheckGrpcConstants.PACKAGE,
-            protoPath: healthcheckGrpcConstants.PROTO_PATH
+            package: healthcheckGrpcConstants.package,
+            protoPath: healthcheckGrpcConstants.protoPath
         }
     })
 

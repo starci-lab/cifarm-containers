@@ -5,10 +5,17 @@ import "./shop/entry.proto";
 import "./farming/entry.proto";
 import "./delivery/entry.proto";
 import "./claim/entry.proto";
+import "./auth/entry.proto";
+import "./community/entry.proto";
 
 package gameplay;
 
 service GameplayService {
+    // Auth methods
+    rpc RequestMessage(google.protobuf.Empty) returns (RequestMessageResponse);
+    rpc GenerateTestSignature(GenerateTestSignatureRequest) returns (GenerateTestSignatureResponse);
+    rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse);
+
     // Shop methods
     rpc BuySeeds(BuySeedsRequest) returns (google.protobuf.Empty);
     rpc BuyAnimal(BuyAnimalRequest) returns (BuyAnimalResponse);
@@ -30,4 +37,10 @@ service GameplayService {
     // Claim methods
     rpc ClaimDailyReward(ClaimDailyRewardRequest) returns (google.protobuf.Empty);
     rpc Spin(SpinRequest) returns (SpinResponse);
+
+    // Community methods
+    rpc Follow(FollowRequest) returns (google.protobuf.Empty);
+    rpc HelpUsePesticide(HelpUsePesticideRequest) returns (google.protobuf.Empty);
+    rpc HelpWater(HelpWaterRequest) returns (google.protobuf.Empty);
+    rpc HelpCureAnimal(HelpCureAnimalRequest) returns (google.protobuf.Empty);
 }

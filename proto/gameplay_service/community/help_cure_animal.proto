@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package gameplay;
+
+message HelpCureAnimalRequest {
+    string userId = 1;
+    string neighborUserId = 2;
+}

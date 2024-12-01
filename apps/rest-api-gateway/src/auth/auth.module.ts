@@ -1,20 +1,19 @@
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { AuthController } from "./auth.controller"
-import { authGrpcConstants } from "@apps/auth-service"
-import { envConfig } from "@src/config"
+import { envConfig, grpcConfig } from "@src/config"
 
 @Module({
     imports: [
         ClientsModule.registerAsync([
             {
-                name: authGrpcConstants.NAME,
+                name: grpcConfig.gameplay.name,
                 useFactory: async () => ({
                     transport: Transport.GRPC,
                     options: {
-                        url: `${envConfig().containers.authService.host}:${envConfig().containers.authService.port}`,
-                        package: authGrpcConstants.PACKAGE,
-                        protoPath: authGrpcConstants.PROTO_PATH
+                        url: `${envConfig().containers.gameplayService.host}:${envConfig().containers.gameplayService.port}`,
+                        package: grpcConfig.gameplay.package,
+                        protoPath: grpcConfig.gameplay.protoPath
                     }
                 })
             }

@@ -57,7 +57,7 @@ export const _mintNearNft = async ({
     const client = await nearClient(network, storageKey)
     const account = await client.account(accountId)
     //default
-    const { nftCollections, decimals } = blockchainConfig()[chainKey]
+    const { nftCollections, decimals } = blockchainConfig[chainKey]
     const nftCollectionId = nftCollections[nftCollectionKey][network].collectionId
 
     const { defaultImageUrl, defaultTitlePrefix } =

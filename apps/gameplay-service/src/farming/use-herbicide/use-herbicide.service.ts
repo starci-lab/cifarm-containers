@@ -11,7 +11,7 @@ import {
 import { DataSource } from "typeorm"
 import { UseHerbicideRequest, UseHerbicideResponse } from "./use-herbicide.dto"
 import {
-    PlacedItemNotNeedUseHerbicideException,
+    PlacedItemTileNotNeedUseHerbicideException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotPlantedException,
     UseHerbicideTransactionFailedException
@@ -32,7 +32,10 @@ export class UseHerbicideService {
         await queryRunner.connect()
         try {
             const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemTileId },
+                where: { 
+                    userId: request.userId,
+                    id: request.placedItemTileId  
+                },
                 relations: {
                     seedGrowthInfo: true
                 }
@@ -44,7 +47,7 @@ export class UseHerbicideService {
                 throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
 
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy)
-                throw new PlacedItemNotNeedUseHerbicideException(request.placedItemTileId)
+                throw new PlacedItemTileNotNeedUseHerbicideException(request.placedItemTileId)
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }

@@ -11,7 +11,7 @@ import {
 import { DataSource } from "typeorm"
 import { UsePesticideRequest, UsePesticideResponse } from "./use-pesticide.dto"
 import {
-    PlacedItemNotNeedUsePesticideException,
+    PlacedItemTileNotNeedUsePesticideException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotPlantedException,
     UsePesticideTransactionFailedException
@@ -32,7 +32,10 @@ export class UsePesticideService {
         await queryRunner.connect()
         try {
             const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemTileId },
+                where: { 
+                    userId: request.userId,
+                    id: request.placedItemTileId 
+                },
                 relations: {
                     seedGrowthInfo: true
                 }
@@ -44,13 +47,13 @@ export class UsePesticideService {
                 throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
 
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested)
-                throw new PlacedItemNotNeedUsePesticideException(request.placedItemTileId)
+                throw new PlacedItemTileNotNeedUsePesticideException(request.placedItemTileId)
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
             })
             const {
-                usePesticide: { energyConsume, experiencesGain }
+                helpUsePesticide: { energyConsume, experiencesGain }
             } = value as Activities
 
             const user = await queryRunner.manager.findOne(UserEntity, {

@@ -9,7 +9,7 @@ import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-clas
 @Module({
     imports: [
         BullModule.registerQueue({
-            name: animalsTimeQueueConstants.NAME
+            name: animalsTimeQueueConstants.name
         }),
         TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
     ],

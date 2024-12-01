@@ -29,7 +29,7 @@ export class AlgorandAuthService {
 
     public getFakeKeyPair(accountNumber: number) {
         const seed = mnemonicToSeedSync(
-            fakeConfig().mnemonic,
+            fakeConfig.mnemonic,
             accountNumber.toString(),
         )
         const algorandMnemonic = mnemonicFromSeed(seed.subarray(0, 32))

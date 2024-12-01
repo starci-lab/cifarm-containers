@@ -1,4 +1,8 @@
-import { GrpcNotFoundException, GrpcResourceExhaustedException } from "nestjs-grpc-exceptions"
+import {
+    GrpcInvalidArgumentException,
+    GrpcNotFoundException,
+    GrpcResourceExhaustedException
+} from "nestjs-grpc-exceptions"
 
 export class UserNotFoundException extends GrpcNotFoundException {
     constructor(id: string) {
@@ -51,5 +55,11 @@ export class GoldCannotBeZeroOrNegativeException extends GrpcResourceExhaustedEx
 export class TokenCannotBeZeroOrNegativeException extends GrpcResourceExhaustedException {
     constructor(message: string) {
         super(`Token cannot be zero or negative: ${message}`)
+    }
+}
+
+export class SelfFollowException extends GrpcInvalidArgumentException {
+    constructor(id: string) {
+        super(`Cannot self follow: ${id}`)
     }
 }

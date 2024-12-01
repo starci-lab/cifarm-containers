@@ -10,7 +10,7 @@ import { ApiResponse, ApiTags } from "@nestjs/swagger"
 export class HealthcheckController implements OnModuleInit {
     private readonly logger = new Logger(HealthcheckController.name)
 
-    constructor(@Inject(healthcheckGrpcConstants.NAME) private client: ClientGrpc) {}
+    constructor(@Inject(healthcheckGrpcConstants.name) private client: ClientGrpc) {}
 
     private healthcheckService: IHealthcheckService
     onModuleInit() {
