@@ -1,5 +1,5 @@
 import { IntrospectAndCompose } from "@apollo/gateway"
-import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/dist/esm/plugin/landingPage/default"
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default"
 import { ApolloGatewayDriverConfig, ApolloGatewayDriver, ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo"
 import { DynamicModule } from "@nestjs/common"
 import { GraphQLModule } from "@nestjs/graphql"
