@@ -109,7 +109,7 @@ export class HarvestCropService {
                 entities: existingInventories,
                 userId: request.userId,
                 data: {
-                    inventoryTypeId: inventoryType.id,
+                    inventoryType: inventoryType,
                     quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
                 }
             })

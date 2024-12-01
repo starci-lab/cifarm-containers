@@ -3,6 +3,9 @@ import { DeliverProductModule } from "./deliver-product"
 import { RetainProductModule } from "./retain-product"
 
 @Module({
-    imports: [ DeliverProductModule, RetainProductModule ]
+    imports: [
+        DeliverProductModule,
+        RetainProductModule
+    ]
 })
 export class DeliveryModule {}

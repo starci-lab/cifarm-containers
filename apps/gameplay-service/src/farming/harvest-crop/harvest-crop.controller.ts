@@ -11,7 +11,7 @@ export class HarvestCropController {
     constructor(private readonly harvestCropService: HarvestCropService) {}
 
     @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "HarvestCrop")
-    public async water(request: HarvestCropRequest) {
+    public async harvestCrop(request: HarvestCropRequest) {
         this.logger.debug("Harvest crop request called")
         return this.harvestCropService.harvestCrop(request)
     }

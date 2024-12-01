@@ -23,6 +23,8 @@ import {
     ConstructBuildingResponse,
     DeliverProductRequest,
     DeliverProductResponse,
+    HarvestCropRequest,
+    HarvestCropResponse,
     PlantSeedRequest,
     PlantSeedResponse,
     TheifCropRequest,
@@ -160,13 +162,13 @@ export class GameplayController implements OnModuleInit {
     @HttpCode(HttpStatus.OK)
     @ApiResponse({})
     @Post("/harvest-crop")
-    public async Water(
+    public async harvestCrop(
         @User() user: UserLike,
-        @Body() request: WaterRequest
-    ): Promise<WaterResponse> {
-        this.logger.debug(`Processing Water for user ${user?.id}`)
+        @Body() request: HarvestCropRequest
+    ): Promise<HarvestCropResponse> {
+        this.logger.debug(`Processing harvest crop for user ${user?.id}`)
         return await lastValueFrom(
-            this.gameplayService.havestCrop({
+            this.gameplayService.harvestCrop({
                 ...request,
                 userId: user?.id
             })
