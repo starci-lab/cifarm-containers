@@ -41,6 +41,7 @@ service GameplayService {
 
     // Community methods
     rpc Follow(FollowRequest) returns (google.protobuf.Empty);
+    rpc Unfollow(UnfollowRequest) returns (google.protobuf.Empty);
     rpc HelpUsePesticide(HelpUsePesticideRequest) returns (google.protobuf.Empty);
     rpc HelpWater(HelpWaterRequest) returns (google.protobuf.Empty);
     rpc HelpCureAnimal(HelpCureAnimalRequest) returns (google.protobuf.Empty);

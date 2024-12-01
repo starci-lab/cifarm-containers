@@ -32,7 +32,6 @@ export class FollowService {
                 followerId: request.userId,
                 followeeId: request.followedUserId
             })
-            return
         } finally {
             await queryRunner.release()
         }
