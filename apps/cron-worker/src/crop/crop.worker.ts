@@ -35,7 +35,7 @@ export class CropWorker extends WorkerHost {
                 where: {
                     fullyMatured: false,
                     currentState: Not(CropCurrentState.NeedWater),
-                    createdAt: LessThanOrEqual(dayjs(utcTime).utc().toDate())
+                    createdAt: LessThanOrEqual(dayjs(utcTime).toDate())
                 },
                 relations: {
                     crop: true
