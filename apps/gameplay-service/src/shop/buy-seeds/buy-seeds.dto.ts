@@ -2,7 +2,7 @@
 
 import { ApiProperty } from "@nestjs/swagger"
 import { CropId } from "@src/database"
-import { Empty, UserIdRequest } from "@src/types"
+import { UserIdRequest } from "@src/types"
 import { IsInt, IsString, Min } from "class-validator"
 
 export class BuySeedsRequest extends UserIdRequest {
@@ -16,4 +16,4 @@ export class BuySeedsRequest extends UserIdRequest {
         quantity: number
 }
 
-export type BuySeedsResponse = Empty
+export class BuySeedsResponse {}

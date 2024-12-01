@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common"
-import { DeliveryService } from "./delivery.service"
+import { CropWorker } from "./crop.worker"
 import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
 import { BullQueueName } from "@src/config"
 
 @Module({
     imports: [
-        bullRegisterQueue(BullQueueName.Delivery),
+        bullRegisterQueue(BullQueueName.Crop),
         typeOrmForFeature(),
     ],
-    providers: [DeliveryService]
+    providers: [CropWorker]
 })
-export class DeliveryModule {}
+export class CropModule {}

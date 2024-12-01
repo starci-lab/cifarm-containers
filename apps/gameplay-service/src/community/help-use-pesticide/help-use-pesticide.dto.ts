@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Empty, NeighborAndUserIdRequest } from "@src/types"
+import { NeighborAndUserIdRequest } from "@src/types"
 import { IsUUID } from "class-validator"
 
 export class HelpUsePesticideRequest extends NeighborAndUserIdRequest {
@@ -8,4 +8,4 @@ export class HelpUsePesticideRequest extends NeighborAndUserIdRequest {
         placedItemTileId: string
 }
 
-export type HelpUsePesticideResponse = Empty
+export class HelpUsePesticideResponse {}

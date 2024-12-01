@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common"
-import { DeliveryService } from "./delivery.service"
+import { AnimalService } from "./animal.service"
 import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
 import { BullQueueName } from "@src/config"
 
 @Module({
     imports: [
-        bullRegisterQueue(BullQueueName.Delivery),
+        bullRegisterQueue(BullQueueName.Animal),
         typeOrmForFeature(),
     ],
-    providers: [DeliveryService]
+    providers: [AnimalService]
 })
-export class DeliveryModule {}
+export class AnimalModule {}

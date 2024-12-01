@@ -68,23 +68,18 @@ export class DeliverProductService {
                 }
 
                 // Save delivering product in database
-                const savedDeliveringProduct = await queryRunner.manager.save(
+                await queryRunner.manager.save(
                     DeliveringProductEntity,
                     deliveringProduct
                 )
 
                 await queryRunner.commitTransaction()
-
-                this.logger.log(
-                    `Successfully delivered product for user ${request.userId}, delivering product id: ${savedDeliveringProduct.id}`
-                )
-
-                return { deliveringProductId: savedDeliveringProduct.id }
             } catch (error) {
                 this.logger.error("Delivery transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
                 throw new DeliverProductTransactionFailedException(error)
             }
+            return {}
         } finally {
             await queryRunner.release()
         }

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Empty, UserIdRequest } from "@src/types"
+import { UserIdRequest } from "@src/types"
 import { IsString } from "class-validator"
 
 export class RetainProductRequest extends UserIdRequest {
@@ -8,4 +8,4 @@ export class RetainProductRequest extends UserIdRequest {
         deliveringProductId: string
 }
 
-export type RetainProductResponse = Empty
+export class RetainProductResponse {}

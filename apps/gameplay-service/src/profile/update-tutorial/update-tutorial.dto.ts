@@ -11,3 +11,5 @@ export class UpdateTutorialRequest extends UserIdRequest {
     @ApiProperty({ example: 1 })
         stepIndex: number
 }
+
+export class UpdateTutorialResponse {}

@@ -73,32 +73,29 @@ export class ConstructBuildingService {
                 placedItemTypeId: placedItemType.id
             }
 
+            // Subtract gold
+            const goldsChanged = this.goldBalanceService.subtract({
+                entity: user,
+                amount: totalCost
+            })
+
             // Start transaction
             await queryRunner.startTransaction()
             try {
-                // Subtract gold
-                const goldsChanged = this.goldBalanceService.subtract({
-                    entity: user,
-                    amount: totalCost
-                })
-
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...goldsChanged
                 })
 
                 // Save the placed item in the database
-                const savedBuilding = await queryRunner.manager.save(PlacedItemEntity, placedItem)
+                await queryRunner.manager.save(PlacedItemEntity, placedItem)
 
                 await queryRunner.commitTransaction()
-
-                this.logger.log(`Successfully constructed building with id: ${savedBuilding.id}`)
-
-                return { placedItemId: savedBuilding.id }
             } catch (error) {
                 this.logger.error("Construction transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
                 throw new ConstructBuildingTransactionFailedException(error)
             }
+            return {}
         } finally {
             await queryRunner.release()
         }

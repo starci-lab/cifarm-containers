@@ -2,7 +2,6 @@ import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { Job } from "bullmq"
 import { DataSource, Not } from "typeorm"
-import { CropsJobData, cropsTimeQueueConstants } from "@apps/cron-scheduler"
 import {
     CropCurrentState,
     CropRandomness,
@@ -10,16 +9,19 @@ import {
     SystemEntity,
     SystemId
 } from "@src/database"
+import { CropsWorkerProcessTransactionFailedException } from "@src/exceptions"
+import { bullConfig, BullQueueName } from "@src/config"
+import { CropJobData } from "@apps/cron-scheduler"
 
-@Processor(cropsTimeQueueConstants.name)
-export class CropsWorker extends WorkerHost {
-    private readonly logger = new Logger(CropsWorker.name)
+@Processor(bullConfig[BullQueueName.Crop].name)
+export class CropWorker extends WorkerHost {
+    private readonly logger = new Logger(CropWorker.name)
 
     constructor(private readonly dataSource: DataSource) {
         super()
     }
 
-    public override async process(job: Job<CropsJobData>): Promise<void> {
+    public override async process(job: Job<CropJobData>): Promise<void> {
         this.logger.verbose(`Processing job: ${job.id} - data: ${JSON.stringify(job.data)}`)
         const { from, to, seconds } = job.data
 
@@ -99,8 +101,9 @@ export class CropsWorker extends WorkerHost {
                 await queryRunner.manager.save(SeedGrowthInfoEntity, seedGrowthInfos)
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error(error)
+                this.logger.error(`Transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
+                throw new CropsWorkerProcessTransactionFailedException(error)
             }
         } finally {
             await queryRunner.release()

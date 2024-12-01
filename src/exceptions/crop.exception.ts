@@ -11,9 +11,3 @@ export class CropNotAvailableInShopException extends GrpcResourceExhaustedExcept
         super(`Crop not available in shop: ${id}`)
     }
 }
-
-export class BuySeedsTransactionFailedException extends GrpcResourceExhaustedException {
-    constructor(error: Error) {
-        super(`Failed to buy seeds: ${error.message}`)
-    }
-}

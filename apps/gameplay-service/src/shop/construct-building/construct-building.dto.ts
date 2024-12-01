@@ -15,8 +15,4 @@ export class ConstructBuildingRequest extends UserIdRequest {
         position: Position
 }
 
-export class ConstructBuildingResponse {
-    @IsString()
-    @ApiProperty({ example: "placed-item-id" })
-        placedItemId: string
-}
+export class ConstructBuildingResponse {}

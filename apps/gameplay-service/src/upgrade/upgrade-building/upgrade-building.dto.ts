@@ -9,8 +9,4 @@ export class UpgradeBuildingRequest extends UserIdRequest {
 
 }
 
-export class UpgradeBuildingResponse {
-    @IsString()
-    @ApiProperty({ example: "placed-item-id" })
-        placedItemId: string
-}
+export class UpgradeBuildingResponse {}

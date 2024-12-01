@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsInt } from "class-validator"
 
-export class CropsJobData {
+export class CropJobData {
     @IsInt()
     @ApiProperty({ example: 1, description: "From index" })
         from: number

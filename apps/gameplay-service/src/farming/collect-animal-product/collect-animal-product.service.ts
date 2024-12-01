@@ -1,9 +1,23 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalInfoEntity, InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity, ProductType } from "@src/database"
-import { AnimalNotCurrentlyYieldingException, PlacedItemAnimalNotFoundException } from "@src/exceptions"
+import {
+    AnimalInfoEntity,
+    InventoryEntity,
+    InventoryType,
+    InventoryTypeEntity,
+    PlacedItemEntity,
+    ProductType
+} from "@src/database"
+import {
+    AnimalNotCurrentlyYieldingException,
+    CollectAnimalProductTransactionFailedException,
+    PlacedItemAnimalNotFoundException
+} from "@src/exceptions"
 import { InventoryService } from "@src/services"
 import { DataSource } from "typeorm"
-import { CollectAnimalProductRequest, CollectAnimalProductResponse } from "./collect-animal-product.dto"
+import {
+    CollectAnimalProductRequest,
+    CollectAnimalProductResponse
+} from "./collect-animal-product.dto"
 
 @Injectable()
 export class CollectAnimalProductService {
@@ -14,7 +28,9 @@ export class CollectAnimalProductService {
         private readonly inventoryService: InventoryService
     ) {}
 
-    async collectAnimalProduct(request: CollectAnimalProductRequest): Promise<CollectAnimalProductResponse> {
+    async collectAnimalProduct(
+        request: CollectAnimalProductRequest
+    ): Promise<CollectAnimalProductResponse> {
         this.logger.debug(
             `Starting collect animal product for placedItem ${request?.placedItemAnimalId}`
         )
@@ -24,9 +40,9 @@ export class CollectAnimalProductService {
 
         try {
             const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { 
+                where: {
                     id: request.placedItemAnimalId,
-                    userId: request.userId,
+                    userId: request.userId
                 },
                 relations: {
                     animalInfo: {
@@ -34,25 +50,25 @@ export class CollectAnimalProductService {
                     }
                 }
             })
-    
+
             if (!placedItemAnimal) {
                 throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
             }
-    
+
             const animalInfo = placedItemAnimal.animalInfo
-    
+
             if (!animalInfo || !animalInfo.hasYielded) {
                 throw new AnimalNotCurrentlyYieldingException(request.placedItemAnimalId)
             }
 
             //Get inventory type
             const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                where: { product: 
-                    {
+                where: {
+                    product: {
                         type: ProductType.Animal,
                         animalId: animalInfo.animalId
-                    }, 
-                type: InventoryType.Product 
+                    },
+                    type: InventoryType.Product
                 },
                 relations: {
                     product: true
@@ -62,7 +78,7 @@ export class CollectAnimalProductService {
             //Get inventories same type
             const existingInventories = await queryRunner.manager.find(InventoryEntity, {
                 where: {
-                    inventoryTypeId: inventoryType.id,
+                    inventoryTypeId: inventoryType.id
                 },
                 relations: {
                     inventoryType: {
@@ -79,32 +95,26 @@ export class CollectAnimalProductService {
                     quantity: animalInfo.harvestQuantityRemaining
                 }
             })
-    
+
             queryRunner.startTransaction()
 
             try {
                 //Save inventory
-                const savedInventory = await queryRunner.manager.save(InventoryEntity, updatedInventories)
-    
+                await queryRunner.manager.save(InventoryEntity, updatedInventories)
+
                 // Save updated placed item
-                await queryRunner.manager.update(AnimalInfoEntity, 
-                    placedItemAnimal.animalInfo.id, 
-                    {
-                        hasYielded: false,
-                    })
-    
+                await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
+                    hasYielded: false
+                })
+
                 // Commit transaction
                 await queryRunner.commitTransaction()
-    
-                // Last inventory saved is the animal product
-                return {
-                    inventoryAnimalProductId: savedInventory[savedInventory.length - 1].id
-                }
             } catch (error) {
                 await queryRunner.rollbackTransaction()
                 this.logger.error("Collect Animal Product transaction failed", error)
-                throw error
+                throw new CollectAnimalProductTransactionFailedException(error)
             }
+            return {}
         } finally {
             await queryRunner.release()
         }

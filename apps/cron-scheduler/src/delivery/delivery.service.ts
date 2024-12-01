@@ -4,16 +4,16 @@ import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
-import { deliveryTimeQueueConstants } from "../app.constant"
 import { DeliveryJobData } from "./delivery.dto"
 import { DeliveringProductEntity } from "@src/database"
+import { bullConfig, BullQueueName } from "@src/config"
 
 @Injectable()
 export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
 
     constructor(
-        @InjectQueue(deliveryTimeQueueConstants.name) private deliveryQueue: Queue,
+        @InjectQueue(bullConfig[BullQueueName.Delivery].name) private deliveryQueue: Queue,
         private readonly dataSource: DataSource
     ) {}
 
@@ -45,7 +45,7 @@ export class DeliveryService {
         }
 
         //split into 10000 per batch
-        const batchSize = deliveryTimeQueueConstants.BATCH_SIZE
+        const batchSize = bullConfig[BullQueueName.Delivery].batchSize
         const batchCount = Math.ceil(count / batchSize)
 
         // Create batches

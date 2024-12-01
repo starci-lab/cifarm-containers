@@ -1,25 +1,17 @@
-import { BullModule } from "@nestjs/bullmq"
 import { Module } from "@nestjs/common"
-import { ScheduleModule } from "@nestjs/schedule"
-import { envConfig } from "@src/config"
-import { AnimalsModule } from "./animals"
-import { CropsModule } from "./crops"
+import { AnimalModule } from "./animal"
+import { CropModule } from "./crop"
 import { DeliveryModule } from "./delivery"
-import { configForRoot, typeOrmForRoot } from "@src/dynamic-modules"
+import { bullForRoot, configForRoot, schedulerForRoot, typeOrmForRoot } from "@src/dynamic-modules"
 
 @Module({
     imports: [
         configForRoot(),
-        ScheduleModule.forRoot(),
-        BullModule.forRoot({
-            connection: {
-                host: envConfig().database.redis.job.host,
-                port: envConfig().database.redis.job.port
-            }
-        }),
+        schedulerForRoot(),
+        bullForRoot(),
         typeOrmForRoot(),
-        CropsModule,
-        AnimalsModule,
+        CropModule,
+        AnimalModule,
         DeliveryModule
     ]
 })
