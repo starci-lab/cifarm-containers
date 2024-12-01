@@ -1,16 +1,13 @@
-import { BullModule } from "@nestjs/bullmq"
 import { Module } from "@nestjs/common"
-import { CropsWorker } from "./delivery.service"
-import { typeOrmForFeature } from "@src/dynamic-modules"
-import { bullConfig, BullQueueName } from "@src/config"
+import { BullQueueName } from "@src/config"
+import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
+import { DeliveryWorker } from "./delivery.worker"
 
 @Module({
     imports: [
-        BullModule.registerQueue({
-            name: bullConfig[BullQueueName.Delivery].name
-        }),
+        bullRegisterQueue(BullQueueName.Delivery),
         typeOrmForFeature(),
     ],
-    providers: [CropsWorker]
+    providers: [DeliveryWorker]
 })
-export class CropsModule {}
+export class DeliveryModule {}

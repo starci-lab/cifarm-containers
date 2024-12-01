@@ -11,11 +11,11 @@ import {
 
 export abstract class AbstractEntity {
     @Field(() => Date)
-    @CreateDateColumn({name: "created_at"})
+    @CreateDateColumn({type: "time with time zone", name: "created_at"})
         createdAt: Date
     
     @Field(() => Date)
-    @UpdateDateColumn({name: "updated_at"})
+    @UpdateDateColumn({type: "time with time zone", name: "updated_at"})
         updatedAt: Date
     
     toDto<Dto>(dtoClass: ClassConstructor<Dto>): Dto {

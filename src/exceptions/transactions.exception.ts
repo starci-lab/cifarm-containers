@@ -155,3 +155,9 @@ export class CropsWorkerProcessTransactionFailedException extends GrpcInternalEx
         super(`Failed to process crops worker: ${error.message}`)
     }
 }
+
+export class DeliverysWorkerProcessTransactionFailedException extends GrpcInternalException {
+    constructor(error: Error) {
+        super(`Failed to process delivery worker: ${error.message}`)
+    }
+}

@@ -91,7 +91,7 @@ export enum SystemId {
     Activities = "activities",
     CropRandomness = "cropRandomness",
     Starter = "starter",
-    SpinInfo = "spinInfo"
+    SpinInfo = "spinInfo",
 }
 
 export enum InventoryTypeId {
@@ -117,3 +117,4 @@ export enum PlacedItemTypeId {
     BasicTile3 = "basicTile3",
     FertileTile = "fertileTile"
 }
+

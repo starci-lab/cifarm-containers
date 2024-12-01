@@ -36,6 +36,7 @@ import {
     UpgradeEntity,
     UpgradeId,
     SpinInfo,
+    DeliveryTimeInfo,
 } from "@src/database"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 

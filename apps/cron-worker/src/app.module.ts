@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common"
 import { CropModule } from "./crop"
 import { bullForRoot, configForRoot, schedulerForRoot, typeOrmForRoot } from "@src/dynamic-modules"
+import { DeliveryModule } from "./delivery"
 
 @Module({
     imports: [
@@ -8,7 +9,8 @@ import { bullForRoot, configForRoot, schedulerForRoot, typeOrmForRoot } from "@s
         bullForRoot(),
         schedulerForRoot(),
         typeOrmForRoot(),
-        CropModule
+        CropModule,
+        DeliveryModule
         //AnimalsModule
     ]
 })
