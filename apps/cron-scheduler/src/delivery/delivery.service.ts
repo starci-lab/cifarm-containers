@@ -32,50 +32,28 @@ export class DeliveryService {
             this.logger.debug("Fetching distinct users with delivering products.")
 
             const { count } = await queryRunner.manager
-                .createQueryBuilder()
-                .select("user_id")
-                .from(DeliveringProductEntity, "delivering_products")
-                .groupBy("user_id")
-                .having("COUNT(id) > 0")
+                .createQueryBuilder(DeliveringProductEntity, "delivering_products")
+                .select("COUNT(DISTINCT delivering_products.userId)", "count")
                 .getRawOne()
+
+            if (!count) {
+                this.logger.verbose("No users to process.")
+                return
+            }
             
             const batchSize = bullConfig[BullQueueName.Animal].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
-            const promises: Array<Promise<void>> = []
-            const batches: Array<{
-                name: string
-                data: DeliveryJobData
-            }> = []
+            const batches = Array.from({ length: batchCount }, (_, i) => ({
+                name: v4(),
+                data: {
+                    skip: i * batchSize,
+                    take: batchSize,
+                    utcTime: utcNow.valueOf(),
+                } as DeliveryJobData,
+            }))
 
-            for (let i = 0; i < batchCount; i++) {
-                promises.push(
-                    (async () => {
-                        const skip = i * batchSize
-                        const take = Math.min((i + 1) * batchSize, count)
-
-                        const rawUserIds = await queryRunner.manager
-                            .createQueryBuilder()
-                            .select("user_id")
-                            .from(DeliveringProductEntity, "delivering_products")
-                            .groupBy("user_id")
-                            .having("COUNT(id) > 0")
-                            .skip(skip)
-                            .take(take)
-                            .getRawMany()   
-                        batches.push({
-                            name: v4(),
-                            data: {
-                                userIds: rawUserIds.map((rawUserId) => rawUserId.user_id),
-                                utcTime: utcNow.valueOf()
-                            }
-                        })
-                    })()
-                )
-            }
-            await Promise.all(promises)
-
-            this.logger.verbose(`Adding ${batches.length} batches to the queue`)
+            this.logger.verbose(`Adding ${batches.length} batches to the queue.`)
             await this.deliveryQueue.addBulk(batches)
         } finally {
             await queryRunner.release()

@@ -3,7 +3,7 @@ import { GetContractObservableParams } from "../common"
 import { WebSocketProvider, Contract } from "ethers"
 import { evmWsRpcUrl } from "../../rpcs"
 import { erc721Abi } from "../../abis"
-import * as WebSocket from "ws"
+import WebSocket from "ws"
 
 @Injectable()
 export class BlockchainNftObserverService {

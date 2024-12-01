@@ -71,6 +71,10 @@ describe("Deliver product flow", () => {
             }
         })
         //get the first tile
+        console.log(user.id)
+
+        console.log(await dataSource.manager.find(PlacedItemEntity))
+
         const { id: placedItemTileId } = await dataSource.manager.findOne(PlacedItemEntity, {
             where: {
                 userId: user.id,
