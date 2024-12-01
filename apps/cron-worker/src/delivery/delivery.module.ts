@@ -1,13 +1,13 @@
-import { cropsTimeQueueConstants } from "@apps/cron-scheduler"
 import { BullModule } from "@nestjs/bullmq"
 import { Module } from "@nestjs/common"
 import { CropsWorker } from "./delivery.service"
 import { typeOrmForFeature } from "@src/dynamic-modules"
+import { bullConfig, BullQueueName } from "@src/config"
 
 @Module({
     imports: [
         BullModule.registerQueue({
-            name: cropsTimeQueueConstants.name
+            name: bullConfig[BullQueueName.Delivery].name
         }),
         typeOrmForFeature(),
     ],
