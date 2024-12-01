@@ -35,7 +35,7 @@ export class CropWorker extends WorkerHost {
                 where: {
                     fullyMatured: false,
                     currentState: Not(CropCurrentState.NeedWater),
-                    updatedAt: LessThanOrEqual(dayjs(utcTime).utc().toDate())
+                    createdAt: LessThanOrEqual(dayjs(utcTime).utc().toDate())
                 },
                 relations: {
                     crop: true
@@ -43,7 +43,7 @@ export class CropWorker extends WorkerHost {
                 skip,
                 take,
                 order: {
-                    updatedAt: "ASC"
+                    createdAt: "ASC"
                 }
             })
             const system = await queryRunner.manager.findOne(SystemEntity, {
