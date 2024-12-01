@@ -2,8 +2,9 @@ syntax = "proto3";
 
 import "google/protobuf/empty.proto";
 
-package farming;
+package gameplay_service;
 
 message HarvestCropRequest {
-    string placedItemTileId = 1;
+    string userId = 1;
+    string placedItemTileId = 2;
 }

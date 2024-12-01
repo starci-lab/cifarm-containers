@@ -63,7 +63,7 @@ export interface IGameplayService {
     constructBuilding(request: ConstructBuildingRequest): Observable<ConstructBuildingResponse>
 
     //Farming
-    havestCrop(request: HarvestCropRequest): Observable<HarvestCropResponse>
+    harvestCrop(request: HarvestCropRequest): Observable<HarvestCropResponse>
     water(request: WaterRequest): Observable<WaterResponse>
     plantSeed(request: PlantSeedRequest): Observable<PlantSeedResponse>
     useHerbicide(request: UseHerbicideRequest): Observable<UseHerbicideResponse>

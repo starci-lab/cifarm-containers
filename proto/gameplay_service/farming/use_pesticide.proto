@@ -2,7 +2,7 @@ syntax = "proto3";
 
 import "google/protobuf/empty.proto";
 
-package farming;
+package gameplay_service;
 
 message UsePesticideRequest {
     string userId = 1;
