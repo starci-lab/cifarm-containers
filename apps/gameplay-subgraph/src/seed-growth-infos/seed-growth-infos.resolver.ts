@@ -18,4 +18,12 @@ export class SeedGrowthInfosResolver {
     ): Promise<Array<SeedGrowthInfoEntity>> {
         return this.seedgrowthinfosService.getSeedGrowthInfos(args)
     }
+    @Query(() => SeedGrowthInfoEntity, {
+        name: "seed_growth_infos"
+    })
+    async getSeedGrowthInfoByID(
+        @Args("id") id: string 
+    ): Promise<SeedGrowthInfoEntity> {
+        return this.seedgrowthinfosService.getSeedGrowthInfoByID(id)
+    }
 }

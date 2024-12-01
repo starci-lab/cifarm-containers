@@ -8,7 +8,7 @@ import { v4 } from "uuid"
 import { CropCurrentState, SeedGrowthInfoEntity } from "@src/database"
 import { CropsJobData } from "./crops.dto"
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
-import { speedUpConstants } from "@apps/gameplay-service"
+import { CacheKey } from "@src/config"
 
 @Injectable()
 export class CropsService {
@@ -49,12 +49,12 @@ export class CropsService {
         const batchSize = cropsTimeQueueConstants.BATCH_SIZE
         const batchCount = Math.ceil(count / batchSize)
 
-        const value = await this.cacheManager.get(speedUpConstants.key)
+        const value = await this.cacheManager.get(CacheKey.SpeedUp)
         let time = 1
         if (value) {
             // kieemr tra kieu du lieu xem redis luu string hay number
             time += Number(value)
-            await this.cacheManager.del(speedUpConstants.key)
+            await this.cacheManager.del(CacheKey.SpeedUp)
         }
 
         // Create batches

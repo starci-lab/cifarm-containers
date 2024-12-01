@@ -1,8 +1,8 @@
 import { Logger } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
-import { SpinEntity } from "@src/database"
 import { GetSpinsArgs } from "./"
 import { SpinsService } from "./spins.service"
+import { SpinSlotEntity } from "@src/database"
 
 @Resolver()
 export class SpinsResolver {
@@ -10,10 +10,10 @@ export class SpinsResolver {
 
     constructor(private readonly spinsService: SpinsService) {}
 
-    @Query(() => [SpinEntity], {
+    @Query(() => [SpinSlotEntity], {
         name: "spins"
     })
-    async getSpins(@Args("args") args: GetSpinsArgs): Promise<Array<SpinEntity>> {
+    async getSpins(@Args("args") args: GetSpinsArgs): Promise<Array<SpinSlotEntity>> {
         return this.spinsService.getSpins(args)
     }
 }

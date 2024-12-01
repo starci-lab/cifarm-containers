@@ -48,7 +48,7 @@ export class SpinPrizeEntity extends UuidAbstractEntity {
     @Column({ name: "quantity", type: "int", nullable: true })
         quantity?: number
 
-    @Field(() => AppearanceChance, { nullable: true })
+    @Field(() => String, { nullable: true })
     @Column({ name: "appearance_chance", type: "enum", enum: AppearanceChance })
         appearanceChance: AppearanceChance
 

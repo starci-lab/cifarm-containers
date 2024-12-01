@@ -5,7 +5,14 @@ import { GetSeedGrowthInfosArgs } from "./"
 
 @Injectable()
 export class SeedGrowthInfosService {
+
     private readonly logger = new Logger(SeedGrowthInfosService.name)
+
+    private readonly relations = {
+        crop: true,
+        thiefedBy: true,
+        placedItem: true,
+    }
 
     constructor(private readonly dataSource: DataSource) {}
 
@@ -22,13 +29,25 @@ export class SeedGrowthInfosService {
             seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
                 take: limit,
                 skip: offset,
-                relations: {
-                    crop: true,
-                    thiefedBy: true,
-                    placedItem: true,
-                }
+                relations: this.relations
             })
             return seedGrowthInfos
+        } finally {
+            await queryRunner.release()
+        }
+    }
+    async getSeedGrowthInfoByID(id: string): Promise<SeedGrowthInfoEntity> {
+        this.logger.debug(`GetSeedGrowthInfoByIds: id=${id}`)
+
+        let seedGrowthInfo: SeedGrowthInfoEntity
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            seedGrowthInfo = await queryRunner.manager.findOne(SeedGrowthInfoEntity, {
+                where: { id },
+                relations:this.relations
+            })
+            return seedGrowthInfo
         } finally {
             await queryRunner.release()
         }

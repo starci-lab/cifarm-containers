@@ -23,8 +23,8 @@ import {
     PlacedItemTypeEntity,
     DeliveringProductEntity,
     SpinPrizeEntity,
-    HealthcheckEntity
 } from "@src/database"
+import { FollowRecordEntity } from "@src/database/gameplay-postgresql/follow-record.entity"
 
 export enum TypeOrmDbType {
     Main,
@@ -86,6 +86,7 @@ export const typeOrmForFeature = (type: TypeOrmDbType = TypeOrmDbType.Main): Dyn
             CropEntity,
             ToolEntity,
             BuildingEntity,
+            FollowRecordEntity,
             UpgradeEntity,
             TileEntity,
             SupplyEntity,
@@ -102,7 +103,6 @@ export const typeOrmForFeature = (type: TypeOrmDbType = TypeOrmDbType.Main): Dyn
             SpinSlotEntity,
             AnimalInfoEntity,
             BuildingInfoEntity,
-            HealthcheckEntity
         ],
         map[type]
     )

@@ -23,7 +23,6 @@ export class DailyRewardsService {
                 take: limit,
                 skip: offset,
                 relations: {
-                    dailyRewardPossibilities: true
                 }
             })
             return dailyRewards

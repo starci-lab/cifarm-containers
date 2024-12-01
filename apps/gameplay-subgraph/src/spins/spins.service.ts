@@ -1,5 +1,5 @@
 import { Injectable, Logger, Inject } from "@nestjs/common"
-import { SpinEntity } from "@src/database"
+import { SpinSlotEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import { GetSpinsArgs } from "./"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
@@ -15,19 +15,18 @@ export class SpinsService {
         private cacheManager: Cache
     ) {}
 
-    async getSpins({ limit = 10, offset = 0 }: GetSpinsArgs): Promise<Array<SpinEntity>> {
-        this.logger.debug(`GetSpins: limit=${limit}, offset=${offset}`)
+    async getSpins({ limit = 10, offset = 0 }: GetSpinsArgs): Promise<Array<SpinSlotEntity>> {
+        this.logger.debug(`GetSpinSlots: limit=${limit}, offset=${offset}`)
 
-        let spins: Array<SpinEntity>
+        let spins: Array<SpinSlotEntity>
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            spins = await queryRunner.manager.find(SpinEntity,{
+            spins = await queryRunner.manager.find(SpinSlotEntity,{
                 take: limit,
-                skip: offset
-                ,
+                skip: offset,
                 relations: {
-                    // type: true,
+                    spinPrize: true,
                 }
             })
         } finally {
