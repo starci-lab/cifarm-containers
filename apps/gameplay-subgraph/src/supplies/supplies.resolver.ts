@@ -19,9 +19,10 @@ export class SuppliesResolver {
         return this.suppliesService.getSupplies(args)
     }
 
-    @Query(() => SupplyEntity, {
-        name: "supply"
-    })
+     @Query(() => SupplyEntity, {
+         name: "supply",
+         nullable:true
+     })
     async getSupplyById(@Args("id") id: string): Promise<SupplyEntity | null> {
         this.logger.debug(`getSupplyById: id=${id}`)
         return this.suppliesService.getSupplyById(id)

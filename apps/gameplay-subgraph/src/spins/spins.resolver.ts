@@ -17,9 +17,10 @@ export class SpinsResolver {
         return this.spinsService.getSpins(args)
     }
 
-    @Query(() => SpinSlotEntity, {
-        name: "spin_slot"
-    })
+     @Query(() => SpinSlotEntity, {
+         name: "spin_slot",
+         nullable:true
+     })
     async getSpinSlotById(@Args("id") id: string): Promise<SpinSlotEntity | null> {
         this.logger.debug(`getSpinSlotById: id=${id}`)
         return this.spinsService.getSpinSlotById(id)

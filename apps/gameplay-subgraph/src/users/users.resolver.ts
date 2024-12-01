@@ -18,9 +18,10 @@ export class UserResolver {
         return this.usersService.getUsers(args)
     }
 
-    @Query(() => UserEntity, {
-        name: "user"
-    })
+     @Query(() => UserEntity, {
+         name: "user",
+         nullable:true
+     })
     async getUserById(@Args("id") id: string): Promise<UserEntity | null> {
         this.logger.debug(`getUserById: id=${id}`)
         return this.usersService.getUserById(id)

@@ -19,9 +19,10 @@ export class BuildingInfosResolver {
         return this.buildingInfosService.getBuildingInfos(args)
     }
 
-    @Query(() => BuildingInfoEntity, {
-        name: "building_info"
-    })
+     @Query(() => BuildingInfoEntity, {
+         name: "building_info",
+         nullable:true
+     })
     async getBuildingInfoById(
         @Args("id") id: string
     ): Promise<BuildingInfoEntity> {

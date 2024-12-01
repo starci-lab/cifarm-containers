@@ -18,9 +18,10 @@ export class InventoryResolver {
         return this.inventoriesService.getInventories(args)
     }
 
-    @Query(() => InventoryEntity, {
-        name: "inventory"
-    })
+     @Query(() => InventoryEntity, {
+         name: "inventory",
+         nullable:true
+     })
     async getInventoryById(@Args("id") id: string): Promise<InventoryEntity> {
         this.logger.debug(`getInventoryById: id=${id}`)
         return this.inventoriesService.getInventoryById(id)

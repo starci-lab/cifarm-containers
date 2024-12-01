@@ -21,7 +21,8 @@ export class ToolsResolver {
     }
 
     @Query(() => ToolEntity, {
-        name: "tool"
+        name: "tool",
+        nullable:true
     })
     async getToolById(@Args("id") id: string): Promise<ToolEntity | null> {
         this.logger.debug(`getToolById: id=${id}`)

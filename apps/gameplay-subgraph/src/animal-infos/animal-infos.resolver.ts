@@ -17,9 +17,10 @@ export class AnimalInfosResolver {
         const result = await this.animalInfosService.getAnimalInfos(args)
         return result
     }
-    @Query(() => AnimalInfoEntity, {
-        name: "animal_infos"
-    })
+     @Query(() => AnimalInfoEntity, {
+         name: "animal_infos",
+         nullable:true
+     })
     async getAnimalInfoById(@Args("id") id: string): Promise<AnimalInfoEntity> {
         const result = await this.animalInfosService.getAnimalInfoById(id)
         return result

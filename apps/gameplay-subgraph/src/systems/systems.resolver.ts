@@ -17,9 +17,10 @@ export class SystemsResolver {
         return this.systemsService.getSystems(args)
     }
 
-    @Query(() => SystemEntity, {
-        name: "system"
-    })
+     @Query(() => SystemEntity, {
+         name: "system",
+         nullable:true
+     })
     async getSystemById(@Args("id") id: string): Promise<SystemEntity | null> {
         this.logger.debug(`getSystemById: id=${id}`)
         return this.systemsService.getSystemById(id)

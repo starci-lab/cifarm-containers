@@ -18,9 +18,10 @@ export class ProductResolver {
         return this.productsService.getProducts(args)
     }
 
-    @Query(() => ProductEntity, {
-        name: "product"
-    })
+     @Query(() => ProductEntity, {
+         name: "product",
+         nullable:true
+     })
     async getProductById(@Args("id") id: string): Promise<ProductEntity | null> {
         this.logger.debug(`getProductById: id=${id}`)
         return this.productsService.getProductById(id)

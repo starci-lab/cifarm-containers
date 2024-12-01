@@ -20,9 +20,10 @@ export class AnimalsResolver {
         const result = await this.animalsService.getAnimals(args)
         return result
     }
-    @Query(() => AnimalEntity, {
-        name: "animals"
-    })
+     @Query(() => AnimalEntity, {
+         name: "animals",
+         nullable:true
+     })
     @UseInterceptors(TimerInterceptor, GraphQLCacheInterceptor)
     async getAnimalById(@Args("id") id: string): Promise<AnimalEntity> {
         const result = await this.animalsService.getAnimalById(id)

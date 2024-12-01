@@ -256,37 +256,41 @@ type ToolEntity {
 }
 
 type Query {
-  animals(id: String!): AnimalEntity!
-  animal_infos(id: String!): AnimalInfoEntity!
+  animals(id: String!): AnimalEntity
+  animal_infos(id: String!): AnimalInfoEntity
   buildings(args: GetBuildingsArgs!): [BuildingEntity!]!
   building(id: String!): BuildingEntity!
   building_infos(args: GetBuildingInfosArgs!): [BuildingInfoEntity!]!
-  building_info(id: String!): BuildingInfoEntity!
+  building_info(id: String!): BuildingInfoEntity
   crops(args: GetCropsArgs!): [CropEntity!]!
-  crop(id: String!): CropEntity!
+  crop(id: String!): CropEntity
   daily_rewards(args: GetDailyRewardsArgs!): [DailyRewardEntity!]!
+  daily_reward(id: String!): DailyRewardEntity
   inventories(args: GetInventoriesArgs!): [InventoryEntity!]!
-  inventory(id: String!): InventoryEntity!
+  inventory(id: String!): InventoryEntity
   inventory_types(args: GetInventoryTypesArgs!): [InventoryTypeEntity!]!
-  inventory_type(id: String!): InventoryTypeEntity!
+  inventory_type(id: String!): InventoryTypeEntity
   placed_item_types(args: GetPlacedItemTypesArgs!): [PlacedItemTypeEntity!]!
-  placed_item_type(id: String!): PlacedItemTypeEntity!
+  placed_item_type(id: String!): PlacedItemTypeEntity
   placeditems(args: GetPlacedItemsArgs!): [PlacedItemEntity!]!
-  placeditem(id: String!): PlacedItemEntity!
+  placeditem(id: String!): PlacedItemEntity
   products(args: GetProductsArgs!): [ProductEntity!]!
-  product(id: String!): ProductEntity!
-  seed_growth_infos(id: String!): SeedGrowthInfoEntity!
+  product(id: String!): ProductEntity
+  seed_growth_infos(id: String!): SeedGrowthInfoEntity
   spin_slots(args: GetSpinsArgs!): [SpinSlotEntity!]!
-  spin_slot(id: String!): SpinSlotEntity!
+  spin_slot(id: String!): SpinSlotEntity
   supplies(args: GetSuppliesArgs!): [SupplyEntity!]!
+  supply(id: String!): SupplyEntity
   systems(args: GetSystemsArgs!): [SystemEntity!]!
+  system(id: String!): SystemEntity
   tiles(args: GetTilesArgs!): [TileEntity!]!
+  tile(id: String!): TileEntity
   tools(args: GetToolsArgs!): [ToolEntity!]!
-  tool(id: String!): ToolEntity!
+  tool(id: String!): ToolEntity
   upgrades(args: GetUpgradesArgs!): [UpgradeEntity!]!
-  upgrade(id: String!): UpgradeEntity!
+  upgrade(id: String!): UpgradeEntity
   users(args: GetUsersArgs!): [UserEntity!]!
-  user(id: String!): UserEntity!
+  user(id: String!): UserEntity
 }
 
 input GetBuildingsArgs {

@@ -18,9 +18,10 @@ export class SeedGrowthInfosResolver {
     ): Promise<Array<SeedGrowthInfoEntity>> {
         return this.seedgrowthinfosService.getSeedGrowthInfos(args)
     }
-    @Query(() => SeedGrowthInfoEntity, {
-        name: "seed_growth_infos"
-    })
+     @Query(() => SeedGrowthInfoEntity, {
+         name: "seed_growth_infos",
+         nullable:true
+     })
     @UsePipes(ParseUUIDPipe)
     async getSeedGrowthInfoByID(
         @Args("id") id: string 

@@ -22,9 +22,10 @@ export class InventoryTypeResolver {
         return this.inventoryTypesService.getInventoryTypes(args)
     }
 
-    @Query(() => InventoryTypeEntity, {
-        name: "inventory_type"
-    })
+     @Query(() => InventoryTypeEntity, {
+         name: "inventory_type",
+         nullable:true
+     })
     async getInventoryTypeById(@Args("id") id: string): Promise<InventoryTypeEntity> {
         this.logger.debug(`getInventoryTypeById: id=${id}`)
         return this.inventoryTypesService.getInventoryTypeById(id)
