@@ -27,7 +27,6 @@ import {
     FollowRecordEntity,
     CollectionEntity
 } from "@src/database"
-import { FollowRecordEntity } from "@src/database/gameplay-postgresql/follow-record.entity"
 
 export enum TypeOrmDbType {
     Main,

@@ -1,8 +1,7 @@
 import { Network } from "@src/config"
-import {} from "bs58"
+import { } from "bs58"
 import { connect, KeyPair, keyStores } from "near-api-js"
 import { KeyStore } from "near-api-js/lib/key_stores"
-import { KeyPairString } from "near-api-js/lib/utils"
 export const NEAR_MAINNET_NODE_URL = "https://rpc.mainnet.near.org"
 export const NEAR_TESTNET_NODE_URL = "https://rpc.testnet.near.org"
 export const NEAR_MAINNET_WALLET_URL = "https://wallet.mainnet.near.org"
@@ -35,7 +34,7 @@ const nearRpcsMap: Record<Network, NearRpc> = {
 }
 
 export const nearKeyPair = (privateKey: string) => {
-    return KeyPair.fromString(privateKey as KeyPairString )
+    return KeyPair.fromString(privateKey)
 }
 
 export const nearPublicKeyToAddress = (publicKey: Uint8Array) => {

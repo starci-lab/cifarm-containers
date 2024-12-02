@@ -42,7 +42,7 @@ export class BuySuppliesService {
                 where: { id: request.userId }
             })
 
-            if (!user) throw new UserNotFoundException(request.userId)
+            if (!user) throw new UserNotFoundException(request.userId) // why not just use guard?
 
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
