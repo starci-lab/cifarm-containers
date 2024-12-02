@@ -1,12 +1,6 @@
 import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
-import {
-    HaverstQuantityRemainingEqualMinHarvestQuantityException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotFullyMaturedException,
-    PlacedItemTileNotPlantedException,
-    ThiefCropTransactionFailedException
-} from "@src/exceptions"
-import { DataSource } from "typeorm"
+import { ClientKafka } from "@nestjs/microservices"
+import { kafkaConfig, KafkaConfigKey } from "@src/config"
 import {
     Activities,
     CropRandomness,
@@ -20,11 +14,16 @@ import {
     SystemId,
     UserEntity
 } from "@src/database"
+import {
+    HaverstQuantityRemainingEqualMinHarvestQuantityException,
+    PlacedItemTileNotFoundException,
+    PlacedItemTileNotFullyMaturedException,
+    PlacedItemTileNotPlantedException,
+    ThiefCropTransactionFailedException
+} from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService, TheifService } from "@src/services"
+import { DataSource } from "typeorm"
 import { TheifCropRequest, TheifCropResponse } from "./theif-crop.dto"
-import { ClientKafka } from "@nestjs/microservices"
-import { kafkaConfig, KafkaConfigKey } from "@src/config"
-import { lastValueFrom } from "rxjs"
 
 @Injectable()
 export class TheifCropService implements OnModuleInit{
@@ -191,10 +190,9 @@ export class TheifCropService implements OnModuleInit{
                 throw new ThiefCropTransactionFailedException(error)
             }
 
-            const result  = await lastValueFrom(this.clientKafka.send(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern, {
+            await this.clientKafka.emit(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern, {
                 userId: request.neighborUserId
-            }))
-            console.log("result", result)
+            })
             return {
                 quantity: actualQuantity
             }
