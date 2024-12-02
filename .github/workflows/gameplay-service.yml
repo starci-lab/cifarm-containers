@@ -43,7 +43,7 @@ jobs:
       run: |
         kubectl wait pod/gameplay-service-kaniko \
         --for jsonpath="status.containerStatuses[0].state.terminated.reason"=Completed \
-        --timeout=20m
+        --timeout=40m
       continue-on-error: false
 
     - name: Create secret
