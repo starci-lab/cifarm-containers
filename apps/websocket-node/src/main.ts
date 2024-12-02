@@ -12,7 +12,11 @@ const bootstrap = async () => {
             transport: Transport.KAFKA,
             options: {
                 client: {
-                    brokers: Object.values(envConfig().kafka.brokers),
+                    brokers: [
+                        `${envConfig().kafka.brokers.broker1.host}:${envConfig().kafka.brokers.broker1.port}`,
+                        `${envConfig().kafka.brokers.broker2.host}:${envConfig().kafka.brokers.broker2.port}`,
+                        `${envConfig().kafka.brokers.broker3.host}:${envConfig().kafka.brokers.broker3.port}`,
+                    ],
                 },
                 consumer: {
                     groupId: kafkaConfig.broadcastPlacedItems.groupId,

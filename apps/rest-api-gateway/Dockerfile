@@ -40,3 +40,5 @@ USER node
 
 # Run the application.
 CMD ["node", "dist/main"]
+
+#docker build -t cifarm/rest-api-gateway -f ./apps/rest-api-gateway/Dockerfile .

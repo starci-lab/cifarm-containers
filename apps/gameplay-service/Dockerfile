@@ -2,41 +2,67 @@
 
 ARG NODE_VERSION=21.6.2
 
-FROM node:${NODE_VERSION}-alpine as deps
+# Base image for installing dependencies
+FROM node:${NODE_VERSION}-alpine AS deps
 
+# Set working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+# Install necessary build tools and dependencies
+RUN apk add --no-cache libc6-compat
+
+# Copy only dependency files for cache efficiency
 COPY package*.json ./
+
+# Install only production dependencies
 RUN npm ci --omit=dev
 
-# Create a new stage for building the application
-FROM deps as build
+# Build stage for application
+FROM node:${NODE_VERSION}-alpine AS build
 
-# Install all dependencies, including dev dependencies
+# Set working directory
+WORKDIR /usr/src/app
+
+# Install necessary tools and dev dependencies
+RUN apk add --no-cache libc6-compat
+
+# Copy dependency files again
 COPY package*.json ./
+
+# Install all dependencies (including dev dependencies) for building
 RUN npm ci
 
 # Install NestJS CLI globally
-RUN npm i -g @nestjs/cli
+RUN npm install -g @nestjs/cli
 
-# Copy the source code
+# Copy the full source code
 COPY . .
+
+# Build the application
 RUN nest build gameplay-service
 
-# Create a new stage for running the application
-FROM build as final 
+# Final stage for production
+FROM node:${NODE_VERSION}-alpine AS final
 
-# Use production node environment by default.
+# Set working directory
+WORKDIR /usr/src/app
+
+# Install necessary runtime libraries
+RUN apk add --no-cache libc6-compat
+
+# Set environment to production
 ENV NODE_ENV production
 
-# Copy the minimal files needed to run the application.
-COPY package.json .
+# Copy only the built artifacts and production dependencies
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist/apps/gameplay-service ./dist
 
-# Run the application as a non-root user.
+# Create a non-root user and set permissions
+RUN addgroup --system --gid 1001 node && adduser --system --uid 1001 --ingroup node node
 USER node
 
-# Run the application.
+# Expose the port (optional)
+EXPOSE 3000
+
+# Run the application
 CMD ["node", "dist/main"]

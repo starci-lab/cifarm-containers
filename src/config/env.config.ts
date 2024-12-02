@@ -169,7 +169,18 @@ export const envConfig = () => ({
     },
     kafka: {
         brokers: {
-            broker1: process.env.KAFKA_BROKER_1
+            broker1: {
+                host: process.env.KAFKA_BROKER_1_HOST,
+                port: process.env.KAFKA_BROKER_1_PORT
+            },
+            broker2: {
+                host: process.env.KAFKA_BROKER_2_HOST,
+                port: process.env.KAFKA_BROKER_2_PORT
+            },
+            broker3: {
+                host: process.env.KAFKA_BROKER_3_HOST,
+                port: process.env.KAFKA_BROKER_3_PORT
+            }
         },
     },
     chainCredentials: {
