@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common"
+import { DailyRewardEntity } from "@src/database"
 import {
     cacheRegisterAsync,
     configForRoot,
@@ -6,24 +7,22 @@ import {
     typeOrmForRoot
 } from "@src/dynamic-modules"
 import { AnimalInfosModule } from "./animal-infos"
-import { AnimalsModule, CropsModule } from "@apps/cron-scheduler"
-import { DailyRewardEntity } from "@src/database"
 import { BuildingInfosModule } from "./building-infos"
 import { BuildingsModule } from "./buildings"
-import { DailyRewardPossibilitiesModule } from "./daily-reward-possibilities"
 import { InventoriesModule } from "./inventories"
 import { InventoryTypesModule } from "./inventory-types"
 import { PlacedItemTypesModule } from "./placed-item-types"
 import { PlacedItemsModule } from "./placed-items"
 import { ProductsModule } from "./products"
 import { SeedGrowthInfosModule } from "./seed-growth-infos"
-import { SpinsModule } from "./spins"
 import { SuppliesModule } from "./supplies"
 import { SystemsModule } from "./systems"
 import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
 import { UsersModule } from "./users"
+import { AnimalsModule } from "./animals"
+import { CropsModule } from "./crops"
 
 @Module({
     imports: [
@@ -37,7 +36,6 @@ import { UsersModule } from "./users"
         BuildingInfosModule,
         BuildingsModule,
         CropsModule,
-        DailyRewardPossibilitiesModule,
         DailyRewardEntity,
         InventoriesModule,
         InventoryTypesModule,
@@ -45,7 +43,6 @@ import { UsersModule } from "./users"
         PlacedItemsModule,
         ProductsModule,
         SeedGrowthInfosModule,
-        SpinsModule,
         SuppliesModule,
         SystemsModule,
         TilesModule,

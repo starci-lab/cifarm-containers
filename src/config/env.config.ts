@@ -32,17 +32,9 @@ export const envConfig = () => ({
         }
     },
     containers: {
-        authService: {
-            host: process.env.AUTH_SERVICE_HOST,
-            port: Number(process.env.AUTH_SERVICE_PORT)
-        },
         restApiGateway: {
             host: process.env.REST_API_GATEWAY_HOST,
             port: Number(process.env.REST_API_GATEWAY_PORT)
-        },
-        broadcastService: {
-            host: process.env.BROADCAST_SERVICE_HOST,
-            port: Number(process.env.BROADCAST_SERVICE_PORT)
         },
         graphqlApiGateway: {
             host: process.env.GRAPHQL_API_GATEWAY_HOST,
@@ -51,26 +43,6 @@ export const envConfig = () => ({
         websocketApiGateway: {
             host: process.env.WEBSOCKET_API_GATEWAY_HOST,
             port: Number(process.env.WEBSOCKET_API_GATEWAY_PORT)
-        },
-        walletService: {
-            host: process.env.WALLET_SERVICE_HOST,
-            port: Number(process.env.WALLET_SERVICE_PORT)
-        },
-        shopService: {
-            host: process.env.SHOP_SERVICE_HOST,
-            port: Number(process.env.SHOP_SERVICE_PORT)
-        },
-        placedItemService: {
-            host: process.env.PLACED_ITEM_SERVICE_HOST,
-            port: Number(process.env.PLACED_ITEM_SERVICE_PORT)
-        },
-        inventoryService: {
-            host: process.env.INVENTORY_SERVICE_HOST,
-            port: Number(process.env.INVENTORY_SERVICE_PORT)
-        },
-        staticService: {
-            host: process.env.STATIC_SERVICE_HOST,
-            port: Number(process.env.STATIC_SERVICE_PORT)
         },
         gameplayService: {
             host: process.env.GAMEPLAY_SERVICE_HOST,
