@@ -13,8 +13,8 @@ export const kafkaClientRegister = ({ key, producerOnlyMode = false }: KafkaClie
             transport: Transport.KAFKA,
             options: {
                 client: {
-                    clientId: v4(),
-                    brokers: Object.values(envConfig().kafka.brokers)
+                    clientId: "test-client",
+                    brokers: ["localhost:9092"]
                 },
                 producerOnlyMode,
                 consumer: {

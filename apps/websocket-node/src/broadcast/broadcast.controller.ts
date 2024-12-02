@@ -12,6 +12,9 @@ export class BroadcastController {
     @MessagePattern(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern)
     public async broadcastPlacedItems(@Payload() payload: any) {
         console.log("broadcastPlacedItems", payload)
-        return true
+        return {
+            key: payload,
+            value: payload
+        }
     }
 }
