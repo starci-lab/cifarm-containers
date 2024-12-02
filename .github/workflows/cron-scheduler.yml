@@ -21,7 +21,7 @@ jobs:
     - name: Create manifest.yaml file
       run: |
         if ! helm repo list | grep -q "cifarm"; then
-          helm repo add cifarm https://starci-lab.github.io/cifarm-k8s/helm
+          helm repo add cifarm https://starci-lab.github.io/cifarm-k8s/charts
         else
           helm repo update cifarm
         fi
