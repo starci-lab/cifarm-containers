@@ -25,7 +25,7 @@ jobs:
         else
           helm repo update cifarm
         fi
-        helm template cron-scheduler cifarm/cron-scheduler > \
+        helm template cron-scheduler cifarm/cron-scheduler-build > \
           ./manifest.yaml
 
     - name: Create namespace

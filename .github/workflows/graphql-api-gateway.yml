@@ -25,7 +25,7 @@ jobs:
         else
           helm repo update cifarm
         fi
-        helm template graphql-api-gateway cifarm/graphql-api-gateway > \
+        helm template graphql-api-gateway cifarm/graphql-api-gateway-build > \
           ./manifest.yaml
 
     - name: Create namespace
