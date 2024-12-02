@@ -18,7 +18,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "lint-staged": "lint-staged"
+    "lint-staged": "lint-staged",
+    "concurrently": "concurrently \"nest start gameplay-service --watch\" \"nest start rest-api-gateway --watch\"  \"nest start cron-worker --watch\" \"nest start cron-scheduler --watch\" "
   },
   "dependencies": {
     "@apollo/gateway": "2.9.3",
@@ -73,6 +74,7 @@
     "cifarm-server": "file:",
     "class-transformer": "0.5.1",
     "class-validator": "0.14.1",
+    "concurrently": "^9.1.0",
     "ethers": "6.13.4",
     "google-protobuf": "^3.21.4",
     "graphql": "^16.9.0",
