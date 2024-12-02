@@ -68,7 +68,8 @@ export const typeOrmForRoot = (type: TypeOrmDbType = TypeOrmDbType.Main): Dynami
         ...map[type],
         autoLoadEntities: true,
         synchronize: true,
-        poolSize: 10000
+        poolSize: 10000,
+        connectTimeoutMS: 5000,
     })
 }
 

@@ -46,6 +46,7 @@ export class CropWorker extends WorkerHost {
                     createdAt: "ASC"
                 }
             })
+
             const system = await queryRunner.manager.findOne(SystemEntity, {
                 where: {
                     id: SystemId.CropRandomness
