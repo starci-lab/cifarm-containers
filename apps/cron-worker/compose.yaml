@@ -2,7 +2,7 @@ services:
   server:
     build:
       context: ../..
-      dockerfile: apps/time-cronjobs/Dockerfile
+      dockerfile: apps/cron-worker/Dockerfile
     env_file:
       - ../../.env.docker
     environment:
@@ -10,4 +10,4 @@ services:
     ports:
       - "3005:3005"
 
-#docker compose -f apps/time-cronjobs/compose.yaml up -d
+#docker compose -f apps/cron-worker/compose.yaml up -d

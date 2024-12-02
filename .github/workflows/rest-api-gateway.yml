@@ -3,7 +3,7 @@ name: CI/CD Pipeline for Rest API Gateway
 on:
   push:
     branches:
-      - main
+      - build
     paths:
       - 'src/**'  # Trigger the workflow when files under the 'src' folder change
       - 'apps/rest-api-gateway/**'  # Trigger the workflow when files under the 'apps/rest-api-gateway' folder change

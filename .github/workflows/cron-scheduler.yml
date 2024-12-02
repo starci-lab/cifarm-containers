@@ -1,16 +1,16 @@
-name: CI/CD Pipeline for Wallet Service
+name: CI/CD Pipeline for Cron Schedulers
 
 on:
   push:
     branches:
-      - main
+      - build
     paths:
       - 'src/**'  # Trigger the workflow when files under the 'src' folder change
-      - 'apps/wallet-service/**'  # Trigger the workflow when files under the 'apps/wallet-service' folder change
+      - 'apps/cron-scheduler/**'  # Trigger the workflow when files under the 'apps/cron-scheduler' folder change
 jobs:
   deployment:
     concurrency:
-      group: "wallet-service-deployment"
+      group: "cron-scheduler-deployment"
       cancel-in-progress: true
     runs-on: self-hosted
     environment: cifarm
@@ -21,41 +21,47 @@ jobs:
     - name: Create manifest.yaml file
       run: |
         if ! helm repo list | grep -q "cifarm"; then
-          helm repo add cifarm https://starci-lab.github.io/cifarm-k8s/charts
+          helm repo add cifarm https://starci-lab.github.io/cifarm-k8s/helm
         else
           helm repo update cifarm
         fi
-        helm template wallet-service cifarm/wallet-service > \
+        helm template cron-scheduler cifarm/cron-scheduler > \
           ./manifest.yaml
 
     - name: Create namespace
-      run: kubectl create namespace wallet-service \
-           2>/dev/null || echo "Namespace 'wallet-service' already exist"
+      run: kubectl create namespace cron-scheduler \
+           2>/dev/null || echo "Namespace 'cron-scheduler' already exist"
 
     - name: Apply Kaniko Build
       run: |
-        kubectl delete pod wallet-service-kaniko-build \
+        kubectl delete pod cron-scheduler-kaniko-build \
         --namespace build \
-        2>/dev/null || echo "Pod 'wallet-service-kaniko-build' does not exist"
+        2>/dev/null || echo "Pod 'cron-scheduler-kaniko-build' does not exist"
         kubectl apply -f ./manifest.yaml -l mode=build
   
     - name: Wait for Kaniko Build to Complete
       run: |
-        kubectl wait pod/wallet-service-kaniko-build \
+        kubectl wait pod/cron-scheduler-kaniko-build \
         --for jsonpath="status.containerStatuses[0].state.terminated.reason"=Completed \
         --namespace build \
         --timeout=20m
       continue-on-error: false
     - name: Create secret
       run: |
-        kubectl delete secret generic wallet-service-env \
-        --namespace wallet-service \
+        kubectl delete secret generic cron-scheduler-env \
+        --namespace cron-scheduler \
         --ignore-not-found
-        kubectl create secret generic wallet-service-env --namespace wallet-service \
+        kubectl create secret generic cron-scheduler-env --namespace cron-scheduler \
+        --from-literal=JOB_REDIS_HOST=${{ vars.JOB_REDIS_HOST }} \
+        --from-literal=JOB_REDIS_PORT=${{ vars.JOB_REDIS_PORT }} \
         --from-literal=GAMEPLAY_POSTGRES_DBNAME=${{ vars.GAMEPLAY_POSTGRES_DBNAME }} \
         --from-literal=GAMEPLAY_POSTGRES_HOST=${{ vars.GAMEPLAY_POSTGRES_HOST }} \
         --from-literal=GAMEPLAY_POSTGRES_PORT=${{ vars.GAMEPLAY_POSTGRES_PORT }} \
         --from-literal=GAMEPLAY_POSTGRES_USER=${{ secrets.GAMEPLAY_POSTGRES_USER }} \
-        --from-literal=GAMEPLAY_POSTGRES_PASS=${{ secrets.GAMEPLAY_POSTGRES_PASS }}
+        --from-literal=GAMEPLAY_POSTGRES_PASS=${{ secrets.GAMEPLAY_POSTGRES_PASS }} \
+        --from-literal=GAMEPLAY_POSTGRES_SSL=${{ vars.CACHE_REDIS_HOST }} \
+        --from-literal=GAMEPLAY_POSTGRES_SSL=${{ vars.CACHE_REDIS_PORT }}
+
     - name: Apply the Deployment
       run: kubectl apply -f ./manifest.yaml -l mode=deploy
+

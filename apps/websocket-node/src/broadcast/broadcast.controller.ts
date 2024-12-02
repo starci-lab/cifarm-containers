@@ -1,7 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
-import { BroadcastGateway } from "./broadcast.gateway"
-import { EventPattern, MessagePattern, Payload } from "@nestjs/microservices"
+import { EventPattern, Payload } from "@nestjs/microservices"
 import { kafkaConfig, KafkaConfigKey } from "@src/config"
+import { BroadcastGateway } from "./broadcast.gateway"
 
 @Controller()
 export class BroadcastController {
