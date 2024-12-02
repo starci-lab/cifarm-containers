@@ -23,7 +23,7 @@ export class DeliveryService {
         private readonly dataSource: DataSource
     ) {}
     
-    @Cron("/1 * * * * *")
+    @Cron("*/1 * * * * *")
     public async triggerDeliveryProducts() {
         if (!isProduction()) {
             const hasValue = await this.cacheManager.get<boolean>(CacheKey.DeliverInstantly)
