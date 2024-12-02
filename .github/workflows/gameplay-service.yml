@@ -32,14 +32,10 @@ jobs:
       run: kubectl create namespace gameplay-service \
            2>/dev/null || echo "Namespace 'gameplay-service' already exist"
 
-    - name: Create namespace build
-      run: kubectl create namespace build \
-           2>/dev/null || echo "Namespace 'build' already exist"
-
     - name: Apply Kaniko Build
       run: |
-        if kubectl get pod gameplay-service-kaniko-build --namespace build; then
-          kubectl delete pod gameplay-service-kaniko-build --namespace build
+        if kubectl get pod gameplay-service-kaniko-build; then
+          kubectl delete pod gameplay-service-kaniko-build
         fi
         kubectl apply -f ./manifest.yaml -l mode=build
   
