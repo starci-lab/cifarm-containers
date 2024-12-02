@@ -1,11 +1,15 @@
+//npx jest --config ./e2e/jest.json ./e2e/delivery-product.spec.ts
+
 import { IGameplayService } from "@apps/gameplay-service"
+import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { ClientGrpc } from "@nestjs/microservices"
 import { Test } from "@nestjs/testing"
-import { authAxios, gameplayAxios, grpcConfig, GrpcServiceName, Network, SupportedChainKey } from "@src/config"
-import { CropCurrentState, CropEntity, CropId, DeliveringProductEntity, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId } from "@src/database"
-import { configForRoot, grpcClientRegisterAsync, typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
+import { authAxios, CacheKey, gameplayAxios, grpcConfig, GrpcServiceName, Network, SupportedChainKey } from "@src/config"
+import { CropCurrentState, CropEntity, CropId, DeliveringProductEntity, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/database"
+import { cacheRegisterAsync, configForRoot, grpcClientRegisterAsync, typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
 import { JwtModule, JwtService, UserLike } from "@src/services"
 import { sleep } from "@src/utils"
+import { Cache } from "cache-manager"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
 
@@ -15,6 +19,7 @@ describe("Deliver product flow", () => {
     let user: UserLike
     let jwtService: JwtService
     let gameplayService: IGameplayService
+    let cacheManager: Cache
 
     beforeAll(async () => {
         const module = await Test.createTestingModule({
@@ -22,6 +27,7 @@ describe("Deliver product flow", () => {
                 configForRoot(),
                 typeOrmForRoot(),
                 typeOrmForFeature(),
+                cacheRegisterAsync(),
                 grpcClientRegisterAsync(GrpcServiceName.Gameplay),
                 JwtModule
             ],
@@ -40,6 +46,7 @@ describe("Deliver product flow", () => {
         jwtService = module.get<JwtService>(JwtService)
         const clientGrpc = module.get<ClientGrpc>(grpcConfig[GrpcServiceName.Gameplay].name)
         gameplayService = clientGrpc.getService<IGameplayService>(grpcConfig[GrpcServiceName.Gameplay].service)
+        cacheManager = module.get<Cache>(CACHE_MANAGER)
 
         // Decode accessToken to get user
         user = await jwtService.decodeToken(accessToken)
@@ -204,10 +211,39 @@ describe("Deliver product flow", () => {
         //Check the delivering product
         expect(deliveringProduct.quantity).toBeDefined()
         expect(deliveringProduct.quantity).toEqual(inventory.quantity)
+
+        //Delivery instantly
+        await lastValueFrom(gameplayService.deliverInstantly({}))
+        await sleep(1100)
+
+        //Check token and deliveringProduct is deleted
+        const deliveringProductAfterDelivering = await dataSource.manager.findOne(DeliveringProductEntity, {
+            where: {
+                userId: user.id,
+                index: 1
+            }
+        })
+
+        expect(deliveringProductAfterDelivering).toBeNull()
+
+        //Get user after
+        const userAfter = await dataSource.manager.findOne(UserEntity, {
+            where: {
+                id: user.id
+            }
+        })
+
+        //Check the user's balance
+        expect(userAfter.tokens).toEqual(inventory.quantity * inventory.inventoryType.product.tokenAmount)
+
+        //Check redis
+        const hasValue = await cacheManager.get<boolean>(CacheKey.DeliverInstantly)
+        expect(hasValue).toBeUndefined()
+
     })
 
     afterAll(async () => {
-        // await dataSource.manager.remove(UserEntity, user)
+        await dataSource.manager.remove(UserEntity, user)
     })
 })
 

@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common"
 import { SpeedUpModule } from "./speed-up"
-import { DeliverProductModule } from "../delivery"
+import { DeliveryInstantlyModule } from "./deliver-instantly"
 
 @Module({
-    imports: [SpeedUpModule, DeliverProductModule]
+    imports: [SpeedUpModule, DeliveryInstantlyModule]
 })
 export class DevModule {}

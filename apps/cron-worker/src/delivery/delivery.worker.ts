@@ -71,24 +71,17 @@ export class DeliveryWorker extends WorkerHost {
                 }
 
                 // Example logic: calculate total cost
-                const totalCost = deliveringProducts.reduce((sum, deliveringProducts) => {
-                    return sum + deliveringProducts.product.goldAmount * deliveringProducts.quantity
+                const totalTokenAmount = deliveringProducts.reduce((sum, deliveringProducts) => {
+                    return sum + deliveringProducts.product.tokenAmount * deliveringProducts.quantity
                 }, 0)
-
-                // Update user balance via gold balance service
-                // const goldsChanged = this.goldBalanceService.add({
-                //     entity: user,
-                //     amount: totalCost,
-                // })
 
                 // Update user balance via token balance service
                 const tokensChanged = this.tokenBalanceService.add({
                     entity: user,
-                    amount: totalCost,
+                    amount: totalTokenAmount,
                 })
 
                 userUpdatePromises.push(queryRunner.manager.update(UserEntity, user.id, {
-                    // ...goldsChanged,
                     ...tokensChanged,
                 }))
 

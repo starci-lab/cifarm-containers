@@ -1,3 +1,5 @@
+//npx jest --config ./e2e/jest.json ./e2e/grow-seed.spec.ts
+
 import { Test } from "@nestjs/testing"
 import { authAxios, gameplayAxios, grpcConfig, GrpcServiceName, Network, SupportedChainKey } from "@src/config"
 import { CropCurrentState, CropEntity, CropId, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/database"

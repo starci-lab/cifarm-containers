@@ -46,6 +46,7 @@ import {
     TheifAnimalProductResponse
 } from "./community/theif-animal-product"
 import { SpeedUpRequest, SpeedUpResponse } from "./dev/speed-up"
+import { DeliverInstantlyRequest, DeliverInstantlyResponse } from "./dev/deliver-instantly"
 
 export interface IGameplayService {
     // Auth
@@ -82,4 +83,5 @@ export interface IGameplayService {
 
     //Dev
     speedUp(request: SpeedUpRequest): Observable<SpeedUpResponse>
+    deliverInstantly(request: DeliverInstantlyRequest): Observable<DeliverInstantlyResponse>
 }

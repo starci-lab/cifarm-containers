@@ -4,8 +4,8 @@ import { Cache, CACHE_MANAGER } from "@nestjs/cache-manager"
 import { CacheKey } from "@src/config"
 
 @Injectable()
-export class DeliveryInstantlyService {
-    private readonly logger = new Logger(DeliveryInstantlyService.name)
+export class DeliverInstantlyService {
+    private readonly logger = new Logger(DeliverInstantlyService.name)
 
     constructor(
         @Inject(CACHE_MANAGER)
