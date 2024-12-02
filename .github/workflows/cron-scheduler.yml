@@ -59,8 +59,8 @@ jobs:
         --from-literal=GAMEPLAY_POSTGRES_PORT=${{ vars.GAMEPLAY_POSTGRES_PORT }} \
         --from-literal=GAMEPLAY_POSTGRES_USER=${{ secrets.GAMEPLAY_POSTGRES_USER }} \
         --from-literal=GAMEPLAY_POSTGRES_PASS=${{ secrets.GAMEPLAY_POSTGRES_PASS }} \
-        --from-literal=GAMEPLAY_POSTGRES_SSL=${{ vars.CACHE_REDIS_HOST }} \
-        --from-literal=GAMEPLAY_POSTGRES_SSL=${{ vars.CACHE_REDIS_PORT }}
+        --from-literal=CACHE_REDIS_HOST=${{ vars.CACHE_REDIS_HOST }} \
+        --from-literal=CACHE_REDIS_PORT=${{ vars.CACHE_REDIS_PORT }}
 
     - name: Apply the Deployment
       run: kubectl apply -f ./manifest.yaml -l mode=deploy
