@@ -1,0 +1,5 @@
+export * from "./deliver-instantly.dto"
+export * from "./deliver-instantly.module"
+export * from "./deliver-instantly.service"
+export * from "./deliver-instantly.controller"
+//export * from "./speed-up.spec"

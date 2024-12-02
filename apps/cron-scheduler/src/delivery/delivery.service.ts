@@ -1,14 +1,16 @@
 import { InjectQueue } from "@nestjs/bullmq"
-import { Injectable, Logger } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { DeliveryJobData } from "./delivery.dto"
 import { DeliveringProductEntity } from "@src/database"
-import { bullConfig, BullQueueName } from "@src/config"
+import { bullConfig, BullQueueName, CacheKey } from "@src/config"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
+import { isProduction } from "@src/utils"
+import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
 dayjs.extend(utc)
 
 @Injectable()
@@ -17,13 +19,24 @@ export class DeliveryService {
 
     constructor(
         @InjectQueue(bullConfig[BullQueueName.Delivery].name) private deliveryQueue: Queue,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly dataSource: DataSource
     ) {}
     
+    @Cron("/1 * * * * *")
+    public async triggerDeliveryProducts() {
+        if (!isProduction()) {
+            const hasValue = await this.cacheManager.get<boolean>(CacheKey.DeliverInstantly)
+            if (hasValue) {
+                await this.cacheManager.del(CacheKey.DeliverInstantly)
+                await this.handleDeliveryProducts()
+            }
+        }
+    }
 
     @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     // @Cron("*/1 * * * * *")
-    public async handle() {
+    public async handleDeliveryProducts() {
         const utcNow = dayjs().utc()
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()

@@ -50,4 +50,5 @@ service GameplayService {
 
     // Dev methods
     rpc SpeedUp(SpeedUpRequest) returns (google.protobuf.Empty);
+    rpc DeliverInstantly(google.protobuf.Empty) returns (google.protobuf.Empty);
 }
