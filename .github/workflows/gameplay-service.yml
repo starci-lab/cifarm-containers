@@ -37,7 +37,7 @@ jobs:
         if kubectl get pod gameplay-service-kaniko-build; then
           kubectl delete pod gameplay-service-kaniko-build
         fi
-        kubectl apply -f ./manifest.yaml -l mode=build
+        kubectl apply -f ./manifest.yaml
   
     - name: Wait for Kaniko Build to Complete
       run: |
