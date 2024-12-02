@@ -17,7 +17,7 @@ import {
     PlacedItemTileNotFoundException,
     PlacedItemTileNotFullyMaturedException,
     PlacedItemTileNotPlantedException,
-    WaterTransactionFailedException
+    HaverstCropTransactionFailedException,
 } from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService } from "@src/services"
 
@@ -109,49 +109,51 @@ export class HarvestCropService {
                 entities: existingInventories,
                 userId: request.userId,
                 data: {
-                    inventoryTypeId: inventoryType.id,
+                    inventoryType: inventoryType,
                     quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
                 }
             })
 
             await queryRunner.startTransaction()
             
+            try {
             // update user
-            await queryRunner.manager.update(UserEntity, user.id, {
-                ...energyChanges,
-                ...experiencesChanges
-            })
+                await queryRunner.manager.update(UserEntity, user.id, {
+                    ...energyChanges,
+                    ...experiencesChanges
+                })
 
-            await queryRunner.manager.save(InventoryEntity, updatedInventories)
+                await queryRunner.manager.save(InventoryEntity, updatedInventories)
 
-            //if current perennial count is equal to crop's perennial count, remove the crop, delete the seed growth info
-            if (
-                placedItemTile.seedGrowthInfo.currentPerennialCount >=
+                //if current perennial count is equal to crop's perennial count, remove the crop, delete the seed growth info
+                if (
+                    placedItemTile.seedGrowthInfo.currentPerennialCount >=
                 placedItemTile.seedGrowthInfo.crop.perennialCount
-            ) {
-                await queryRunner.manager.remove(
-                    SeedGrowthInfoEntity,
-                    placedItemTile.seedGrowthInfo
-                )
-            } else {
+                ) {
+                    await queryRunner.manager.remove(
+                        SeedGrowthInfoEntity,
+                        placedItemTile.seedGrowthInfo
+                    )
+                } else {
                 // update seed growth info
-                await queryRunner.manager.update(
-                    SeedGrowthInfoEntity,
-                    placedItemTile.seedGrowthInfo.id,
-                    {
-                        currentPerennialCount:
+                    await queryRunner.manager.update(
+                        SeedGrowthInfoEntity,
+                        placedItemTile.seedGrowthInfo.id,
+                        {
+                            currentPerennialCount:
                             placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
-                        fullyMatured: false,
-                        currentStageTimeElapsed: 0
-                    }
-                )
+                            fullyMatured: false,
+                            currentStageTimeElapsed: 0
+                        }
+                    )
+                }
+                await queryRunner.commitTransaction()
+            } catch (error) {
+                this.logger.error("Harvest crop transaction failed, rolling back...", error)
+                await queryRunner.rollbackTransaction()
+                throw new HaverstCropTransactionFailedException(error)
             }
-            await queryRunner.commitTransaction()
             return {}
-        } catch (error) {
-            this.logger.error("Harvest crop transaction failed, rolling back...", error)
-            await queryRunner.rollbackTransaction()
-            throw new WaterTransactionFailedException(error)
         } finally {
             await queryRunner.release()
         }

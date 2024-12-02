@@ -1,66 +1,76 @@
 import { InjectQueue } from "@nestjs/bullmq"
-import { Injectable, Logger } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
-import { deliveryTimeQueueConstants } from "../app.constant"
 import { DeliveryJobData } from "./delivery.dto"
 import { DeliveringProductEntity } from "@src/database"
+import { bullConfig, BullQueueName, CacheKey } from "@src/config"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+import { isProduction } from "@src/utils"
+import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
+dayjs.extend(utc)
 
 @Injectable()
 export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
 
     constructor(
-        @InjectQueue(deliveryTimeQueueConstants.name) private deliveryQueue: Queue,
+        @InjectQueue(bullConfig[BullQueueName.Delivery].name) private deliveryQueue: Queue,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly dataSource: DataSource
     ) {}
+    
+    @Cron("*/1 * * * * *")
+    public async triggerDeliveryProducts() {
+        if (!isProduction()) {
+            const hasValue = await this.cacheManager.get<boolean>(CacheKey.DeliverInstantly)
+            if (hasValue) {
+                await this.cacheManager.del(CacheKey.DeliverInstantly)
+                await this.handleDeliveryProducts()
+            }
+        }
+    }
 
-    @Cron("0 17 * * *", { timeZone: "Asia/Bangkok" }) // 17:00 GMT+7
-    async handle() {
+    @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
+    // @Cron("*/1 * * * * *")
+    public async handleDeliveryProducts() {
+        const utcNow = dayjs().utc()
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
-        let count: number
-
         try {
-            this.logger.debug("Checking for delivering products that need to be sold")
+            this.logger.debug("Fetching distinct users with delivering products.")
 
-            count = await queryRunner.manager.count(DeliveringProductEntity, {
-                order: {
-                    createdAt: "ASC"
-                },
-                where: {}
-            })
+            const { count } = await queryRunner.manager
+                .createQueryBuilder(DeliveringProductEntity, "delivering_products")
+                .select("COUNT(DISTINCT delivering_products.userId)", "count")
+                .getRawOne()
+
+            if (!count) {
+                this.logger.verbose("No users to process.")
+                return
+            }
+            
+            const batchSize = bullConfig[BullQueueName.Animal].batchSize
+            const batchCount = Math.ceil(count / batchSize)
+
+            const batches = Array.from({ length: batchCount }, (_, i) => ({
+                name: v4(),
+                data: {
+                    skip: i * batchSize,
+                    take: batchSize,
+                    utcTime: utcNow.valueOf(),
+                } as DeliveryJobData,
+            }))
+
+            this.logger.verbose(`Adding ${batches.length} batches to the queue.`)
+            await this.deliveryQueue.addBulk(batches)
         } finally {
             await queryRunner.release()
         }
-
-        this.logger.debug(`Found ${count} delivering products that need to be sold`)
-        if (count === 0) {
-            this.logger.verbose("No delivering products to sell")
-            return
-        }
-
-        //split into 10000 per batch
-        const batchSize = deliveryTimeQueueConstants.BATCH_SIZE
-        const batchCount = Math.ceil(count / batchSize)
-
-        // Create batches
-        const batches: Array<{
-            name: string
-            data: DeliveryJobData
-        }> = Array.from({ length: batchCount }, (_, i) => ({
-            name: v4(),
-            data: {
-                from: i * batchSize,
-                to: Math.min((i + 1) * batchSize, count) // Ensure 'to' does not exceed 'count'
-            }
-        }))
-        this.logger.verbose(`Adding ${batches.length} batches to the queue`)
-        const jobs = await this.deliveryQueue.addBulk(batches)
-        this.logger.verbose(`Added ${jobs.at(0).name} jobs to the queue`)
     }
 }

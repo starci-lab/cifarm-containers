@@ -1,7 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { TheifAnimalProductService } from "./theif-animal-product.service"
-import { grpcConfig } from "@src/config"
+import { grpcConfig, GrpcServiceName } from "@src/config"
 import { TheifAnimalProductRequest } from "./theif-animal-product.dto"
 
 @Controller()
@@ -10,7 +10,7 @@ export class TheifAnimalProductController {
 
     constructor(private readonly theifAnimalProductService: TheifAnimalProductService) {}
 
-    @GrpcMethod(grpcConfig.gameplay.service, "TheifAnimalProduct")
+    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "TheifAnimalProduct")
     public async theifAnimalProduct(request: TheifAnimalProductRequest) {
         this.logger.debug("TheifAnimalProduct request called")
         return this.theifAnimalProductService.theifAnimalProduct(request)

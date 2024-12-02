@@ -1,4 +1,3 @@
-import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
 import {
     Body,
     Controller,
@@ -24,8 +23,12 @@ import {
     ConstructBuildingResponse,
     DeliverProductRequest,
     DeliverProductResponse,
+    HarvestCropRequest,
+    HarvestCropResponse,
     PlantSeedRequest,
     PlantSeedResponse,
+    TheifCropRequest,
+    TheifCropResponse,
     UseHerbicideRequest,
     UseHerbicideResponse,
     WaterRequest,
@@ -37,8 +40,8 @@ import { User } from "@src/decorators"
 import { RestJwtAuthGuard } from "@src/guards"
 import { UserLike } from "@src/services"
 import { lastValueFrom } from "rxjs"
-import { IGameplayService } from "./gameplay.service"
-import { grpcConfig } from "@src/config"
+import { IGameplayService } from "@apps/gameplay-service"
+import { grpcConfig, GrpcServiceName } from "@src/config"
 
 @ApiTags("Gameplay")
 @Controller("gameplay")
@@ -46,15 +49,14 @@ export class GameplayController implements OnModuleInit {
     private readonly logger = new Logger(GameplayController.name)
 
     constructor(
-        @Inject(healthcheckGrpcConstants.name) private healthCheckServiceClient: ClientGrpc,
-        @Inject(grpcConfig.gameplay.name) private gameplayServiceClient: ClientGrpc
+        @Inject(grpcConfig[GrpcServiceName.Gameplay].name) private grpcClient: ClientGrpc
     ) {}
 
     private gameplayService: IGameplayService
 
     onModuleInit() {
-        this.gameplayService = this.gameplayServiceClient.getService<IGameplayService>(
-            grpcConfig.gameplay.service
+        this.gameplayService = this.grpcClient.getService<IGameplayService>(
+            grpcConfig[GrpcServiceName.Gameplay].service
         )
     }
 
@@ -160,13 +162,13 @@ export class GameplayController implements OnModuleInit {
     @HttpCode(HttpStatus.OK)
     @ApiResponse({})
     @Post("/harvest-crop")
-    public async Water(
+    public async harvestCrop(
         @User() user: UserLike,
-        @Body() request: WaterRequest
-    ): Promise<WaterResponse> {
-        this.logger.debug(`Processing Water for user ${user?.id}`)
+        @Body() request: HarvestCropRequest
+    ): Promise<HarvestCropResponse> {
+        this.logger.debug(`Processing harvest crop for user ${user?.id}`)
         return await lastValueFrom(
-            this.gameplayService.havestCrop({
+            this.gameplayService.harvestCrop({
                 ...request,
                 userId: user?.id
             })
@@ -186,7 +188,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.water({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -278,6 +280,24 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing retain product for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.deliverProduct({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({})
+    @Post("/theif-crop")
+    public async theifCrop(
+        @User() user: UserLike,
+        @Body() request: TheifCropRequest
+    ): Promise<TheifCropResponse> {
+        this.logger.debug(`Processing theif crop for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.theifCrop({
                 ...request,
                 userId: user?.id
             })

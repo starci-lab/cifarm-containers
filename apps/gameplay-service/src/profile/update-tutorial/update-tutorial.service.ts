@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { UpdateTutorialTransactionFailedException } from "@src/exceptions"
 import { DataSource } from "typeorm"
-import { UpdateTutorialRequest } from "./update-tutorial.dto"
+import { UpdateTutorialRequest, UpdateTutorialResponse } from "./update-tutorial.dto"
 import { UserEntity } from "@src/database"
 
 @Injectable()
@@ -10,7 +10,7 @@ export class UpdateTutorialService {
 
     constructor(private readonly dataSource: DataSource) {}
 
-    async updateTutorial(request: UpdateTutorialRequest) {
+    async updateTutorial(request: UpdateTutorialRequest): Promise<UpdateTutorialResponse> {
         this.logger.debug(`Starting claim daily reward for user ${request.userId}`)
 
         const queryRunner = this.dataSource.createQueryRunner()
@@ -39,6 +39,7 @@ export class UpdateTutorialService {
                 await queryRunner.rollbackTransaction()
                 throw new UpdateTutorialTransactionFailedException(error)
             }
+            return {}
         } finally {
             await queryRunner.release()
         }

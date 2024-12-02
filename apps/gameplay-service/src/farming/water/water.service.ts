@@ -88,10 +88,10 @@ export class WaterService {
                     SeedGrowthInfoEntity,
                     placedItemTile.seedGrowthInfo.id,
                     {
-                        ...placedItemTile.seedGrowthInfo,
                         currentState: CropCurrentState.Normal
                     }
                 )
+                await queryRunner.commitTransaction()
             }
             catch (error) {
                 this.logger.error("Water transaction failed, rolling back...", error)

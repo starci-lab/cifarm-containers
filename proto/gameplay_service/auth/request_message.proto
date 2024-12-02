@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package auth_service;
+package gameplay_service;
 
 message RequestMessageResponse {
     string message = 1;     

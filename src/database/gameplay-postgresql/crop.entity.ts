@@ -63,7 +63,7 @@ export class CropEntity extends StringAbstractEntity {
         cascade: ["insert"]
     })
         product?: ProductEntity
-
+ 
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.crop, {
         nullable: true,

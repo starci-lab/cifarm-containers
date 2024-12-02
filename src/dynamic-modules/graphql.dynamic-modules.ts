@@ -4,7 +4,7 @@ import { ApolloGatewayDriverConfig, ApolloGatewayDriver, ApolloFederationDriver,
 import { DynamicModule } from "@nestjs/common"
 import { GraphQLModule } from "@nestjs/graphql"
 import { envConfig } from "@src/config"
-
+  
 export const graphqlMaingraphForRoot = (): DynamicModule => {
     return GraphQLModule.forRoot<ApolloGatewayDriverConfig>({
         driver: ApolloGatewayDriver,

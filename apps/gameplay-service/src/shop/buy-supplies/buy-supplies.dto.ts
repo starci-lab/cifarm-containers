@@ -1,7 +1,7 @@
 // buy-supplies.dto.ts
 
 import { ApiProperty } from "@nestjs/swagger"
-import { Empty, UserIdRequest } from "@src/types"
+import { UserIdRequest } from "@src/types"
 import { IsInt, IsString, Min } from "class-validator"
 
 export class BuySuppliesRequest extends UserIdRequest {
@@ -18,4 +18,4 @@ export class BuySuppliesRequest extends UserIdRequest {
         quantity: number
 }
 
-export type BuySuppliesResponse = Empty
+export class BuySuppliesResponse {}

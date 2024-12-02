@@ -23,6 +23,9 @@ import {
     PlacedItemTypeEntity,
     DeliveringProductEntity,
     SpinPrizeEntity,
+    HealthcheckEntity,
+    FollowRecordEntity,
+    CollectionEntity
 } from "@src/database"
 import { FollowRecordEntity } from "@src/database/gameplay-postgresql/follow-record.entity"
 
@@ -66,7 +69,8 @@ export const typeOrmForRoot = (type: TypeOrmDbType = TypeOrmDbType.Main): Dynami
         ...map[type],
         autoLoadEntities: true,
         synchronize: true,
-        poolSize: 10000
+        poolSize: 10000,
+        connectTimeoutMS: 5000,
     })
 }
 
@@ -103,6 +107,9 @@ export const typeOrmForFeature = (type: TypeOrmDbType = TypeOrmDbType.Main): Dyn
             SpinSlotEntity,
             AnimalInfoEntity,
             BuildingInfoEntity,
+            HealthcheckEntity,
+            FollowRecordEntity,
+            CollectionEntity
         ],
         map[type]
     )

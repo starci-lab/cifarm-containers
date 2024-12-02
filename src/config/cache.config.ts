@@ -1,3 +1,3 @@
 export enum CacheKey {
-    SpeedUp = "speed_up",
+    DeliverInstantly = "deliverInstantly",
 }

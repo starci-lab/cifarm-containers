@@ -8,8 +8,4 @@ export class CollectAnimalProductRequest extends UserIdRequest {
         placedItemAnimalId: string
 }
 
-export class CollectAnimalProductResponse {
-    @IsString()
-    @ApiProperty({ example: "inventory-animal-product-id" })
-        inventoryAnimalProductId: string
-}
+export class CollectAnimalProductResponse {}

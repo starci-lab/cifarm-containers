@@ -4,9 +4,12 @@ import { RequestMessageModule } from "./request-message"
 import { VerifySignatureModule } from "./verify-signature"
 import { AuthModule as BlockchainAuthModule, JwtModule } from "@src/services"
 @Module({
-    imports: [GenerateTestSignatureModule, RequestMessageModule, VerifySignatureModule,
+    imports: [
+        GenerateTestSignatureModule,
+        RequestMessageModule,
+        VerifySignatureModule,
         BlockchainAuthModule,
-        JwtModule,
+        JwtModule
     ]
 })
 export class AuthModule {}

@@ -76,32 +76,29 @@ export class BuyTileService {
                 placedItemTypeId: placedItemType.id
             }
 
+            // Subtract gold
+            const goldsChanged = this.goldBalanceService.subtract({
+                entity: user,
+                amount: totalCost
+            })
             // Start transaction
             await queryRunner.startTransaction()
             try {
-                // Subtract gold
-                const goldsChanged = this.goldBalanceService.subtract({
-                    entity: user,
-                    amount: totalCost
-                })
-
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...goldsChanged
                 })
 
                 // Save the placed item in the database
-                const savedTile = await queryRunner.manager.save(PlacedItemEntity, placedItem)
+                await queryRunner.manager.save(PlacedItemEntity, placedItem)
 
                 await queryRunner.commitTransaction()
-
-                this.logger.log(`Successfully purchased tile with id: ${savedTile.id}`)
-
-                return { placedItemId: savedTile.id }
             } catch (error) {
                 this.logger.error("Purchase transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
                 throw new BuyTileTransactionFailedException(error)
             }
+
+            return {}
         } finally {
             await queryRunner.release()
         }

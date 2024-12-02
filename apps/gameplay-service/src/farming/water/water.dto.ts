@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsUUID } from "class-validator"
-import { Empty, UserIdRequest } from "@src/types"
+import { UserIdRequest } from "@src/types"
 
 export class WaterRequest extends UserIdRequest {
     @IsUUID()
@@ -8,4 +8,4 @@ export class WaterRequest extends UserIdRequest {
         placedItemTileId: string
 }
 
-export type WaterResponse = Empty
+export class WaterResponse {}

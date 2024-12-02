@@ -53,5 +53,5 @@ import { AnimalInfoThievedByUsersModule } from "./animal-info-thieved-by-users"
         UpgradesModule,
         UsersModule
     ]
-})
+}) 
 export class AppModule {}

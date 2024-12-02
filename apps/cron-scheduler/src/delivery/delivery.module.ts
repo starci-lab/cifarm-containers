@@ -1,40 +1,12 @@
 import { Module } from "@nestjs/common"
-import { BullModule } from "@nestjs/bullmq"
 import { DeliveryService } from "./delivery.service"
-import {
-    BuildingEntity,
-    BuildingInfoEntity,
-    CropEntity,
-    DeliveringProductEntity,
-    InventoryTypeEntity,
-    PlacedItemTypeEntity,
-    ProductEntity,
-    SeedGrowthInfoEntity,
-    TileEntity,
-    UpgradeEntity,
-    UserEntity
-} from "@src/database"
-import { TypeOrmModule } from "@nestjs/typeorm"
-import { deliveryTimeQueueConstants } from "../app.constant"
+import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
+import { BullQueueName } from "@src/config"
 
 @Module({
     imports: [
-        BullModule.registerQueue({
-            name: deliveryTimeQueueConstants.name
-        }),
-        TypeOrmModule.forFeature([
-            SeedGrowthInfoEntity,
-            CropEntity,
-            UserEntity,
-            ProductEntity,
-            InventoryTypeEntity,
-            BuildingInfoEntity,
-            BuildingEntity,
-            UpgradeEntity,
-            PlacedItemTypeEntity,
-            TileEntity,
-            DeliveringProductEntity
-        ])
+        bullRegisterQueue(BullQueueName.Delivery),
+        typeOrmForFeature(),
     ],
     providers: [DeliveryService]
 })

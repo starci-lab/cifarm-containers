@@ -102,14 +102,12 @@ export class UpgradeBuildingService {
                 await queryRunner.manager.save(PlacedItemEntity, placedItem)
 
                 await queryRunner.commitTransaction()
-
-                this.logger.log(`Successfully upgraded building for placedItem ${request.placedItemId}`)
-                return { placedItemId: request.placedItemId }
             } catch (error) {
                 this.logger.error("Upgrade transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
                 throw new UpgradeBuildingTransactionFailedException(error)
             }
+            return {}
         } finally {
             await queryRunner.release()
         }

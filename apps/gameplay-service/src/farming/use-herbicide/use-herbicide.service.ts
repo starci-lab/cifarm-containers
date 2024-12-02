@@ -88,10 +88,10 @@ export class UseHerbicideService {
                     SeedGrowthInfoEntity,
                     placedItemTile.seedGrowthInfo.id,
                     {
-                        ...placedItemTile.seedGrowthInfo,
                         currentState: CropCurrentState.Normal
                     }
                 )
+                await queryRunner.commitTransaction()
             } catch (error) {
                 this.logger.error("Use Pesticide transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()

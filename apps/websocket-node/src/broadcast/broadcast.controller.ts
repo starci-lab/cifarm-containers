@@ -1,8 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
-import { BroadcastPlacedItemsParams } from "./broadcast.dto"
 import { BroadcastGateway } from "./broadcast.gateway"
-import { MessagePattern } from "@nestjs/microservices"
-import { kafkaConfig } from "@src/config"
+import { EventPattern, MessagePattern, Payload } from "@nestjs/microservices"
+import { kafkaConfig, KafkaConfigKey } from "@src/config"
 
 @Controller()
 export class BroadcastController {
@@ -10,9 +9,23 @@ export class BroadcastController {
 
     constructor(private readonly broadcastGateway: BroadcastGateway) {}
 
-    @MessagePattern(kafkaConfig.broadcastPlacedItems.pattern)
-    public async broadcastPlacedItems(params: BroadcastPlacedItemsParams) {
-        this.logger.debug(`Broadcasting placed items for user ${params.userId}`)
-        return this.broadcastGateway.broadcastPlacedItems(params)
+    // @MessagePattern(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern)
+    // public async broadcastPlacedItems(@Payload() payload: any) {
+    //     console.log("broadcastPlacedItems", payload)
+    //     return {
+    //         key: payload,
+    //         value: payload
+    //     }
+    // }
+
+    //Event based
+    @EventPattern(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern)
+    async broadcastPlacedItems(@Payload() payload: any) {
+        console.log("broadcastPlacedItems", payload)
+        return {
+            key: payload,
+            value: payload
+        }
     }
+    
 }

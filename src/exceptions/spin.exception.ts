@@ -12,8 +12,3 @@ export class SpinSlotsNotEqual8Exception extends GrpcPermissionDeniedException {
     }
 }
 
-export class SpinTransactionFailedException extends GrpcPermissionDeniedException {
-    constructor(error: Error) {
-        super(`Spin transaction failed: ${error.message}`)
-    }
-}

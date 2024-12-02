@@ -35,23 +35,18 @@ export class RetainProductService {
 
             try {
                 // Save Retaining product in database
-                const savedRetainingProduct = await queryRunner.manager.remove(
+                await queryRunner.manager.remove(
                     DeliveringProductEntity,
                     deliveringProduct
                 )
 
                 await queryRunner.commitTransaction()
-
-                this.logger.log(
-                    `Successfully Retained product for user ${request.userId}, Retaining delivering product id: ${savedRetainingProduct.id}`
-                )
-
-                return {}
             } catch (error) {
                 this.logger.error("Retain transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
                 throw new RetainProductTransactionFailedException(error)
             }
+            return {}
         } finally {
             await queryRunner.release()
         }

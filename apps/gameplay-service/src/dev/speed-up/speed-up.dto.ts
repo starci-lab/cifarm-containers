@@ -1,5 +1,4 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Empty } from "@src/types"
 import { IsInt } from "class-validator"
 
 export class SpeedUpRequest {
@@ -8,4 +7,4 @@ export class SpeedUpRequest {
         time: number
 }
 
-export type SpeedUpResponse = Empty
+export class SpeedUpResponse {}

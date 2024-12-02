@@ -1,12 +1,6 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
-import {
-    HaverstQuantityRemainingEqualMinHarvestQuantityException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotFullyMaturedException,
-    PlacedItemTileNotPlantedException,
-    TheifCropTransactionFailedException
-} from "@src/exceptions"
-import { DataSource } from "typeorm"
+import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { ClientKafka } from "@nestjs/microservices"
+import { kafkaConfig, KafkaConfigKey } from "@src/config"
 import {
     Activities,
     CropRandomness,
@@ -20,13 +14,19 @@ import {
     SystemId,
     UserEntity
 } from "@src/database"
+import {
+    HaverstQuantityRemainingEqualMinHarvestQuantityException,
+    PlacedItemTileNotFoundException,
+    PlacedItemTileNotFullyMaturedException,
+    PlacedItemTileNotPlantedException,
+    ThiefCropTransactionFailedException
+} from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService, TheifService } from "@src/services"
+import { DataSource } from "typeorm"
 import { TheifCropRequest, TheifCropResponse } from "./theif-crop.dto"
-import { ClientKafka } from "@nestjs/microservices"
-import { kafkaConfig } from "@src/config"
 
 @Injectable()
-export class TheifCropService {
+export class TheifCropService implements OnModuleInit{
     private readonly logger = new Logger(TheifCropService.name)
 
     constructor(
@@ -38,6 +38,11 @@ export class TheifCropService {
         private readonly theifService: TheifService,
         private readonly inventoryService: InventoryService,
     ) {}
+
+    async onModuleInit() {
+        this.clientKafka.subscribeToResponseOf(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern)
+        await this.clientKafka.connect()
+    }
 
     async theifCrop(request: TheifCropRequest): Promise<TheifCropResponse> {
         this.logger.debug(`Theif crop for user ${request.neighborUserId}`)
@@ -56,7 +61,9 @@ export class TheifCropService {
                     }
                 },
                 relations: {
-                    seedGrowthInfo: true,
+                    seedGrowthInfo: {
+                        crop: true
+                    },
                     placedItemType: true
                 }
             })
@@ -134,13 +141,14 @@ export class TheifCropService {
                     inventoryTypeId: inventoryType.id
                 }
             })
-
+            console.log(existingInventories)
+            
             const updatedInventories = this.inventoryService.add({
                 entities: existingInventories,
                 userId: request.userId,
                 data: {
-                    inventoryTypeId: inventoryType.id,
-                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
+                    inventoryType,
+                    quantity: actualQuantity
                 }
             })
 
@@ -179,13 +187,12 @@ export class TheifCropService {
             } catch (error) {
                 this.logger.error(`Theif crop transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new TheifCropTransactionFailedException(error)
+                throw new ThiefCropTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(kafkaConfig.broadcastPlacedItems.pattern, {
+            await this.clientKafka.emit(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern, {
                 userId: request.neighborUserId
             })
-
             return {
                 quantity: actualQuantity
             }

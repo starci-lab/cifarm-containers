@@ -14,5 +14,3 @@ export class RemoveParams extends EntityParams<InventoryEntity> {
         quantity: number
 }
 export type RemoveResult = DeepPartial<InventoryEntity>
-
-export class CheckDeleteParams extends EntityParams<InventoryEntity> {}

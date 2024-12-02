@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsUUID } from "class-validator"
-import { Empty, UserIdRequest } from "@src/types"
+import { UserIdRequest } from "@src/types"
 
 export class PlantSeedRequest extends UserIdRequest {
     @IsUUID()
@@ -11,4 +11,4 @@ export class PlantSeedRequest extends UserIdRequest {
         placedItemTileId: string
 }
 
-export type PlantSeedResponse = Empty
+export class PlantSeedResponse {}

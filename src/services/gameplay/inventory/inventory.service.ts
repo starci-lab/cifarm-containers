@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity, InventoryTypeEntity } from "@src/database"
+import { InventoryEntity } from "@src/database"
 import { DeepPartial } from "typeorm"
-import { AddParams, AddResult, CheckDeleteParams, RemoveParams, RemoveResult } from "./inventory.dto"
+import { AddParams, AddResult, RemoveParams, RemoveResult } from "./inventory.dto"
 import { InventoryQuantityNotSufficientException } from "@src/exceptions"
 
 @Injectable()
@@ -15,9 +15,7 @@ export class InventoryService {
 
         let remainingQuantity = params.data.quantity
 
-        const inventoryType =
-            (params.data.inventoryType as InventoryTypeEntity) ||
-            (params.entities[0].inventoryType as InventoryTypeEntity)
+        const inventoryType = params.data.inventoryType
 
         this.logger.debug(`Found ${resultInventories.length} inventories`)
 
@@ -60,16 +58,5 @@ export class InventoryService {
             throw new InventoryQuantityNotSufficientException(entity.id, params.quantity)
 
         return { quantity: entity.quantity - quantity }
-    }
-
-    public checkDelete(params: CheckDeleteParams): boolean {
-        const { entity } = params
-
-        if (entity.quantity === 0) {
-            this.logger.debug(`Deleting inventory ${entity.id}`)
-            return true
-        }
-
-        return false
     }
 }

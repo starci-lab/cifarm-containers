@@ -1,8 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger"
+import { IsInt } from "class-validator"
 
 export class DeliveryJobData {
-    @ApiProperty({ example: 1, description: "From index" })
-        from: number
-    @ApiProperty({ example: 10, description: "To index" })
-        to: number
+    @IsInt()
+    @ApiProperty({ description: "Time to deliver products" })
+        utcTime: number
+
+    @IsInt()
+    @ApiProperty({ description: "Skip number" })
+        skip: number
+
+    @IsInt()
+    @ApiProperty({ description: "Take number" })
+        take: number
 }

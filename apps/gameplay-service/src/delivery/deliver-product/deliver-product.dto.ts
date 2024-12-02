@@ -17,7 +17,4 @@ export class DeliverProductRequest extends UserIdRequest {
 }
 
 export class DeliverProductResponse {
-    @IsString()
-    @ApiProperty({ example: "f7b3b3b3-4b3b-4b3b-4b3b-4b3b4b3b4b3b" })
-        deliveringProductId: string
 }

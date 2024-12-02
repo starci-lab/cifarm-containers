@@ -11,7 +11,4 @@ export class PlaceTileRequest extends UserIdRequest {
         position: Position
 }
 
-export class PlaceTileResponse {
-    @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
-        tileId: string
-}
+export class PlaceTileResponse {}

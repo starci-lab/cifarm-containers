@@ -7,8 +7,9 @@ import "./delivery/entry.proto";
 import "./claim/entry.proto";
 import "./auth/entry.proto";
 import "./community/entry.proto";
+import "./dev/entry.proto";
 
-package gameplay;
+package gameplay_service;
 
 service GameplayService {
     // Auth methods
@@ -40,7 +41,14 @@ service GameplayService {
 
     // Community methods
     rpc Follow(FollowRequest) returns (google.protobuf.Empty);
+    rpc Unfollow(UnfollowRequest) returns (google.protobuf.Empty);
     rpc HelpUsePesticide(HelpUsePesticideRequest) returns (google.protobuf.Empty);
     rpc HelpWater(HelpWaterRequest) returns (google.protobuf.Empty);
     rpc HelpCureAnimal(HelpCureAnimalRequest) returns (google.protobuf.Empty);
+    rpc TheifCrop(TheifCropRequest) returns (TheifCropResponse);
+    rpc TheifAnimalProduct(TheifAnimalProductRequest) returns (TheifAnimalProductResponse);
+
+    // Dev methods
+    rpc SpeedUp(SpeedUpRequest) returns (google.protobuf.Empty);
+    rpc DeliverInstantly(google.protobuf.Empty) returns (google.protobuf.Empty);
 }
