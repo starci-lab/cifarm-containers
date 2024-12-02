@@ -32,7 +32,7 @@ export class AnimalService {
             await queryRunner.release()
         }
 
-        this.logger.debug(`Found ${count} animals that need to be grown`)
+        //this.logger.debug(`Found ${count} animals that need to be grown`)
         //split into 10000 per batch
         if (count === 0) {
             this.logger.verbose("No animals to grow")
@@ -52,7 +52,7 @@ export class AnimalService {
                 to: Math.min((i + 1) * batchSize, count)
             }
         }))
-        this.logger.verbose(`Adding ${batches.length} batches to the queue`)
+        //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
         await this.animalQueue.addBulk(batches)
     }
 }

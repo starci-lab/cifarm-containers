@@ -23,7 +23,7 @@ import {
 import { EnergyService, InventoryService, LevelService, TheifService } from "@src/services"
 import { TheifCropRequest, TheifCropResponse } from "./theif-crop.dto"
 import { ClientKafka } from "@nestjs/microservices"
-import { kafkaConfig } from "@src/config"
+import { kafkaConfig, KafkaConfigKey } from "@src/config"
 
 @Injectable()
 export class TheifCropService {
@@ -185,10 +185,9 @@ export class TheifCropService {
                 throw new ThiefCropTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(kafkaConfig.broadcastPlacedItems.pattern, {
+            this.clientKafka.emit(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern, {
                 userId: request.neighborUserId
             })
-
             return {
                 quantity: actualQuantity
             }

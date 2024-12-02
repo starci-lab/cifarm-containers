@@ -46,7 +46,6 @@ export class CropWorker extends WorkerHost {
                     createdAt: "ASC"
                 }
             })
-            console.log(seedGrowthInfos)
 
             const system = await queryRunner.manager.findOne(SystemEntity, {
                 where: {

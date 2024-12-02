@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { AnimalModule } from "./animal"
+//import { AnimalModule } from "./animal"
 import { CropModule } from "./crop"
 import { DeliveryModule } from "./delivery"
 import {
@@ -8,7 +8,7 @@ import {
     configForRoot,
     schedulerForRoot,
     typeOrmForRoot
-} from "@src/dynamic-modules"
+} from "@src/dynamic-modules" 
 
 @Module({
     imports: [
@@ -18,7 +18,7 @@ import {
         cacheRegisterAsync(),
         typeOrmForRoot(),
         CropModule,
-        AnimalModule,
+        //AnimalModule,
         DeliveryModule
     ]
 })

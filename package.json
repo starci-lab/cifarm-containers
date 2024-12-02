@@ -10,7 +10,7 @@
     "format": "prettier --write \"apps/**/*.ts\" ",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:all": "concurrently [\"nest start gameplay-service --watch\", \"nest start rest-api-gateway --watch\", \"nest start cron-worker --watch\", \"nest start cron-scheduler --watch\"]",
+    "start:all": "concurrently \"nest start gameplay-service --watch\" \"nest start rest-api-gateway --watch\", \"nest start cron-worker --watch\" \"nest start cron-scheduler --watch\" \"nest start websocket-node --watch\"",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/cifarm-server/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
