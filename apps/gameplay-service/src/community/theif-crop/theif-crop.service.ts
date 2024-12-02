@@ -191,7 +191,7 @@ export class TheifCropService implements OnModuleInit{
                 throw new ThiefCropTransactionFailedException(error)
             }
 
-            const result  = await lastValueFrom(await this.clientKafka.emit(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern, {
+            const result  = await lastValueFrom(this.clientKafka.send(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern, {
                 userId: request.neighborUserId
             }))
             console.log("result", result)

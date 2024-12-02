@@ -4,19 +4,17 @@ import { v4 } from "uuid"
 
 export interface KafkaClientRegisterParams {
     key: KafkaConfigKey
-    producerOnlyMode?: boolean
 }
-export const kafkaClientRegister = ({ key, producerOnlyMode = false }: KafkaClientRegisterParams) => {
+export const kafkaClientRegister = ({ key }: KafkaClientRegisterParams) => {
     return ClientsModule.register([
         {
             name: kafkaConfig[key].name,
             transport: Transport.KAFKA,
             options: {
                 client: {
-                    clientId: "test-client",
-                    brokers: ["localhost:9092"]
+                    clientId: v4(),
+                    brokers: [...Object.values(envConfig().kafka.brokers)],
                 },
-                producerOnlyMode,
                 consumer: {
                     groupId: kafkaConfig[key].groupId
                 }
