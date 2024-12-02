@@ -19,7 +19,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "lint-staged": "lint-staged",
-    "concurrently": "concurrently \"nest start gameplay-service --watch\" \"nest start rest-api-gateway --watch\"  \"nest start cron-worker --watch\" \"nest start cron-scheduler --watch\" "
+    "all": "concurrently \"nest start gameplay-service --watch\" \"nest start rest-api-gateway --watch\"  \"nest start cron-worker --watch\" \"nest start cron-scheduler --watch\" "
   },
   "dependencies": {
     "@apollo/gateway": "2.9.3",

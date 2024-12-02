@@ -35,7 +35,6 @@ export class DeliveryWorker extends WorkerHost {
             const rawUserIds = await queryRunner.manager
                 .createQueryBuilder(DeliveringProductEntity, "delivering_products")
                 .select("delivering_products.userId", "userId")
-                .where("delivering_products.createdAt <= :utcTime", { utcTime })
                 .groupBy("delivering_products.userId")
                 .orderBy("delivering_products.userId", "ASC")
                 .skip(skip)
