@@ -18,7 +18,7 @@ export class CropService {
         @InjectQueue(bullConfig[BullQueueName.Crop].name) private cropQueue: Queue,
         private readonly dataSource: DataSource
     ) {}
-
+    
     @Cron("*/1 * * * * *")
     async handle() {
         // Create a query runner
