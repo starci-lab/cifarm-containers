@@ -34,9 +34,9 @@ jobs:
 
     - name: Apply Kaniko Build
       run: |
-        kubectl delete pod gameplay-service-kaniko-build \
-        --namespace build \
-        2>/dev/null || echo "Pod 'gameplay-service-kaniko-build' does not exist"
+        if kubectl get pod gameplay-service-kaniko-build --namespace build; then
+          kubectl delete pod gameplay-service-kaniko-build --namespace build
+        fi
         kubectl apply -f ./manifest.yaml -l mode=build
   
     - name: Wait for Kaniko Build to Complete
