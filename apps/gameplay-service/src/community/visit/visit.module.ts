@@ -2,10 +2,10 @@ import { Module } from "@nestjs/common"
 import { VisitController } from "./visit.controller"
 import { VisitService } from "./visit.service"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { FollowRecordEntity } from "@src/database"
+import { UserEntity } from "@src/database"
 
 @Module({
-    imports: [TypeOrmModule.forFeature([FollowRecordEntity])],
+    imports: [TypeOrmModule.forFeature([UserEntity])],
     controllers: [VisitController],
     providers: [VisitService]
 })

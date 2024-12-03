@@ -10,3 +10,4 @@ import "./unfollow.proto";
 import "./theif_crop.proto";
 import "./theif_animal_product.proto";
 import "./visit.proto";
+import "./return.proto";

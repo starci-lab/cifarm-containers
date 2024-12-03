@@ -48,6 +48,7 @@ service GameplayService {
     rpc TheifCrop(TheifCropRequest) returns (TheifCropResponse);
     rpc TheifAnimalProduct(TheifAnimalProductRequest) returns (TheifAnimalProductResponse);
     rpc Visit(VisitRequest) returns (google.protobuf.Empty);
+    rpc Return(ReturnRequest) returns (google.protobuf.Empty);
 
     // Dev methods
     rpc SpeedUp(SpeedUpRequest) returns (google.protobuf.Empty);

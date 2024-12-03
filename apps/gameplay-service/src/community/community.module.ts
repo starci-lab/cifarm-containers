@@ -8,6 +8,7 @@ import { TheifCropModule } from "./theif-crop"
 import { TheifAnimalProductModule } from "./theif-animal-product"
 import { UnfollowModule } from "./unfollow/unfollow.module"
 import { VisitModule } from "./visit/visit.module"
+import { ReturnModule } from "./return/return.module"
 
 @Module({
     imports: [
@@ -19,7 +20,8 @@ import { VisitModule } from "./visit/visit.module"
         HelpUseHerbicideModule,
         TheifCropModule,
         TheifAnimalProductModule,
-        VisitModule
+        VisitModule,
+        ReturnModule
     ]
 })
 export class CommunityModule {}

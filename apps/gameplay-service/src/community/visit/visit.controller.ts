@@ -12,7 +12,7 @@ export class VisitController {
 
     @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "Visit")
     async visit(request: VisitRequest) {
-        this.logger.debug("Unfollow called")
+        this.logger.debug("Visit called")
         await this.visitService.visit(request)
     }
 }
