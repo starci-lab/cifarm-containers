@@ -12,64 +12,71 @@
     "healthcheck-service": {
       "type": "application",
       "root": "apps/healthcheck-service",
-      "entryFile": "main",
+      "entryFile": "../dist/apps/healthcheck-service/main",
       "sourceRoot": "apps/healthcheck-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/healthcheck-service/tsconfig.app.json"
+        "webpack": true,
+        "webpackConfigPath": "apps/healthcheck-service/webpack.config.js"
       }
     },
     "rest-api-gateway": {
       "type": "application",
       "root": "apps/rest-api-gateway",
-      "entryFile": "main",
+      "entryFile": "../dist/apps/rest-api-gateway/main",
       "sourceRoot": "apps/rest-api-gateway/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/rest-api-gateway/tsconfig.app.json"
+        "webpack": true,
+        "webpackConfigPath": "apps/rest-api-gateway/webpack.config.js"
       }
     },
     "websocket-node": {
       "type": "application",
       "root": "apps/websocket-node",
-      "entryFile": "main",
+      "entryFile": "../dist/apps/websocket-node/main",
       "sourceRoot": "apps/websocket-node/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/websocket-node/tsconfig.app.json"
+        "webpack": true,
+        "webpackConfigPath": "apps/websocket-node/webpack.config.js"
       }
     },
     "graphql-maingraph": {
       "type": "application",
       "root": "apps/graphql-maingraph",
-      "entryFile": "main",
+      "entryFile": "../dist/apps/graphql-maingraph/main",
       "sourceRoot": "apps/graphql-maingraph/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/graphql-maingraph/tsconfig.app.json"
+        "webpack": true,
+        "webpackConfigPath": "apps/graphql-maingraph/webpack.config.js"
       }
     },
     "cron-scheduler": {
       "type": "application",
       "root": "apps/cron-scheduler",
-      "entryFile": "main",
+      "entryFile": "../dist/apps/cron-scheduler/main",
       "sourceRoot": "apps/cron-scheduler/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/cron-scheduler/tsconfig.app.json"
+        "webpack": true,
+        "webpackConfigPath": "apps/cron-scheduler/webpack.config.js"
       }
     },
     "cron-worker": {
       "type": "application",
       "root": "apps/cron-worker",
-      "entryFile": "main",
+      "entryFile": "../dist/apps/cron-worker/main",
       "sourceRoot": "apps/cron-worker/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/cron-worker/tsconfig.app.json"
+        "webpack": true,
+        "webpackConfigPath": "apps/cron-worker/webpack.config.js"
       }
     },
     "static-subgraph": {
       "type": "application",
       "root": "apps/static-subgraph",
-      "entryFile": "main",
+      "entryFile": "../dist/apps/static-subgraph/main",
       "sourceRoot": "apps/static-subgraph/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/static-subgraph/tsconfig.app.json"
+        "webpack": true,
+        "webpackConfigPath": "apps/static-subgraph/webpack.config.js"
       }
     },
     "gameplay-service": {
@@ -85,10 +92,11 @@
     "seed": {
       "type": "application",
       "root": "apps/seed",
-      "entryFile": "main",
+      "entryFile": "../dist/apps/seed/main",
       "sourceRoot": "apps/seed/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/seed/tsconfig.app.json"
+        "webpack": true,
+        "webpackConfigPath": "apps/seed/webpack.config.js"
       }
     }
   }

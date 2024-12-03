@@ -5,6 +5,7 @@ const {
 } = require("@nestjs/cli/lib/compiler/defaults/swc-defaults")
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
+const WebpackObfuscator = require("webpack-obfuscator")
 
 /** @type { import("webpack").Configuration } */
 module.exports = {
@@ -63,6 +64,7 @@ module.exports = {
             allowAsyncCycles: false,
             cwd: process.cwd(),
         }),
+        new WebpackObfuscator({rotateStringArray: true, reservedStrings: [ "\s*" ]}, [])
     ],
     resolve: {
         extensions: [".js", ".json", ".ts"],

@@ -32,7 +32,7 @@ module.exports = {
     },
     output: {
         filename: "main.js",
-        path: path.resolve(__dirname, "../../dist/apps/gameplay-service")
+        path: path.resolve(__dirname, "../../dist/apps/graphql-maingraph")
     },
     plugins: [
         new IgnorePlugin({
