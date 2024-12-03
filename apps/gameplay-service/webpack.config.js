@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require("path")
 const { IgnorePlugin } = require("webpack")
 const {
@@ -6,6 +5,7 @@ const {
 } = require("@nestjs/cli/lib/compiler/defaults/swc-defaults")
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin")
 const CircularDependencyPlugin = require("circular-dependency-plugin")
+const CopyWebpackPlugin = require("copy-webpack-plugin")
 
 /** @type { import("webpack").Configuration } */
 module.exports = {
@@ -64,10 +64,16 @@ module.exports = {
             allowAsyncCycles: false,
             cwd: process.cwd(),
         }),
+        new CopyWebpackPlugin({
+            patterns: [
+                { from: path.resolve(__dirname, "../../proto"), to: path.resolve(__dirname, "../../dist/apps/gameplay-service/proto") }
+            ],
+        }),
     ],
     resolve: {
         extensions: [".js", ".json", ".ts"],
         alias: {
+            "@apps": path.resolve(__dirname, "apps"),
             "@src": path.resolve(__dirname, "src"),
         },
         mainFields: ["main"],

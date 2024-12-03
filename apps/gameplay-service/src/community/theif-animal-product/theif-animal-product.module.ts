@@ -17,7 +17,7 @@ import { typeOrmForFeature } from "@src/dynamic-modules"
                 transport: Transport.KAFKA,
                 options: {
                     client: {
-                        clientId: v4(),
+                        clientId: `thief-animal-product-${v4()}`,
                         brokers: [
                             `${envConfig().kafka.brokers.broker1.host}:${envConfig().kafka.brokers.broker1.port}`,
                             `${envConfig().kafka.brokers.broker2.host}:${envConfig().kafka.brokers.broker2.port}`,

@@ -3,6 +3,7 @@ import { AppModule } from "./app.module"
 import { RedisIoAdapter } from "@src/adapters"
 import { envConfig, kafkaConfig } from "@src/config"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
+import { v4 } from "uuid"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -12,6 +13,7 @@ const bootstrap = async () => {
             transport: Transport.KAFKA,
             options: {
                 client: {
+                    clientId: `websocket-node-${v4()}`,
                     brokers: [
                         `${envConfig().kafka.brokers.broker1.host}:${envConfig().kafka.brokers.broker1.port}`,
                         `${envConfig().kafka.brokers.broker2.host}:${envConfig().kafka.brokers.broker2.port}`,

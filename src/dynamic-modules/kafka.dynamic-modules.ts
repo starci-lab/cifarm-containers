@@ -12,7 +12,7 @@ export const kafkaClientRegister = ({ key }: KafkaClientRegisterParams) => {
             transport: Transport.KAFKA,
             options: {
                 client: {
-                    clientId: v4(),
+                    clientId: `kafka-${v4()}`,
                     brokers: [
                         `${envConfig().kafka.brokers.broker1.host}:${envConfig().kafka.brokers.broker1.port}`,
                         `${envConfig().kafka.brokers.broker2.host}:${envConfig().kafka.brokers.broker2.port}`,
