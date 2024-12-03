@@ -16,7 +16,6 @@ export class PlacementMoveService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            await queryRunner.startTransaction()
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
             })
@@ -27,16 +26,16 @@ export class PlacementMoveService {
             })
 
             if (!placedItem) throw new PlacedItemNotFoundException(request.placedItemKey)
-
-            await queryRunner.manager.update(PlacedItemEntity, 
-                request.placedItemKey
-                , {
-                    x: request.position.x,
-                    y: request.position.y
-                })
-
-            await queryRunner.commitTransaction()
-        } finally {
+            if(inventory.inventoryType.type != InventoryType.Tile) throw new InventoryTypeNotTileException(request.inventoryTileId)
+            if(inventory.isPlaced) throw new InventoryAlreadyPlacedException(request.inventoryTileId)
+            
+            
+            await queryRunner.manager.update(PlacedItemEntity, request.placedItemKey, {
+                x: request.position.x,
+                y: request.position.y
+            })
+        }
+        finally {
             await queryRunner.release()
         }
     }

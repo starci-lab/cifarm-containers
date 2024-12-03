@@ -27,7 +27,11 @@ export class PlacedItemTileNotNeedWaterException extends GrpcNotFoundException {
         super(`Placed item tile not need water: ${id}`)
     }
 }
-
+export class PlacedItemInventoryNotFoundException extends GrpcNotFoundException {
+    constructor() {
+        super("placed item inventory key not found")
+    }
+}
 export class PlacedItemTileNotNeedUsePesticideException extends GrpcNotFoundException {
     constructor(id: string) {
         super(`Placed item tile not need use Pesticide: ${id}`)
@@ -57,7 +61,11 @@ export class PlacedItemTypeNotFoundException extends GrpcNotFoundException {
         super(`Placed item type not found: ${id}`)
     }
 }
-
+export class PlacedItemTypeNotTileException extends GrpcNotFoundException {
+    constructor() {
+        super("Placed item type not tile")
+    }
+}
 export class PlacedItemIsLimitException extends Error {
     constructor(tileId: string) {
         super(`Tile with id "${tileId}" has reached its maximum ownership limit.`)

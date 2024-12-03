@@ -11,10 +11,10 @@ export class PlaceTitleController {
             private readonly placementService: PlaceTitleService
     ){}
 
-    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "move") 
-    public async move(@Body() request: PlaceTileRequest) {
+    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "place_tile") 
+    public async placeTile(@Body() request: PlaceTileRequest) {
         this.logger.debug(`Received request to place tile: ${JSON.stringify(request)}`)
-        return await this.placementService.move(request)
+        return await this.placementService.placeTile(request)
     }
     
 }
