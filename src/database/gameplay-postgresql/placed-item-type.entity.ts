@@ -1,11 +1,11 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, Relation } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
-import { AnimalEntity } from "./animal.entity"
-import { BuildingEntity } from "./building.entity"
 import { PlacedItemType } from "./enums"
-import { TileEntity } from "./tile.entity"
-import { PlacedItemEntity } from "./placed-item.entity"
+import type { AnimalEntity } from "./animal.entity"
+import type { BuildingEntity } from "./building.entity"
+import type { TileEntity } from "./tile.entity"
+import type { PlacedItemEntity } from "./placed-item.entity"
 
 @ObjectType()
 @Entity("placed_item_types")
@@ -18,34 +18,33 @@ export class PlacedItemTypeEntity extends StringAbstractEntity {
     @Column({ name: "tile_id", nullable: true })
         tileId: string
 
-    @OneToOne(() => TileEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne("TileEntity", { onDelete: "CASCADE", cascade: true })
     @JoinColumn({
         name: "tile_id",
         referencedColumnName: "id"
     })
-        tile: TileEntity
+        tile: Relation<TileEntity>
 
-    @OneToOne(() => BuildingEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne("BuildingEntity", { onDelete: "CASCADE", cascade: true })
     @JoinColumn({
         name: "building_id",
         referencedColumnName: "id"
     })
-        building: BuildingEntity
+        building: Relation<BuildingEntity>
 
     @Field(() => String, { nullable: true })
     @Column({ name: "animal_id", nullable: true })
         animalId: string
 
-    @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne("AnimalEntity", { onDelete: "CASCADE", cascade: true })
     @JoinColumn({
         name: "animal_id",
         referencedColumnName: "id"
     })
-        animal: AnimalEntity
+        animal: Relation<AnimalEntity>
 
-    @Field(() => [PlacedItemEntity], { nullable: true })
-    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.placedItemType, {
+    @OneToMany("PlacedItemEntity", "placedItemType", {
         cascade: ["insert", "update"]
     })
-        placedItems?: Array<PlacedItemEntity>
+        placedItems?: Relation<Array<PlacedItemEntity>>
 }

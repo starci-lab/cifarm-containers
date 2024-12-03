@@ -1,7 +1,7 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, Relation } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
-import { BuildingEntity } from "./building.entity"
+import type { BuildingEntity } from "./building.entity"
 
 @ObjectType()
 @Entity("upgrades")
@@ -18,8 +18,7 @@ export class UpgradeEntity extends StringAbstractEntity {
     @Column({ name: "upgrade_level", type: "int" })
         upgradeLevel: number
 
-    @Field(() => BuildingEntity)
-    @ManyToOne(() => BuildingEntity, (building: BuildingEntity) => building.upgrades)
+    @ManyToOne("BuildingEntity", "upgrades")
     @JoinColumn({ name: "building_id", referencedColumnName: "id" })
-        building: BuildingEntity
+        building: Relation<BuildingEntity>
 }

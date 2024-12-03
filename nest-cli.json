@@ -4,8 +4,7 @@
   "sourceRoot": "apps/cifarm-server/src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "webpack": true,
-    "tsConfigPath": "apps/cifarm-server/tsconfig.app.json"
+    "webpack": true
   },
   "monorepo": true,
   "root": "apps/cifarm-server",
@@ -76,10 +75,11 @@
     "gameplay-service": {
       "type": "application",
       "root": "apps/gameplay-service",
-      "entryFile": "main",
+      "entryFile": "../dist/apps/gameplay-service/main",
       "sourceRoot": "apps/gameplay-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/gameplay-service/tsconfig.app.json"
+        "webpack": true,
+        "webpackConfigPath": "apps/gameplay-service/webpack.config.js"
       }
     },
     "seed": {

@@ -1,6 +1,6 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm"
-import { UserEntity } from "@src/database"
+import { Entity, JoinColumn, ManyToOne, PrimaryColumn, Relation } from "typeorm"
+import { UserEntity } from "./user.entity"
 
 @ObjectType()
 @Entity("follow_records")
@@ -16,10 +16,10 @@ export class FollowRecordEntity {
     @Field(() => UserEntity, { nullable: false })
     @ManyToOne(() => UserEntity, (user) => user.followingRecords)
     @JoinColumn({ name: "follower_id" })
-        follower: UserEntity
+        follower: Relation<UserEntity>
 
     @Field(() => UserEntity, { nullable: false })
     @ManyToOne(() => UserEntity, (user) => user.followedRecords)
     @JoinColumn({ name: "followee_id" })
-        followee: UserEntity
+        followee: Relation<UserEntity>
 }

@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, Relation } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { AnimalCurrentState } from "./enums"
@@ -58,5 +58,5 @@ export class AnimalInfoEntity extends UuidAbstractEntity {
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.animalInfo, {
         onDelete: "CASCADE"
     })
-        placedItem?: PlacedItemEntity
+        placedItem?: Relation<PlacedItemEntity>
 }

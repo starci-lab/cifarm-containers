@@ -1,5 +1,5 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, Relation } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
 import { SpinPrizeEntity } from "./spin-prize.entity"
 
@@ -16,5 +16,5 @@ export class SpinSlotEntity extends UuidAbstractEntity {
         eager: true 
     })
     @JoinColumn({ name: "spin_prize_id", referencedColumnName: "id" })
-        spinPrize: SpinPrizeEntity
+        spinPrize: Relation<SpinPrizeEntity>
 }

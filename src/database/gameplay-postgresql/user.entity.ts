@@ -1,11 +1,11 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Network, SupportedChainKey } from "@src/config"
-import { Column, Entity, OneToMany } from "typeorm"
+import { Column, Entity, OneToMany, Relation } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
-import { InventoryEntity } from "./inventory.entity"
-import { PlacedItemEntity } from "./placed-item.entity"
-import { DeliveringProductEntity } from "./delivering-product.entity"
-import { FollowRecordEntity } from "./follow-record.entity"
+import type { InventoryEntity } from "./inventory.entity"
+import type { PlacedItemEntity } from "./placed-item.entity"
+import type { DeliveringProductEntity } from "./delivering-product.entity"
+import type { FollowRecordEntity } from "./follow-record.entity"
 
 @ObjectType()
 @Entity("users")
@@ -74,38 +74,35 @@ export class UserEntity extends UuidAbstractEntity {
     @Column({ name: "spin_count", type: "int", default: 0 })
         spinCount: number
 
-    @Field(() => [InventoryEntity])
-    @OneToMany(() => InventoryEntity, (inventory) => inventory.user, {
+    @OneToMany("InventoryEntity", "user", {
         cascade: true,
         onDelete: "CASCADE"
     })
-        inventories?: Array<InventoryEntity>
+        inventories?: Relation<Array<InventoryEntity>>
 
-    @Field(() => [PlacedItemEntity])
-    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.user, {
+    @OneToMany("PlacedItemEntity", "user", {
         cascade: true,
         onDelete: "CASCADE"
     })
-        placedItems?: Array<PlacedItemEntity>
+        placedItems?: Relation<Array<PlacedItemEntity>>
 
-    @Field(() => [DeliveringProductEntity])
-    @OneToMany(() => DeliveringProductEntity, (deliveringProduct) => deliveringProduct.user, {
+    @OneToMany("DeliveringProductEntity", "user", {
         cascade: true,
         onDelete: "CASCADE"
     })
-        deliveringProducts?: Array<DeliveringProductEntity>
+        deliveringProducts?: Relation<Array<DeliveringProductEntity>>
 
     @Field(() => [UserEntity])
-    @OneToMany(() => FollowRecordEntity, (userFollowing) => userFollowing.followeeId, {
+    @OneToMany("FollowRecordEntity", "followeeId", {
         cascade: true,
         onDelete: "CASCADE"
     })
-        followingRecords: Array<FollowRecordEntity>
+        followingRecords: Relation<Array<FollowRecordEntity>>
 
     @Field(() => [UserEntity])
-    @OneToMany(() => FollowRecordEntity, (userFollowing) => userFollowing.followerId, {
+    @OneToMany("FollowRecordEntity", "followerId", {
         cascade: true,
         onDelete: "CASCADE"
     })
-        followedRecords: Array<FollowRecordEntity>
+        followedRecords: Relation<Array<FollowRecordEntity>>
 }

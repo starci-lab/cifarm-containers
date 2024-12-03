@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
+import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne, Relation } from "typeorm"
 import { CropEntity } from "./crop.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { UuidAbstractEntity } from "./abstract"
@@ -36,7 +36,7 @@ export class SeedGrowthInfoEntity extends UuidAbstractEntity {
     @Field(() => CropEntity)
     @ManyToOne(() => CropEntity)
     @JoinColumn({ name: "crop_id", referencedColumnName: "id" })
-        crop: CropEntity
+        crop: Relation<CropEntity>
 
     @Index()
     @Field(() => String)
@@ -68,5 +68,5 @@ export class SeedGrowthInfoEntity extends UuidAbstractEntity {
         name: "placed_item_id",
         referencedColumnName: "id"
     })
-        placedItem?: PlacedItemEntity
+        placedItem?: Relation<PlacedItemEntity>
 }

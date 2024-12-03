@@ -1,10 +1,10 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, Relation } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
-import { AnimalInfoEntity } from "./animal-info.entity"
-import { BuildingInfoEntity } from "./building-info.entity"
-import { PlacedItemTypeEntity } from "./placed-item-type.entity"
-import { SeedGrowthInfoEntity } from "./seed-grow-info.entity"
+import type { AnimalInfoEntity } from "./animal-info.entity"
+import type{ BuildingInfoEntity } from "./building-info.entity"
+import type { PlacedItemTypeEntity } from "./placed-item-type.entity"
+import type { SeedGrowthInfoEntity } from "./seed-grow-info.entity"
 import { UserEntity } from "./user.entity"
 
 @ObjectType()
@@ -31,8 +31,7 @@ export class PlacedItemEntity extends UuidAbstractEntity {
     @Column({ name: "inventory_id", type: "uuid", nullable: true })
         inventoryId?: string
 
-    @Field(() => SeedGrowthInfoEntity, { nullable: true })
-    @OneToOne(() => SeedGrowthInfoEntity, (seedGrowthInfo) => seedGrowthInfo.placedItem, {
+    @OneToOne("SeedGrowthInfoEntity", "placedItem", {
         nullable: true,
         eager: true,
         cascade: true,
@@ -40,8 +39,7 @@ export class PlacedItemEntity extends UuidAbstractEntity {
     })
         seedGrowthInfo?: SeedGrowthInfoEntity
 
-    @Field(() => AnimalInfoEntity, { nullable: true })
-    @OneToOne(() => AnimalInfoEntity, (animalInfo) => animalInfo.placedItem, {
+    @OneToOne("AnimalInfoEntity", "placedItem", {
         nullable: true,
         eager: true,
         cascade: true,
@@ -50,8 +48,7 @@ export class PlacedItemEntity extends UuidAbstractEntity {
     @JoinColumn()
         animalInfo?: AnimalInfoEntity
 
-    @Field(() => BuildingInfoEntity, { nullable: true })
-    @OneToOne(() => BuildingInfoEntity, (buildingInfo) => buildingInfo.placedItem, {
+    @OneToOne("BuildingInfoEntity", "placedItem", {
         nullable: true,
         eager: true,
         cascade: true,
@@ -62,7 +59,7 @@ export class PlacedItemEntity extends UuidAbstractEntity {
 
     @Field(() => [PlacedItemEntity])
     @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.placedItemType)
-        placedItems?: Array<PlacedItemEntity>
+        placedItems?: Relation<Array<PlacedItemEntity>>
 
     @Field(() => String, { nullable: true })
     @Column({ name: "parent_id", type: "uuid", nullable: true })
@@ -70,17 +67,16 @@ export class PlacedItemEntity extends UuidAbstractEntity {
 
     @Field(() => String, { nullable: true })
     @ManyToOne(() => PlacedItemEntity, (placedItem) => placedItem.id, { nullable: true })
-        parent: PlacedItemEntity
+        parent: Relation<PlacedItemEntity>
 
     @Field(() => String, { nullable: true })
     @Column({ name: "placed_item_type_id", length: 36, nullable: true })
         placedItemTypeId?: string
 
-    @Field(() => PlacedItemTypeEntity, { nullable: true })
-    @ManyToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.placedItems, {
+    @ManyToOne("PlacedItemTypeEntity", "placedItems", {
         onDelete: "CASCADE",
         eager: true
     })
     @JoinColumn({ name: "placed_item_type_id", referencedColumnName: "id" })
-        placedItemType?: PlacedItemTypeEntity
+        placedItemType?: Relation<PlacedItemTypeEntity>
 }
