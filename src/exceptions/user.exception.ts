@@ -63,3 +63,9 @@ export class SelfFollowException extends GrpcInvalidArgumentException {
         super(`Cannot self follow: ${id}`)
     }
 }
+
+export class SelfVisitException extends GrpcInvalidArgumentException {
+    constructor(id: string) {
+        super(`Cannot self visit: ${id}`)
+    }
+}
