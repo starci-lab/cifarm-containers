@@ -1,3 +1,6 @@
+#docker build -t cifarm/websocket-node -f ./apps/websocket-node/Dockerfile .
+#docker push cifarm/websocket-node
+
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=21.6.2
@@ -25,7 +28,7 @@ COPY . .
 RUN nest build websocket-node
 
 # Create a new stage for running the application
-FROM build as final
+FROM build as final 
 
 # Use production node environment by default.
 ENV NODE_ENV production
@@ -35,7 +38,8 @@ COPY package.json .
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist/apps/websocket-node ./dist
 
-RUN chown -R node:node /usr/src/app/dist
+# Change ownership of the dist directory
+RUN chown -R node:node ./dist
 
 # Run the application as a non-root user.
 USER node

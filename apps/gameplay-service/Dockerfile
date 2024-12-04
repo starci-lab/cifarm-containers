@@ -1,3 +1,6 @@
+#docker build -t cifarm/gameplay-service -f ./apps/gameplay-service/Dockerfile .
+#docker push cifarm/gameplay-service
+
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=21.6.2

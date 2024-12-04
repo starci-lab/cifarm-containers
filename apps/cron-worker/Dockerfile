@@ -22,7 +22,7 @@ RUN npm i -g @nestjs/cli
 
 # Copy the source code
 COPY . .
-RUN nest build time-cronjobs
+RUN nest build cron-worker
 
 # Create a new stage for running the application
 FROM build as final 
@@ -33,7 +33,7 @@ ENV NODE_ENV production
 # Copy the minimal files needed to run the application.
 COPY package.json .
 COPY --from=deps /usr/src/app/node_modules ./node_modules
-COPY --from=build /usr/src/app/dist/apps/time-cronjobs ./dist
+COPY --from=build /usr/src/app/dist/apps/cron-worker ./dist
 
 # Run the application as a non-root user.
 USER node

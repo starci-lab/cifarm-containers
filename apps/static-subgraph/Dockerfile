@@ -1,3 +1,6 @@
+#docker build -t cifarm/static-subgraph -f ./apps/static-subgraph/Dockerfile .
+#docker push cifarm/static-subgraph
+
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=21.6.2
@@ -35,7 +38,8 @@ COPY package.json .
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist/apps/static-subgraph ./dist
 
-RUN chown -R node:node /usr/src/app/dist
+# Change ownership of the dist directory
+RUN chown -R node:node ./dist
 
 # Run the application as a non-root user.
 USER node

@@ -1,3 +1,6 @@
+#docker build -t cifarm/rest-api-gateway -f ./apps/rest-api-gateway/Dockerfile .
+#docker push cifarm/rest-api-gateway
+
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=21.6.2

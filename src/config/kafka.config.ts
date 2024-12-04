@@ -6,7 +6,7 @@ export interface KafkaConfigDetails {
 }
 
 export enum KafkaConfigKey {
-    BroadcastPlacedItems = "broadcastPlacedItems"
+    BroadcastPlacedItems = "broadcastPlacedItems",
 }
 
 export const kafkaConfig: Record<KafkaConfigKey, KafkaConfigDetails> = {

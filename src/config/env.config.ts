@@ -28,21 +28,14 @@ export const envConfig = () => ({
     nodeEnv: (process.env.NODE_ENV ?? NodeEnv.Development) as NodeEnv,
     graphqlFederation: {
         subgraphUrls: {
-            static: process.env.GRAPHQL_SUBGRAPH_STATIC_URL
+            static: process.env.GRAPHQL_SUBGRAPH_STATIC_URL,
+            port: process.env.GRAPHQL_STATIC_SUBGRAPH_PORT
         }
     },
     containers: {
-        authService: {
-            host: process.env.AUTH_SERVICE_HOST,
-            port: Number(process.env.AUTH_SERVICE_PORT)
-        },
         restApiGateway: {
             host: process.env.REST_API_GATEWAY_HOST,
             port: Number(process.env.REST_API_GATEWAY_PORT)
-        },
-        broadcastService: {
-            host: process.env.BROADCAST_SERVICE_HOST,
-            port: Number(process.env.BROADCAST_SERVICE_PORT)
         },
         graphqlApiGateway: {
             host: process.env.GRAPHQL_API_GATEWAY_HOST,
@@ -51,26 +44,6 @@ export const envConfig = () => ({
         websocketApiGateway: {
             host: process.env.WEBSOCKET_API_GATEWAY_HOST,
             port: Number(process.env.WEBSOCKET_API_GATEWAY_PORT)
-        },
-        walletService: {
-            host: process.env.WALLET_SERVICE_HOST,
-            port: Number(process.env.WALLET_SERVICE_PORT)
-        },
-        shopService: {
-            host: process.env.SHOP_SERVICE_HOST,
-            port: Number(process.env.SHOP_SERVICE_PORT)
-        },
-        placedItemService: {
-            host: process.env.PLACED_ITEM_SERVICE_HOST,
-            port: Number(process.env.PLACED_ITEM_SERVICE_PORT)
-        },
-        inventoryService: {
-            host: process.env.INVENTORY_SERVICE_HOST,
-            port: Number(process.env.INVENTORY_SERVICE_PORT)
-        },
-        staticService: {
-            host: process.env.STATIC_SERVICE_HOST,
-            port: Number(process.env.STATIC_SERVICE_PORT)
         },
         gameplayService: {
             host: process.env.GAMEPLAY_SERVICE_HOST,
@@ -168,8 +141,25 @@ export const envConfig = () => ({
         }
     },
     kafka: {
-        brokers: {
-            broker1: process.env.KAFKA_BROKER_1
+        headless: {
+            headless1: {
+                host: process.env.HEADLESS_KAFKA_1_HOST,
+                port: process.env.HEADLESS_KAFKA_1_PORT
+            },
+            headless2: {
+                host: process.env.HEADLESS_KAFKA_2_HOST,
+                port: process.env.HEADLESS_KAFKA_2_PORT
+            },
+            headless3: {
+                host: process.env.HEADLESS_KAFKA_3_HOST,
+                port: process.env.HEADLESS_KAFKA_3_PORT
+            }
+        },
+        default: {
+            default1: {
+                host: process.env.KAFKA_1_HOST,
+                port: process.env.KAFKA_1_PORT
+            }
         },
     },
     chainCredentials: {
