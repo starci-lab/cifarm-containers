@@ -14,7 +14,11 @@ export class FollowService {
     async follow(request: FollowRequest) {
         this.logger.debug(`Follow user ${request.followedUserId} for user ${request.userId}`)
 
-        if (request.userId === request.followedUserId) {
+        if (
+            request.userId.localeCompare(request.followedUserId, undefined, {
+                sensitivity: "base"
+            }) === 0
+        ) {
             throw new SelfFollowException(request.followedUserId)
         }
 
