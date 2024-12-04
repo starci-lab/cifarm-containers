@@ -28,7 +28,8 @@ export const envConfig = () => ({
     nodeEnv: (process.env.NODE_ENV ?? NodeEnv.Development) as NodeEnv,
     graphqlFederation: {
         subgraphUrls: {
-            static: process.env.GRAPHQL_SUBGRAPH_STATIC_URL
+            static: process.env.GRAPHQL_SUBGRAPH_STATIC_URL,
+            port: process.env.GRAPHQL_STATIC_SUBGRAPH_PORT
         }
     },
     containers: {
@@ -140,18 +141,24 @@ export const envConfig = () => ({
         }
     },
     kafka: {
-        brokers: {
-            broker1: {
-                host: process.env.KAFKA_BROKER_1_HOST,
-                port: process.env.KAFKA_BROKER_1_PORT
+        headless: {
+            headless1: {
+                host: process.env.HEADLESS_KAFKA_1_HOST,
+                port: process.env.HEADLESS_KAFKA_1_PORT
             },
-            broker2: {
-                host: process.env.KAFKA_BROKER_2_HOST,
-                port: process.env.KAFKA_BROKER_2_PORT
+            headless2: {
+                host: process.env.HEADLESS_KAFKA_2_HOST,
+                port: process.env.HEADLESS_KAFKA_2_PORT
             },
-            broker3: {
-                host: process.env.KAFKA_BROKER_3_HOST,
-                port: process.env.KAFKA_BROKER_3_PORT
+            headless3: {
+                host: process.env.HEADLESS_KAFKA_3_HOST,
+                port: process.env.HEADLESS_KAFKA_3_PORT
+            }
+        },
+        default: {
+            default1: {
+                host: process.env.KAFKA_1_HOST,
+                port: process.env.KAFKA_1_PORT
             }
         },
     },

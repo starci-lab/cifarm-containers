@@ -1,10 +1,10 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Relation } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
+import { CropEntity } from "./crop.entity"
 import { AppearanceChance, SpinPrizeType } from "./enums"
-import type { CropEntity } from "./crop.entity"
-import type{ SupplyEntity } from "./supply.entity"
-import type { SpinSlotEntity } from "./spin-slot.entity"
+import { SupplyEntity } from "./supply.entity"
+import { SpinSlotEntity } from "./spin-slot.entity"
 
 @ObjectType()
 @Entity("spin_prizes")
@@ -17,7 +17,8 @@ export class SpinPrizeEntity extends UuidAbstractEntity {
     @Column({ name: "crop_id", nullable: true })
         cropId?: string
 
-    @ManyToOne("CropEntity", "spinPrizes", { nullable: true })
+    @Field(() => CropEntity, { nullable: true })
+    @ManyToOne(() => CropEntity, (crop) => crop.spinPrizes, { nullable: true })
     @JoinColumn({
         name: "crop_id",
         referencedColumnName: "id"
@@ -28,12 +29,12 @@ export class SpinPrizeEntity extends UuidAbstractEntity {
     @Column({ name: "supply_id", nullable: true })
         supplyId: string
 
-    @ManyToOne("SupplyEntity", "spinPrizes", { nullable: true })
+    @ManyToOne(() => SupplyEntity, (supply) => supply.spinPrizes, { nullable: true })
     @JoinColumn({
         name: "supply_id",
         referencedColumnName: "id"
     })
-        supply: Relation<SupplyEntity>
+        supply: SupplyEntity
 
     @Field(() => Int, { nullable: true })
     @Column({ name: "golds", type: "int", nullable: true })
@@ -51,9 +52,10 @@ export class SpinPrizeEntity extends UuidAbstractEntity {
     @Column({ name: "appearance_chance", type: "enum", enum: AppearanceChance })
         appearanceChance: AppearanceChance
 
-    @OneToMany("SpinSlotEntity", "spinPrize", {
+    @Field(() => [SpinSlotEntity], { nullable: true })
+    @OneToMany(() => SpinSlotEntity, (spin) => spin.spinPrize, {
         cascade: ["insert", "update"]
     })
-        spinSlots?: Relation<Array<SpinSlotEntity>>
+        spinSlots?: Array<SpinSlotEntity>
 }
 

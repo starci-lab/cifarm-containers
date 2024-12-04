@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToMany, OneToOne, Relation } from "typeorm"
+import { Column, Entity, OneToMany, OneToOne } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { ProductEntity } from "./product.entity"
@@ -62,7 +62,7 @@ export class CropEntity extends StringAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        product?: Relation<ProductEntity>
+        product?: ProductEntity
  
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.crop, {
@@ -70,7 +70,7 @@ export class CropEntity extends StringAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        inventoryType?: Relation<InventoryTypeEntity>
+        inventoryType?: InventoryTypeEntity
 
     @Field(() => [SpinPrizeEntity], { nullable: true })
     @OneToMany(() => SpinPrizeEntity, (spinPrize) => spinPrize.crop, {
@@ -78,5 +78,5 @@ export class CropEntity extends StringAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        spinPrizes?: Relation<Array<SpinPrizeEntity>>
+        spinPrizes?: Array<SpinPrizeEntity>
 }

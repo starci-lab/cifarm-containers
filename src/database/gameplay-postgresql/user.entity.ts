@@ -1,11 +1,11 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Network, SupportedChainKey } from "@src/config"
-import { Column, Entity, OneToMany, Relation } from "typeorm"
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
-import type { InventoryEntity } from "./inventory.entity"
-import type { PlacedItemEntity } from "./placed-item.entity"
-import type { DeliveringProductEntity } from "./delivering-product.entity"
-import type { FollowRecordEntity } from "./follow-record.entity"
+import { InventoryEntity } from "./inventory.entity"
+import { PlacedItemEntity } from "./placed-item.entity"
+import { DeliveringProductEntity } from "./delivering-product.entity"
+import { FollowRecordEntity } from "./follow-record.entity"
 
 @ObjectType()
 @Entity("users")
@@ -74,35 +74,51 @@ export class UserEntity extends UuidAbstractEntity {
     @Column({ name: "spin_count", type: "int", default: 0 })
         spinCount: number
 
-    @OneToMany("InventoryEntity", "user", {
-        cascade: true,
-        onDelete: "CASCADE"
-    })
-        inventories?: Relation<Array<InventoryEntity>>
+    @Field(() => ID, { nullable: true })
+    @Column({ name: "visiting_user_id", type: "uuid", nullable: true })
+        visitingUserId?: string
 
-    @OneToMany("PlacedItemEntity", "user", {
-        cascade: true,
-        onDelete: "CASCADE"
-    })
-        placedItems?: Relation<Array<PlacedItemEntity>>
+    @Field({ nullable: true })
+    @Column({ name: "is_random", type: "boolean", nullable: true })
+        isRandom?: boolean
 
-    @OneToMany("DeliveringProductEntity", "user", {
+    @Field(() => UserEntity, { nullable: true })
+    @OneToOne(() => UserEntity, { nullable: true })
+    @JoinColumn({ name: "visiting_user_id" })
+        visitingUser?: UserEntity
+
+    @Field(() => [InventoryEntity])
+    @OneToMany(() => InventoryEntity, (inventory) => inventory.user, {
         cascade: true,
         onDelete: "CASCADE"
     })
-        deliveringProducts?: Relation<Array<DeliveringProductEntity>>
+        inventories?: Array<InventoryEntity>
+
+    @Field(() => [PlacedItemEntity])
+    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.user, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
+        placedItems?: Array<PlacedItemEntity>
+
+    @Field(() => [DeliveringProductEntity])
+    @OneToMany(() => DeliveringProductEntity, (deliveringProduct) => deliveringProduct.user, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
+        deliveringProducts?: Array<DeliveringProductEntity>
 
     @Field(() => [UserEntity])
-    @OneToMany("FollowRecordEntity", "followeeId", {
+    @OneToMany(() => FollowRecordEntity, (userFollowing) => userFollowing.followeeId, {
         cascade: true,
         onDelete: "CASCADE"
     })
-        followingRecords: Relation<Array<FollowRecordEntity>>
+        followingRecords: Array<FollowRecordEntity>
 
     @Field(() => [UserEntity])
-    @OneToMany("FollowRecordEntity", "followerId", {
+    @OneToMany(() => FollowRecordEntity, (userFollowing) => userFollowing.followerId, {
         cascade: true,
         onDelete: "CASCADE"
     })
-        followedRecords: Relation<Array<FollowRecordEntity>>
+        followedRecords: Array<FollowRecordEntity>
 }

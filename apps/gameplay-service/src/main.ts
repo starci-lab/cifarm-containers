@@ -7,7 +7,7 @@ const bootstrap = async () => {
     const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.GRPC,
         options: {
-            url: `${envConfig().containers.gameplayService.host}:${envConfig().containers.gameplayService.port}`,
+            url: `0.0.0.0:${envConfig().containers.gameplayService.port}`,
             package: grpcConfig[GrpcServiceName.Gameplay].package,
             protoPath: grpcConfig[GrpcServiceName.Gameplay].protoPath
         }

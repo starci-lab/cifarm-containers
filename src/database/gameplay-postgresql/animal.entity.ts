@@ -1,5 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToOne, Relation } from "typeorm"
+import { Column, Entity, OneToOne } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
 import { InventoryTypeEntity } from "./inventory-type.entity"
@@ -67,7 +67,7 @@ export class AnimalEntity extends StringAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        product?: Relation<ProductEntity>
+        product?: ProductEntity
 
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.animal, {
@@ -75,7 +75,7 @@ export class AnimalEntity extends StringAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        inventoryType?: Relation<InventoryTypeEntity>
+        inventoryType?: InventoryTypeEntity
 
     @Field(() => PlacedItemTypeEntity, { nullable: true })
     @OneToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.animal, {
@@ -83,5 +83,5 @@ export class AnimalEntity extends StringAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        placedItemType?: Relation<PlacedItemTypeEntity>
+        placedItemType?: PlacedItemTypeEntity
 }

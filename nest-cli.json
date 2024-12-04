@@ -4,7 +4,8 @@
   "sourceRoot": "apps/cifarm-server/src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "webpack": true
+    "webpack": true,
+    "tsConfigPath": "apps/cifarm-server/tsconfig.app.json"
   },
   "monorepo": true,
   "root": "apps/cifarm-server",
@@ -12,91 +13,82 @@
     "healthcheck-service": {
       "type": "application",
       "root": "apps/healthcheck-service",
-      "entryFile": "../dist/apps/healthcheck-service/main",
+      "entryFile": "main",
       "sourceRoot": "apps/healthcheck-service/src",
       "compilerOptions": {
-        "webpack": true,
-        "webpackConfigPath": "apps/healthcheck-service/webpack.config.js"
+        "tsConfigPath": "apps/healthcheck-service/tsconfig.app.json"
       }
     },
     "rest-api-gateway": {
       "type": "application",
       "root": "apps/rest-api-gateway",
-      "entryFile": "../dist/apps/rest-api-gateway/main",
+      "entryFile": "main",
       "sourceRoot": "apps/rest-api-gateway/src",
       "compilerOptions": {
-        "webpack": true,
-        "webpackConfigPath": "apps/rest-api-gateway/webpack.config.js"
+        "tsConfigPath": "apps/rest-api-gateway/tsconfig.app.json"
       }
     },
     "websocket-node": {
       "type": "application",
       "root": "apps/websocket-node",
-      "entryFile": "../dist/apps/websocket-node/main",
+      "entryFile": "main",
       "sourceRoot": "apps/websocket-node/src",
       "compilerOptions": {
-        "webpack": true,
-        "webpackConfigPath": "apps/websocket-node/webpack.config.js"
+        "tsConfigPath": "apps/websocket-node/tsconfig.app.json"
       }
     },
     "graphql-maingraph": {
       "type": "application",
       "root": "apps/graphql-maingraph",
-      "entryFile": "../dist/apps/graphql-maingraph/main",
+      "entryFile": "main",
       "sourceRoot": "apps/graphql-maingraph/src",
       "compilerOptions": {
-        "webpack": true,
-        "webpackConfigPath": "apps/graphql-maingraph/webpack.config.js"
+        "tsConfigPath": "apps/graphql-maingraph/tsconfig.app.json"
       }
     },
     "cron-scheduler": {
       "type": "application",
       "root": "apps/cron-scheduler",
-      "entryFile": "../dist/apps/cron-scheduler/main",
+      "entryFile": "main",
       "sourceRoot": "apps/cron-scheduler/src",
       "compilerOptions": {
-        "webpack": true,
-        "webpackConfigPath": "apps/cron-scheduler/webpack.config.js"
+        "tsConfigPath": "apps/cron-scheduler/tsconfig.app.json"
       }
     },
     "cron-worker": {
       "type": "application",
       "root": "apps/cron-worker",
-      "entryFile": "../dist/apps/cron-worker/main",
+      "entryFile": "main",
       "sourceRoot": "apps/cron-worker/src",
       "compilerOptions": {
-        "webpack": true,
-        "webpackConfigPath": "apps/cron-worker/webpack.config.js"
+        "tsConfigPath": "apps/cron-worker/tsconfig.app.json"
       }
     },
     "static-subgraph": {
       "type": "application",
       "root": "apps/static-subgraph",
-      "entryFile": "../dist/apps/static-subgraph/main",
+      "entryFile": "main",
       "sourceRoot": "apps/static-subgraph/src",
       "compilerOptions": {
-        "webpack": true,
-        "webpackConfigPath": "apps/static-subgraph/webpack.config.js"
+        "tsConfigPath": "apps/static-subgraph/tsconfig.app.json"
       }
     },
     "gameplay-service": {
       "type": "application",
       "root": "apps/gameplay-service",
-      "entryFile": "../dist/apps/gameplay-service/main",
+      "entryFile": "main",
       "sourceRoot": "apps/gameplay-service/src",
       "compilerOptions": {
-        "webpack": true,
-        "webpackConfigPath": "apps/gameplay-service/webpack.config.js"
+        "tsConfigPath": "apps/gameplay-service/tsconfig.app.json"
       }
     },
     "seed": {
       "type": "application",
       "root": "apps/seed",
-      "entryFile": "../dist/apps/seed/main",
+      "entryFile": "main",
       "sourceRoot": "apps/seed/src",
       "compilerOptions": {
-        "webpack": true,
-        "webpackConfigPath": "apps/seed/webpack.config.js"
+        "tsConfigPath": "apps/seed/tsconfig.app.json"
       }
     }
   }

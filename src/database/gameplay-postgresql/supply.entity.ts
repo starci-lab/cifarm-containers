@@ -1,5 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToMany, OneToOne, Relation } from "typeorm"
+import { Column, Entity, OneToMany, OneToOne } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { SupplyType } from "./enums"
 import { InventoryTypeEntity } from "./inventory-type.entity"
@@ -34,7 +34,7 @@ export class SupplyEntity extends StringAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        inventoryType?: Relation<InventoryTypeEntity>
+        inventoryType?: InventoryTypeEntity
 
     @Field(() => [SpinPrizeEntity], { nullable: true })
     @OneToMany(() => SpinPrizeEntity, (spinPrize) => spinPrize.supply, {
@@ -42,5 +42,5 @@ export class SupplyEntity extends StringAbstractEntity {
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        spinPrizes?: Relation<Array<SpinPrizeEntity>>
+        spinPrizes?: Array<SpinPrizeEntity>
 }

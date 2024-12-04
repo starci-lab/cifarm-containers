@@ -1,8 +1,6 @@
-import {
-    InventoryTypeResolver,
-    InventoryTypeService
-} from "@apps/static-subgraph/src/inventory-types"
 import { Module } from "@nestjs/common"
+import { InventoryTypeService } from "./inventory-types.service"
+import { InventoryTypeResolver } from "./inventory-types.resolver"
 
 @Module({
     providers: [InventoryTypeService, InventoryTypeResolver]

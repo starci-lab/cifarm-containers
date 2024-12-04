@@ -25,6 +25,7 @@ import { TilesResolver } from "./tiles"
 import { ToolsResolver } from "./tools"
 import { UpgradeResolver } from "./upgrades"
 import { UserResolver } from "./users"
+import { envConfig } from "@src/config"
 
 const generateSchema = async () => {
     const app = await NestFactory.create(GraphQLSchemaBuilderModule)
@@ -64,6 +65,6 @@ const generateSchema = async () => {
 }
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
-    await app.listen(3007)
+    await app.listen(envConfig().graphqlFederation.subgraphUrls.port)
 }
 generateSchema().then(() => bootstrap())

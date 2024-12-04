@@ -1,5 +1,5 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, Index, JoinColumn, ManyToOne, Relation } from "typeorm"
+import { Column, Entity, Index, JoinColumn, ManyToOne } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
 import { ProductEntity } from "./product.entity"
 import { UserEntity } from "./user.entity"
@@ -28,7 +28,7 @@ export class DeliveringProductEntity extends UuidAbstractEntity {
     @Field(() => UserEntity, { nullable: true })
     @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
-        user?: Relation<UserEntity>
+        user?: UserEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "product_id", nullable: true })
@@ -39,5 +39,5 @@ export class DeliveringProductEntity extends UuidAbstractEntity {
         onDelete: "SET NULL"
     })
     @JoinColumn({ name: "product_id", referencedColumnName: "id" })
-        product?: Relation<ProductEntity>
+        product?: ProductEntity
 }

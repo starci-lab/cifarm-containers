@@ -1,5 +1,5 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, ManyToOne, Relation } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { UserEntity } from "./user.entity"
@@ -30,7 +30,7 @@ export class InventoryEntity extends UuidAbstractEntity {
     @Field(() => UserEntity, { nullable: true })
     @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
-        user?: Relation<UserEntity>
+        user?: UserEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "inventory_type_id", nullable: true })
@@ -43,5 +43,5 @@ export class InventoryEntity extends UuidAbstractEntity {
         { onDelete: "SET NULL" }
     )
     @JoinColumn({ name: "inventory_type_id", referencedColumnName: "id" })
-        inventoryType: Relation<InventoryTypeEntity>
+        inventoryType: InventoryTypeEntity
 }
