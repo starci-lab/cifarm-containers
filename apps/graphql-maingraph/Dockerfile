@@ -1,3 +1,6 @@
+#docker build -t cifarm/graphql-maingraph -f ./apps/graphql-maingraph/Dockerfile .
+#docker push cifarm/graphql-maingraph
+
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=21.6.2
@@ -25,7 +28,7 @@ COPY . .
 RUN nest build graphql-maingraph
 
 # Create a new stage for running the application
-FROM build as final
+FROM build as final 
 
 # Use production node environment by default.
 ENV NODE_ENV production
@@ -34,8 +37,6 @@ ENV NODE_ENV production
 COPY package.json .
 COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist/apps/graphql-maingraph ./dist
-
-RUN chown -R node:node /usr/src/app/dist
 
 # Run the application as a non-root user.
 USER node

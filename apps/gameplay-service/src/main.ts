@@ -12,6 +12,7 @@ const bootstrap = async () => {
             protoPath: grpcConfig[GrpcServiceName.Gameplay].protoPath
         }
     })
+    console.log("ENV", envConfig())
     await app.listen()
 } 
 bootstrap()
