@@ -1,6 +1,7 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Network, SupportedChainKey } from "@src/config"
-import { Column, Entity, OneToMany, Relation } from "typeorm"
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
+
 import { UuidAbstractEntity } from "./abstract"
 import type { InventoryEntity } from "./inventory.entity"
 import type { PlacedItemEntity } from "./placed-item.entity"
@@ -74,7 +75,22 @@ export class UserEntity extends UuidAbstractEntity {
     @Column({ name: "spin_count", type: "int", default: 0 })
         spinCount: number
 
-    @OneToMany("InventoryEntity", "user", {
+
+    @Field(() => ID, { nullable: true })
+    @Column({ name: "visiting_user_id", type: "uuid", nullable: true })
+        visitingUserId?: string
+
+    @Field({ nullable: true })
+    @Column({ name: "is_random", type: "boolean", nullable: true })
+        isRandom?: boolean
+
+    @Field(() => UserEntity, { nullable: true })
+    @OneToOne(() => UserEntity, { nullable: true })
+    @JoinColumn({ name: "visiting_user_id" })
+        visitingUser?: UserEntity
+
+    @Field(() => [InventoryEntity])
+    @OneToMany(() => InventoryEntity, (inventory) => inventory.user, {
         cascade: true,
         onDelete: "CASCADE"
     })
