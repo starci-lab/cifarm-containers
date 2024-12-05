@@ -49,7 +49,7 @@ jobs:
   
     - name: Wait for Kaniko Build to Complete
       run: |
-        kubectl wait pod/gameplay-service-kaniko-build \
+        kubectl wait pod/gameplay-service-kaniko-build -n build \
           --for=jsonpath="{.status.containerStatuses[0].state.terminated.reason}"=Completed \
           --namespace build \
           --timeout=20m
