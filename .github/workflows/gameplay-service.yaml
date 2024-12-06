@@ -50,7 +50,12 @@ jobs:
     - name: Wait for Kaniko Build to Complete
       run: |
         while true; do
-          STATUS=$(kubectl get pod gameplay-service-build-kaniko -n build -o jsonpath="{.status.containerStatuses[0].state.terminated.reason}")
+          if ! kubectl get pod gameplay-service-build-kaniko -n build > /dev/null 2>&1; then
+            echo "Pod gameplay-service-build-kaniko no longer exists. Assuming it has completed."
+            break
+          fi
+
+          STATUS=$(kubectl get pod gameplay-service-build-kaniko -n build -o jsonpath="{.status.containerStatuses[0].state.terminated.reason}" 2>/dev/null || echo "Pending")
           if [ "$STATUS" == "Completed" ]; then
             echo "Build Completed"
             break
