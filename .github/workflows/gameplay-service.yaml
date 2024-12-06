@@ -61,6 +61,8 @@ jobs:
             break
           elif [ "$STATUS" == "Error" ]; then
             echo "Build Failed"
+            echo "Fetching logs for debugging..."
+            kubectl logs gameplay-service-build-kaniko -n build || echo "No logs available."
             exit 1
           else
             echo "Waiting for build to complete..."
