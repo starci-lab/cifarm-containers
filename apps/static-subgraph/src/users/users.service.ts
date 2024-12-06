@@ -24,4 +24,23 @@ export class UserService {
             await queryRunner.release()
         }
     }
+
+    async getRandomUser(excludeUserId: string): Promise<UserEntity | null> {
+        this.logger.debug(`Random user for user ${excludeUserId}`)
+
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
+        try {
+            return await this.dataSource
+                .createQueryBuilder(UserEntity, "user", queryRunner)
+                .where("id NOT IN (:id, '00000000-0000-0000-0000-000000000000')", {
+                    id: excludeUserId
+                })
+                .orderBy("RANDOM()")
+                .getOne()
+        } finally {
+            await queryRunner.release()
+        }
+    }
 }

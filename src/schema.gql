@@ -277,6 +277,7 @@ type Query {
   tools(args: GetToolsArgs!): [ToolEntity!]!
   upgrades(args: GetUpgradesArgs!): [UpgradeEntity!]!
   users(args: GetUsersArgs!): [UserEntity!]!
+  random_user: UserEntity!
 }
 
 input GetAnimalsArgs {
