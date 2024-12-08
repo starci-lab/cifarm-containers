@@ -109,6 +109,10 @@ export const envConfig = () => ({
             }
         }
     },
+    zookeeper: {
+        host: process.env.ZOOKEEPER_HOST,
+        port: process.env.ZOOKEEPER_PORT
+    },
     nakama: {
         host: process.env.NAKAMA_HOST,
         port: process.env.NAKAMA_PORT,

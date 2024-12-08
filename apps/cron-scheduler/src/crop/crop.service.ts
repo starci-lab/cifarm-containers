@@ -9,6 +9,7 @@ import { CropJobData } from "./crop.dto"
 import { bullConfig, BullQueueName } from "@src/config"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
+import { ZooKeeperService } from "../zookeeper"
 dayjs.extend(utc)
 
 @Injectable()
@@ -16,11 +17,13 @@ export class CropService {
     private readonly logger = new Logger(CropService.name)
     constructor(
         @InjectQueue(bullConfig[BullQueueName.Crop].name) private cropQueue: Queue,
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly zooKeeperService: ZooKeeperService
     ) {}
     
     @Cron("*/1 * * * * *")
     async handle() {
+        console.log(this.zooKeeperService.checkLeader())
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

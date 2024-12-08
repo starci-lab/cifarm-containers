@@ -90,6 +90,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/seed/tsconfig.app.json"
       }
+    },
+    "hentai": {
+      "type": "application",
+      "root": "apps/hentai",
+      "entryFile": "main",
+      "sourceRoot": "apps/hentai/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/hentai/tsconfig.app.json"
+      }
     }
   }
 }
