@@ -17,10 +17,12 @@ import { Namespace, namespaceConstants } from "../app.constants"
 import { Server } from "socket.io"
 import { DataSource } from "typeorm"
 import { PlacedItemEntity } from "@src/database"
+import { envConfig } from "@src/config"
 
 @WebSocketGateway({
     cors: {
-        origin: "*"
+        origin: envConfig().cors.origin,
+        credentials: true
     },
     namespace: namespaceConstants[Namespace.Broadcast].NAMESPACE
 })
