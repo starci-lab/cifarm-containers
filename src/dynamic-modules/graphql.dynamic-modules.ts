@@ -10,7 +10,8 @@ export const graphqlMaingraphForRoot = (): DynamicModule => {
         driver: ApolloGatewayDriver,
         server: {
             plugins: [ApolloServerPluginLandingPageLocalDefault()],
-            playground: false
+            playground: false,
+            path: "/"
         },
         gateway: {
             supergraphSdl: new IntrospectAndCompose({
