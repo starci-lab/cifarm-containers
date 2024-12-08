@@ -6,7 +6,10 @@ import { ExceptionFilter } from "@src/filters"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
-    app.enableCors()
+    app.enableCors({
+        origin: envConfig().cors.origin,
+        credentials: true
+    })
 
     // Register the global exception filter
     app.useGlobalFilters(new ExceptionFilter())

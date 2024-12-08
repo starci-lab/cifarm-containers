@@ -14,10 +14,12 @@ import { UserLike } from "@src/services"
 import { Socket } from "socket.io"
 import { HandleLinkSessionResponse } from "./auth.dto"
 import { Namespace, namespaceConstants } from "../app.constants"
+import { envConfig } from "@src/config"
 
 @WebSocketGateway({
     cors: {
-        origin: "*"
+        origin: envConfig().cors.origin,
+        credentials: true
     },
     namespace: namespaceConstants[Namespace.Default].NAMESPACE
 })
