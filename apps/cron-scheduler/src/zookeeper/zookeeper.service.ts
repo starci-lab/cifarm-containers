@@ -22,9 +22,6 @@ export class ZooKeeperService implements OnModuleInit, OnModuleDestroy {
     private leaderZnodeName = "default2"
 
     public checkLeader() {
-        //check if current path is leader path
-        this.logger.debug(`Current znode: ${this.currentZnodeName}`)
-        this.logger.debug(`Leader znode: ${this.leaderZnodeName}`)
         return this.currentZnodeName === this.leaderZnodeName
     }
 

@@ -23,7 +23,8 @@ export class CropService {
     
     @Cron("*/1 * * * * *")
     async handle() {
-        console.log(this.zooKeeperService.checkLeader())
+        if (!this.zooKeeperService.checkLeader()) return
+        this.logger.verbose("Checking for crops that need to be grown")
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
