@@ -3,8 +3,8 @@ import { UserService } from "@apps/static-subgraph/src/users/users.service"
 import { Logger, UseGuards } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
 import { UserEntity } from "@src/database"
-import { GraphqlJwtAuthGuard } from "@src/guards"
 import { GraphqlUser } from "@src/decorators"
+import { GraphqlJwtAuthGuard } from "@src/guards"
 import { UserLike } from "@src/services"
 
 @Resolver()
