@@ -1,23 +1,19 @@
-
-
 import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { ClassConstructor, instanceToPlain, plainToInstance } from "class-transformer"
-import {
-    CreateDateColumn,
-    PrimaryColumn,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn
-} from "typeorm"
+import { CreateDateColumn, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm"
 
+@ObjectType({
+    isAbstract: true
+})
 export abstract class AbstractEntity {
     @Field(() => Date)
-    @CreateDateColumn({type: "timestamptz",  name: "created_at"})
+    @CreateDateColumn({ type: "timestamptz", name: "created_at" })
         createdAt: Date
-    
+
     @Field(() => Date)
-    @UpdateDateColumn({type: "timestamptz", name: "updated_at"})
+    @UpdateDateColumn({ type: "timestamptz", name: "updated_at" })
         updatedAt: Date
-    
+
     toDto<Dto>(dtoClass: ClassConstructor<Dto>): Dto {
         return plainToInstance(dtoClass, this)
     }
@@ -27,6 +23,9 @@ export abstract class AbstractEntity {
     }
 }
 
+@ObjectType({
+    isAbstract: true
+})
 export abstract class UuidAbstractEntity extends AbstractEntity {
     @Field(() => ID)
     @PrimaryGeneratedColumn("uuid", {

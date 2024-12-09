@@ -26,6 +26,12 @@ export interface ChainCredentialsConfig {
 export const envConfig = () => ({
     port: process.env.PORT ?? 9999,
     nodeEnv: (process.env.NODE_ENV ?? NodeEnv.Development) as NodeEnv,
+    cors: {
+        origin:
+            !process.env.CORS_ORIGIN || process.env.CORS_ORIGIN === "false"
+                ? false
+                : process.env.CORS_ORIGIN === "true" || process.env.CORS_ORIGIN.split(",")
+    },
     graphqlFederation: {
         subgraphUrls: {
             static: process.env.GRAPHQL_SUBGRAPH_STATIC_URL,
@@ -109,6 +115,10 @@ export const envConfig = () => ({
             }
         }
     },
+    zookeeper: {
+        host: process.env.ZOOKEEPER_HOST,
+        port: process.env.ZOOKEEPER_PORT
+    },
     nakama: {
         host: process.env.NAKAMA_HOST,
         port: process.env.NAKAMA_PORT,
@@ -160,7 +170,7 @@ export const envConfig = () => ({
                 host: process.env.KAFKA_1_HOST,
                 port: process.env.KAFKA_1_PORT
             }
-        },
+        }
     },
     chainCredentials: {
         [SupportedChainKey.Near]: {
