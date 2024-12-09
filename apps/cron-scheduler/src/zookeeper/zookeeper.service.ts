@@ -29,6 +29,30 @@ export class ZooKeeperService implements OnModuleInit, OnModuleDestroy {
         private readonly eventEmitter: EventEmitter2
     ) { }
 
+    //get children of root znode
+    private async getChildren () : Promise<Array<string>> {
+        return new Promise<Array<string>>((resolve, reject) => {
+            this.zk.getChildren(this.makeRootZnodePath(), (error, children) => {
+                if (error) {
+                    reject(error)
+                } else {
+                    resolve(children)
+                }
+            })
+        })
+    }
+
+    //get children of root znode and emit leader changed event
+    private async getChidrenThenEmitLeaderChanged() {
+        const children = await this.getChildren()
+        const sortedChildren = children.sort()
+        const leaderZnodeName = sortedChildren[0]
+
+        this.eventEmitter.emit(LEADER_CHANGED_EVENT, {
+            leaderZnodeName
+        })
+    }
+
     @OnEvent(LEADER_CHANGED_EVENT)
     handleLeaderChanged(payload: LeaderChangedPayload) {
         this.logger.debug("Leader has changed")
@@ -37,23 +61,11 @@ export class ZooKeeperService implements OnModuleInit, OnModuleDestroy {
         
         //watch new leader
         this.logger.fatal(`Watching new leader: ${this.leaderZnodeName}`)
-        this.zk.exists(this.makeEphemeralZnodePath(this.leaderZnodeName), (event) => {
-            
+        this.zk.exists(this.makeEphemeralZnodePath(this.leaderZnodeName), async (event) => {
+            //if leader is deleted, get children and emit leader changed event
             if (event.getType() === ZooKeeper.Event.NODE_DELETED) {
-                this.zk.getChildren(this.makeRootZnodePath(), (error, children) => {
-                    if (error) {
-                        this.logger.error(`Failed to get children of znode: ${error}`)
-                        //mean that leader has changed again, so a callback is needed
-                    } else if (children.length)
-                    {
-                        const sortedChildren = children.sort()
-                        const leaderZnodeName = sortedChildren[0]
-
-                        this.eventEmitter.emit(LEADER_CHANGED_EVENT, {
-                            leaderZnodeName
-                        })
-                    }
-                })
+                this.logger.fatal(`Leader ${this.leaderZnodeName} has been deleted`)
+                await this.getChidrenThenEmitLeaderChanged()
             }
         }, (error) => {
             if (error) {
@@ -108,9 +120,10 @@ export class ZooKeeperService implements OnModuleInit, OnModuleDestroy {
 
     private async createEphemeralZnode() {
         //create perapheal znode
-        this.zk.create(this.makeEphemeralZnodePath("candidate"), Buffer.from(""), ZooKeeper.CreateMode.EPHEMERAL_SEQUENTIAL, (error, path) => {
+        this.zk.create(this.makeEphemeralZnodePath("candidate"), Buffer.from(""), ZooKeeper.CreateMode.EPHEMERAL_SEQUENTIAL, async (error, path) => {
             this.currentZnodeName = path.split("/").pop()
 
+            //check if znode was created
             if (error) {
                 this.logger.error(`Failed to create znode: ${error}`)
             } else {
@@ -118,20 +131,7 @@ export class ZooKeeperService implements OnModuleInit, OnModuleDestroy {
             }
 
             //get children of root znode
-            this.zk.getChildren(this.makeRootZnodePath(), (error, children) => {
-
-                //if error, log error
-                if (error) {
-                    this.logger.error(`Failed to get children of znode: ${error}`)
-                } else if (children.length) {
-                    //sort children and get leader path
-                    const sortedChildren = children.sort()
-                    const leaderZnodeName = sortedChildren[0]
-                    this.eventEmitter.emit(LEADER_CHANGED_EVENT, {
-                        leaderZnodeName
-                    })    
-                }
-            })
+            await this.getChidrenThenEmitLeaderChanged()
         })
     }
 
