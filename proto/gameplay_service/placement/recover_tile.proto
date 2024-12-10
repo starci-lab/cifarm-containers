@@ -4,7 +4,7 @@ package gameplay_service;
 
 message RecoverTileRequest {
     string userId = 1;
-    string placedItemTileId = 1;
+    string placedItemTileId = 2;
 }
 
 message RecoverTileResponse {

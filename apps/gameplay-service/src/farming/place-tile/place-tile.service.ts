@@ -60,7 +60,7 @@ export class PlaceTileService {
                 await queryRunner.commitTransaction()
 
                 this.logger.log(`Successfully placed tile with ID: ${placedTile.id}`)
-                return { tileId: placedTile.id }
+                return { placedItemTileKey: placedTile.id }
             } catch (error) {
                 this.logger.error("Place Tile transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()

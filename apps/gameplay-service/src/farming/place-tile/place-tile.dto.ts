@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsUUID } from "class-validator"
 import { Position, UserIdRequest } from "@src/types"
+import { IsUUID } from "class-validator"
 
 export class PlaceTileRequest extends UserIdRequest {
     @IsUUID()
@@ -11,4 +11,9 @@ export class PlaceTileRequest extends UserIdRequest {
         position: Position
 }
 
-export class PlaceTileResponse {}
+export class PlaceTileResponse {
+    @IsUUID()
+    @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
+        placedItemTileKey : string
+
+}
