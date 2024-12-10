@@ -1,16 +1,17 @@
 import { Module } from "@nestjs/common"
 import { APP_FILTER } from "@nestjs/core"
+import { cacheRegisterAsync, configForRoot, typeOrmForRoot } from "@src/dynamic-modules"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AppController } from "./app.controller"
-import { cacheRegisterAsync, configForRoot, typeOrmForRoot } from "@src/dynamic-modules"
-import { CommunityModule } from "./community"
-import { ClaimModule } from "./claim"
-import { ShopModule } from "./shop"
-import { DevModule } from "./dev"
-import { DeliveryModule } from "./delivery"
-import { FarmingModule } from "./farming"
-import { ProfileModule } from "./profile"
 import { AuthModule } from "./auth"
+import { ClaimModule } from "./claim"
+import { CommunityModule } from "./community"
+import { DeliveryModule } from "./delivery"
+import { DevModule } from "./dev"
+import { FarmingModule } from "./farming"
+import { PlacementMoveModule } from "./placement/placement-move"
+import { ProfileModule } from "./profile"
+import { ShopModule } from "./shop"
 @Module({
     imports: [
         configForRoot(),
@@ -23,7 +24,8 @@ import { AuthModule } from "./auth"
         FarmingModule,
         ShopModule,
         ProfileModule,
-        AuthModule
+        AuthModule,
+        PlacementMoveModule
     ],
     controllers: [AppController],
     providers: [

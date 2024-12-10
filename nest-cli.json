@@ -64,13 +64,13 @@
         "tsConfigPath": "apps/cron-worker/tsconfig.app.json"
       }
     },
-    "static-subgraph": {
+    "gameplay-subgraph": {
       "type": "application",
-      "root": "apps/static-subgraph",
+      "root": "apps/gameplay-subgraph",
       "entryFile": "main",
-      "sourceRoot": "apps/static-subgraph/src",
+      "sourceRoot": "apps/gameplay-subgraph/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/static-subgraph/tsconfig.app.json"
+        "tsConfigPath": "apps/gameplay-subgraph/tsconfig.app.json"
       }
     },
     "gameplay-service": {

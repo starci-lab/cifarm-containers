@@ -1,7 +1,7 @@
 import { Global, Module } from "@nestjs/common"
+import { typeOrmForFeature } from "@src/dynamic-modules"
 import { PlaceTileController } from "./place-tile.controller"
 import { PlaceTileService } from "./place-tile.service"
-import { typeOrmForFeature } from "@src/dynamic-modules"
 
 @Global()
 @Module({

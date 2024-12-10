@@ -1,3 +1,14 @@
+type InventoryEntity {
+  quantity: String!
+  tokenId: String
+  premium: Boolean!
+  isPlaced: Boolean!
+  userId: String
+  user: UserEntity
+  inventoryTypeId: String
+  inventoryType: InventoryTypeEntity!
+}
+
 type UpgradeEntity {
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -245,12 +256,57 @@ type AnimalEntity {
   sickChance: Float!
   product: ProductEntity
   inventoryType: InventoryTypeEntity
-  placedItemType: PlacedItemTypeEntity
+  deliveringProducts: [DeliveringProductEntity!]!
+}
+
+type SupplyEntity {
+  id: ID!
+  type: String!
+  price: Float!
+  availableInShop: Boolean!
+  maxStack: Int!
+  fertilizerEffectTimeReduce: Int
+  inventoryType: InventoryTypeEntity
+  spinPrizes: [SpinPrizeEntity!]
+}
+
+type SpinSlotEntity {
+  spinPrizeId: String!
+  spinPrize: SpinPrizeEntity
+}
+
+type SpinPrizeEntity {
+  type: String!
+  cropId: String
+  crop: CropEntity
+  supplyId: String
+  golds: Int
+  tokens: Float
+  quantity: Int
+  appearanceChance: String
+  spinSlots: [SpinSlotEntity!]
+}
+
+type CropEntity {
+  id: ID!
+  growthStageDuration: Int!
+  growthStages: Int!
+  price: Int!
+  premium: Boolean!
+  perennialCount: Int!
+  nextGrowthStageAfterHarvest: Int!
+  minHarvestQuantity: Int!
+  maxHarvestQuantity: Int!
+  basicHarvestExperiences: Int!
+  premiumHarvestExperiences: Int!
+  availableInShop: Boolean!
+  maxStack: Int!
+  product: ProductEntity
+  inventoryType: InventoryTypeEntity
+  spinPrizes: [SpinPrizeEntity!]
 }
 
 type InventoryTypeEntity {
-  createdAt: DateTime!
-  updatedAt: DateTime!
   id: ID!
   type: String!
   placeable: Boolean!
@@ -309,24 +365,42 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
+type ToolEntity {
+  id: ID!
+  availableIn: String!
+  index: Int!
+}
+
 type Query {
-  animals(args: GetAnimalsArgs!): [AnimalEntity!]!
-  animal_infos(args: GetAnimalInfosArgs!): [AnimalInfoEntity!]!
+  animals(id: String!): AnimalEntity
+  animal_infos(id: String!): AnimalInfoEntity
   buildings(args: GetBuildingsArgs!): [BuildingEntity!]!
+  building(id: String!): BuildingEntity!
   building_infos(args: GetBuildingInfosArgs!): [BuildingInfoEntity!]!
+  building_info(id: String!): BuildingInfoEntity
   crops(args: GetCropsArgs!): [CropEntity!]!
   daily_rewards(args: GetDailyRewardsArgs!): [DailyRewardEntity!]!
+  daily_reward(id: String!): DailyRewardEntity
   inventories(args: GetInventoriesArgs!): [InventoryEntity!]!
+  inventory(id: String!): InventoryEntity
   inventory_types(args: GetInventoryTypesArgs!): [InventoryTypeEntity!]!
+  inventory_type(id: String!): InventoryTypeEntity
   placed_item_types(args: GetPlacedItemTypesArgs!): [PlacedItemTypeEntity!]!
+  placed_item_type(id: String!): PlacedItemTypeEntity
   placeditems(args: GetPlacedItemsArgs!): [PlacedItemEntity!]!
+  placeditem(id: String!): PlacedItemEntity
   products(args: GetProductsArgs!): [ProductEntity!]!
   seed_growth_infos(args: GetSeedGrowthInfosArgs!): [SeedGrowthInfoEntity!]!
   supplies(args: GetSuppliesArgs!): [SupplyEntity!]!
+  supply(id: String!): SupplyEntity
   systems(args: GetSystemsArgs!): [SystemEntity!]!
+  system(id: String!): SystemEntity
   tiles(args: GetTilesArgs!): [TileEntity!]!
+  tile(id: String!): TileEntity
   tools(args: GetToolsArgs!): [ToolEntity!]!
+  tool(id: String!): ToolEntity
   upgrades(args: GetUpgradesArgs!): [UpgradeEntity!]!
+  upgrade(id: String!): UpgradeEntity
   users(args: GetUsersArgs!): [UserEntity!]!
   random_user: UserEntity!
 }
