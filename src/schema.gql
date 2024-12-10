@@ -1,14 +1,3 @@
-type InventoryEntity {
-  quantity: String!
-  tokenId: String
-  premium: Boolean!
-  isPlaced: Boolean!
-  userId: String
-  user: UserEntity
-  inventoryTypeId: String
-  inventoryType: InventoryTypeEntity!
-}
-
 type UpgradeEntity {
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -256,57 +245,12 @@ type AnimalEntity {
   sickChance: Float!
   product: ProductEntity
   inventoryType: InventoryTypeEntity
-  deliveringProducts: [DeliveringProductEntity!]!
-}
-
-type SupplyEntity {
-  id: ID!
-  type: String!
-  price: Float!
-  availableInShop: Boolean!
-  maxStack: Int!
-  fertilizerEffectTimeReduce: Int
-  inventoryType: InventoryTypeEntity
-  spinPrizes: [SpinPrizeEntity!]
-}
-
-type SpinSlotEntity {
-  spinPrizeId: String!
-  spinPrize: SpinPrizeEntity
-}
-
-type SpinPrizeEntity {
-  type: String!
-  cropId: String
-  crop: CropEntity
-  supplyId: String
-  golds: Int
-  tokens: Float
-  quantity: Int
-  appearanceChance: String
-  spinSlots: [SpinSlotEntity!]
-}
-
-type CropEntity {
-  id: ID!
-  growthStageDuration: Int!
-  growthStages: Int!
-  price: Int!
-  premium: Boolean!
-  perennialCount: Int!
-  nextGrowthStageAfterHarvest: Int!
-  minHarvestQuantity: Int!
-  maxHarvestQuantity: Int!
-  basicHarvestExperiences: Int!
-  premiumHarvestExperiences: Int!
-  availableInShop: Boolean!
-  maxStack: Int!
-  product: ProductEntity
-  inventoryType: InventoryTypeEntity
-  spinPrizes: [SpinPrizeEntity!]
+  placedItemType: PlacedItemTypeEntity
 }
 
 type InventoryTypeEntity {
+  createdAt: DateTime!
+  updatedAt: DateTime!
   id: ID!
   type: String!
   placeable: Boolean!
@@ -365,12 +309,6 @@ The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://
 """
 scalar JSON
 
-type ToolEntity {
-  id: ID!
-  availableIn: String!
-  index: Int!
-}
-
 type Query {
   animals(id: String!): AnimalEntity
   animal_infos(id: String!): AnimalInfoEntity
@@ -379,6 +317,7 @@ type Query {
   building_infos(args: GetBuildingInfosArgs!): [BuildingInfoEntity!]!
   building_info(id: String!): BuildingInfoEntity
   crops(args: GetCropsArgs!): [CropEntity!]!
+  crop(id: String!): CropEntity
   daily_rewards(args: GetDailyRewardsArgs!): [DailyRewardEntity!]!
   daily_reward(id: String!): DailyRewardEntity
   inventories(args: GetInventoriesArgs!): [InventoryEntity!]!
@@ -390,7 +329,8 @@ type Query {
   placeditems(args: GetPlacedItemsArgs!): [PlacedItemEntity!]!
   placeditem(id: String!): PlacedItemEntity
   products(args: GetProductsArgs!): [ProductEntity!]!
-  seed_growth_infos(args: GetSeedGrowthInfosArgs!): [SeedGrowthInfoEntity!]!
+  product(id: String!): ProductEntity
+  seed_growth_infos(id: String!): SeedGrowthInfoEntity
   supplies(args: GetSuppliesArgs!): [SupplyEntity!]!
   supply(id: String!): SupplyEntity
   systems(args: GetSystemsArgs!): [SystemEntity!]!
@@ -402,17 +342,7 @@ type Query {
   upgrades(args: GetUpgradesArgs!): [UpgradeEntity!]!
   upgrade(id: String!): UpgradeEntity
   users(args: GetUsersArgs!): [UserEntity!]!
-  random_user: UserEntity!
-}
-
-input GetAnimalsArgs {
-  limit: Int = 10
-  offset: Int = 0
-}
-
-input GetAnimalInfosArgs {
-  limit: Int = 10
-  offset: Int = 0
+  user(id: String!): UserEntity
 }
 
 input GetBuildingsArgs {
@@ -459,11 +389,6 @@ input GetPlacedItemsArgs {
 
 """GetProductArgs"""
 input GetProductsArgs {
-  limit: Int = 10
-  offset: Int = 0
-}
-
-input GetSeedGrowthInfosArgs {
   limit: Int = 10
   offset: Int = 0
 }

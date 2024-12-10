@@ -1,8 +1,7 @@
-import { GetInventoriesArgs } from "./"
-import { InventoryService } from "@apps/gameplay-subgraph/src/inventories/inventories.service"
 import { Logger } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
 import { InventoryEntity } from "@src/database"
+import { GetInventoriesArgs, InventoryService } from "./"
 
 @Resolver()
 export class InventoryResolver {

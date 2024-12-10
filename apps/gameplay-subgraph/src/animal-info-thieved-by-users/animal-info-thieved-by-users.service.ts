@@ -8,20 +8,4 @@ export class AnimalInfoThievedByUsersService {
 
     constructor(private readonly dataSource: DataSource) {}
 
-    // async getAnimalInfoThiefedByUsers({ limit = 10, offset = 0 }: GetAnimalInfoThiefedByUsersArgs): Promise<Array<AnimalInfoThiefedByUserEntity>> {
-    //     this.logger.debug(`GetAnimalInfoThiefedByUsers: limit=${limit}, offset=${offset}`)
-
-    //     let animalInfoThiefedByUsers: Array<AnimalInfoThiefedByUserEntity>
-    //     const queryRunner = this.dataSource.createQueryRunner()
-    //     await queryRunner.connect()
-    //     try {
-    //         animalInfoThiefedByUsers = await this.dataSource.getRepository(AnimalInfoThiefedByUserEntity).find({
-    //             take: limit,
-    //             skip: offset
-    //         })
-    //     } finally {
-    //         await queryRunner.release()
-    //     }
-    //     return animalInfoThiefedByUsers
-    // }
 }

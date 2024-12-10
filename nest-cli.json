@@ -4,7 +4,6 @@
   "sourceRoot": "apps/cifarm-server/src",
   "compilerOptions": {
     "deleteOutDir": true,
-    "webpack": true,
     "tsConfigPath": "apps/cifarm-server/tsconfig.app.json"
   },
   "monorepo": true,

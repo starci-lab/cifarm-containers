@@ -5,26 +5,24 @@ import {
     graphqlGameplaySubgraphForRoot,
     typeOrmForRoot
 } from "@src/dynamic-modules"
+import { AnimalInfoThievedByUsersModule } from "./animal-info-thieved-by-users"
 import { AnimalInfosModule } from "./animal-infos"
-import { AnimalsModule, CropsModule } from "@apps/cron-scheduler"
-import { DailyRewardEntity } from "@src/database"
+import { AnimalsModule } from "./animals"
 import { BuildingInfosModule } from "./building-infos"
 import { BuildingsModule } from "./buildings"
-import { DailyRewardPossibilitiesModule } from "./daily-reward-possibilities"
+import { CropsModule } from "./crops"
 import { InventoriesModule } from "./inventories"
 import { InventoryTypesModule } from "./inventory-types"
 import { PlacedItemTypesModule } from "./placed-item-types"
 import { PlacedItemsModule } from "./placed-items"
 import { ProductsModule } from "./products"
 import { SeedGrowthInfosModule } from "./seed-growth-infos"
-import { SpinsModule } from "./spins"
 import { SuppliesModule } from "./supplies"
 import { SystemsModule } from "./systems"
 import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
 import { UsersModule } from "./users"
-import { AnimalInfoThievedByUsersModule } from "./animal-info-thieved-by-users"
 @Module({
     imports: [
         configForRoot(),
@@ -37,15 +35,12 @@ import { AnimalInfoThievedByUsersModule } from "./animal-info-thieved-by-users"
         BuildingInfosModule,
         BuildingsModule,
         CropsModule,
-        DailyRewardPossibilitiesModule,
-        DailyRewardEntity,
         InventoriesModule,
         InventoryTypesModule,
         PlacedItemTypesModule,
         PlacedItemsModule,
         ProductsModule,
         SeedGrowthInfosModule,
-        SpinsModule,
         SuppliesModule,
         SystemsModule,
         TilesModule,

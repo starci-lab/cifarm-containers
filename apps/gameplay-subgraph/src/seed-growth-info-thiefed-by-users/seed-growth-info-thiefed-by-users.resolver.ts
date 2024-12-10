@@ -10,10 +10,4 @@ export class SeedGrowthInfoThiefedByUsersResolver {
         private readonly seedgrowthinfothiefedbyusersService: SeedGrowthInfoThiefedByUsersService
     ) {}
 
-    // @Query(() => [SeedGrowthInfoThiefedByUserEntity], {
-    //     name: "seedgrowthinfothiefedbyusers"
-    // })
-    // async getSeedGrowthInfoThiefedByUsers(@Args("args") args: GetSeedGrowthInfoThiefedByUsersArgs): Promise<Array<SeedGrowthInfoThiefedByUserEntity>> {
-    //     return this.seedgrowthinfothiefedbyusersService.getSeedGrowthInfoThiefedByUsers(args)
-    // }
 }

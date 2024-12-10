@@ -1,5 +1,4 @@
-import { GetAnimalInfosArgs } from "./"
-import { AnimalInfosService } from "@apps/gameplay-subgraph/src/animal-infos/animal-infos.service"
+import { AnimalInfosService, GetAnimalInfosArgs } from "./"
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { AnimalInfoEntity } from "@src/database"

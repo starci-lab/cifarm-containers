@@ -1,6 +1,6 @@
-import { ProductResolver } from "@apps/gameplay-subgraph/src/products/products.resolver"
-import { ProductService } from "@apps/gameplay-subgraph/src/products/products.service"
 import { Module } from "@nestjs/common"
+import { ProductService } from "./products.service"
+import { ProductResolver } from "./products.resolver"
 
 @Module({
     providers: [ProductService, ProductResolver]

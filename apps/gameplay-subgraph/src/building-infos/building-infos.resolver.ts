@@ -1,5 +1,4 @@
-import { GetBuildingInfosArgs } from "./"
-import { BuildingInfosService } from "@apps/gameplay-subgraph/src/building-infos/building-infos.service"
+import { BuildingInfosService, GetBuildingInfosArgs } from "./"
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { BuildingInfoEntity } from "@src/database"

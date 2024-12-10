@@ -13,20 +13,4 @@ export class SeedGrowthInfoThiefedByUsersService {
         private cacheManager: Cache
     ) {}
 
-    // async getSeedGrowthInfoThiefedByUsers({ limit = 10, offset = 0 }: GetSeedGrowthInfoThiefedByUsersArgs): Promise<Array<SeedGrowthInfoThiefedByUserEntity>> {
-    //     this.logger.debug(`GetSeedGrowthInfoThiefedByUsers: limit=${limit}, offset=${offset}`)
-
-    //     let spins: Array<SeedGrowthInfoThiefedByUserEntity>
-    //     const queryRunner = this.dataSource.createQueryRunner()
-    //     await queryRunner.connect()
-    //     try {
-    //         spins = await this.dataSource.getRepository(SeedGrowthInfoThiefedByUserEntity).find({
-    //             take: limit,
-    //             skip: offset
-    //         })
-    //     } finally {
-    //         await queryRunner.release()
-    //     }
-    //     return spins
-    // }
 }

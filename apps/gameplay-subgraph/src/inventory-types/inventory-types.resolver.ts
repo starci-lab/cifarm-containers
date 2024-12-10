@@ -1,5 +1,4 @@
-import { GetInventoryTypesArgs } from "./"
-import { InventoryTypeService } from "@apps/gameplay-subgraph/src/inventory-types/inventory-types.service"
+import { GetInventoryTypesArgs, InventoryTypeService } from "./"
 import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { InventoryTypeEntity } from "@src/database"

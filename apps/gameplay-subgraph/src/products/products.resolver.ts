@@ -1,5 +1,4 @@
-import { GetProductsArgs } from "./"
-import { ProductService } from "@apps/gameplay-subgraph/src/products/products.service"
+import { GetProductsArgs, ProductService } from "./"
 import { Logger, UseInterceptors } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
 import { ProductEntity } from "@src/database"

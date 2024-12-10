@@ -1,6 +1,6 @@
-import { SystemsResolver } from "@apps/gameplay-subgraph/src/systems/systems.resolver"
-import { SystemsService } from "@apps/gameplay-subgraph/src/systems/systems.service"
 import { Module } from "@nestjs/common"
+import { SystemsService } from "./systems.service"
+import { SystemsResolver } from "./systems.resolver"
 
 @Module({
     providers: [SystemsService, SystemsResolver]
