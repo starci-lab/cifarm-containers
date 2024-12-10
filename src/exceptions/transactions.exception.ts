@@ -161,3 +161,10 @@ export class DeliverysWorkerProcessTransactionFailedException extends GrpcIntern
         super(`Failed to process delivery worker: ${error.message}`)
     }
 }
+
+//MoveTransactionFailedException
+export class MoveTransactionFailedException extends GrpcInternalException {
+    constructor(error: Error) {
+        super(`Failed to move: ${error.message}`)
+    }
+}

@@ -9,6 +9,7 @@ import "./auth/entry.proto";
 import "./community/entry.proto";
 import "./dev/entry.proto";
 
+
 package gameplay_service;
 
 service GameplayService {
@@ -53,4 +54,9 @@ service GameplayService {
     // Dev methods
     rpc SpeedUp(SpeedUpRequest) returns (google.protobuf.Empty);
     rpc DeliverInstantly(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+    // Placement methods
+    rpc Move(MoveRequest) returns (google.protobuf.Empty);
+    rpc PlaceTile(PlaceTileRequest) returns (PlaceTileResponse);
+    rpc RecoverTile(RecoverTileRequest) returns (RecoverTileResponse);
 }

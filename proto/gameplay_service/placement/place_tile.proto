@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message PlaceTileRequest {
+    string userId = 1;
+    string inventoryId = 2;
+    Position position = 3;
+}
+
+message PlaceTileResponse {
+    string placedItemTileId = 1;
+}
