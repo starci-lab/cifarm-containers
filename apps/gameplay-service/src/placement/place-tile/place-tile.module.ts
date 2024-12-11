@@ -1,9 +1,15 @@
-import { Module } from "@nestjs/common"
-import { PlaceTitleController } from "./place-tile.controller"
-import { PlaceTitleService } from "./place-tile.service"
+import { Global, Module } from "@nestjs/common"
+import { typeOrmForFeature } from "@src/dynamic-modules"
+import { PlaceTileController } from "./place-tile.controller"
+import { PlaceTileService } from "./place-tile.service"
 
+@Global()
 @Module({
-    providers: [PlaceTitleService],
-    controllers: [PlaceTitleController]
+    imports: [
+        typeOrmForFeature(),
+    ],
+    controllers: [PlaceTileController],
+    providers: [PlaceTileService],
+    exports: [PlaceTileService]
 })
-export class PlaceTitleModule {}
+export class PlaceTileModule {}

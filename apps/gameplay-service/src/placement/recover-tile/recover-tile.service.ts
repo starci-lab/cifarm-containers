@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InventoryEntity, PlacedItemEntity, PlacedItemType, UserEntity } from "@src/database"
 import { InventoryNotFoundException, PlacedItemInventoryNotFoundException, PlacedItemNotFoundException, PlacedItemTypeNotTileException, UserNotFoundException } from "@src/exceptions"
 import { DataSource } from "typeorm"
-import RecoverTileRequest from "./recover-tile.dto"
+import { RecoverTileRequest } from "./recover-tile.dto"
 
 @Injectable()
 export class RecoverTileService {

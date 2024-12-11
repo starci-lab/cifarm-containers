@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common"
-import { PlaceTitleModule } from "./place-tile"
-import { PlacementMoveModule } from "./placement-move"
+import { MoveModule } from "./move"
+import { PlaceTileModule } from "./place-tile"
 @Module({
     imports: [
-        PlacementMoveModule ,
-        PlaceTitleModule  
+        MoveModule,
+        PlaceTileModule
     ]
 })
 export class PlacementModule {}

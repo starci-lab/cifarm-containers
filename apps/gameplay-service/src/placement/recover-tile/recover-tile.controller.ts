@@ -1,8 +1,8 @@
 import { Body, Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { grpcConfig, GrpcServiceName } from "@src/config"
-import RecoverTileRequest from "./recover-tile.dto"
 import { RecoverTileService } from "./recover-tile.service"
+import { RecoverTileRequest } from "./recover-tile.dto"
 
 @Controller()
 export class RecoverTileController {

@@ -1,20 +1,18 @@
-import { Body, Controller, Logger } from "@nestjs/common"
+import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
+import { PlaceTileRequest, PlaceTileResponse } from "./place-tile.dto"
+import { PlaceTileService } from "./place-tile.service"
 import { grpcConfig, GrpcServiceName } from "@src/config"
-import { PlaceTileRequest } from "../../farming/place-tile"
-import { PlaceTitleService } from "./place-tile.service"
 
 @Controller()
-export class PlaceTitleController {
-    private readonly logger = new Logger(PlaceTitleController.name)
-    constructor(
-            private readonly placementService: PlaceTitleService
-    ){}
+export class PlaceTileController {
+    private readonly logger = new Logger(PlaceTileController.name)
 
-    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "place_tile") 
-    public async placeTile(@Body() request: PlaceTileRequest) {
-        this.logger.debug(`Received request to place tile: ${JSON.stringify(request)}`)
-        return await this.placementService.placeTile(request)
+    constructor(private readonly placeTileService: PlaceTileService) {}
+
+    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "PlaceTile")
+    public async placeTile(request: PlaceTileRequest): Promise<PlaceTileResponse> {
+        this.logger.debug("Place Tile request received")
+        return this.placeTileService.placeTile(request)
     }
-    
 }

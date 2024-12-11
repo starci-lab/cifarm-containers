@@ -1,25 +1,19 @@
-// buy-supplies.dto.ts
-
 import { ApiProperty } from "@nestjs/swagger"
 import { Position, UserIdRequest } from "@src/types"
-import { IsString } from "class-validator"
+import { IsUUID } from "class-validator"
 
-class PlaceTitleRequest extends UserIdRequest {
-    @ApiProperty({
-        example: "uuids",
-        description: "inventoryTileKey"
-    })
-    @IsString()
-        inventoryTileKey :string    
+export class PlaceTileRequest extends UserIdRequest {
+    @IsUUID()
+    @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
+        inventoryTileId: string
 
-    position: Position
+    @ApiProperty({ type: Position })
+        position: Position
 }
-class PlaceTileResponse {
-    @ApiProperty({
-        example: "uuids",
-        description: "placedItemTileKey"
-    })
-    @IsString()
-        placedItemTileKey: string
+
+export class PlaceTileResponse {
+    @IsUUID()
+    @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
+        placedItemTileKey : string
+
 }
-export default { PlaceTitleRequest , PlaceTileResponse} 

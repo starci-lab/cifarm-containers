@@ -42,6 +42,7 @@ import { UserLike } from "@src/services"
 import { lastValueFrom } from "rxjs"
 import { IGameplayService } from "@apps/gameplay-service"
 import { grpcConfig, GrpcServiceName } from "@src/config"
+import { CollectAnimalProductRequest } from "@apps/gameplay-service/src/farming/collect-animal-product"
 
 @ApiTags("Gameplay")
 @Controller("gameplay")
@@ -104,6 +105,7 @@ export class GameplayController implements OnModuleInit {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({})
+    @Post("/buy-supplies")
     public async buySupplies(
         @User() user: UserLike,
         @Body() request: BuySuppliesRequest
@@ -151,6 +153,26 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing constructBuilding for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.constructBuilding({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    //Farming
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({})
+    @Post("/collect-animal-product")
+    public async collectAnimalProduct(
+        @User() user: UserLike,
+        @Body() request: CollectAnimalProductRequest
+    ): Promise<HarvestCropResponse> {
+        this.logger.debug(`Processing collect animal product for user ${user?.id}`)
+        return await lastValueFrom(
+            this.gameplayService.collectAnimalProduct({
                 ...request,
                 userId: user?.id
             })

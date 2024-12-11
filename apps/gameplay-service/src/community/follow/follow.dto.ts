@@ -5,3 +5,5 @@ export class FollowRequest extends UserIdRequest {
     @IsUUID("4")
         followedUserId: string
 }
+
+export class FollowResponse {}

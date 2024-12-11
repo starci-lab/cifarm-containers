@@ -1,59 +1,71 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity, InventoryType, PlacedItemEntity, UserEntity } from "@src/database"
-import { InventoryAlreadyPlacedException, InventoryNotFoundException, InventoryTypeNotTileException, PlaceTileTransactionFailedException, UserNotFoundException } from "@src/exceptions"
+import {
+    InventoryEntity,
+    InventoryType,
+    PlacedItemEntity,
+} from "@src/database"
+import {
+    InventoryNotFoundException,
+    InventoryNotTypePlacedException,
+    InventoryTypeNotTileException,
+    PlaceTileTransactionFailedException
+} from "@src/exceptions"
 import { DataSource } from "typeorm"
-import { PlaceTileRequest, PlaceTileResponse } from "../../farming/place-tile"
+import { PlaceTileRequest, PlaceTileResponse } from "./place-tile.dto"
 
 @Injectable()
-export class PlaceTitleService {
-    private readonly logger = new Logger(PlaceTitleService.name)
+export class PlaceTileService {
+    private readonly logger = new Logger(PlaceTileService.name)
 
     constructor(private readonly dataSource: DataSource) {}
 
-    async placeTile(request: PlaceTileRequest):Promise<PlaceTileResponse> {
-        this.logger.debug(`Received request to move placement: ${JSON.stringify(request)}`)
-
+    async placeTile(request: PlaceTileRequest): Promise<PlaceTileResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
+
         try {
-            const user = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: request.userId }
-            })
-            if (!user) throw new UserNotFoundException(request.userId)
-            const inventory =  await queryRunner.manager.findOne(InventoryEntity, {
-                where: { id: request.inventoryTileId },
+            const inventory = await queryRunner.manager.findOne(InventoryEntity, {
+                where: {
+                    id: request.inventoryTileId,
+                    userId: request.userId
+                },
                 relations: {
                     inventoryType: true
                 }
             })
-            
+
             if (!inventory) throw new InventoryNotFoundException(request.inventoryTileId)
-            if(inventory.inventoryType.type != InventoryType.Tile) throw new InventoryTypeNotTileException(request.inventoryTileId)
-            if(inventory.isPlaced) throw new InventoryAlreadyPlacedException(request.inventoryTileId)
-            
+
+            if (inventory.inventoryType.type !== InventoryType.Tile)
+                throw new InventoryTypeNotTileException(request.inventoryTileId)
+
+            if (!inventory.isPlaced) throw new InventoryNotTypePlacedException(request.inventoryTileId)
+
             await queryRunner.startTransaction()
-            try{
-                const result = queryRunner.manager.create(PlacedItemEntity, {
-                    inventoryId: request.inventoryTileId,
+            try {
+                // Mark inventory as placed
+                await queryRunner.manager.update(InventoryEntity, inventory.id, {
+                    quantity: inventory.quantity - 1,
+                })
+
+                // Create placed tile
+                const placedTile = await queryRunner.manager.save(PlacedItemEntity, {
+                    userId: request.userId,
+                    inventoryId: inventory.id,
+                    placedItemTypeId: inventory.inventoryType.id,
                     x: request.position.x,
-                    y: request.position.y,
-                    userId: request.userId
+                    y: request.position.y
                 })
-            
-                await queryRunner.manager.update(InventoryEntity, request.inventoryTileId, {
-                    isPlaced: true,
-                    userId: request.userId
-                })
+
                 await queryRunner.commitTransaction()
-                return {
-                    placedItemTileKey: result.id
-                }
+
+                this.logger.log(`Successfully placed tile with ID: ${placedTile.id}`)
+                return { placedItemTileKey: placedTile.id }
             } catch (error) {
                 this.logger.error("Place Tile transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()
                 throw new PlaceTileTransactionFailedException(error)
             }
-
         } finally {
             await queryRunner.release()
         }

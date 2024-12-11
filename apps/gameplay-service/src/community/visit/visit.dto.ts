@@ -8,3 +8,5 @@ export class VisitRequest extends UserIdRequest {
     @IsBoolean()
         isRandom: boolean
 }
+
+export class VisitResponse {}

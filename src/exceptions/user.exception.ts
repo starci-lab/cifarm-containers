@@ -10,6 +10,12 @@ export class UserNotFoundException extends GrpcNotFoundException {
     }
 }
 
+export class UserIsNotOwnerPlacedItemException extends GrpcInvalidArgumentException {
+    constructor(userId: string, placedItemId: string) {
+        super(`User is not owner of placed item: ${userId} (userId), ${placedItemId} (placedItemId)`)
+    }
+}
+
 export class EnergyExceedsMaximumException extends GrpcResourceExhaustedException {
     constructor(current: number, max: number) {
         super(`Energy exceeds maximum: ${current} (current), ${max} (max)`)

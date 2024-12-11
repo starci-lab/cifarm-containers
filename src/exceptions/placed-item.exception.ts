@@ -16,6 +16,19 @@ export class PlacedItemTileNotFoundException extends GrpcNotFoundException {
     }
 }
 
+
+export class PlacedItemInventoryNotFoundException extends GrpcNotFoundException {
+    constructor() {
+        super("Placed item inventory not found")
+    }
+}
+
+export class PlacedItemTypeNotTileException extends GrpcNotFoundException {
+    constructor() {
+        super("Placed item type not tile")
+    }
+}
+
 export class PlacedItemTileNotPlantedException extends GrpcNotFoundException {
     constructor(id: string) {
         super(`Placed item tile not planted: ${id}`)
