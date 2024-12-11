@@ -2,11 +2,11 @@ syntax = "proto3";
 
 package gameplay_service;
 
-message TheifAnimalProductRequest {
+message ThiefAnimalProductRequest {
     string userId = 1;
     string neighborUserId = 2;
 }
 
-message TheifAnimalProductResponse {
+message ThiefAnimalProductResponse {
     int32 quantity = 1;
 }

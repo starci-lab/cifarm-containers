@@ -36,12 +36,12 @@ import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
 import { console } from "inspector"
 
-describe("Theif crop flow", () => {
+describe("Thief crop flow", () => {
     let user: UserLike
     let accessToken: string
     
-    let theifUser: UserLike
-    let theifAccessToken: string
+    let thiefUser: UserLike
+    let thiefAccessToken: string
 
     let dataSource: DataSource
     let jwtService: JwtService
@@ -77,20 +77,20 @@ describe("Theif crop flow", () => {
         user = await jwtService.decodeToken(accessToken)
 
 
-        //sign in theif
-        const { data: dataTheif } = await authAxios().post("/test-signature", {
+        //sign in thief
+        const { data: dataThief } = await authAxios().post("/test-signature", {
             chainKey: SupportedChainKey.Avalanche,
             accountNumber: 1,
             network: Network.Testnet
         })
-        const { data: verifySignatureDataTheif } = await authAxios().post("/verify-signature", dataTheif)
-        accessToken = verifySignatureDataTheif.accessToken
+        const { data: verifySignatureDataThief } = await authAxios().post("/verify-signature", dataThief)
+        accessToken = verifySignatureDataThief.accessToken
 
-        theifAccessToken = verifySignatureDataTheif.accessToken
-        theifUser = await jwtService.decodeToken(theifAccessToken)
+        thiefAccessToken = verifySignatureDataThief.accessToken
+        thiefUser = await jwtService.decodeToken(thiefAccessToken)
     })
 
-    it("Should theif flow success", async () => {
+    it("Should thief flow success", async () => {
         //test with carrot
         const cropId: CropId = CropId.Carrot
 
@@ -264,11 +264,11 @@ describe("Theif crop flow", () => {
         })
         expect(seedGrowthInfoSeventhCheck.fullyMatured).toBe(true) 
 
-        //create theif axios
-        const theifAxios = gameplayAxios(theifAccessToken)
+        //create thief axios
+        const thiefAxios = gameplayAxios(thiefAccessToken)
 
-        //process theif
-        const { data: theifCropResponseData } = await theifAxios.post("/theif-crop", {
+        //process thief
+        const { data: thiefCropResponseData } = await thiefAxios.post("/thief-crop", {
             placedItemTileId,
             neighborUserId: user.id
         })
@@ -282,11 +282,11 @@ describe("Theif crop flow", () => {
                 crop: true
             }
         })
-        expect(seedGrowthInfoEightCheck.harvestQuantityRemaining).toBe(seedGrowthInfoEightCheck.crop.maxHarvestQuantity - theifCropResponseData.quantity)
-        //get the inventory of the theif
-        const theifInventory = await dataSource.manager.findOne(InventoryEntity, {
+        expect(seedGrowthInfoEightCheck.harvestQuantityRemaining).toBe(seedGrowthInfoEightCheck.crop.maxHarvestQuantity - thiefCropResponseData.quantity)
+        //get the inventory of the thief
+        const thiefInventory = await dataSource.manager.findOne(InventoryEntity, {
             where: {
-                userId: theifUser.id,
+                userId: thiefUser.id,
                 inventoryType: {
                     type: InventoryType.Product,
                     product: {
@@ -297,11 +297,11 @@ describe("Theif crop flow", () => {
             }
         })
 
-        expect(theifInventory.quantity).toBe(theifCropResponseData.quantity)
+        expect(thiefInventory.quantity).toBe(thiefCropResponseData.quantity)
     })
 
     afterAll(async () => {
         await dataSource.manager.remove(UserEntity, user)
-        await dataSource.manager.remove(UserEntity, theifUser)
+        await dataSource.manager.remove(UserEntity, thiefUser)
     })
 })

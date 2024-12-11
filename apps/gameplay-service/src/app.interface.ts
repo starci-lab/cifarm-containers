@@ -20,10 +20,15 @@ import {
     HelpWaterResponse,
     ReturnRequest,
     ReturnResponse,
-    TheifAnimalProductRequest,
-    TheifAnimalProductResponse,
-    TheifCropRequest,
-    TheifCropResponse,
+
+    ThiefAnimalProductRequest,
+
+    ThiefAnimalProductResponse,
+
+    ThiefCropRequest,
+
+    ThiefCropResponse,
+
     UnfollowRequest,
     UnfollowResponse,
     VisitRequest,
@@ -105,8 +110,8 @@ export interface IGameplayService {
     helpUsePesticide(request: HelpUsePesticideRequest): Observable<HelpUsePesticideResponse>
     helpWater(request: HelpWaterRequest): Observable<HelpWaterResponse>
     return(request: ReturnRequest): Observable<ReturnResponse>
-    theifAnimalProduct(request: TheifAnimalProductRequest): Observable<TheifAnimalProductResponse>
-    theifCrop(request: TheifCropRequest): Observable<TheifCropResponse>
+    thiefAnimalProduct(request: ThiefAnimalProductRequest): Observable<ThiefAnimalProductResponse>
+    thiefCrop(request: ThiefCropRequest): Observable<ThiefCropResponse>
     unfollow(request: UnfollowRequest): Observable<UnfollowResponse>
     visit(request: VisitRequest): Observable<VisitResponse>
 

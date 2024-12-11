@@ -33,8 +33,8 @@ export class ActivityInfo {
 }
 
 export class CropRandomness {
-    theif3: number
-    theif2: number
+    thief3: number
+    thief2: number
     needWater: number
     isWeedyOrInfested: number
 }

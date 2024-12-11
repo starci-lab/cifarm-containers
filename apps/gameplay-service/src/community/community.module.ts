@@ -4,8 +4,8 @@ import { HelpCureAnimalModule } from "./help-cure-animal"
 import { HelpUsePesticideModule } from "./help-use-pesticide"
 import { HelpWaterModule } from "./help-water"
 import { HelpUseHerbicideModule } from "./help-use-herbicide"
-import { TheifCropModule } from "./theif-crop"
-import { TheifAnimalProductModule } from "./theif-animal-product"
+import { ThiefCropModule } from "./thief-crop"
+import { ThiefAnimalProductModule } from "./thief-animal-product"
 import { UnfollowModule } from "./unfollow"
 import { VisitModule } from "./visit"
 import { ReturnModule } from "./return"
@@ -18,8 +18,8 @@ import { ReturnModule } from "./return"
         HelpWaterModule,
         HelpUsePesticideModule,
         HelpUseHerbicideModule,
-        TheifCropModule,
-        TheifAnimalProductModule,
+        ThiefCropModule,
+        ThiefAnimalProductModule,
         VisitModule,
         ReturnModule
     ]

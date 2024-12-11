@@ -47,8 +47,8 @@ service GameplayService {
     rpc HelpUsePesticide(HelpUsePesticideRequest) returns (google.protobuf.Empty);
     rpc HelpWater(HelpWaterRequest) returns (google.protobuf.Empty);
     rpc HelpCureAnimal(HelpCureAnimalRequest) returns (google.protobuf.Empty);
-    rpc TheifCrop(TheifCropRequest) returns (TheifCropResponse);
-    rpc TheifAnimalProduct(TheifAnimalProductRequest) returns (TheifAnimalProductResponse);
+    rpc ThiefCrop(ThiefCropRequest) returns (ThiefCropResponse);
+    rpc ThiefAnimalProduct(ThiefAnimalProductRequest) returns (ThiefAnimalProductResponse);
     rpc Visit(VisitRequest) returns (google.protobuf.Empty);
     rpc Return(ReturnRequest) returns (google.protobuf.Empty);
 
