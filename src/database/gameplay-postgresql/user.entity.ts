@@ -5,7 +5,7 @@ import { UuidAbstractEntity } from "./abstract"
 import { InventoryEntity } from "./inventory.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { DeliveringProductEntity } from "./delivering-product.entity"
-import { FollowRecordEntity } from "./follow-record.entity"
+import { UsersFollowingUsersEntity } from "./users-following-users.entity"
 
 @ObjectType()
 @Entity("users")
@@ -109,16 +109,16 @@ export class UserEntity extends UuidAbstractEntity {
         deliveringProducts?: Array<DeliveringProductEntity>
 
     @Field(() => [UserEntity])
-    @OneToMany(() => FollowRecordEntity, (userFollowing) => userFollowing.followeeId, {
+    @OneToMany(() => UsersFollowingUsersEntity, (userFollowing) => userFollowing.followeeId, {
         cascade: true,
         onDelete: "CASCADE"
     })
-        followingRecords: Array<FollowRecordEntity>
+        followingUsers: Array<UsersFollowingUsersEntity>
 
     @Field(() => [UserEntity])
-    @OneToMany(() => FollowRecordEntity, (userFollowing) => userFollowing.followerId, {
+    @OneToMany(() => UsersFollowingUsersEntity, (userFollowing) => userFollowing.followerId, {
         cascade: true,
         onDelete: "CASCADE"
     })
-        followedRecords: Array<FollowRecordEntity>
+        followedByUsers: Array<UsersFollowingUsersEntity>
 }

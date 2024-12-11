@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { FollowRequest } from "./follow.dto"
 import { DataSource } from "typeorm"
 import { UserEntity } from "@src/database"
-import { FollowRecordEntity } from "@src/database/gameplay-postgresql/follow-record.entity"
+import { UsersFollowingUsersEntity } from "@src/database/gameplay-postgresql/users-following-users.entity"
 import { SelfFollowException, UserNotFoundException } from "@src/exceptions"
 
 @Injectable()
@@ -32,7 +32,7 @@ export class FollowService {
             if (!userExists) {
                 throw new UserNotFoundException(request.followedUserId)
             }
-            await queryRunner.manager.save(FollowRecordEntity, {
+            await queryRunner.manager.save(UsersFollowingUsersEntity, {
                 followerId: request.userId,
                 followeeId: request.followedUserId
             })

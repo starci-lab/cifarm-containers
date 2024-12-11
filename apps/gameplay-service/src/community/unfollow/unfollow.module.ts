@@ -2,10 +2,10 @@ import { Module } from "@nestjs/common"
 import { UnfollowController } from "./unfollow.controller"
 import { UnfollowService } from "./unfollow.service"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { FollowRecordEntity } from "@src/database"
+import { UsersFollowingUsersEntity } from "@src/database"
 
 @Module({
-    imports: [TypeOrmModule.forFeature([FollowRecordEntity])],
+    imports: [TypeOrmModule.forFeature([UsersFollowingUsersEntity])],
     controllers: [UnfollowController],
     providers: [UnfollowService],
     exports: [UnfollowService]
