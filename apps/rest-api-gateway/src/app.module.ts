@@ -22,6 +22,7 @@ import { configForRoot } from "@src/dynamic-modules"
             provide: APP_INTERCEPTOR,
             useClass: GrpcToHttpInterceptor
         }
-    ]
+    ],
+    exports: [AuthModule, GameplayModule]
 })
 export class AppModule {}

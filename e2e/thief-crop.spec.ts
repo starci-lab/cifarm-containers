@@ -301,7 +301,7 @@ describe("Thief crop flow", () => {
     })
 
     afterAll(async () => {
-        await dataSource.manager.remove(UserEntity, user)
-        await dataSource.manager.remove(UserEntity, thiefUser)
+        // await dataSource.manager.remove(UserEntity, user)
+        // await dataSource.manager.remove(UserEntity, thiefUser)
     })
 })

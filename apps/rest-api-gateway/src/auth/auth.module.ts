@@ -8,6 +8,7 @@ import { GrpcServiceName } from "@src/config"
         grpcClientRegisterAsync(GrpcServiceName.Gameplay)
     ],
     controllers: [AuthController],
-    providers: []
+    providers: [AuthController],
+    exports: [AuthController]
 })
 export class AuthModule {}
