@@ -95,6 +95,7 @@
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "typeorm": "0.3.20",
     "uuid": "9.0.1",
     "whatwg-mimetype": "3.0.0"

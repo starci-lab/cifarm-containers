@@ -1,7 +1,6 @@
 //npx jest --config ./e2e/jest.json ./e2e/thief-crop.spec.ts
 
 import { IGameplayService } from "@apps/gameplay-service"
-import { sleep } from "@src/utils"
 import { ClientGrpc } from "@nestjs/microservices"
 import { Test } from "@nestjs/testing"
 import {
@@ -10,6 +9,7 @@ import {
     grpcConfig,
     GrpcServiceName,
     Network,
+    socket,
     SupportedChainKey
 } from "@src/config"
 import {
@@ -32,9 +32,10 @@ import {
     typeOrmForRoot
 } from "@src/dynamic-modules"
 import { JwtModule, JwtService, UserLike } from "@src/services"
+import { sleep } from "@src/utils"
+import { console } from "inspector"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
-import { console } from "inspector"
 
 describe("Thief crop flow", () => {
     let user: UserLike
@@ -46,7 +47,7 @@ describe("Thief crop flow", () => {
     let dataSource: DataSource
     let jwtService: JwtService
     let gameplayService: IGameplayService
-    
+
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [
@@ -88,6 +89,7 @@ describe("Thief crop flow", () => {
 
         thiefAccessToken = verifySignatureDataThief.accessToken
         thiefUser = await jwtService.decodeToken(thiefAccessToken)
+
     })
 
     it("Should thief flow success", async () => {
@@ -150,7 +152,7 @@ describe("Thief crop flow", () => {
         await lastValueFrom(gameplayService.speedUp({
             time: crop.growthStageDuration
         }))
-        await sleep(1100)
+        await sleep(2000)
 
         //retrive the seed growth info
         const { seedGrowthInfo } = await dataSource.manager.findOne(PlacedItemEntity, {
@@ -190,7 +192,7 @@ describe("Thief crop flow", () => {
         await lastValueFrom(gameplayService.speedUp({
             time: crop.growthStageDuration
         }))
-        await sleep(1100)
+        await sleep(2000)
 
         //retrive the seed growth info
         const seedGrowthInfoThirdCheck = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
@@ -218,7 +220,7 @@ describe("Thief crop flow", () => {
         await lastValueFrom(gameplayService.speedUp({
             time: crop.growthStageDuration
         }))
-        await sleep(1100)
+        await sleep(2000)
 
         //retrive the seed growth info
         const seedGrowthInfoFifthCheck = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
@@ -254,7 +256,7 @@ describe("Thief crop flow", () => {
         await lastValueFrom(gameplayService.speedUp({
             time: crop.growthStageDuration
         }))
-        await sleep(1100)
+        await sleep(2000)
 
         //now, the crop is ready to be harvested
         const seedGrowthInfoSeventhCheck = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
@@ -298,10 +300,20 @@ describe("Thief crop flow", () => {
         })
 
         expect(thiefInventory.quantity).toBe(thiefCropResponseData.quantity)
+
+
+        //Test websocket
+        const socketBroadcast = socket("http://localhost:3006/broadcast")
+
+        socketBroadcast.on("hello_world", (data: any) => {
+            expect(data.message).toBe("Hello World")
+        })
+
+        socketBroadcast.emit("request_hello_world")
     })
 
     afterAll(async () => {
-        // await dataSource.manager.remove(UserEntity, user)
-        // await dataSource.manager.remove(UserEntity, thiefUser)
+        await dataSource.manager.remove(UserEntity, user)
+        await dataSource.manager.remove(UserEntity, thiefUser)
     })
 })

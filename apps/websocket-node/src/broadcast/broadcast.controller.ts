@@ -14,14 +14,11 @@ export class BroadcastController {
         private readonly authController: AuthController
     ) {}
 
-    // @MessagePattern(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern)
-    // public async broadcastPlacedItems(@Payload() payload: any) {
-    //     console.log("broadcastPlacedItems", payload)
-    //     return {
-    //         key: payload,
-    //         value: payload
-    //     }
-    // }
+    //Get HelloWorld message
+    async getHelloWorld() {
+        return "Hello World" + await this.authController.requestMessage()
+    }
+
 
     //Event based
     @EventPattern(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern)

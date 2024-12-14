@@ -26,6 +26,7 @@ import { envConfig } from "@src/config"
     },
     namespace: namespaceConstants[Namespace.Broadcast].NAMESPACE
 })
+
 export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
     private readonly logger = new Logger(BroadcastGateway.name)
 
@@ -71,5 +72,15 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
             userId: user.id,
             clientId: client.id
         })
+    }
+
+    // Hàm gửi sự kiện Hello World đến tất cả client
+    public broadcastHelloWorld(): void {
+        this.server.emit("hello_world", { message: "Hello World" })
+    }
+
+    @SubscribeMessage("request_hello_world")
+    public handleHelloWorldRequest(@ConnectedSocket() client: Socket): void {
+        client.emit("hello_world", { message: "Hello World" })
     }
 }

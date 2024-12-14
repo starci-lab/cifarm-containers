@@ -1,4 +1,5 @@
 import axios, { Axios } from "axios"
+import { io, Socket } from "socket.io-client"
 import { envConfig } from "./env.config"
 
 export const authAxios = (): Axios => axios.create({
@@ -15,3 +16,5 @@ export const gameplayAxios = (accessToken: string): Axios => {
     })
     return gameplayAxios
 }
+
+export const socket = (url: string): Socket  => io(url) 
