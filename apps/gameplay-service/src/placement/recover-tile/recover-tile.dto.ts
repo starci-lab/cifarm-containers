@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Position, UserIdRequest } from "@src/types"
-import { IsString } from "class-validator"
+import { UserIdRequest } from "@src/types"
+import { IsString, IsUUID } from "class-validator"
 
 export class RecoverTileRequest extends UserIdRequest {
     @ApiProperty({
@@ -8,9 +8,12 @@ export class RecoverTileRequest extends UserIdRequest {
         description: "PlacedItemKey"
     })
     @IsString()
-        placedItemKey:string    
+        placedItemTileId:string    
     
-    position: Position
 }
 
-export class RecoverTileResponse {}
+export class RecoverTileResponse {
+    @IsUUID()
+    @ApiProperty({ example: "550e8400-e29b-41d4-a716-446655440000" })
+        inventoryTileId: string
+}

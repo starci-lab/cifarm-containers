@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity, PlacedItemEntity, PlacedItemType, UserEntity } from "@src/database"
-import { InventoryNotFoundException, PlacedItemInventoryNotFoundException, PlacedItemNotFoundException, PlacedItemTypeNotTileException, UserNotFoundException } from "@src/exceptions"
+import { InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity, PlacedItemType } from "@src/database"
+import { PlacedItemInventoryNotFoundException, PlacedItemNotFoundException, PlacedItemTypeNotTileException } from "@src/exceptions"
+import { InventoryService } from "@src/services"
 import { DataSource } from "typeorm"
 import { RecoverTileRequest } from "./recover-tile.dto"
 
@@ -8,49 +9,63 @@ import { RecoverTileRequest } from "./recover-tile.dto"
 export class RecoverTileService {
     private readonly logger = new Logger(RecoverTileService.name)
 
-    constructor(private readonly dataSource: DataSource) {}
+    constructor(private readonly dataSource: DataSource,
+        private readonly inventoryService: InventoryService
+    ) {}
 
     async recoverTile(request: RecoverTileRequest) {
-        this.logger.debug(`Received request to move placement: ${JSON.stringify(request)}`)
+        this.logger.debug(`Received request to recover tile: ${JSON.stringify(request)}`)
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const user = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: request.userId }
-            })
-            if (!user) throw new UserNotFoundException(request.userId)
-
             const placedItem = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemKey }
+                where: { id: request.placedItemTileId },
+                relations: {
+                    placedItemType: true
+                }
             })
 
-            if (!placedItem) throw new PlacedItemNotFoundException(request.placedItemKey)
+            if (!placedItem) throw new PlacedItemNotFoundException(request.placedItemTileId)
             if(!placedItem.inventoryId) throw new PlacedItemInventoryNotFoundException()
             if(placedItem.placedItemType.type != PlacedItemType.Tile) throw new PlacedItemTypeNotTileException()
+
+            //Get inventory type
+            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+                where: { tileId: placedItem.placedItemType.tileId, type: InventoryType.Tile }
+            })
+                
+            // Get inventory same type
+            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
+                where: {
+                    userId: request.userId,
+                    inventoryTypeId: inventoryType.id
+                },
+                relations: {
+                    inventoryType: true
+                }
+            })
                             
             await queryRunner.startTransaction()
 
             try {
                 // Delete the placed item
                 await queryRunner.manager.delete(PlacedItemEntity, {
-                    id:request.placedItemKey
-                    ,userId:request.userId
+                    id: request.placedItemTileId,
+                    userId: request.userId
                 })
-
-                // Update inventory
-                const inventory = await queryRunner.manager.findOne(InventoryEntity, {
-                    where: { 
-                        id: placedItem.inventoryId ,
-                        userId: request.userId,
+                
+                const updatedInventories = this.inventoryService.add({
+                    entities: existingInventories,
+                    userId: request.userId,
+                    data: {
+                        inventoryType: inventoryType,
+                        quantity: 1
                     }
                 })
-                if (!inventory) throw new InventoryNotFoundException(placedItem.inventoryId)
-                // update the tile
-                await queryRunner.manager.update(InventoryEntity, placedItem.inventoryId, {
-                    isPlaced: false,
-                    userId: request.userId
-                })   
+
+                await queryRunner.manager.save(InventoryEntity, updatedInventories)
+
                 await queryRunner.commitTransaction()
             } catch (err) {
                 // Rollback transaction in case of error

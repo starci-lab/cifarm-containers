@@ -12,7 +12,6 @@ import {
 } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import { PlaceTileRequest, PlaceTileResponse } from "./place-tile.dto"
-
 @Injectable()
 export class PlaceTileService {
     private readonly logger = new Logger(PlaceTileService.name)
@@ -44,9 +43,13 @@ export class PlaceTileService {
             await queryRunner.startTransaction()
             try {
                 // Mark inventory as placed
-                await queryRunner.manager.update(InventoryEntity, inventory.id, {
-                    quantity: inventory.quantity - 1,
-                })
+                if(inventory.quantity == 1) {
+                    await queryRunner.manager.delete(InventoryEntity, inventory.id)
+                } else{
+                    await queryRunner.manager.update(InventoryEntity, inventory.id, {
+                        quantity: inventory.quantity - 1,
+                    })
+                }
 
                 // Create placed tile
                 const placedTile = await queryRunner.manager.save(PlacedItemEntity, {
@@ -60,7 +63,7 @@ export class PlaceTileService {
                 await queryRunner.commitTransaction()
 
                 this.logger.log(`Successfully placed tile with ID: ${placedTile.id}`)
-                return { placedItemTileKey: placedTile.id }
+                return { placedItemTileId: placedTile.id }
             } catch (error) {
                 this.logger.error("Place Tile transaction failed, rolling back...", error)
                 await queryRunner.rollbackTransaction()

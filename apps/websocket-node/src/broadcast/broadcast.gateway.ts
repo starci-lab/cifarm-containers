@@ -29,6 +29,7 @@ import { envConfig } from "@src/config"
 
 export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
     private readonly logger = new Logger(BroadcastGateway.name)
+    private connectedClients = new Set<string>()
 
     constructor(private readonly dataSource: DataSource) {}
 
@@ -36,17 +37,20 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
         this.logger.debug("Broadcast gateway initialized")
     }
 
+    @WebSocketServer()
+    private readonly server: Server
+
     async handleDisconnect(@ConnectedSocket() client: Socket) {
+        this.connectedClients.delete(client.id)
         this.logger.debug(`Client disconnected: ${client.id} - namespace: ${client.nsp.name}`)
     }
 
     public handleConnection(@ConnectedSocket() client: Socket) {
+        this.connectedClients.add(client.id)
         this.logger.debug(`Client connected: ${client.id} - namespace: ${client.nsp.name}`)
     }
-
-    @WebSocketServer()
-    private readonly server: Server
-
+ 
+    
     public async broadcastPlacedItems({ clientId, userId }: BroadcastPlacedItemsParams) {
         //emit placed items to all clients
         const queryRunner = this.dataSource.createQueryRunner()
@@ -82,5 +86,17 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
     @SubscribeMessage("request_hello_world")
     public handleHelloWorldRequest(@ConnectedSocket() client: Socket): void {
         client.emit("hello_world", { message: "Hello World" })
+    }
+
+    @SubscribeMessage("send_hello_world_to_all")
+    public handleHelloWorldRequestToAll(@ConnectedSocket() client: Socket): void {
+        client.emit("hello_world", { message: "Hello World" })
+    }
+
+    @SubscribeMessage("request_connection_count")
+    handleConnectionCount(@ConnectedSocket() client: Socket) {
+        const count = this.connectedClients.size
+        this.logger.log(`Sending connection count: ${count}`)
+        client.emit("connection_count", { count })
     }
 }

@@ -15,7 +15,10 @@ export class JwtService {
                 secret: envConfig().secrets.jwt.secret,
                 expiresIn: envConfig().secrets.jwt.accessTokenExpiration,
             }),
-            this.jwtService.signAsync(payload, {
+            this.jwtService.signAsync({
+                ...payload,
+                refresh: true,
+            }, {
                 secret: envConfig().secrets.jwt.secret,
                 expiresIn: envConfig().secrets.jwt.refreshTokenExpiration,
             }),
@@ -47,7 +50,7 @@ export class JwtService {
     }
 }
 
-export type UserLike = Partial<UserEntity> & { id: string };
+export type UserLike = Partial<UserEntity> & { id: string, refresh?: boolean };
 
 export class AuthTokenPair {
     accessToken: string

@@ -11,8 +11,8 @@ export class RecoverTileController {
             private readonly placementService: RecoverTileService
     ){}
 
-    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "move") 
-    public async move(@Body() request: RecoverTileRequest) {
+    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "RecoverTile") 
+    public async recoverTile(@Body() request: RecoverTileRequest) {
         this.logger.debug(`Received request to recover Tile: ${JSON.stringify(request)}`)
         return await this.placementService.recoverTile(request)
     }

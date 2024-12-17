@@ -1,10 +1,8 @@
+import { AuthController } from "@apps/rest-api-gateway/src/auth"
 import { Controller, Logger } from "@nestjs/common"
 import { EventPattern, Payload } from "@nestjs/microservices"
 import { kafkaConfig, KafkaConfigKey } from "@src/config"
 import { BroadcastGateway } from "./broadcast.gateway"
-import { IGameplayService } from "@apps/gameplay-service"
-import { GameplayController } from "@apps/rest-api-gateway/src/gameplay"
-import { AuthController } from "@apps/rest-api-gateway/src/auth"
 
 @Controller()
 export class BroadcastController {

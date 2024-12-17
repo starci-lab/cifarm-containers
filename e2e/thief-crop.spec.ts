@@ -309,7 +309,7 @@ describe("Thief crop flow", () => {
             expect(data.message).toBe("Hello World")
         })
 
-        socketBroadcast.emit("request_hello_world")
+        socketBroadcast.emit("send_hello_world_to_all")
     })
 
     afterAll(async () => {
