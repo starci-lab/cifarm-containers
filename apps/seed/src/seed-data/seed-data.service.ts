@@ -175,8 +175,8 @@ export class SeedDataService {
         }
         const cropRandomness: CropRandomness = {
             needWater: 0.5,
-            theif2: 0.8,
-            theif3: 0.95,
+            thief2: 0.8,
+            thief3: 0.95,
             isWeedyOrInfested: 1
         }
         const starter: Starter = {

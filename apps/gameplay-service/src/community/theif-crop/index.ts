@@ -1,5 +1,0 @@
-export * from "./theif-crop.dto"
-export * from "./theif-crop.module"
-export * from "./theif-crop.service"
-export * from "./theif-crop.controller"
-//export * from "./claim.spec"

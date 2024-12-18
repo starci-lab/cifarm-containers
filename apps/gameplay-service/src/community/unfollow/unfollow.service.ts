@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { UnfollowRequest } from "./unfollow.dto"
-import { FollowRecordEntity } from "@src/database"
+import { UsersFollowingUsersEntity } from "@src/database"
 import { DataSource } from "typeorm"
 
 @Injectable()
@@ -16,7 +16,7 @@ export class UnfollowService {
         await queryRunner.connect()
 
         try {
-            await queryRunner.manager.delete(FollowRecordEntity, {
+            await queryRunner.manager.delete(UsersFollowingUsersEntity, {
                 followerId: request.userId,
                 followeeId: request.unfollowedUserId
             })

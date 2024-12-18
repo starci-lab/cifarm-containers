@@ -5,3 +5,5 @@ export class UnfollowRequest extends UserIdRequest {
     @IsUUID("4")
         unfollowedUserId: string
 }
+
+export class UnfollowResponse {}

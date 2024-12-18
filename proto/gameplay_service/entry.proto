@@ -8,6 +8,8 @@ import "./claim/entry.proto";
 import "./auth/entry.proto";
 import "./community/entry.proto";
 import "./dev/entry.proto";
+import "./placement/entry.proto";
+
 
 package gameplay_service;
 
@@ -16,6 +18,7 @@ service GameplayService {
     rpc RequestMessage(google.protobuf.Empty) returns (RequestMessageResponse);
     rpc GenerateTestSignature(GenerateTestSignatureRequest) returns (GenerateTestSignatureResponse);
     rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse);
+    rpc Refresh(RefreshRequest) returns (RefreshResponse);
 
     // Shop methods
     rpc BuySeeds(BuySeedsRequest) returns (google.protobuf.Empty);
@@ -45,12 +48,17 @@ service GameplayService {
     rpc HelpUsePesticide(HelpUsePesticideRequest) returns (google.protobuf.Empty);
     rpc HelpWater(HelpWaterRequest) returns (google.protobuf.Empty);
     rpc HelpCureAnimal(HelpCureAnimalRequest) returns (google.protobuf.Empty);
-    rpc TheifCrop(TheifCropRequest) returns (TheifCropResponse);
-    rpc TheifAnimalProduct(TheifAnimalProductRequest) returns (TheifAnimalProductResponse);
+    rpc ThiefCrop(ThiefCropRequest) returns (ThiefCropResponse);
+    rpc ThiefAnimalProduct(ThiefAnimalProductRequest) returns (ThiefAnimalProductResponse);
     rpc Visit(VisitRequest) returns (google.protobuf.Empty);
     rpc Return(ReturnRequest) returns (google.protobuf.Empty);
 
     // Dev methods
     rpc SpeedUp(SpeedUpRequest) returns (google.protobuf.Empty);
     rpc DeliverInstantly(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+    // Placement methods
+    // rpc Move(MoveRequest) returns (google.protobuf.Empty);
+    // rpc PlaceTile(PlaceTileRequest) returns (PlaceTileResponse);
+    // rpc RecoverTile(RecoverTileRequest) returns (RecoverTileResponse);
 }

@@ -29,9 +29,9 @@ const NAMESPACE = "broadcast"
     },
     namespace: NAMESPACE
 })
+
 export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
     private readonly logger = new Logger(BroadcastGateway.name)
-    private readonly sessionMap = new Map<string, string>()
 
     constructor(
         private readonly dataSource: DataSource) {}
@@ -40,34 +40,21 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
         this.logger.log(`Initialized gateway with namespace: ${NAMESPACE}`)
     }
 
-    private checkSessionLinked(clientId: string): string {
-        const userId = this.sessionMap.get(clientId)
-        if (!userId) {
-            throw new WsSessionNotLinkedException(clientId)
-        }
-        return userId
+    @WebSocketServer()
+    private readonly server: Server
+
+    async handleDisconnect(@ConnectedSocket() client: Socket) {
+        this.logger.debug(`Client disconnected: ${client.id} - namespace: ${client.nsp.name}`)
     }
 
-    @Cron("*/1 * * * * *")
-    public async broadcastPlacedItemsEverySecond() {
-        const uniqueUserIds = new Set<string>(this.sessionMap.values())
-        const userIds = Array.from(uniqueUserIds)
-    
-        // Create an array of promises for syncing placed items
-        const promises = userIds.map(async (userId) => {
-            await this.broadcastPlacedItems({
-                userId,
-            })
-        })
-    
-        // Run all the promises in parallel
-        await Promise.all(promises)
+    public handleConnection(@ConnectedSocket() client: Socket) {
+        this.logger.debug(`Client connected: ${client.id} - namespace: ${client.nsp.name}`)
     }
 
     @WebSocketServer()
     private readonly server: Server
 
-    public async broadcastPlacedItems({ userId }: SyncPlacedItemsParams) {
+    public async broadcastPlacedItems({ clientId, userId }: BroadcastPlacedItemsParams) {
         //emit placed items to all clients
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -129,5 +116,27 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
         this.sessionMap.set(client.id, user.id)
 
         return {}
+    }
+
+    // Hàm gửi sự kiện Hello World đến tất cả client
+    public broadcastHelloWorld(): void {
+        this.server.emit("hello_world", { message: "Hello World" })
+    }
+
+    @SubscribeMessage("request_hello_world")
+    public handleHelloWorldRequest(@ConnectedSocket() client: Socket): void {
+        client.emit("hello_world", { message: "Hello World" })
+    }
+
+    @SubscribeMessage("send_hello_world_to_all")
+    public handleHelloWorldRequestToAll(@ConnectedSocket() client: Socket): void {
+        client.emit("hello_world", { message: "Hello World" })
+    }
+
+    @SubscribeMessage("request_connection_count")
+    handleConnectionCount(@ConnectedSocket() client: Socket) {
+        const count = this.connectedClients.size
+        this.logger.log(`Sending connection count: ${count}`)
+        client.emit("connection_count", { count })
     }
 }

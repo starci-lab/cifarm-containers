@@ -44,9 +44,9 @@ export class CropService {
                 }
             })
         
-            //this.logger.debug(`Found ${count} crops that need to be grown`)
+            this.logger.debug(`Found ${count} crops that need to be grown`)
             if (count === 0) {
-                // this.logger.verbose("No crops to grow")
+                this.logger.verbose("No crops to grow")
                 return
             }
 

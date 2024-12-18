@@ -15,7 +15,10 @@ export class JwtService {
                 secret: envConfig().secrets.jwt.secret,
                 expiresIn: envConfig().secrets.jwt.accessTokenExpiration,
             }),
-            this.jwtService.signAsync(payload, {
+            this.jwtService.signAsync({
+                ...payload,
+                refresh: true,
+            }, {
                 secret: envConfig().secrets.jwt.secret,
                 expiresIn: envConfig().secrets.jwt.refreshTokenExpiration,
             }),
@@ -45,9 +48,20 @@ export class JwtService {
             return null
         }
     }
+
+    public async getExpiredAt(token: string): Promise<Date> {
+        try {
+            const decodedToken = this.jwtService.decode(token) as { exp?: number }
+    
+            return new Date(decodedToken.exp * 1000)
+        } catch (ex) {
+            this.logger.error("Failed to get expiration time from token", ex.message)
+            return null
+        }
+    }
 }
 
-export type UserLike = Partial<UserEntity> & { id: string };
+export type UserLike = Partial<UserEntity> & { id: string, refresh?: boolean };
 
 export class AuthTokenPair {
     accessToken: string

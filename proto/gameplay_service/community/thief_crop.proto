@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message ThiefCropRequest {
+    string userId = 1;
+    string neighborUserId = 2;
+}
+
+message ThiefCropResponse {
+    int32 quantity = 1;
+}

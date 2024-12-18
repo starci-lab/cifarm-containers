@@ -3,12 +3,14 @@ import { GenerateTestSignatureModule } from "./generate-test-signature"
 import { RequestMessageModule } from "./request-message"
 import { VerifySignatureModule } from "./verify-signature"
 import { AuthModule as BlockchainAuthModule, JwtModule } from "@src/services"
+import { RefreshModule } from "./refresh"
 @Module({
     imports: [
         GenerateTestSignatureModule,
         RequestMessageModule,
         VerifySignatureModule,
         BlockchainAuthModule,
+        RefreshModule,
         JwtModule
     ]
 })

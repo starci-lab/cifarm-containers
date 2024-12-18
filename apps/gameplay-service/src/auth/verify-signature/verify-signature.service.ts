@@ -1,8 +1,18 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/config"
 import { CacheNotFound, VerifySignatureTransactionFailedException } from "@src/exceptions"
+import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 
+import { CACHE_MANAGER } from "@nestjs/cache-manager"
+import {
+    PlacedItemEntity,
+    PlacedItemTypeId,
+    SessionEntity,
+    Starter,
+    SystemEntity,
+    SystemId,
+    UserEntity
+} from "@src/database"
 import {
     AlgorandAuthService,
     AptosAuthService,
@@ -15,15 +25,6 @@ import {
 } from "@src/services"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import {
-    PlacedItemEntity,
-    PlacedItemTypeId,
-    Starter,
-    SystemEntity,
-    SystemId,
-    UserEntity
-} from "@src/database"
 
 @Injectable()
 export class VerifySignatureService {
@@ -176,6 +177,16 @@ export class VerifySignatureService {
             const { accessToken, refreshToken } = await this.jwtService.createAuthTokenPair({
                 id: user.id
             })
+
+            const userSession: DeepPartial<SessionEntity> = {
+                expiredAt: await this.jwtService.getExpiredAt(refreshToken),
+                token: refreshToken,
+                userId: user.id,
+            }
+
+            // Create session
+            await queryRunner.manager.save(SessionEntity, userSession)
+
             return {
                 accessToken,
                 refreshToken

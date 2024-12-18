@@ -10,6 +10,12 @@ export class UserNotFoundException extends GrpcNotFoundException {
     }
 }
 
+export class UserIsNotOwnerPlacedItemException extends GrpcInvalidArgumentException {
+    constructor(userId: string, placedItemId: string) {
+        super(`User is not owner of placed item: ${userId} (userId), ${placedItemId} (placedItemId)`)
+    }
+}
+
 export class EnergyExceedsMaximumException extends GrpcResourceExhaustedException {
     constructor(current: number, max: number) {
         super(`Energy exceeds maximum: ${current} (current), ${max} (max)`)
@@ -67,5 +73,17 @@ export class SelfFollowException extends GrpcInvalidArgumentException {
 export class SelfVisitException extends GrpcInvalidArgumentException {
     constructor(id: string) {
         super(`Cannot self visit: ${id}`)
+    }
+}
+
+export class UserIsNotLoginException extends GrpcNotFoundException {
+    constructor() {
+        super("Cannot refresh becasuse you are not login")
+    }
+}
+
+export class UserRefreshIsInvalidException extends GrpcInvalidArgumentException {
+    constructor(id: string) {
+        super(`Refresh is invalid for user: ${id}`)
     }
 }

@@ -1,15 +1,12 @@
 import { Global, Module } from "@nestjs/common"
-import { TypeOrmModule } from "@nestjs/typeorm"
-import * as Entities from "@src/database/gameplay-postgresql"
 import { WalletModule } from "@src/services/gameplay/wallet"
 import { UpgradeBuildingController } from "./upgrade-building.controller"
 import { UpgradeBuildingService } from "./upgrade-building.service"
-import { EntityClassOrSchema } from "@nestjs/typeorm/dist/interfaces/entity-class-or-schema.type"
-
+import { typeOrmForFeature } from "@src/dynamic-modules"
 @Global()
 @Module({
     imports: [
-        TypeOrmModule.forFeature([...Object.values(Entities)]  as Array<EntityClassOrSchema>),
+        typeOrmForFeature(),
         WalletModule
     ],
     controllers: [UpgradeBuildingController],
