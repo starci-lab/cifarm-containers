@@ -22,4 +22,4 @@ import { ThiefAnimalProductService } from "./thief-animal-product.service"
     exports: [ThiefAnimalProductService],
     controllers: [ThiefAnimalProductController]
 })
-export class TheifAnimalProductModule {}
+export class ThiefAnimalProductModule {}
