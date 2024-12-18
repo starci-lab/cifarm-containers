@@ -2,6 +2,8 @@ import { Observable } from "rxjs"
 import {
     GenerateTestSignatureRequest,
     GenerateTestSignatureResponse,
+    RefreshRequest,
+    RefreshResponse,
     RequestMessageRequest,
     RequestMessageResponse,
     VerifySignatureRequest,
@@ -93,6 +95,7 @@ export interface IGameplayService {
     ): Observable<GenerateTestSignatureResponse>
     verifySignature(request: VerifySignatureRequest): Observable<VerifySignatureResponse>
     requestMessage(request: RequestMessageRequest): Observable<RequestMessageResponse>
+    refresh(request: RefreshRequest): Observable<RefreshResponse>
 
     // Claim
     claimDailyReward(request: ClaimDailyRewardRequest): Observable<ClaimDailyRewardResponse>

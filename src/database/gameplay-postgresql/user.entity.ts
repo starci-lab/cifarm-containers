@@ -6,6 +6,7 @@ import { InventoryEntity } from "./inventory.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { DeliveringProductEntity } from "./delivering-product.entity"
 import { UsersFollowingUsersEntity } from "./users-following-users.entity"
+import { SessionEntity } from "./session.entity"
 
 @ObjectType()
 @Entity("users")
@@ -121,4 +122,11 @@ export class UserEntity extends UuidAbstractEntity {
         onDelete: "CASCADE"
     })
         followedByUsers: Array<UsersFollowingUsersEntity>
+
+    @Field(() => [SessionEntity])
+    @OneToMany(() => SessionEntity, (session) => session.user, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
+        sessions?: Array<SessionEntity>
 }

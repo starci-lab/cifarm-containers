@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message RefreshRequest {
+  string refreshToken = 1;  // JWT refresh token
+}
+  
+message RefreshResponse {
+  string accessToken = 1;  // JWT access token
+  string refreshToken = 2;  // JWT refresh token
+}

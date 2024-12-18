@@ -18,7 +18,9 @@ import {
     GenerateTestSignatureRequest,
     VerifySignatureResponse,
     VerifySignatureRequest,
-    IGameplayService
+    IGameplayService,
+    RefreshResponse,
+    RefreshRequest
 } from "@apps/gameplay-service"
 
 @ApiTags("Auth")
@@ -63,5 +65,16 @@ export class AuthController implements OnModuleInit {
         @Body() request: VerifySignatureRequest
     ): Promise<VerifySignatureResponse> {
         return await lastValueFrom(this.gameplayService.verifySignature(request))
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: RefreshResponse
+    })
+    @Post("refresh")
+    public async refresh(
+        @Body() request: RefreshRequest
+    ): Promise<RefreshResponse> {
+        return await lastValueFrom(this.gameplayService.refresh(request))
     }
 }

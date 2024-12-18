@@ -25,7 +25,8 @@ import {
     SpinPrizeEntity,
     HealthcheckEntity,
     UsersFollowingUsersEntity,
-    CollectionEntity
+    CollectionEntity,
+    SessionEntity
 } from "@src/database"
 
 export enum TypeOrmDbType {
@@ -107,7 +108,8 @@ export const typeOrmForFeature = (type: TypeOrmDbType = TypeOrmDbType.Main): Dyn
             BuildingInfoEntity,
             HealthcheckEntity,
             UsersFollowingUsersEntity,
-            CollectionEntity
+            CollectionEntity,
+            SessionEntity
         ],
         map[type]
     )

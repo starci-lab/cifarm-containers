@@ -18,6 +18,7 @@ service GameplayService {
     rpc RequestMessage(google.protobuf.Empty) returns (RequestMessageResponse);
     rpc GenerateTestSignature(GenerateTestSignatureRequest) returns (GenerateTestSignatureResponse);
     rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse);
+    rpc Refresh(RefreshRequest) returns (RefreshResponse);
 
     // Shop methods
     rpc BuySeeds(BuySeedsRequest) returns (google.protobuf.Empty);

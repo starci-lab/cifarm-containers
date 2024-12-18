@@ -75,3 +75,15 @@ export class SelfVisitException extends GrpcInvalidArgumentException {
         super(`Cannot self visit: ${id}`)
     }
 }
+
+export class UserIsNotLoginException extends GrpcNotFoundException {
+    constructor() {
+        super("Cannot refresh becasuse you are not login")
+    }
+}
+
+export class UserRefreshIsInvalidException extends GrpcInvalidArgumentException {
+    constructor(id: string) {
+        super(`Refresh is invalid for user: ${id}`)
+    }
+}

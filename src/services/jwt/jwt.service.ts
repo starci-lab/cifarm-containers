@@ -48,6 +48,17 @@ export class JwtService {
             return null
         }
     }
+
+    public async getExpiredAt(token: string): Promise<Date> {
+        try {
+            const decodedToken = this.jwtService.decode(token) as { exp?: number }
+    
+            return new Date(decodedToken.exp * 1000)
+        } catch (ex) {
+            this.logger.error("Failed to get expiration time from token", ex.message)
+            return null
+        }
+    }
 }
 
 export type UserLike = Partial<UserEntity> & { id: string, refresh?: boolean };
