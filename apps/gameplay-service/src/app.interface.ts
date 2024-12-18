@@ -84,7 +84,7 @@ import {
     UseFertilizerRequest,
     UseFertilizerResponse
 } from "./farming"
-import { MoveRequest, MoveResponse, PlaceTileRequest, PlaceTileResponse } from "./placement"
+import { MoveRequest, MoveResponse, PlaceTileRequest, PlaceTileResponse, RecoverTileRequest, RecoverTileResponse } from "./placement"
 import { UpdateTutorialRequest, UpdateTutorialResponse } from "./profile"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 
@@ -137,7 +137,7 @@ export interface IGameplayService {
     // Placement
     move(request: MoveRequest): Observable<MoveResponse>
     placeTile(request: PlaceTileRequest): Observable<PlaceTileResponse>
-    //Mising recover tile
+    recoverTile(request: RecoverTileRequest): Observable<RecoverTileResponse>
 
     // Profile
     updateTutorial(request: UpdateTutorialRequest): Observable<UpdateTutorialResponse>
