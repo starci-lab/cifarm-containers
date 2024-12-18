@@ -20,14 +20,14 @@ import {
     SystemId,
     UserEntity
 } from "@src/database"
-import { EnergyService, InventoryService, LevelService, TheifService } from "@src/services"
+import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/services"
 import { ClientKafka } from "@nestjs/microservices"
 import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
-import { TheifAnimalProductRequest, TheifAnimalProductResponse } from "./theif-animal-product.dto"
+import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 
 @Injectable()
-export class TheifAnimalProductService {
-    private readonly logger = new Logger(TheifAnimalProductService.name)
+export class ThiefAnimalProductService {
+    private readonly logger = new Logger(ThiefAnimalProductService.name)
 
     constructor(
         @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
@@ -35,13 +35,13 @@ export class TheifAnimalProductService {
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        private readonly theifService: TheifService,
+        private readonly theifService: ThiefService,
         private readonly inventoryService: InventoryService
     ) {}
 
     async theifAnimalProduct(
-        request: TheifAnimalProductRequest
-    ): Promise<TheifAnimalProductResponse> {
+        request: ThiefAnimalProductRequest
+    ): Promise<ThiefAnimalProductResponse> {
         this.logger.debug(`Theif animal product for user ${request.neighborUserId}`)
 
         const queryRunner = this.dataSource.createQueryRunner()
@@ -100,10 +100,10 @@ export class TheifAnimalProductService {
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.CropRandomness }
             })
-            const { theif2, theif3 } = value as CropRandomness
+            const { thief2, thief3 } = value as CropRandomness
             const { value: computedQuantity } = this.theifService.compute({
-                theif2,
-                theif3
+                thief2,
+                thief3
             })
 
             //get the actual quantity

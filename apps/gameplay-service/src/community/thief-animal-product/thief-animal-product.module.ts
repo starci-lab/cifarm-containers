@@ -1,25 +1,25 @@
 import { Global, Module } from "@nestjs/common"
 import { KafkaConfigKey } from "@src/config"
 import { kafkaClientRegister, typeOrmForFeature } from "@src/dynamic-modules"
-import { EnergyModule, InventoryModule, LevelModule, TheifModule } from "@src/services"
-import { TheifAnimalProductController } from "./theif-animal-product.controller"
-import { TheifAnimalProductService } from "./theif-animal-product.service"
+import { EnergyModule, InventoryModule, LevelModule, ThiefModule } from "@src/services"
+import { ThiefAnimalProductController } from "./thief-animal-product.controller"
+import { ThiefAnimalProductService } from "./thief-animal-product.service"
 
 @Global()
 @Module({
     imports: [
         typeOrmForFeature(),
         kafkaClientRegister({
-            key: KafkaConfigKey.BroadcastPlacedItems,
+            key: KafkaConfigKey.PlacedItems,
             producerOnly: true
         }),
         EnergyModule,
         LevelModule,
-        TheifModule,
+        ThiefModule,
         InventoryModule
     ],
-    providers: [TheifAnimalProductService],
-    exports: [TheifAnimalProductService],
-    controllers: [TheifAnimalProductController]
+    providers: [ThiefAnimalProductService],
+    exports: [ThiefAnimalProductService],
+    controllers: [ThiefAnimalProductController]
 })
 export class TheifAnimalProductModule {}
