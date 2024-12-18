@@ -9,7 +9,7 @@ import { BroadcastGateway } from "./broadcast.gateway"
     imports: [
         configForRoot(),
         kafkaClientRegister({
-            key: KafkaConfigKey.BroadcastPlacedItems,
+            key: KafkaConfigKey.PlacedItems,
         }),
         typeOrmForFeature(),
         WsJwtAuthModule,

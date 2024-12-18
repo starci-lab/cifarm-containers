@@ -12,3 +12,9 @@ export class WsUnauthorizedException extends WsException {
     }
 }  
 
+export class WsSessionNotLinkedException extends WsException {
+    constructor(clientId: string) {
+        super(`Session is not linked: ${clientId}`)
+    }
+}
+

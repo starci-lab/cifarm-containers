@@ -1,6 +1,6 @@
-import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
-import { kafkaConfig, KafkaConfigKey } from "@src/config"
+import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
 import {
     Activities,
     CropRandomness,
@@ -26,11 +26,11 @@ import { DataSource } from "typeorm"
 import { TheifCropRequest, TheifCropResponse } from "./theif-crop.dto"
 
 @Injectable()
-export class TheifCropService implements OnModuleInit{
+export class TheifCropService{
     private readonly logger = new Logger(TheifCropService.name)
 
     constructor(
-        @Inject(kafkaConfig.broadcastPlacedItems.name)
+        @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
         private readonly clientKafka: ClientKafka,
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
@@ -38,11 +38,6 @@ export class TheifCropService implements OnModuleInit{
         private readonly theifService: TheifService,
         private readonly inventoryService: InventoryService,
     ) {}
-
-    async onModuleInit() {
-        this.clientKafka.subscribeToResponseOf(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern)
-        await this.clientKafka.connect()
-    }
 
     async theifCrop(request: TheifCropRequest): Promise<TheifCropResponse> {
         this.logger.debug(`Theif crop for user ${request.neighborUserId}`)
@@ -190,7 +185,7 @@ export class TheifCropService implements OnModuleInit{
                 throw new ThiefCropTransactionFailedException(error)
             }
 
-            await this.clientKafka.emit(kafkaConfig[KafkaConfigKey.BroadcastPlacedItems].pattern, {
+            this.clientKafka.emit(kafkaConfig[KafkaConfigKey.PlacedItems].patterns[KafkaPlacedItemPattern.Broadcast], {
                 userId: request.neighborUserId
             })
             return {

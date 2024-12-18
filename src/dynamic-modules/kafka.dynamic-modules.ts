@@ -7,14 +7,15 @@ export interface KafkaClientRegisterParams {
     key: KafkaConfigKey
     producerOnly?: boolean
 }
-export const kafkaClientRegister = ({ key, producerOnly = false}: KafkaClientRegisterParams) => {
-    const checkHeadless = () => {
-        const headless1 = envConfig().kafka.headless.headless1
-        const headless2 = envConfig().kafka.headless.headless2
-        const headless3 = envConfig().kafka.headless.headless3
-        return !!(headless1.host && headless1.port && headless2.host && headless2.port && headless3.host && headless3.port)
-    }
 
+const checkHeadless = () => {
+    const headless1 = envConfig().kafka.headless.headless1
+    const headless2 = envConfig().kafka.headless.headless2
+    const headless3 = envConfig().kafka.headless.headless3
+    return !!(headless1.host && headless1.port && headless2.host && headless2.port && headless3.host && headless3.port)
+}
+
+export const kafkaClientRegister = ({ key, producerOnly = false}: KafkaClientRegisterParams) => {
     return ClientsModule.register([
         {
             name: kafkaConfig[key].name,
@@ -38,4 +39,3 @@ export const kafkaClientRegister = ({ key, producerOnly = false}: KafkaClientReg
         }
     ])
 }
-

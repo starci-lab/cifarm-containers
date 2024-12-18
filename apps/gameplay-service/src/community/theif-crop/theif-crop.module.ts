@@ -11,7 +11,7 @@ import { TheifCropService } from "./theif-crop.service"
         configForRoot(),
         typeOrmForFeature(),
         kafkaClientRegister({
-            key: KafkaConfigKey.BroadcastPlacedItems,
+            key: KafkaConfigKey.PlacedItems,
             producerOnly: true
         }),
         EnergyModule,

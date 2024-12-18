@@ -10,7 +10,7 @@ import { HelpCureAnimalService } from "./help-cure-animal.service"
     imports: [
         typeOrmForFeature(),
         kafkaClientRegister({
-            key: KafkaConfigKey.BroadcastPlacedItems,
+            key: KafkaConfigKey.PlacedItems,
             producerOnly: true
         }),
         EnergyModule,

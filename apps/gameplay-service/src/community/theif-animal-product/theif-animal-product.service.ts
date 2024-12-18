@@ -22,7 +22,7 @@ import {
 } from "@src/database"
 import { EnergyService, InventoryService, LevelService, TheifService } from "@src/services"
 import { ClientKafka } from "@nestjs/microservices"
-import { kafkaConfig } from "@src/config"
+import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
 import { TheifAnimalProductRequest, TheifAnimalProductResponse } from "./theif-animal-product.dto"
 
 @Injectable()
@@ -30,7 +30,7 @@ export class TheifAnimalProductService {
     private readonly logger = new Logger(TheifAnimalProductService.name)
 
     constructor(
-        @Inject(kafkaConfig.broadcastPlacedItems.name)
+        @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
         private readonly clientKafka: ClientKafka,
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
@@ -177,7 +177,7 @@ export class TheifAnimalProductService {
                 throw new ThiefAnimalProductTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(kafkaConfig.broadcastPlacedItems.pattern, {
+            this.clientKafka.emit(kafkaConfig[KafkaConfigKey.PlacedItems].patterns[KafkaPlacedItemPattern.Broadcast], {
                 userId: request.neighborUserId
             })
 

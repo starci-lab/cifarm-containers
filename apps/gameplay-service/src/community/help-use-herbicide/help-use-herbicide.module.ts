@@ -10,7 +10,7 @@ import { HelpUseHerbicideService } from "./help-use-herbicide.service"
     imports: [
         typeOrmForFeature(),
         kafkaClientRegister({
-            key: KafkaConfigKey.BroadcastPlacedItems,
+            key: KafkaConfigKey.PlacedItems,
             producerOnly: true
         }),
         EnergyModule,

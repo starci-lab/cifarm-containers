@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common"
-import { AuthModule } from "./auth"
 import { BroadcastModule } from "./broadcast"
 import { cacheRegisterAsync, configForRoot, typeOrmForRoot } from "@src/dynamic-modules"
 @Module({
@@ -7,7 +6,6 @@ import { cacheRegisterAsync, configForRoot, typeOrmForRoot } from "@src/dynamic-
         configForRoot(),
         cacheRegisterAsync(),
         typeOrmForRoot(),
-        AuthModule,
         BroadcastModule
     ],
     controllers: [],

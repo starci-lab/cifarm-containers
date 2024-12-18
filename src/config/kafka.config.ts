@@ -1,18 +1,24 @@
 
 export interface KafkaConfigDetails {
-    pattern: string
+    patterns: Record<KafkaPlacedItemPattern, string>
     name: string
     groupId: string
 }
 
 export enum KafkaConfigKey {
-    BroadcastPlacedItems = "broadcastPlacedItems",
+    PlacedItems = "placedItems",
+}
+
+export enum KafkaPlacedItemPattern {
+    Broadcast = "broadcast",
 }
 
 export const kafkaConfig: Record<KafkaConfigKey, KafkaConfigDetails> = {
-    [KafkaConfigKey.BroadcastPlacedItems]: {
-        pattern: "broadcast-placed-items",
-        name: "BROADCAST_PLACED_ITEMS",
-        groupId: "broadcast-placed-items-group",
+    [KafkaConfigKey.PlacedItems]: {
+        patterns: {
+            [KafkaPlacedItemPattern.Broadcast]: "place.broadcast.items",
+        },
+        name: "PLACED_ITEMS",
+        groupId: "placed-items",
     }
 }

@@ -1,6 +1,6 @@
 import { Field, InputType, Int } from "@nestjs/graphql"
 import { ApiHideProperty, ApiProperty } from "@nestjs/swagger"
-import { IsString, IsUUID } from "class-validator"
+import { IsOptional, IsString, IsUUID } from "class-validator"
 import { Socket } from "socket.io"
 import { DeepPartial, QueryRunner } from "typeorm"
 
@@ -92,8 +92,10 @@ export abstract class PaginatedArgs {
 }
 
 export class SocketConnectionParams  {
+    @IsOptional()
     @IsString()
-        clientId: string
+        clientId?: string
+    @IsOptional()
     @IsUUID("4")
-        userId: string
+        userId?: string
 }

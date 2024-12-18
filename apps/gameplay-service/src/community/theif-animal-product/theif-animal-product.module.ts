@@ -10,7 +10,7 @@ import { TheifAnimalProductService } from "./theif-animal-product.service"
     imports: [
         typeOrmForFeature(),
         kafkaClientRegister({
-            key: KafkaConfigKey.BroadcastPlacedItems,
+            key: KafkaConfigKey.PlacedItems,
             producerOnly: true
         }),
         EnergyModule,

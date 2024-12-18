@@ -15,13 +15,11 @@ const bootstrap = async () => {
                 client: {
                     clientId: `websocket-node-${v4()}`,
                     brokers: [
-                        `${envConfig().kafka.headless.headless1.host}:${envConfig().kafka.headless.headless1.port}`,
-                        `${envConfig().kafka.headless.headless2.host}:${envConfig().kafka.headless.headless2.port}`,
-                        `${envConfig().kafka.headless.headless3.host}:${envConfig().kafka.headless.headless3.port}`,
+                        `${envConfig().kafka.default.default1.host}:${envConfig().kafka.default.default1.port}`,
                     ],
                 },
                 consumer: {
-                    groupId: kafkaConfig.broadcastPlacedItems.groupId,
+                    groupId: kafkaConfig.placedItems.groupId,
                 },
             }
         }

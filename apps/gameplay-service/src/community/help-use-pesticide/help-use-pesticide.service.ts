@@ -19,14 +19,14 @@ import {
 import { EnergyService, LevelService } from "@src/services"
 import { HelpUsePesticideRequest, HelpUsePesticideResponse } from "./help-use-pesticide.dto"
 import { ClientKafka } from "@nestjs/microservices"
-import { kafkaConfig } from "@src/config"
+import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
 
 @Injectable()
 export class HelpUsePesticideService {
     private readonly logger = new Logger(HelpUsePesticideService.name)
 
     constructor(
-        @Inject(kafkaConfig.broadcastPlacedItems.name)
+        @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
         private readonly clientKafka: ClientKafka,
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
@@ -120,7 +120,7 @@ export class HelpUsePesticideService {
             } 
 
             this.clientKafka.emit(
-                kafkaConfig.broadcastPlacedItems.pattern, {
+                kafkaConfig[KafkaConfigKey.PlacedItems].patterns[KafkaPlacedItemPattern.Broadcast], {
                     userId: request.neighborUserId
                 })
 
