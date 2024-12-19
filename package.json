@@ -84,7 +84,7 @@
     "lodash.sortby": "4.7.0",
     "lru-cache": "7.18.3",
     "multiformats": "9.9.0",
-    "near-api-js": "^4.0.3",
+    "near-api-js": "5.0.1",
     "near-seed-phrase": "0.2.1",
     "nestjs-grpc-exceptions": "^0.2.2",
     "node-zookeeper-client": "^1.1.3",

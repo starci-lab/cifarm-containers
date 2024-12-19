@@ -6,7 +6,10 @@ const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin"
 const basePackage = {
     name: "gameplay-service",
     version: "1.0.0",
-    main: "./index.js",
+    main: "./main.js",
+    scripts: {
+        "start": "node ./main.js"
+    },
     engines: {
         node: ">= 14",
     },
@@ -19,15 +22,17 @@ module.exports = {
     entry: "./apps/gameplay-service/src/main.ts",
     output: {
         path: path.join(__dirname, "../..", "dist", "apps", "gameplay-service"),
-        filename: "main.ts",
+        filename: "main.js",
     },
     target: "node",
     externals: [nodeExternals()],
     plugins: [
         new GeneratePackageJsonPlugin(basePackage, {
-            sourcePackageFilenames: [path.join(__dirname, "../..", "package.json")],
+            debug: true,
+            resolveContextPaths: [__dirname],
+            useInstalledVersions: true,
             excludeDependencies: [          
-
+                
             ],
         }),
     ],
