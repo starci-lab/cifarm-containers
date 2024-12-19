@@ -9,11 +9,5 @@ services:
       NODE_ENV: production
     ports:
       - "3007:3007"
-    networks:
-      - graphql-network
-
-networks:
-  graphql-network:
-    driver: bridge
 
 #docker compose -f apps/gameplay-subgraph/compose.yaml up -d --build

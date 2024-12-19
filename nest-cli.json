@@ -35,7 +35,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/websocket-node/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/websocket-node/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/websocket-node/tsconfig.app.json",
+        "webpackConfigPath": "apps/websocket-node/webpack.config.js"
       }
     },
     "graphql-maingraph": {
@@ -44,7 +46,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/graphql-maingraph/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/graphql-maingraph/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/graphql-maingraph/tsconfig.app.json",
+        "webpackConfigPath": "apps/graphql-maingraph/webpack.config.js"
       }
     },
     "cron-scheduler": {
@@ -53,7 +57,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/cron-scheduler/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/cron-scheduler/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/cron-scheduler/tsconfig.app.json",
+        "webpackConfigPath": "apps/cron-scheduler/webpack.config.js"
       }
     },
     "cron-worker": {
@@ -62,7 +68,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/cron-worker/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/cron-worker/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/cron-worker/tsconfig.app.json",
+        "webpackConfigPath": "apps/cron-worker/webpack.config.js"
       }
     },
     "gameplay-subgraph": {
@@ -71,7 +79,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/gameplay-subgraph/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/gameplay-subgraph/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/gameplay-subgraph/tsconfig.app.json",
+        "webpackConfigPath": "apps/gameplay-subgraph/webpack.config.js"
       }
     },
     "gameplay-service": {
@@ -91,7 +101,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/seed/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/seed/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/seed/tsconfig.app.json",
+        "webpackConfigPath": "apps/seed/webpack.config.js"
       }
     }
   }
