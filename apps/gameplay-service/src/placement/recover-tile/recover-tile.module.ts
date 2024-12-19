@@ -1,12 +1,11 @@
 import { Module } from "@nestjs/common"
-import { RecoverTileController, RecoverTileService } from "."
 import { typeOrmForFeature } from "@src/dynamic-modules"
-import { InventoryService } from "@src/services"
+import { RecoverTileService } from "./recover-tile.service"
+import { RecoverTileController } from "./recover-tile.controller"
 
 @Module({
     imports: [
         typeOrmForFeature(),
-        InventoryService
     ],
     controllers: [RecoverTileController],
     exports: [RecoverTileService],
