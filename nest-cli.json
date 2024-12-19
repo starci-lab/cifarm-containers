@@ -4,6 +4,7 @@
   "sourceRoot": "apps/cifarm-server/src",
   "compilerOptions": {
     "deleteOutDir": true,
+    "webpack": true,
     "tsConfigPath": "apps/cifarm-server/tsconfig.app.json"
   },
   "monorepo": true,
@@ -24,7 +25,8 @@
       "entryFile": "main",
       "sourceRoot": "apps/rest-api-gateway/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/rest-api-gateway/tsconfig.app.json"
+        "tsConfigPath": "apps/rest-api-gateway/tsconfig.app.json",
+        "webpackConfigPath": "apps/rest-api-gateway/webpack.config.js"
       }
     },
     "websocket-node": {

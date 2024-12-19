@@ -9,20 +9,26 @@ const basePackage = {
     main: "./index.js",
     engines: {
         node: ">= 14",
+    },
+    dependencies: {
+        "kafkajs": "^2.2.4",
     }
 }
 
 module.exports = {
-    entry: "./src/main.js",
+    entry: "./apps/gameplay-service/src/main.ts",
     output: {
-        path: path.resolve(__dirname, "dist"),
-        filename: "main.js",
+        path: path.join(__dirname, "../..", "dist", "apps", "gameplay-service"),
+        filename: "main.ts",
     },
     target: "node",
     externals: [nodeExternals()],
     plugins: [
         new GeneratePackageJsonPlugin(basePackage, {
-            sourcePackageFilenames: ["../../package.json"],
+            sourcePackageFilenames: [path.join(__dirname, "../..", "package.json")],
+            excludeDependencies: [          
+
+            ],
         }),
     ],
 }
