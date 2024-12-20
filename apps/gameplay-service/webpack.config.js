@@ -15,6 +15,7 @@ const basePackage = {
     },
     dependencies: {
         "kafkajs": "^2.2.4",
+        "pg": "8.13.1",
     }
 }
 
