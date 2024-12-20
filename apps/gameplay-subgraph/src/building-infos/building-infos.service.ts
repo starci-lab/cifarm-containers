@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { BuildingInfoEntity } from "@src/database"
 import { DataSource } from "typeorm"
-import { GetBuildingInfosArgs } from "./"
+import { GetBuildingInfosArgs } from "./building-infos.dto"
 
 @Injectable()
 export class BuildingInfosService {

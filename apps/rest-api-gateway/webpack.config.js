@@ -14,6 +14,8 @@ const basePackage = {
         node: ">= 14",
     },
     dependencies: {
+        "kafkajs": "^2.2.4",
+        "@nestjs/platform-express": "^10.0.0"
     }
 }
 

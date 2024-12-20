@@ -1,7 +1,7 @@
-import { GetProductsArgs } from "./"
 import { Injectable, Logger } from "@nestjs/common"
 import { ProductEntity } from "@src/database"
 import { DataSource, FindOptionsRelations } from "typeorm"
+import { GetProductsArgs } from "./products.dto"
 
 @Injectable()
 export class ProductService {

@@ -14,6 +14,7 @@ const basePackage = {
         node: ">= 14",
     },
     dependencies: {
+        "pg": "8.13.1",
     }
 }
 

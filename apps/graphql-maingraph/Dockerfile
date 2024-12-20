@@ -5,20 +5,32 @@
 
 ARG NODE_VERSION=21.6.2
 
+# Build Stage
 FROM node:${NODE_VERSION}-alpine as build
 
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+# Copy only necessary files first for better caching
 COPY package*.json ./
+
+# Install dependencies
+RUN npm config set registry http://registry.npmjs.org/ && npm ci
+
+# Copy remaining source code and build the application
 COPY . .
-RUN npm config set registry http://registry.npmjs.org/
-RUN npm ci
 RUN npx nest build graphql-maingraph
 
-FROM build as deps
-COPY --from=build /usr/src/app/dist/apps/graphql-maingraph .
-COPY proto ./proto
-RUN npm i --omit=dev
+# Production Stage (final image)
+FROM node:${NODE_VERSION}-alpine as production
 
+WORKDIR /usr/src/app
+
+# Copy only the build output and proto files
+COPY --from=build /usr/src/app/dist/apps/graphql-maingraph .
+COPY --from=build /usr/src/app/proto ./proto
+
+# Install only production dependencies
+RUN npm i --production
+
+# Start the application
 CMD ["node", "main"]

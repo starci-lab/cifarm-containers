@@ -1,7 +1,8 @@
-import { AnimalInfosService, GetAnimalInfosArgs } from "./"
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { AnimalInfoEntity } from "@src/database"
+import { AnimalInfosService } from "./animal-infos.service"
+import { GetAnimalInfosArgs } from "./animal-infos.dto"
 
 @Resolver()
 export class AnimalInfosResolver {

@@ -121,6 +121,18 @@ type DeliveringProductEntity {
   product: ProductEntity
 }
 
+type SessionEntity {
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  id: ID!
+  token: String!
+  expiredAt: DateTime!
+  userId: String
+  isActive: Boolean!
+  deviceInfo: String
+  user: UserEntity
+}
+
 type UserEntity {
   createdAt: DateTime!
   updatedAt: DateTime!
@@ -147,8 +159,9 @@ type UserEntity {
   inventories: [InventoryEntity!]!
   placedItems: [PlacedItemEntity!]!
   deliveringProducts: [DeliveringProductEntity!]!
-  followingRecords: [UserEntity!]!
-  followedRecords: [UserEntity!]!
+  followingUsers: [UserEntity!]!
+  followedByUsers: [UserEntity!]!
+  sessions: [SessionEntity!]!
 }
 
 type AnimalInfoEntity {

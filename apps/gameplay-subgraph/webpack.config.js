@@ -14,6 +14,9 @@ const basePackage = {
         node: ">= 14",
     },
     dependencies: {
+        "@nestjs/platform-express": "^10.0.0",
+        "pg": "8.13.1",
+        "@apollo/subgraph": "2.9.3",
     }
 }
 
