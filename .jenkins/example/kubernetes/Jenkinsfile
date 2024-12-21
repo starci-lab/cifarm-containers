@@ -1,21 +1,11 @@
-podTemplate(
-    serviceAccount: 'jenkins',
-    containers: [
-    containerTemplate(
-        name: 'kubectl', 
-        image: 'bitnami/kubectl:latest', 
-        command: 'sleep', 
-        args: '5s'
-    )
-]) {
+podTemplate (
+    serviceAccount: 'jenkins'
+){
     node(POD_LABEL) {
-        stage('Test kubectl') {
-            container('kubectl') {
-                stage('Create pod nginx') {
-                    // Step 1: Create the nginx pod
-                    sh 'kubectl get pods -n cicd'
-                }
-            }
+        stage('Run shell') {
+            sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
+            sh 'chmod u+x ./kubectl'
+            sh './kubectl get pods -n cicd'
         }
     }
 }
