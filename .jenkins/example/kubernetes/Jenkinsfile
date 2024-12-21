@@ -1,11 +1,16 @@
-podTemplate (
-    serviceAccount: 'jenkins'
-){
+podTemplate(
+    serviceAccount: 'jenkins' // Ensure the service account has the necessary permissions to interact with the Kubernetes cluster
+) {
     node(POD_LABEL) {
         stage('Run shell') {
-            sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-            sh 'chmod u+x ./kubectl'
-            sh './kubectl get pods -n cicd'
+            withKubeConfig(credentialsId: 'jenkins-token') { // Specify the credentials ID for the kubeconfig stored in Jenkins
+                // Download and install kubectl
+                sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
+                sh 'chmod u+x ./kubectl'
+                
+                // Interact with the Kubernetes cluster
+                sh './kubectl get pods -n cicd' // List pods in the cicd namespace
+            }
         }
     }
 }
