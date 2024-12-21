@@ -1,15 +1,20 @@
 podTemplate(
     serviceAccount: 'jenkins' // Ensure the service account has the necessary permissions to interact with the Kubernetes cluster
+    containers: [
+        // Use the Bitnami kubectl container to avoid downloading kubectl manually
+        containerTemplate(
+            name: 'kubectl',
+            image: 'bitnami/kubectl:1.20.5',
+            command: 'cat', // This is a no-op, we just need the container to run
+            ttyEnabled: true
+        )
+    ]
 ) {
     node(POD_LABEL) {
-        stage('Run shell') {
-            withKubeConfig(credentialsId: 'jenkins-token') { // Specify the credentials ID for the kubeconfig stored in Jenkins
-                // Download and install kubectl
-                sh 'curl -LO "https://storage.googleapis.com/kubernetes-release/release/v1.20.5/bin/linux/amd64/kubectl"'
-                sh 'chmod u+x ./kubectl'
-                
-                // Interact with the Kubernetes cluster
-                sh './kubectl get pods -n cicd' // List pods in the cicd namespace
+        stage('Run kubectl commands') {
+            container('kubectl') {
+                // Use kubectl directly from the Bitnami container
+                sh 'kubectl get pods -n cicd' // List pods in the cicd namespace
             }
         }
     }
