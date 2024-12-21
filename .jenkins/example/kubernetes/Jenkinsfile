@@ -1,21 +1,19 @@
-podTemplate(
-    containers: [
-        // Use the Bitnami kubectl container to avoid downloading kubectl manually
-        containerTemplate(
-            name: 'kubectl',
-            image: 'bitnami/kubectl:1.20.5',
-            command: 'sleep',
-            args: '99d'
-        )
-    ],
-    serviceAccount: 'jenkins'
-) {
-    node(POD_LABEL) {
-        stage('Run kubectl commands') {
-            container('kubectl') {
-                // Use kubectl directly from the Bitnami container
-                sh 'kubectl get pods -n cicd' // List pods in the cicd namespace
-            }
-        }
+pipeline {
+  agent {
+    kubernetes {
+      yamlFile 'agent.yaml'
+      }
     }
+
+  stages {
+    stage('Test Kubernetes') {
+      steps {
+      container(name: 'kubectl', shell: '/bin/sh') {
+        withCredentials([file(credentialsId: 'jenkins-token', variable: 'KUBECONFIG')]) {
+          sh "kubectl get pods -n cicd"
+          }
+        }
+      }
+    }
+  }
 }
