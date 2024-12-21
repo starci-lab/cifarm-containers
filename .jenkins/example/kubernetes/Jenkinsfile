@@ -1,5 +1,4 @@
 podTemplate(
-
     containers: [
         // Use the Bitnami kubectl container to avoid downloading kubectl manually
         containerTemplate(
@@ -8,7 +7,8 @@ podTemplate(
             command: 'cat', // This is a no-op, we just need the container to run
             ttyEnabled: true
         )
-    ]
+    ],
+    serviceAccount: 'jenkins'
 ) {
     node(POD_LABEL) {
         stage('Run kubectl commands') {
