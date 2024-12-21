@@ -9,7 +9,7 @@ pipeline {
     stage('Test Kubernetes') {
       steps {
       container(name: 'kubectl', shell: '/bin/sh') {
-        withCredentials(credentialsId: 'jenkins-token') {
+        withCredentials([credentialsId: 'jenkins-token']) {
             sh "kubectl get pods -n cicd"
           }
         }
