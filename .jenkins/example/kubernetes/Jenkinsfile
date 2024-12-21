@@ -4,7 +4,7 @@ podTemplate(
         containerTemplate(
             name: 'kubectl',
             image: 'bitnami/kubectl:1.20.5',
-            command: ["echo"],
+            command: "echo helloworld",
             ttyEnabled: true
         )
     ],
