@@ -1,35 +1,16 @@
 pipeline {
   agent {
     kubernetes {
-      yaml '''
-apiVersion: v1
-kind: Pod
-metadata:
-  labels:
-    type: jenkins-agent
-spec:
-  containers:
-    - name: kubectl
-      image: bitnami/kubectl:latest
-      command:
-        - "/bin/sh"
-        - "-c"
-        - "sleep 99d"  // Keeps the pod running
-      tty: true  // Enables interactive terminal
-      securityContext:
-        runAsUser: 0  // Run as root (if necessary)
-  restartPolicy: Never
-'''
+      yamlFile 'agent.yaml'
+      }
     }
-  }
 
   stages {
     stage('Test Kubernetes') {
       steps {
-        container(name: 'kubectl', shell: '/bin/sh') {
-          withCredentials([file(credentialsId: 'jenkins-token', variable: 'KUBECONFIG')]) {
-            // Run kubectl command to list pods in the cicd namespace
-            sh "kubectl get pods -n cicd"
+      container(name: 'kubectl', shell: '/bin/sh') {
+        withCredentials([file(credentialsId: 'jenkins-token', variable: 'KUBECONFIG')]) {
+          sh "kubectl get pods -n cicd"
           }
         }
       }
