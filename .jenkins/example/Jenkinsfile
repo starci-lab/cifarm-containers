@@ -1,13 +1,7 @@
-pipeline {
-    agent any 
-
-    stages {
-        stage('Hello World') {
-            steps {
-                script {
-                    echo 'Hello World, Nguyen Van Tu Cuong'
-                }
-            }
+podTemplate {
+    node(POD_LABEL) {
+        stage('Run shell') {
+            sh 'echo hello world'
         }
     }
 }
