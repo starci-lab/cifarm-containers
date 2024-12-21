@@ -4,6 +4,7 @@ metadata:
   labels:
     type: jenkins-agent
 spec:
+  serviceAccountName: jenkins
   #securityContext:
   #  runAsUser: 1000
   containers:
