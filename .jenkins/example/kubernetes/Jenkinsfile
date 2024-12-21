@@ -11,7 +11,7 @@ podTemplate(containers: [
             container('kubectl') {
                 stage('Create pod nginx') {
                     // Step 1: Create the nginx pod
-                    sh "kubectl get pods -n cicd"
+                    sh 'kubectl get pods -n cicd'
                 }
             }
         }
