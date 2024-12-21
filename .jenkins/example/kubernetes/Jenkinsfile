@@ -9,11 +9,12 @@ pipeline {
     stage('Test Kubernetes') {
       steps {
       container(name: 'kubectl', shell: '/bin/sh') {
-        withKubeConfig([credentialsId: 'jenkins-token']) {
+        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+            sh "echo $KUBECONFIG > /.kube/config"
             sh "kubectl get pods -n cicd"
           }
-        }
       }
     }
+  }
   }
 }
