@@ -4,6 +4,8 @@ podTemplate(
     containerTemplate(
         name: 'kubectl', 
         image: 'bitnami/kubectl:latest', 
+        command: 'sleep', 
+        args: '30d'
     )
 ]) {
     node(POD_LABEL) {
