@@ -1,31 +1,56 @@
-pipeline {
-    agent none
-    stages {
-        stage('Run Hello World in Kubernetes Pod') {
+podTemplate {
+    node(POD_LABEL) {
+        stage('Run kubectl apply in Kubernetes Pod') {
             agent {
                 kubernetes {
-                    label 'helloworld-pod'  // This is a unique label for the pod
+                    label 'kubectl-pod'  // Label to identify the pod
                     yaml """
 apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    app: helloworld
+    app: kubectl-pod
 spec:
   containers:
-  - name: shell
-    image: alpine
+  - name: kubectl-container
+    image: bitnami/kubectl:latest  // Using a container that has kubectl pre-installed
     command:
-    - cat
-    tty: true
-"""
+    - cat  // Keeps the container alive to run kubectl commands
+    tty: true  // Allows interactive commands
+  """
                 }
             }
             steps {
-                container('shell') {
+                container('kubectl-container') {
                     script {
-                        // This is where we run the 'echo' command inside the pod
-                        sh 'echo hello world'
+                        // Run kubectl apply to create a Kubernetes resource (example: deployment.yaml)
+                        def yamlConfig = """
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-world
+  template:
+    metadata:
+      labels:
+        app: hello-world
+    spec:
+      containers:
+      - name: hello-world
+        image: nginx
+        ports:
+        - containerPort: 80
+                        """
+                        // Apply the resource to the cluster using kubectl
+                        writeFile file: 'deployment.yaml', text: yamlConfig
+                        sh 'kubectl apply -f deployment.yaml'
+
+                        // Verify the deployment is created
+                        sh 'kubectl get deployments'
                     }
                 }
             }
