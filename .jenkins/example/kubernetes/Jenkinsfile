@@ -1,8 +1,9 @@
-podTemplate(containers: [
+podTemplate(
+    serviceAccount: 'jenkins',
+    containers: [
     containerTemplate(
         name: 'kubectl', 
         image: 'bitnami/kubectl:latest', 
-        serviceAccount: 'jenkins'
     )
 ]) {
     node(POD_LABEL) {
