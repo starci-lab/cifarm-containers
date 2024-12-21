@@ -4,8 +4,8 @@ podTemplate(
         containerTemplate(
             name: 'kubectl',
             image: 'bitnami/kubectl:1.20.5',
-            command: "sleep",
-            ttyEnabled: true
+            command: 'sleep',
+            args: '99d'
         )
     ],
     serviceAccount: 'jenkins'
