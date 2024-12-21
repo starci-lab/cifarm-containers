@@ -2,8 +2,7 @@ podTemplate(containers: [
     containerTemplate(
         name: 'kubectl', 
         image: 'bitnami/kubectl:latest', 
-        command: 'sleep', 
-        args: '30d'
+        serviceAccount: 'jenkins'
     )
 ]) {
     node(POD_LABEL) {
