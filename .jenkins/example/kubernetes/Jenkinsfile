@@ -1,5 +1,5 @@
 podTemplate(
-    serviceAccount: 'jenkins' // Ensure the service account has the necessary permissions to interact with the Kubernetes cluster
+    serviceAccount: 'jenkins' // Ensure the service account has the necessary permissions to interact with the Kubernetes cluster,
     containers: [
         // Use the Bitnami kubectl container to avoid downloading kubectl manually
         containerTemplate(
