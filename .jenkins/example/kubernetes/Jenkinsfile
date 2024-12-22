@@ -1,4 +1,4 @@
-podTemplate(inheritFrom: 'default')
+podTemplate(inheritFrom: 'default', serviceAccount: 'jenkins')
 {
     node(POD_LABEL){
       stage('List Configmaps') {
