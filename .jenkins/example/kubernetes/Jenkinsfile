@@ -10,7 +10,7 @@ pipeline {
                 container('kubectl') {
                     script {
                         // Run kubectl commands or any other commands inside the kubectl container
-                        echo 'Running inside the kubectl container'
+                        sh 'sleep 30' // Example command to sleep for 30 seconds
                         sh 'kubectl get pods -n cicd'  // Example command to check kubectl version
                     }
                 }
