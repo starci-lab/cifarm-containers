@@ -1,18 +1,20 @@
-podTemplate(serviceAccount: 'jenkins-agent', containers: [
-  containerTemplate(
-    name: 'kubectl',
-    image: 'bitnami/kubectl',
-    command: '/bin/sh',    // Command to run the shell
-    args: '-c "sleep 99d"' // Args for the shell to execute 'sleep 99d'
-  )
-]) {
-  node(POD_LABEL) {
-    stage('List Configmaps') {
-      // Execute kubectl get pods inside the kubectl container
-      container('kubectl', shell: '/bin/sh') {
-        sh 'echo "kubectl"'
-        sh 'kubectl get pods -n cicd'
-      }
+pipeline {
+    agent {
+        kubernetes {
+            yamlFile 'agent.yaml' // Path to your agent YAML file
+        }
     }
-  }
+    stages {
+        stage('Build') {
+            steps {
+                container('kubectl') {
+                    script {
+                        // Run kubectl commands or any other commands inside the kubectl container
+                        echo 'Running inside the kubectl container'
+                        sh 'kubectl get pods -n cicd'  // Example command to check kubectl version
+                    }
+                }
+            }
+        }
+    }
 }
