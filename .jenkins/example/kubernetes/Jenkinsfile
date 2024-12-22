@@ -9,7 +9,7 @@ podTemplate(serviceAccount: 'jenkins-agent', containers: [
   node(POD_LABEL) {
     stage('List Configmaps') {
       // Execute kubectl get pods inside the kubectl container
-      container('kubectl') {
+      container('kubectl', shell: '/bin/sh') {
         sh 'echo "kubectl"'
         sh 'kubectl get pods -n cicd'
       }
