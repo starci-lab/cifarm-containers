@@ -3,7 +3,8 @@ podTemplate(serviceAccount: 'jenkins-agent', containers: [
     name: 'kubectl',
     image: 'bitnami/kubectl',
     command: 'sleep',
-    args: '30d'
+    args: '30d',
+    workingDir: '/home/jenkins/agent'
   )
 ]) {
   node(POD_LABEL) {
