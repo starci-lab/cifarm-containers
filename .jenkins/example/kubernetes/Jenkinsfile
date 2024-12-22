@@ -2,8 +2,8 @@ podTemplate(serviceAccount: 'jenkins-agent', containers: [
   containerTemplate(
     name: 'kubectl',
     image: 'bitnami/kubectl',
-    command: "/bin/sh"
-    args: "-c 'sleep 99d'"
+    command: '/bin/sh',    // Command to run the shell
+    args: '-c "sleep 99d"' // Args for the shell to execute 'sleep 99d'
   )
 ]) {
   node(POD_LABEL) {
