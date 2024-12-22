@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2024-12-21T11:27:52Z"
+  name: jenkins-agent
+  namespace: cicd
+  resourceVersion: "1959699"
+  uid: a3aab06c-e439-4c14-8c2c-f58212f6f9c2
+secrets:
+- name: jenkins-agent-token

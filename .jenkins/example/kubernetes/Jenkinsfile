@@ -1,11 +1,17 @@
-podTemplate(inheritFrom: 'default', serviceAccount: 'jenkins')
-{
-    node(POD_LABEL){
-      stage('List Configmaps') {
-        withAWS(credentials: 'aaa', region: 'ap-southeast-1') {
-                        sh 'aws eks update-kubeconfig --name "cifarm-dev-1" --region "ap-southeast-1"'
-                        sh 'kubectl get pods'
-                        }
-        }
+podTemplate(serviceAccount: 'jenkins-agent', containers: [
+  containerTemplate(
+    name: 'kubectl',
+    image: 'bitnami/kubectl',
+    command: 'sleep',
+    args: '30d'
+  )
+]) {
+  node(POD_LABEL) {
+    stage('List Configmaps') {
+      // Execute kubectl get pods inside the kubectl container
+      container('kubectl') {
+        sh 'kubectl get pods -n cicd'
+      }
     }
+  }
 }
