@@ -9,7 +9,6 @@ import { CropJobData } from "./crop.dto"
 import { bullConfig, BullQueueName } from "@src/config"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
-import { ZooKeeperService } from "../zookeeper"
 dayjs.extend(utc)
 
 @Injectable()
