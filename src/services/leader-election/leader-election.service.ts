@@ -38,8 +38,6 @@ export class LeaderElectionService implements OnApplicationBootstrap {
         return this.isLeader
     }
 
-
-
     constructor(
         @Inject(LEADER_ELECTION_OPTIONS) private options: LeaderElectionOptions,
         private readonly eventEmitter: EventEmitter2
