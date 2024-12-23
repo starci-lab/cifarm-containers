@@ -4,11 +4,13 @@ import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
-import { Collection, CollectionEntity, CropCurrentState, SeedGrowthInfoEntity, SpeedUpData } from "@src/database"
+import { Collection, CollectionEntity, CropCurrentState, SeedGrowthInfoEntity, SpeedUpData, TempId } from "@src/database"
 import { CropJobData } from "./crop.dto"
 import { bullConfig, BullQueueName } from "@src/config"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
+import { LeaderElectionService } from "@src/services/leader-election"
+import { CropGrowthLastSchedule, TempEntity } from "@src/database/gameplay-postgresql/temp.entity"
 dayjs.extend(utc)
 
 @Injectable()
@@ -17,12 +19,12 @@ export class CropService {
     constructor(
         @InjectQueue(bullConfig[BullQueueName.Crop].name) private cropQueue: Queue,
         private readonly dataSource: DataSource,
-        private readonly zooKeeperService: ZooKeeperService
+        private readonly leaderElectionService: LeaderElectionService,
     ) {}
     
     @Cron("*/1 * * * * *")
     async handle() {
-        if (!this.zooKeeperService.checkLeader()) return
+        if (!this.leaderElectionService.isLeaderInstance()) return
         this.logger.verbose("Checking for crops that need to be grown")
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
@@ -42,7 +44,14 @@ export class CropService {
                     collection: Collection.CropSpeedUp
                 }
             })
-        
+            
+            //get the last scheduled time
+            const { value } = await queryRunner.manager.findOne(TempEntity, {
+                where: {
+                    id: TempId.CropGrowthLastSchedule
+                }
+            })
+            const { date } = value as CropGrowthLastSchedule
             this.logger.debug(`Found ${count} crops that need to be grown`)
             if (count === 0) {
                 this.logger.verbose("No crops to grow")
@@ -53,12 +62,11 @@ export class CropService {
             const batchSize = bullConfig[BullQueueName.Crop].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
-            let growthTime = 1
+            let growthTime = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1
             if (speedUps.length) {
                 for (const { data } of speedUps)
                 {
                     const { time : additionalTime } = data as SpeedUpData
-                    console.log(additionalTime)
                     growthTime += Number(additionalTime)
                 }
             }
@@ -84,6 +92,12 @@ export class CropService {
             try {
                 await queryRunner.manager.delete(CollectionEntity, {
                     collection: Collection.CropSpeedUp
+                })
+                await queryRunner.manager.save(TempEntity, {
+                    id: TempId.CropGrowthLastSchedule,
+                    value: {
+                        date: dayjs().utc().toDate()
+                    }
                 })
                 await queryRunner.commitTransaction()
             } catch (error) {

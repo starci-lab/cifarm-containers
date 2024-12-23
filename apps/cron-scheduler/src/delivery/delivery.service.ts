@@ -33,7 +33,7 @@ export class DeliveryService {
             }
         }
     }
-
+    
     @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     // @Cron("*/1 * * * * *")
     public async handleDeliveryProducts() {

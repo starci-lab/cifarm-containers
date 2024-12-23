@@ -39,6 +39,10 @@ export class CropRandomness {
     isWeedyOrInfested: number
 }
 
+export class AnimalRandomness {
+    sickChance: number
+}
+
 export class Positions {
     //starter tiles
     tiles: Array<Position>

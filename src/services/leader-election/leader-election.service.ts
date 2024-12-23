@@ -35,6 +35,10 @@ export class LeaderElectionService implements OnApplicationBootstrap {
   
     private runInKubernetes = !!envConfig().kubernetes.defined.namespace
 
+    public isLeaderInstance(): boolean {
+        return this.isLeader
+    }
+
     constructor(
         @Inject(LEADER_ELECTION_OPTIONS) private options: LeaderElectionOptions,
         private readonly eventEmitter: EventEmitter2
