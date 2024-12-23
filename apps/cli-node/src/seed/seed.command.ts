@@ -206,6 +206,10 @@ export class SeedCommand extends CommandRunner {
             water: {
                 energyConsume: 1,
                 experiencesGain: 3
+            },
+            harvestCrop: {
+                energyConsume: 1,
+                experiencesGain: 3
             }
         }
         const cropRandomness: CropRandomness = {

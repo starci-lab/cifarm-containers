@@ -5,8 +5,8 @@ import {
 } from "nestjs-grpc-exceptions"
 
 export class InventoryNotFoundException extends GrpcNotFoundException {
-    constructor(id: string) {
-        super(`Inventory not found : ${id}`)
+    constructor(id?: string) {
+        super(id ? `Inventory not found : ${id}` : "Inventory not found")
     }
 }
 

@@ -26,7 +26,8 @@ import {
     HealthcheckEntity,
     UsersFollowingUsersEntity,
     CollectionEntity,
-    SessionEntity
+    SessionEntity,
+    TempEntity
 } from "@src/database"
 
 export enum TypeOrmDbType {
@@ -117,7 +118,8 @@ export const typeOrmForFeature = ({ type }: TypeOrmModuleForFeatureParams = {}):
             HealthcheckEntity,
             UsersFollowingUsersEntity,
             CollectionEntity,
-            SessionEntity
+            SessionEntity,
+            TempEntity
         ],
         map[type || TypeOrmDbType.Main]
     )

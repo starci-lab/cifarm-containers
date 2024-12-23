@@ -197,8 +197,8 @@ type SeedGrowthInfoEntity {
   updatedAt: DateTime!
   id: ID!
   currentStage: Int!
-  currentStageTimeElapsed: Int!
-  totalTimeElapsed: Int!
+  currentStageTimeElapsed: Float!
+  totalTimeElapsed: Float!
   currentPerennialCount: Int!
   harvestQuantityRemaining: Int!
   cropId: String!
