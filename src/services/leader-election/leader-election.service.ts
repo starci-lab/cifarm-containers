@@ -5,9 +5,10 @@ import {
     Inject,
 } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
-import { CoordinationV1Api, LEADER_ELECTION_OPTIONS, LeaderElectionOptions, LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT, V1Lease, Watch } from "./leader-election.types"
+import {  LEADER_ELECTION_OPTIONS, LeaderElectionOptions, LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT } from "./leader-election.types"
 import { envConfig } from "@src/config"
 import { runInKubernetes } from "@src/utils"
+import { CoordinationV1Api, V1Lease, Watch } from "@kubernetes/client-node"
 
 @Injectable()
 export class LeaderElectionService implements OnApplicationBootstrap {
@@ -162,15 +163,9 @@ export class LeaderElectionService implements OnApplicationBootstrap {
         lease.spec.renewTime = new V1MicroTime(new Date())
 
         try {
-            const replacedLease = await this.kubeClient.replaceNamespacedLease(
-                {
-                    name: this.leaseName,
-                    namespace: this.namespace,
-                    body: lease
-                }
-            )
+            const { body } = await this.kubeClient.replaceNamespacedLease(this.leaseName,this.namespace, lease)
             this.logger[this.logAtLevel]("Successfully acquired lease")
-            return replacedLease
+            return body
         } catch (error) {
             this.logger.error({ message: "Error while acquiring lease", error })
             throw error
@@ -186,15 +181,13 @@ export class LeaderElectionService implements OnApplicationBootstrap {
                 this.logger[this.logAtLevel]("Renewing lease...")
                 lease.spec.renewTime = new V1MicroTime(new Date())
                 try {
-                    const replacedLease = await this.kubeClient.replaceNamespacedLease(
-                        {
-                            name: this.leaseName,
-                            namespace: this.namespace,
-                            body: lease
-                        }
+                    const { body } = await this.kubeClient.replaceNamespacedLease(
+                        this.leaseName,
+                        this.namespace,
+                        lease     
                     )
                     this.logger[this.logAtLevel]("Successfully renewed lease")
-                    return replacedLease
+                    return body
                 } catch (error) {
                     this.logger.error({ message: "Error while renewing lease", error })
                     throw error
@@ -210,13 +203,8 @@ export class LeaderElectionService implements OnApplicationBootstrap {
 
     private async getLease(): Promise<V1Lease> {
         try {
-            const lease = await this.kubeClient.readNamespacedLease(
-                {
-                    name: this.leaseName,
-                    namespace: this.namespace
-                }
-            )
-            return lease
+            const { body } = await this.kubeClient.readNamespacedLease(this.leaseName,this.namespace)
+            return body
         } catch (error) {
             if (error.response && error.response.statusCode === 404) {
                 this.logger[this.logAtLevel]("Lease not found. Creating lease...")
@@ -244,14 +232,9 @@ export class LeaderElectionService implements OnApplicationBootstrap {
         }
 
         try {
-            const createdLease = await this.kubeClient.createNamespacedLease(
-                {
-                    namespace: this.namespace,
-                    body: lease
-                }
-            )
+            const { body } = await this.kubeClient.createNamespacedLease(this.namespace, lease)
             this.logger[this.logAtLevel]("Successfully created lease")
-            return createdLease
+            return body
         } catch (error) {
             this.logger.error({ message: "Failed to create lease", error })
             throw error
@@ -284,13 +267,7 @@ export class LeaderElectionService implements OnApplicationBootstrap {
             if (lease && this.isLeaseHeldByUs(lease)) {
                 lease.spec.holderIdentity = null
                 lease.spec.renewTime = null
-                await this.kubeClient.replaceNamespacedLease(
-                    {
-                        name: this.leaseName,
-                        namespace: this.namespace,
-                        body: lease
-                    }
-                )
+                await this.kubeClient.replaceNamespacedLease(this.leaseName, this.namespace, lease)
                 this.logger[this.logAtLevel](`Lease for ${this.leaseName} released.`)
             }
         } catch (error) {
