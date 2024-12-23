@@ -10,7 +10,7 @@
     "format": "prettier --write \"apps/**/*.ts\" ",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:all": "concurrently \"nest start gameplay-service --watch\" \"nest start rest-api-gateway --watch\", \"nest start cron-worker --watch\" \"nest start cron-scheduler --watch\" \"nest start websocket-node --watch\"",
+    "start:all": "concurrently \"nest start gameplay-service --watch\" \"nest start rest-api-gateway --watch\", \"nest start cron-worker --watch\" \"nest start cron-scheduler --watch\" \"nest start websocket-node --watch\" \"nest start graphql-maingraph --watch\" \"nest start gameplay-subgraph --watch\"",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/cifarm-server/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -39,7 +39,6 @@
     "@graphql-tools/utils": "9.2.1",
     "@grpc/grpc-js": "^1.12.2",
     "@grpc/proto-loader": "0.7.13",
-    "@kubernetes/client-node": "^1.0.0",
     "@metaplex-foundation/mpl-token-metadata": "3.2.1",
     "@metaplex-foundation/umi": "0.9.2",
     "@metaplex-foundation/umi-bundle-defaults": "0.9.2",
@@ -169,3 +168,4 @@
     ]
   }
 }
+

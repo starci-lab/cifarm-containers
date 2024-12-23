@@ -25,6 +25,7 @@ export class Activities {
     thiefAnimalProduct: ActivityInfo
     cureAnimal: ActivityInfo
     helpCureAnimal: ActivityInfo
+    harvestCrop: ActivityInfo
 }
 
 export class ActivityInfo {

@@ -36,6 +36,7 @@ import {
     UpgradeEntity,
     UpgradeId,
     SpinInfo,
+    AnimalRandomness,
 } from "@src/database"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 
@@ -171,6 +172,10 @@ export class SeedDataService {
             water: {
                 energyConsume: 1,
                 experiencesGain: 3
+            },
+            harvestCrop: {
+                energyConsume: 1,
+                experiencesGain: 3
             }
         }
         const cropRandomness: CropRandomness = {
@@ -178,6 +183,10 @@ export class SeedDataService {
             thief2: 0.8,
             thief3: 0.95,
             isWeedyOrInfested: 1
+        }
+
+        const animalRandomness: AnimalRandomness = {
+            sickChance: 0.5
         }
         const starter: Starter = {
             golds: 1000,
@@ -246,6 +255,10 @@ export class SeedDataService {
             {
                 id: SystemId.CropRandomness,
                 value: cropRandomness
+            },
+            {
+                id: SystemId.AnimalRandomness,
+                value: animalRandomness
             },
             {
                 id: SystemId.Starter,
