@@ -1,7 +1,5 @@
 import { Module } from "@nestjs/common"
 //import { AnimalModule } from "./animal"
-import { CropModule } from "./crop"
-import { DeliveryModule } from "./delivery"
 import {
     bullForRoot,
     cacheRegisterAsync,
@@ -9,8 +7,11 @@ import {
     eventEmiterForRoot,
     schedulerForRoot,
     typeOrmForRoot
-} from "@src/dynamic-modules" 
+} from "@src/dynamic-modules"
 import { LeaderElectionModule } from "@src/services/leader-election"
+import { AnimalModule } from "./animal"
+import { CropModule } from "./crop"
+import { DeliveryModule } from "./delivery"
 @Module({
     imports: [
         configForRoot(),
@@ -25,7 +26,7 @@ import { LeaderElectionModule } from "@src/services/leader-election"
             logAtLevel: "debug",
         }),
         CropModule,
-        //AnimalModule,
+        AnimalModule,
         DeliveryModule
     ]
 })
