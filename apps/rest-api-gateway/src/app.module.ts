@@ -1,20 +1,20 @@
 import { Module } from "@nestjs/common"
 //import { HealthcheckModule } from "./healthcheck"
-import { AuthModule } from "./auth"
 //import { GameplayModule } from "./gameplay"
-import { StrategiesModule } from "@src/strategies"
 import { APP_INTERCEPTOR } from "@nestjs/core"
-import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
-import { GameplayModule } from "./gameplay"
 import { configForRoot } from "@src/dynamic-modules"
+import { StrategiesModule } from "@src/strategies"
+import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
+import { AppModuleV1 } from "./v1"
+import { AppModuleV2 } from "./v2"
 
 @Module({
     imports: [
         configForRoot(),
         StrategiesModule,
         //HealthcheckModule,
-        AuthModule,
-        GameplayModule
+        AppModuleV1,
+        AppModuleV2
     ],
     controllers: [],
     providers: [
@@ -23,6 +23,7 @@ import { configForRoot } from "@src/dynamic-modules"
             useClass: GrpcToHttpInterceptor
         }
     ],
-    exports: [AuthModule, GameplayModule]
+    exports: []
 })
+
 export class AppModule {}
