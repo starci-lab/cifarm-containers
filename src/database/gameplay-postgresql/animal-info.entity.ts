@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
@@ -9,16 +9,16 @@ import { UserEntity } from "./user.entity"
 @ObjectType()
 @Entity("animal_infos")
 export class AnimalInfoEntity extends UuidAbstractEntity {
-    @Field(() => Number)
-    @Column({ type: "int", default: 0 })
+    @Field(() => Float)
+    @Column({ type: "float", default: 0 })
         currentGrowthTime: number
 
-    @Field(() => Number)
-    @Column({ type: "int", default: 0 })
+    @Field(() => Float)
+    @Column({ type: "float", default: 0 })
         currentHungryTime: number
 
-    @Field(() => Number)
-    @Column({ type: "int", default: 0 })
+    @Field(() => Float)
+    @Column({ type: "float", default: 0 })
         currentYieldTime: number
 
     @Field(() => Boolean)

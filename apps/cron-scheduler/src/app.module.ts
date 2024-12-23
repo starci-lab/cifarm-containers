@@ -10,8 +10,7 @@ import {
     schedulerForRoot,
     typeOrmForRoot
 } from "@src/dynamic-modules" 
-import { ZooKeeperModule } from "./zookeeper"
-
+import { LeaderElectionModule } from "@src/services/leader-election"
 @Module({
     imports: [
         configForRoot(),
@@ -21,7 +20,10 @@ import { ZooKeeperModule } from "./zookeeper"
         typeOrmForRoot(),
         eventEmiterForRoot(),
         //register here for global access
-        ZooKeeperModule,
+        LeaderElectionModule.forRoot({
+            leaseName: "cron-scheduler-leader-election",
+            logAtLevel: "debug",
+        }),
         CropModule,
         //AnimalModule,
         DeliveryModule

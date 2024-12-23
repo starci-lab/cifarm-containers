@@ -250,8 +250,18 @@ export const envConfig = () => ({
                 }
             }
         }
-    }
+    },
+    kubernetes: {
+        defined: {
+            namespace: process.env.POD_NAMESPACE,
+        },
+        generated: {
+            serviceHost: process.env.KUBERNETES_SERVICE_HOST,
+            hostname: process.env.KUBERNETES_HOSTNAME,
+        }
+    },
 })
+
 
 export interface NearPair {
     privateKey: string

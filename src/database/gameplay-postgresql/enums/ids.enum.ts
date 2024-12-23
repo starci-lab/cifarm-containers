@@ -95,6 +95,11 @@ export enum SystemId {
     SpinInfo = "spinInfo",
 }
 
+export enum TempId {
+    CropGrowthLastSchedule = "cropGrowthLastSchedule",
+    AnimalGrowthLastSchedule = "animalGrowthLastSchedule"
+}
+
 export enum InventoryTypeId {
     CarrotSeed = "carrotSeed",
     PotatoSeed = "potatoSeed",
