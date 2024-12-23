@@ -8,7 +8,7 @@ import { EventEmitter2 } from "@nestjs/event-emitter"
 import { LEADER_ELECTION_OPTIONS, LeaderElectionOptions, LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT } from "./leader-election.types"
 import { envConfig } from "@src/config"
 import { runInKubernetes } from "@src/utils"
-import { CoordinationV1Api, V1Lease, Watch } from "@kubernetes/client-node"
+import { CoordinationV1Api, KubeConfig, V1Lease, V1MicroTime, Watch } from "@kubernetes/client-node"
 
 @Injectable()
 export class LeaderElectionService implements OnApplicationBootstrap {
@@ -59,8 +59,6 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
 
     async onApplicationBootstrap() {
-        const { KubeConfig, CoordinationV1Api, Watch } = await import("@kubernetes/client-node")
-
         const kubeConfig = new KubeConfig()
         kubeConfig.loadFromDefault()  // Load the default configuration (from ~/.kube/config or in-cluster configuration)
 
@@ -154,8 +152,6 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
 
     private async acquireLease(lease: V1Lease): Promise<V1Lease> {
-        const { V1MicroTime } = await import("@kubernetes/client-node")
-
         // Set this instance as the holder of the lease
         lease.spec.holderIdentity = this.LEADER_IDENTITY
         lease.spec.leaseDurationSeconds = this.durationInSeconds
@@ -173,7 +169,6 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
 
     private async renewLease() {
-        const { V1MicroTime } = await import("@kubernetes/client-node")
         try {
 
             const lease = await this.getLease()
@@ -216,8 +211,6 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
 
     private async createLease(): Promise<V1Lease> {
-        const { V1MicroTime } = await import("@kubernetes/client-node")
-
         const lease = {
             metadata: {
                 name: this.leaseName,
