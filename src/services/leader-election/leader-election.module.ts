@@ -22,9 +22,9 @@ export class LeaderElectionModule {
     }
 
     static forRootAsync(options: {
-    useFactory: (...args: any[]) => Promise<LeaderElectionOptions> | LeaderElectionOptions;
-    inject?: any[];
-  }): DynamicModule {
+        useFactory: (...args: any[]) => Promise<LeaderElectionOptions> | LeaderElectionOptions;
+        inject?: any[];
+    }): DynamicModule {
         return {
             module: LeaderElectionModule,
             providers: [
