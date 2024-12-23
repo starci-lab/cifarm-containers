@@ -5,13 +5,13 @@ import {
     OnApplicationBootstrap,
     Inject,
 } from "@nestjs/common"
-import {
-    KubeConfig,
+import type {
     CoordinationV1Api,
     V1Lease,
     Watch,
-    V1MicroTime,
 } from "@kubernetes/client-node"
+
+
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { LEADER_ELECTION_OPTIONS, LeaderElectionOptions, LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT } from "./leader-election.types"
 import { envConfig } from "@src/config"
@@ -38,19 +38,16 @@ export class LeaderElectionService implements OnApplicationBootstrap {
         return this.isLeader
     }
 
+
+
     constructor(
         @Inject(LEADER_ELECTION_OPTIONS) private options: LeaderElectionOptions,
         private readonly eventEmitter: EventEmitter2
     ) {
         // Create a new instance of KubeConfig to load Kubernetes cluster configuration
-        const kubeConfig = new KubeConfig()
-        kubeConfig.loadFromDefault()  // Load the default configuration (from ~/.kube/config or in-cluster configuration)
         
-        // Create a Kubernetes client for interacting with the Coordination V1 API (for leader election)
-        this.kubeClient = kubeConfig.makeApiClient(CoordinationV1Api)
+
         
-        // Initialize the Watch object to watch Kubernetes resources
-        this.watch = new Watch(kubeConfig)
     
         // Set up the lease name with a fallback default value
         this.leaseName = options.leaseName ?? "nestjs-leader-election"  // Default lease name if not provided in options
@@ -76,6 +73,17 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
   
     async onApplicationBootstrap() {
+        const { KubeConfig, CoordinationV1Api, Watch } = await import("@kubernetes/client-node")
+
+        const kubeConfig = new KubeConfig()
+        kubeConfig.loadFromDefault()  // Load the default configuration (from ~/.kube/config or in-cluster configuration)
+        
+        // Create a Kubernetes client for interacting with the Coordination V1 API (for leader election)
+        this.kubeClient = kubeConfig.makeApiClient(CoordinationV1Api)
+        
+        // Initialize the Watch object to watch Kubernetes resources
+        this.watch = new Watch(kubeConfig)
+
         // Check if the application is running inside a Kubernetes cluster
         if (!runInKubernetes()) {
             // If not running in Kubernetes, assume the current instance is the leader
@@ -160,6 +168,8 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
   
     private async acquireLease(lease: V1Lease): Promise<V1Lease> {
+        const { V1MicroTime } = await import("@kubernetes/client-node")
+
         // Set this instance as the holder of the lease
         lease.spec.holderIdentity = this.LEADER_IDENTITY
         lease.spec.leaseDurationSeconds = this.durationInSeconds
@@ -183,7 +193,9 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
   
     private async renewLease() {
+        const { V1MicroTime } = await import("@kubernetes/client-node")
         try {
+
             const lease: V1Lease = await this.getLease()
             if (this.isLeaseHeldByUs(lease)) {
                 this.logger[this.logAtLevel]("Renewing lease...")
@@ -231,6 +243,8 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
   
     private async createLease(): Promise<V1Lease> {
+        const { V1MicroTime } = await import("@kubernetes/client-node")
+
         const lease = {
             metadata: {
                 name: this.leaseName,
