@@ -25,6 +25,7 @@ export class Activities {
     thiefAnimalProduct: ActivityInfo
     cureAnimal: ActivityInfo
     helpCureAnimal: ActivityInfo
+    harvestCrop: ActivityInfo
 }
 
 export class ActivityInfo {
@@ -37,6 +38,10 @@ export class CropRandomness {
     thief2: number
     needWater: number
     isWeedyOrInfested: number
+}
+
+export class AnimalRandomness {
+    sickChance: number
 }
 
 export class Positions {

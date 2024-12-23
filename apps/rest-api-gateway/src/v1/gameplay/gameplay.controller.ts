@@ -33,6 +33,8 @@ import {
     FeedAnimalResponse,
     FollowRequest,
     FollowResponse,
+    GenerateTestSignatureRequest,
+    GenerateTestSignatureResponse,
     HarvestCropRequest,
     HarvestCropResponse,
     HelpCureAnimalRequest,
@@ -52,6 +54,9 @@ import {
     PlantSeedResponse,
     RecoverTileRequest,
     RecoverTileResponse,
+    RefreshRequest,
+    RefreshResponse,
+    RequestMessageResponse,
     RetainProductRequest,
     RetainProductResponse,
     ReturnRequest,
@@ -74,6 +79,8 @@ import {
     UseHerbicideResponse,
     UsePesticideRequest,
     UsePesticideResponse,
+    VerifySignatureRequest,
+    VerifySignatureResponse,
     VisitRequest,
     VisitResponse,
     WaterRequest,
@@ -106,6 +113,48 @@ export class GameplayController implements OnModuleInit {
             grpcConfig[GrpcServiceName.Gameplay].service
         )
     }
+
+    // Auth
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({ type: RequestMessageResponse })
+    @Post("message")
+    public async requestMessage(): Promise<RequestMessageResponse> {
+        return await lastValueFrom(this.gameplayService.requestMessage({}))
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: GenerateTestSignatureResponse
+    })
+    @Post("test-signature")
+    public async generateTestSignature(
+        @Body() request: GenerateTestSignatureRequest
+    ): Promise<GenerateTestSignatureResponse> {
+        return await lastValueFrom(this.gameplayService.generateTestSignature(request))
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: VerifySignatureResponse
+    })
+    @Post("verify-signature")
+    public async verifySignature(
+        @Body() request: VerifySignatureRequest
+    ): Promise<VerifySignatureResponse> {
+        return await lastValueFrom(this.gameplayService.verifySignature(request))
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: RefreshResponse
+    })
+    @Post("refresh")
+    public async refresh(
+        @Body() request: RefreshRequest
+    ): Promise<RefreshResponse> {
+        return await lastValueFrom(this.gameplayService.refresh(request))
+    }
+
     // Claim
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()

@@ -1,10 +1,9 @@
 import { Module } from "@nestjs/common"
-import { AuthModule } from "./auth"
 import { GameplayModule } from "./gameplay"
 
 @Module({
-    imports: [AuthModule, GameplayModule],
+    imports: [GameplayModule],
     providers: [],
-    exports: [AuthModule, GameplayModule]
+    exports: [GameplayModule]
 })
 export class AppModuleV1 {}

@@ -90,6 +90,7 @@ export enum ProductId {
 export enum SystemId {
     Activities = "activities",
     CropRandomness = "cropRandomness",
+    AnimalRandomness = "animalRandomness",
     Starter = "starter",
     SpinInfo = "spinInfo",
 }

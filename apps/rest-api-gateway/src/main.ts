@@ -3,7 +3,7 @@ import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger"
 import { envConfig } from "@src/config"
 import { AppModule } from "./app.module"
-import { AuthModule as AuthModuleV1, GameplayModule as GameplayModuleV1 } from "./v1"
+import { GameplayModule as GameplayModuleV1 } from "./v1"
 import { AuthModule as AuthModuleV2 } from "./v2"
 
 const bootstrap = async () => {
@@ -50,7 +50,7 @@ const bootstrap = async () => {
         .build()
 
     const documentV1 = SwaggerModule.createDocument(app, configV1, {
-        include: [AuthModuleV1, GameplayModuleV1],
+        include: [GameplayModuleV1],
     })
 
     SwaggerModule.setup("/v1", app, documentV1, {

@@ -6,13 +6,13 @@ import {
     InventoryType,
     PlacedItemEntity,
     SeedGrowthInfoEntity,
+    SupplyId,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/database"
 import {
     InventoryNotFoundException,
-    InventoryTypeNotSupplyException,
     PlacedItemNotNeedUseFertilizerException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotPlantedException,
@@ -80,17 +80,18 @@ export class UseFertilizerService {
             const inventory = await queryRunner.manager.findOne(InventoryEntity, {
                 where: {
                     userId: user.id,
-                    id: request.inventoryId
+                    inventoryType: {
+                        id: SupplyId.BasicFertilizer,
+                        type: InventoryType.Supply
+                    }
                 },
                 relations: {
                     inventoryType: true
                 }
             })
 
-            if(!inventory) throw new InventoryNotFoundException(request.inventoryId)
+            if(!inventory) throw new InventoryNotFoundException()
 
-            if(inventory.inventoryType.type != InventoryType.Supply) throw new InventoryTypeNotSupplyException(request.inventoryId)
-                
             await queryRunner.startTransaction()
             try {
                 //Decrease invetory
