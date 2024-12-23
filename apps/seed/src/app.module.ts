@@ -6,7 +6,7 @@ import {
     TypeOrmDbType,
     typeOrmForRoot
 } from "@src/dynamic-modules"
-import { SeedDataModule } from "./seed-data"
+import { SeedDataModule } from "../../cli-node/src/seed"
 
 @Module({
     imports: [

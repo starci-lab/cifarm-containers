@@ -43,9 +43,13 @@ export interface TypeORMConfig {
     name?: string
 }
 
-export const TEST_NAME = "test"
+export const TEST_DATASOURCE_NAME = "test"
 
-export const typeOrmForRoot = (type: TypeOrmDbType = TypeOrmDbType.Main): DynamicModule => {
+export interface TypeOrmModuleForRootParams {
+    type?: TypeOrmDbType
+}
+
+export const typeOrmForRoot = ({ type }: TypeOrmModuleForRootParams = {}): DynamicModule => {
     const map: Record<TypeOrmDbType, TypeORMConfig> = {
         [TypeOrmDbType.Main]: {
             host: envConfig().database.postgres.gameplay.main.host,
@@ -60,13 +64,13 @@ export const typeOrmForRoot = (type: TypeOrmDbType = TypeOrmDbType.Main): Dynami
             username: envConfig().database.postgres.gameplay.test.user,
             password: envConfig().database.postgres.gameplay.test.pass,
             database: envConfig().database.postgres.gameplay.test.dbName,
-            name: TEST_NAME
+            name: TEST_DATASOURCE_NAME
         }
     }
 
     return TypeOrmModule.forRoot({
         type: "postgres",
-        ...map[type],
+        ...map[type || TypeOrmDbType.Main],
         autoLoadEntities: true,
         synchronize: true,
         poolSize: 10000,
@@ -74,10 +78,14 @@ export const typeOrmForRoot = (type: TypeOrmDbType = TypeOrmDbType.Main): Dynami
     })
 }
 
-export const typeOrmForFeature = (type: TypeOrmDbType = TypeOrmDbType.Main): DynamicModule => {
+export interface TypeOrmModuleForFeatureParams {
+    type?: TypeOrmDbType
+}
+
+export const typeOrmForFeature = ({ type }: TypeOrmModuleForFeatureParams = {}): DynamicModule => {
     const map: Record<TypeOrmDbType, string> = {
         [TypeOrmDbType.Main]: undefined,
-        [TypeOrmDbType.Test]: TEST_NAME
+        [TypeOrmDbType.Test]: TEST_DATASOURCE_NAME
     }
 
     return TypeOrmModule.forFeature(
@@ -111,6 +119,6 @@ export const typeOrmForFeature = (type: TypeOrmDbType = TypeOrmDbType.Main): Dyn
             CollectionEntity,
             SessionEntity
         ],
-        map[type]
+        map[type || TypeOrmDbType.Main]
     )
 }

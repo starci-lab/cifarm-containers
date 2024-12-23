@@ -17,6 +17,10 @@ export const isProduction = (): boolean => {
     return envConfig().nodeEnv === NodeEnv.Production
 }
 
+export const runInKubernetes = (): boolean => {
+    return !!envConfig().kubernetes.generated.serviceHost
+}
+
 export const waitFor = (observeVariable: boolean, delay: number = 100): Promise<void> => {
     return new Promise((resolve) => {
         const interval = setInterval(() => {

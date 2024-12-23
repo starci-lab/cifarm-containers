@@ -15,6 +15,7 @@ import {
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { LEADER_ELECTION_OPTIONS, LeaderElectionOptions, LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT } from "./leader-election.types"
 import { envConfig } from "@src/config"
+import { runInKubernetes } from "@src/utils"
 
 @Injectable()
 export class LeaderElectionService implements OnApplicationBootstrap {
@@ -32,8 +33,6 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     private awaitLeadership: boolean
 
     LEADER_IDENTITY = `nestjs-${envConfig().kubernetes.generated.hostname}`  // Unique identity for the leader
-  
-    private runInKubernetes = !!envConfig().kubernetes.defined.namespace
 
     public isLeaderInstance(): boolean {
         return this.isLeader
@@ -78,7 +77,7 @@ export class LeaderElectionService implements OnApplicationBootstrap {
   
     async onApplicationBootstrap() {
         // Check if the application is running inside a Kubernetes cluster
-        if (!this.runInKubernetes) {
+        if (!runInKubernetes()) {
             // If not running in Kubernetes, assume the current instance is the leader
             this.logger[this.logAtLevel](
                 "Not running in Kubernetes, assuming leadership..."  // Log the information that it's not in Kubernetes

@@ -105,6 +105,26 @@
         "tsConfigPath": "apps/seed/tsconfig.app.json",
         "webpackConfigPath": "apps/seed/webpack.config.js"
       }
+    },
+    "cli": {
+      "type": "application",
+      "root": "apps/cli",
+      "entryFile": "main",
+      "sourceRoot": "apps/cli/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/cli/tsconfig.app.json"
+      }
+    },
+    "cli-node": {
+      "type": "application",
+      "root": "apps/cli-node",
+      "entryFile": "main",
+      "sourceRoot": "apps/cli-node/src",
+      "compilerOptions": {
+        "webpack": true,
+        "tsConfigPath": "apps/cli-node/tsconfig.app.json",
+        "webpackConfigPath": "apps/cli-node/webpack.config.js"
+      }
     }
   }
 }

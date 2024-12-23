@@ -27,6 +27,7 @@ export const createDatabase = async ({
 
     //Create database
     await dataSource.createQueryRunner().createDatabase(dbName, true)
+    return dataSource
 }
 
 export const deleteDatabase = async ({
