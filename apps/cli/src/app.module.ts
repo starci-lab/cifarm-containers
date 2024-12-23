@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
-import { CliController } from './cli.controller';
-import { CliService } from './cli.service';
+import { Module } from "@nestjs/common"
+import { CommandsModule } from "./commands"
+import { SqliteModule } from "./sqlite"
 
 @Module({
-  imports: [],
-  controllers: [CliController],
-  providers: [CliService],
+    imports: [
+        SqliteModule,
+        CommandsModule
+    ]
 })
-export class CliModule {}
+export class AppModule {}

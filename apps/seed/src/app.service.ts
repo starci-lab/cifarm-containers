@@ -2,7 +2,7 @@ import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { InjectDataSource } from "@nestjs/typeorm"
 import { TEST_NAME } from "@src/dynamic-modules"
 import { DataSource } from "typeorm"
-import { SeedDataService } from "../../cli-node/src/seed-data"
+import { SeedDataService } from "../../cli/src/seed-data"
 
 @Injectable()
 export class AppService implements OnModuleInit {

@@ -21,9 +21,9 @@ const basePackage = {
 }
 
 module.exports = {
-    entry: "./apps/cli-node/src/main.ts",
+    entry: "./apps/cli/src/main.ts",
     output: {
-        path: path.join(__dirname, "../..", "dist", "apps", "cli-node"),
+        path: path.join(__dirname, "../..", "dist", "apps", "cli"),
         filename: "main.js",
     },
     target: "node",
