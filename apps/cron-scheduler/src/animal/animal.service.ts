@@ -65,12 +65,12 @@ export class AnimalService {
             const batchSize = bullConfig[BullQueueName.Crop].batchSize
             const batchCount = Math.ceil(count / batchSize)
             
-            let growthTime = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1
+            let time = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1
             if (speedUps.length) {
                 for (const { data } of speedUps)
                 {
                     const { time : additionalTime } = data as SpeedUpData
-                    growthTime += Number(additionalTime)
+                    time += Number(additionalTime)
                 }
             }
             
@@ -83,7 +83,7 @@ export class AnimalService {
                         data: {
                             skip: i * batchSize,
                             take: Math.min((i + 1) * batchSize, count),
-                            growthTime,
+                            time,
                             utcTime: dayjs().utc().valueOf()
                         }
                     }))

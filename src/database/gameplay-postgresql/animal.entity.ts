@@ -1,4 +1,4 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, OneToOne } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"

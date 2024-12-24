@@ -12,7 +12,7 @@ export class CropJobData {
 
     @IsInt()
     @ApiProperty({ example: 1, description: "Seconds to grow" })
-        growthTime: number
+        time: number
 
     @IsInt()
     @ApiProperty({ example: 1, description: "Time to grow" })

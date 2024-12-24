@@ -26,7 +26,7 @@ export class CropWorker extends WorkerHost {
 
     public override async process(job: Job<CropJobData>): Promise<void> {
         this.logger.verbose(`Processing job: ${job.id}`)
-        const { growthTime, skip, take, utcTime } = job.data
+        const { time, skip, take, utcTime } = job.data
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -54,8 +54,8 @@ export class CropWorker extends WorkerHost {
             const { needWater, isWeedyOrInfested } = system.value as CropRandomness
             seedGrowthInfos = seedGrowthInfos.map((seedGrowthInfo) => {
                 // Add time to the seed growth
-                seedGrowthInfo.currentStageTimeElapsed += growthTime
-                seedGrowthInfo.totalTimeElapsed += growthTime
+                seedGrowthInfo.currentStageTimeElapsed += time
+                seedGrowthInfo.totalTimeElapsed += time
 
                 //while the current stage time elapsed is greater than the growth stage duration
                 while (

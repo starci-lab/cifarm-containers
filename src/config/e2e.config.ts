@@ -2,13 +2,13 @@ import axios, { Axios } from "axios"
 import { io, Socket } from "socket.io-client"
 import { envConfig } from "./env.config"
 
-export const authAxios = (): Axios => axios.create({
-    baseURL: `http://localhost:${envConfig().containers.restApiGateway.port}/auth`
+export const authAxios = (version: string): Axios => axios.create({
+    baseURL: `http://localhost:${envConfig().containers.restApiGateway.port}/${version}/gameplay`
 })
 
-export const gameplayAxios = (accessToken: string): Axios => {
+export const gameplayAxios = (version: string, accessToken: string): Axios => {
     const gameplayAxios = axios.create({
-        baseURL: `http://localhost:${envConfig().containers.restApiGateway.port}/gameplay`
+        baseURL: `http://localhost:${envConfig().containers.restApiGateway.port}/${version}/gameplay`
     })
     gameplayAxios.interceptors.request.use((config) => {
         config.headers["Authorization"] = `Bearer ${accessToken}`
