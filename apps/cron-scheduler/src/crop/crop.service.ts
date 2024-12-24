@@ -35,8 +35,8 @@ export class CropService {
             //this.logger.fatal("Checking for crops that need to be grown")
             count = await queryRunner.manager.count(SeedGrowthInfoEntity, {
                 where: {
-                    fullyMatured: false,
-                    currentState: Not(CropCurrentState.NeedWater),
+                    //Not fully matured and need water
+                    currentState: Not(CropCurrentState.FullyMatured) && Not(CropCurrentState.NeedWater)
                 }
             })
             const speedUps = await queryRunner.manager.find(CollectionEntity, {

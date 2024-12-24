@@ -144,7 +144,7 @@ describe("Grow seed flow", () => {
                 placedItemId: placedItemTileId
             }
         })
-        expect(finalSeedGrowthInfo.fullyMatured).toBe(true)
+        expect(finalSeedGrowthInfo.currentStage).toBe(CropCurrentState.FullyMatured)
     })
 
     afterAll(async () => {

@@ -33,8 +33,7 @@ export class CropWorker extends WorkerHost {
         try {
             let seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
                 where: {
-                    fullyMatured: false,
-                    currentState: Not(CropCurrentState.NeedWater),
+                    currentState: Not(CropCurrentState.NeedWater) && Not(CropCurrentState.FullyMatured),
                     createdAt: LessThanOrEqual(dayjs(utcTime).toDate())
                 },
                 relations: {
@@ -96,7 +95,7 @@ export class CropWorker extends WorkerHost {
                                 seedGrowthInfo.crop.maxHarvestQuantity) /
                             2
                     }
-                    seedGrowthInfo.fullyMatured = true
+                    seedGrowthInfo.currentState = CropCurrentState.FullyMatured
                 }
                 return seedGrowthInfo
             })

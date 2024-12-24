@@ -33,8 +33,7 @@ export class AnimalService {
         try {
             count = await queryRunner.manager.count(AnimalInfoEntity, {
                 where: {
-                    hasYielded: false,
-                    currentState: Not(AnimalCurrentState.Hungry)
+                    currentState: Not(AnimalCurrentState.Hungry) && Not(AnimalCurrentState.Yield)
                 }
             })
 

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
+    CropCurrentState,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -49,7 +50,7 @@ export class HarvestCropService {
             if (!placedItemTile.seedGrowthInfo)
                 throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
 
-            if (!placedItemTile.seedGrowthInfo.fullyMatured)
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured)
                 throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -142,7 +143,7 @@ export class HarvestCropService {
                         {
                             currentPerennialCount:
                             placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
-                            fullyMatured: false,
+                            currentState: CropCurrentState.Normal,
                             currentStageTimeElapsed: 0
                         }
                     )

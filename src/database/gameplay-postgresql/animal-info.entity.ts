@@ -23,10 +23,6 @@ export class AnimalInfoEntity extends UuidAbstractEntity {
 
     @Field(() => Boolean)
     @Column({ type: "boolean", default: false })
-        hasYielded: boolean
-
-    @Field(() => Boolean)
-    @Column({ type: "boolean", default: false })
         isAdult: boolean
 
     @Field(() => String)

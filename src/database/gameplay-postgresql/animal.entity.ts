@@ -57,10 +57,6 @@ export class AnimalEntity extends StringAbstractEntity {
     @Column({ name: "type", type: "enum", enum: AnimalType })
         type: AnimalType
 
-    @Field(() => Float)
-    @Column({ name: "sick_chance", type: "float" })
-        sickChance: number
-
     @Field(() => ProductEntity, { nullable: true })
     @OneToOne(() => ProductEntity, (product) => product.animal, {
         nullable: true,

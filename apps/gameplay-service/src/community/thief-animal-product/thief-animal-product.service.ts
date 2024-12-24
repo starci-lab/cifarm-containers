@@ -8,6 +8,7 @@ import {
 import { DataSource } from "typeorm"
 import {
     Activities,
+    AnimalCurrentState,
     AnimalInfoEntity,
     CropRandomness,
     InventoryEntity,
@@ -67,7 +68,7 @@ export class ThiefAnimalProductService {
                 throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
             }
 
-            if (!placedItemAnimal.animalInfo.hasYielded) {
+            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
                 throw new PlacedItemAnimalNotCurrentlyYieldingException(request.placedItemAnimalId)
             }
 

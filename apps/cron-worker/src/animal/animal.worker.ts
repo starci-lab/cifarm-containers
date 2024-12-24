@@ -21,8 +21,7 @@ export class AnimalWorker {
         await queryRunner.connect()
         const count = await queryRunner.manager.count(AnimalInfoEntity, {
             where: {
-                hasYielded: false,
-                currentState: Not(AnimalCurrentState.Hungry)
+                currentState: Not(AnimalCurrentState.Hungry) && Not(AnimalCurrentState.Yield)
             }
         })
         this.logger.debug(`Found ${count} animals that need to be grown`)

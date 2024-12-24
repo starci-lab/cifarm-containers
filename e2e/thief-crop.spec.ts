@@ -264,7 +264,7 @@ describe("Thief crop flow", () => {
                 id: seedGrowthInfo.id,
             }
         })
-        expect(seedGrowthInfoSeventhCheck.fullyMatured).toBe(true) 
+        expect(seedGrowthInfoSeventhCheck.currentStage).toBe(CropCurrentState.FullyMatured) 
 
         //create thief axios
         const thiefAxios = gameplayAxios(thiefAccessToken)

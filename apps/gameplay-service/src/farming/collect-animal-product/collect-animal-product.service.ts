@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
+    AnimalCurrentState,
     AnimalInfoEntity,
     InventoryEntity,
     InventoryType,
@@ -57,7 +58,7 @@ export class CollectAnimalProductService {
 
             const animalInfo = placedItemAnimal.animalInfo
 
-            if (!animalInfo || !animalInfo.hasYielded) {
+            if (!animalInfo || (animalInfo.currentState !== AnimalCurrentState.Yield)) {
                 throw new AnimalNotCurrentlyYieldingException(request.placedItemAnimalId)
             }
 
@@ -104,7 +105,7 @@ export class CollectAnimalProductService {
 
                 // Save updated placed item
                 await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
-                    hasYielded: false
+                    currentState: AnimalCurrentState.Normal,
                 })
 
                 // Commit transaction
