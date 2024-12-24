@@ -1,2 +1,2 @@
-export * from "./add-database.module"
-export * from "./add-database.command"
+export * from "./select-database.module"
+export * from "./select-database.command"

@@ -13,4 +13,8 @@ export class GameplayDatabaseEntity extends UuidAbstractEntity {
         password: string
     @Column({ type: "varchar", length: 40 })
         dbName: string
+    @Column({ type: "boolean", default: true })
+        selected: boolean
+    @Column({ type: "varchar", length: 40, unique: true })
+        name: string
 }
