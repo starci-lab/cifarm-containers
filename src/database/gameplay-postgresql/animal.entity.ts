@@ -1,4 +1,4 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, OneToOne } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalType } from "./enums"
@@ -56,10 +56,6 @@ export class AnimalEntity extends StringAbstractEntity {
     @Field(() => String)
     @Column({ name: "type", type: "enum", enum: AnimalType })
         type: AnimalType
-
-    @Field(() => Float)
-    @Column({ name: "sick_chance", type: "float" })
-        sickChance: number
 
     @Field(() => ProductEntity, { nullable: true })
     @OneToOne(() => ProductEntity, (product) => product.animal, {

@@ -313,7 +313,6 @@ export class SeedCommand extends CommandRunner {
                 premiumHarvestExperiences: 96,
                 price: 1000,
                 type: AnimalType.Poultry,
-                sickChance: 0.001,
                 product: {
                     id: ProductId.Egg,
                     isPremium: false,
@@ -357,7 +356,6 @@ export class SeedCommand extends CommandRunner {
                 premiumHarvestExperiences: 96,
                 price: 2500,
                 type: AnimalType.Livestock,
-                sickChance: 0.001,
                 product: {
                     id: ProductId.Milk,
                     isPremium: false,

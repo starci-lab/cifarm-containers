@@ -3,6 +3,7 @@ import { ClientKafka } from "@nestjs/microservices"
 import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
 import {
     Activities,
+    CropCurrentState,
     CropRandomness,
     InventoryEntity,
     InventoryType,
@@ -71,7 +72,7 @@ export class TheifCropService{
                 throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
             }
 
-            if (!placedItemTile.seedGrowthInfo.fullyMatured) {
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
                 throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
             }
 

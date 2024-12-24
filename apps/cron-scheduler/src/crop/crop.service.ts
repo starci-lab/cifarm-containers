@@ -35,8 +35,8 @@ export class CropService {
             //this.logger.fatal("Checking for crops that need to be grown")
             count = await queryRunner.manager.count(SeedGrowthInfoEntity, {
                 where: {
-                    fullyMatured: false,
-                    currentState: Not(CropCurrentState.NeedWater),
+                    //Not fully matured and need water
+                    currentState: Not(CropCurrentState.FullyMatured) && Not(CropCurrentState.NeedWater)
                 }
             })
             const speedUps = await queryRunner.manager.find(CollectionEntity, {
@@ -68,12 +68,12 @@ export class CropService {
             const batchSize = bullConfig[BullQueueName.Crop].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
-            let growthTime = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1
+            let time = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1
             if (speedUps.length) {
                 for (const { data } of speedUps)
                 {
                     const { time : additionalTime } = data as SpeedUpData
-                    growthTime += Number(additionalTime)
+                    time += Number(additionalTime)
                 }
             }
 
@@ -86,7 +86,7 @@ export class CropService {
             data: {
                 skip: i * batchSize,
                 take: Math.min((i + 1) * batchSize, count),
-                growthTime,
+                time,
                 utcTime: dayjs().utc().valueOf()
             }
         }))

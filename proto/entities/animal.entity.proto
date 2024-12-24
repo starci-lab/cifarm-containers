@@ -17,6 +17,5 @@ message AnimalEntity {
     int32 basicHarvestExperiences = 10;
     int32 premiumHarvestExperiences = 11;
     string type = 12;
-    float sickChance = 13;
     ProductEntity product = 14;
 }

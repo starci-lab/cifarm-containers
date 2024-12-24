@@ -47,11 +47,6 @@ export class SeedGrowthInfoEntity extends UuidAbstractEntity {
     @JoinTable()
         thiefedBy: Array<UserEntity>
 
-    @Index()
-    @Field(() => Boolean)
-    @Column({ type: "boolean", default: false })
-        fullyMatured: boolean
-
     @Field(() => Boolean)
     @Column({ type: "boolean", default: false })
         isFertilized: boolean
