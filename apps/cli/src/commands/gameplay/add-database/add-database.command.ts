@@ -1,8 +1,7 @@
 import { GameplayDatabaseEntity } from "../../../sqlite"
-import { CommandRunner, SubCommand, Option, InquirerService } from "nest-commander"
+import { CommandRunner, SubCommand, Option } from "nest-commander"
 import { DataSource } from "typeorm"
-import { isEmpty } from "lodash"
-import { ADD_DATABASE_QUESTIONS_NAME } from "./add-database.questions"
+import { v4 } from "uuid"
 
 @SubCommand({
     name: "add-database",
@@ -11,118 +10,110 @@ import { ADD_DATABASE_QUESTIONS_NAME } from "./add-database.questions"
 export class AddDatabaseCommand extends CommandRunner {
     constructor(
         private readonly dataSource: DataSource,
-        private readonly inquirer: InquirerService
     ) {
         super()
     }
 
-    async process(fn: (...args: Array<unknown>) => unknown): Promise<void> {
-        try {
-            await fn()
-        } finally {
-            await this.dataSource.destroy()
-        }
-    }
-
     async run(_: string[], options?: AddDatabaseCommandOptions): Promise<void> {
-        // test the connection
-        const fn = async () => {
+        // get the options
+        const { password, create, database, host, port, username, name } = options
 
-            // case when the options are not provided
-            let anwsers: AddDatabaseCommandOptions
-            if (isEmpty(options)) {
-                anwsers = await this.inquirer.ask<AddDatabaseCommandOptions>(ADD_DATABASE_QUESTIONS_NAME, undefined)
-            }
-
-            const host = anwsers?.host || options?.host || "localhost"
-            const port = anwsers?.port || options?.port || 5432
-            const username = anwsers?.username || options?.username || "postgres"
-            const database = anwsers?.database || options?.database || "gameplay"
-            const password = anwsers?.password || options?.password
-
-            // check if the database already exists
-            const exists = await this.dataSource.manager.findOne(GameplayDatabaseEntity, {
-                where: { host, port, username, dbName: database }
-            })
-            if (exists) {
-                console.error("Database already exists")
-                return
-            }
-            // check if the database exists
-            if (options.create) {
-                let createConn: DataSource
-                try {
-                    createConn = new DataSource({
-                        type: "postgres",
-                        host,
-                        port,
-                        username,
-                        password,
-                    })
-                    await createConn.initialize()
-                    const queryRunner = createConn.createQueryRunner()
-                    await queryRunner.connect()
-                    try {
-                        await queryRunner.createDatabase(database, true)
-                    } catch (error) {
-                        console.error(`Failed to create the database: ${error.message}`)
-                        return
-                    } finally {
-                        await queryRunner.release()
-                        await createConn.destroy()
-                    }
-                } catch (error) {
-                    console.error(`Failed to connect to the database: ${error.message}`)
-                    return
-                } finally {
-                    await createConn.destroy()
-                }
-            }
-
-            // test the connection
-            let connection: DataSource
+        // check if the database already exists
+        const exists = await this.dataSource.manager.findOne(GameplayDatabaseEntity, {
+            where: { name }
+        })
+        if (exists) {
+            console.error("Database already exists")
+            return
+        }
+        // check if the database exists
+        if (create) {
+            let createConn: DataSource
             try {
-                connection = new DataSource({
+                createConn = new DataSource({
                     type: "postgres",
                     host,
                     port,
                     username,
                     password,
-                    database,
                 })
-                await connection.initialize()
+                await createConn.initialize()
+                const queryRunner = createConn.createQueryRunner()
+                await queryRunner.connect()
+                try {
+                    await queryRunner.createDatabase(database, true)
+                } catch (error) {
+                    console.error(`Failed to create the database: ${error.message}`)
+                    return
+                } finally {
+                    await queryRunner.release()
+                    await createConn.destroy()
+                }
             } catch (error) {
                 console.error(`Failed to connect to the database: ${error.message}`)
                 return
             } finally {
-                await connection.destroy()
+                await createConn.destroy()
             }
+        }
 
-            // create the database
-            const { id } = await this.dataSource.manager.save(GameplayDatabaseEntity, {
+        // test the connection
+        let connection: DataSource
+        try {
+            connection = new DataSource({
+                type: "postgres",
                 host,
                 port,
                 username,
-                password: options.password,
-                dbName: database
+                password,
+                database,
             })
-            console.log(`Database created with id: ${id}`)
+            await connection.initialize()
+        } catch (error) {
+            console.error(`Failed to connect to the database: ${error.message}`)
+            return
+        } finally {
+            await connection.destroy()
         }
-        await this.process(fn)
+
+        // update the selected database
+        await this.dataSource.manager.update(GameplayDatabaseEntity, { selected: false }, {})
+        // create the database
+        const { id } = await this.dataSource.manager.save(GameplayDatabaseEntity, {
+            host,
+            port,
+            username,
+            password: options.password,
+            dbName: database,
+        })
+        console.log(`Database created with id: ${id}`)
     }
 
     // Define the options available for this subcommand
     @Option({
         flags: "-h, --host <host>",
         description: "Specify the host of the database (default: localhost)",
+        defaultValue: "localhost",
     })
     parseHost(val: string): string {
         return val
     }
 
     @Option({
+        flags: "-n, --name <name>",
+        description: "Specify the name of the database (randomly generated if not provided)",
+        defaultValue: "",
+    })
+    parseName(val: string): string {
+        if (!val) {
+            return v4()
+        }
+    }
+
+    @Option({
         flags: "-p, --port <port>",
         description: "Specify the port of the database (default: 5432)",
+        defaultValue: 5432,
     })
     parsePort(val: string): number {
         return parseInt(val)
@@ -131,6 +122,7 @@ export class AddDatabaseCommand extends CommandRunner {
     @Option({
         flags: "-u, --username <username>",
         description: "Specify the username for the database (default: postgres)",
+        defaultValue: "postgres",
     })
     parseUsername(val: string): string {
         return val
@@ -138,7 +130,7 @@ export class AddDatabaseCommand extends CommandRunner {
 
     @Option({
         flags: "-P, --password <password>",
-        description: "Specify the password for the database (required)",
+        description: "Specify the password for the database",
     })
     parsePassword(val: string): string {
         return val
@@ -147,6 +139,7 @@ export class AddDatabaseCommand extends CommandRunner {
     @Option({
         flags: "-d, --database <database>",
         description: "Specify the name of the database (default: gameplay)",
+        defaultValue: "gameplay",
     })
     parseDatabase(val: string): string {
         return val
@@ -154,7 +147,7 @@ export class AddDatabaseCommand extends CommandRunner {
 
     @Option({
         flags: "-c, --create",
-        description: "Create the database if it does not exist (default: false)",
+        description: "Create the database if it does not exist",
     })
     parseCreate(): boolean {
         return true
@@ -169,4 +162,5 @@ export interface AddDatabaseCommandOptions {
     password: string
     database?: string
     create?: boolean
+    name?: string
 }

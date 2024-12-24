@@ -8,7 +8,7 @@ const basePackage = {
     version: "1.0.0",
     main: "./main.js",
     bin: {
-        "cifarm": "./main.js"
+        "cifarm": "node ./main.js"
     },
     scripts: {
         "start": "node ./main.js"
