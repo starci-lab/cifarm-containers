@@ -1,13 +1,14 @@
 import { Command, CommandRunner } from "nest-commander"
-import { AddDatabaseCommand } from "./add-database"
-import { ListDatabasesCommand } from "./list-databases"
-import { SelectDatabaseCommand } from "./select-database"
+import { AddDataSourceCommand } from "./add-data-source"
+import { ListDataSourcesCommand } from "./list-data-sources"
+import { SelectDataSourceCommand } from "./select-data-source"
+import { SeedCommand } from "./seed"
 
 @Command({
     name: "gameplay",
     aliases: ["g"],
     description: "manage the gameplay related actions",
-    subCommands: [ AddDatabaseCommand, ListDatabasesCommand, SelectDatabaseCommand ]
+    subCommands: [ AddDataSourceCommand, ListDataSourcesCommand, SelectDataSourceCommand, SeedCommand ]
 })
 export class GameplayCommand extends CommandRunner {
     constructor() {

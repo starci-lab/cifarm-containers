@@ -1,19 +1,18 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { ConfigEntity, GameplayDatabaseEntity } from "./entities"
-import { join } from "path"
+import { ConfigEntity, GameplayDataSourceEntity } from "./entities"
 
 @Module({
     imports: [
         TypeOrmModule.forRoot({
             type: "sqlite",
-            database: join(__dirname,"db.sqlite"),
+            database: "db.sqlite",
             autoLoadEntities: true,
             synchronize: true,
         }),
         TypeOrmModule.forFeature([
             ConfigEntity,
-            GameplayDatabaseEntity
+            GameplayDataSourceEntity
         ]),
     ] 
 })

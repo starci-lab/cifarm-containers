@@ -1,16 +1,17 @@
 import { Field, ObjectType } from "@nestjs/graphql"
-import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm"
-import { UserEntity } from "@src/database"
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm"
+import { UuidAbstractEntity } from "./abstract"
+import { UserEntity } from "./user.entity"
 
 @ObjectType()
 @Entity("users_following_users")
-export class UsersFollowingUsersEntity {
+export class UsersFollowingUsersEntity extends UuidAbstractEntity {
     @Field(() => String, { nullable: false })
-    @PrimaryColumn({ name: "follower_id", type: "uuid" })
+    @Column({ name: "follower_id", type: "uuid" })
         followerId: string
 
     @Field(() => String, { nullable: false })
-    @PrimaryColumn({ name: "followee_id", type: "uuid" })
+    @Column({ name: "followee_id", type: "uuid" })
         followeeId: string
 
     @Field(() => UserEntity, { nullable: false })

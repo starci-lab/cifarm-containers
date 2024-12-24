@@ -1,8 +1,8 @@
 import { UuidAbstractEntity } from "./abstract"
 import { Column, Entity } from "typeorm"
 
-@Entity("gameplay_database")
-export class GameplayDatabaseEntity extends UuidAbstractEntity {
+@Entity("gameplay-data-source")
+export class GameplayDataSourceEntity extends UuidAbstractEntity {
     @Column({ type: "varchar", length: 100 })
         host: string
     @Column({ type: "int" })
@@ -15,6 +15,6 @@ export class GameplayDatabaseEntity extends UuidAbstractEntity {
         dbName: string
     @Column({ type: "boolean", default: true })
         selected: boolean
-    @Column({ type: "varchar", length: 40, unique: true })
+    @Column({ type: "varchar", length: 100, unique: true })
         name: string
 }

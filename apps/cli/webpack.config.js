@@ -7,9 +7,6 @@ const basePackage = {
     name: "cli-node",
     version: "1.0.0",
     main: "./main.js",
-    bin: {
-        "cifarm": "node ./main.js"
-    },
     scripts: {
         "start": "node ./main.js"
     },

@@ -2,32 +2,7 @@ import { DynamicModule } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig } from "@src/config"
 import {
-    InventoryEntity,
-    PlacedItemEntity,
-    UserEntity,
-    ProductEntity,
-    AnimalEntity,
-    CropEntity,
-    ToolEntity,
-    BuildingEntity,
-    UpgradeEntity,
-    TileEntity,
-    SupplyEntity,
-    DailyRewardEntity,
-    SpinSlotEntity,
-    AnimalInfoEntity,
-    BuildingInfoEntity,
-    SeedGrowthInfoEntity,
-    SystemEntity,
-    InventoryTypeEntity,
-    PlacedItemTypeEntity,
-    DeliveringProductEntity,
-    SpinPrizeEntity,
-    HealthcheckEntity,
-    UsersFollowingUsersEntity,
-    CollectionEntity,
-    SessionEntity,
-    TempEntity
+    gameplayEntites
 } from "@src/database"
 
 export enum TypeOrmDbType {
@@ -90,37 +65,7 @@ export const typeOrmForFeature = ({ type }: TypeOrmModuleForFeatureParams = {}):
     }
 
     return TypeOrmModule.forFeature(
-        [
-            InventoryEntity,
-            PlacedItemEntity,
-            UserEntity,
-            ProductEntity,
-            AnimalEntity,
-            CropEntity,
-            ToolEntity,
-            BuildingEntity,
-            UpgradeEntity,
-            TileEntity,
-            SupplyEntity,
-            DailyRewardEntity,
-            SpinSlotEntity,
-            AnimalInfoEntity,
-            BuildingInfoEntity,
-            SeedGrowthInfoEntity,
-            SystemEntity,
-            InventoryTypeEntity,
-            PlacedItemTypeEntity,
-            DeliveringProductEntity,
-            SpinPrizeEntity,
-            SpinSlotEntity,
-            AnimalInfoEntity,
-            BuildingInfoEntity,
-            HealthcheckEntity,
-            UsersFollowingUsersEntity,
-            CollectionEntity,
-            SessionEntity,
-            TempEntity
-        ],
+        gameplayEntites(),
         map[type || TypeOrmDbType.Main]
     )
 }

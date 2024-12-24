@@ -33,3 +33,5 @@ export * from "./healthcheck.entity"
 export * from "./collection.entity"
 export * from "./session.entity"
 export * from "./temp.entity"
+export * from "./export"
+

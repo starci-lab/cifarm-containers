@@ -1,12 +1,13 @@
 import { Module } from "@nestjs/common"
 import { GameplayCommand } from "./gameplay.command"
-import { AddDatabaseModule } from "./add-database"
-import { ListDatabasesModule } from "./list-databases"
-import { SelectDatabaseModule } from "./select-database"
+import { AddDataSourceModule } from "./add-data-source"
+import { ListDataSourcesModule } from "./list-data-sources"
+import { SelectDataSourcesModule } from "./select-data-source"
+import { SeedModule } from "./seed"
 
 @Module({
-    imports: [ AddDatabaseModule, ListDatabasesModule, SelectDatabaseModule ],
-    providers: [ GameplayCommand ],
-    exports: [ GameplayCommand ]
+    imports: [AddDataSourceModule, ListDataSourcesModule, SelectDataSourcesModule, SeedModule],
+    providers: [GameplayCommand],
+    exports: [GameplayCommand]
 })
-export class GameplayModule {}
+export class GameplayModule { }

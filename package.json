@@ -7,6 +7,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "cli:dev": "nest build cli && node dist/apps/cli/main.js",
+    "cli": "node dist/apps/cli/main.js",
     "format": "prettier --write \"apps/**/*.ts\" ",
     "start": "nest start",
     "start:dev": "nest start --watch",
