@@ -16,6 +16,7 @@ const basePackage = {
     dependencies: {
         "kafkajs": "^2.2.4",
         "pg": "8.13.1",
+        "@nestjs/platform-express": "^10.0.0"
     }
 }
 

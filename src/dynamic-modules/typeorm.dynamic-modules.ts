@@ -28,18 +28,18 @@ export interface TypeOrmModuleForRootParams {
 export const typeOrmForRoot = ({ type }: TypeOrmModuleForRootParams = {}): DynamicModule => {
     const map: Record<TypeOrmDbType, TypeORMConfig> = {
         [TypeOrmDbType.Main]: {
-            host: envConfig().database.postgres.gameplay.main.host,
-            port: envConfig().database.postgres.gameplay.main.port,
-            username: envConfig().database.postgres.gameplay.main.user,
-            password: envConfig().database.postgres.gameplay.main.pass,
-            database: envConfig().database.postgres.gameplay.main.dbName,
+            host: envConfig().database.postgresql.gameplay.main.host,
+            port: envConfig().database.postgresql.gameplay.main.port,
+            username: envConfig().database.postgresql.gameplay.main.user,
+            password: envConfig().database.postgresql.gameplay.main.pass,
+            database: envConfig().database.postgresql.gameplay.main.dbName,
         },
         [TypeOrmDbType.Test]: {
-            host: envConfig().database.postgres.gameplay.test.host,
-            port: envConfig().database.postgres.gameplay.test.port,
-            username: envConfig().database.postgres.gameplay.test.user,
-            password: envConfig().database.postgres.gameplay.test.pass,
-            database: envConfig().database.postgres.gameplay.test.dbName,
+            host: envConfig().database.postgresql.gameplay.test.host,
+            port: envConfig().database.postgresql.gameplay.test.port,
+            username: envConfig().database.postgresql.gameplay.test.user,
+            password: envConfig().database.postgresql.gameplay.test.pass,
+            database: envConfig().database.postgresql.gameplay.test.dbName,
             name: TEST_DATASOURCE_NAME
         }
     }

@@ -4,6 +4,7 @@ import { RedisIoAdapter } from "@src/adapters"
 import { envConfig, kafkaConfig } from "@src/config"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { v4 } from "uuid"
+import { kafkaBrokers } from "@src/dynamic-modules"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -14,9 +15,7 @@ const bootstrap = async () => {
             options: {
                 client: {
                     clientId: `websocket-node-${v4()}`,
-                    brokers: [
-                        `${envConfig().kafka.default.default1.host}:${envConfig().kafka.default.default1.port}`,
-                    ],
+                    brokers: kafkaBrokers(false),
                 },
                 consumer: {
                     groupId: kafkaConfig.placedItems.groupId,

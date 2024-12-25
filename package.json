@@ -60,6 +60,7 @@
     "@nestjs/platform-socket.io": "10.4.7",
     "@nestjs/schedule": "4.1.1",
     "@nestjs/swagger": "8.0.2",
+    "@nestjs/terminus": "^10.2.3",
     "@nestjs/typeorm": "10.0.2",
     "@nestjs/websockets": "10.4.7",
     "@polkadot/util-crypto": "^9.2.2-0",

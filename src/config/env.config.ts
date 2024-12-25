@@ -58,7 +58,8 @@ export const envConfig = () => ({
         },
         gameplayService: {
             host: process.env.GAMEPLAY_SERVICE_HOST,
-            port: Number(process.env.GAMEPLAY_SERVICE_PORT)
+            port: Number(process.env.GAMEPLAY_SERVICE_PORT),
+            healthcheckPort: process.env.GAMEPLAY_SERVICE_HEALTHCHECK_PORT
         }
     },
     database: {
@@ -71,21 +72,21 @@ export const envConfig = () => ({
                 pass: process.env.MONGO_1_PASS
             }
         },
-        postgres: {
+        postgresql: {
             gameplay: {
                 main: {
-                    dbName: process.env.GAMEPLAY_POSTGRES_DBNAME,
-                    host: process.env.GAMEPLAY_POSTGRES_HOST,
-                    port: Number(process.env.GAMEPLAY_POSTGRES_PORT),
-                    user: process.env.GAMEPLAY_POSTGRES_USER,
-                    pass: process.env.GAMEPLAY_POSTGRES_PASS
+                    dbName: process.env.GAMEPLAY_POSTGRESQL_DBNAME,
+                    host: process.env.GAMEPLAY_POSTGRESQL_HOST,
+                    port: Number(process.env.GAMEPLAY_POSTGRESQL_PORT),
+                    user: process.env.GAMEPLAY_POSTGRESQL_USER,
+                    pass: process.env.GAMEPLAY_POSTGRESQL_PASS
                 },
                 test: {
-                    dbName: process.env.GAMEPLAY_TEST_POSTGRES_DBNAME,
-                    host: process.env.GAMEPLAY_TEST_POSTGRES_HOST,
-                    port: Number(process.env.GAMEPLAY_TEST_POSTGRES_PORT),
-                    user: process.env.GAMEPLAY_TEST_POSTGRES_USER,
-                    pass: process.env.GAMEPLAY_TEST_POSTGRES_PASS
+                    dbName: process.env.GAMEPLAY_TEST_POSTGRESQL_DBNAME,
+                    host: process.env.GAMEPLAY_TEST_POSTGRESQL_HOST,
+                    port: Number(process.env.GAMEPLAY_TEST_POSTGRESQL_PORT),
+                    user: process.env.GAMEPLAY_TEST_POSTGRESQL_USER,
+                    pass: process.env.GAMEPLAY_TEST_POSTGRESQL_PASS
                 }
             }
         },

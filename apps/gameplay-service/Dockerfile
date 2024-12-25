@@ -6,7 +6,7 @@
 ARG NODE_VERSION=21.6.2
 
 # Build Stage
-FROM node:${NODE_VERSION}-alpine as build
+FROM node:${NODE_VERSION}-alpine AS build
 
 WORKDIR /usr/src/app
 
@@ -21,7 +21,7 @@ COPY . .
 RUN npx nest build gameplay-service
 
 # Production Stage (final image)
-FROM node:${NODE_VERSION}-alpine as production
+FROM node:${NODE_VERSION}-alpine AS production
 
 WORKDIR /usr/src/app
 
