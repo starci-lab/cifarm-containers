@@ -5,15 +5,11 @@ metadata:
 spec:
   containers:
   - name: kaniko
-    image: bitnami/kaniko:latest
+    image: gcr.io/kaniko-project/executor:debug
+    command: ["/busybox/cat"]
     volumeMounts:
       - name: kaniko-secret
         mountPath: /kaniko/.docker
-    command:
-      - /busybox/sh
-      - -c
-      - sleep
-      - infinity
   restartPolicy: Never
   volumes:
     - name: kaniko-secret
