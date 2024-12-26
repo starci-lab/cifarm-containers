@@ -10,7 +10,7 @@ spec:
       - name: kaniko-secret
         mountPath: /kaniko/.docker
     command:
-      - /bin/sh
+      - /busybox/sh
       - -c
       - sleep
       - infinity
