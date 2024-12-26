@@ -3,7 +3,7 @@
 
 # syntax=docker/dockerfile:1
 
-ARG NODE_VERSION=21.6.2
+ARG NODE_VERSION=23.5.0
 
 # Build Stage
 FROM node:${NODE_VERSION}-alpine AS build
@@ -14,7 +14,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm config set registry http://registry.npmjs.org/ && npm ci
+RUN npm ci
 
 # Copy remaining source code and build the application
 COPY . .
