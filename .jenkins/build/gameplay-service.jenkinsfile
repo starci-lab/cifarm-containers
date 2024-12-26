@@ -28,6 +28,7 @@ pipeline {
                             --destination=${REGISTRY}/${IMAGE_NAME}:${TAG} \
                             --cache=true
                     """
+                    echo "======== Kaniko build completed ========"
                 }
             }
         }
