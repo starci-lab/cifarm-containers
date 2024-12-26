@@ -5,14 +5,7 @@ pipeline {
             yamlFile ".jenkins/agents/build.yaml"
         }
     }
-    when {
-        anyOf {
-            changeset "src/**"
-            changeset "apps/gameplay-service/**"
-            changeset ".jenkins/builds/gameplay-service.jenkinsfile"
-            changeset ".jenkins/agents/build.yaml"
-        }
-    }
+
     environment {
         // Define the arguments as environment variables
         DOCKERFILE_PATH = "./apps/gameplay-service/Dockerfile"
@@ -21,21 +14,19 @@ pipeline {
         TAG = "latest"  // Example tag for the image
         REGISTRY = "cifarm"  // Replace with your actual Docker registry
     }
+
     stages {
-        stage("Checkout") {
-            steps {
-                script {
-                    // Pulling source code from Git repository
-                    echo "======== Checkout ========"
-                    checkout scm  // This will checkout the code from the repository defined in Jenkins job configuration
-                    echo "======== Checkout completed ========"
+        stage("Build") {
+            when {
+                anyOf {
+                    changeset "src/**"
+                    changeset "apps/gameplay-service/**"
+                    changeset ".jenkins/builds/gameplay-service.jenkinsfile"
+                    changeset ".jenkins/agents/build.yaml"
                 }
             }
-        }
-        
-        stage("Build") {
-            container('kaniko') {
-                steps {
+            steps {
+                container('kaniko') {
                     // Building the Docker image using Kaniko
                     echo "======== Starting Kaniko build ========"
                     sh """
@@ -48,6 +39,7 @@ pipeline {
             }
         }
     }
+
     post {
         always {
             echo "======== Always block for the entire pipeline ========"
