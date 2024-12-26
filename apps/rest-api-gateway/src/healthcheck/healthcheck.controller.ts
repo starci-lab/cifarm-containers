@@ -1,33 +1,30 @@
-import { Controller, Get, HttpCode, HttpStatus, Inject, Logger, OnModuleInit } from "@nestjs/common"
-import { DoHealthcheckResponse, healthcheckGrpcConstants } from "@apps/healthcheck-service"
-import { ClientGrpc } from "@nestjs/microservices"
-import { IHealthcheckService } from "./healthcheck.service"
-import { lastValueFrom } from "rxjs"
-import { ApiResponse, ApiTags } from "@nestjs/swagger"
+import { Controller, Get, Logger } from "@nestjs/common"
+import { HealthCheckService, HealthCheck, HttpHealthIndicator } from "@nestjs/terminus"
+import { envConfig, healthcheckConfig } from "@src/config"
+import { getHttpAddress } from "@src/utils"
 
-@ApiTags("Healthcheck")
-@Controller("healthcheck")
-export class HealthcheckController implements OnModuleInit {
+@Controller()
+export class HealthcheckController {
     private readonly logger = new Logger(HealthcheckController.name)
 
-    constructor(@Inject(healthcheckGrpcConstants.name) private client: ClientGrpc) {}
+    constructor(
+        private health: HealthCheckService,
+        private http: HttpHealthIndicator,
+    ) { }
 
-    private healthcheckService: IHealthcheckService
-    onModuleInit() {
-        this.healthcheckService = this.client.getService<IHealthcheckService>(
-            healthcheckGrpcConstants.service
-        )
-    }
-
-    @HttpCode(HttpStatus.OK)
-    @ApiResponse({ type: DoHealthcheckResponse })
-    @Get()
-    public async doHealthcheck(): Promise<DoHealthcheckResponse> {
-        try {
-            return await lastValueFrom(this.healthcheckService.doHealthcheck({}))
-        } catch (error) {
-            this.logger.error("Healthcheck failed", error)
-            throw new Error("Healthcheck service unavailable")
-        }
+    @Get(healthcheckConfig.endpoint)
+    @HealthCheck()
+    healthz() {
+        this.logger.log("Health check endpoint called")
+        return this.health.check([
+            async () =>
+                await this.http.pingCheck(
+                    healthcheckConfig.names.gameplayService,
+                    getHttpAddress(
+                        envConfig().containers.gameplayService.host,
+                        envConfig().containers.gameplayService.healthcheckPort,
+                        healthcheckConfig.endpoint
+                    )),
+        ])
     }
 }

@@ -1,7 +1,7 @@
 import { Controller, Get, Logger } from "@nestjs/common"
 import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
 import { HealthCheckService, HealthCheck, TypeOrmHealthIndicator, MicroserviceHealthIndicator } from "@nestjs/terminus"
-import { envConfig, timerConfig } from "@src/config"
+import { envConfig, healthcheckConfig, timerConfig } from "@src/config"
 import { kafkaBrokers } from "@src/dynamic-modules"
 
 @Controller()
@@ -14,14 +14,14 @@ export class HealthcheckController {
         private db: TypeOrmHealthIndicator,
     ) {}
 
-    @Get("/healthz")
+    @Get(healthcheckConfig.endpoint)
     @HealthCheck()
     healthz() {
         this.logger.log("Health check endpoint called")
         return this.health.check([
-            async () => this.db.pingCheck("gameplay-postgres", { timeout: timerConfig.timeouts.healthcheck }),
+            async () => this.db.pingCheck(healthcheckConfig.names.gameplayPostgresql, { timeout: timerConfig.timeouts.healthcheck }),
             async () =>
-                this.microservice.pingCheck<RedisOptions>("cache-redis", {
+                this.microservice.pingCheck<RedisOptions>(healthcheckConfig.names.cacheRedis, {
                     transport: Transport.REDIS,
                     options: {
                         host: envConfig().database.redis.cache.host,
@@ -30,7 +30,7 @@ export class HealthcheckController {
                     timeout: timerConfig.timeouts.healthcheck,
                 }),
             async () =>
-                this.microservice.pingCheck<KafkaOptions>("kafka", {
+                this.microservice.pingCheck<KafkaOptions>(healthcheckConfig.names.kafka, {
                     transport: Transport.KAFKA,
                     options: {
                         client: {

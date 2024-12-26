@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            label "gameplay-gateway"
+            label "gameplay-service"
             yamlFile ".jenkins/agents/build.yaml"
         }
     }
@@ -12,7 +12,7 @@ pipeline {
         CONTEXT_PATH = "git://github.com/starci-lab/cifarm-containers"  // You can adjust this if the context path is relative
         IMAGE_NAME = "gameplay-service"
         TAG = "latest"  // Example tag for the image
-        REGISTRY = "cifarm"  // Replace with your actual Docker registry
+        REPOSITORY = "cifarm"  // Replace with your actual Docker repository
     }
 
     stages {
@@ -25,7 +25,7 @@ pipeline {
                         /kaniko/executor \
                             --context=${CONTEXT_PATH} \
                             --dockerfile=${DOCKERFILE_PATH} \
-                            --destination=${REGISTRY}/${IMAGE_NAME}:${TAG} \
+                            --destination=${REPOSITORY}/${IMAGE_NAME}:${TAG} \
                             --cache=true
                     """
                     echo "======== Kaniko build completed ========"

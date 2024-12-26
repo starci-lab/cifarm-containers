@@ -1,25 +1,12 @@
 import { Module } from "@nestjs/common"
-import { ClientsModule, Transport } from "@nestjs/microservices"
-import { healthcheckGrpcConstants } from "@apps/healthcheck-service"
 import { HealthcheckController } from "./healthcheck.controller"
+import { TerminusModule } from "@nestjs/terminus"
+import { HttpModule } from "@nestjs/axios"
 
 @Module({
-    imports: [
-        ClientsModule.registerAsync([
-            {
-                name: healthcheckGrpcConstants.name,
-                useFactory: async () => ({
-                    transport: Transport.GRPC,
-                    options: {
-                        url: "0.0.0.0:3002",
-                        package: healthcheckGrpcConstants.package,
-                        protoPath: healthcheckGrpcConstants.protoPath
-                    }
-                })
-            }
-        ])
-    ],
+    imports: [TerminusModule, HttpModule],
     controllers: [HealthcheckController],
-    providers: []
+    providers: [],
+    exports: []
 })
 export class HealthcheckModule {}

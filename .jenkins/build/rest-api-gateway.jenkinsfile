@@ -1,38 +1,48 @@
-pipeline{
-    agent{
+pipeline {
+    agent {
         kubernetes {
             label "rest-api-gateway"
-            defaultContainer 'jnlp'
-            yamlFile "./jenkins/agents/build.yaml"
+            yamlFile ".jenkins/agents/build.yaml"
         }
     }
-    stages{
-        stage("A"){
-            steps{
-                echo "========executing A========"
-            }
-            post{
-                always{
-                    echo "========always========"
-                }
-                success{
-                    echo "========A executed successfully========"
-                }
-                failure{
-                    echo "========A execution failed========"
+
+    environment {
+        // Define the arguments as environment variables
+        DOCKERFILE_PATH = "./apps/rest-api-gateway/Dockerfile"
+        CONTEXT_PATH = "git://github.com/starci-lab/cifarm-containers"  // You can adjust this if the context path is relative
+        IMAGE_NAME = "rest-api-gateway"
+        TAG = "latest"  // Example tag for the image
+        REPOSITORY = "cifarm"  // Replace with your actual Docker repository
+    }
+
+    stages {
+        stage("Build") {
+            steps {
+                container('kaniko') {
+                    // Building the Docker image using Kaniko
+                    echo "======== Starting Kaniko build ========"
+                    sh """
+                        /kaniko/executor \
+                            --context=${CONTEXT_PATH} \
+                            --dockerfile=${DOCKERFILE_PATH} \
+                            --destination=${REPOSITORY}/${IMAGE_NAME}:${TAG} \
+                            --cache=true
+                    """
+                    echo "======== Kaniko build completed ========"
                 }
             }
         }
     }
-    post{
-        always{
-            echo "========always========"
+
+    post {
+        always {
+            echo "======== Always block for the entire pipeline ========"
         }
-        success{
-            echo "========pipeline executed successfully ========"
+        success {
+            echo "======== Pipeline executed successfully ========"
         }
-        failure{
-            echo "========pipeline execution failed========"
+        failure {
+            echo "======== Pipeline execution failed ========"
         }
     }
 }

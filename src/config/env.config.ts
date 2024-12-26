@@ -59,7 +59,7 @@ export const envConfig = () => ({
         gameplayService: {
             host: process.env.GAMEPLAY_SERVICE_HOST,
             port: Number(process.env.GAMEPLAY_SERVICE_PORT),
-            healthcheckPort: process.env.GAMEPLAY_SERVICE_HEALTHCHECK_PORT
+            healthcheckPort: Number(process.env.GAMEPLAY_SERVICE_HEALTHCHECK_PORT)
         }
     },
     database: {

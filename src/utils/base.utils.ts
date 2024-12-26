@@ -35,3 +35,11 @@ export const waitFor = (observeVariable: boolean, delay: number = 100): Promise<
 export const sleep = (ms: number): Promise<void> => {
     return new Promise((resolve) => setTimeout(resolve, ms))
 }
+
+export const getLoopbackAddress = (port: number = 80) => {
+    return `0.0.0.0:${port}`
+}
+
+export const getHttpAddress = (host: string, port: number, path?: string) => {
+    return path ? `http://${host}:${port}/${path}` : `http://${host}:${port}`
+}
