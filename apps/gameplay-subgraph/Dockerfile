@@ -4,7 +4,7 @@
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=21.6.2
-
+ 
 # Build Stage
 FROM node:${NODE_VERSION}-alpine as build
 
