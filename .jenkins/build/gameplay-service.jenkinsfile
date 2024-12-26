@@ -17,14 +17,6 @@ pipeline {
 
     stages {
         stage("Build") {
-            when {
-                anyOf {
-                    changeset "src/**"
-                    changeset "apps/gameplay-service/**"
-                    changeset ".jenkins/builds/gameplay-service.jenkinsfile"
-                    changeset ".jenkins/agents/build.yaml"
-                }
-            }
             steps {
                 container('kaniko') {
                     // Building the Docker image using Kaniko
