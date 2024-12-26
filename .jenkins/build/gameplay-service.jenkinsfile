@@ -26,6 +26,7 @@ pipeline {
                             --context=${CONTEXT_PATH} \
                             --dockerfile=${DOCKERFILE_PATH} \
                             --destination=${REGISTRY}/${IMAGE_NAME}:${TAG}
+                            --cache=true
                     """
                 }
             }
