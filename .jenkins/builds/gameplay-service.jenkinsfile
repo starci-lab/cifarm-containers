@@ -6,9 +6,11 @@ pipeline {
         }
     }
     when {
-        allOf {
+        anyOf {
             changeset "src/**"
             changeset "apps/gameplay-service/**"
+            changeset ".jenkins/builds/gameplay-service.jenkinsfile"
+            changeset ".jenkins/agents/build.yaml"
         }
     }
     environment {
