@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: build-agent
+spec:
+  containers:
+  - name: kaniko
+    image: bitnami/kaniko:latest
+    cmd: ["/kaniko/executor"]
+    args: [
+      "--dockerfile=./apps/gameplay-service/Dockerfile",
+      "--context=git://github.com/starci-lab/cifarm-containers",
+      "--destination=cifarm/gameplay-service"
+    ]
+    volumeMounts:
+      - name: kaniko-secret
+        mountPath: /kaniko/.docker
+      - name: dockerfile-storage
+        mountPath: /workspace
+  restartPolicy: Never
+  volumes:
+    - name: kaniko-secret
+      secret:
+        secretName: regcred
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+    - name: dockerfile-storage
+      persistentVolumeClaim:
+        claimName: dockerfile-claim

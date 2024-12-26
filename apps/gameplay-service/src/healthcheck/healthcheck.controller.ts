@@ -14,9 +14,9 @@ export class HealthcheckController {
         private db: TypeOrmHealthIndicator,
     ) {}
 
-    @Get("/healthcheck")
+    @Get("/healthz")
     @HealthCheck()
-    healthcheck() {
+    healthz() {
         this.logger.log("Health check endpoint called")
         return this.health.check([
             async () => this.db.pingCheck("gameplay-postgres", { timeout: timerConfig.timeouts.healthcheck }),

@@ -1,0 +1,48 @@
+pipeline {
+    agent {
+        kubernetes {
+            label "rest-api-gateway"
+            yamlFile "./jenkins/agents/build.yaml"
+        }
+    }
+    stages {
+        stage("Checkout") {
+            steps {
+                script {
+                    // Pulling source code from Git repository
+                    echo "======== Checkout ========"
+                    checkout scm  // This will checkout the code from the repository defined in Jenkins job configuration
+                    echo "======== Checkout completed ========"
+                }
+            }
+        }
+        stage("A") {
+            steps {
+                echo "======== Executing Stage A ========"
+                // Add your build or test commands here
+            }
+            post {
+                always {
+                    echo "======== Always block for Stage A ========"
+                }
+                success {
+                    echo "======== Stage A executed successfully ========"
+                }
+                failure {
+                    echo "======== Stage A execution failed ========"
+                }
+            }
+        }
+    }
+    post {
+        always {
+            echo "======== Always block for the entire pipeline ========"
+        }
+        success {
+            echo "======== Pipeline executed successfully ========"
+        }
+        failure {
+            echo "======== Pipeline execution failed ========"
+        }
+    }
+}
