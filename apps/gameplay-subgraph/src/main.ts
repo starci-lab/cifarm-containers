@@ -1,10 +1,5 @@
 import { NestFactory } from "@nestjs/core"
-import { GraphQLSchemaBuilderModule, GraphQLSchemaFactory } from "@nestjs/graphql"
-import { getEnvValue } from "@src/utils"
-import { mkdirSync, writeFileSync } from "fs"
-import { printSchema } from "graphql"
-import { dirname, join } from "path"
-import { AppModule } from "./app.module"
+import { AppModule, GAMEPLAY_SUBGRAPH_GQL_NAME } from "./app.module"
 import { AnimalInfosResolver } from "./animal-infos"
 import { AnimalsResolver } from "./animals"
 import { BuildingInfosResolver } from "./building-infos"
@@ -24,42 +19,33 @@ import { TilesResolver } from "./tiles"
 import { ToolsResolver } from "./tools"
 import { UpgradeResolver } from "./upgrades"
 import { UserResolver } from "./users"
-import { AnimalInfoThievedByUsersResolver } from "./animal-info-thieved-by-users/animal-info-thieved-by-users.resolver"
+import { AnimalInfoThievedByUsersResolver } from "./animal-info-thieved-by-users"
+import { envConfig } from "@src/config"
+import { generateSchema } from "@src/dynamic-modules"
 
-const generateSchema = async () => {
-    const app = await NestFactory.create(GraphQLSchemaBuilderModule)
-    await app.init()
-
-    const gqlSchemaFactory = app.get(GraphQLSchemaFactory)
-    const schema = await gqlSchemaFactory.create([
-        AnimalsResolver,
-        AnimalInfosResolver,
-        AnimalInfoThievedByUsersResolver,
-        BuildingsResolver,
-        BuildingInfosResolver,
-        CropsResolver,
-        DailyRewardsResolver,
-        InventoryResolver,
-        InventoryTypeResolver,
-        PlacedItemTypesResolver,
-        PlacedItemsResolver,
-        ProductResolver,
-        SeedGrowthInfosResolver,
-        SeedGrowthInfoThiefedByUsersResolver,
-        SuppliesResolver,
-        SystemsResolver,
-        TilesResolver,
-        ToolsResolver,
-        UpgradeResolver,
-        UserResolver
-    ])
-
-    const outputPath = join(process.cwd(), `${getEnvValue({ development: "src", production: "dist" })}/schema.gql`)
-    mkdirSync(dirname(outputPath), { recursive: true })
-    writeFileSync(outputPath, printSchema(schema))
-}
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
-    await app.listen(3007)
+    await app.listen(envConfig().containers.gameplaySubgraph.port)
 }
-generateSchema().then(() => bootstrap())
+generateSchema([
+    AnimalsResolver,
+    AnimalInfosResolver,
+    AnimalInfoThievedByUsersResolver,
+    BuildingsResolver,
+    BuildingInfosResolver,
+    CropsResolver,
+    DailyRewardsResolver,
+    InventoryResolver,
+    InventoryTypeResolver,
+    PlacedItemTypesResolver,
+    PlacedItemsResolver,
+    ProductResolver,
+    SeedGrowthInfosResolver,
+    SeedGrowthInfoThiefedByUsersResolver,
+    SuppliesResolver,
+    SystemsResolver,
+    TilesResolver,
+    ToolsResolver,
+    UpgradeResolver,
+    UserResolver
+], GAMEPLAY_SUBGRAPH_GQL_NAME).then(() => bootstrap())

@@ -36,13 +36,6 @@ export const envConfig = () => ({
                         ? true
                         : process.env.CORS_ORIGIN.split(",")
     },
-    
-    graphqlFederation: {
-        subgraphUrls: {
-            static: process.env.GRAPHQL_SUBGRAPH_STATIC_URL,
-            port: process.env.GRAPHQL_STATIC_SUBGRAPH_PORT
-        }
-    },
     containers: {
         restApiGateway: {
             host: process.env.REST_API_GATEWAY_HOST,
@@ -60,7 +53,15 @@ export const envConfig = () => ({
             host: process.env.GAMEPLAY_SERVICE_HOST,
             port: Number(process.env.GAMEPLAY_SERVICE_PORT),
             healthcheckPort: Number(process.env.GAMEPLAY_SERVICE_HEALTHCHECK_PORT)
-        }
+        },
+        graphqlMaingraph: {
+            host: process.env.GRAPHQL_MAINGRAPH_HOST,
+            port: Number(process.env.GRAPHQL_MAINGRAPH_PORT),
+        },
+        gameplaySubgraph: {
+            host: process.env.GAMEPLAY_SUBGRAPH_HOST,
+            port: Number(process.env.GAMEPLAY_SUBGRAPH_PORT),
+        },
     },
     database: {
         mongo: {

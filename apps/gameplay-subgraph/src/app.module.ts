@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common"
 import {
     cacheRegisterAsync,
     configForRoot,
-    graphqlGameplaySubgraphForRoot,
+    gameplaySubgraphForRoot,
     typeOrmForRoot
 } from "@src/dynamic-modules"
 import { AnimalInfoThievedByUsersModule } from "./animal-info-thieved-by-users"
@@ -23,12 +23,16 @@ import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
 import { UsersModule } from "./users"
+import { HealthCheckModule } from "./health-check"
+
+export const GAMEPLAY_SUBGRAPH_GQL_NAME = "gameplay-subgraph.gql"
+
 @Module({
     imports: [
         configForRoot(),
         typeOrmForRoot(),
         cacheRegisterAsync(),
-        graphqlGameplaySubgraphForRoot(),
+        gameplaySubgraphForRoot(GAMEPLAY_SUBGRAPH_GQL_NAME),
         AnimalInfoThievedByUsersModule,
         AnimalInfosModule,
         AnimalsModule,
@@ -46,7 +50,8 @@ import { UsersModule } from "./users"
         TilesModule,
         ToolsModule,
         UpgradesModule,
-        UsersModule
+        UsersModule,
+        HealthCheckModule
     ]
 }) 
 export class AppModule {}

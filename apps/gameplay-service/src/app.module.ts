@@ -12,7 +12,8 @@ import { PlacementModule } from "./placement"
 import { ProfileModule } from "./profile"
 import { ShopModule } from "./shop"
 import { UpgradeModule } from "./upgrade"
-import { HealthcheckModule } from "./healthcheck"
+import { HealthCheckModule } from "./health-check"
+
 @Module({
     imports: [
         configForRoot(),
@@ -28,7 +29,7 @@ import { HealthcheckModule } from "./healthcheck"
         ProfileModule,
         ShopModule,
         UpgradeModule,
-        HealthcheckModule
+        HealthCheckModule
     ],
     providers: [
         {

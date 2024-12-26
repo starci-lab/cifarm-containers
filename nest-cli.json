@@ -9,15 +9,6 @@
   "monorepo": true,
   "root": "apps/cifarm-server",
   "projects": {
-    "healthcheck-service": {
-      "type": "application",
-      "root": "apps/healthcheck-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/healthcheck-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/healthcheck-service/tsconfig.app.json"
-      }
-    },
     "rest-api-gateway": {
       "type": "application",
       "root": "apps/rest-api-gateway",

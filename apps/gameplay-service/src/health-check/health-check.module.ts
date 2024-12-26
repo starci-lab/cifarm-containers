@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common"
 import { typeOrmForFeature } from "@src/dynamic-modules"
-import { HealthcheckController } from "./healthcheck.controller"
+import { HealthCheckController } from "./health-check.controller"
 import { TerminusModule } from "@nestjs/terminus"
 
 @Module({
     imports: [typeOrmForFeature(), TerminusModule],
-    controllers: [HealthcheckController],
+    controllers: [HealthCheckController],
     providers: [],
     exports: []
 })
-export class HealthcheckModule {}
+export class HealthCheckModule {}

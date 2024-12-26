@@ -23,14 +23,15 @@ RUN npx nest build gameplay-service
 # Production Stage (final image)
 FROM node:${NODE_VERSION}-alpine AS production
 
-WORKDIR /usr/src/app
-
 # Copy only the build output and proto files
 COPY --from=build /usr/src/app/dist/apps/gameplay-service .
 COPY --from=build /usr/src/app/proto ./proto
 
 # Install only production dependencies
 RUN npm i --production
+
+# Run as non-root user
+USER node
 
 # Start the application
 CMD ["node", "main"]

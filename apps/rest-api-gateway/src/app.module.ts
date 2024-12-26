@@ -5,13 +5,13 @@ import { StrategiesModule } from "@src/strategies"
 import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
 import { AppModuleV1 } from "./v1"
 import { AppModuleV2 } from "./v2"
-import { HealthcheckModule } from "./healthcheck"
+import { HealthCheckModule } from "./health-check"
 
 @Module({
     imports: [
         configForRoot(),
         StrategiesModule,
-        HealthcheckModule,
+        HealthCheckModule,
         AppModuleV1,
         AppModuleV2
     ],

@@ -14,6 +14,7 @@ const basePackage = {
         node: ">= 14",
     },
     dependencies: {
+        "@nestjs/platform-express": "^10.0.0",
     }
 }
 
