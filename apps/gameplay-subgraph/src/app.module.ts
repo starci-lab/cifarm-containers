@@ -25,14 +25,12 @@ import { UpgradesModule } from "./upgrades"
 import { UsersModule } from "./users"
 import { HealthCheckModule } from "./health-check"
 
-export const GAMEPLAY_SUBGRAPH_GQL_NAME = "gameplay-subgraph.gql"
-
 @Module({
     imports: [
         configForRoot(),
         typeOrmForRoot(),
         cacheRegisterAsync(),
-        gameplaySubgraphForRoot(GAMEPLAY_SUBGRAPH_GQL_NAME),
+        gameplaySubgraphForRoot(),
         AnimalInfoThievedByUsersModule,
         AnimalInfosModule,
         AnimalsModule,

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require("path")
 const nodeExternals = require("webpack-node-externals")
 const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin")
@@ -14,6 +15,9 @@ const basePackage = {
         node: ">= 14",
     },
     dependencies: {
+        "kafkajs": "^2.2.4",
+        "pg": "8.13.1",
+        "@nestjs/platform-express": "^10.0.0"
     }
 }
 

@@ -21,7 +21,7 @@ COPY . .
 RUN npx nest build graphql-maingraph
 
 # Production Stage (final image)
-FROM node:${NODE_VERSION}-alpine AS production
+FROM build AS production
 
 # Copy only the build output and proto files
 COPY --from=build /usr/src/app/dist/apps/graphql-maingraph .
@@ -29,10 +29,6 @@ COPY --from=build /usr/src/app/proto ./proto
 
 # Install only production dependencies
 RUN npm i --production
-
-# Allow node user to write to the /generated directory
-RUN mkdir ./generated
-RUN chown -R node:node ./generated
 
 # Run as non-root user
 USER node

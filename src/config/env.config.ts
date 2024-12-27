@@ -41,18 +41,14 @@ export const envConfig = () => ({
             host: process.env.REST_API_GATEWAY_HOST,
             port: Number(process.env.REST_API_GATEWAY_PORT)
         },
-        graphqlApiGateway: {
-            host: process.env.GRAPHQL_API_GATEWAY_HOST,
-            port: Number(process.env.GRAPHQL_API_GATEWAY_PORT)
-        },
-        websocketApiGateway: {
-            host: process.env.WEBSOCKET_API_GATEWAY_HOST,
-            port: Number(process.env.WEBSOCKET_API_GATEWAY_PORT)
+        websocketNode: {
+            host: process.env.WEBSOCKET_NODE_HOST,
+            port: Number(process.env.WEBSOCKET_NODE_PORT)
         },
         gameplayService: {
             host: process.env.GAMEPLAY_SERVICE_HOST,
             port: Number(process.env.GAMEPLAY_SERVICE_PORT),
-            healthcheckPort: Number(process.env.GAMEPLAY_SERVICE_HEALTHCHECK_PORT)
+            healthCheckPort: Number(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT)
         },
         graphqlMaingraph: {
             host: process.env.GRAPHQL_MAINGRAPH_HOST,
@@ -79,15 +75,15 @@ export const envConfig = () => ({
                     dbName: process.env.GAMEPLAY_POSTGRESQL_DBNAME,
                     host: process.env.GAMEPLAY_POSTGRESQL_HOST,
                     port: Number(process.env.GAMEPLAY_POSTGRESQL_PORT),
-                    user: process.env.GAMEPLAY_POSTGRESQL_USER,
-                    pass: process.env.GAMEPLAY_POSTGRESQL_PASS
+                    username: process.env.GAMEPLAY_POSTGRESQL_USERNAME,
+                    password: process.env.GAMEPLAY_POSTGRESQL_PASSWORD
                 },
                 test: {
                     dbName: process.env.GAMEPLAY_TEST_POSTGRESQL_DBNAME,
                     host: process.env.GAMEPLAY_TEST_POSTGRESQL_HOST,
                     port: Number(process.env.GAMEPLAY_TEST_POSTGRESQL_PORT),
-                    user: process.env.GAMEPLAY_TEST_POSTGRESQL_USER,
-                    pass: process.env.GAMEPLAY_TEST_POSTGRESQL_PASS
+                    username: process.env.GAMEPLAY_TEST_POSTGRESQL_USERNAME,
+                    password: process.env.GAMEPLAY_TEST_POSTGRESQL_PASSWORD
                 }
             }
         },
@@ -254,16 +250,11 @@ export const envConfig = () => ({
         }
     },
     kubernetes: {
-        defined: {
-            namespace: process.env.POD_NAMESPACE,
-        },
-        generated: {
-            serviceHost: process.env.KUBERNETES_SERVICE_HOST,
-            hostname: process.env.KUBERNETES_HOSTNAME,
-        }
+        namespace: process.env.POD_NAMESPACE,
+        serviceHost: process.env.KUBERNETES_SERVICE_HOST,
+        hostname: process.env.KUBERNETES_HOSTNAME,
     },
 })
-
 
 export interface NearPair {
     privateKey: string

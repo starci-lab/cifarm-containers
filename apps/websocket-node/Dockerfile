@@ -3,22 +3,35 @@
 
 # syntax=docker/dockerfile:1
 
-ARG NODE_VERSION=21.6.2
+ARG NODE_VERSION=23.5.0
 
-FROM node:${NODE_VERSION}-alpine as build
+# Build Stage
+FROM node:${NODE_VERSION}-alpine AS build
 
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json
+# Copy only necessary files first for better caching
 COPY package*.json ./
-COPY . .
-RUN npm config set registry http://registry.npmjs.org/
+
+# Install dependencies
 RUN npm ci
+
+# Copy remaining source code and build the application
+COPY . .
 RUN npx nest build websocket-node
 
-FROM build as deps
-COPY --from=build /usr/src/app/dist/apps/websocket-node .
-COPY proto ./proto
-RUN npm i --omit=dev
+# Production Stage (final image)
+FROM build AS production
 
+# Copy only the build output and proto files
+COPY --from=build /usr/src/app/dist/apps/websocket-node .
+COPY --from=build /usr/src/app/proto ./proto
+
+# Install only production dependencies
+RUN npm i --production
+
+# Run as non-root user
+USER node
+
+# Start the application
 CMD ["node", "main"]

@@ -30,15 +30,15 @@ export const typeOrmForRoot = ({ type }: TypeOrmModuleForRootParams = {}): Dynam
         [TypeOrmDbType.Main]: {
             host: envConfig().database.postgresql.gameplay.main.host,
             port: envConfig().database.postgresql.gameplay.main.port,
-            username: envConfig().database.postgresql.gameplay.main.user,
-            password: envConfig().database.postgresql.gameplay.main.pass,
+            username: envConfig().database.postgresql.gameplay.main.username,
+            password: envConfig().database.postgresql.gameplay.main.password,
             database: envConfig().database.postgresql.gameplay.main.dbName,
         },
         [TypeOrmDbType.Test]: {
             host: envConfig().database.postgresql.gameplay.test.host,
             port: envConfig().database.postgresql.gameplay.test.port,
-            username: envConfig().database.postgresql.gameplay.test.user,
-            password: envConfig().database.postgresql.gameplay.test.pass,
+            username: envConfig().database.postgresql.gameplay.test.username,
+            password: envConfig().database.postgresql.gameplay.test.password,
             database: envConfig().database.postgresql.gameplay.test.dbName,
             name: TEST_DATASOURCE_NAME
         }

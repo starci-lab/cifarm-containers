@@ -8,7 +8,7 @@ import { kafkaBrokers } from "@src/dynamic-modules"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
-
+    console.log(kafkaBrokers(false))
     app.connectMicroservice<MicroserviceOptions>(
         {
             transport: Transport.KAFKA,
@@ -29,6 +29,6 @@ const bootstrap = async () => {
     app.useWebSocketAdapter(redisIoAdapter)
     
     await app.startAllMicroservices()
-    await app.listen(envConfig().containers.websocketApiGateway.port)
+    await app.listen(envConfig().containers.websocketNode.port)
 }
 bootstrap()

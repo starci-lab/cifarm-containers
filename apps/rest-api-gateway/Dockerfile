@@ -21,7 +21,7 @@ COPY . .
 RUN npx nest build rest-api-gateway
 
 # Production Stage (final image)
-FROM node:${NODE_VERSION}-alpine AS production
+FROM build AS production
 
 # Copy only the build output and proto files
 COPY --from=build /usr/src/app/dist/apps/rest-api-gateway .

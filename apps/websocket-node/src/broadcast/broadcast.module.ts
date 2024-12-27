@@ -4,7 +4,6 @@ import { typeOrmForFeature, kafkaClientRegister, configForRoot } from "@src/dyna
 import { WsJwtAuthModule } from "@src/guards"
 import { BroadcastController } from "./broadcast.controller"
 import { BroadcastGateway } from "./broadcast.gateway"
-import { AppModule as RestApiGatewayModule } from "@apps/rest-api-gateway"
 
 @Module({
     imports: [
@@ -14,7 +13,6 @@ import { AppModule as RestApiGatewayModule } from "@apps/rest-api-gateway"
         }),
         typeOrmForFeature(),
         WsJwtAuthModule,
-        RestApiGatewayModule
     ],
     controllers: [BroadcastController],
     providers: [BroadcastGateway]

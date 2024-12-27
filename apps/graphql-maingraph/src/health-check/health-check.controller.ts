@@ -19,10 +19,10 @@ export class HealthCheckController {
         return this.health.check([
             async () =>
                 await this.http.pingCheck(
-                    healthCheckConfig.names.gameplayService,
+                    healthCheckConfig.names.gameplaySubgraph,
                     getHttpAddress(
-                        envConfig().containers.gameplayService.host,
-                        envConfig().containers.gameplayService.healthcheckPort,
+                        envConfig().containers.gameplaySubgraph.host,
+                        envConfig().containers.gameplaySubgraph.port,
                         healthCheckConfig.endpoint
                     )),
         ])
