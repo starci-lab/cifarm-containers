@@ -1,5 +1,5 @@
 import { NodeEnv, envConfig } from "@src/config"
-import { join } from "path"
+
 //sw2s
 export const getEnvValue = <ValueType = string>(values: {
     development?: ValueType
@@ -19,7 +19,7 @@ export const isProduction = (): boolean => {
 }
 
 export const runInKubernetes = (): boolean => {
-    return !!envConfig().kubernetes.generated.serviceHost
+    return !!envConfig().kubernetes.serviceHost
 }
 
 export const waitFor = (observeVariable: boolean, delay: number = 100): Promise<void> => {
@@ -41,6 +41,27 @@ export const getLoopbackAddress = (port: number = 80) => {
     return `0.0.0.0:${port}`
 }
 
-export const getHttpAddress = (host: string, port: number, path?: string) => {
-    return path ? `http://${host}:${port}/${path}` : `http://${host}:${port}`
+export const getHttpUrl = (params: GetHttpUrlParams) => {
+    const host = params.host || "localhost"
+    const port = params.port
+    const path = params.path
+
+    const prefix = "http://"
+
+    if (path) {
+        if (port) {
+            return `${prefix}${host}:${port}/${path}`
+        }
+        return `${prefix}${host}/${path}`
+    }
+    if (port) {
+        return `${prefix}${host}:${port}`
+    }
+    return `${prefix}${host}`
+}
+
+export interface GetHttpUrlParams {
+    host?: string
+    port?: number
+    path?: string
 }

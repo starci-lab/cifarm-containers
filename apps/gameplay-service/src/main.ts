@@ -1,12 +1,12 @@
 import { NestFactory } from "@nestjs/core"
-import { AppModule } from "./app.module"
 import { envConfig, grpcConfig, GrpcServiceName } from "@src/config"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { getLoopbackAddress } from "@src/utils"
+import { HealthCheckModule } from "./health-check"
+import { AppModule } from "./app.module"
 
 const bootstrap = async () => {
-    const app = await NestFactory.create(AppModule)
-    app.connectMicroservice<MicroserviceOptions>({
+    const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
         transport: Transport.GRPC,
         options: {
             url: getLoopbackAddress(envConfig().containers.gameplayService.port),
@@ -14,9 +14,14 @@ const bootstrap = async () => {
             protoPath: grpcConfig[GrpcServiceName.Gameplay].protoPath
         }
     })
-    await app.startAllMicroservices()
-    // microservice will listen the rest on the healthcheck port
-    await app.listen(envConfig().containers.gameplayService.healthCheckPort)
+    await app.listen()
 } 
-bootstrap()
+
+
+const bootstrapHealthCheck = async () => {
+    const app = await NestFactory.create(HealthCheckModule)
+    await app.listen(envConfig().containers.gameplayService.healthCheckPort)
+}
+
+bootstrap().then(bootstrapHealthCheck)
   

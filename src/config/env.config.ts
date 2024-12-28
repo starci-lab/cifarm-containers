@@ -24,14 +24,14 @@ export interface ChainCredentialsConfig {
 }
 
 export const envConfig = () => ({
-    port: process.env.PORT ?? 9999,
+    port: Number(process.env.PORT),
     nodeEnv: (process.env.NODE_ENV ?? NodeEnv.Development) as NodeEnv,
     cors: {
         origin:
             process.env.NODE_ENV !== "production"
                 ? "*"
                 : process.env.CORS_ORIGIN === "false"
-                    ? false 
+                    ? false
                     : process.env.CORS_ORIGIN === "true"
                         ? true
                         : process.env.CORS_ORIGIN.split(",")
@@ -39,11 +39,13 @@ export const envConfig = () => ({
     containers: {
         restApiGateway: {
             host: process.env.REST_API_GATEWAY_HOST,
-            port: Number(process.env.REST_API_GATEWAY_PORT)
+            port: Number(process.env.REST_API_GATEWAY_PORT),
+            healthCheckPort: Number(process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT)
         },
         websocketNode: {
             host: process.env.WEBSOCKET_NODE_HOST,
-            port: Number(process.env.WEBSOCKET_NODE_PORT)
+            port: Number(process.env.WEBSOCKET_NODE_PORT),
+            healthCheckPort: Number(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT)
         },
         gameplayService: {
             host: process.env.GAMEPLAY_SERVICE_HOST,
@@ -53,10 +55,12 @@ export const envConfig = () => ({
         graphqlMaingraph: {
             host: process.env.GRAPHQL_MAINGRAPH_HOST,
             port: Number(process.env.GRAPHQL_MAINGRAPH_PORT),
+            healthCheckPort: Number(process.env.GRAPHQL_MAINGRAPH_HEALTH_CHECK_PORT)
         },
         gameplaySubgraph: {
             host: process.env.GAMEPLAY_SUBGRAPH_HOST,
             port: Number(process.env.GAMEPLAY_SUBGRAPH_PORT),
+            healthCheckPort: Number(process.env.GAMEPLAY_SUBGRAPH_HEALTH_CHECK_PORT)
         },
     },
     database: {
@@ -254,6 +258,12 @@ export const envConfig = () => ({
         serviceHost: process.env.KUBERNETES_SERVICE_HOST,
         hostname: process.env.KUBERNETES_HOSTNAME,
     },
+    socketIoAdmin: {
+        username: process.env.SOCKET_IO_ADMIN_USERNAME,
+        password: process.env.SOCKET_IO_ADMIN_PASSWORD
+    },
+    //productionUrl
+    productionUrl: process.env.PRODUCTION_URL
 })
 
 export interface NearPair {

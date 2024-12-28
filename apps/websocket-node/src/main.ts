@@ -5,10 +5,10 @@ import { envConfig, kafkaConfig } from "@src/config"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { v4 } from "uuid"
 import { kafkaBrokers } from "@src/dynamic-modules"
+import { HealthCheckModule } from "./health-check"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
-    console.log(kafkaBrokers(false))
     app.connectMicroservice<MicroserviceOptions>(
         {
             transport: Transport.KAFKA,
@@ -31,4 +31,9 @@ const bootstrap = async () => {
     await app.startAllMicroservices()
     await app.listen(envConfig().containers.websocketNode.port)
 }
-bootstrap()
+
+const bootstrapHealthCheck = async () => {
+    const app = await NestFactory.create(HealthCheckModule)
+    await app.listen(envConfig().containers.websocketNode.healthCheckPort)
+}
+bootstrap().then(bootstrapHealthCheck)

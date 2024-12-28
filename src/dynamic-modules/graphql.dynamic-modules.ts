@@ -4,7 +4,7 @@ import { ApolloGatewayDriverConfig, ApolloGatewayDriver, ApolloFederationDriver,
 import { DynamicModule } from "@nestjs/common"
 import { GraphQLModule } from "@nestjs/graphql"
 import { envConfig } from "@src/config"
-import { getHttpAddress } from "@src/utils"
+import { getHttpUrl } from "@src/utils"
 
 export const graphqlMaingraphForRoot = (): DynamicModule => {
     return GraphQLModule.forRoot<ApolloGatewayDriverConfig>({
@@ -19,7 +19,11 @@ export const graphqlMaingraphForRoot = (): DynamicModule => {
                 subgraphs: [
                     {
                         name: "graphql",
-                        url: getHttpAddress(envConfig().containers.gameplaySubgraph.host, envConfig().containers.gameplaySubgraph.port, "graphql"),
+                        url: getHttpUrl({
+                            host: envConfig().containers.gameplaySubgraph.host,
+                            port: envConfig().containers.gameplaySubgraph.port,
+                            path: "graphql"
+                        }),
                     }
                 ]
             })

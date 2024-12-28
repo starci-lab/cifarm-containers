@@ -13,7 +13,6 @@ import { LinkUserSessionResponse, SyncPlacedItemsParams } from "./broadcast.dto"
 import { Server } from "socket.io"
 import { DataSource } from "typeorm"
 import { PlacedItemEntity } from "@src/database"
-import { envConfig } from "@src/config"
 import { WsJwtAuthGuard } from "@src/guards"
 import { WsUser } from "@src/decorators"
 import { UserLike } from "@src/services"
@@ -24,7 +23,8 @@ const NAMESPACE = "broadcast"
 
 @WebSocketGateway({
     cors: {
-        origin: envConfig().cors.origin,
+        // origin: [envConfig().cors.origin, "https://admin.socket.io"],
+        origin: "*",
         credentials: true
     },
     namespace: NAMESPACE
@@ -35,10 +35,14 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
     private readonly sessionMap = new Map<string, string>()
 
     constructor(
-        private readonly dataSource: DataSource) {}
+        private readonly dataSource: DataSource) { }
+
+    @WebSocketServer()
+    private server: Server
 
     afterInit() {
         this.logger.log(`Initialized gateway with namespace: ${NAMESPACE}`)
+        // Initialize the admin UI for the namespace
     }
 
     private checkSessionLinked(clientId: string): string {
@@ -49,24 +53,26 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
         return userId
     }
 
+    @Cron("*/5 * * * * *")
+    public printSessionKeys() {
+        this.logger.debug(Array.from(this.sessionMap.keys()))
+    }
+
     @Cron("*/1 * * * * *")
     public async broadcastPlacedItemsEverySecond() {
         const uniqueUserIds = new Set<string>(this.sessionMap.values())
         const userIds = Array.from(uniqueUserIds)
-    
+
         // Create an array of promises for syncing placed items
         const promises = userIds.map(async (userId) => {
             await this.broadcastPlacedItems({
                 userId,
             })
         })
-    
+
         // Run all the promises in parallel
         await Promise.all(promises)
     }
-
-    @WebSocketServer()
-    private readonly server: Server
 
     public async broadcastPlacedItems({ userId }: SyncPlacedItemsParams) {
         //emit placed items to all clients
@@ -85,7 +91,7 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
             await queryRunner.release()
         }
     }
-    
+
     @SubscribeMessage("broadcast_placed_items")
     public async handleBroadcastPlacedItems(@ConnectedSocket() client: Socket) {
         //check if the user is in the room

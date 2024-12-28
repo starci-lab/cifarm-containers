@@ -23,7 +23,6 @@ import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
 import { UsersModule } from "./users"
-import { HealthCheckModule } from "./health-check"
 
 @Module({
     imports: [
@@ -48,8 +47,7 @@ import { HealthCheckModule } from "./health-check"
         TilesModule,
         ToolsModule,
         UpgradesModule,
-        UsersModule,
-        HealthCheckModule
+        UsersModule
     ]
 }) 
 export class AppModule {}

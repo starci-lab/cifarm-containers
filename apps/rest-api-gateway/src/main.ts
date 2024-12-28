@@ -5,6 +5,7 @@ import { envConfig } from "@src/config"
 import { AppModule } from "./app.module"
 import { GameplayModule as GameplayModuleV1 } from "./v1"
 import { AuthModule as AuthModuleV2 } from "./v2"
+import { HealthCheckModule } from "./health-check"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -78,4 +79,9 @@ const bootstrap = async () => {
     await app.listen(envConfig().containers.restApiGateway.port)
 }
 
-bootstrap()
+const bootstrapHealthCheck = async () => {
+    const app = await NestFactory.create(HealthCheckModule)
+    await app.listen(envConfig().containers.restApiGateway.healthCheckPort)
+}
+
+bootstrap().then(bootstrapHealthCheck)

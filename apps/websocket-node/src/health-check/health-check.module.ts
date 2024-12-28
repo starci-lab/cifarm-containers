@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common"
-import { typeOrmForFeature } from "@src/dynamic-modules"
+import { typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
 import { HealthCheckController } from "./health-check.controller"
 import { TerminusModule } from "@nestjs/terminus"
 
 @Module({
-    imports: [typeOrmForFeature(), TerminusModule],
+    imports: [typeOrmForRoot(), typeOrmForFeature(), TerminusModule],
     controllers: [HealthCheckController],
     providers: [],
     exports: []
