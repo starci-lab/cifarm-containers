@@ -2,7 +2,7 @@
 
 import { Test } from "@nestjs/testing"
 import { authAxios, gameplayAxios, grpcConfig, GrpcServiceName, Network, SupportedChainKey } from "@src/config"
-import { CropCurrentState, CropEntity, CropId, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/database"
+import { CropCurrentState, CropEntity, CropId, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
 import { configForRoot, grpcClientRegisterAsync, typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
 import { JwtModule, JwtService, UserLike } from "@src/services"
 import { DataSource } from "typeorm"

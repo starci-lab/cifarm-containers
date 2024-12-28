@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingInfoEntity } from "@src/database"
+import { BuildingInfoEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetBuildingInfosArgs } from "./building-infos.dto"
 

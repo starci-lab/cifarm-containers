@@ -1,6 +1,6 @@
 import { GetAnimalInfosArgs } from "./"
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalInfoEntity } from "@src/database"
+import { AnimalInfoEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 
 @Injectable()

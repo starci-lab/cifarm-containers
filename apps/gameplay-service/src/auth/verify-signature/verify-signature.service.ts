@@ -5,6 +5,7 @@ import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signat
 
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import {
+    GameplayPostgreSQLService,
     PlacedItemEntity,
     PlacedItemTypeId,
     SessionEntity,
@@ -12,7 +13,7 @@ import {
     SystemEntity,
     SystemId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import {
     AlgorandAuthService,
     AptosAuthService,
@@ -30,10 +31,11 @@ import { DataSource, DeepPartial } from "typeorm"
 export class VerifySignatureService {
     private readonly logger = new Logger(VerifySignatureService.name)
 
+    private readonly dataSource: DataSource
     constructor(
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
         private readonly evmAuthService: EvmAuthService,
         private readonly solanaAuthService: SolanaAuthService,
         private readonly aptosAuthService: AptosAuthService,
@@ -42,7 +44,9 @@ export class VerifySignatureService {
         private readonly nearAuthService: NearAuthService,
         private readonly jwtService: JwtService,
         private readonly energyService: EnergyService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgreSQLService.getDataSource()
+    }
 
     public async verifySignature({
         message,

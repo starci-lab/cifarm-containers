@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
 import { GetSystemsArgs } from "./"
-import { SystemEntity } from "@src/database"
+import { SystemEntity } from "@src/databases"
 
 @Injectable()
 export class SystemsService {

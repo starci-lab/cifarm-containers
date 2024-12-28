@@ -5,7 +5,7 @@ import { DataSource} from "typeorm"
 import { DeliverysWorkerProcessTransactionFailedException } from "@src/exceptions"
 import { bullConfig, BullQueueName } from "@src/config"
 import { DeliveryJobData } from "@apps/cron-scheduler"
-import { DeliveringProductEntity, UserEntity } from "@src/database"
+import { DeliveringProductEntity, UserEntity } from "@src/databases"
 import { GoldBalanceService, TokenBalanceService } from "@src/services"
 
 @Processor(bullConfig[BullQueueName.Delivery].name)

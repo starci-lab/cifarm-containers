@@ -3,13 +3,14 @@ import {
     Activities,
     AnimalCurrentState,
     AnimalInfoEntity,
+    GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
     SystemEntity,
     SystemId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import {
     InventoryNotFoundException,
     InventoryTypeNotSupplyException,
@@ -25,11 +26,14 @@ import { FeedAnimalRequest, FeedAnimalResponse } from "./feed-animal.dto"
 export class FeedAnimalService {
     private readonly logger = new Logger(FeedAnimalService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async feedAnimal(request: FeedAnimalRequest): Promise<FeedAnimalResponse> {
         const queryRunner = this.dataSource.createQueryRunner()

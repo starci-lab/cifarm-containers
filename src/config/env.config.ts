@@ -62,6 +62,14 @@ export const envConfig = () => ({
             port: Number(process.env.GAMEPLAY_SUBGRAPH_PORT),
             healthCheckPort: Number(process.env.GAMEPLAY_SUBGRAPH_HEALTH_CHECK_PORT)
         },
+        cronWorker: {
+            host: process.env.CRON_WORKER_HOST,
+            healthCheckPort: Number(process.env.CRON_WORKER_HEALTH_CHECK_PORT)
+        },
+        cronScheduler: {
+            host: process.env.CRON_SCHEDULER_HOST,
+            healthCheckPort: Number(process.env.CRON_SCHEDULER_HEALTH_CHECK_PORT)
+        },
     },
     database: {
         mongo: {

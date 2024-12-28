@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common"
-import { typeOrmForFeature } from "@src/dynamic-modules"
 import { FollowController } from "./follow.controller"
 import { FollowService } from "./follow.service"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [typeOrmForFeature()],
+    imports: [ GameplayPostgreSQLModule.forRoot() ],
     controllers: [FollowController],
     providers: [FollowService],
     exports: [FollowService]

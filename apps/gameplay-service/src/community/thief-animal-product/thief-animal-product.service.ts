@@ -11,6 +11,7 @@ import {
     AnimalCurrentState,
     AnimalInfoEntity,
     CropRandomness,
+    GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -20,7 +21,7 @@ import {
     SystemEntity,
     SystemId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/services"
 import { ClientKafka } from "@nestjs/microservices"
 import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
@@ -30,15 +31,18 @@ import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-a
 export class ThiefAnimalProductService {
     private readonly logger = new Logger(ThiefAnimalProductService.name)
 
+    private readonly dataSource: DataSource
     constructor(
         @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
         private readonly clientKafka: ClientKafka,
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly theifService: ThiefService,
         private readonly inventoryService: InventoryService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async theifAnimalProduct(
         request: ThiefAnimalProductRequest

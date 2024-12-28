@@ -1,7 +1,7 @@
 import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { UpgradeService } from "./upgrades.service"
-import { UpgradeEntity } from "@src/database"
+import { UpgradeEntity } from "@src/databases"
 import { GetUpgradesArgs } from "./"
 import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
 

@@ -1,6 +1,6 @@
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { SessionEntity, UserEntity } from "@src/database"
+import { SessionEntity, UserEntity } from "@src/databases"
 import { UserIsNotLoginException, UserNotFoundException, UserRefreshIsInvalidException } from "@src/exceptions"
 import { JwtService } from "@src/services"
 import { Cache } from "cache-manager"

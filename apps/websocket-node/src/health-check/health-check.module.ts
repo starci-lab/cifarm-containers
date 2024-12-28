@@ -9,4 +9,4 @@ import { TerminusModule } from "@nestjs/terminus"
     providers: [],
     exports: []
 })
-export class HealthCheckModule {}
+export class HealthCheckModule { }

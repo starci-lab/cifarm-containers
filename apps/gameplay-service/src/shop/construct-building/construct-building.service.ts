@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, PlacedItemEntity, PlacedItemTypeEntity, UserEntity } from "@src/database"
+import { BuildingEntity, GameplayPostgreSQLService, PlacedItemEntity, PlacedItemTypeEntity, UserEntity } from "@src/databases"
 import {
     BuildingNotAvailableInShopException,
     BuildingNotFoundException,
@@ -14,10 +14,13 @@ import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct
 export class ConstructBuildingService {
     private readonly logger = new Logger(ConstructBuildingService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,        
         private readonly goldBalanceService: GoldBalanceService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
         this.logger.debug(

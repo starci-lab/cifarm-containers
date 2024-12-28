@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
 import { GetTilesArgs } from "./"
-import { TileEntity } from "@src/database"
+import { TileEntity } from "@src/databases"
 
 @Injectable()
 export class TilesService {

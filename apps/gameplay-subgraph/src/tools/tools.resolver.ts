@@ -1,7 +1,7 @@
 import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { ToolsService } from "./tools.service"
-import { ToolEntity } from "@src/database"
+import { ToolEntity } from "@src/databases"
 import { GetToolsArgs } from "./"
 import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
 

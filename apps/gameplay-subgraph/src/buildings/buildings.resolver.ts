@@ -1,6 +1,6 @@
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { Logger, UseInterceptors } from "@nestjs/common"
-import { BuildingEntity } from "@src/database"
+import { BuildingEntity } from "@src/databases"
 import { BuildingsService } from "./buildings.service"
 import { GetBuildingsArgs } from "./"
 import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"

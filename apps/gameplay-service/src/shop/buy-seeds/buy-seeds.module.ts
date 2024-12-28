@@ -2,12 +2,12 @@ import { Global, Module } from "@nestjs/common"
 import { GoldBalanceModule, InventoryModule } from "@src/services"
 import { BuySeedsController } from "./buy-seeds.controller"
 import { BuySeedsService } from "./buy-seeds.service"
-import { typeOrmForFeature } from "@src/dynamic-modules"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
     imports: [
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot(),
         InventoryModule,
         GoldBalanceModule
     ],

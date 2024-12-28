@@ -1,6 +1,6 @@
 import { Global, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { UserEntity } from "@src/database"
+import { UserEntity } from "@src/databases"
 import { LevelService } from "./level.service"
 
 @Global()

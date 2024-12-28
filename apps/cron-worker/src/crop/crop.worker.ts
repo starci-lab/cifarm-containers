@@ -8,7 +8,7 @@ import {
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId
-} from "@src/database"
+} from "@src/databases"
 import { CropsWorkerProcessTransactionFailedException } from "@src/exceptions"
 import { bullConfig, BullQueueName } from "@src/config"
 import { CropJobData } from "@apps/cron-scheduler"

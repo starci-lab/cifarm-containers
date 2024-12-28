@@ -1,12 +1,12 @@
-#docker build -t cifarm/cron-worker -f ./apps/cron-worker/Dockerfile .
-#docker push cifarm/cron-worker
+#docker build -t cifarm/cron-worker -f ./apps/cron-worker/Dockerfile . & docker push cifarm/cron-worker
+#
 
 # syntax=docker/dockerfile:1
 
-ARG NODE_VERSION=21.6.2
+ARG NODE_VERSION=23.5.0
 
 # Build Stage
-FROM node:${NODE_VERSION}-alpine as build
+FROM node:${NODE_VERSION}-alpine AS build
 
 WORKDIR /usr/src/app
 
@@ -14,16 +14,14 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm config set registry http://registry.npmjs.org/ && npm ci
+RUN npm ci
 
 # Copy remaining source code and build the application
 COPY . .
 RUN npx nest build cron-worker
 
 # Production Stage (final image)
-FROM node:${NODE_VERSION}-alpine as production
-
-WORKDIR /usr/src/app
+FROM build AS production
 
 # Copy only the build output and proto files
 COPY --from=build /usr/src/app/dist/apps/cron-worker .
@@ -31,6 +29,9 @@ COPY --from=build /usr/src/app/proto ./proto
 
 # Install only production dependencies
 RUN npm i --production
+
+# Run as non-root user
+USER node
 
 # Start the application
 CMD ["node", "main"]

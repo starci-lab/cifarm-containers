@@ -3,6 +3,6 @@ import { SpinModule } from "./spin"
 import { ClaimDailyRewardModule } from "./claim-daily-reward"
 
 @Module({
-    imports: [SpinModule, ClaimDailyRewardModule]
+    imports: [ SpinModule, ClaimDailyRewardModule ]
 })
 export class ClaimModule {}

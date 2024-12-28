@@ -2,13 +2,18 @@ import { Injectable, Logger } from "@nestjs/common"
 import { UpdateTutorialTransactionFailedException } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import { UpdateTutorialRequest, UpdateTutorialResponse } from "./update-tutorial.dto"
-import { UserEntity } from "@src/database"
+import { GameplayPostgreSQLService, UserEntity } from "@src/databases"
 
 @Injectable()
 export class UpdateTutorialService {
     private readonly logger = new Logger(UpdateTutorialService.name)
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+    constructor(
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async updateTutorial(request: UpdateTutorialRequest): Promise<UpdateTutorialResponse> {
         this.logger.debug(`Starting claim daily reward for user ${request.userId}`)

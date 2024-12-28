@@ -1,11 +1,10 @@
 import { Module } from "@nestjs/common"
 import { UnfollowController } from "./unfollow.controller"
 import { UnfollowService } from "./unfollow.service"
-import { TypeOrmModule } from "@nestjs/typeorm"
-import { UsersFollowingUsersEntity } from "@src/database"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [TypeOrmModule.forFeature([UsersFollowingUsersEntity])],
+    imports: [GameplayPostgreSQLModule.forRoot()],
     controllers: [UnfollowController],
     providers: [UnfollowService],
     exports: [UnfollowService]

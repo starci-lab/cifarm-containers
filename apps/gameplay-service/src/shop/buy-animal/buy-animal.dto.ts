@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { AnimalId } from "@src/database"
+import { AnimalId } from "@src/databases"
 import { Position, UserIdRequest } from "@src/types"
 import { Type } from "class-transformer"
 import { IsString, ValidateNested } from "class-validator"

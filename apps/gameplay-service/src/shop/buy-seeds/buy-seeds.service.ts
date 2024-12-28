@@ -1,11 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     CropEntity,
+    GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import {
     BuySeedsTransactionFailedException,
     CropNotAvailableInShopException,
@@ -19,11 +20,14 @@ import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
 export class BuySeedsService {
     private readonly logger = new Logger(BuySeedsService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async buySeeds(request: BuySeedsRequest): Promise<BuySeedsResponse> {
         this.logger.debug(

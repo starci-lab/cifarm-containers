@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
-import { InventoryEntity } from "@src/database"
+import { InventoryEntity } from "@src/databases"
 import { GetInventoriesArgs } from "./inventories.dto"
 import { InventoryService } from "./inventories.service"
 

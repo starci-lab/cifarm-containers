@@ -1,12 +1,12 @@
 import { Global, Module } from "@nestjs/common"
-import { typeOrmForFeature } from "@src/dynamic-modules"
 import { PlaceTileController } from "./place-tile.controller"
 import { PlaceTileService } from "./place-tile.service"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
     imports: [
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot(),
     ],
     controllers: [PlaceTileController],
     providers: [PlaceTileService],

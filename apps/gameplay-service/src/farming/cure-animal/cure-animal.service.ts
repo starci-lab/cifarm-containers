@@ -3,11 +3,12 @@ import {
     Activities,
     AnimalCurrentState,
     AnimalInfoEntity,
+    GameplayPostgreSQLService,
     PlacedItemEntity,
     SystemEntity,
     SystemId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import {
     PlacedItemAnimalNotFoundException,
     CureAnimalTransactionFailedException,
@@ -21,11 +22,14 @@ import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
 export class CureAnimalService {
     private readonly logger = new Logger(CureAnimalService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async cureAnimal(request: CureAnimalRequest): Promise<CureAnimalResponse> {
         const queryRunner = this.dataSource.createQueryRunner()

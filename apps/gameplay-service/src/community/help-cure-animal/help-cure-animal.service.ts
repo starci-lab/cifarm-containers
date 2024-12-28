@@ -14,23 +14,27 @@ import {
     SystemEntity,
     SystemId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import { EnergyService, LevelService } from "@src/services"
 import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
 import { ClientKafka } from "@nestjs/microservices"
 import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
+import { GameplayPostgreSQLService } from "@src/databases"
 
 @Injectable()
 export class HelpCureAnimalService {
     private readonly logger = new Logger(HelpCureAnimalService.name)
 
+    private readonly dataSource: DataSource
     constructor(
         @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
         private readonly clientKafka: ClientKafka,
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgreSQLService.getDataSource()
+    }
 
     async helpCureAnimal(request: HelpCureAnimalRequest): Promise<HelpCureAnimalResponse> {
         this.logger.debug(`Help cure animal for user ${request.neighborUserId}`)

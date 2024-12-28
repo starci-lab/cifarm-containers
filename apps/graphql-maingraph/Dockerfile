@@ -1,5 +1,5 @@
-#docker build -t cifarm/graphql-maingraph -f ./apps/graphql-maingraph/Dockerfile .
-#docker push cifarm/graphql-maingraph
+#docker build -t cifarm/graphql-maingraph -f ./apps/graphql-maingraph/Dockerfile . & docker push cifarm/graphql-maingraph
+#
 
 # syntax=docker/dockerfile:1
 

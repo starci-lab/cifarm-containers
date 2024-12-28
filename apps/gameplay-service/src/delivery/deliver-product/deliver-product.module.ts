@@ -1,12 +1,12 @@
 import { Global, Module } from "@nestjs/common"
 import { DeliverProductController } from "./deliver-product.controller"
 import { DeliverProductService } from "./deliver-product.service"
-import { typeOrmForFeature } from "@src/dynamic-modules"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
     imports: [
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot()
     ],
     providers: [DeliverProductService],
     exports: [DeliverProductService],

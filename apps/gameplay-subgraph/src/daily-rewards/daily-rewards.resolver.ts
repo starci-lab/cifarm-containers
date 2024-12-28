@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { DailyRewardsService } from "./daily-rewards.service"
-import { DailyRewardEntity } from "@src/database"
+import { DailyRewardEntity } from "@src/databases"
 import { GetDailyRewardsArgs } from "./"
 
 @Resolver()

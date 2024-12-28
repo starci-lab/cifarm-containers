@@ -1,5 +1,5 @@
-#docker build -t cifarm/gameplay-subgraph -f ./apps/gameplay-subgraph/Dockerfile .
-#docker push cifarm/gameplay-subgraph
+#docker build -t cifarm/gameplay-subgraph -f ./apps/gameplay-subgraph/Dockerfile . & docker push cifarm/gameplay-subgraph
+#
 
 # syntax=docker/dockerfile:1
 

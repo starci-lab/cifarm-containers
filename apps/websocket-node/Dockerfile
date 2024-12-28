@@ -1,5 +1,5 @@
-#docker build -t cifarm/websocket-node -f ./apps/websocket-node/Dockerfile .
-#docker push cifarm/websocket-node
+#docker build -t cifarm/websocket-node -f ./apps/websocket-node/Dockerfile . & docker push cifarm/websocket-node
+#
 
 # syntax=docker/dockerfile:1
 

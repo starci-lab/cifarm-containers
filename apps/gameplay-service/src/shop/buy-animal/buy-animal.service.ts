@@ -1,11 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     AnimalEntity,
+    GameplayPostgreSQLService,
     PlacedItemEntity,
     PlacedItemType,
     PlacedItemTypeEntity,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import {
     AnimalNotAvailableInShopException,
     AnimalNotFoundException,
@@ -24,10 +25,14 @@ import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 @Injectable()
 export class BuyAnimalService {
     private readonly logger = new Logger(BuyAnimalService.name)
+
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly goldBalanceService: GoldBalanceService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {
         this.logger.debug(

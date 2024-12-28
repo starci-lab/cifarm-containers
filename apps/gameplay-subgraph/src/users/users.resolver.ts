@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { UserService } from "./users.service"
-import { UserEntity } from "@src/database"
+import { UserEntity } from "@src/databases"
 import { GetUsersArgs } from "./"
 
 @Resolver()

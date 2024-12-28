@@ -1,7 +1,7 @@
 import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { AnimalsService } from "./animals.service"
-import { AnimalEntity } from "@src/database"
+import { AnimalEntity } from "@src/databases"
 import { GetAnimalsArgs } from "./"
 import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
 import TimerInterceptor from "@src/interceptors/timer.interceptor"

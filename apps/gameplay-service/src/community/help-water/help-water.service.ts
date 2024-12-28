@@ -9,13 +9,14 @@ import { DataSource } from "typeorm"
 import {
     Activities,
     CropCurrentState,
+    GameplayPostgreSQLService,
     PlacedItemEntity,
     PlacedItemType,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import { EnergyService, LevelService } from "@src/services"
 import { HelpWaterRequest, HelpWaterResponse } from "./help-water.dto"
 
@@ -23,11 +24,14 @@ import { HelpWaterRequest, HelpWaterResponse } from "./help-water.dto"
 export class HelpWaterService {
     private readonly logger = new Logger(HelpWaterService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async helpWater(request: HelpWaterRequest): Promise<HelpWaterResponse> {
         this.logger.debug(`Help water for user ${request.neighborUserId}`)

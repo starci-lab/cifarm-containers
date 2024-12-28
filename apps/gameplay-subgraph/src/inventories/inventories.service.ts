@@ -1,6 +1,6 @@
 import { GetInventoriesArgs } from "./"
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity } from "@src/database"
+import { InventoryEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DeliveringProductEntity } from "@src/database"
+import { DeliveringProductEntity, GameplayPostgreSQLService } from "@src/databases"
 import {
     DeliveringProductNotFoundException,
     RetainProductTransactionFailedException
@@ -11,7 +11,12 @@ import { RetainProductRequest, RetainProductResponse } from "./retain-product.dt
 export class RetainProductService {
     private readonly logger = new Logger(RetainProductService.name)
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+    constructor(
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async retainProduct(request: RetainProductRequest): Promise<RetainProductResponse> {
         this.logger.debug(

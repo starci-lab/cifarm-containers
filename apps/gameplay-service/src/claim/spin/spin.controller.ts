@@ -7,7 +7,7 @@ import { grpcConfig, GrpcServiceName } from "@src/config"
 @Controller()
 export class SpinController {
     private readonly logger = new Logger(SpinController.name)
-
+    
     constructor(private readonly spinService: SpinService) {}
 
     @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "Spin")

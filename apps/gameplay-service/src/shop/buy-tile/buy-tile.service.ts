@@ -1,12 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
+    GameplayPostgreSQLService,
     PlacedItemEntity,
     PlacedItemType,
     PlacedItemTypeEntity,
     TileEntity,
     TileId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import {
     BuyTileTransactionFailedException,
     PlacedItemIsLimitException,
@@ -24,10 +25,13 @@ export class BuyTileService {
 
     private tileOrder = [TileId.BasicTile1, TileId.BasicTile2, TileId.BasicTile3]
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly goldBalanceService: GoldBalanceService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async buyTile(request: BuyTileRequest): Promise<BuyTileResponse> {
         this.logger.debug(`Starting tile purchase for user ${request.userId}`)

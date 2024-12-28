@@ -2,15 +2,18 @@ import { Injectable, Logger } from "@nestjs/common"
 import { SpeedUpRequest, SpeedUpResponse } from "./speed-up.dto"
 import { DataSource } from "typeorm"
 import { SpeedUpTransactionFailedException } from "@src/exceptions"
-import { Collection, CollectionEntity, SpeedUpData } from "@src/database"
+import { Collection, CollectionEntity, GameplayPostgreSQLService, SpeedUpData } from "@src/databases"
 
 @Injectable()
 export class SpeedUpService {
     private readonly logger = new Logger(SpeedUpService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource
-    ) {}
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async speedUp(request: SpeedUpRequest): Promise<SpeedUpResponse> {
         this.logger.debug(`Speeding up growth time with time ${request.time}`)

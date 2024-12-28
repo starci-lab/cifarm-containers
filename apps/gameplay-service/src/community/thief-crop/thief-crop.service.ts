@@ -5,6 +5,7 @@ import {
     Activities,
     CropCurrentState,
     CropRandomness,
+    GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -14,7 +15,7 @@ import {
     SystemEntity,
     SystemId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import {
     HaverstQuantityRemainingEqualMinHarvestQuantityException,
     PlacedItemTileNotFoundException,
@@ -30,15 +31,18 @@ import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
 export class TheifCropService{
     private readonly logger = new Logger(TheifCropService.name)
 
+    private readonly dataSource: DataSource
     constructor(
         @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
         private readonly clientKafka: ClientKafka,
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly thiefService: ThiefService,
         private readonly inventoryService: InventoryService,
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async theifCrop(request: ThiefCropRequest): Promise<ThiefCropResponse> {
         this.logger.debug(`Thief crop for user ${request.neighborUserId}`)

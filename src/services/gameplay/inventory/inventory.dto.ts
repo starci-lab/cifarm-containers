@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { InventoryEntity } from "@src/database"
+import { InventoryEntity } from "@src/databases"
 import { ArrayEntityWithUserIdParams, EntityParams } from "@src/types"
 import { IsInt } from "class-validator"
 import { DeepPartial } from "typeorm"

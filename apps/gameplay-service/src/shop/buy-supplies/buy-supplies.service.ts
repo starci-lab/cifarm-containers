@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity, InventoryTypeEntity, SupplyEntity, UserEntity } from "@src/database"
+import { InventoryEntity, InventoryTypeEntity, SupplyEntity, UserEntity } from "@src/databases"
 import {
     BuySuppliesTransactionFailedException,
     SupplyNotAvailableInShopException,
@@ -9,16 +9,20 @@ import {
 import { GoldBalanceService, InventoryService } from "@src/services"
 import { DataSource } from "typeorm"
 import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
+import { GameplayPostgreSQLService } from "@src/databases"
 
 @Injectable()
 export class BuySuppliesService {
     private readonly logger = new Logger(BuySuppliesService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async buySupplies(request: BuySuppliesRequest): Promise<BuySuppliesResponse> {
         this.logger.debug(

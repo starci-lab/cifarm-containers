@@ -13,7 +13,7 @@ import {
     AnimalCurrentState,
     AnimalEntity,
     AnimalInfoEntity,
-} from "@src/database"
+} from "@src/databases"
 import {
     configForRoot,
     grpcClientRegisterAsync,

@@ -25,7 +25,7 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     private leaseRenewalTimeout: NodeJS.Timeout | null = null
     private awaitLeadership: boolean
 
-    LEADER_IDENTITY = `nestjs-${envConfig().kubernetes.generated.hostname}`  // Unique identity for the leader
+    LEADER_IDENTITY = `nestjs-${envConfig().kubernetes.hostname}`  // Unique identity for the leader
 
     public isLeaderInstance(): boolean {
         return this.isLeader
@@ -39,7 +39,7 @@ export class LeaderElectionService implements OnApplicationBootstrap {
         this.leaseName = options.leaseName ?? "nestjs-leader-election"  // Default lease name if not provided in options
 
         // Set up the Kubernetes namespace for the lease, defaulting to "default"
-        this.namespace = envConfig().kubernetes.defined.namespace ?? "default"  // Default namespace if not provided
+        this.namespace = envConfig().kubernetes.namespace ?? "default"  // Default namespace if not provided
 
         // Set the renewal interval for the leader lease, defaulting to 10000 ms (10 seconds)
         this.renewalInterval = options.renewalInterval ?? 10000  // Default interval if not provided

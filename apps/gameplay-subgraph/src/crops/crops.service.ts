@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CropEntity } from "@src/database"
+import { CropEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetCropsArgs } from "./"
 

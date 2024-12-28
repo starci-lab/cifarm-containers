@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DailyRewardEntity } from "@src/database"
+import { DailyRewardEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetDailyRewardsArgs } from "./"
 

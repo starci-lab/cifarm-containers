@@ -1,7 +1,7 @@
 import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { PlacedItemTypesService } from "./placed-item-types.service"
-import { PlacedItemTypeEntity } from "@src/database"
+import { PlacedItemTypeEntity } from "@src/databases"
 import { GetPlacedItemTypesArgs } from "./"
 import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
 

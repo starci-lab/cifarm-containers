@@ -1,6 +1,6 @@
 import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
-import { InventoryTypeEntity } from "@src/database"
+import { InventoryTypeEntity } from "@src/databases"
 import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
 import { InventoryTypeService } from "./inventory-types.service"
 import { GetInventoryTypesArgs } from "./inventory-types.dto"

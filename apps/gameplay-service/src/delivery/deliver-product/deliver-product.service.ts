@@ -7,13 +7,18 @@ import {
 } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
 import { DeliverProductRequest, DeliverProductResponse } from "./deliver-product.dto"
-import { DeliveringProductEntity, InventoryEntity } from "@src/database"
+import { DeliveringProductEntity, GameplayPostgreSQLService, InventoryEntity } from "@src/databases"
 
 @Injectable()
 export class DeliverProductService {
     private readonly logger = new Logger(DeliverProductService.name)
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+    constructor(
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async deliverProduct(request: DeliverProductRequest): Promise<DeliverProductResponse> {
         this.logger.debug(

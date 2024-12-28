@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity } from "@src/database"
+import { InventoryEntity } from "@src/databases"
 import { DeepPartial } from "typeorm"
 import { AddParams, AddResult, RemoveParams, RemoveResult } from "./inventory.dto"
 import { InventoryQuantityNotSufficientException } from "@src/exceptions"

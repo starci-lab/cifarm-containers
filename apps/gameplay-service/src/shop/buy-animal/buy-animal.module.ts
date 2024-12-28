@@ -1,12 +1,12 @@
 import { Global, Module } from "@nestjs/common"
 import { BuyAnimalController } from "./buy-animal.controller"
 import { BuyAnimalService } from "./buy-animal.service"
-import { typeOrmForFeature } from "@src/dynamic-modules"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
     imports: [
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot(),
     ],
     controllers: [BuyAnimalController],
     providers: [BuyAnimalService],

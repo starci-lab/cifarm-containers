@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
 import { GetUpgradesArgs } from "./"
-import { UpgradeEntity } from "@src/database"
+import { UpgradeEntity } from "@src/databases"
 
 @Injectable()
 export class UpgradeService {

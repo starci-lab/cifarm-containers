@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
 import { APP_FILTER } from "@nestjs/core"
-import { cacheRegisterAsync, configForRoot, typeOrmForRoot } from "@src/dynamic-modules"
+import { cacheRegisterAsync } from "@src/dynamic-modules"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AuthModule } from "./auth"
 import { ClaimModule } from "./claim"
@@ -15,8 +15,6 @@ import { UpgradeModule } from "./upgrade"
 
 @Module({
     imports: [
-        configForRoot(),
-        typeOrmForRoot(),
         cacheRegisterAsync(),
         AuthModule,
         ClaimModule,

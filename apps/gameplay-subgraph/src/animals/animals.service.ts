@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity } from "@src/database"
+import { AnimalEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetAnimalsArgs } from "./"
 

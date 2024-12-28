@@ -1,7 +1,7 @@
 // buy-seed.dto.ts
 
 import { ApiProperty } from "@nestjs/swagger"
-import { CropId } from "@src/database"
+import { CropId } from "@src/databases"
 import { UserIdRequest } from "@src/types"
 import { IsInt, IsString, Min } from "class-validator"
 

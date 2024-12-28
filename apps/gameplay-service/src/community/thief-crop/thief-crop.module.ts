@@ -1,15 +1,16 @@
 import { Global, Module } from "@nestjs/common"
 import { KafkaConfigKey } from "@src/config"
-import { configForRoot, kafkaClientRegister, typeOrmForFeature } from "@src/dynamic-modules"
+import { configForRoot, kafkaClientRegister } from "@src/dynamic-modules"
 import { EnergyModule, InventoryModule, LevelModule, ThiefModule } from "@src/services"
 import { ThiefCropController } from "./thief-crop.controller"
 import { TheifCropService } from "./thief-crop.service"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
     imports: [
         configForRoot(),
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot(),
         kafkaClientRegister({
             key: KafkaConfigKey.PlacedItems,
             producerOnly: true

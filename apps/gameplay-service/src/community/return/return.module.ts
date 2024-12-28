@@ -1,11 +1,10 @@
 import { Module } from "@nestjs/common"
 import { ReturnController } from "./return.controller"
 import { ReturnService } from "./return.service"
-import { TypeOrmModule } from "@nestjs/typeorm"
-import { UserEntity } from "@src/database"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [TypeOrmModule.forFeature([UserEntity])],
+    imports: [GameplayPostgreSQLModule.forRoot()],
     controllers: [ReturnController],
     providers: [ReturnService]
 })

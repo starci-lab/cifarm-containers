@@ -6,7 +6,7 @@ import {
     BuildingId,
     PlacedItemEntity,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import { GoldBalanceService } from "@src/services"
 import { DataSource, DeepPartial } from "typeorm"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"

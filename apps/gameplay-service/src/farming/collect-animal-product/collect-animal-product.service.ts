@@ -2,12 +2,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     AnimalCurrentState,
     AnimalInfoEntity,
+    GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
     PlacedItemEntity,
     ProductType
-} from "@src/database"
+} from "@src/databases"
 import {
     AnimalNotCurrentlyYieldingException,
     CollectAnimalProductTransactionFailedException,
@@ -24,10 +25,13 @@ import {
 export class CollectAnimalProductService {
     private readonly logger = new Logger(CollectAnimalProductService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly inventoryService: InventoryService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async collectAnimalProduct(
         request: CollectAnimalProductRequest

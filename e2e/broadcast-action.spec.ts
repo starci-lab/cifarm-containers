@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing"
 import { authAxios, GrpcServiceName, SupportedChainKey } from "@src/config"
-import { UserEntity } from "@src/database"
+import { UserEntity } from "@src/databases"
 import { configForRoot, grpcClientRegisterAsync, typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
 import { JwtModule, JwtService, UserLike } from "@src/services"
 import { io, Socket } from "socket.io-client"

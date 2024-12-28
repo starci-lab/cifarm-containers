@@ -6,7 +6,7 @@ import {
 } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
 import { SpinRequest, SpinResponse } from "./spin.dto"
-import { AppearanceChance, InventoryEntity, InventoryType, InventoryTypeEntity, SpinInfo, SpinPrizeType, SpinSlotEntity, SystemEntity, SystemId, UserEntity } from "@src/database"
+import { AppearanceChance, GameplayPostgreSQLService, InventoryEntity, InventoryType, InventoryTypeEntity, SpinInfo, SpinPrizeType, SpinSlotEntity, SystemEntity, SystemId, UserEntity } from "@src/databases"
 import dayjs from "dayjs"
 import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/services"
 
@@ -14,12 +14,15 @@ import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/
 export class SpinService {
     private readonly logger = new Logger(SpinService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+       private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
         private readonly inventoryService: InventoryService,
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgreSQLService.getDataSource()
+    }
 
     async spin(request: SpinRequest): Promise<SpinResponse> {
         this.logger.debug(

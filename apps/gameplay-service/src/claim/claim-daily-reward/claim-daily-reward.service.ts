@@ -6,7 +6,7 @@ import {
 } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
 import { ClaimDailyRewardRequest, ClaimDailyRewardResponse } from "./claim-daily-reward.dto"
-import { DailyRewardEntity, UserEntity } from "@src/database"
+import { DailyRewardEntity, GameplayPostgreSQLService, UserEntity } from "@src/databases"
 import dayjs from "dayjs"
 import { GoldBalanceService, TokenBalanceService } from "@src/services"
 
@@ -14,11 +14,14 @@ import { GoldBalanceService, TokenBalanceService } from "@src/services"
 export class ClaimDailyRewardService {
     private readonly logger = new Logger(ClaimDailyRewardService.name)
 
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgreSQLService.getDataSource()
+    }
 
     async claimDailyReward(request: ClaimDailyRewardRequest): Promise<ClaimDailyRewardResponse> {
         this.logger.debug(`Starting claim daily reward for user ${request.userId}`)

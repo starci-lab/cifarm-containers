@@ -24,7 +24,7 @@ import {
     SeedGrowthInfoEntity,
     TileId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import {
     configForRoot,
     grpcClientRegisterAsync,

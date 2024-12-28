@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { SystemsService } from "./systems.service"
-import { SystemEntity } from "@src/database"
+import { SystemEntity } from "@src/databases"
 import { GetSystemsArgs } from "./"
 
 @Resolver()

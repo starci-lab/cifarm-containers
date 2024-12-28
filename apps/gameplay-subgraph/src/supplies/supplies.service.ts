@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { SupplyEntity } from "@src/database"
+import { SupplyEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetSuppliesArgs } from "./"
 

@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
-import { BuildingInfoEntity } from "@src/database"
+import { BuildingInfoEntity } from "@src/databases"
 import { BuildingInfosService } from "./building-infos.service"
 import { GetBuildingInfosArgs } from "./building-infos.dto"
 

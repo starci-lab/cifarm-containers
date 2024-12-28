@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { UnfollowRequest } from "./unfollow.dto"
-import { UsersFollowingUsersEntity } from "@src/database"
+import { UsersFollowingUsersEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 
 @Injectable()

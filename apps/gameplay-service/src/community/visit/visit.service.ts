@@ -1,14 +1,19 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { VisitRequest } from "./visit.dto"
 import { DataSource } from "typeorm"
-import { UserEntity } from "@src/database"
+import { GameplayPostgreSQLService, UserEntity } from "@src/databases"
 import { SelfVisitException, UserNotFoundException } from "@src/exceptions"
 
 @Injectable()
 export class VisitService {
     private readonly logger = new Logger(VisitService.name)
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+    constructor(
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async visit(request: VisitRequest) {
         this.logger.debug(`Visit user ${request.visitingUserId} for user ${request.userId}`)

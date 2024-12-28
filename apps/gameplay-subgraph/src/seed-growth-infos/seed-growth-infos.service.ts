@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { SeedGrowthInfoEntity } from "@src/database"
+import { SeedGrowthInfoEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetSeedGrowthInfosArgs } from "./"
 

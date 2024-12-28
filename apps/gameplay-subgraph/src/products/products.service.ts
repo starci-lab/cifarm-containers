@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ProductEntity } from "@src/database"
+import { ProductEntity } from "@src/databases"
 import { DataSource, FindOptionsRelations } from "typeorm"
 import { GetProductsArgs } from "./products.dto"
 

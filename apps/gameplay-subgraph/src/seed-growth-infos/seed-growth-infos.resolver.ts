@@ -1,6 +1,6 @@
 import { Logger, ParseUUIDPipe, UsePipes } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
-import { SeedGrowthInfoEntity } from "@src/database"
+import { SeedGrowthInfoEntity } from "@src/databases"
 import { GetSeedGrowthInfosArgs } from "./"
 import { SeedGrowthInfosService } from "./seed-growth-infos.service"
 

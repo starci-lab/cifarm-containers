@@ -3,12 +3,12 @@ import { InventoryModule, LevelModule } from "@src/services"
 import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
 import { CureAnimalController } from "./cure-animal.controller"
 import { CureAnimalService } from "./cure-animal.service"
-import { typeOrmForFeature } from "@src/dynamic-modules"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
     imports: [
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot(),
         EnergyModule,
         LevelModule,
         InventoryModule,

@@ -1,6 +1,6 @@
 import { GetPlacedItemsArgs } from "./"
 import { Injectable, Logger } from "@nestjs/common"
-import { PlacedItemEntity } from "@src/database"
+import { PlacedItemEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 
 @Injectable()

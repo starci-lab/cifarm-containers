@@ -1,5 +1,5 @@
-#docker build -t cifarm/gameplay-service -f ./apps/gameplay-service/Dockerfile .
-#docker push cifarm/gameplay-service
+#docker build -t cifarm/gameplay-service -f ./apps/gameplay-service/Dockerfile . & docker push cifarm/gameplay-service
+#
 
 # syntax=docker/dockerfile:1
 

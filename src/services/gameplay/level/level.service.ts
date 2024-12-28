@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { UserEntity } from "@src/database"
+import { UserEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import {
     AddExperiencesParams,

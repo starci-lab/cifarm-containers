@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common"
-import { AnimalCurrentState, AnimalInfoEntity, AnimalRandomness, SystemEntity, SystemId } from "@src/database"
+import { AnimalCurrentState, AnimalInfoEntity, AnimalRandomness, SystemEntity, SystemId } from "@src/databases"
 import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import utc from "dayjs/plugin/utc"
 import { Processor, WorkerHost } from "@nestjs/bullmq"

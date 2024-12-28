@@ -2,12 +2,12 @@ import { Global, Module } from "@nestjs/common"
 import { EnergyModule, WalletModule } from "@src/services"
 import { VerifySignatureController } from "./verify-signature.controller"
 import { VerifySignatureService } from "./verify-signature.service"
-import { typeOrmForFeature } from "@src/dynamic-modules"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
     imports: [
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot(),
         EnergyModule,
         WalletModule,
     ],

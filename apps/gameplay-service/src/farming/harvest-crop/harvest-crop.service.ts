@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
     CropCurrentState,
+    GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -11,7 +12,7 @@ import {
     SystemEntity,
     SystemId,
     UserEntity
-} from "@src/database"
+} from "@src/databases"
 import { DataSource } from "typeorm"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import {
@@ -25,12 +26,16 @@ import { EnergyService, InventoryService, LevelService } from "@src/services"
 @Injectable()
 export class HarvestCropService {
     private readonly logger = new Logger(HarvestCropService.name)
+
+    private readonly dataSource: DataSource
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+    }
 
     async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {
         const queryRunner = this.dataSource.createQueryRunner()

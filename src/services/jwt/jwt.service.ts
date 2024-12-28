@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { JwtService as NestJwtService } from "@nestjs/jwt"
 import { envConfig } from "@src/config"
-import { UserEntity } from "@src/database"
+import { UserEntity } from "@src/databases"
 
 @Injectable()
 export class JwtService {

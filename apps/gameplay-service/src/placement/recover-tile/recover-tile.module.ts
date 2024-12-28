@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common"
-import { typeOrmForFeature } from "@src/dynamic-modules"
 import { RecoverTileService } from "./recover-tile.service"
 import { RecoverTileController } from "./recover-tile.controller"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
     imports: [
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot()
     ],
     controllers: [RecoverTileController],
     exports: [RecoverTileService],

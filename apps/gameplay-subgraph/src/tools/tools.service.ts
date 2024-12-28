@@ -1,5 +1,5 @@
 import { Injectable, Logger, Inject, UseInterceptors } from "@nestjs/common"
-import { ToolEntity } from "@src/database"
+import { ToolEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetToolsArgs } from "./"
 import { CACHE_MANAGER, CacheInterceptor, CacheKey } from "@nestjs/cache-manager"
