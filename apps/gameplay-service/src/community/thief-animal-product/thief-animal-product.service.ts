@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     HaverstQuantityRemainingEqualMinHarvestQuantityException,
     PlacedItemAnimalNotCurrentlyYieldingException,
@@ -23,9 +23,8 @@ import {
     UserEntity
 } from "@src/databases"
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/services"
-import { ClientKafka } from "@nestjs/microservices"
-import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
+import { KafkaClientService, KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class ThiefAnimalProductService {
@@ -33,8 +32,7 @@ export class ThiefAnimalProductService {
 
     private readonly dataSource: DataSource
     constructor(
-        @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
-        private readonly clientKafka: ClientKafka,
+        private readonly kafkaClientService: KafkaClientService,
         private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
@@ -182,7 +180,7 @@ export class ThiefAnimalProductService {
                 throw new ThiefAnimalProductTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(kafkaConfig[KafkaConfigKey.PlacedItems].patterns[KafkaPlacedItemPattern.Broadcast], {
+            this.kafkaClientService.emit(KafkaPattern.PlacedItemsBroadcast, {
                 userId: request.neighborUserId
             })
 

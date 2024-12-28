@@ -1,6 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
-import { ClientKafka } from "@nestjs/microservices"
-import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
     CropCurrentState,
@@ -26,6 +24,7 @@ import {
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/services"
 import { DataSource } from "typeorm"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
+import { KafkaClientService, KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class TheifCropService{
@@ -33,8 +32,7 @@ export class TheifCropService{
 
     private readonly dataSource: DataSource
     constructor(
-        @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
-        private readonly clientKafka: ClientKafka,
+        private readonly kafkaClientService: KafkaClientService,
         private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
@@ -190,9 +188,10 @@ export class TheifCropService{
                 throw new ThiefCropTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(kafkaConfig[KafkaConfigKey.PlacedItems].patterns[KafkaPlacedItemPattern.Broadcast], {
+            this.kafkaClientService.emit(KafkaPattern.PlacedItemsBroadcast, {
                 userId: request.neighborUserId
             })
+
             return {
                 quantity: actualQuantity
             }

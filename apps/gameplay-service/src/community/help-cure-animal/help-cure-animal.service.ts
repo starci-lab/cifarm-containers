@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     HelpCureAnimalTransactionFailedException,
     PlacedItemAnimalNotFoundException,
@@ -17,9 +17,8 @@ import {
 } from "@src/databases"
 import { EnergyService, LevelService } from "@src/services"
 import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
-import { ClientKafka } from "@nestjs/microservices"
-import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
 import { GameplayPostgreSQLService } from "@src/databases"
+import { KafkaClientService, KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class HelpCureAnimalService {
@@ -27,8 +26,7 @@ export class HelpCureAnimalService {
 
     private readonly dataSource: DataSource
     constructor(
-        @Inject(kafkaConfig[KafkaConfigKey.PlacedItems].name)
-        private readonly clientKafka: ClientKafka,
+        private readonly kafkaClientService: KafkaClientService,
         private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
@@ -112,8 +110,8 @@ export class HelpCureAnimalService {
                 throw new HelpCureAnimalTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(
-                kafkaConfig[KafkaConfigKey.PlacedItems].patterns[KafkaPlacedItemPattern.Broadcast], {
+            this.kafkaClientService.emit(
+                KafkaPattern.PlacedItemsBroadcast, {
                     userId: request.neighborUserId
                 })
 
