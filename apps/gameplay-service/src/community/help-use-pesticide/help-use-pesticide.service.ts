@@ -17,7 +17,7 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/services"
+import { EnergyService, LevelService } from "@src/gameplay"
 import { HelpUsePesticideRequest, HelpUsePesticideResponse } from "./help-use-pesticide.dto"
 import { KafkaClientService, KafkaPattern } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"

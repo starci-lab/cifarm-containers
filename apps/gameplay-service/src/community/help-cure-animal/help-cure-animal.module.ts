@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { EnergyModule, LevelModule } from "@src/services"
+import { GameplayModule } from "@src/gameplay"
 import { HelpCureAnimalController } from "./help-cure-animal.controller"
 import { HelpCureAnimalService } from "./help-cure-animal.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
@@ -13,8 +13,7 @@ import { KafkaModule, KafkaGroupId } from "@src/brokers"
             groupId: KafkaGroupId.PlacedItemsBroadcast,
             producerOnly: true
         }),
-        EnergyModule,
-        LevelModule
+        GameplayModule
     ],
     providers: [HelpCureAnimalService],
     exports: [HelpCureAnimalService],

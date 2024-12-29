@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { EnergyModule, InventoryModule, LevelModule, ThiefModule } from "@src/services"
+import { GameplayModule } from "@src/gameplay"
 import { ThiefAnimalProductController } from "./thief-animal-product.controller"
 import { ThiefAnimalProductService } from "./thief-animal-product.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
@@ -13,10 +13,7 @@ import { KafkaModule, KafkaGroupId } from "@src/brokers"
             groupId: KafkaGroupId.PlacedItemsBroadcast,
             producerOnly: true
         }),
-        EnergyModule,
-        LevelModule,
-        ThiefModule,
-        InventoryModule
+        GameplayModule
     ],
     providers: [ThiefAnimalProductService],
     exports: [ThiefAnimalProductService],
