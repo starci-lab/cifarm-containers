@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common"
-import { configForRoot} from "@src/dynamic-modules"
 import { HealthCheckController } from "./health-check.controller"
 import { TerminusModule } from "@nestjs/terminus"
 import { GameplayPostgreSQLModule } from "@src/databases"
+import { EnvModule } from "@src/config"
 
 @Module({
     imports: [
-        configForRoot(),
+        EnvModule.forRoot(),
         GameplayPostgreSQLModule.forRoot(),
         TerminusModule
     ],

@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common"
 import { APP_FILTER } from "@nestjs/core"
-import { cacheRegisterAsync } from "@src/dynamic-modules"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { AuthModule } from "./auth"
 import { ClaimModule } from "./claim"
@@ -12,10 +11,11 @@ import { PlacementModule } from "./placement"
 import { ProfileModule } from "./profile"
 import { ShopModule } from "./shop"
 import { UpgradeModule } from "./upgrade"
+import { EnvModule } from "@src/config"
 
 @Module({
     imports: [
-        cacheRegisterAsync(),
+        EnvModule.forRoot(),
         AuthModule,
         ClaimModule,
         CommunityModule,
