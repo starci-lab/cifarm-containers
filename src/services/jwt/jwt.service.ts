@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { JwtService as NestJwtService } from "@nestjs/jwt"
-import { envConfig } from "@src/config"
+import { envConfig } from "@src/grpc"
 import { UserEntity } from "@src/databases"
 
 @Injectable()

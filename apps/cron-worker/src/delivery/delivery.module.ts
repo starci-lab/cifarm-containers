@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { BullQueueName } from "@src/config"
+import { BullQueueName } from "@src/grpc"
 import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
 import { DeliveryWorker } from "./delivery.worker"
 import { GoldBalanceModule, TokenBalanceModule } from "@src/services"

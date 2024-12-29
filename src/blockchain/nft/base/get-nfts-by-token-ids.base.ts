@@ -14,7 +14,7 @@ import {
     Platform,
     blockchainConfig,
     chainKeyToPlatform,
-} from "@src/config"
+} from "@src/grpc"
 import { PlatformNotFoundException } from "@src/exceptions"
 import { MulticallProvider } from "@ethers-ext/provider-multicall"
 import { NearNft, NftData } from "../common"

@@ -1,6 +1,6 @@
 import { CacheModule, CacheStore } from "@nestjs/cache-manager"
 import { Module } from "@nestjs/common"
-import { envConfig } from "@src/config"
+import { envConfig } from "@src/grpc"
 import { redisStore } from "cache-manager-redis-yet"
 import { CacheRedisService } from "./cache-redis.service"
 

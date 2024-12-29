@@ -1,7 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { DeliverInstantlyService } from "./deliver-instantly.service"
-import { grpcConfig, GrpcServiceName } from "@src/config"
+import { grpcData, GrpcServiceName } from "@src/grpc"
 
 @Controller()
 export class DeliveryInstantlyController {
@@ -9,7 +9,7 @@ export class DeliveryInstantlyController {
 
     constructor(private readonly deliverInstantlyService: DeliverInstantlyService) {}
 
-    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "DeliverInstantly")
+    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "DeliverInstantly")
     public async deliverInstantly() {
         this.logger.verbose("DeliveryInstantly")
         return this.deliverInstantlyService.deliverInstantly()

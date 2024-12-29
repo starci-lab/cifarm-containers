@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import { HealthCheckModule } from "./health-check"
-import { envConfig } from "@src/config"
+import { envConfig } from "@src/grpc"
 
 const bootstrap = async () => {
     const app = await NestFactory.createApplicationContext(AppModule)

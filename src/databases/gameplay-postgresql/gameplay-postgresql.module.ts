@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common"
 import { GameplayPostgreSQLService } from "./gameplay-postgresql.service"
 import { GameplayPostgreSQLOptions, GameplayPostgreSQLType } from "./gameplay-postgresql.types"
 import { TypeORMConfig } from "@src/types"
-import { envConfig } from "@src/config"
+import { envConfig } from "@src/grpc"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { gameplayPostgreSqlEntites } from "./entities"
 

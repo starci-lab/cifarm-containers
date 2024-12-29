@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import { RedisIoAdapter } from "@src/adapters"
-import { envConfig, kafkaConfig } from "@src/config"
+import { envConfig, kafkaConfig } from "@src/grpc"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { v4 } from "uuid"
 import { kafkaBrokers } from "@src/dynamic-modules"

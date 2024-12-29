@@ -1,7 +1,7 @@
 import { ConfigModule } from "@nestjs/config"
 import { Test } from "@nestjs/testing"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { envConfig, Network, SupportedChainKey } from "@src/config"
+import { envConfig, Network, SupportedChainKey } from "@src/grpc"
 import { PlacedItemEntity, TileEntity, TileId, UserEntity } from "@src/databases"
 import { UserInsufficientGoldException } from "@src/exceptions"
 import { GoldBalanceService } from "@src/services"

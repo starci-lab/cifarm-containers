@@ -2,7 +2,7 @@ import {
     envConfig,
     Network,
     SupportedChainKey,
-} from "@src/config"
+} from "@src/grpc"
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { Account } from "near-api-js"
 import { nearClient, nearKeyPair, nearKeyStore } from "../rpcs"

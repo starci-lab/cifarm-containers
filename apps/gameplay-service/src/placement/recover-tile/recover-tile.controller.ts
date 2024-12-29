@@ -1,6 +1,6 @@
 import { Body, Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { grpcConfig, GrpcServiceName } from "@src/config"
+import { grpcData, GrpcServiceName } from "@src/grpc"
 import { RecoverTileService } from "./recover-tile.service"
 import { RecoverTileRequest } from "./recover-tile.dto"
 
@@ -11,7 +11,7 @@ export class RecoverTileController {
             private readonly placementService: RecoverTileService
     ){}
 
-    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "RecoverTile") 
+    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "RecoverTile") 
     public async recoverTile(@Body() request: RecoverTileRequest) {
         this.logger.debug(`Received request to recover Tile: ${JSON.stringify(request)}`)
         return await this.placementService.recoverTile(request)

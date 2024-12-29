@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { KafkaConfigKey } from "@src/config"
+import { KafkaConfigKey } from "@src/grpc"
 import { typeOrmForFeature, kafkaClientRegister, configForRoot } from "@src/dynamic-modules"
 import { WsJwtAuthModule } from "@src/guards"
 import { BroadcastController } from "./broadcast.controller"

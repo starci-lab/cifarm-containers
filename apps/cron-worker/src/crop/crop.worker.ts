@@ -10,7 +10,7 @@ import {
     SystemId
 } from "@src/databases"
 import { CropsWorkerProcessTransactionFailedException } from "@src/exceptions"
-import { bullConfig, BullQueueName } from "@src/config"
+import { bullConfig, BullQueueName } from "@src/grpc"
 import { CropJobData } from "@apps/cron-scheduler"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"

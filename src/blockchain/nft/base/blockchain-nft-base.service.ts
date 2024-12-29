@@ -3,7 +3,7 @@ import {
     GetNftsByOwnerAddressParams,
     _getNftsByOwnerAddress,
 } from "./get-nfts-by-owner-address.base"
-import { Network } from "@src/config"
+import { Network } from "@src/grpc"
 import {
     GetNftsByTokenIdsParams,
     _getNftsByTokenIds,

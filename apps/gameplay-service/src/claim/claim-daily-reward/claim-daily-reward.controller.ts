@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
 import { ClaimDailyRewardRequest } from "./claim-daily-reward.dto"
-import { grpcConfig, GrpcServiceName } from "@src/config"
+import { grpcData, GrpcServiceName } from "@src/grpc"
 
 @Controller()
 export class ClaimDailyRewardSpinController {
@@ -10,7 +10,7 @@ export class ClaimDailyRewardSpinController {
 
     constructor(private readonly claimDailyRewardService: ClaimDailyRewardService) {}
 
-    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "ClaimDailyReward")
+    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "ClaimDailyReward")
     public async claimDailyReward(request: ClaimDailyRewardRequest) {
         this.logger.debug(`Claiming daily reward for user ${request.userId}`)
         return this.claimDailyRewardService.claimDailyReward(request)

@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { grpcConfig, GrpcServiceName } from "@src/config"
+import { grpcData, GrpcServiceName } from "@src/grpc"
 import { UnfollowService } from "./unfollow.service"
 import { UnfollowRequest } from "./unfollow.dto"
 
@@ -10,7 +10,7 @@ export class UnfollowController {
 
     constructor(private readonly unfollowService: UnfollowService) {}
 
-    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "Unfollow")
+    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "Unfollow")
     public async follow(request: UnfollowRequest) {
         this.logger.debug("Unfollow called")
         return this.unfollowService.unfollow(request)

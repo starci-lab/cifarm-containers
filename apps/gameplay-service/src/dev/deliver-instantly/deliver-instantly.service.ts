@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DeliverInstantlyResponse } from "./deliver-instantly.dto"
 import { Cache } from "@nestjs/cache-manager"
-import { CacheKey } from "@src/config"
+import { CacheKey } from "@src/grpc"
 import { CacheRedisService } from "@src/databases"
 
 @Injectable()

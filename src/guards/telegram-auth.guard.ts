@@ -1,4 +1,4 @@
-import { envConfig } from "@src/config"
+import { envConfig } from "@src/grpc"
 import { TelegramAuthorizationFailedException } from "@src/exceptions"
 import { CanActivate, ExecutionContext, Logger } from "@nestjs/common"
 import { validate, parse } from "@telegram-apps/init-data-node"

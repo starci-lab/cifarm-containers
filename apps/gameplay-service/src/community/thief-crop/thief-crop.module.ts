@@ -4,7 +4,7 @@ import { ThiefCropController } from "./thief-crop.controller"
 import { TheifCropService } from "./thief-crop.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
 import { KafkaModule, KafkaGroupId } from "@src/brokers"
-import { EnvModule } from "@src/config"
+import { EnvModule } from "@src/grpc"
 
 @Global()
 @Module({

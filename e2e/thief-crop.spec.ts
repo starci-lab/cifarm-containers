@@ -6,12 +6,12 @@ import { Test } from "@nestjs/testing"
 import {
     authAxios,
     gameplayAxios,
-    grpcConfig,
+    grpcData,
     GrpcServiceName,
     Network,
     socket,
     SupportedChainKey
-} from "@src/config"
+} from "@src/grpc"
 import {
     CropCurrentState,
     CropEntity,
@@ -61,8 +61,8 @@ describe("Thief crop flow", () => {
 
         dataSource = module.get<DataSource>(DataSource)
         jwtService = module.get<JwtService>(JwtService)
-        const clientGrpc = module.get<ClientGrpc>(grpcConfig[GrpcServiceName.Gameplay].name)
-        gameplayService = clientGrpc.getService<IGameplayService>(grpcConfig[GrpcServiceName.Gameplay].service)
+        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcServiceName.Gameplay].name)
+        gameplayService = clientGrpc.getService<IGameplayService>(grpcData[GrpcServiceName.Gameplay].service)
 
         //sign in
         //get mesasge

@@ -88,7 +88,7 @@ import {
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
-import { grpcConfig, GrpcServiceName } from "@src/config"
+import { grpcData, GrpcServiceName } from "@src/grpc"
 import { User } from "@src/decorators"
 import { RestJwtAuthGuard } from "@src/guards"
 import { UserLike } from "@src/services"
@@ -103,14 +103,14 @@ export class GameplayController implements OnModuleInit {
     private readonly logger = new Logger(GameplayController.name)
 
     constructor(
-        @Inject(grpcConfig[GrpcServiceName.Gameplay].name) private grpcClient: ClientGrpc
+        @Inject(grpcData[GrpcServiceName.Gameplay].name) private grpcClient: ClientGrpc
     ) {}
 
     private gameplayService: IGameplayService
 
     onModuleInit() {
         this.gameplayService = this.grpcClient.getService<IGameplayService>(
-            grpcConfig[GrpcServiceName.Gameplay].service
+            grpcData[GrpcServiceName.Gameplay].service
         )
     }
 

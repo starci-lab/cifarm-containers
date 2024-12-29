@@ -3,7 +3,7 @@ import { Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
 import { CliSqliteService, GameplayPostgreSQLEntity } from "@src/databases"
 import { GameplayPostgreSQLType } from "@src/databases"
-import { envConfig } from "@src/config"
+import { envConfig } from "@src/grpc"
 import { isProduction } from "@src/utils"
 
 @SubCommand({ name: "init", description: "Initialize database" })

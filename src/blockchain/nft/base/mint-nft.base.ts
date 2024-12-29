@@ -5,7 +5,7 @@ import {
     Network,
     Platform,
     SupportedChainKey,
-} from "@src/config"
+} from "@src/grpc"
 import { nearClient, nearKeyPair, nearKeyStore } from "../../rpcs"
 import { computeRaw } from "@src/utils"
 import { TransactionResult } from "@src/types"

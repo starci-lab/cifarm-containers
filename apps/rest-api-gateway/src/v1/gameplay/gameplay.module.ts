@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { GameplayController } from "./gameplay.controller"
 import { grpcClientRegisterAsync } from "@src/dynamic-modules"
-import { GrpcServiceName } from "@src/config"
+import { GrpcServiceName } from "@src/grpc"
 
 @Module({
     imports: [

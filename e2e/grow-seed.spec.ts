@@ -1,7 +1,7 @@
 //npx jest --config ./e2e/jest.json ./e2e/grow-seed.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { authAxios, gameplayAxios, grpcConfig, GrpcServiceName, Network, SupportedChainKey } from "@src/config"
+import { authAxios, gameplayAxios, grpcData, GrpcServiceName, Network, SupportedChainKey } from "@src/grpc"
 import { CropCurrentState, CropEntity, CropId, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
 import { configForRoot, grpcClientRegisterAsync, typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
 import { JwtModule, JwtService, UserLike } from "@src/services"
@@ -40,8 +40,8 @@ describe("Grow seed flow", () => {
         accessToken = verifySignatureData.accessToken
         dataSource = module.get<DataSource>(DataSource)
         jwtService = module.get<JwtService>(JwtService)
-        const clientGrpc = module.get<ClientGrpc>(grpcConfig[GrpcServiceName.Gameplay].name)
-        gameplayService = clientGrpc.getService<IGameplayService>(grpcConfig[GrpcServiceName.Gameplay].service)
+        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcServiceName.Gameplay].name)
+        gameplayService = clientGrpc.getService<IGameplayService>(grpcData[GrpcServiceName.Gameplay].service)
 
         // Decode accessToken to get user
         user = await jwtService.decodeToken(accessToken)

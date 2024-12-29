@@ -1,4 +1,4 @@
-import { Network } from "@src/config"
+import { Network } from "@src/grpc"
 import {} from "bs58"
 import { connect, KeyPair, keyStores } from "near-api-js"
 import { KeyStore } from "near-api-js/lib/key_stores"

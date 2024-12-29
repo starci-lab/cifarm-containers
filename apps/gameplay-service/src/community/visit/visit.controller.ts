@@ -1,7 +1,7 @@
 import { Controller, Logger } from "@nestjs/common"
 import { VisitService } from "./visit.service"
 import { GrpcMethod } from "@nestjs/microservices"
-import { grpcConfig, GrpcServiceName } from "@src/config"
+import { grpcData, GrpcServiceName } from "@src/grpc"
 import { VisitRequest } from "./visit.dto"
 
 @Controller()
@@ -10,7 +10,7 @@ export class VisitController {
 
     constructor(private readonly visitService: VisitService) {}
 
-    @GrpcMethod(grpcConfig[GrpcServiceName.Gameplay].service, "Visit")
+    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "Visit")
     async visit(request: VisitRequest) {
         this.logger.debug("Visit called")
         await this.visitService.visit(request)

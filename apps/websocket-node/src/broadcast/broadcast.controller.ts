@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { EventPattern, Payload } from "@nestjs/microservices"
-import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/config"
+import { kafkaConfig, KafkaConfigKey, KafkaPlacedItemPattern } from "@src/grpc"
 import { BroadcastPlacedItemsRequest } from "./broadcast.dto"
 import { BroadcastGateway } from "./broadcast.gateway"
 

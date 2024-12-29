@@ -4,11 +4,11 @@ import { Test } from "@nestjs/testing"
 import {
     authAxios,
     gameplayAxios,
-    grpcConfig,
+    grpcData,
     GrpcServiceName,
     Network,
     SupportedChainKey,
-} from "@src/config"
+} from "@src/grpc"
 import {
     AnimalCurrentState,
     AnimalEntity,
@@ -57,10 +57,10 @@ describe("Raise animal flow", () => {
         dataSource = module.get<DataSource>(DataSource)
         jwtService = module.get<JwtService>(JwtService)
         const clientGrpc = module.get<ClientGrpc>(
-            grpcConfig[GrpcServiceName.Gameplay].name
+            grpcData[GrpcServiceName.Gameplay].name
         )
         gameplayService = clientGrpc.getService<IGameplayService>(
-            grpcConfig[GrpcServiceName.Gameplay].service
+            grpcData[GrpcServiceName.Gameplay].service
         )
 
         // Decode accessToken to get user

@@ -11,7 +11,7 @@ import { PlacementModule } from "./placement"
 import { ProfileModule } from "./profile"
 import { ShopModule } from "./shop"
 import { UpgradeModule } from "./upgrade"
-import { EnvModule } from "@src/config"
+import { EnvModule } from "@src/grpc"
 
 @Module({
     imports: [

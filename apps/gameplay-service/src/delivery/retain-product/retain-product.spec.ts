@@ -1,7 +1,7 @@
 import { ConfigModule } from "@nestjs/config"
 import { Test } from "@nestjs/testing"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { envConfig, Network, SupportedChainKey } from "@src/config"
+import { envConfig, Network, SupportedChainKey } from "@src/grpc"
 import { DeliveringProductEntity, ProductId, UserEntity } from "@src/databases"
 import { DeliveringProductNotFoundException } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"

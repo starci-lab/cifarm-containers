@@ -1,5 +1,6 @@
 import { NestFactory } from "@nestjs/core"
-import { envConfig, grpcConfig, GrpcServiceName } from "@src/config"
+import { grpcData, GrpcServiceName } from "@src/grpc"
+import { envConfig } from "@src/config"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { getLoopbackAddress } from "@src/utils"
 import { HealthCheckModule } from "./health-check"
@@ -10,8 +11,8 @@ const bootstrap = async () => {
         transport: Transport.GRPC,
         options: {
             url: getLoopbackAddress(envConfig().containers.gameplayService.port),
-            package: grpcConfig[GrpcServiceName.Gameplay].package,
-            protoPath: grpcConfig[GrpcServiceName.Gameplay].protoPath
+            package: grpcData[GrpcServiceName.Gameplay].package,
+            protoPath: grpcData[GrpcServiceName.Gameplay].protoPath
         }
     })
     await app.listen()

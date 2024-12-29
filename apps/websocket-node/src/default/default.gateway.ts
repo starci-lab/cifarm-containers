@@ -10,7 +10,7 @@ import {
 import { Server, Socket } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
 import { getEnvValue, getHttpUrl, isProduction } from "@src/utils"
-import { envConfig } from "@src/config"
+import { envConfig } from "@src/grpc"
 import { BcryptService } from "@src/services/hash/bcrypt"
 
 @WebSocketGateway({

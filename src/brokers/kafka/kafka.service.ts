@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
-import { KAFKA_NAME } from "./kafka.types"
+import { KAFKA_NAME } from "./kafka.constants"
 
 @Injectable()
 export class KafkaClientService {

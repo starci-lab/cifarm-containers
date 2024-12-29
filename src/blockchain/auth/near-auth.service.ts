@@ -1,4 +1,4 @@
-import { fakeConfig } from "@src/config"
+import { fakeConfig } from "@src/grpc"
 import { SignedMessage } from "../common"
 import { Injectable, Logger } from "@nestjs/common"
 import { nearKeyPair } from "../rpcs"

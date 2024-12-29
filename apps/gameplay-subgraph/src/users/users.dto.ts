@@ -1,6 +1,6 @@
 import { Field, Float, ID, InputType, Int } from "@nestjs/graphql"
 import { PaginatedArgs } from "@src/types"
-import { Network, SupportedChainKey } from "@src/config"
+import { Network, SupportedChainKey } from "@src/grpc"
 
 @InputType({
     description: "GetUsersArgs"

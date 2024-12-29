@@ -1,4 +1,4 @@
-import { NodeEnv, envConfig } from "@src/config"
+import { NodeEnv, envConfig } from "@src/grpc"
 
 //sw2s
 export const getEnvValue = <ValueType = string>(values: {

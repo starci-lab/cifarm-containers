@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
 import { CommandsModule } from "./commands"
-import { EnvModule } from "@src/config"
+import { EnvModule } from "@src/grpc"
 
 @Module({
     imports: [

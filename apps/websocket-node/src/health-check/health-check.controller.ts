@@ -1,7 +1,7 @@
 import { Controller, Get, Logger } from "@nestjs/common"
 import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
 import { HealthCheckService, HealthCheck, TypeOrmHealthIndicator, MicroserviceHealthIndicator } from "@nestjs/terminus"
-import { envConfig, healthCheckConfig, timerConfig } from "@src/config"
+import { envConfig, healthCheckConfig, timerConfig } from "@src/grpc"
 import { kafkaBrokers } from "@src/dynamic-modules"
 
 @Controller()

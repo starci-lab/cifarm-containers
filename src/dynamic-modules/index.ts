@@ -1,5 +1,0 @@
-export * from "./graphql.dynamic-modules"
-export * from "./grpc.dynamic-modules"
-export * from "./bull.dynamic-modules"
-export * from "./scheduler.dynamic-modules"
-export * from "./event-emiter.dynamic-modules"
