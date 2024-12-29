@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
-import { GameplayController } from "./gameplay.controller"
 import { GrpcModule, GrpcServiceName } from "@src/grpc"
+import { GameplayController } from "./gameplay.controller"
 
 @Module({
     imports: [
@@ -9,7 +9,7 @@ import { GrpcModule, GrpcServiceName } from "@src/grpc"
         }),
     ],
     controllers: [GameplayController],
-    providers: [GameplayController],
-    exports: [GameplayController],
+    providers: [],
+    exports: [],
 })
 export class GameplayModule {}

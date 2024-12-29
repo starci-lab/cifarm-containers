@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
-import { AuthController } from "./auth.controller"
 import { GrpcModule, GrpcServiceName } from "@src/grpc"
+import { AuthController } from "./auth.controller"
 
 @Module({
     imports: [
@@ -9,7 +9,7 @@ import { GrpcModule, GrpcServiceName } from "@src/grpc"
         }),
     ],
     controllers: [AuthController],
-    providers: [AuthController],
-    exports: [AuthController]
+    providers: [],
+    exports: []
 })
 export class AuthModule {}
