@@ -1,15 +1,18 @@
 //npx jest --config ./e2e/jest.json ./e2e/grow-seed.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { authAxios, gameplayAxios, grpcData, GrpcServiceName, Network, SupportedChainKey } from "@src/grpc"
-import { CropCurrentState, CropEntity, CropId, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
-import { configForRoot, grpcClientRegisterAsync, typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
+import { CropCurrentState, CropEntity, CropId, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
 import { JwtModule, JwtService, UserLike } from "@src/services"
 import { DataSource } from "typeorm"
 import { lastValueFrom } from "rxjs"
 import { sleep } from "@src/utils"
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
+import { EnvModule } from "@src/env"
+import { grpcData, GrpcModule } from "@src/grpc"
+import { GrpcServiceName } from "@src/grpc/grpc.types"
+import { Network, SupportedChainKey } from "@src/config"
+import { createAxios } from "./e2e.utils"
 
 describe("Grow seed flow", () => {
     let accessToken: string
@@ -21,21 +24,23 @@ describe("Grow seed flow", () => {
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [
-                configForRoot(),
-                typeOrmForRoot(),
-                typeOrmForFeature(),
-                grpcClientRegisterAsync(GrpcServiceName.Gameplay),
+                EnvModule.forRoot(),
+                GameplayPostgreSQLModule.forRoot(),
+                GrpcModule.forRoot({
+                    name: GrpcServiceName.Gameplay
+                }),
                 JwtModule
             ],
         }).compile()
 
         // Sign in and retrieve accessToken
-        const { data } = await authAxios().post("/test-signature", {
+        const authAxios = createAxios("no-auth", { version: "v1" })
+        const { data } = await authAxios.post("/test-signature", {
             chainKey: SupportedChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,
         })
-        const { data: verifySignatureData } = await authAxios().post("/verify-signature", data)
+        const { data: verifySignatureData } = await authAxios.post("/verify-signature", data)
 
         accessToken = verifySignatureData.accessToken
         dataSource = module.get<DataSource>(DataSource)
@@ -48,18 +53,17 @@ describe("Grow seed flow", () => {
     })
 
     it("Should grow seed successfully", async () => {
-        //test with carrot
+        // Test with carrot
         const cropId: CropId = CropId.Carrot
+        const axios = createAxios("with-auth", { version: "v1", accessToken })
 
-        const axios = gameplayAxios(accessToken)
-
-        //buy seeds from the shop
+        // Buy seeds from the shop
         await axios.post("/buy-seeds", {
             cropId,
             quantity: 1
         })
 
-        //get the inventory
+        // Get the inventory
         const { id: inventorySeedId } = await dataSource.manager.findOne(InventoryEntity, {
             where: {
                 userId: user.id,
@@ -72,7 +76,8 @@ describe("Grow seed flow", () => {
                 inventoryType: true
             }
         })
-        //get the first tile
+
+        // Get the first tile
         const { id: placedItemTileId } = await dataSource.manager.findOne(PlacedItemEntity, {
             where: {
                 userId: user.id,
@@ -90,7 +95,7 @@ describe("Grow seed flow", () => {
             }
         })
 
-        //plant the seed
+        // Plant the seed
         await axios.post("/plant-seed", {
             inventorySeedId,
             placedItemTileId
@@ -120,11 +125,11 @@ describe("Grow seed flow", () => {
             expect(seedGrowthInfo.currentStage).toBe(stage)
 
             if (seedGrowthInfo.currentState === CropCurrentState.NeedWater) {
-                await axios.post("/water", { placedItemTileId: placedItemTileId })
+                await axios.post("/water", { placedItemTileId })
             } else if (seedGrowthInfo.currentState === CropCurrentState.IsWeedy) {
-                await axios.post("/use-herbicide", { placedItemTileId: placedItemTileId })
+                await axios.post("/use-herbicide", { placedItemTileId })
             } else if (seedGrowthInfo.currentState === CropCurrentState.IsInfested) {
-                await axios.post("/use-pesticide", { placedItemTileId: placedItemTileId })
+                await axios.post("/use-pesticide", { placedItemTileId })
             }
 
             // Ensure the crop is in a normal state
@@ -135,7 +140,6 @@ describe("Grow seed flow", () => {
             })
 
             expect(updatedSeedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
-
         }
 
         // Final assertion: Crop should be fully matured
@@ -148,6 +152,6 @@ describe("Grow seed flow", () => {
     })
 
     afterAll(async () => {
-        await dataSource.manager.remove(UserEntity, user)
+        await dataSource.manager.delete(UserEntity, user.id)
     })
 })

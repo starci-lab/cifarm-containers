@@ -1,12 +1,14 @@
 import { Module } from "@nestjs/common"
+import { BullQueueName, RegisterModule } from "@src/bull"
+import { GameplayPostgreSQLModule } from "@src/databases"
 import { CropService } from "./crop.service"
-import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
-import { BullQueueName } from "@src/grpc"
 
 @Module({
     imports: [
-        bullRegisterQueue(BullQueueName.Crop),
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot(),
+        RegisterModule.forRoot({
+            queueName: BullQueueName.Crop
+        })
     ],
     providers: [CropService]
 })

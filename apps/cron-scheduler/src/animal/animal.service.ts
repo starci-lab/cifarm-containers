@@ -1,22 +1,22 @@
 import { InjectQueue } from "@nestjs/bullmq"
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
-import { Queue } from "bullmq"
-import { DataSource, Not } from "typeorm"
-import { v4 } from "uuid"
+import { bullData, BullQueueName } from "@src/bull"
 import { AnimalCurrentState, AnimalGrowthLastSchedule, AnimalInfoEntity, Collection, CollectionEntity, SpeedUpData, TempEntity, TempId } from "@src/databases"
-import { AnimalJobData } from "./animal.dto"
-import { bullConfig, BullQueueName } from "@src/grpc"
 import { LeaderElectionService } from "@src/services"
+import { Queue } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
+import { DataSource, Not } from "typeorm"
+import { v4 } from "uuid"
+import { AnimalJobData } from "./animal.dto"
 dayjs.extend(utc)
 
 @Injectable()
 export class AnimalService {
     private readonly logger = new Logger(AnimalService.name)
     constructor(
-        @InjectQueue(bullConfig[BullQueueName.Animal].name) private animalQueue: Queue,
+        @InjectQueue(bullData[BullQueueName.Animal].name) private animalQueue: Queue,
         private readonly dataSource: DataSource,
         private readonly leaderElectionService: LeaderElectionService,
     ) {}
@@ -62,7 +62,7 @@ export class AnimalService {
             }
             
             //split into 10000 per batch
-            const batchSize = bullConfig[BullQueueName.Crop].batchSize
+            const batchSize = bullData[BullQueueName.Crop].batchSize
             const batchCount = Math.ceil(count / batchSize)
             
             let time = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1

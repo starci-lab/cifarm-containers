@@ -1,12 +1,14 @@
 import { Module } from "@nestjs/common"
+import { BullQueueName, RegisterModule } from "@src/bull"
+import { GameplayPostgreSQLModule } from "@src/databases"
 import { DeliveryService } from "./delivery.service"
-import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
-import { BullQueueName } from "@src/grpc"
 
 @Module({
     imports: [
-        bullRegisterQueue(BullQueueName.Delivery),
-        typeOrmForFeature(),
+        GameplayPostgreSQLModule.forRoot(),
+        RegisterModule.forRoot({
+            queueName: BullQueueName.Delivery
+        })
     ],
     providers: [DeliveryService]
 })

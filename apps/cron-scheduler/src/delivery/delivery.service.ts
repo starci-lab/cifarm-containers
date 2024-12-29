@@ -6,11 +6,12 @@ import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { DeliveryJobData } from "./delivery.dto"
 import { DeliveringProductEntity } from "@src/databases"
-import { bullConfig, BullQueueName, CacheKey } from "@src/grpc"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { isProduction } from "@src/utils"
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
+import { bullData, BullQueueName } from "@src/bull"
+import { CacheKey } from "@src/config"
 dayjs.extend(utc)
 
 @Injectable()
@@ -18,7 +19,7 @@ export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
 
     constructor(
-        @InjectQueue(bullConfig[BullQueueName.Delivery].name) private deliveryQueue: Queue,
+        @InjectQueue(bullData[BullQueueName.Delivery].name) private deliveryQueue: Queue,
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly dataSource: DataSource
     ) {}
@@ -55,7 +56,7 @@ export class DeliveryService {
                 return
             }
             
-            const batchSize = bullConfig[BullQueueName.Animal].batchSize
+            const batchSize = bullData[BullQueueName.Animal].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
             const batches = Array.from({ length: batchCount }, (_, i) => ({
