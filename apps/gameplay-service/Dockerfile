@@ -1,6 +1,4 @@
 #docker build -t cifarm/gameplay-service -f ./apps/gameplay-service/Dockerfile . & docker push cifarm/gameplay-service
-#
-
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0
@@ -21,7 +19,9 @@ COPY . .
 RUN npx nest build gameplay-service
 
 # Production Stage (final image)
-FROM build AS production
+FROM node:${NODE_VERSION}-alpine AS production
+
+WORKDIR /usr/src/app
 
 # Copy only the build output and proto files
 COPY --from=build /usr/src/app/dist/apps/gameplay-service .

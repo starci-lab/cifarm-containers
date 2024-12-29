@@ -58,3 +58,5 @@ start.bat
 
 *.sqlite
 *.gql
+
+db

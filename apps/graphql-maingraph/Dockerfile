@@ -25,7 +25,6 @@ FROM build AS production
 
 # Copy only the build output and proto files
 COPY --from=build /usr/src/app/dist/apps/graphql-maingraph .
-COPY --from=build /usr/src/app/proto ./proto
 
 # Install only production dependencies
 RUN npm i --production

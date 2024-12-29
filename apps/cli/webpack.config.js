@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require("path")
 const nodeExternals = require("webpack-node-externals")
 const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin")
@@ -10,10 +11,14 @@ const basePackage = {
     scripts: {
         "start": "node ./main.js"
     },
+    bin: {
+        cifarm: "./main.js"
+    },
     engines: {
         node: ">= 14",
     },
     dependencies: {
+        "sqlite3": "^5.1.7",
     }
 }
 

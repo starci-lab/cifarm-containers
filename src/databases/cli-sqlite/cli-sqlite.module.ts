@@ -13,7 +13,7 @@ export class CliSqliteModule {
                     type: "sqlite",
                     entities: cliSqliteEnties(),
                     synchronize: true,
-                    database: "cli.sqlite",
+                    database: "db/cli.sqlite",
                     logging: false
                 }),
                 TypeOrmModule.forFeature(cliSqliteEnties())

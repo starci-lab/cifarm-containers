@@ -43,7 +43,7 @@ import { CommandRunner, Option, SubCommand } from "nest-commander"
 import { gameplayPostgreSqlEntites } from "@src/databases"
 import { Logger } from "@nestjs/common"
 
-@SubCommand({ name: "switch", description: "Switch to another datasource" })
+@SubCommand({ name: "seed", description: "Seed static data into the data source" })
 export class SeedCommand extends CommandRunner {
     private readonly logger = new Logger(SeedCommand.name)
     private readonly dataSource: DataSource
@@ -61,6 +61,10 @@ export class SeedCommand extends CommandRunner {
         const selectedDataSource = await this.dataSource.manager.findOne(GameplayPostgreSQLEntity, {
             where: { selected: true }
         })
+
+        // log selected data source
+        this.logger.debug(`Selected data source: ${selectedDataSource?.type}`)
+
         if (!selectedDataSource) {
             this.logger.error("No data source selected.")
             return

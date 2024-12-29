@@ -37,7 +37,7 @@ export class SwitchCommand extends CommandRunner {
     }
 
     @Option({
-        flags: "-t, --type <value>",
+        flags: "-t, --type <type>",
         description: "Type of the data source to switch to",
         defaultValue: GameplayPostgreSQLType.Main,
     })
