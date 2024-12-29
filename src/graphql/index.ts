@@ -1,2 +1,1 @@
-export * from "./maingraph"
-export * from "./subgraph"
+export * from "./graphql.module"

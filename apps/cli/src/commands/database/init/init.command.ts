@@ -4,7 +4,7 @@ import { DataSource } from "typeorm"
 import { CliSqliteService, GameplayPostgreSQLEntity } from "@src/databases"
 import { GameplayPostgreSQLType } from "@src/databases"
 import { envConfig } from "@src/grpc"
-import { isProduction } from "@src/utils"
+import { isProduction } from "@src/common/utils"
 
 @SubCommand({ name: "init", description: "Initialize database" })
 export class InitCommand extends CommandRunner {

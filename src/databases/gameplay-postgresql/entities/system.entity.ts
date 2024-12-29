@@ -2,7 +2,7 @@ import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import JSON from "graphql-type-json"
-import { Position } from "@src/types"
+import { Position } from "@src/common/types"
 import { AppearanceChance } from "../enums"
 @ObjectType()
 @Entity("system")

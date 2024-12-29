@@ -1,4 +1,4 @@
-import { envConfig } from "@src/config"
+import { envConfig } from "@src/env"
 
 const headlessAvailable = () => {
     const headless1 = envConfig().kafka.headless.headless1

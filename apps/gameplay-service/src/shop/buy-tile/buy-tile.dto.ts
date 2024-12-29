@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Position, UserIdRequest } from "@src/types"
+import { Position, UserIdRequest } from "@src/common/types"
 import { Type } from "class-transformer"
 import { ValidateNested } from "class-validator"
 

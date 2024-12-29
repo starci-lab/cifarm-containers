@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { Position, UserIdRequest } from "@src/types"
+import { Position, UserIdRequest } from "@src/common/types"
 import { IsUUID } from "class-validator"
 
 export class PlaceTileRequest extends UserIdRequest {

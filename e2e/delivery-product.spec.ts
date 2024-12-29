@@ -8,7 +8,7 @@ import { authAxios, CacheKey, gameplayAxios, grpcData, GrpcServiceName, Network,
 import { CropCurrentState, CropEntity, CropId, DeliveringProductEntity, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
 import { cacheRegisterAsync, configForRoot, grpcClientRegisterAsync, typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
 import { JwtModule, JwtService, UserLike } from "@src/services"
-import { sleep } from "@src/utils"
+import { sleep } from "@src/common/utils"
 import { Cache } from "cache-manager"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"

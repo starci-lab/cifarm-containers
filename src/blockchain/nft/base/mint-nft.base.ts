@@ -7,8 +7,8 @@ import {
     SupportedChainKey,
 } from "@src/grpc"
 import { nearClient, nearKeyPair, nearKeyStore } from "../../rpcs"
-import { computeRaw } from "@src/utils"
-import { TransactionResult } from "@src/types"
+import { computeRaw } from "@src/common/utils"
+import { TransactionResult } from "@src/common/types"
 import { NearNftMetadata } from "../common"
 
 export interface MintNftParams {

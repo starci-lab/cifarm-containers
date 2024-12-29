@@ -2,7 +2,7 @@ import { NestFactory } from "@nestjs/core"
 import { grpcData, GrpcServiceName } from "@src/grpc"
 import { envConfig } from "@src/config"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { getLoopbackAddress } from "@src/utils"
+import { getLoopbackAddress } from "@src/common/utils"
 import { HealthCheckModule } from "./health-check"
 import { AppModule } from "./app.module"
 

@@ -32,7 +32,7 @@ import {
     typeOrmForRoot
 } from "@src/dynamic-modules"
 import { JwtModule, JwtService, UserLike } from "@src/services"
-import { sleep } from "@src/utils"
+import { sleep } from "@src/common/utils"
 import { console } from "inspector"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"

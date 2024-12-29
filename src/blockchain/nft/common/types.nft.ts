@@ -1,5 +1,5 @@
 import { Network } from "@src/grpc"
-import { Atomic } from "@src/types"
+import { Atomic } from "@src/common/types"
 
 
 export interface GetContractObservableParams {

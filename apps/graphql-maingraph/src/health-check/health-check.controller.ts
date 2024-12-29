@@ -1,7 +1,7 @@
 import { Controller, Get, Logger } from "@nestjs/common"
 import { HealthCheckService, HealthCheck, HttpHealthIndicator } from "@nestjs/terminus"
 import { envConfig, healthCheckConfig } from "@src/grpc"
-import { getHttpUrl } from "@src/utils"
+import { getHttpUrl } from "@src/common/utils"
 
 @Controller()
 export class HealthCheckController {

@@ -1,4 +1,4 @@
-import { SupportedChainKey, Network } from "../config/blockchain.config"
+import { SupportedChainKey, Network } from "../blockchain/blockchain.config"
 
 export enum NodeEnv {
     Production = "production",

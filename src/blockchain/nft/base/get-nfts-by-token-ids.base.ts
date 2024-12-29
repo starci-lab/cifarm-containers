@@ -22,7 +22,7 @@ import { Connection, PublicKey, ParsedAccountData } from "@solana/web3.js"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
 import { fetchDigitalAsset } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey } from "@metaplex-foundation/umi"
-import { Atomic } from "@src/types"
+import { Atomic } from "@src/common/types"
 import { IpfsService } from "../common"
 
 export interface GetNftsByTokenIdsParams {

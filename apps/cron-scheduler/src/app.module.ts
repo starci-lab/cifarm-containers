@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 //import { AnimalModule } from "./animal"
 
-import { LeaderElectionModule } from "@src/services/leader-election"
+import { LeaderElectionModule } from "@src/leader-election"
 import { AnimalModule } from "./animal"
 import { CropModule } from "./crop"
 import { DeliveryModule } from "./delivery"

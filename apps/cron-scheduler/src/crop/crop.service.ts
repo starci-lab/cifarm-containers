@@ -8,7 +8,7 @@ import { Collection, CollectionEntity, CropCurrentState, CropGrowthLastSchedule,
 import { CropJobData } from "./crop.dto"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
-import { LeaderElectionService } from "@src/services/leader-election"
+import { LeaderElectionService } from "@src/leader-election"
 import { bullData, BullQueueName } from "@src/bull"
 
 dayjs.extend(utc)

@@ -1,6 +1,6 @@
 import { Global, Module } from "@nestjs/common"
 import { InventoryModule, LevelModule } from "@src/services"
-import { EnergyModule } from "@src/services/gameplay/energy/energy.module"
+import { EnergyModule } from "@src/gameplay/energy/energy.module"
 import { UsePesticideController } from "./use-pesticide.controller"
 import { UsePesticideService } from "./use-pesticide.service"
 import { GameplayPostgreSQLModule } from "@src/databases"

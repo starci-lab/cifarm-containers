@@ -1,4 +1,4 @@
-import { UserIdRequest } from "@src/types"
+import { UserIdRequest } from "@src/common/types"
 import { IsBoolean, IsUUID } from "class-validator"
 
 export class VisitRequest extends UserIdRequest {

@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { NeighborAndUserIdRequest } from "@src/types"
+import { NeighborAndUserIdRequest } from "@src/common/types"
 import { IsUUID } from "class-validator"
 
 export class HelpUseHerbicideRequest extends NeighborAndUserIdRequest {

@@ -23,7 +23,7 @@ import {
 import { JwtModule, JwtService, UserLike } from "@src/services"
 import { DataSource } from "typeorm"
 import { lastValueFrom } from "rxjs"
-import { sleep } from "@src/utils"
+import { sleep } from "@src/common/utils"
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 
