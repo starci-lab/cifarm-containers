@@ -4,20 +4,20 @@ import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
-import { Collection, CollectionEntity, CropCurrentState, SeedGrowthInfoEntity, SpeedUpData, TempId } from "@src/databases"
+import { Collection, CollectionEntity, CropCurrentState, CropGrowthLastSchedule, SeedGrowthInfoEntity, SpeedUpData, TempEntity, TempId } from "@src/databases"
 import { CropJobData } from "./crop.dto"
-import { bullConfig, BullQueueName } from "@src/grpc"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { LeaderElectionService } from "@src/services/leader-election"
-import { CropGrowthLastSchedule, TempEntity } from "@src/database/gameplay-postgresql/temp.entity"
+import { bullData, BullQueueName } from "@src/bull"
+
 dayjs.extend(utc)
 
 @Injectable()
 export class CropService {
     private readonly logger = new Logger(CropService.name)
     constructor(
-        @InjectQueue(bullConfig[BullQueueName.Crop].name) private cropQueue: Queue,
+        @InjectQueue(bullData[BullQueueName.Crop].name) private cropQueue: Queue,
         private readonly dataSource: DataSource,
         private readonly leaderElectionService: LeaderElectionService,
     ) {}
@@ -65,7 +65,7 @@ export class CropService {
             }
 
             //split into 10000 per batch
-            const batchSize = bullConfig[BullQueueName.Crop].batchSize
+            const batchSize = bullData[BullQueueName.Crop].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
             let time = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1
