@@ -15,7 +15,7 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/services"
+import { EnergyService, LevelService } from "@src/gameplay"
 import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
 import { GameplayPostgreSQLService } from "@src/databases"
 import { KafkaClientService, KafkaPattern } from "@src/brokers"

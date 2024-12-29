@@ -8,7 +8,7 @@ import { DataSource, DeepPartial } from "typeorm"
 import { ClaimDailyRewardRequest, ClaimDailyRewardResponse } from "./claim-daily-reward.dto"
 import { DailyRewardEntity, GameplayPostgreSQLService, UserEntity } from "@src/databases"
 import dayjs from "dayjs"
-import { GoldBalanceService, TokenBalanceService } from "@src/services"
+import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
 
 @Injectable()
 export class ClaimDailyRewardService {

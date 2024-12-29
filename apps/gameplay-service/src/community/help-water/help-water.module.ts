@@ -1,7 +1,7 @@
 import { Global, Module } from "@nestjs/common"
 import { HelpWaterController } from "./help-water.controller"
 import { HelpWaterService } from "./help-water.service"
-import { EnergyModule, LevelModule } from "@src/services"
+import { GameplayModule } from "@src/gameplay"
 import { GameplayPostgreSQLModule } from "@src/databases"
 import { KafkaModule, KafkaGroupId } from "@src/brokers"
 
@@ -13,8 +13,7 @@ import { KafkaModule, KafkaGroupId } from "@src/brokers"
             groupId: KafkaGroupId.PlacedItemsBroadcast,
             producerOnly: true
         }),
-        EnergyModule,
-        LevelModule
+        GameplayModule
     ],
     providers: [HelpWaterService],
     exports: [HelpWaterService],

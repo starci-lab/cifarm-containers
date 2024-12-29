@@ -22,7 +22,7 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/services"
+import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 import { KafkaClientService, KafkaPattern } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"

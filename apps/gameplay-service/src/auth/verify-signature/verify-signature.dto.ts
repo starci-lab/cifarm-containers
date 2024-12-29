@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty, IsOptional, IsString } from "class-validator"
-import { Network, SupportedChainKey } from "@src/config"
+import { Network, SupportedChainKey } from "@src/blockchain"
 import { SignedMessage } from "@src/blockchain"
 
 export class VerifySignatureRequest implements SignedMessage {

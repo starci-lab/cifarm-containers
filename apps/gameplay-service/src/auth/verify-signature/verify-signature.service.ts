@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/config"
+import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/blockchain"
 import { CacheNotFound, VerifySignatureTransactionFailedException } from "@src/exceptions"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 
@@ -24,7 +24,7 @@ import {
     SolanaAuthService
 } from "@src/blockchain"
 
-import { EnergyService } from "@src/services"
+import { EnergyService } from "@src/gameplay"
 
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"

@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { EnergyModule, GoldBalanceModule } from "@src/services"
+import { GameplayModule } from "@src/gameplay"
 import { VerifySignatureController } from "./verify-signature.controller"
 import { VerifySignatureService } from "./verify-signature.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
@@ -8,8 +8,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
-        EnergyModule,
-        GoldBalanceModule,
+        GameplayModule
     ],
     controllers: [VerifySignatureController],
     providers: [VerifySignatureService],

@@ -21,7 +21,7 @@ import {
     PlacedItemTileNotPlantedException,
     ThiefCropTransactionFailedException
 } from "@src/exceptions"
-import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/services"
+import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
 import { KafkaClientService, KafkaPattern } from "@src/brokers"
