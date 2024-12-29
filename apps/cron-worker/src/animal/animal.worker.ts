@@ -4,13 +4,13 @@ import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import utc from "dayjs/plugin/utc"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import dayjs from "dayjs"
-import { bullConfig, BullQueueName } from "@src/grpc"
 import { AnimalJobData } from "@apps/cron-scheduler"
 import { Job } from "bullmq"
 import { AnimalsWorkerProcessTransactionFailedException } from "@src/exceptions"
+import { bullData, BullQueueName } from "@src/bull"
 dayjs.extend(utc)
 
-@Processor(bullConfig[BullQueueName.Animal].name)
+@Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost  {
     private readonly logger = new Logger(AnimalWorker.name)
     

@@ -3,12 +3,12 @@ import { Logger } from "@nestjs/common"
 import { Job } from "bullmq"
 import { DataSource} from "typeorm"
 import { DeliverysWorkerProcessTransactionFailedException } from "@src/exceptions"
-import { bullConfig, BullQueueName } from "@src/grpc"
 import { DeliveryJobData } from "@apps/cron-scheduler"
 import { DeliveringProductEntity, UserEntity } from "@src/databases"
-import { GoldBalanceService, TokenBalanceService } from "@src/services"
+import { bullData, BullQueueName } from "@src/bull"
+import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
 
-@Processor(bullConfig[BullQueueName.Delivery].name)
+@Processor(bullData[BullQueueName.Delivery].name)
 export class DeliveryWorker extends WorkerHost {
     private readonly logger = new Logger(DeliveryWorker.name)
 

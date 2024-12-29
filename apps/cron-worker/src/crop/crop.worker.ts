@@ -10,13 +10,13 @@ import {
     SystemId
 } from "@src/databases"
 import { CropsWorkerProcessTransactionFailedException } from "@src/exceptions"
-import { bullConfig, BullQueueName } from "@src/grpc"
 import { CropJobData } from "@apps/cron-scheduler"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
+import { bullData, BullQueueName } from "@src/bull"
 dayjs.extend(utc)
 
-@Processor(bullConfig[BullQueueName.Crop].name)
+@Processor(bullData[BullQueueName.Crop].name)
 export class CropWorker extends WorkerHost {
     private readonly logger = new Logger(CropWorker.name)
 
