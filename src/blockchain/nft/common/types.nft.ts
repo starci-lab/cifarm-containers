@@ -1,4 +1,4 @@
-import { Network } from "@src/blockchain"
+import { Network } from "@src/blockchain/blockchain.config"
 import { Atomic } from "@src/common/types"
 
 export interface GetContractObservableParams {

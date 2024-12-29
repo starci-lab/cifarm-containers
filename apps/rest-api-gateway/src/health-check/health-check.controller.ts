@@ -1,7 +1,8 @@
 import { Controller, Get, Logger } from "@nestjs/common"
 import { HealthCheckService, HealthCheck, HttpHealthIndicator } from "@nestjs/terminus"
-import { envConfig, healthCheckConfig } from "@src/grpc"
 import { getHttpUrl } from "@src/common/utils"
+import { envConfig } from "@src/env"
+import { HEALTH_CHECK_ENDPOINT, HealthCheckDependency } from "@src/health-check"
 
 @Controller()
 export class HealthCheckController {
@@ -19,7 +20,7 @@ export class HealthCheckController {
         return this.health.check([
             async () =>
                 await this.http.pingCheck(
-                    healthCheckConfig.names.gameplayService,
+                    HealthCheckDependency.GameplayService,
                     getHttpUrl(
                         {
                             host : envConfig().containers.gameplayService.host,
