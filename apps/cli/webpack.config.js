@@ -19,6 +19,7 @@ const basePackage = {
     },
     dependencies: {
         "sqlite3": "^5.1.7",
+        "pg": "8.13.1",
     }
 }
 

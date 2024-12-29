@@ -20,7 +20,7 @@ import {
     NearAuthService,
     PolkadotAuthService,
     SolanaAuthService
-} from "@src/services"
+} from "@src/blockchain"
 import { RequestMessageService } from "../request-message"
 import { encode } from "bs58"
 

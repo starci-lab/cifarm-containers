@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { InventoryModule, WalletModule } from "@src/services"
+import { GoldBalanceModule, InventoryModule, TokenBalanceModule,  } from "@src/services"
 import { SpinController } from "./spin.controller"
 import { SpinService } from "./spin.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
@@ -8,7 +8,8 @@ import { GameplayPostgreSQLModule } from "@src/databases"
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
-        WalletModule,
+        GoldBalanceModule,
+        TokenBalanceModule,
         InventoryModule
     ],
     providers: [SpinService],

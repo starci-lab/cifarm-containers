@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { WalletModule, InventoryModule } from "@src/services"
+import { InventoryModule, GoldBalanceModule } from "@src/services"
 import { BuySuppliesController } from "./buy-supplies.controller"
 import { BuySuppliesService } from "./buy-supplies.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
@@ -10,7 +10,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
     imports: [
         GameplayPostgreSQLModule.forRoot(),
         InventoryModule,
-        WalletModule
+        GoldBalanceModule
     ],
     providers: [BuySuppliesService],
     exports: [BuySuppliesService],

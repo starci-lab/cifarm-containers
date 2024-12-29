@@ -14,16 +14,18 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
+
 import {
     AlgorandAuthService,
     AptosAuthService,
-    EnergyService,
     EvmAuthService,
-    JwtService,
     NearAuthService,
     PolkadotAuthService,
     SolanaAuthService
-} from "@src/services"
+} from "@src/blockchain"
+
+import { EnergyService, JwtService } from "@src/services"
+
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
 
