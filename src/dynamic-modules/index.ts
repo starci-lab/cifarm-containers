@@ -1,5 +1,3 @@
-export * from "./cache.dynamic-modules"
-export * from "./config.dynamic-modules"
 export * from "./graphql.dynamic-modules"
 export * from "./grpc.dynamic-modules"
 export * from "./bull.dynamic-modules"
