@@ -1,4 +1,3 @@
-import { fakeConfig } from "@src/grpc"
 import { SignedMessage } from "../common"
 import {
     mnemonicFromSeed,
@@ -8,6 +7,7 @@ import {
 } from "algosdk"
 import { Injectable, Logger } from "@nestjs/common"
 import { mnemonicToSeedSync } from "bip39"
+import { fakeConfig } from "../blockchain.config"
 
 @Injectable()
 export class AlgorandAuthService {

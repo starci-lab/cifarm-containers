@@ -12,18 +12,13 @@ import { fetchDigitalAsset } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey } from "@metaplex-foundation/umi"
 import { Connection, PublicKey, ParsedAccountData } from "@solana/web3.js"
 import { erc721Abi } from "../../abis"
-import {
-    Network,
-    Platform,
-    blockchainConfig,
-    chainKeyToPlatform,
-} from "@src/grpc"
 import { PlatformNotFoundException } from "@src/exceptions"
 import { MulticallProvider } from "@ethers-ext/provider-multicall"
 import { NearNft, NftData } from "../common"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
 import { Atomic } from "@src/common/types"
 import { IpfsService } from "../common"
+import { blockchainConfig, chainKeyToPlatform, Network, Platform } from "@src/blockchain"
 
 export interface GetNftByTokenIdParams {
   tokenId: string;

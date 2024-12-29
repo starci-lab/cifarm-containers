@@ -14,7 +14,7 @@ import {
     CollectAnimalProductTransactionFailedException,
     PlacedItemAnimalNotFoundException
 } from "@src/exceptions"
-import { InventoryService } from "@src/services"
+import { InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import {
     CollectAnimalProductRequest,

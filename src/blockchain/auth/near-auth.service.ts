@@ -1,9 +1,9 @@
-import { fakeConfig } from "@src/grpc"
 import { SignedMessage } from "../common"
 import { Injectable, Logger } from "@nestjs/common"
 import { nearKeyPair } from "../rpcs"
 import { parseSeedPhrase } from "near-seed-phrase"
 import { utils } from "near-api-js"
+import { fakeConfig } from "../blockchain.config"
 
 @Injectable()
 export class NearAuthService {

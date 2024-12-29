@@ -17,7 +17,7 @@ import {
     PlacedItemTileNotPlantedException,
     UsePesticideTransactionFailedException
 } from "@src/exceptions"
-import { EnergyService, LevelService } from "@src/services"
+import { EnergyService, LevelService } from "@src/gameplay"
 
 @Injectable()
 export class UsePesticideService {

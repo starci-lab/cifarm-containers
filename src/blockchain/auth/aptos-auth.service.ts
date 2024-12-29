@@ -1,4 +1,3 @@
-import { fakeConfig } from "@src/grpc"
 import { SignedMessage } from "../common"
 import {
     Account,
@@ -7,6 +6,7 @@ import {
     Ed25519Signature,
 } from "@aptos-labs/ts-sdk"
 import { Injectable, Logger } from "@nestjs/common"
+import { fakeConfig } from "../blockchain.config"
 
 @Injectable()
 export class AptosAuthService {

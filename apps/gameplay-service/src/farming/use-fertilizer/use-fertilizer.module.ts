@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { InventoryModule, LevelModule } from "@src/services"
+import { InventoryModule, LevelModule } from "@src/gameplay"
 import { EnergyModule } from "@src/gameplay/energy/energy.module"
 import { UseFertilizerController } from "./use-fertilizer.controller"
 import { UseFertilizerService } from "./use-fertilizer.service"

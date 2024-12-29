@@ -1,10 +1,11 @@
-import { Network } from "@src/grpc"
+import { Network } from "@src/blockchain/blockchain.config"
 import { Network as AptosNetwork, Aptos, AptosConfig } from "@aptos-labs/ts-sdk"
 
 export const networkMap: Record<Network, AptosNetwork> = {
     [Network.Mainnet]: AptosNetwork.MAINNET,
-    [Network.Testnet]: AptosNetwork.TESTNET
+    [Network.Testnet]: AptosNetwork.TESTNET,
 }
+  
 
 export const aptosClient = (network: Network) => {
     const aptosNetwork = networkMap[network]

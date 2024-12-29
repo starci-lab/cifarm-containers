@@ -19,7 +19,7 @@ import {
     PlacedItemTileNotPlantedException,
     UseFertilizerTransactionFailedException
 } from "@src/exceptions"
-import { EnergyService, LevelService } from "@src/services"
+import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { UseFertilizerRequest, UseFertilizerResponse } from "./use-fertilizer.dto"
 

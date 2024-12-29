@@ -1,5 +1,5 @@
 import { UniqueChain, UniqueIndexer } from "@unique-nft/sdk"
-import { Network } from "@src/grpc"
+import { Network } from "@src/blockchain/blockchain.config"
 
 const MAINNET_UNIQUE_CHAIN_SDK_RPC_URL = "https://rest.unique.network/v2/unique"
 const TESTNET_UNIQUE_CHAIN_SDK_RPC_URL = "https://rest.unique.network/v2/opal"

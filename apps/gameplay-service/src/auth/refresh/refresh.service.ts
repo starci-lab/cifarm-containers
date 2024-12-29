@@ -1,11 +1,9 @@
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { SessionEntity, UserEntity } from "@src/databases"
 import { UserIsNotLoginException, UserNotFoundException, UserRefreshIsInvalidException } from "@src/exceptions"
-import { Cache } from "cache-manager"
+import { JwtService } from "@src/jwt"
 import { DataSource, DeepPartial } from "typeorm"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
-import { JwtService } from "@src/jwt"
 
 @Injectable()
 export class RefreshService {
@@ -14,8 +12,8 @@ export class RefreshService {
     constructor(
     private readonly dataSource: DataSource,
     private readonly jwtService: JwtService,
-    @Inject(CACHE_MANAGER)
-    private cacheManager: Cache
+    // @Inject(CACHE_MANAGER)
+    // private cacheManager: Cache
     ) {}
 
     public async refresh(request: RefreshRequest): Promise<RefreshResponse> {
