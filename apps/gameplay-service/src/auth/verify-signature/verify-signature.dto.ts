@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty, IsOptional, IsString } from "class-validator"
 import { Network, SupportedChainKey } from "@src/config"
-import { SignedMessage } from "@src/services"
+import { SignedMessage } from "@src/blockchain"
 
 export class VerifySignatureRequest implements SignedMessage {
     @IsNotEmpty()

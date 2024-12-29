@@ -8,6 +8,5 @@ export * from "./placement"
 export * from "./profile"
 export * from "./shop"
 export * from "./upgrade"
-
 export * from "./app.interface"
 export * from "./app.module"
