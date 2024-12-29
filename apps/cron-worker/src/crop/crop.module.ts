@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common"
 import { CropWorker } from "./crop.worker"
-import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
-import { BullQueueName } from "@src/grpc"
+import { BullModule, BullQueueName } from "@src/bull"
 
 @Module({
     imports: [
-        bullRegisterQueue(BullQueueName.Crop),
-        typeOrmForFeature(),
+        BullModule.registerQueue({
+            queueName: BullQueueName.Crop
+        }),
     ],
     providers: [CropWorker]
 })
