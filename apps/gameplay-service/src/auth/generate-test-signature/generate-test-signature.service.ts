@@ -7,10 +7,9 @@ import {
     chainKeyToPlatform,
     defaultChainKey,
     defaultNetwork,
-    envConfig,
     Platform,
     SupportedChainKey
-} from "@src/config"
+} from "@src/blockchain"
 import { ChainKeyNotFoundException } from "@src/exceptions"
 import { defaultBotType } from "@src/guards"
 import {
@@ -23,6 +22,7 @@ import {
 } from "@src/blockchain"
 import { RequestMessageService } from "../request-message"
 import { encode } from "bs58"
+import { envConfig } from "@src/env"
 
 @Injectable()
 export class GenerateTestSignatureService {

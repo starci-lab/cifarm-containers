@@ -1,6 +1,5 @@
-import { Network } from "@src/grpc"
+import { Network } from "@src/blockchain"
 import { Atomic } from "@src/common/types"
-
 
 export interface GetContractObservableParams {
     nftCollectionId: string,
@@ -9,7 +8,6 @@ export interface GetContractObservableParams {
     eventName: string,
     callbackFn: (...args: Array<unknown>) => void | Promise<void>
 } 
-
 
 export interface NftData {
     ownerAddress: string,

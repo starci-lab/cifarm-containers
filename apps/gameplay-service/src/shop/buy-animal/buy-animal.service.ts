@@ -18,7 +18,7 @@ import {
     PlacedItemTypeNotFoundException,
     UserNotFoundException
 } from "@src/exceptions"
-import { GoldBalanceService } from "@src/services"
+import { GoldBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 

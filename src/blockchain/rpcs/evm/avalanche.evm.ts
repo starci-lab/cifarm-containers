@@ -1,4 +1,4 @@
-import { Network } from "@src/grpc"
+import { Network } from "@src/blockchain"
 
 export const AVALANCHE_TESTNET_RPC_URL =
   "https://api.avax-test.network/ext/bc/C/rpc"

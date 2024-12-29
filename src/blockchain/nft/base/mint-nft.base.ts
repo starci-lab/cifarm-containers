@@ -1,15 +1,9 @@
-import {
-    blockchainConfig,
-    chainKeyToPlatform,
-    envConfig,
-    Network,
-    Platform,
-    SupportedChainKey,
-} from "@src/grpc"
 import { nearClient, nearKeyPair, nearKeyStore } from "../../rpcs"
 import { computeRaw } from "@src/common/utils"
 import { TransactionResult } from "@src/common/types"
 import { NearNftMetadata } from "../common"
+import { blockchainConfig, chainKeyToPlatform, Network, Platform, SupportedChainKey } from "@src/blockchain"
+import { envConfig } from "@src/env"
 
 export interface MintNftParams {
   //specify other or not, since some blockchains may not require it

@@ -1,4 +1,4 @@
-import { Network } from "@src/grpc"
+import { Network } from "@src/blockchain"
 import { avalancheHttpRpcUrl, avalancheWsRpcUrl } from "./avalanche.evm"
 
 export const evmHttpRpcUrl = (chainKey: string, network: Network) => {

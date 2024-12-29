@@ -2,9 +2,9 @@ import { SignedMessage } from "../common"
 import { Injectable, Logger } from "@nestjs/common"
 import { sign } from "tweetnacl"
 import { mnemonicToSeedSync } from "bip39"
-import { fakeConfig } from "@src/grpc"
 import { Keypair } from "@solana/web3.js"
 import { decode } from "bs58"
+import { fakeConfig } from "../blockchain.config"
 
 @Injectable()
 export class SolanaAuthService {

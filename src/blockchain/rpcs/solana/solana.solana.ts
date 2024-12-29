@@ -1,4 +1,4 @@
-import { Network } from "@src/grpc"
+import { Network } from "@src/blockchain"
 import { clusterApiUrl } from "@solana/web3.js"
 
 export const solanaHttpRpcUrl = (network: Network) => {

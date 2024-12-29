@@ -1,4 +1,3 @@
-import { fakeConfig } from "@src/grpc"
 import { SignedMessage } from "../common"
 import { Injectable, Logger } from "@nestjs/common"
 import {
@@ -7,6 +6,7 @@ import {
     Mnemonic,
     Wallet,
 } from "ethers"
+import { fakeConfig } from "../blockchain.config"
 
 @Injectable()
 export class EvmAuthService {

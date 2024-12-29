@@ -1,4 +1,3 @@
-import { fakeConfig } from "@src/grpc"
 import { SignedMessage } from "../common"
 import { Injectable, Logger } from "@nestjs/common"
 import {
@@ -9,6 +8,7 @@ import {
     sr25519Verify,
 } from "@polkadot/util-crypto"
 import { hexToU8a, u8aToHex } from "@polkadot/util"
+import { fakeConfig } from "../blockchain.config"
 @Injectable()
 export class PolkadotAuthService {
     private readonly logger = new Logger(PolkadotAuthService.name)
