@@ -7,14 +7,14 @@ import { CropModule } from "./crop"
 import { DeliveryModule } from "./delivery"
 import { EnvModule } from "@src/env"
 import { ScheduleModule } from "@nestjs/schedule"
-import { BullRootModule } from "@src/bull"
 import { CacheRedisModule, GameplayPostgreSQLModule } from "@src/databases"
 import { EventEmitterModule } from "@nestjs/event-emitter"
+import { BullModule } from "@src/bull"
 @Module({
     imports: [
         EnvModule.forRoot(),
         ScheduleModule.forRoot(),
-        BullRootModule.forRoot(),
+        BullModule.forRoot(),
         CacheRedisModule.forRoot(),
         GameplayPostgreSQLModule.forRoot(),
         EventEmitterModule.forRoot(),

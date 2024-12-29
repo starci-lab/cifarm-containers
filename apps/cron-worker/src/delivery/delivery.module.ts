@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common"
-import { BullQueueName } from "@src/grpc"
-import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
-import { DeliveryWorker } from "./delivery.worker"
+import { BullModule, BullQueueName } from "@src/bull"
 import { GoldBalanceModule, TokenBalanceModule } from "@src/services"
+import { DeliveryWorker } from "./delivery.worker"
 
 @Module({
     imports: [
-        bullRegisterQueue(BullQueueName.Delivery),
-        typeOrmForFeature(),
+        BullModule.registerQueue({
+            queueName: BullQueueName.Delivery
+        }),
         GoldBalanceModule,
         TokenBalanceModule
     ],

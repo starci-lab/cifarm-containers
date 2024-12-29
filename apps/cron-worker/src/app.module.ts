@@ -1,14 +1,17 @@
 import { Module } from "@nestjs/common"
 import { CropModule } from "./crop"
-import { bullForRoot, configForRoot, schedulerForRoot, typeOrmForRoot } from "@src/dynamic-modules"
 import { DeliveryModule } from "./delivery"
+import { EnvModule } from "@src/env"
+import { BullModule } from "@src/bull"
+import { ScheduleModule } from "@nestjs/schedule"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
     imports: [
-        configForRoot(),
-        bullForRoot(),
-        schedulerForRoot(),
-        typeOrmForRoot(),
+        EnvModule.forRoot(),
+        BullModule.forRoot(),
+        ScheduleModule.forRoot(),
+        GameplayPostgreSQLModule.forRoot(),
         CropModule,
         DeliveryModule
         //AnimalsModule

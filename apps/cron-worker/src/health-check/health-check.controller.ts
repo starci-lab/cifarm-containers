@@ -1,7 +1,7 @@
 import { Controller, Get, Logger } from "@nestjs/common"
 import { RedisOptions, Transport } from "@nestjs/microservices"
 import { HealthCheckService, HealthCheck, TypeOrmHealthIndicator, MicroserviceHealthIndicator } from "@nestjs/terminus"
-import { envConfig, healthCheckConfig, timerConfig } from "@src/grpc"
+import { envConfig, healthCheckConfig, timerConfig } from "@src/config"
 
 @Controller()
 export class HealthCheckController {

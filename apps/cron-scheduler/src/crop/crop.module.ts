@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common"
-import { BullQueueName, RegisterModule } from "@src/bull"
+import { BullModule, BullQueueName } from "@src/bull"
 import { GameplayPostgreSQLModule } from "@src/databases"
 import { CropService } from "./crop.service"
 
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
-        RegisterModule.forRoot({
+        BullModule.registerQueue({
             queueName: BullQueueName.Crop
         })
     ],
