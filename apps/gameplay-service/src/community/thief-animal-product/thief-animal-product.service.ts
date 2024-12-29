@@ -25,12 +25,14 @@ import {
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/services"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 import { KafkaClientService, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class ThiefAnimalProductService {
     private readonly logger = new Logger(ThiefAnimalProductService.name)
 
     private readonly dataSource: DataSource
+    private readonly clientKafka: ClientKafka
     constructor(
         private readonly kafkaClientService: KafkaClientService,
         private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
@@ -40,6 +42,7 @@ export class ThiefAnimalProductService {
         private readonly inventoryService: InventoryService
     ) {
         this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.clientKafka = this.kafkaClientService.getClient()
     }
 
     async theifAnimalProduct(
@@ -180,7 +183,7 @@ export class ThiefAnimalProductService {
                 throw new ThiefAnimalProductTransactionFailedException(error)
             }
 
-            this.kafkaClientService.emit(KafkaPattern.PlacedItemsBroadcast, {
+            this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
                 userId: request.neighborUserId
             })
 

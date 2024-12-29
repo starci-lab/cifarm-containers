@@ -3,11 +3,16 @@ import { HelpWaterController } from "./help-water.controller"
 import { HelpWaterService } from "./help-water.service"
 import { EnergyModule, LevelModule } from "@src/services"
 import { GameplayPostgreSQLModule } from "@src/databases"
+import { KafkaModule, KafkaGroupId } from "@src/brokers"
 
 @Global()
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
+        KafkaModule.forRoot({
+            groupId: KafkaGroupId.PlacedItemsBroadcast,
+            producerOnly: true
+        }),
         EnergyModule,
         LevelModule
     ],

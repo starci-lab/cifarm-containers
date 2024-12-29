@@ -3,13 +3,13 @@ import { EnergyModule, LevelModule } from "@src/services"
 import { HelpUseHerbicideController } from "./help-use-herbicide.controller"
 import { HelpUseHerbicideService } from "./help-use-herbicide.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
-import { KafkaClientModule, KafkaGroupId } from "@src/brokers"
+import { KafkaModule, KafkaGroupId } from "@src/brokers"
 
 @Global()
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
-        KafkaClientModule.forRoot({
+        KafkaModule.forRoot({
             groupId: KafkaGroupId.PlacedItemsBroadcast,
             producerOnly: true
         }),

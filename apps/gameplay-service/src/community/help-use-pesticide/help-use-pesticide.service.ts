@@ -20,12 +20,14 @@ import {
 import { EnergyService, LevelService } from "@src/services"
 import { HelpUsePesticideRequest, HelpUsePesticideResponse } from "./help-use-pesticide.dto"
 import { KafkaClientService, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class HelpUsePesticideService {
     private readonly logger = new Logger(HelpUsePesticideService.name)
 
     private readonly dataSource: DataSource
+    private readonly clientKafka: ClientKafka
     constructor(
         private readonly kafkaClientService: KafkaClientService,
         private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
@@ -33,6 +35,7 @@ export class HelpUsePesticideService {
         private readonly levelService: LevelService
     ) {
         this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.clientKafka = this.kafkaClientService.getClient()
     }
 
     async helpUsePesticide(request: HelpUsePesticideRequest): Promise<HelpUsePesticideResponse> {
@@ -121,7 +124,7 @@ export class HelpUsePesticideService {
                 throw new HelpUsePesticideTransactionFailedException(error)
             } 
 
-            this.kafkaClientService.emit(
+            this.clientKafka.emit(
                 KafkaPattern.PlacedItemsBroadcast, {
                     userId: request.neighborUserId
                 })

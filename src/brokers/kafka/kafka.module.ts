@@ -1,19 +1,19 @@
 import { Module } from "@nestjs/common"
-import { KafkaClientService } from "./kafka-client.service"
-import { KafkaClientOptions, KAFKA_CLIENT_NAME } from "./kafka.types"
+import { KafkaClientService } from "./kafka.service"
+import { KafkaOptions, KAFKA_NAME } from "./kafka.types"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { envConfig } from "@src/config"
 import { v4 } from "uuid"
 
 @Module({})
-export class KafkaClientModule {
-    public static forRoot(options: KafkaClientOptions) {
+export class KafkaModule {
+    public static forRoot(options: KafkaOptions) {
         return {
-            module: KafkaClientModule,
+            module: KafkaModule,
             imports: [
                 ClientsModule.register([
                     {
-                        name: KAFKA_CLIENT_NAME,
+                        name: KAFKA_NAME,
                         transport: Transport.KAFKA,
                         options: {
                             client: {

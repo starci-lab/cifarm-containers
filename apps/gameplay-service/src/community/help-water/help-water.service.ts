@@ -19,18 +19,23 @@ import {
 } from "@src/databases"
 import { EnergyService, LevelService } from "@src/services"
 import { HelpWaterRequest, HelpWaterResponse } from "./help-water.dto"
+import { ClientKafka } from "@nestjs/microservices"
+import { KafkaClientService, KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class HelpWaterService {
     private readonly logger = new Logger(HelpWaterService.name)
 
     private readonly dataSource: DataSource
+    private readonly clientKafka: ClientKafka
     constructor(
         private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
+        private readonly kafkaClientService: KafkaClientService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {
         this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.clientKafka = this.kafkaClientService.getClient()
     }
 
     async helpWater(request: HelpWaterRequest): Promise<HelpWaterResponse> {
@@ -113,6 +118,11 @@ export class HelpWaterService {
                 )
 
                 await queryRunner.commitTransaction()
+
+                // send message to kafka
+                this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
+                    neighborUserId: request.neighborUserId
+                })
                 return {}
             } catch (error) {
                 this.logger.error(`Failed to help water for user ${request.neighborUserId}`)

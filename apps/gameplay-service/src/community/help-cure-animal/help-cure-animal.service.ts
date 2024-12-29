@@ -19,12 +19,14 @@ import { EnergyService, LevelService } from "@src/services"
 import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
 import { GameplayPostgreSQLService } from "@src/databases"
 import { KafkaClientService, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class HelpCureAnimalService {
     private readonly logger = new Logger(HelpCureAnimalService.name)
 
     private readonly dataSource: DataSource
+    private readonly clientKafka: ClientKafka
     constructor(
         private readonly kafkaClientService: KafkaClientService,
         private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
@@ -32,6 +34,7 @@ export class HelpCureAnimalService {
         private readonly levelService: LevelService
     ) {
         this.dataSource = this.gameplayPostgreSQLService.getDataSource()
+        this.clientKafka = this.kafkaClientService.getClient()
     }
 
     async helpCureAnimal(request: HelpCureAnimalRequest): Promise<HelpCureAnimalResponse> {
@@ -110,7 +113,7 @@ export class HelpCureAnimalService {
                 throw new HelpCureAnimalTransactionFailedException(error)
             }
 
-            this.kafkaClientService.emit(
+            this.clientKafka.emit(
                 KafkaPattern.PlacedItemsBroadcast, {
                     userId: request.neighborUserId
                 })

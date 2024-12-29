@@ -1,10 +1,10 @@
-export interface KafkaClientOptions {
+export interface KafkaOptions {
     groupId: KafkaGroupId
     producerOnly?: boolean
 }
 
-export const KAFKA_CLIENT_OPTIONS = "KAFKA_CLIENT_OPTIONS"
-export const KAFKA_CLIENT_NAME = "KAFKA_CLIENT_NAME"
+export const KAFKA_OPTIONS = "KAFKA_OPTIONS"
+export const KAFKA_NAME = "KAFKA_NAME"
 
 export enum KafkaGroupId {
     PlacedItemsBroadcast = "placed-items-broadcast",

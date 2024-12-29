@@ -25,12 +25,14 @@ import { EnergyService, InventoryService, LevelService, ThiefService } from "@sr
 import { DataSource } from "typeorm"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
 import { KafkaClientService, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class TheifCropService{
     private readonly logger = new Logger(TheifCropService.name)
 
     private readonly dataSource: DataSource
+    private readonly clientKafka: ClientKafka
     constructor(
         private readonly kafkaClientService: KafkaClientService,
         private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
@@ -40,6 +42,7 @@ export class TheifCropService{
         private readonly inventoryService: InventoryService,
     ) {
         this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.clientKafka = this.kafkaClientService.getClient()
     }
 
     async theifCrop(request: ThiefCropRequest): Promise<ThiefCropResponse> {
@@ -188,7 +191,7 @@ export class TheifCropService{
                 throw new ThiefCropTransactionFailedException(error)
             }
 
-            this.kafkaClientService.emit(KafkaPattern.PlacedItemsBroadcast, {
+            this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
                 userId: request.neighborUserId
             })
 
