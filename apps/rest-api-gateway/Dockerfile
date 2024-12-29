@@ -1,6 +1,4 @@
 #docker build -t cifarm/rest-api-gateway -f ./apps/rest-api-gateway/Dockerfile . & docker push cifarm/rest-api-gateway
-#
-
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0
@@ -21,7 +19,9 @@ COPY . .
 RUN npx nest build rest-api-gateway
 
 # Production Stage (final image)
-FROM build AS production
+FROM node:${NODE_VERSION}-alpine AS production
+
+WORKDIR /usr/src/app
 
 # Copy only the build output and proto files
 COPY --from=build /usr/src/app/dist/apps/rest-api-gateway .
