@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
 import { BlockchainModule } from "../blockchain"
-import { JwtModule } from "./jwt"
+import { JwtModule } from "@src/jwt"
 
 @Module({
     imports: [

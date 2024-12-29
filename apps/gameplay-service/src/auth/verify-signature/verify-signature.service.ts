@@ -24,10 +24,11 @@ import {
     SolanaAuthService
 } from "@src/blockchain"
 
-import { EnergyService, JwtService } from "@src/services"
+import { EnergyService } from "@src/services"
 
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
+import { JwtService } from "@src/jwt"
 
 @Injectable()
 export class VerifySignatureService {
@@ -180,7 +181,7 @@ export class VerifySignatureService {
                     throw new VerifySignatureTransactionFailedException(error)
                 }
             }
-            const { accessToken, refreshToken } = await this.jwtService.createAuthTokenPair({
+            const { accessToken, refreshToken } = await this.jwtService.generateAuthCredentials({
                 id: user.id
             })
 

@@ -2,10 +2,10 @@ import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { SessionEntity, UserEntity } from "@src/databases"
 import { UserIsNotLoginException, UserNotFoundException, UserRefreshIsInvalidException } from "@src/exceptions"
-import { JwtService } from "@src/services"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
+import { JwtService } from "@src/jwt"
 
 @Injectable()
 export class RefreshService {
@@ -52,7 +52,7 @@ export class RefreshService {
             throw new UserNotFoundException(userId)
         }
 
-        const { accessToken, refreshToken: newRefreshToken } = await this.jwtService.createAuthTokenPair({
+        const { accessToken, refreshToken: newRefreshToken } = await this.jwtService.generateAuthCredentials({
             id: user.id,
         })
 

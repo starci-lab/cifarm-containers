@@ -1,5 +1,4 @@
 export * from "./services.module"
-export * from "./jwt"
 export * from "./gameplay"
 export * from "./leader-election"
 export * from "./hash"
