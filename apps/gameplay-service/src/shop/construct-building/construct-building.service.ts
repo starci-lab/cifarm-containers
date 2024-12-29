@@ -6,9 +6,9 @@ import {
     ConstructBuildingTransactionFailedException,
     PlacedItemTypeNotFoundException
 } from "@src/exceptions"
-import { GoldBalanceService } from "@src/services"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
+import { GoldBalanceService } from "@src/gameplay"
 
 @Injectable()
 export class ConstructBuildingService {

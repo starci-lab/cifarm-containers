@@ -11,7 +11,7 @@ import utc from "dayjs/plugin/utc"
 import { isProduction } from "@src/common/utils"
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
 import { bullData, BullQueueName } from "@src/bull"
-import { CacheKey } from "@src/config"
+import { CacheKey } from "@src/common"
 dayjs.extend(utc)
 
 @Injectable()

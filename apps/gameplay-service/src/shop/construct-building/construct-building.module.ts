@@ -1,8 +1,8 @@
 import { Global, Module } from "@nestjs/common"
-import { GoldBalanceModule, TokenBalanceModule } from "@src/services"
 import { ConstructBuildingController } from "./construct-building.controller"
 import { ConstructBuildingService } from "./construct-building.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
+import { GoldBalanceModule, TokenBalanceModule } from "@src/gameplay"
 
 @Global()
 @Module({

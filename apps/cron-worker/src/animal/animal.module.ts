@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common"
 import { AnimalWorker } from "./animal.worker"
-import { BullQueueName } from "@src/grpc"
-import { bullRegisterQueue, typeOrmForFeature } from "@src/dynamic-modules"
+import { BullModule, BullQueueName } from "@src/bull"
 
 @Module({
     imports: [
-        typeOrmForFeature(),
-        bullRegisterQueue(BullQueueName.Animal),
+        BullModule.registerQueue({
+            queueName: BullQueueName.Animal
+        }),
     ],
     providers: [AnimalWorker]
 })

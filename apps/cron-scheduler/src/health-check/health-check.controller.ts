@@ -13,12 +13,12 @@ export class HealthCheckController {
         private db: TypeOrmHealthIndicator,
     ) {}
 
-    @Get(healthCheckConfig.endpoint)
+    @Get(HEALTH_CHECK_ENDPOINT)
     @HealthCheck()
     healthz() {
         this.logger.log("Health check endpoint called")
         return this.health.check([
-            async () => this.db.pingCheck(healthCheckConfig.names.gameplayPostgreSql, { timeout: timerConfig.timeouts.healthcheck }),
+            async () => this.db.pingCheck(healthCheckConfig.names.gameplayPostgreSql, { timeout: HEALTH_CHECK_TIMEOUT }),
             async () =>
                 this.microservice.pingCheck<RedisOptions>(healthCheckConfig.names.jobRedis, {
                     transport: Transport.REDIS,
@@ -26,7 +26,7 @@ export class HealthCheckController {
                         host: envConfig().database.redis.job.host,
                         port: envConfig().database.redis.job.port
                     },
-                    timeout: timerConfig.timeouts.healthcheck,
+                    timeout: HEALTH_CHECK_TIMEOUT,
                 }),
         ])
     }

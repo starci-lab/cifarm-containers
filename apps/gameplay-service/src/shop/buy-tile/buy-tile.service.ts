@@ -15,7 +15,7 @@ import {
     TileNotAvailableInShopException,
     TileNotFoundException
 } from "@src/exceptions"
-import { GoldBalanceService } from "@src/services"
+import { GoldBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
 

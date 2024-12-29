@@ -91,8 +91,8 @@ import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { grpcData, GrpcServiceName } from "@src/grpc"
 import { User } from "@src/decorators"
 import { RestJwtAuthGuard } from "@src/guards"
-import { UserLike } from "@src/services"
 import { lastValueFrom } from "rxjs"
+import { UserLike } from "@src/jwt"
 
 @ApiTags("Gameplay")
 @Controller({

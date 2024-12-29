@@ -1,7 +1,8 @@
 import { Controller, Get, Logger } from "@nestjs/common"
 import { RedisOptions, Transport } from "@nestjs/microservices"
 import { HealthCheckService, HealthCheck, TypeOrmHealthIndicator, MicroserviceHealthIndicator } from "@nestjs/terminus"
-import { envConfig, healthCheckConfig, timerConfig } from "@src/config"
+import { envConfig } from "@src/env"
+import { HEALTH_CHECK_ENDPOINT, HEALTH_CHECK_TIMEOUT, HealthCheckDependency } from "@src/health-check"
 
 @Controller()
 export class HealthCheckController {
@@ -13,29 +14,29 @@ export class HealthCheckController {
         private db: TypeOrmHealthIndicator,
     ) {}
 
-    @Get(healthCheckConfig.endpoint)
+    @Get(HEALTH_CHECK_ENDPOINT)
     @HealthCheck()
     healthz() {
         this.logger.log("Health check endpoint called")
         return this.health.check([
-            async () => this.db.pingCheck(healthCheckConfig.names.gameplayPostgreSql, { timeout: timerConfig.timeouts.healthcheck }),
+            async () => this.db.pingCheck(HealthCheckDependency.GameplayPostgreSql, { timeout: HEALTH_CHECK_TIMEOUT }),
             async () =>
-                this.microservice.pingCheck<RedisOptions>(healthCheckConfig.names.cacheRedis, {
+                this.microservice.pingCheck<RedisOptions>(HealthCheckDependency.CacheRedis, {
                     transport: Transport.REDIS,
                     options: {
                         host: envConfig().database.redis.cache.host,
                         port: envConfig().database.redis.cache.port
                     },
-                    timeout: timerConfig.timeouts.healthcheck,
+                    timeout: HEALTH_CHECK_TIMEOUT,
                 }),
             async () =>
-                this.microservice.pingCheck<RedisOptions>(healthCheckConfig.names.jobRedis, {
+                this.microservice.pingCheck<RedisOptions>(HealthCheckDependency.JobRedis, {
                     transport: Transport.REDIS,
                     options: {
                         host: envConfig().database.redis.job.host,
                         port: envConfig().database.redis.job.port
                     },
-                    timeout: timerConfig.timeouts.healthcheck,
+                    timeout: HEALTH_CHECK_TIMEOUT,
                 }),
         ])
     }

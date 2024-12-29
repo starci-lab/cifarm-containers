@@ -8,8 +8,8 @@ import {
     BuildingNextUpgradeNotFoundException,
     UserNotFoundException,
 } from "@src/exceptions"
-import { GoldBalanceService } from "@src/services"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"
+import { GoldBalanceService } from "@src/gameplay"
 
 @Injectable()
 export class UpgradeBuildingService {

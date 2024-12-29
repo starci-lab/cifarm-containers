@@ -3,13 +3,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName } from "@src/bull"
 import { AnimalCurrentState, AnimalGrowthLastSchedule, AnimalInfoEntity, Collection, CollectionEntity, SpeedUpData, TempEntity, TempId } from "@src/databases"
-import { LeaderElectionService } from "@src/services"
 import { Queue } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
 import { AnimalJobData } from "./animal.dto"
+import { LeaderElectionService } from "@src/leader-election"
 dayjs.extend(utc)
 
 @Injectable()

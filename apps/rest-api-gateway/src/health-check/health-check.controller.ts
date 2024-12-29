@@ -12,7 +12,7 @@ export class HealthCheckController {
         private http: HttpHealthIndicator,
     ) { }
 
-    @Get(healthCheckConfig.endpoint)
+    @Get(HEALTH_CHECK_ENDPOINT)
     @HealthCheck()
     healthz() {
         this.logger.log("Health check endpoint called")
@@ -24,7 +24,7 @@ export class HealthCheckController {
                         {
                             host : envConfig().containers.gameplayService.host,
                             port: envConfig().containers.gameplayService.healthCheckPort,
-                            path: healthCheckConfig.endpoint
+                            path: HEALTH_CHECK_ENDPOINT
                         }
                     )),
         ])

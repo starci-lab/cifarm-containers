@@ -1,11 +1,11 @@
 import { VersioningType } from "@nestjs/common"
 import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger"
-import { envConfig } from "@src/config"
 import { AppModule } from "./app.module"
 import { GameplayModule as GameplayModuleV1 } from "./v1"
 import { AuthModule as AuthModuleV2 } from "./v2"
 import { HealthCheckModule } from "./health-check"
+import { envConfig } from "@src/env"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)

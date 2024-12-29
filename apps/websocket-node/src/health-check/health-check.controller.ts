@@ -1,8 +1,9 @@
 import { Controller, Get, Logger } from "@nestjs/common"
 import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
-import { HealthCheckService, HealthCheck, TypeOrmHealthIndicator, MicroserviceHealthIndicator } from "@nestjs/terminus"
-import { envConfig, healthCheckConfig, timerConfig } from "@src/grpc"
-import { kafkaBrokers } from "@src/dynamic-modules"
+import { HealthCheck, HealthCheckService, MicroserviceHealthIndicator, TypeOrmHealthIndicator } from "@nestjs/terminus"
+import { kafkaBrokers } from "@src/brokers"
+import { envConfig } from "@src/env"
+import { HEALTH_CHECK_ENDPOINT, HEALTH_CHECK_TIMEOUT, HealthCheckDependency } from "@src/health-check"
 
 @Controller()
 export class HealthCheckController {
@@ -14,29 +15,29 @@ export class HealthCheckController {
         private db: TypeOrmHealthIndicator,
     ) {}
 
-    @Get(healthCheckConfig.endpoint)
+    @Get(HEALTH_CHECK_ENDPOINT)
     @HealthCheck()
     healthz() {
         return this.health.check([
-            async () => this.db.pingCheck(healthCheckConfig.names.gameplayPostgreSql, { timeout: timerConfig.timeouts.healthcheck }),
+            async () => this.db.pingCheck(HealthCheckDependency.GameplayPostgreSql, { timeout: HEALTH_CHECK_TIMEOUT }),
             async () =>
-                this.microservice.pingCheck<RedisOptions>(healthCheckConfig.names.cacheRedis, {
+                this.microservice.pingCheck<RedisOptions>(HealthCheckDependency.CacheRedis, {
                     transport: Transport.REDIS,
                     options: {
                         host: envConfig().database.redis.cache.host,
                         port: envConfig().database.redis.cache.port
                     },
-                    timeout: timerConfig.timeouts.healthcheck,
+                    timeout: HEALTH_CHECK_TIMEOUT,
                 }),
             async () =>
-                this.microservice.pingCheck<KafkaOptions>(healthCheckConfig.names.kafka, {
+                this.microservice.pingCheck<KafkaOptions>(HealthCheckDependency.Kafka, {
                     transport: Transport.KAFKA,
                     options: {
                         client: {
                             brokers: kafkaBrokers(false),
                         },
                     },
-                    timeout: timerConfig.timeouts.healthcheck,
+                    timeout: HEALTH_CHECK_TIMEOUT,
                 }),
         ])
     }
