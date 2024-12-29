@@ -1,6 +1,6 @@
 export const healthCheckConfig = {
     names: {
-        gameplayPostgresql: "gameplay-postgres",
+        gameplayPostgreSql: "gameplay-postgres",
         cacheRedis: "cache-redis",
         adapterRedis: "adapter-redis",
         jobRedis: "job-redis",

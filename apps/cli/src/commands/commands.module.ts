@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common"
-import { GameplayModule } from "./gameplay"
+import { DatabaseModule } from "./database"
 
 @Module({
-    imports: [ GameplayModule ],
+    imports: [ DatabaseModule ],
     providers: [],
 })
 export class CommandsModule {}

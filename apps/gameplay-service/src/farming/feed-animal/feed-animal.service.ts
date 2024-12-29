@@ -28,11 +28,11 @@ export class FeedAnimalService {
 
     private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {
-        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async feedAnimal(request: FeedAnimalRequest): Promise<FeedAnimalResponse> {

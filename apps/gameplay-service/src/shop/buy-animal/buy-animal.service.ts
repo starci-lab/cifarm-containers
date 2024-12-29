@@ -28,10 +28,10 @@ export class BuyAnimalService {
 
     private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly goldBalanceService: GoldBalanceService
     ) {
-        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {

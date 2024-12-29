@@ -35,21 +35,23 @@ import {
     UpgradeEntity,
     UpgradeId,
     SpinInfo,
+    GameplayPostgreSQLEntity,
+    CliSqliteService,
 } from "@src/databases"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 import { CommandRunner, Option, SubCommand } from "nest-commander"
-import { LoggerService } from "../../../logger"
-import { gameplayEntites } from "@src/databases"
-import { GameplayPostgreSQLEntity } from "../../../sqlite"
+import { gameplayPostgreSqlEntites } from "@src/databases"
+import { Logger } from "@nestjs/common"
 
-@SubCommand({ name: "seed", description: "Seed static data into the data source" })
+@SubCommand({ name: "switch", description: "Switch to another datasource" })
 export class SeedCommand extends CommandRunner {
-
+    private readonly logger = new Logger(SeedCommand.name)
+    private readonly dataSource: DataSource
     constructor(
-        private readonly logger: LoggerService,
-        private readonly dataSource: DataSource,
+        private readonly cliSqliteService: CliSqliteService
     ) {
         super()
+        this.dataSource = this.cliSqliteService.getDataSource()
     }
 
     async run(_: Array<string>, options: SeedCommandOptions): Promise<void> {
@@ -60,11 +62,11 @@ export class SeedCommand extends CommandRunner {
             where: { selected: true }
         })
         if (!selectedDataSource) {
-            this.logger.error("NO_DATA_SOURCE_SELECTED", "No data source selected.", "Try to create a new data source first.")
+            this.logger.error("No data source selected.")
             return
         }
         const { host, password, dbName, port, username } = selectedDataSource
-        
+
         const dataSource = new DataSource({
             type: "postgres",
             database: dbName,
@@ -72,7 +74,7 @@ export class SeedCommand extends CommandRunner {
             port,
             username,
             password,
-            entities: gameplayEntites(),
+            entities: gameplayPostgreSqlEntites(),
             synchronize: true
         })
         await dataSource.initialize()
@@ -80,10 +82,10 @@ export class SeedCommand extends CommandRunner {
             if (force) {
                 await this.clearData(dataSource)
             }
-            await this.seedEntities(dataSource) 
-            this.logger.success("SEED_SUCCESS", "Static data seeded successfully.")
+            await this.seedEntities(dataSource)
+            this.logger.log("Static data seeded successfully.")
         } catch (error) {
-            this.logger.error("SEED_FAILED", "Failed to seed static data into the data source.", `Error details: ${error.message}`)
+            this.logger.error(`Failed to seed static data into the data source.: ${error.message}`)
         } finally {
             await dataSource.destroy()
         }
@@ -97,13 +99,13 @@ export class SeedCommand extends CommandRunner {
         return true
     }
     private async clearData(dataSource: DataSource) {
-        this.logger.info("CLEARING_OLD_DATA", "Clearing old data...")
+        this.logger.debug("Clearing old data...")
         const queryRunner: QueryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
 
         try {
             await queryRunner.startTransaction()
-            
+
             await queryRunner.manager.delete(AnimalEntity, {})
             await queryRunner.manager.delete(SpinPrizeEntity, {})
             await queryRunner.manager.delete(CropEntity, {})
@@ -115,19 +117,19 @@ export class SeedCommand extends CommandRunner {
             await queryRunner.manager.delete(DailyRewardEntity, {})
             await queryRunner.manager.delete(SystemEntity, {})
             await queryRunner.manager.delete(InventoryTypeEntity, {})
- 
+
             await queryRunner.commitTransaction()
-            this.logger.verbose("OLD_DATA_CLEARED", "Data cleared successfully.")
+            this.logger.verbose("Data cleared successfully.")
         } catch (error) {
             await queryRunner.rollbackTransaction()
-            this.logger.error("CLEAR_DATA_FAILED", "Failed to clear old data.", `Error details: ${error.message}`)
+            this.logger.error(`Failed to clear old data: ${error.message}`)
         } finally {
             await queryRunner.release()
-        }  
+        }
     }
 
     private async seedEntities(dataSource: DataSource) {
-        this.logger.info("SEEDING_ENTITIES", "Seeding entities...")
+        this.logger.debug("Seeding entities...")
         try {
             const queryRunner = dataSource.createQueryRunner()
             await queryRunner.connect()
@@ -148,16 +150,15 @@ export class SeedCommand extends CommandRunner {
                 await this.seedSpinSlotData(queryRunner)
 
                 await queryRunner.commitTransaction()
-                this.logger.verbose("ENTITIES_SEEDED", "Entities seeded successfully.")
+                this.logger.verbose("Entities seeded successfully.")
             } catch (error) {
                 await queryRunner.rollbackTransaction()
-                this.logger.error("ENTITY_SEEDING_FAILED", "Failed to seed entities.", `Error details: ${error.message}`)
-                throw error
+                this.logger.error(`Failed to seed entities: ${error.message}`)
             } finally {
                 await queryRunner.release()
             }
         } catch (error) {
-            this.logger.error("ENTITY_SEEDING_FAILED", "Failed to seed entities.", `Error details: ${error.message}`)
+            this.logger.error(`Failed to seed entities: ${error.message}`)
             throw error
         }
     }
@@ -273,12 +274,12 @@ export class SeedCommand extends CommandRunner {
                     count: 1,
                     thresholdMin: 0.95,
                     thresholdMax: 0.99
-                }, 
+                },
                 [AppearanceChance.VeryRare]: {
                     count: 1,
                     thresholdMin: 0.99,
                     thresholdMax: 1
-                }   
+                }
             }
         }
         const data: Array<DeepPartial<SystemEntity>> = [
@@ -934,7 +935,7 @@ export class SeedCommand extends CommandRunner {
                 appearanceChance: AppearanceChance.Common,
                 cropId: CropId.Carrot,
                 quantity: 3,
-            }, 
+            },
             {
                 type: SpinPrizeType.Seed,
                 appearanceChance: AppearanceChance.Uncommon,
@@ -1085,7 +1086,7 @@ export class SeedCommand extends CommandRunner {
             ...rarePrizes.map((prize) => ({
                 prize,
                 spinPrizeId: prize.id,
-            })), 
+            })),
             ...veryRarePrizes.map((prize) => ({
                 prize,
                 spinPrizeId: prize.id,
@@ -1098,5 +1099,5 @@ export class SeedCommand extends CommandRunner {
 export interface SeedCommandOptions {
     force?: boolean
 }
-  
+
 

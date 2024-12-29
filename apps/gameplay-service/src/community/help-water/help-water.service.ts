@@ -29,12 +29,12 @@ export class HelpWaterService {
     private readonly dataSource: DataSource
     private readonly clientKafka: ClientKafka
     constructor(
-        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly kafkaClientService: KafkaClientService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {
-        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
         this.clientKafka = this.kafkaClientService.getClient()
     }
 

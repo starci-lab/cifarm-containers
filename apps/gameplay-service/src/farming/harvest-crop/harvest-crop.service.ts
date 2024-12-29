@@ -29,12 +29,12 @@ export class HarvestCropService {
 
     private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService
     ) {
-        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {

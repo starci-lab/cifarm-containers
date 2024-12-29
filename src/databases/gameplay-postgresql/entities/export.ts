@@ -26,7 +26,7 @@ import { UpgradeEntity } from "./upgrade.entity"
 import { UserEntity } from "./user.entity"
 import { UsersFollowingUsersEntity } from "./users-following-users.entity"
 
-export const gameplayEntites = () : Array<typeof AbstractEntity> => ([
+export const gameplayPostgreSqlEntites = () : Array<typeof AbstractEntity> => ([
     InventoryEntity,
     PlacedItemEntity,
     UserEntity,

@@ -1,3 +1,4 @@
+import { GameplayPostgreSQLType } from "../../gameplay-postgresql"
 import { UuidAbstractEntity } from "./abstract"
 import { Column, Entity } from "typeorm"
 
@@ -16,10 +17,5 @@ export class GameplayPostgreSQLEntity extends UuidAbstractEntity {
     @Column({ type: "boolean", default: true })
         selected: boolean
     @Column({ type: "varchar", length: 100, unique: true })
-        name: GameplayPostgreSQLName
-}
-
-export enum GameplayPostgreSQLName {
-    Main = "main",
-    Test = "test",
+        type: GameplayPostgreSQLType
 }

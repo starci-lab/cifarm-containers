@@ -1,15 +1,14 @@
-import { Injectable, LoggerService as NestLoggerService } from "@nestjs/common"
+import { Injectable, LoggerService } from "@nestjs/common"
 import chalk from "chalk"
 
 @Injectable()
-export class LoggerService implements NestLoggerService {
+export class CliLogger implements LoggerService {
 
     private logLevels: Map<string, { color: chalk.Chalk, emoji: string, logMethod: (...data: string[]) => void }> = new Map()
 
     constructor() {
         // Initialize log level map
-        this.logLevels.set("log", { color: chalk.bold.white, emoji: "", logMethod: console.log })
-        this.logLevels.set("success", { color: chalk.bold.green, emoji: "", logMethod: console.log })
+        this.logLevels.set("log", { color: chalk.bold.green, emoji: "", logMethod: console.log })
         this.logLevels.set("error", { color: chalk.bold.red, emoji: "", logMethod: console.error })
         this.logLevels.set("warn", { color: chalk.bold.yellow, emoji: "", logMethod: console.warn })
         this.logLevels.set("debug", { color: chalk.bold.blue, emoji: "", logMethod: console.debug })
@@ -30,10 +29,6 @@ export class LoggerService implements NestLoggerService {
         this.printLog("log", name, message, extra)
     }
 
-    success(name: string, message: string, extra?: string) {
-        this.printLog("success", name, message, extra)
-    }
-
     error(name: string, message: string, extra?: string) {
         this.printLog("error", name, message, extra)
     }
@@ -52,9 +47,5 @@ export class LoggerService implements NestLoggerService {
 
     info(name: string, message: string, extra?: string) {
         this.printLog("info", name, message, extra)
-    }
-
-    table<T>(data: Array<T>) {
-        console.table(data)
     }
 }

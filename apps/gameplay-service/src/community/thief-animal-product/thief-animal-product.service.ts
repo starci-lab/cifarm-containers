@@ -35,13 +35,13 @@ export class ThiefAnimalProductService {
     private readonly clientKafka: ClientKafka
     constructor(
         private readonly kafkaClientService: KafkaClientService,
-        private readonly gameplayPostgresqlService: GameplayPostgreSQLService,
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly theifService: ThiefService,
         private readonly inventoryService: InventoryService
     ) {
-        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
         this.clientKafka = this.kafkaClientService.getClient()
     }
 

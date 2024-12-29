@@ -4,7 +4,7 @@ import { GameplayPostgreSQLOptions, GameplayPostgreSQLType } from "./gameplay-po
 import { TypeORMConfig } from "@src/types"
 import { envConfig } from "@src/config"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { gameplayEntites } from "./entities"
+import { gameplayPostgreSqlEntites } from "./entities"
 
 @Module({
     imports: [
@@ -39,12 +39,12 @@ export class GameplayPostgreSQLModule {
                 TypeOrmModule.forRoot({
                     type: "postgres",
                     ...map[options.type || GameplayPostgreSQLType.Main],
-                    autoLoadEntities: true,
+                    entities: gameplayPostgreSqlEntites(),
                     synchronize: true,
                     poolSize: 10000,
                     connectTimeoutMS: 5000,
                 }),
-                TypeOrmModule.forFeature(gameplayEntites())
+                TypeOrmModule.forFeature(gameplayPostgreSqlEntites())
             ],
             providers: [
                 GameplayPostgreSQLService

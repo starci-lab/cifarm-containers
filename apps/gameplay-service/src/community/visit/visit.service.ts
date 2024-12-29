@@ -10,9 +10,9 @@ export class VisitService {
 
     private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgresqlService: GameplayPostgreSQLService
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
     ) {
-        this.dataSource = this.gameplayPostgresqlService.getDataSource()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async visit(request: VisitRequest) {

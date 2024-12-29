@@ -1,16 +1,12 @@
 import { Module } from "@nestjs/common"
 import { CommandsModule } from "./commands"
-import { LoggerModule } from "./logger"
-import { configForRoot } from "@src/dynamic-modules"
-import { InitializeModule } from "./initialize/initialize.module"
-import { TypeOrmModule } from "@nestjs/typeorm"
+import { InitModule } from "./init"
+import { EnvModule } from "@src/config"
 
 @Module({
     imports: [
-        configForRoot(),
-        LoggerModule,
-        typeOrmF
-        InitializeModule,
+        EnvModule.forRoot(),
+        InitModule,
         CommandsModule
     ]
 })

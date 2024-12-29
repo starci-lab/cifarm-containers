@@ -19,7 +19,7 @@ export class HealthCheckController {
     healthz() {
         this.logger.log("Health check endpoint called")
         return this.health.check([
-            async () => this.db.pingCheck(healthCheckConfig.names.gameplayPostgresql, { timeout: timerConfig.timeouts.healthcheck }),
+            async () => this.db.pingCheck(healthCheckConfig.names.gameplayPostgreSql, { timeout: timerConfig.timeouts.healthcheck }),
             async () =>
                 this.microservice.pingCheck<RedisOptions>(healthCheckConfig.names.cacheRedis, {
                     transport: Transport.REDIS,

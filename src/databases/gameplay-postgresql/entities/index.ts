@@ -1,5 +1,3 @@
-export * from "./abstract"
-export * from "../enums"
 export * from "../enums/ids.enum"
 export * from "./inventory.entity"
 export * from "./placed-item.entity"
