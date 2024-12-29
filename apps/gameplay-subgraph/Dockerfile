@@ -1,6 +1,4 @@
 #docker build -t cifarm/gameplay-subgraph -f ./apps/gameplay-subgraph/Dockerfile . & docker push cifarm/gameplay-subgraph
-#
-
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0
@@ -21,10 +19,13 @@ COPY . .
 RUN npx nest build gameplay-subgraph
 
 # Production Stage (final image)
-FROM build AS production
+FROM node:${NODE_VERSION}-alpine AS production
+
+WORKDIR /usr/src/app
 
 # Copy only the build output and proto files
 COPY --from=build /usr/src/app/dist/apps/gameplay-subgraph .
+COPY --from=build /usr/src/app/proto ./proto
 
 # Install only production dependencies
 RUN npm i --production

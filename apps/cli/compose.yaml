@@ -7,7 +7,9 @@ services:
       - ../../.env.docker
     environment:
       NODE_ENV: production
-    ports:
-      - "3005:3005"
+    volumes:
+      - db:/usr/src/app/db
+volumes:
+    db:
 
 #docker compose -f apps/cli/compose.yaml up --build -d

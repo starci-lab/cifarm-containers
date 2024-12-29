@@ -29,10 +29,6 @@ COPY --from=build /usr/src/app/dist/apps/cli .
 # Install only production dependencies
 RUN npm i --production
 
-# Make current directory writable
-RUN rm -rf db && mkdir db
-RUN chmod -R 777 db
-
 # Add the shebang line to the main.js file
 RUN echo "#!/usr/bin/env node" | cat - main.js > temp && mv temp main.js
 # Make the main.js file executable
