@@ -14,7 +14,7 @@ import {
     CureAnimalTransactionFailedException,
     PlacedItemAnimalNotSickException
 } from "@src/exceptions"
-import { EnergyService, LevelService } from "@src/services"
+import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
 

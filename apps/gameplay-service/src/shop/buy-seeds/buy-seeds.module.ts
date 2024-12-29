@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { GoldBalanceModule, InventoryModule } from "@src/services"
+import { GoldBalanceModule, InventoryModule } from "@src/gameplay"
 import { BuySeedsController } from "./buy-seeds.controller"
 import { BuySeedsService } from "./buy-seeds.service"
 import { GameplayPostgreSQLModule } from "@src/databases"

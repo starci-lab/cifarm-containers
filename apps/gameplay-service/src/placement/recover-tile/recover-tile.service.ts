@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { GameplayPostgreSQLService, InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity, PlacedItemType } from "@src/databases"
 import { PlacedItemInventoryNotFoundException, PlacedItemNotFoundException, PlacedItemTypeNotTileException } from "@src/exceptions"
-import { InventoryService } from "@src/services"
+import { InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { RecoverTileRequest } from "./recover-tile.dto"
 

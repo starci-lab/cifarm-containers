@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common"
 import { HealthCheckController } from "./health-check.controller"
 import { TerminusModule } from "@nestjs/terminus"
 import { GameplayPostgreSQLModule } from "@src/databases"
-import { EnvModule } from "@src/config"
+import { EnvModule } from "@src/env"
 
 @Module({
     imports: [

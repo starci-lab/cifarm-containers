@@ -19,7 +19,7 @@ import {
     PlacedItemTileNotFoundException,
     PlantSeedTransactionFailedException,
 } from "@src/exceptions"
-import { EnergyService, InventoryService, LevelService } from "@src/services"
+import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 
 @Injectable()
 export class PlantSeedService {

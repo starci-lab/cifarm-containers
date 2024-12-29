@@ -6,7 +6,7 @@ import {
     SupplyNotFoundException,
     UserNotFoundException
 } from "@src/exceptions"
-import { GoldBalanceService, InventoryService } from "@src/services"
+import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
 import { GameplayPostgreSQLService } from "@src/databases"

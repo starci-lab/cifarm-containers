@@ -1,8 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { BuildingId } from "@src/databases"
-import { Position, UserIdRequest } from "@src/common/types"
+import { UserIdRequest } from "@src/common/types"
 import { Type } from "class-transformer"
 import { IsString, ValidateNested } from "class-validator"
+import { Position } from "@src/gameplay"
 
 export class ConstructBuildingRequest extends UserIdRequest {
     @IsString()

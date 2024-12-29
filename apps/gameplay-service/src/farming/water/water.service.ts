@@ -17,7 +17,7 @@ import {
     PlacedItemTileNotPlantedException,
     WaterTransactionFailedException
 } from "@src/exceptions"
-import { EnergyService, LevelService } from "@src/services"
+import { EnergyService, LevelService } from "@src/gameplay"
 
 @Injectable()
 export class WaterService {

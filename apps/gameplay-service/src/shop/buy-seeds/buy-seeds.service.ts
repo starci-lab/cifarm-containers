@@ -12,7 +12,7 @@ import {
     CropNotAvailableInShopException,
     CropNotFoundException
 } from "@src/exceptions"
-import { GoldBalanceService, InventoryService } from "@src/services"
+import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
 
