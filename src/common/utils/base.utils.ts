@@ -41,24 +41,19 @@ export const getLoopbackAddress = (port: number = 80) => {
     return `0.0.0.0:${port}`
 }
 
-export const getHttpUrl = (params: GetHttpUrlParams) => {
-    const host = params.host || "localhost"
-    const port = params.port
-    const path = params.path
-
+export const getHttpUrl = ({ host = "localhost", port, path }: GetHttpUrlParams) => {
     const prefix = "http://"
+    
+    // Ensure path starts without a leading slash if it's provided
+    const formattedPath = path?.startsWith("/") ? path.slice(1) : path
 
-    if (path) {
-        if (port) {
-            return `${prefix}${host}:${port}/${path}`
-        }
-        return `${prefix}${host}/${path}`
-    }
-    if (port) {
-        return `${prefix}${host}:${port}`
-    }
-    return `${prefix}${host}`
+    // Building the URL
+    const hostPort = port ? `${host}:${port}` : host
+    const urlPath = formattedPath ? `/${formattedPath}` : ""
+
+    return `${prefix}${hostPort}${urlPath}`
 }
+
 
 export interface GetHttpUrlParams {
     host?: string
