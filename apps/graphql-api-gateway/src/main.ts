@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
-import { envConfig } from "@src/grpc"
+import { envConfig } from "@src/env"
 import { HealthCheckModule } from "./health-check"
 
 const bootstrap = async () => {
