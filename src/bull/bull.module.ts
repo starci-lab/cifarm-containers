@@ -15,8 +15,13 @@ export class BullModule {
                     name: bullData[options.queueName].name
                 })
             ],
-            providers: [],
-            exports: []
+            providers: [
+            ],
+            exports: [
+                NestBullModule.registerQueue({
+                    name: bullData[options.queueName].name
+                })
+            ]
         }
     }
 
