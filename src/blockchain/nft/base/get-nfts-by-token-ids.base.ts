@@ -16,9 +16,9 @@ import { Connection, PublicKey, ParsedAccountData } from "@solana/web3.js"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
 import { fetchDigitalAsset } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey } from "@metaplex-foundation/umi"
-import { Atomic } from "@src/common/types"
+import { Atomic } from "@src/common"
 import { IpfsService } from "../common"
-import { blockchainConfig, chainKeyToPlatform, Network, Platform } from "@src/blockchain"
+import { blockchainConfig, chainKeyToPlatform, Network, Platform } from "../../blockchain.config"
 
 export interface GetNftsByTokenIdsParams {
   tokenIds: Array<string>;

@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty, IsOptional } from "class-validator"
-import { Network } from "@src/blockchain/blockchain.config"
+import { Network } from "@src/blockchain"
 import { BotType } from "@src/guards"
 
 export class GenerateTestSignatureRequest {

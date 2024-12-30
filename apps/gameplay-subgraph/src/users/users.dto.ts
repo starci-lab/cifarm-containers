@@ -1,5 +1,5 @@
 import { Field, Float, ID, InputType, Int } from "@nestjs/graphql"
-import { PaginatedArgs } from "@src/common/types"
+import { PaginatedArgs } from "@src/common"
 import { Network, SupportedChainKey } from "@src/blockchain"
 
 @InputType({

@@ -14,9 +14,9 @@ import { AlgorandMetadata, NearNft, NftData } from "../common"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
 import { fetchAllDigitalAssetByOwner } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey, isSome } from "@metaplex-foundation/umi"
-import { Atomic } from "@src/common/types"
+import { Atomic } from "@src/common"
 import { IpfsService } from "../common"
-import { blockchainConfig, chainKeyToPlatform, Network, Platform } from "@src/blockchain"
+import { blockchainConfig, chainKeyToPlatform, Network, Platform } from "../../blockchain.config"
 
 export interface GetNftsByOwnerAddressParams {
   accountAddress: string;

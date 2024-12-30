@@ -3,7 +3,6 @@ import {
     GetNftsByOwnerAddressParams,
     _getNftsByOwnerAddress,
 } from "./get-nfts-by-owner-address.base"
-import { Network } from "@src/blockchain/blockchain.config"
 import {
     GetNftsByTokenIdsParams,
     _getNftsByTokenIds,
@@ -11,6 +10,7 @@ import {
 import { GetNftByTokenIdParams, _getNftByTokenId } from "./get-nfts-by-token-id.base"
 import { IpfsService } from "../common"
 import { _mintNft, MintNftParams } from "./mint-nft.base"
+import { Network } from "../../blockchain.config"
 
 export interface BlockchainNftBaseServiceConstructorParams {
   nftCollectionId: string;

@@ -4,7 +4,7 @@ import { ApolloGatewayDriverConfig, ApolloGatewayDriver, ApolloFederationDriver,
 import { Module } from "@nestjs/common"
 import { GraphQLModule as NestGraphQLModule } from "@nestjs/graphql"
 import { envConfig } from "@src/env"
-import { getHttpUrl } from "@src/common/utils"
+import { getHttpUrl } from "@src/common"
 
 @Module({})
 export class GraphQLModule { 

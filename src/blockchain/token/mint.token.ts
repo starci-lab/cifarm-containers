@@ -1,5 +1,5 @@
 import { Contract, JsonRpcProvider, Wallet } from "ethers"
-import { Network, Platform, chainKeyToPlatform } from "@src/blockchain"
+import { Network, Platform, chainKeyToPlatform } from "../blockchain.config"
 import { PlatformNotFoundException } from "@src/exceptions"
 import { evmHttpRpcUrl } from "../rpcs"
 import { erc20Abi } from "../abis"

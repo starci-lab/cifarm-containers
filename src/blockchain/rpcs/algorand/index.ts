@@ -1,4 +1,4 @@
-import { Network } from "@src/blockchain/blockchain.config"
+import { Network } from "../../blockchain.config"
 import { Algodv2, Indexer } from "algosdk"
 
 export const TESTNET_ALGOD_SERVER_URL = "https://testnet-api.algonode.cloud"

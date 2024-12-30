@@ -1,6 +1,6 @@
 import { Controller, Get, Logger } from "@nestjs/common"
 import { HealthCheckService, HealthCheck, HttpHealthIndicator } from "@nestjs/terminus"
-import { getHttpUrl } from "@src/common/utils"
+import { getHttpUrl } from "@src/common"
 import { envConfig } from "@src/env"
 import { HEALTH_CHECK_ENDPOINT, HealthCheckDependency } from "@src/health-check"
 

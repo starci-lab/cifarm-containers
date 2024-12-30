@@ -16,9 +16,9 @@ import { PlatformNotFoundException } from "@src/exceptions"
 import { MulticallProvider } from "@ethers-ext/provider-multicall"
 import { NearNft, NftData } from "../common"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
-import { Atomic } from "@src/common/types"
+import { Atomic } from "@src/common"
 import { IpfsService } from "../common"
-import { blockchainConfig, chainKeyToPlatform, Network, Platform } from "@src/blockchain"
+import { blockchainConfig, chainKeyToPlatform, Network, Platform } from "../../blockchain.config"
 
 export interface GetNftByTokenIdParams {
   tokenId: string;

@@ -9,7 +9,7 @@ import {
 } from "@nestjs/websockets"
 import { Server, Socket } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
-import { getEnvValue, getHttpUrl, isProduction } from "@src/common/utils"
+import { getEnvValue, getHttpUrl, isProduction } from "@src/common"
 import { envConfig } from "@src/env"
 import { BcryptService } from "@src/crypto/bcrypt"
 

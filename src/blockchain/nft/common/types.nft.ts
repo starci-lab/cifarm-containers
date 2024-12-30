@@ -1,5 +1,5 @@
-import { Network } from "@src/blockchain/blockchain.config"
-import { Atomic } from "@src/common/types"
+import { Network } from "../../blockchain.config"
+import { Atomic } from "@src/common"
 
 export interface GetContractObservableParams {
     nftCollectionId: string,

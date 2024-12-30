@@ -1,4 +1,4 @@
-import { UserIdRequest } from "@src/common/types"
+import { UserIdRequest } from "@src/common"
 
 export class ClaimDailyRewardRequest extends UserIdRequest {}
 

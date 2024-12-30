@@ -3,7 +3,7 @@
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { Test } from "@nestjs/testing"
-import { sleep } from "@src/common/utils"
+import { sleep } from "@src/common"
 import {
     CropCurrentState,
     CropEntity,

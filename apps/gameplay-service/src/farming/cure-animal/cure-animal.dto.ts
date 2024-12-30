@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsUUID } from "class-validator"
-import { UserIdRequest } from "@src/common/types"
+import { UserIdRequest } from "@src/common"
 
 export class CureAnimalRequest extends UserIdRequest {
     @IsUUID()

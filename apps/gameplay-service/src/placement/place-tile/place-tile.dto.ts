@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { UserIdRequest } from "@src/common/types"
+import { UserIdRequest } from "@src/common"
 import { Position } from "@src/gameplay"
 import { IsUUID } from "class-validator"
 

@@ -8,7 +8,7 @@ import { DeliveryJobData } from "./delivery.dto"
 import { CacheKey, DeliveringProductEntity } from "@src/databases"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
-import { isProduction } from "@src/common/utils"
+import { isProduction } from "@src/common"
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
 import { bullData, BullQueueName } from "@src/bull"
 dayjs.extend(utc)

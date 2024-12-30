@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { AnimalId } from "@src/databases"
-import { UserIdRequest } from "@src/common/types"
+import { UserIdRequest } from "@src/common"
 import { Type } from "class-transformer"
 import { IsString, ValidateNested } from "class-validator"
 import { Position } from "@src/gameplay"

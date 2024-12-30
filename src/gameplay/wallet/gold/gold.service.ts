@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import { GoldCannotBeZeroOrNegativeException, UserInsufficientGoldException } from "@src/exceptions"
 import { AddParams, AddResult, SubtractParams, SubtractResult } from "./gold.dto"
-import { CheckSufficientParams } from "@src/common/types"
+import { CheckSufficientParams } from "@src/common"
 
 @Injectable()
 export class GoldBalanceService {

@@ -7,7 +7,7 @@ import {
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { LEADER_ELECTION_OPTIONS, LeaderElectionOptions, LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT } from "./leader-election.types"
 import { envConfig } from "@src/env"
-import { runInKubernetes } from "@src/common/utils"
+import { runInKubernetes } from "@src/common"
 import { CoordinationV1Api, KubeConfig, V1Lease, V1MicroTime, Watch } from "@kubernetes/client-node"
 
 @Injectable()

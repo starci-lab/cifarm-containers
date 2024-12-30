@@ -1,8 +1,8 @@
 import { nearClient, nearKeyPair, nearKeyStore } from "../../rpcs"
-import { computeRaw } from "@src/common/utils"
-import { TransactionResult } from "@src/common/types"
+import { computeRaw } from "@src/common"
+import { TransactionResult } from "@src/common"
 import { NearNftMetadata } from "../common"
-import { blockchainConfig, chainKeyToPlatform, Network, Platform, SupportedChainKey } from "@src/blockchain"
+import { blockchainConfig, chainKeyToPlatform, Network, Platform, SupportedChainKey } from "../../blockchain.config"
 import { envConfig } from "@src/env"
 
 export interface MintNftParams {

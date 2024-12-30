@@ -1,4 +1,4 @@
-import { UserIdRequest } from "@src/common/types"
+import { UserIdRequest } from "@src/common"
 import { IsUUID } from "class-validator"
 
 export class FollowRequest extends UserIdRequest {

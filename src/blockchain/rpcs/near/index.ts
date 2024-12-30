@@ -1,4 +1,4 @@
-import { Network } from "@src/blockchain/blockchain.config"
+import { Network } from "../../blockchain.config"
 import {} from "bs58"
 import { connect, KeyPair, keyStores } from "near-api-js"
 import { KeyStore } from "near-api-js/lib/key_stores"

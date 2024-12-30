@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { UserEntity } from "@src/databases"
-import { EntityParams, UserIdRequest } from "@src/common/types"
+import { EntityParams, UserIdRequest } from "@src/common"
 import { IsInt } from "class-validator"
 import { DeepPartial } from "typeorm"
 

@@ -1,4 +1,4 @@
-import { Network } from "@src/blockchain/blockchain.config"
+import { Network } from "../../blockchain.config"
 import { Network as AptosNetwork, Aptos, AptosConfig } from "@aptos-labs/ts-sdk"
 
 export const networkMap: Record<Network, AptosNetwork> = {

@@ -4,7 +4,7 @@ import {
     UserInsufficientTokenException
 } from "@src/exceptions"
 import { AddParams, AddResult, SubtractParams, SubtractResult } from "./token.dto"
-import { CheckSufficientParams } from "@src/common/types"
+import { CheckSufficientParams } from "@src/common"
 
 @Injectable()
 export class TokenBalanceService {

@@ -1,7 +1,7 @@
 // buy-supplies.dto.ts
 
 import { ApiProperty } from "@nestjs/swagger"
-import {  UserIdRequest } from "@src/common/types"
+import {  UserIdRequest } from "@src/common"
 import { Position } from "@src/gameplay"
 import { IsString } from "class-validator"
 
