@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common"
 import { DailyRewardsResolver } from "./daily-rewards.resolver"
 import { DailyRewardsService } from "./daily-rewards.service"
-import { typeOrmForFeature } from "@src/dynamic-modules"
+ 
 
 @Module({
-    imports: [typeOrmForFeature()],
+    imports: [ ],
     providers: [DailyRewardsService, DailyRewardsResolver]
 })
 export class DailyRewardsModule {}

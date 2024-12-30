@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common"
-import { configForRoot } from "@src/dynamic-modules"
 import { DefaultGateway } from "./default.gateway"
 import { BcryptModule } from "@src/crypto/bcrypt"
+import { EnvModule } from "@src/env"
 
 @Module({
     imports: [
-        configForRoot(),
+        EnvModule.forRoot(),
         BcryptModule,
     ],
     controllers: [],

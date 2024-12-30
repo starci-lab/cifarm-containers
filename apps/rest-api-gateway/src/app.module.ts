@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common"
 import { APP_INTERCEPTOR } from "@nestjs/core"
 import { EnvModule } from "@src/env"
+import { JwtModule } from "@src/jwt"
 import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
 import { AppModuleV1 } from "./v1"
 import { AppModuleV2 } from "./v2"
@@ -8,6 +9,7 @@ import { AppModuleV2 } from "./v2"
 @Module({
     imports: [
         EnvModule.forRoot(),
+        JwtModule,
         AppModuleV1,
         AppModuleV2
     ],

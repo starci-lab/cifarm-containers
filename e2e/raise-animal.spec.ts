@@ -2,30 +2,30 @@
 
 import { Test } from "@nestjs/testing"
 import {
-    authAxios,
-    gameplayAxios,
     grpcData,
+    GrpcModule,
     GrpcServiceName,
-    Network,
-    SupportedChainKey,
 } from "@src/grpc"
 import {
     AnimalCurrentState,
     AnimalEntity,
     AnimalInfoEntity,
+    BuildingId,
+    GameplayPostgreSQLModule,
+    PlacedItemEntity,
+    PlacedItemTypeId,
+    SupplyId,
+    UserEntity,
 } from "@src/databases"
-import {
-    configForRoot,
-    grpcClientRegisterAsync,
-    typeOrmForFeature,
-    typeOrmForRoot,
-} from "@src/dynamic-modules"
-import { JwtModule, JwtService, UserLike } from "@src/services"
+import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { DataSource } from "typeorm"
 import { lastValueFrom } from "rxjs"
 import { sleep } from "@src/common/utils"
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
+import { EnvModule } from "@src/env"
+import { Network, SupportedChainKey } from "@src/blockchain"
+import { AxiosConfigType, createAxios } from "./e2e.utils"
 
 describe("Raise animal flow", () => {
     let accessToken: string
@@ -37,23 +37,15 @@ describe("Raise animal flow", () => {
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [
-                configForRoot(),
-                typeOrmForRoot(),
-                typeOrmForFeature(),
-                grpcClientRegisterAsync(GrpcServiceName.Gameplay),
+                EnvModule.forRoot(),
+                GameplayPostgreSQLModule.forRoot(),
+                GrpcModule.forRoot({
+                    name: GrpcServiceName.Gameplay,
+                }),
                 JwtModule,
             ],
         }).compile()
 
-        // Sign in and retrieve accessToken
-        const { data } = await authAxios("v1").post("/test-signature", {
-            chainKey: SupportedChainKey.Aptos,
-            accountNumber: 2,
-            network: Network.Mainnet,
-        })
-        const { data: verifySignatureData } = await authAxios("v1").post("/verify-signature", data)
-
-        accessToken = verifySignatureData.accessToken
         dataSource = module.get<DataSource>(DataSource)
         jwtService = module.get<JwtService>(JwtService)
         const clientGrpc = module.get<ClientGrpc>(
@@ -63,33 +55,91 @@ describe("Raise animal flow", () => {
             grpcData[GrpcServiceName.Gameplay].service
         )
 
-        // Decode accessToken to get user
+        // Sign in and retrieve accessToken
+        const axios = createAxios(AxiosConfigType.NoAuth, { version: "v1" })
+
+        const { data } = await axios.post("/test-signature", {
+            chainKey: SupportedChainKey.Aptos,
+            accountNumber: 2,
+            network: Network.Mainnet,
+        })
+        const { data: verifySignatureData } = await axios.post(
+            "/verify-signature",
+            data
+        )
+
+        accessToken = verifySignatureData.accessToken
         user = await jwtService.decodeToken(accessToken)
     })
 
     it("Should raise animal successfully", async () => {
         // Test with an animal (e.g., cow)
-        const animalId = "cow" // Replace with the appropriate Animal ID
+        const animalId = "cow"
 
-        const axios = gameplayAxios(accessToken, "v1")
+        const axios = createAxios(AxiosConfigType.WithAuth, {
+            version: "v1",
+            accessToken,
+        })
+
+
+        // Increase user money
+        await dataSource.manager.update(
+            UserEntity,
+            { id: user.id },
+            { golds: 30000 }
+        )
+
+        // Buy animal food
+        await axios.post("/buy-supplies", {
+            supplyId: SupplyId.AnimalFeed,
+            quantity: 5
+        })
+
+        // Construct a building
+        await axios.post("/construct-building", {
+            buildingId: BuildingId.Pasture,
+            position: {
+                x: 1,
+                y: 1
+            }
+        })
+
+        //Find placedItemBuilding
+        const placedItemBuilding = await dataSource.manager.findOne(PlacedItemEntity, {
+            where: {
+                userId: user.id,
+                placedItemTypeId: PlacedItemTypeId.Pasture,
+                x: 1,
+                y: 1,
+            }
+        })
+        // Check if the building is constructed
+        expect(placedItemBuilding).toBeDefined()
 
         // Buy an animal from the shop
         await axios.post("/buy-animal", {
             animalId,
-            quantity: 1,
+            placedItemBuildingId: placedItemBuilding.id,
+            position: {
+                x: 0,
+                y: 0,
+            }
         })
 
         // Get the animal info
-        const { id: animalInfoId } = await dataSource.manager.findOne(AnimalInfoEntity, {
-            where: {
-                animal: {
-                    id: animalId,
+        let animalInfo = await dataSource.manager.findOne(
+            AnimalInfoEntity,
+            {
+                where: {
+                    animal: {
+                        id: animalId,
+                    },
                 },
-            },
-            relations: {
-                animal: true,
-            },
-        })
+                relations: {
+                    animal: true,
+                },
+            }
+        )
 
         // Retrieve the animal data
         const animal = await dataSource.manager.findOne(AnimalEntity, {
@@ -98,59 +148,82 @@ describe("Raise animal flow", () => {
             },
         })
 
-        // Speed up growth and yield process
-        for (let stage = 1; stage <= 2; stage++) { // Assuming 2 stages: growth and yield
-            await lastValueFrom(
-                gameplayService.speedUp({
-                    time: stage === 1 ? animal.growthTime : animal.yieldTime,
-                })
-            )
+        // Buy 
+
+        //while stage is not mature
+        while (!animalInfo.isAdult) {
+            // Speed up and feed until the animal is an adult
+            await lastValueFrom(gameplayService.speedUp({ time: animal.hungerTime + 100 }))
             await sleep(1100)
 
-            // Retrieve the updated animal info
-            const animalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
-                where: {
-                    id: animalInfoId,
-                },
-            })
-
-            if (stage === 1) {
-                // Assert animal has grown to adulthood
-                expect(animalInfo.isAdult).toBe(true)
-            } else {
-                // Assert animal is ready for yield
-                expect(animalInfo.currentState).toBe(AnimalCurrentState.Yield)
-
-                // Handle yield process
-                await axios.post("/harvest-animal", { animalInfoId })
-
-                // Ensure the animal returns to a normal state
-                const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
+            // check if the animal is hungry
+            animalInfo = await dataSource.manager.findOne(
+                AnimalInfoEntity,
+                {
                     where: {
-                        id: animalInfoId,
+                        id: animalInfo.id,
                     },
-                })
-                expect(updatedAnimalInfo.currentState).toBe(AnimalCurrentState.Normal)
-            }
+                }
+            )
 
-            // Handle other potential states
-            if (animalInfo.currentState === AnimalCurrentState.Hungry) {
-                await axios.post("/feed-animal", { animalInfoId })
-            } else if (animalInfo.currentState === AnimalCurrentState.Sick) {
-                await axios.post("/cure-animal", { animalInfoId })
-            }
+            expect(animalInfo.currentState).toBe(AnimalCurrentState.Hungry)
 
-            // Ensure the animal is in a normal state after each cycle
-            const recheckedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
-                where: {
-                    id: animalInfoId,
-                },
+            // Feed the animal            
+            await axios.post("/feed-animal", { 
+                placedItemAnimalId: placedItemBuilding.id,
             })
-            expect(recheckedAnimalInfo.currentState).toBe(AnimalCurrentState.Normal)
+
+            animalInfo = await dataSource.manager.findOne(
+                AnimalInfoEntity,
+                {
+                    where: {
+                        id: animalInfo.id,
+                    },
+                }
+            )
+
+            expect(animalInfo.currentState).toBe(AnimalCurrentState.Normal)
         }
+
+
+        // Speed up growth and yield process
+        while(animalInfo.currentState != AnimalCurrentState.Yield){
+            await lastValueFrom(gameplayService.speedUp({ time: animal.yieldTime  }))
+            await sleep(1100)
+
+            animalInfo = await dataSource.manager.findOne(
+                AnimalInfoEntity,
+                {
+                    where: {
+                        id: animalInfo.id,
+                    },
+                }
+            )
+        }
+
+        // Handle yield process
+        await axios.post("/collect-animal-product", { 
+            placedItemAnimalId: placedItemBuilding.id,
+        })
+
+        // Ensure the animal returns to a normal state
+
+        animalInfo = await dataSource.manager.findOne(
+            AnimalInfoEntity,
+            {
+                where: {
+                    id: animalInfo.id,
+                },
+            }
+        )
+        expect(animalInfo.currentState).toBe(
+            AnimalCurrentState.Normal
+        )
+
     })
 
     afterAll(async () => {
-        // await dataSource.manager.remove(UserEntity, user)
+        // Remove user after the test
+        // await dataSource.manager.delete(UserEntity, user.id)
     })
 })

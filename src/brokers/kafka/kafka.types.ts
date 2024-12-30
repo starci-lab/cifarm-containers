@@ -8,5 +8,5 @@ export enum KafkaGroupId {
 }
 
 export enum KafkaPattern {
-    PlacedItemsBroadcast = "placeed.items.broadcast",
+    PlacedItemsBroadcast = "placed.items.broadcast",
 }

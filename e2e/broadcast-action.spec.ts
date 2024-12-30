@@ -19,7 +19,7 @@ describe("WebSocket Broadcast Gateway - Authenticated Users", () => {
             imports: [
                 configForRoot(),
                 typeOrmForRoot(),
-                typeOrmForFeature(),
+                 ,
                 grpcClientRegisterAsync(GrpcServiceName.Gameplay),
                 JwtModule,
             ],

@@ -2,8 +2,8 @@ import { Field, ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import JSON from "graphql-type-json"
-import { Position } from "@src/common/types"
 import { AppearanceChance } from "../enums"
+import { Position } from "@src/gameplay"
 @ObjectType()
 @Entity("system")
 export class SystemEntity extends StringAbstractEntity {

@@ -25,9 +25,23 @@ export class GrpcModule {
                     }
                 ])
             ],
-            providers: [],
-            exports: [
+            providers: [
                 
+            ],
+            exports: [
+                ClientsModule.registerAsync([
+                    {
+                        name: data.name,
+                        useFactory: async () => ({
+                            transport: Transport.GRPC,
+                            options: {
+                                url,
+                                package: data.package,
+                                protoPath: data.protoPath
+                            }
+                        })
+                    }
+                ])
             ]
         }
     }

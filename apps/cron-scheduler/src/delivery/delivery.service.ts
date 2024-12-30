@@ -5,13 +5,12 @@ import { Queue } from "bullmq"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { DeliveryJobData } from "./delivery.dto"
-import { DeliveringProductEntity } from "@src/databases"
+import { CacheKey, DeliveringProductEntity } from "@src/databases"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { isProduction } from "@src/common/utils"
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
 import { bullData, BullQueueName } from "@src/bull"
-import { CacheKey } from "@src/common"
 dayjs.extend(utc)
 
 @Injectable()

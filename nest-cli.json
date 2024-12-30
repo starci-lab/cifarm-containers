@@ -31,15 +31,15 @@
         "webpackConfigPath": "apps/websocket-node/webpack.config.js"
       }
     },
-    "graphql-maingraph": {
+    "graphql-api-gateway": {
       "type": "application",
-      "root": "apps/graphql-maingraph",
+      "root": "apps/graphql-api-gateway",
       "entryFile": "main",
-      "sourceRoot": "apps/graphql-maingraph/src",
+      "sourceRoot": "apps/graphql-api-gateway/src",
       "compilerOptions": {
         "webpack": true,
-        "tsConfigPath": "apps/graphql-maingraph/tsconfig.app.json",
-        "webpackConfigPath": "apps/graphql-maingraph/webpack.config.js"
+        "tsConfigPath": "apps/graphql-api-gateway/tsconfig.app.json",
+        "webpackConfigPath": "apps/graphql-api-gateway/webpack.config.js"
       }
     },
     "cron-scheduler": {
