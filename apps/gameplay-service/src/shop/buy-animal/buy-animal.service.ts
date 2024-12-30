@@ -143,7 +143,7 @@ export class BuyAnimalService {
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Animal purchase transaction failed, rolling back...")
+                this.logger.error("Animal purchase transaction failed, rolling back..." + error.message)
                 await queryRunner.rollbackTransaction()
                 throw new BuyAnimalTransactionFailedException(error)
             }

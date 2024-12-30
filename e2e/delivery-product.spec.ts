@@ -4,14 +4,16 @@ import { IGameplayService } from "@apps/gameplay-service"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { ClientGrpc } from "@nestjs/microservices"
 import { Test } from "@nestjs/testing"
-import { authAxios, CacheKey, gameplayAxios, grpcData, GrpcServiceName, Network, SupportedChainKey } from "@src/grpc"
-import { CropCurrentState, CropEntity, CropId, DeliveringProductEntity, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
-import { cacheRegisterAsync, configForRoot, grpcClientRegisterAsync, typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
-import { JwtModule, JwtService, UserLike } from "@src/services"
+import { Network, SupportedChainKey } from "@src/blockchain"
 import { sleep } from "@src/common/utils"
+import { CacheKey, CacheRedisModule, CropCurrentState, CropEntity, CropId, DeliveringProductEntity, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
+import { EnvModule } from "@src/env"
+import { grpcData, GrpcModule, GrpcServiceName } from "@src/grpc"
+import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
+import { AxiosConfigType, createAxios } from "./e2e.utils"
 
 describe("Deliver product flow", () => {
     let accessToken: string
@@ -24,22 +26,25 @@ describe("Deliver product flow", () => {
     beforeAll(async () => {
         const module = await Test.createTestingModule({
             imports: [
-                configForRoot(),
-                typeOrmForRoot(),
-                 ,
-                cacheRegisterAsync(),
-                grpcClientRegisterAsync(GrpcServiceName.Gameplay),
+                EnvModule.forRoot(),
+                GameplayPostgreSQLModule.forRoot(),
+                CacheRedisModule.forRoot(),
+                GrpcModule.forRoot({
+                    name: GrpcServiceName.Gameplay,
+                }),
                 JwtModule
             ],
         }).compile()
 
         // Sign in and retrieve accessToken
-        const { data } = await authAxios().post("/test-signature", {
+        const axios = createAxios(AxiosConfigType.NoAuth, { version: "v1" })
+
+        const { data } = await axios.post("/test-signature", {
             chainKey: SupportedChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,
         })
-        const { data: verifySignatureData } = await authAxios().post("/verify-signature", data)
+        const { data: verifySignatureData } = await axios.post("/verify-signature", data)
 
         accessToken = verifySignatureData.accessToken
         dataSource = module.get<DataSource>(DataSource)
@@ -56,32 +61,32 @@ describe("Deliver product flow", () => {
         //test with carrot
         const cropId: CropId = CropId.Carrot
 
-        const axios = gameplayAxios(accessToken)
+        const gameplayAxios = createAxios(AxiosConfigType.WithAuth, {
+            version: "v1",
+            accessToken
+        })
 
-        //buy seeds from the shop
-        await axios.post("/buy-seeds", {
+        // Buy seeds from the shop
+        await gameplayAxios.post("/buy-seeds", {
             cropId,
             quantity: 1
         })
 
-        //get the inventory
+        // Get the inventory
         const { id: inventorySeedId } = await dataSource.manager.findOne(InventoryEntity, {
             where: {
                 userId: user.id,
                 inventoryType: {
                     type: InventoryType.Seed,
-                    cropId
+                    cropId: cropId
                 }
             },
             relations: {
                 inventoryType: true
             }
         })
-        //get the first tile
-        console.log(user.id)
 
-        console.log(await dataSource.manager.find(PlacedItemEntity))
-
+        // Get the first tile
         const { id: placedItemTileId } = await dataSource.manager.findOne(PlacedItemEntity, {
             where: {
                 userId: user.id,
@@ -99,11 +104,16 @@ describe("Deliver product flow", () => {
             }
         })
 
-        //plant the seed
-        await axios.post("/plant-seed", {
-            inventorySeedId,
+        //Check placedItemTileId
+        expect(placedItemTileId).toBeDefined()
+
+        // Plant the seed
+        const response = await gameplayAxios.post("/plant-seed", {
+            inventorySeedId: inventorySeedId,
             placedItemTileId
         })
+
+        console.log(response.data)
 
         // Speed up the growth for each stage and perform checks
         const crop = await dataSource.manager.findOne(CropEntity, {
@@ -114,7 +124,7 @@ describe("Deliver product flow", () => {
 
         for (let stage = 2; stage <= crop.growthStages; stage++) {
             await lastValueFrom(gameplayService.speedUp({
-                time: crop.growthStageDuration
+                time: crop.growthStageDuration + 100,
             }))
             await sleep(1100)
 
@@ -129,11 +139,11 @@ describe("Deliver product flow", () => {
             expect(seedGrowthInfo.currentStage).toBe(stage)
 
             if (seedGrowthInfo.currentState === CropCurrentState.NeedWater) {
-                await axios.post("/water", { placedItemTileId: placedItemTileId })
+                await gameplayAxios.post("/water", { placedItemTileId })
             } else if (seedGrowthInfo.currentState === CropCurrentState.IsWeedy) {
-                await axios.post("/use-herbicide", { placedItemTileId: placedItemTileId })
+                await gameplayAxios.post("/use-herbicide", { placedItemTileId })
             } else if (seedGrowthInfo.currentState === CropCurrentState.IsInfested) {
-                await axios.post("/use-pesticide", { placedItemTileId: placedItemTileId })
+                await gameplayAxios.post("/use-pesticide", { placedItemTileId })
             }
 
             // Ensure the crop is in a normal state
@@ -142,8 +152,11 @@ describe("Deliver product flow", () => {
                     id: seedGrowthInfo.id
                 }
             })
-
-            expect(updatedSeedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
+            
+            //If not a last stage, crop should be in normal state, otherwise it should be fully matured
+            if (stage !== crop.growthStages) {
+                expect(updatedSeedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
+            }
         }
 
         // Final assertion: Crop should be fully matured
@@ -152,13 +165,14 @@ describe("Deliver product flow", () => {
                 placedItemId: placedItemTileId
             }
         })
-        expect(finalSeedGrowthInfo.fullyMatured).toBe(true)
+        expect(finalSeedGrowthInfo.currentStage).toBe(crop.growthStages)
+        expect(finalSeedGrowthInfo.currentState).toBe(CropCurrentState.FullyMatured)
 
 
         console.log("placedItemTileId", placedItemTileId)
 
         //Haverst the crop
-        await axios.post("/harvest-crop", { placedItemTileId: placedItemTileId })
+        await gameplayAxios.post("/harvest-crop", { placedItemTileId: placedItemTileId })
 
         // //get the inventory
         const inventory = await dataSource.manager.findOne(InventoryEntity, {
@@ -183,7 +197,7 @@ describe("Deliver product flow", () => {
         console.log("inventory", inventory.quantity)
 
         // Deliver the product
-        await axios.post("/deliver-product", {
+        await gameplayAxios.post("/deliver-product", {
             userId: user.id,
             index: 1,
             inventoryId: inventory.id,
@@ -243,7 +257,7 @@ describe("Deliver product flow", () => {
     })
 
     afterAll(async () => {
-        await dataSource.manager.remove(UserEntity, user)
+        await dataSource.manager.delete(UserEntity, user.id)
     })
 })
 
