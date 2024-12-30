@@ -1,10 +1,11 @@
 import { Module } from "@nestjs/common"
-import { configForRoot, typeOrmForFeature, typeOrmForRoot } from "@src/dynamic-modules"
 import { HealthCheckController } from "./health-check.controller"
 import { TerminusModule } from "@nestjs/terminus"
+import { EnvModule } from "@src/env"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [configForRoot(), typeOrmForRoot(), typeOrmForFeature(), TerminusModule],
+    imports: [EnvModule.forRoot(), GameplayPostgreSQLModule.forRoot(), TerminusModule],
     controllers: [HealthCheckController],
     providers: [],
     exports: []

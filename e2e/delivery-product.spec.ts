@@ -26,7 +26,7 @@ describe("Deliver product flow", () => {
             imports: [
                 configForRoot(),
                 typeOrmForRoot(),
-                typeOrmForFeature(),
+                 ,
                 cacheRegisterAsync(),
                 grpcClientRegisterAsync(GrpcServiceName.Gameplay),
                 JwtModule

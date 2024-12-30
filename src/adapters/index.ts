@@ -1,1 +1,1 @@
-export * from "./redis-io.class"
+export * from "./redis-io.adapter"

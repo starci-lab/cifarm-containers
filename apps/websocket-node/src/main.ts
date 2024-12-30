@@ -1,11 +1,11 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
 import { RedisIoAdapter } from "@src/adapters"
-import { envConfig, kafkaConfig } from "@src/grpc"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { v4 } from "uuid"
-import { kafkaBrokers } from "@src/dynamic-modules"
 import { HealthCheckModule } from "./health-check"
+import { envConfig } from "@src/env"
+import { kafkaBrokers, KafkaGroupId } from "@src/brokers"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -18,7 +18,7 @@ const bootstrap = async () => {
                     brokers: kafkaBrokers(false),
                 },
                 consumer: {
-                    groupId: kafkaConfig.placedItems.groupId,
+                    groupId: KafkaGroupId.PlacedItemsBroadcast
                 },
             }
         }

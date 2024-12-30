@@ -1,10 +1,5 @@
 import { Module } from "@nestjs/common"
-import {
-    cacheRegisterAsync,
-    configForRoot,
-    gameplaySubgraphForRoot,
-    typeOrmForRoot
-} from "@src/dynamic-modules"
+
 import { AnimalInfoThievedByUsersModule } from "./animal-info-thieved-by-users"
 import { AnimalInfosModule } from "./animal-infos"
 import { AnimalsModule } from "./animals"
@@ -23,13 +18,16 @@ import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
 import { UsersModule } from "./users"
+import { EnvModule } from "@src/env"
+import { CacheRedisModule, GameplayPostgreSQLModule } from "@src/databases"
+import { GraphQLModule } from "@src/graphql"
 
 @Module({
     imports: [
-        configForRoot(),
-        typeOrmForRoot(),
-        cacheRegisterAsync(),
-        gameplaySubgraphForRoot(),
+        EnvModule.forRoot(),
+        GameplayPostgreSQLModule.forRoot(),
+        CacheRedisModule.forRoot(),
+        GraphQLModule.forSubgraph(),
         AnimalInfoThievedByUsersModule,
         AnimalInfosModule,
         AnimalsModule,

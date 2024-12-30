@@ -3,7 +3,7 @@ import { Resolver, Query, Args } from "@nestjs/graphql"
 import { UpgradeService } from "./upgrades.service"
 import { UpgradeEntity } from "@src/databases"
 import { GetUpgradesArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
+import { GraphQLCacheInterceptor } from "@src/interceptors"
 
 @Resolver()
 export class UpgradeResolver {

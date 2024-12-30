@@ -53,7 +53,7 @@ describe("Thief crop flow", () => {
             imports: [
                 configForRoot(),
                 typeOrmForRoot(),
-                typeOrmForFeature(),
+                 ,
                 grpcClientRegisterAsync(GrpcServiceName.Gameplay),
                 JwtModule
             ]

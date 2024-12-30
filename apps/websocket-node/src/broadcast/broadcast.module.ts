@@ -1,18 +1,20 @@
 import { Module } from "@nestjs/common"
-import { KafkaConfigKey } from "@src/grpc"
-import { typeOrmForFeature, kafkaClientRegister, configForRoot } from "@src/dynamic-modules"
-import { WsJwtAuthModule } from "@src/guards"
+import { KafkaGroupId, KafkaModule } from "@src/brokers"
+import { GameplayPostgreSQLModule } from "@src/databases"
+import { EnvModule } from "@src/env"
+import { JwtModule } from "@src/jwt"
 import { BroadcastController } from "./broadcast.controller"
 import { BroadcastGateway } from "./broadcast.gateway"
 
 @Module({
     imports: [
-        configForRoot(),
-        kafkaClientRegister({
-            key: KafkaConfigKey.PlacedItems,
+        EnvModule.forRoot(),
+        KafkaModule.forRoot({
+            groupId: KafkaGroupId.PlacedItemsBroadcast,
+            producerOnly: true,
         }),
-        typeOrmForFeature(),
-        WsJwtAuthModule,
+        GameplayPostgreSQLModule.forRoot(),
+        JwtModule,
     ],
     controllers: [BroadcastController],
     providers: [BroadcastGateway]

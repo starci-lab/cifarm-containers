@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common"
 import { UpgradeService } from "./upgrades.service"
 import { UpgradeResolver } from "./upgrades.resolver"
-import { typeOrmForFeature } from "@src/dynamic-modules"
+ 
 
 @Module({
-    imports: [typeOrmForFeature()],
+    imports: [ ],
     providers: [UpgradeService, UpgradeResolver]
 })
 export class UpgradesModule { }

@@ -39,7 +39,7 @@ describe("Raise animal flow", () => {
             imports: [
                 configForRoot(),
                 typeOrmForRoot(),
-                typeOrmForFeature(),
+                 ,
                 grpcClientRegisterAsync(GrpcServiceName.Gameplay),
                 JwtModule,
             ],

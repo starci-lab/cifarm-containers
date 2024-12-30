@@ -1,5 +1,5 @@
 import { Injectable, CanActivate, Logger, ExecutionContext } from "@nestjs/common"
-import { JwtService } from "@src/services"
+import { JwtService } from "@src/jwt"
 import { WsAuthTokenNotFoundException, WsUnauthorizedException } from "@src/exceptions"
 
 @Injectable()

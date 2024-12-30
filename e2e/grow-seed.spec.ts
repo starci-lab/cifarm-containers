@@ -2,7 +2,6 @@
 
 import { Test } from "@nestjs/testing"
 import { CropCurrentState, CropEntity, CropId, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
-import { JwtModule, JwtService, UserLike } from "@src/services"
 import { DataSource } from "typeorm"
 import { lastValueFrom } from "rxjs"
 import { sleep } from "@src/common/utils"
@@ -11,8 +10,9 @@ import { ClientGrpc } from "@nestjs/microservices"
 import { EnvModule } from "@src/env"
 import { grpcData, GrpcModule } from "@src/grpc"
 import { GrpcServiceName } from "@src/grpc/grpc.types"
-import { Network, SupportedChainKey } from "@src/config"
+import { Network, SupportedChainKey } from "@src/blockchain"
 import { createAxios } from "./e2e.utils"
+import { JwtModule, JwtService, UserLike } from "@src/jwt"
 
 describe("Grow seed flow", () => {
     let accessToken: string

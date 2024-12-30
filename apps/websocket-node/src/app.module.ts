@@ -1,16 +1,16 @@
 import { Module } from "@nestjs/common"
-import { cacheRegisterAsync, configForRoot, schedulerForRoot, typeOrmForRoot } from "@src/dynamic-modules"
 import { BroadcastModule } from "./broadcast"
 import { DefaultModule } from "./default"
 import { ServeStaticModule } from "@nestjs/serve-static"
 import { join } from "path"
+import { EnvModule } from "@src/env"
+import { CacheRedisModule, GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
     imports: [
-        configForRoot(),
-        cacheRegisterAsync(),
-        typeOrmForRoot(),
-        schedulerForRoot(),
+        EnvModule.forRoot(),
+        CacheRedisModule.forRoot(),
+        GameplayPostgreSQLModule.forRoot(),
         BroadcastModule,
         DefaultModule,
         ServeStaticModule.forRoot({

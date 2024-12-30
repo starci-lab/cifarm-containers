@@ -3,7 +3,6 @@ const path = require("path")
 const nodeExternals = require("webpack-node-externals")
 const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin")
 
-// Base package.json để làm cơ sở
 const basePackage = {
     name: "gameplay-subgraph",
     version: "1.0.0",
@@ -18,6 +17,7 @@ const basePackage = {
         "@nestjs/platform-express": "^10.0.0",
         "pg": "8.13.1",
         "@apollo/subgraph": "2.9.3",
+        "@apollo/server": "4.11.2"
     }
 }
 
