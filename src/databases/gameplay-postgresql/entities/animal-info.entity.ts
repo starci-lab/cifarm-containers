@@ -50,9 +50,17 @@ export class AnimalInfoEntity extends UuidAbstractEntity {
     @Column({ type: "boolean", default: false })
         alreadySick: boolean
 
+    @Field(() => String)
+    @Column({ name: "placed_item_id", type: "uuid" })
+        placedItemId: string
+
     @Field(() => PlacedItemEntity)
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.animalInfo, {
         onDelete: "CASCADE"
+    })
+    @JoinColumn({
+        name: "placed_item_id",
+        referencedColumnName: "id"
     })
         placedItem?: PlacedItemEntity
 }

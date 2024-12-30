@@ -7,15 +7,16 @@ import {
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
+    SupplyId,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/databases"
 import {
+    FeedAnimalTransactionFailedException,
     InventoryNotFoundException,
     InventoryTypeNotSupplyException,
     PlacedItemAnimalNotFoundException,
-    FeedAnimalTransactionFailedException,
     PlacedItemAnimalNotNeedFeedingException
 } from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
@@ -87,17 +88,21 @@ export class FeedAnimalService {
             const inventory = await queryRunner.manager.findOne(InventoryEntity, {
                 where: {
                     userId: user.id,
-                    id: request.inventoryAnimalFeedId
+                    // Inventory type is Supply
+                    inventoryType: {
+                        type: InventoryType.Supply,
+                        supplyId: SupplyId.AnimalFeed
+                    }
                 },
                 relations: {
                     inventoryType: true
                 }
             })
 
-            if (!inventory) throw new InventoryNotFoundException(request.inventoryAnimalFeedId)
+            if (!inventory) throw new InventoryNotFoundException()
 
             if (inventory.inventoryType.type !== InventoryType.Supply)
-                throw new InventoryTypeNotSupplyException(request.inventoryAnimalFeedId)
+                throw new InventoryTypeNotSupplyException(inventory.id)
 
             await queryRunner.startTransaction()
             try {

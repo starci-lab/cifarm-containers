@@ -7,19 +7,22 @@ interface AxiosConfig {
   accessToken?: string;
 }
 
-export type AxiosConfigType = "no-auth" | "with-auth"
+export enum AxiosConfigType {
+    NoAuth = "no-auth",
+    WithAuth = "with-auth",
+}
 
 export const createAxios = (type: AxiosConfigType, config: AxiosConfig): Axios => {
     const { version, accessToken } = config
     const baseURL = `http://localhost:${envConfig().containers.restApiGateway.port}/${version}/gameplay`
 
     switch (type) {
-    case "no-auth":
+    case AxiosConfigType.NoAuth:
         return axios.create({
             baseURL,
         })
 
-    case "with-auth":
+    case AxiosConfigType.WithAuth:
         // eslint-disable-next-line no-case-declarations
         const gameplayAxios = axios.create({
             baseURL,
