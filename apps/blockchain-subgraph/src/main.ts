@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core"
 import { GraphQLSchemaBuilderModule, GraphQLSchemaFactory } from "@nestjs/graphql"
-import { getEnvValue } from "@src/common"
+import { getEnvValue } from "@src/env"
 import { mkdirSync, writeFileSync } from "fs"
 import { printSchema } from "graphql"
 import { dirname, join } from "path"
