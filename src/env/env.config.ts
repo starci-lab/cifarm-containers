@@ -52,10 +52,10 @@ export const envConfig = () => ({
             port: Number(process.env.GAMEPLAY_SERVICE_PORT),
             healthCheckPort: Number(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT)
         },
-        graphqlMaingraph: {
-            host: process.env.GRAPHQL_MAINGRAPH_HOST,
-            port: Number(process.env.GRAPHQL_MAINGRAPH_PORT),
-            healthCheckPort: Number(process.env.GRAPHQL_MAINGRAPH_HEALTH_CHECK_PORT)
+        graphqlGateway: {
+            host: process.env.GRAPHQL_GATEWAY_HOST,
+            port: Number(process.env.GRAPHQL_GATEWAY_PORT),
+            healthCheckPort: Number(process.env.GRAPHQL_GATEWAY_HEALTH_CHECK_PORT)
         },
         gameplaySubgraph: {
             host: process.env.GAMEPLAY_SUBGRAPH_HOST,
