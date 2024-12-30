@@ -1,9 +1,6 @@
 pipeline {
     agent {
-        kubernetes {
-            label "gameplay-subgraph"
-            yamlFile ".jenkins/agents/build.yaml"
-        }
+        label "build-agent"
     }
 
     environment {
