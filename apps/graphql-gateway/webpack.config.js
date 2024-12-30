@@ -5,7 +5,7 @@ const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin"
 
 // Base package.json để làm cơ sở
 const basePackage = {
-    name: "graphql-api-gateway",
+    name: "graphql-gateway",
     version: "1.0.0",
     main: "./main.js",
     scripts: {
@@ -20,9 +20,9 @@ const basePackage = {
 }
 
 module.exports = {
-    entry: "./apps/graphql-api-gateway/src/main.ts",
+    entry: "./apps/graphql-gateway/src/main.ts",
     output: {
-        path: path.join(__dirname, "../..", "dist", "apps", "graphql-api-gateway"),
+        path: path.join(__dirname, "../..", "dist", "apps", "graphql-gateway"),
         filename: "main.js",
     },
     target: "node",

@@ -1,4 +1,4 @@
-#docker build -t cifarm/graphql-api-gateway -f ./apps/graphql-api-gateway/Dockerfile . & docker push cifarm/graphql-api-gateway
+#docker build -t cifarm/graphql-gateway -f ./apps/graphql-gateway/Dockerfile . & docker push cifarm/graphql-gateway
 #
 
 # syntax=docker/dockerfile:1
@@ -18,13 +18,13 @@ RUN npm ci
 
 # Copy remaining source code and build the application
 COPY . .
-RUN npx nest build graphql-api-gateway
+RUN npx nest build graphql-gateway
 
 # Production Stage (final image)
 FROM build AS production
 
 # Copy only the build output and proto files
-COPY --from=build /usr/src/app/dist/apps/graphql-api-gateway .
+COPY --from=build /usr/src/app/dist/apps/graphql-gateway .
 
 # Install only production dependencies
 RUN npm i --production

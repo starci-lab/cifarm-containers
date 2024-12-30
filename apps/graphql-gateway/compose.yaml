@@ -2,7 +2,7 @@ services:
   server:
     build:
       context: ../..
-      dockerfile: apps/graphql-api-gateway/Dockerfile
+      dockerfile: apps/graphql-gateway/Dockerfile
     env_file:
       - ../../.env.docker
     environment:
@@ -10,4 +10,4 @@ services:
     ports:
       - "3006:3006"
 
-#docker compose -f apps/graphql-api-gateway/compose.yaml up -d --build
+#docker compose -f apps/graphql-gateway/compose.yaml up -d --build
