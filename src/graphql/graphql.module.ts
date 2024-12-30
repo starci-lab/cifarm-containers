@@ -18,7 +18,7 @@ export class GraphQLModule {
                     server: {
                         plugins: [ApolloServerPluginLandingPageLocalDefault()],
                         playground: false,
-                        path: "/"
+                        path: "/graphql"
                     },
                     gateway: {
                         supergraphSdl: new IntrospectAndCompose({
