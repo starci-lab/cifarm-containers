@@ -36,6 +36,11 @@ RUN chmod +x main.js
 # Add the main.js file to the PATH
 RUN npm install -g .
 
+# Make a directory for the database
+RUN mkdir db
+# Allow the node user to write to the database directory
+RUN chown node:node db
+
 # # Run as non-root user
 USER node
 
