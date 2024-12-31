@@ -54,6 +54,8 @@ export class FeedAnimalService {
             if (!placedItemAnimal)
                 throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
 
+            this.logger.verbose(`Feed animal: ${JSON.stringify(placedItemAnimal.animalInfo)}`)
+
             if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry)
                 throw new PlacedItemAnimalNotNeedFeedingException(request.placedItemAnimalId)
 

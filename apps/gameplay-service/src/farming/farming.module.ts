@@ -6,16 +6,20 @@ import { UseHerbicideModule } from "./use-herbicide"
 import { UsePesticideModule } from "./use-pesticide"
 import { CollectAnimalProductModule } from "./collect-animal-product"
 import { FeedAnimalModule } from "./feed-animal"
+import { CureAnimalModule } from "./cure-animal"
+import { UseFertilizerModule } from "./use-fertilizer"
 
 @Module({
     imports: [
-        WaterModule,
+        CollectAnimalProductModule,
+        CureAnimalModule,
+        FeedAnimalModule,
         HarvestCropModule,
         PlantSeedModule,
-        UsePesticideModule,
+        UseFertilizerModule,
         UseHerbicideModule,
-        CollectAnimalProductModule,
-        FeedAnimalModule
+        UsePesticideModule,
+        WaterModule,
     ]
 })
 export class FarmingModule {}

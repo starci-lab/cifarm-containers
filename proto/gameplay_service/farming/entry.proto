@@ -2,9 +2,13 @@ syntax = "proto3";
 
 package gameplay_service;
 
-import  "../../entities/entry.proto";
+import "../../entities/entry.proto";
+import "./collect_animal_product.proto";
+import "./cure_animal.proto";
+import "./feed_animal.proto";
 import "./harvest_crop.proto";
-import "./water.proto";
 import "./plant_seed.proto";
+import "./use_fertilizer.proto";
 import "./use_pesticide.proto";
 import "./use_herbicide.proto";
+import "./water.proto";

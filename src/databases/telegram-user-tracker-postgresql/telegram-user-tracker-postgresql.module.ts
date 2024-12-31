@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { telegramUserTrackerPostgreSqlEntites } from "./entities"
-import { envConfig } from "src/env"
+import { envConfig } from "@src/env"
 import { TelegramUserTrackerPostgreSQLService } from "./telegram-user-tracker-postgresql.service"
 
 @Module({

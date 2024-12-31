@@ -24,9 +24,17 @@ export class BuildingInfoEntity extends UuidAbstractEntity {
     @JoinColumn({ name: "building_id", referencedColumnName: "id" })
         building: BuildingEntity
 
+    @Field(() => String)
+    @Column({ name: "placed_item_id", type: "uuid" })
+        placedItemId: string
+
     @Field(() => PlacedItemEntity)
     @OneToOne(() => PlacedItemEntity, (placedItem) => placedItem.buildingInfo, {
         onDelete: "CASCADE"
+    })
+    @JoinColumn({
+        name: "placed_item_id",
+        referencedColumnName: "id"
     })
         placedItem?: PlacedItemEntity
 }

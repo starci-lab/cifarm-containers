@@ -28,11 +28,15 @@ service GameplayService {
     rpc BuyTile (BuyTileRequest) returns (BuyTileResponse);
 
     // Farming methods
+    rpc CollectAnimalProduct(CollectAnimalProductRequest) returns (google.protobuf.Empty);
+    rpc CureAnimal(CureAnimalRequest) returns (google.protobuf.Empty);
+    rpc FeedAnimal(FeedAnimalRequest) returns (google.protobuf.Empty);
     rpc HarvestCrop(HarvestCropRequest) returns (google.protobuf.Empty);
-    rpc Water(WaterRequest) returns (google.protobuf.Empty);
     rpc PlantSeed(PlantSeedRequest) returns (google.protobuf.Empty);
+    rpc UseFertilizer(UseFertilizerRequest) returns (google.protobuf.Empty);
     rpc UseHerbicide(UseHerbicideRequest) returns (google.protobuf.Empty);
     rpc UsePesticide(UsePesticideRequest) returns (google.protobuf.Empty);
+    rpc Water(WaterRequest) returns (google.protobuf.Empty);
 
     // Delivery methods
     rpc DeliverProduct(DeliverProductRequest) returns (DeliverProductResponse);

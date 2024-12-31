@@ -47,7 +47,6 @@ export class PlacedItemEntity extends UuidAbstractEntity {
         cascade: true,
         onDelete: "CASCADE"
     })
-    @JoinColumn()
         animalInfo?: AnimalInfoEntity
 
     @Field(() => BuildingInfoEntity, { nullable: true })
@@ -57,7 +56,6 @@ export class PlacedItemEntity extends UuidAbstractEntity {
         cascade: true,
         onDelete: "CASCADE"
     })
-    @JoinColumn()
         buildingInfo?: BuildingInfoEntity
 
     @Field(() => [PlacedItemEntity])

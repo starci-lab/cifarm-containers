@@ -37,6 +37,7 @@ import {
     SpinInfo,
     GameplayPostgreSQLEntity,
     CliSqliteService,
+    AnimalRandomness,
 } from "@src/databases"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 import { CommandRunner, Option, SubCommand } from "nest-commander"
@@ -227,6 +228,9 @@ export class SeedCommand extends CommandRunner {
             thief3: 0.95,
             isWeedyOrInfested: 1
         }
+        const animalRandomness: AnimalRandomness = {
+            sickChance: 0.5
+        }
         const starter: Starter = {
             golds: 1000,
             positions: {
@@ -294,6 +298,10 @@ export class SeedCommand extends CommandRunner {
             {
                 id: SystemId.CropRandomness,
                 value: cropRandomness
+            },
+            {
+                id: SystemId.AnimalRandomness,
+                value: animalRandomness
             },
             {
                 id: SystemId.Starter,
