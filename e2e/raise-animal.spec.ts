@@ -239,6 +239,6 @@ describe("Raise animal flow", () => {
 
     afterAll(async () => {
         // Remove user after the test
-        // await dataSource.manager.delete(UserEntity, user.id)
+        await dataSource.manager.delete(UserEntity, user.id)
     })
 })
