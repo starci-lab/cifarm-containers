@@ -70,6 +70,10 @@ export const envConfig = () => ({
             host: process.env.CRON_SCHEDULER_HOST,
             healthCheckPort: Number(process.env.CRON_SCHEDULER_HEALTH_CHECK_PORT)
         },
+        telegramBot: {
+            host: process.env.TELEGRAM_BOT_HOST,
+            healthCheckPort: Number(process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT)
+        }
     },
     database: {
         mongo: {
@@ -97,7 +101,16 @@ export const envConfig = () => ({
                     username: process.env.GAMEPLAY_TEST_POSTGRESQL_USERNAME,
                     password: process.env.GAMEPLAY_TEST_POSTGRESQL_PASSWORD
                 }
-            }
+            },
+            telegramUserTracker: {
+                main: {
+                    dbName: process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_DBNAME,
+                    host: process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_HOST,
+                    port: Number(process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_PORT),
+                    username: process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_USERNAME,
+                    password: process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_PASSWORD,
+                },
+            },
         },
         redis: {
             cache: {
@@ -271,7 +284,17 @@ export const envConfig = () => ({
         password: process.env.SOCKET_IO_ADMIN_PASSWORD
     },
     //productionUrl
-    productionUrl: process.env.PRODUCTION_URL
+    productionUrl: process.env.PRODUCTION_URL,
+    telegramBots: {
+        ciFarm: {
+            token: process.env.TELEGRAM_CIFARM_BOT_TOKEN,
+            miniAppUrl: process.env.TELEGRAM_CIFARM_MINIAPP_URL,
+        },
+        ciWallet: {
+            token: process.env.TELEGRAM_CIWALLET_BOT_TOKEN,
+            miniAppUrl: process.env.TELEGRAM_CIWALLET_MINIAPP_URL,
+        },
+    },
 })
 
 export interface NearPair {

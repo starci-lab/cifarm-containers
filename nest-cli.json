@@ -105,6 +105,17 @@
       "compilerOptions": {
         "tsConfigPath": "apps/blockchain-subgraph/tsconfig.app.json"
       }
+    },
+    "telegram-bot": {
+      "type": "application",
+      "root": "apps/telegram-bot",
+      "entryFile": "main",
+      "sourceRoot": "apps/telegram-bot/src",
+      "compilerOptions": {
+        "webpack": true,
+        "tsConfigPath": "apps/telegram-bot/tsconfig.app.json",
+        "webpackConfigPath": "apps/telegram-bot/webpack.config.js"
+      }
     }
   }
 }
