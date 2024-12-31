@@ -92,6 +92,7 @@ export class AnimalWorker extends WorkerHost  {
                         }
                     }else{
                         animalInfo.isAdult = true
+                        animalInfo.currentState = AnimalCurrentState.Hungry
                     }
                 }
                     

@@ -120,7 +120,11 @@ export class CollectAnimalProductService {
                 throw new CollectAnimalProductTransactionFailedException(error)
             }
             return {}
-        } finally {
+        } catch (error) {
+            this.logger.error("Collect Animal Product failed", error)
+            throw error
+        }
+        finally {
             await queryRunner.release()
         }
     }

@@ -12,8 +12,10 @@ import {
     AnimalInfoEntity,
     BuildingId,
     GameplayPostgreSQLModule,
+    InventoryEntity,
     PlacedItemEntity,
     PlacedItemTypeId,
+    ProductType,
     SupplyId,
     UserEntity,
 } from "@src/databases"
@@ -74,7 +76,7 @@ describe("Raise animal flow", () => {
 
     it("Should raise animal successfully", async () => {
         // Test with an animal (e.g., cow)
-        const animalId = "cow"
+        const animalId = "chicken"
 
         const axios = createAxios(AxiosConfigType.WithAuth, {
             version: "v1",
@@ -97,7 +99,7 @@ describe("Raise animal flow", () => {
 
         // Construct a building
         await axios.post("/construct-building", {
-            buildingId: BuildingId.Pasture,
+            buildingId: BuildingId.Coop,
             position: {
                 x: 1,
                 y: 1
@@ -108,7 +110,7 @@ describe("Raise animal flow", () => {
         const placedItemBuilding = await dataSource.manager.findOne(PlacedItemEntity, {
             where: {
                 userId: user.id,
-                placedItemTypeId: PlacedItemTypeId.Pasture,
+                placedItemTypeId: PlacedItemTypeId.Coop,
                 x: 1,
                 y: 1,
             }
@@ -170,7 +172,7 @@ describe("Raise animal flow", () => {
 
             // Feed the animal            
             await axios.post("/feed-animal", { 
-                placedItemAnimalId: placedItemBuilding.id,
+                placedItemAnimalId: animalInfo.placedItemId
             })
 
             animalInfo = await dataSource.manager.findOne(
@@ -203,11 +205,10 @@ describe("Raise animal flow", () => {
 
         // Handle yield process
         await axios.post("/collect-animal-product", { 
-            placedItemAnimalId: placedItemBuilding.id,
+            placedItemAnimalId: animalInfo.placedItemId
         })
 
         // Ensure the animal returns to a normal state
-
         animalInfo = await dataSource.manager.findOne(
             AnimalInfoEntity,
             {
@@ -220,6 +221,20 @@ describe("Raise animal flow", () => {
             AnimalCurrentState.Normal
         )
 
+        //Check inventory
+        const inventoryItem = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                userId: user.id,
+                inventoryType: {
+                    product: {
+                        type: ProductType.Animal,
+                        animalId: animalId,
+                    },
+                }
+            },
+        })
+        expect(inventoryItem).toBeDefined()
+        expect(inventoryItem.quantity).toBeGreaterThan(0)
     })
 
     afterAll(async () => {
