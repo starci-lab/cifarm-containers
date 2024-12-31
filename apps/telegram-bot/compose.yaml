@@ -1,0 +1,11 @@
+services:
+  server:
+    build:
+      context: ../..
+      dockerfile: apps/telegram-bot/Dockerfile
+    env_file:
+      - ../../.env.docker
+    environment:
+      NODE_ENV: production
+
+#docker compose -f apps/telegram-bot/compose.yaml up -d --build

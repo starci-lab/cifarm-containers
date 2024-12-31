@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common"
-import { HealthCheckController } from "./health-check.controller"
 import { TerminusModule } from "@nestjs/terminus"
+import { TelegramUserTrackerPostgreSQLModule } from "@src/databases"
 import { EnvModule } from "@src/env"
-import { GameplayPostgreSQLModule } from "@src/databases"
+import { HealthCheckController } from "./health-check.controller"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
-        GameplayPostgreSQLModule.forRoot(),
+        TelegramUserTrackerPostgreSQLModule.forRoot(),
         TerminusModule],
     controllers: [HealthCheckController],
     providers: [],

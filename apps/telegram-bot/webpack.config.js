@@ -2,6 +2,7 @@
 const path = require("path")
 const nodeExternals = require("webpack-node-externals")
 const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin")
+const CopyWebpackPlugin = require("copy-webpack-plugin")
 
 // Base package.json để làm cơ sở
 const basePackage = {
@@ -34,8 +35,15 @@ module.exports = {
             resolveContextPaths: [__dirname],
             useInstalledVersions: true,
             excludeDependencies: [          
-                
             ],
         }),
-    ],
+        new CopyWebpackPlugin({
+            patterns: [
+                {
+                    from: path.resolve(__dirname, "src/assets"),
+                    to: path.resolve(__dirname, "../../dist/apps/telegram-bot/assets"),
+                },
+            ],
+        }),
+    ]
 }

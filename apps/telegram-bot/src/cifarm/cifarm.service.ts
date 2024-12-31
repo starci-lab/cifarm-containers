@@ -20,7 +20,7 @@ export class CiFarmService implements OnModuleInit {
 
     private initializeCommands() {
         this.bot.start(async (ctx) => {
-            const photoPath = join(__dirname, "..", "..", "assets", "cifarm-background.png")
+            const photoPath = join(__dirname, "assets", "cifarm-background.png")
             const telegramId = ctx.from?.id.toString() || ""
             const username = ctx.from?.username || "Unknown"
 

@@ -11,14 +11,13 @@ import { TelegramUserTrackerPostgreSQLService } from "./telegram-user-tracker-po
     exports: [TelegramUserTrackerPostgreSQLService],
 })
 export class TelegramUserTrackerPostgreSQLModule {
-
     public static forRoot() {
         return {
             module: TelegramUserTrackerPostgreSQLModule,
             imports: [
                 TypeOrmModule.forRoot({
                     type: "postgres",
-                    host: envConfig().database.postgresql.telegramUserTracker.main.dbName,
+                    host: envConfig().database.postgresql.telegramUserTracker.main.host,
                     port: envConfig().database.postgresql.telegramUserTracker.main.port,
                     username: envConfig().database.postgresql.telegramUserTracker.main.username,
                     password: envConfig().database.postgresql.telegramUserTracker.main.password,
