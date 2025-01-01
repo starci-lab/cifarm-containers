@@ -45,7 +45,7 @@ describe("Thief Animal Product flow", () => {
             imports: [
                 EnvModule.forRoot(),
                 GameplayPostgreSQLModule.forRoot(),
-                GrpcModule.forRoot({
+                GrpcModule.register({
                     name: GrpcServiceName.Gameplay,
                 }),
                 JwtModule,

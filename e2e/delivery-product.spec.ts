@@ -29,7 +29,7 @@ describe("Deliver product flow", () => {
                 EnvModule.forRoot(),
                 GameplayPostgreSQLModule.forRoot(),
                 CacheRedisModule.forRoot(),
-                GrpcModule.forRoot({
+                GrpcModule.register({
                     name: GrpcServiceName.Gameplay,
                 }),
                 JwtModule
