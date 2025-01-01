@@ -4,7 +4,7 @@ import { GameplayController } from "./gameplay.controller"
 
 @Module({
     imports: [
-        GrpcModule.forRoot({
+        GrpcModule.register({
             name: GrpcServiceName.Gameplay
         }),
     ],

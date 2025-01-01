@@ -3,7 +3,6 @@ import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger"
 import { AppModule } from "./app.module"
 import { GameplayModule as GameplayModuleV1 } from "./v1"
-import { AuthModule as AuthModuleV2 } from "./v2"
 import { HealthCheckModule } from "./health-check"
 import { envConfig } from "@src/env"
 
@@ -68,7 +67,7 @@ const bootstrap = async () => {
         .build()
 
     const documentV2 = SwaggerModule.createDocument(app, configV2, {
-        include: [AuthModuleV2],
+        include: [],
     })
 
     SwaggerModule.setup("/v2", app, documentV2, {

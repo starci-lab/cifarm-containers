@@ -9,6 +9,6 @@ export interface GrpcServiceData {
     protoPath: string
 }
 
-export interface GrpcOptions {
+export interface GrpcRegisterOptions {
     name: GrpcServiceName
 }
