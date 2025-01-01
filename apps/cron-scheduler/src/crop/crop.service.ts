@@ -46,18 +46,13 @@ export class CropService {
             })
             
             //get the last scheduled time
-            // const value = await queryRunner.manager.findOne(TempEntity, {
-            //     where: {
-            //         id: TempId.CropGrowthLastSchedule
-            //     }
-            // })
-
-            //today - 1 second
-            const value = {
-                date: dayjs().utc().subtract(1, "second").toDate()
-            }
-
+            const { value } = await queryRunner.manager.findOne(TempEntity, {
+                where: {
+                    id: TempId.CropGrowthLastSchedule
+                }
+            })
             const { date } = value as CropGrowthLastSchedule
+
             this.logger.debug(`Found ${count} crops that need to be grown`)
             if (count === 0) {
                 this.logger.verbose("No crops to grow")

@@ -67,3 +67,7 @@ export class SlotInfo {
     thresholdMin: number
     thresholdMax: number
 }
+
+export class EnergyRegenTime {
+    time: number // In milliseconds
+}

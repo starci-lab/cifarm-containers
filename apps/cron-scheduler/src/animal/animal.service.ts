@@ -3,13 +3,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName } from "@src/bull"
 import { AnimalCurrentState, AnimalGrowthLastSchedule, AnimalInfoEntity, Collection, CollectionEntity, SpeedUpData, TempEntity, TempId } from "@src/databases"
+import { LeaderElectionService } from "@src/leader-election"
 import { Queue } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
 import { AnimalJobData } from "./animal.dto"
-import { LeaderElectionService } from "@src/leader-election"
 dayjs.extend(utc)
 
 @Injectable()
@@ -43,18 +43,13 @@ export class AnimalService {
                 }
             })
             //get the last scheduled time
-            // const value = await queryRunner.manager.findOne(TempEntity, {
-            //     where: {
-            //         id: TempId.CropGrowthLastSchedule
-            //     }
-            // })
-            
-            //today - 1 second
-            const value = {
-                date: dayjs().utc().subtract(1, "second").toDate()
-            }
-            
+            const { value } = await queryRunner.manager.findOne(TempEntity, {
+                where: {
+                    id: TempId.AnimalGrowthLastSchedule
+                }
+            })
             const { date } = value as AnimalGrowthLastSchedule
+
             this.logger.debug(`Found ${count} animals that need to be grown`)
             if (count === 0) {
                 this.logger.verbose("No animals to grow")

@@ -12,5 +12,9 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
     [BullQueueName.Delivery]: {
         name: "DELIVERY_QUEUE",
         batchSize: 1000
+    },
+    [BullQueueName.Energy]: {
+        name: "ENERGY_QUEUE",
+        batchSize: 10000
     }
 }

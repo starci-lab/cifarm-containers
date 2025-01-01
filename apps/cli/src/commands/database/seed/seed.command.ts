@@ -38,11 +38,17 @@ import {
     GameplayPostgreSQLEntity,
     CliSqliteService,
     AnimalRandomness,
+    TempId,
+    TempEntity,
+    EnergyRegenTime,
 } from "@src/databases"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 import { CommandRunner, Option, SubCommand } from "nest-commander"
 import { gameplayPostgreSqlEntites } from "@src/databases"
 import { Logger } from "@nestjs/common"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+dayjs.extend(utc)
 
 @SubCommand({ name: "seed", description: "Seed static data into the data source" })
 export class SeedCommand extends CommandRunner {
@@ -154,6 +160,7 @@ export class SeedCommand extends CommandRunner {
                 await this.seedSystemData(queryRunner)
                 await this.seedSpinPrizeData(queryRunner)
                 await this.seedSpinSlotData(queryRunner)
+                await this.seedTempData(queryRunner)
 
                 await queryRunner.commitTransaction()
                 this.logger.verbose("Entities seeded successfully.")
@@ -293,6 +300,10 @@ export class SeedCommand extends CommandRunner {
                 }
             }
         }
+        const energyRegenTime: EnergyRegenTime = {
+            time: 5 * 1000 * 1000 // 5 minutes
+        }
+
         const data: Array<DeepPartial<SystemEntity>> = [
             {
                 id: SystemId.Activities,
@@ -313,6 +324,10 @@ export class SeedCommand extends CommandRunner {
             {
                 id: SystemId.SpinInfo,
                 value: spinInfo
+            },
+            {
+                id: SystemId.EnergyRegenTime,
+                value: energyRegenTime
             }
         ]
         await queryRunner.manager.save(SystemEntity, data)
@@ -1108,6 +1123,31 @@ export class SeedCommand extends CommandRunner {
             }))
         ]
         await queryRunner.manager.save(SpinSlotEntity, data)
+    }
+
+    //Seed Temp data
+    private async seedTempData(queryRunner: QueryRunner) {
+        const data: Array<DeepPartial<TempEntity>> = [
+            {
+                id: TempId.AnimalGrowthLastSchedule,
+                value: {
+                    date: dayjs().utc().toDate()
+                }
+            },
+            {
+                id: TempId.CropGrowthLastSchedule,
+                value: {
+                    date: dayjs().utc().toDate()
+                }
+            },
+            {
+                id: TempId.EnergyRegenerationLastSchedule,
+                value: {
+                    date: dayjs().utc().toDate()
+                }
+            },
+        ]
+        await queryRunner.manager.save(TempEntity, data)
     }
 }
 

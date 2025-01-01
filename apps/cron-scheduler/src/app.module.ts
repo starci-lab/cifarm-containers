@@ -10,6 +10,7 @@ import { ScheduleModule } from "@nestjs/schedule"
 import { CacheRedisModule, GameplayPostgreSQLModule } from "@src/databases"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { BullModule } from "@src/bull"
+import { EnergyModule } from "./energy"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -25,7 +26,8 @@ import { BullModule } from "@src/bull"
         }),
         CropModule,
         AnimalModule,
-        DeliveryModule
+        DeliveryModule,
+        EnergyModule
     ]
 })
 export class AppModule {}

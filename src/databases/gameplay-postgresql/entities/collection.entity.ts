@@ -19,6 +19,7 @@ export class CollectionEntity extends UuidAbstractEntity {
 export enum Collection {
     CropSpeedUp = "CROP_SPEED_UP",
     AnimalSpeedUp = "ANIMAL_SPEED_UP",
+    EnergySpeedUp = "ENERGY_SPEED_UP",
 }
 
 export class SpeedUpData {

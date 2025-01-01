@@ -93,11 +93,13 @@ export enum SystemId {
     AnimalRandomness = "animalRandomness",
     Starter = "starter",
     SpinInfo = "spinInfo",
+    EnergyRegenTime = "energyRegenTime",
 }
 
 export enum TempId {
     CropGrowthLastSchedule = "cropGrowthLastSchedule",
-    AnimalGrowthLastSchedule = "animalGrowthLastSchedule"
+    AnimalGrowthLastSchedule = "animalGrowthLastSchedule",
+    EnergyRegenerationLastSchedule = "energyRegenerationLastSchedule"
 }
 
 export enum InventoryTypeId {

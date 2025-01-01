@@ -43,6 +43,10 @@ export class UserEntity extends UuidAbstractEntity {
     @Column({ name: "energy", type: "int", default: 0 })
         energy: number
 
+    @Field(() => Float)
+    @Column({ type: "float", default: 0 })
+        energyRegenTime: number
+
     @Field(() => Int)
     @Column({ name: "level", type: "int", default: 1 })
         level: number
