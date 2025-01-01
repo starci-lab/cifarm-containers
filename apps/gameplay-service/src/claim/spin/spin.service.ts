@@ -61,8 +61,8 @@ export class SpinService {
                 }
             })
 
-            //check if slot not equal to 16
-            if (spinSlots.length !== 16) {
+            //check if slot not equal to 8
+            if (spinSlots.length !== 8) {
                 throw new SpinSlotsNotEqual8Exception(spinSlots.length)
             }
 
