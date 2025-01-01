@@ -121,7 +121,6 @@ export class GameplayController implements OnModuleInit {
     @ApiResponse({ type: RequestMessageResponse })
     @Post("request-message")
     public async requestMessage(): Promise<RequestMessageResponse> {
-        console.log(this.clientGrpc)
         return await lastValueFrom(this.gameplayService.requestMessage({}))
     }
 
