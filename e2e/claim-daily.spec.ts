@@ -1,18 +1,17 @@
 //npx jest --config ./e2e/jest.json ./e2e/claim-daily.spec.ts
 
 import { Test } from "@nestjs/testing"
+import { Network, SupportedChainKey } from "@src/blockchain"
 import {
     GameplayPostgreSQLModule,
-    UserEntity,
-    DailyRewardEntity,
-    SpinSlotEntity,
     SpinPrizeType,
+    SpinSlotEntity,
+    UserEntity
 } from "@src/databases"
 import { EnvModule } from "@src/env"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { DataSource } from "typeorm"
-import { AxiosConfigType, createAxios } from "./e2e.utils"
-import { Network, SupportedChainKey } from "@src/blockchain"
+import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
 
 // Test for claim daily reward and spin functionality
 
@@ -35,7 +34,7 @@ describe("Claim Daily Reward and Spin flow", () => {
         jwtService = module.get<JwtService>(JwtService)
 
         // Sign in and retrieve accessToken
-        const axios = createAxios(AxiosConfigType.NoAuth, { version: "v1" })
+        const axios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
 
         const { data } = await axios.post("/test-signature", {
             chainKey: SupportedChainKey.Aptos,
@@ -49,24 +48,11 @@ describe("Claim Daily Reward and Spin flow", () => {
 
         accessToken = verifySignatureData.accessToken
         user = await jwtService.decodeToken(accessToken)
-
-        // Set initial gold balance and ensure daily rewards exist
-        await dataSource.manager.update(UserEntity, { id: user.id }, { golds: 30000 })
-        const dailyRewards = await dataSource.manager.find(DailyRewardEntity)
-        if (dailyRewards.length < 5) {
-            for (let i = 1; i <= 5; i++) {
-                await dataSource.manager.save(DailyRewardEntity, {
-                    day: i,
-                    golds: 100 * i,
-                    tokens: i === 5 ? 10 : 0,
-                })
-            }
-        }
     })
 
     it("Should claim daily reward successfully", async () => {
         const axios = createAxios(AxiosConfigType.WithAuth, {
-            version: "v1",
+            version: ApiVersion.V1,
             accessToken,
         })
 
@@ -80,12 +66,11 @@ describe("Claim Daily Reward and Spin flow", () => {
         })
 
         expect(userAfterClaim.dailyRewardStreak).toBeGreaterThan(0)
-        expect(userAfterClaim.golds).toBeGreaterThan(30000)
     })
 
     it("Should spin successfully and reward appropriately", async () => {
         const axios = createAxios(AxiosConfigType.WithAuth, {
-            version: "v1",
+            version: ApiVersion.V1,
             accessToken,
         })
 

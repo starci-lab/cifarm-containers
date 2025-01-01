@@ -22,7 +22,7 @@ import { grpcData, GrpcModule, GrpcServiceName } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
-import { AxiosConfigType, createAxios } from "./e2e.utils"
+import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
 import { Network, SupportedChainKey } from "@src/blockchain"
 import { EnvModule } from "@src/env"
 
@@ -55,7 +55,7 @@ describe("Thief crop flow", () => {
         gameplayService = clientGrpc.getService<IGameplayService>(grpcData[GrpcServiceName.Gameplay].service)
 
         // Sign in as main user
-        const authAxios = createAxios(AxiosConfigType.NoAuth, { version: "v1" })
+        const authAxios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
         const { data } = await authAxios.post("/test-signature", {
             chainKey: SupportedChainKey.Avalanche,
             accountNumber: 1,
@@ -81,7 +81,7 @@ describe("Thief crop flow", () => {
     it("Should thief crop successfully", async () => {
         const cropId: CropId = CropId.Carrot
 
-        const axios = createAxios(AxiosConfigType.WithAuth, { version: "v1", accessToken })
+        const axios = createAxios(AxiosConfigType.WithAuth, { version: ApiVersion.V1, accessToken })
 
         // Buy seeds and plant the crop
         await axios.post("/buy-seeds", { cropId, quantity: 1 })
@@ -125,7 +125,7 @@ describe("Thief crop flow", () => {
         expect(fullyMaturedInfo.currentState).toBe(CropCurrentState.FullyMatured)
 
         // Thief steals the crop
-        const thiefAxios = createAxios(AxiosConfigType.WithAuth, { version: "v1", accessToken: thiefAccessToken })
+        const thiefAxios = createAxios(AxiosConfigType.WithAuth, { version: ApiVersion.V1, accessToken: thiefAccessToken })
         const { data: thiefCropResponseData } = await thiefAxios.post("/thief-crop", {
             placedItemTileId,
             neighborUserId: user.id,

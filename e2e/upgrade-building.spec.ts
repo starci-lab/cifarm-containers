@@ -9,7 +9,7 @@ import {
 import { EnvModule } from "@src/env"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { DataSource } from "typeorm"
-import { AxiosConfigType, createAxios } from "./e2e.utils"
+import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
 import { Network, SupportedChainKey } from "@src/blockchain"
 
 // Test for upgrading building
@@ -33,7 +33,7 @@ describe("Upgrade Building flow", () => {
         jwtService = module.get<JwtService>(JwtService)
 
         // Sign in and retrieve accessToken
-        const axios = createAxios(AxiosConfigType.NoAuth, { version: "v1" })
+        const axios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
 
         const { data } = await axios.post("/test-signature", {
             chainKey: SupportedChainKey.Aptos,
@@ -51,7 +51,7 @@ describe("Upgrade Building flow", () => {
 
     it("Should upgrade a building successfully", async () => {
         const axios = createAxios(AxiosConfigType.WithAuth, {
-            version: "v1",
+            version: ApiVersion.V1,
             accessToken,
         })
 

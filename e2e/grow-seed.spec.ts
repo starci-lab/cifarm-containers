@@ -12,7 +12,7 @@ import { GrpcServiceName } from "@src/grpc/grpc.types"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
-import { AxiosConfigType, createAxios } from "./e2e.utils"
+import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
 
 describe("Grow seed flow", () => {
     let accessToken: string
@@ -34,7 +34,7 @@ describe("Grow seed flow", () => {
         }).compile()
 
         // Sign in and retrieve accessToken
-        const authAxios = createAxios(AxiosConfigType.NoAuth, { version: "v1" })
+        const authAxios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
         const { data } = await authAxios.post("/test-signature", {
             chainKey: SupportedChainKey.Aptos,
             accountNumber: 2,
@@ -55,7 +55,7 @@ describe("Grow seed flow", () => {
     it("Should grow seed successfully", async () => {
         // Test with carrot
         const cropId: CropId = CropId.Carrot
-        const gameplayAxios = createAxios(AxiosConfigType.WithAuth, { version: "v1", accessToken })
+        const gameplayAxios = createAxios(AxiosConfigType.WithAuth, { version: ApiVersion.V1, accessToken })
 
         // Buy seeds from the shop
         await gameplayAxios.post("/buy-seeds", {

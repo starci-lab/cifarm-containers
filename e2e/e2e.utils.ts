@@ -3,13 +3,18 @@ import { io, Socket } from "socket.io-client"
 import { envConfig } from "@src/env"
 
 interface AxiosConfig {
-  version: string;
+  version: ApiVersion
   accessToken?: string;
 }
 
 export enum AxiosConfigType {
     NoAuth = "no-auth",
     WithAuth = "with-auth",
+}
+
+export enum ApiVersion {
+    V1 = "v1",
+    V2 = "v2",
 }
 
 export const createAxios = (type: AxiosConfigType, config: AxiosConfig): Axios => {
