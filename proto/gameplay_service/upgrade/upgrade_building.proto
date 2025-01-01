@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message UpgradeBuildingRequest {
+    string userId = 1;
+    string placedItemId = 2;
+}
+
