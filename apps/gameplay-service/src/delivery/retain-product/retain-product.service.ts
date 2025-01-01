@@ -1,11 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DeliveringProductEntity, GameplayPostgreSQLService } from "@src/databases"
+import { DeliveringProductEntity, GameplayPostgreSQLService, InventoryEntity, InventoryType, InventoryTypeEntity } from "@src/databases"
 import {
     DeliveringProductNotFoundException,
     RetainProductTransactionFailedException
 } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import { RetainProductRequest, RetainProductResponse } from "./retain-product.dto"
+import { InventoryService } from "@src/gameplay"
 
 @Injectable()
 export class RetainProductService {
@@ -13,7 +14,8 @@ export class RetainProductService {
 
     private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        private readonly inventoryService: InventoryService
     ) {
         this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
@@ -35,6 +37,32 @@ export class RetainProductService {
             if (!deliveringProduct) {
                 throw new DeliveringProductNotFoundException(request.deliveringProductId)
             }
+
+            //Get inventory type
+            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
+                where: { type: InventoryType.Product, productId: deliveringProduct.productId }
+            })
+
+            // Get inventory same type
+            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
+                where: {
+                    userId: request.userId,
+                    inventoryTypeId: inventoryType.id
+                },
+                relations: {
+                    inventoryType: true
+                }
+            })
+
+            const updatedInventories = this.inventoryService.add({
+                entities: existingInventories,
+                userId: request.userId,
+                data: {
+                    inventoryType: inventoryType,
+                    quantity: deliveringProduct.quantity
+                }
+            })
+
             // Start transaction
             await queryRunner.startTransaction()
 
@@ -44,6 +72,9 @@ export class RetainProductService {
                     DeliveringProductEntity,
                     deliveringProduct
                 )
+
+                //Save inventory
+                await queryRunner.manager.save(InventoryEntity, updatedInventories)
 
                 await queryRunner.commitTransaction()
             } catch (error) {

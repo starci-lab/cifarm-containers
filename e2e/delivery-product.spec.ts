@@ -175,7 +175,7 @@ describe("Deliver product flow", () => {
         await gameplayAxios.post("/harvest-crop", { placedItemTileId: placedItemTileId })
 
         // //get the inventory
-        const inventory = await dataSource.manager.findOne(InventoryEntity, {
+        const inventoryItems = await dataSource.manager.find(InventoryEntity, {
             where: {
                 userId: user.id,
                 inventoryType: {
@@ -191,28 +191,78 @@ describe("Deliver product flow", () => {
                 }
             }
         })
+        const [inventoryFirst, inventorySecond] = inventoryItems
 
-        expect(inventory.quantity).toBeGreaterThan(0)
+        expect(inventoryFirst.quantity).toBeGreaterThan(0)
+        expect(inventorySecond.quantity).toBeGreaterThan(0)
 
-        console.log("inventory", inventory.quantity)
-
-        // Deliver the product
+        // Deliver the product 2 slot
         await gameplayAxios.post("/deliver-product", {
             userId: user.id,
             index: 1,
-            inventoryId: inventory.id,
-            quantity: inventory.quantity
+            inventoryId: inventoryFirst.id,
+            quantity: inventoryFirst.quantity
+        })
+        await gameplayAxios.post("/deliver-product", {
+            userId: user.id,
+            index: 2,
+            inventoryId: inventorySecond.id,
+            quantity: inventorySecond.quantity
         })
 
         // Ensure the product is delivered
-        const updatedInventory = await dataSource.manager.findOne(InventoryEntity, {
+        const updatedInventoryFirst = await dataSource.manager.findOne(InventoryEntity, {
             where: {
-                id: inventory.id
+                id: inventoryFirst.id
             }
         })
 
         //Null inventory
-        expect(updatedInventory).toBeNull()
+        expect(updatedInventoryFirst).toBeNull()
+
+        //Ensure the product is delivered
+        const updatedInventorySecond = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                id: inventorySecond.id
+            }
+        })
+
+        //Null inventory
+        expect(updatedInventorySecond).toBeNull()
+
+        //Retain the delivering product
+        const retainProductSecond = await dataSource.manager.findOne(DeliveringProductEntity, {
+            where: {
+                userId: user.id,
+                index: 2
+            }
+        })
+        await gameplayAxios.post("/retain-product", {
+            deliveringProductId: retainProductSecond.id
+        })
+
+        //Ensure the product is retained
+        const retainedProduct = await dataSource.manager.findOne(DeliveringProductEntity, {
+            where: {
+                userId: user.id,
+                index: 2
+            }
+        })
+        expect(retainedProduct).toBeNull()
+
+        //Check inventory
+        const inventoryAfterRetain = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                userId: user.id,
+                inventoryType: {
+                    type: InventoryType.Product,
+                    product: {
+                        cropId
+                    }
+                }
+            }
+        })
+        expect(inventoryAfterRetain.quantity).toEqual(inventorySecond.quantity)
 
         // Ensure the product is delivered
         const deliveringProduct = await dataSource.manager.findOne(DeliveringProductEntity, {
@@ -223,8 +273,8 @@ describe("Deliver product flow", () => {
         })
 
         //Check the delivering product
-        expect(deliveringProduct.quantity).toBeDefined()
-        expect(deliveringProduct.quantity).toEqual(inventory.quantity)
+        expect(deliveringProduct).toBeDefined()
+        expect(deliveringProduct.quantity).toEqual(inventoryFirst.quantity)
 
         //Delivery instantly
         await lastValueFrom(gameplayService.deliverInstantly({}))
@@ -248,7 +298,7 @@ describe("Deliver product flow", () => {
         })
 
         //Check the user's balance
-        expect(userAfter.tokens).toEqual(inventory.quantity * inventory.inventoryType.product.tokenAmount)
+        expect(userAfter.tokens).toEqual((inventoryFirst.quantity) * inventoryFirst.inventoryType.product.tokenAmount)
 
         //Check redis
         const hasValue = await cacheManager.get<boolean>(CacheKey.DeliverInstantly)
@@ -257,7 +307,7 @@ describe("Deliver product flow", () => {
     })
 
     afterAll(async () => {
-        await dataSource.manager.delete(UserEntity, user.id)
+        //await dataSource.manager.delete(UserEntity, user.id)
     })
 })
 
