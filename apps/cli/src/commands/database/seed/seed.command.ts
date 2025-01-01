@@ -230,7 +230,9 @@ export class SeedCommand extends CommandRunner {
             isWeedyOrInfested: 1
         }
         const animalRandomness: AnimalRandomness = {
-            sickChance: 0.5
+            sickChance: 0.5,
+            thief2: 0.8,
+            thief3: 0.95
         }
         const starter: Starter = {
             golds: 1000,

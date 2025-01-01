@@ -10,7 +10,7 @@ import {
     Activities,
     AnimalCurrentState,
     AnimalInfoEntity,
-    CropRandomness,
+    AnimalRandomness,
     GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
@@ -64,7 +64,9 @@ export class ThiefAnimalProductService {
                     }
                 },
                 relations: {
-                    animalInfo: true,
+                    animalInfo: {
+                        animal: true,
+                    },
                     placedItemType: true
                 }
             })
@@ -82,7 +84,7 @@ export class ThiefAnimalProductService {
                 placedItemAnimal.animalInfo.animal.minHarvestQuantity
             ) {
                 throw new HaverstQuantityRemainingEqualMinHarvestQuantityException(
-                    placedItemAnimal.seedGrowthInfo.crop.minHarvestQuantity
+                    placedItemAnimal.animalInfo.animal.minHarvestQuantity
                 )
             }
 
@@ -104,9 +106,9 @@ export class ThiefAnimalProductService {
             })
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
-                where: { id: SystemId.CropRandomness }
+                where: { id: SystemId.AnimalRandomness }
             })
-            const { thief2, thief3 } = value as CropRandomness
+            const { thief2, thief3 } = value as AnimalRandomness
             const { value: computedQuantity } = this.theifService.compute({
                 thief2,
                 thief3
@@ -115,8 +117,8 @@ export class ThiefAnimalProductService {
             //get the actual quantity
             const actualQuantity = Math.min(
                 computedQuantity,
-                placedItemAnimal.seedGrowthInfo.harvestQuantityRemaining -
-                    placedItemAnimal.seedGrowthInfo.crop.minHarvestQuantity
+                placedItemAnimal.animalInfo.harvestQuantityRemaining -
+                    placedItemAnimal.animalInfo.animal.minHarvestQuantity
             )
 
             // get inventories
@@ -145,7 +147,7 @@ export class ThiefAnimalProductService {
                 userId: request.userId,
                 data: {
                     inventoryTypeId: inventoryType.id,
-                    quantity: placedItemAnimal.seedGrowthInfo.harvestQuantityRemaining
+                    quantity: placedItemAnimal.animalInfo.harvestQuantityRemaining
                 }
             })
 
@@ -171,7 +173,7 @@ export class ThiefAnimalProductService {
                 // update inventories
                 await queryRunner.manager.save(InventoryEntity, updatedInventories)
 
-                // update seed growth info
+                // update animal growth info
                 await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
                     harvestQuantityRemaining:
                         placedItemAnimal.animalInfo.harvestQuantityRemaining - actualQuantity

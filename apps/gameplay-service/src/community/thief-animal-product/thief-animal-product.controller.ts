@@ -12,7 +12,7 @@ export class ThiefAnimalProductController {
 
     @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "ThiefAnimalProduct")
     public async thiefAnimalProduct(request: ThiefAnimalProductRequest) {
-        this.logger.debug("ThiefAnimalProduct request called")
+        this.logger.debug("ThiefAnimalProduct request called: " + JSON.stringify(request))
         return this.thiefAnimalProductService.theifAnimalProduct(request)
     }
 }

@@ -42,6 +42,8 @@ export class CropRandomness {
 
 export class AnimalRandomness {
     sickChance: number
+    thief3: number
+    thief2: number
 }
 
 export class Positions {
