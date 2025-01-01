@@ -4,7 +4,6 @@ export enum CropCurrentState {
     NeedWater = "needWater",
     IsWeedy = "isWeedy",
     IsInfested = "isInfested",
-    IsFertilized = "isFertilized",
     FullyMatured = "fullyMatured",
 }
 

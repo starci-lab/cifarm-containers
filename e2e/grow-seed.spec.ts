@@ -26,7 +26,7 @@ describe("Grow seed flow", () => {
             imports: [
                 EnvModule.forRoot(),
                 GameplayPostgreSQLModule.forRoot(),
-                GrpcModule.forRoot({
+                GrpcModule.register({
                     name: GrpcServiceName.Gameplay
                 }),
                 JwtModule
