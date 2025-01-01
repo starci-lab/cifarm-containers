@@ -122,6 +122,7 @@ export class SeedCommand extends CommandRunner {
             await queryRunner.manager.delete(DailyRewardEntity, {})
             await queryRunner.manager.delete(SystemEntity, {})
             await queryRunner.manager.delete(InventoryTypeEntity, {})
+            await queryRunner.manager.delete(SpinSlotEntity, {})
 
             await queryRunner.commitTransaction()
             this.logger.verbose("Data cleared successfully.")

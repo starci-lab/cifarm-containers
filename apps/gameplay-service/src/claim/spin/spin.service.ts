@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     SpinCooldownException,
-    SpinSlotsNotEqual16Exception,
+    SpinSlotsNotEqual8Exception,
     SpinTransactionFailedException
 } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
@@ -63,7 +63,7 @@ export class SpinService {
 
             //check if slot not equal to 16
             if (spinSlots.length !== 16) {
-                throw new SpinSlotsNotEqual16Exception(spinSlots.length)
+                throw new SpinSlotsNotEqual8Exception(spinSlots.length)
             }
 
             //spinnn
