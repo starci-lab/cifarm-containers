@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     SpinCooldownException,
-    SpinSlotsNotEqual8Exception,
+    SpinSlotsNotEqual16Exception,
     SpinTransactionFailedException
 } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
@@ -61,9 +61,9 @@ export class SpinService {
                 }
             })
 
-            //check if slot not equal to 8
-            if (spinSlots.length !== 8) {
-                throw new SpinSlotsNotEqual8Exception(spinSlots.length)
+            //check if slot not equal to 16
+            if (spinSlots.length !== 16) {
+                throw new SpinSlotsNotEqual16Exception(spinSlots.length)
             }
 
             //spinnn
@@ -224,7 +224,11 @@ export class SpinService {
                 `Successfully spun the wheel for user ${request.userId}, selected slot id: ${selectedSlot.id}`
             )
             return { spinSlotId: selectedSlot.id }
-        } finally {
+        } catch (error) {
+            this.logger.error("Spin failed", error)
+            throw error
+        }
+        finally {
             await queryRunner.release()
         }
     }
