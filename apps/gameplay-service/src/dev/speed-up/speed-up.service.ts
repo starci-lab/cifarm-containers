@@ -35,6 +35,10 @@ export class SpeedUpService {
                     {
                         collection: Collection.AnimalSpeedUp,
                         data
+                    },
+                    {
+                        collection: Collection.EnergySpeedUp,
+                        data
                     }
                 ])
                 await queryRunner.commitTransaction()
