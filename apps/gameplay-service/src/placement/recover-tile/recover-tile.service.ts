@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { GameplayPostgreSQLService, InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity, PlacedItemType } from "@src/databases"
-import { PlacedItemInventoryNotFoundException, PlacedItemNotFoundException, PlacedItemTypeNotTileException } from "@src/exceptions"
+import { PlacedItemNotFoundException, PlacedItemTypeNotTileException } from "@src/exceptions"
 import { InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
-import { RecoverTileRequest } from "./recover-tile.dto"
+import { RecoverTileRequest, RecoverTileResponse } from "./recover-tile.dto"
 
 @Injectable()
 export class RecoverTileService {
@@ -17,7 +17,7 @@ export class RecoverTileService {
         this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
-    async recoverTile(request: RecoverTileRequest) {
+    async recoverTile(request: RecoverTileRequest): Promise<RecoverTileResponse> {
         this.logger.debug(`Received request to recover tile: ${JSON.stringify(request)}`)
 
         const queryRunner = this.dataSource.createQueryRunner()
@@ -31,7 +31,6 @@ export class RecoverTileService {
             })
 
             if (!placedItem) throw new PlacedItemNotFoundException(request.placedItemTileId)
-            if(!placedItem.inventoryId) throw new PlacedItemInventoryNotFoundException()
             if(placedItem.placedItemType.type != PlacedItemType.Tile) throw new PlacedItemTypeNotTileException()
 
             //Get inventory type
@@ -71,12 +70,19 @@ export class RecoverTileService {
                 await queryRunner.manager.save(InventoryEntity, updatedInventories)
 
                 await queryRunner.commitTransaction()
+
+                return {
+                    inventoryTileId: updatedInventories[updatedInventories.length - 1].id
+                }
             } catch (err) {
                 // Rollback transaction in case of error
                 this.logger.error("Recover Tile transaction failed, rolling back...", err)
                 await queryRunner.rollbackTransaction()
                 throw err
             }
+        }catch(err){
+            this.logger.error(err)
+            throw err
         }
         finally {
             await queryRunner.release()

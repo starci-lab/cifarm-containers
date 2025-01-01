@@ -7,7 +7,6 @@ import {
 } from "@src/databases"
 import {
     InventoryNotFoundException,
-    InventoryNotTypePlacedException,
     InventoryTypeNotTileException,
     PlaceTileTransactionFailedException
 } from "@src/exceptions"
@@ -44,8 +43,6 @@ export class PlaceTileService {
             if (inventory.inventoryType.type !== InventoryType.Tile)
                 throw new InventoryTypeNotTileException(request.inventoryTileId)
 
-            if (!inventory.isPlaced) throw new InventoryNotTypePlacedException(request.inventoryTileId)
-
             await queryRunner.startTransaction()
             try {
                 // Mark inventory as placed
@@ -75,7 +72,11 @@ export class PlaceTileService {
                 await queryRunner.rollbackTransaction()
                 throw new PlaceTileTransactionFailedException(error)
             }
-        } finally {
+        } catch (error) {
+            this.logger.error("Place Tile failed", error)
+            throw error
+        }
+        finally {
             await queryRunner.release()
         }
     }

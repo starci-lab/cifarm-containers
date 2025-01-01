@@ -8,5 +8,5 @@ message RecoverTileRequest {
 }
 
 message RecoverTileResponse {
-    string inventoryId = 1;
+    string inventoryTileId = 1;
 }

@@ -4,7 +4,7 @@ package gameplay_service;
 
 message PlaceTileRequest {
     string userId = 1;
-    string inventoryId = 2;
+    string inventoryTileId = 2;
     Position position = 3;
 }
 

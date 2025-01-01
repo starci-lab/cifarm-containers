@@ -1,6 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     GameplayPostgreSQLService,
+    InventoryEntity,
+    InventoryType,
     PlacedItemEntity,
     PlacedItemType,
     PlacedItemTypeEntity,
@@ -114,6 +116,19 @@ export class BuyTileService {
     ): Promise<string> {
         for (const tileId of this.tileOrder) {
             const tile = await queryRunner.manager.findOne(TileEntity, { where: { id: tileId } })
+            //check inventory
+            const inventoryTileCount = await queryRunner.manager.count(InventoryEntity, {
+                where: {
+                    userId,
+                    inventoryType: {
+                        tileId: tileId,
+                        type: InventoryType.Tile
+                    }
+                },
+                relations: {
+                    inventoryType: true
+                }
+            })
 
             const placedItemsCount = await queryRunner.manager.count(PlacedItemEntity, {
                 where: {
@@ -128,7 +143,7 @@ export class BuyTileService {
                 }
             })
 
-            if (placedItemsCount < tile.maxOwnership) {
+            if ((placedItemsCount + inventoryTileCount) < tile.maxOwnership) {
                 return tileId
             }
         }
