@@ -6,10 +6,10 @@ import { GrpcServiceName } from "./grpc.types"
 @Injectable()
 export class GrpcService {
     constructor(
-        @Inject(grpcData[GrpcServiceName.Gameplay].name) private grpcClient: ClientGrpc
+        @Inject(grpcData[GrpcServiceName.Gameplay].name) private clientGrpc: ClientGrpc
     ) {}
 
     getClient(): ClientGrpc {
-        return this.grpcClient
+        return this.clientGrpc
     }
 }

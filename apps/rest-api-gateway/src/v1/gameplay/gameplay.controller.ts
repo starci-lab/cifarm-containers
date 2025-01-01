@@ -3,7 +3,6 @@ import {
     Controller,
     HttpCode,
     HttpStatus,
-    Inject,
     Logger,
     OnModuleInit,
     Post,
@@ -88,7 +87,7 @@ import {
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
-import { grpcData, GrpcServiceName } from "@src/grpc"
+import { grpcData, GrpcService, GrpcServiceName } from "@src/grpc"
 import { User } from "@src/decorators"
 import { RestJwtAuthGuard } from "@src/guards"
 import { lastValueFrom } from "rxjs"
@@ -102,14 +101,17 @@ import { UserLike } from "@src/jwt"
 export class GameplayController implements OnModuleInit {
     private readonly logger = new Logger(GameplayController.name)
 
+    private clientGrpc: ClientGrpc
     constructor(
-        @Inject(grpcData[GrpcServiceName.Gameplay].name) private grpcClient: ClientGrpc
-    ) {}
+        private grpcService: GrpcService
+    ) {
+        this.clientGrpc = this.grpcService.getClient()
+    }
 
     private gameplayService: IGameplayService
 
     onModuleInit() {
-        this.gameplayService = this.grpcClient.getService<IGameplayService>(
+        this.gameplayService = this.clientGrpc.getService<IGameplayService>(
             grpcData[GrpcServiceName.Gameplay].service
         )
     }
@@ -117,8 +119,9 @@ export class GameplayController implements OnModuleInit {
     // Auth
     @HttpCode(HttpStatus.OK)
     @ApiResponse({ type: RequestMessageResponse })
-    @Post("message")
+    @Post("request-message")
     public async requestMessage(): Promise<RequestMessageResponse> {
+        console.log(this.clientGrpc)
         return await lastValueFrom(this.gameplayService.requestMessage({}))
     }
 
@@ -126,7 +129,7 @@ export class GameplayController implements OnModuleInit {
     @ApiResponse({
         type: GenerateTestSignatureResponse
     })
-    @Post("test-signature")
+    @Post("generate-test-signature")
     public async generateTestSignature(
         @Body() request: GenerateTestSignatureRequest
     ): Promise<GenerateTestSignatureResponse> {

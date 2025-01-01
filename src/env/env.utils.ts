@@ -1,4 +1,4 @@
-import { envConfig, NodeEnv } from "@src/env"
+import { envConfig, NodeEnv } from "./env.config"
 
 //sw2s
 export const getEnvValue = <ValueType = string>(values: {
