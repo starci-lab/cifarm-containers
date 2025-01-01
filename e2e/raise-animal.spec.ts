@@ -201,6 +201,13 @@ describe("Raise animal flow", () => {
                     },
                 }
             )
+
+            // Check if the animal is in a yield state(if sick, cure it)
+            if(animalInfo.currentState === AnimalCurrentState.Sick){
+                await axios.post("/cure-animal", { 
+                    placedItemAnimalId: animalInfo.placedItemId
+                })
+            }
         }
 
         // Handle yield process
