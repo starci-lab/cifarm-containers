@@ -127,7 +127,7 @@ export class ThiefAnimalProductService {
                     type: InventoryType.Product,
                     product: {
                         type: ProductType.Animal,
-                        animalId: placedItemAnimal.animalInfo.animal.id
+                        animalId: placedItemAnimal.animalInfo.animalId
                     }
                 },
                 relations: {
@@ -146,8 +146,8 @@ export class ThiefAnimalProductService {
                 entities: existingInventories,
                 userId: request.userId,
                 data: {
-                    inventoryTypeId: inventoryType.id,
-                    quantity: placedItemAnimal.animalInfo.harvestQuantityRemaining
+                    inventoryType,
+                    quantity: actualQuantity
                 }
             })
 
