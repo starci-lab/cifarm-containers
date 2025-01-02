@@ -128,7 +128,7 @@ export class GameplayController implements OnModuleInit {
     @ApiResponse({
         type: GenerateSignatureResponse
     })
-    @Post("generate-generate-signature")
+    @Post("generate-signature")
     public async generateSignature(
         @Body() request: GenerateSignatureRequest
     ): Promise<GenerateSignatureResponse> {
