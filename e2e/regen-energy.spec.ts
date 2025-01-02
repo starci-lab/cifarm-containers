@@ -35,7 +35,7 @@ describe("Regenerate energy flow", () => {
 
         // Sign in and retrieve accessToken
         const authAxios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
-        const { data } = await authAxios.post("/test-signature", {
+        const { data } = await authAxios.post("/generate-signature", {
             chainKey: SupportedChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,

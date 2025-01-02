@@ -56,7 +56,7 @@ describe("Thief crop flow", () => {
 
         // Sign in as main user
         const authAxios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
-        const { data } = await authAxios.post("/test-signature", {
+        const { data } = await authAxios.post("/generate-signature", {
             chainKey: SupportedChainKey.Avalanche,
             accountNumber: 1,
             network: Network.Testnet,
@@ -67,7 +67,7 @@ describe("Thief crop flow", () => {
         user = await jwtService.decodeToken(accessToken)
 
         // Sign in as thief
-        const { data: thiefData } = await authAxios.post("/test-signature", {
+        const { data: thiefData } = await authAxios.post("/generate-signature", {
             chainKey: SupportedChainKey.Avalanche,
             accountNumber: 2,
             network: Network.Testnet,

@@ -1,7 +1,7 @@
 import { Observable } from "rxjs"
 import {
-    GenerateTestSignatureRequest,
-    GenerateTestSignatureResponse,
+    GenerateSignatureRequest,
+    GenerateSignatureResponse,
     RefreshRequest,
     RefreshResponse,
     RequestMessageRequest,
@@ -90,9 +90,9 @@ import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 
 export interface IGameplayService {
     // Auth
-    generateTestSignature(
-        request: GenerateTestSignatureRequest
-    ): Observable<GenerateTestSignatureResponse>
+    generateSignature(
+        request: GenerateSignatureRequest
+    ): Observable<GenerateSignatureResponse>
     verifySignature(request: VerifySignatureRequest): Observable<VerifySignatureResponse>
     requestMessage(request: RequestMessageRequest): Observable<RequestMessageResponse>
     refresh(request: RefreshRequest): Observable<RefreshResponse>

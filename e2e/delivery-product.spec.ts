@@ -39,7 +39,7 @@ describe("Deliver product flow", () => {
         // Sign in and retrieve accessToken
         const axios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
 
-        const { data } = await axios.post("/test-signature", {
+        const { data } = await axios.post("/generate-signature", {
             chainKey: SupportedChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,

@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { GenerateTestSignatureModule } from "./generate-test-signature"
+import { GenerateSignatureModule } from "./generate-signature"
 import { RequestMessageModule } from "./request-message"
 import { VerifySignatureModule } from "./verify-signature"
 import { AuthModule as BlockchainAuthModule } from "@src/blockchain"
@@ -8,7 +8,7 @@ import { JwtModule } from "@src/jwt"
 
 @Module({
     imports: [
-        GenerateTestSignatureModule,
+        GenerateSignatureModule,
         RequestMessageModule,
         VerifySignatureModule,
         BlockchainAuthModule,

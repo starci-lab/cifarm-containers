@@ -3,6 +3,6 @@ syntax = "proto3";
 package gameplay_service;
 
 import "./request_message.proto";
-import "./generate_test_signature.proto";
+import "./generate_signature.proto";
 import "./verify_signature.proto";
 import "./refresh.proto";

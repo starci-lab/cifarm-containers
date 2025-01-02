@@ -16,7 +16,7 @@ package gameplay_service;
 service GameplayService {
     // Auth methods
     rpc RequestMessage(google.protobuf.Empty) returns (RequestMessageResponse);
-    rpc GenerateTestSignature(GenerateTestSignatureRequest) returns (GenerateTestSignatureResponse);
+    rpc GenerateSignature(GenerateSignatureRequest) returns (GenerateSignatureResponse);
     rpc VerifySignature(VerifySignatureRequest) returns (VerifySignatureResponse);
     rpc Refresh(RefreshRequest) returns (RefreshResponse);
 

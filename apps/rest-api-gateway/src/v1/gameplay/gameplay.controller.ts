@@ -32,8 +32,8 @@ import {
     FeedAnimalResponse,
     FollowRequest,
     FollowResponse,
-    GenerateTestSignatureRequest,
-    GenerateTestSignatureResponse,
+    GenerateSignatureRequest,
+    GenerateSignatureResponse,
     HarvestCropRequest,
     HarvestCropResponse,
     HelpCureAnimalRequest,
@@ -126,13 +126,13 @@ export class GameplayController implements OnModuleInit {
 
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
-        type: GenerateTestSignatureResponse
+        type: GenerateSignatureResponse
     })
-    @Post("generate-test-signature")
-    public async generateTestSignature(
-        @Body() request: GenerateTestSignatureRequest
-    ): Promise<GenerateTestSignatureResponse> {
-        return await lastValueFrom(this.gameplayService.generateTestSignature(request))
+    @Post("generate-generate-signature")
+    public async generateSignature(
+        @Body() request: GenerateSignatureRequest
+    ): Promise<GenerateSignatureResponse> {
+        return await lastValueFrom(this.gameplayService.generateSignature(request))
     }
 
     @HttpCode(HttpStatus.OK)
