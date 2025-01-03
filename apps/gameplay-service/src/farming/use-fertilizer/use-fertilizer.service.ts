@@ -1,12 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
-    CropCurrentState,
     GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
     SeedGrowthInfoEntity,
+    SupplyEntity,
     SupplyId,
     SystemEntity,
     SystemId,
@@ -52,7 +52,7 @@ export class UseFertilizerService {
             if (!placedItemTile.seedGrowthInfo)
                 throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
 
-            if (placedItemTile.seedGrowthInfo.currentState == CropCurrentState.IsFertilized)
+            if (placedItemTile.seedGrowthInfo.isFertilized)
                 throw new PlacedItemNotNeedUseFertilizerException(request.placedItemTileId)
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -64,6 +64,10 @@ export class UseFertilizerService {
 
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
+            })
+
+            const fertilizer = await queryRunner.manager.findOne(SupplyEntity, {
+                where: { id: SupplyId.BasicFertilizer }
             })
 
             this.energyService.checkSufficient({
@@ -114,7 +118,8 @@ export class UseFertilizerService {
                     SeedGrowthInfoEntity,
                     placedItemTile.seedGrowthInfo.id,
                     {
-                        currentState: CropCurrentState.IsFertilized
+                        currentStageTimeElapsed: placedItemTile.seedGrowthInfo.currentStageTimeElapsed + fertilizer.fertilizerEffectTimeReduce,
+                        isFertilized: true
                     }
                 )
 
@@ -125,6 +130,9 @@ export class UseFertilizerService {
                 await queryRunner.rollbackTransaction()
                 throw new UseFertilizerTransactionFailedException(error)
             } 
+        }catch (error) {
+            this.logger.error("Use Fertilizer failed", error)
+            throw error
         }
         finally {
             await queryRunner.release()
