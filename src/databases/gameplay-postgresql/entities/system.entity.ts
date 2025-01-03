@@ -1,4 +1,4 @@
-import { Field, ObjectType } from "@nestjs/graphql"
+import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import JSON from "graphql-type-json"
@@ -12,25 +12,42 @@ export class SystemEntity extends StringAbstractEntity {
         value: object
 }
 
+@ObjectType()
 export class Activities {
-    water: ActivityInfo
-    feedAnimal: ActivityInfo
-    usePesticide: ActivityInfo
-    useFertilizer: ActivityInfo
-    useHerbicide: ActivityInfo
-    helpUseHerbicide: ActivityInfo
-    helpUsePesticide: ActivityInfo
-    helpWater: ActivityInfo
-    thiefCrop: ActivityInfo
-    thiefAnimalProduct: ActivityInfo
-    cureAnimal: ActivityInfo
-    helpCureAnimal: ActivityInfo
-    harvestCrop: ActivityInfo
+    @Field(() => ActivityInfo)
+        water: ActivityInfo
+    @Field(() => ActivityInfo)
+        feedAnimal: ActivityInfo
+    @Field(() => ActivityInfo)
+        usePesticide: ActivityInfo
+    @Field(() => ActivityInfo)
+        useFertilizer: ActivityInfo
+    @Field(() => ActivityInfo)
+        useHerbicide: ActivityInfo
+    @Field(() => ActivityInfo)
+        helpUseHerbicide: ActivityInfo
+    @Field(() => ActivityInfo)
+        helpUsePesticide: ActivityInfo
+    @Field(() => ActivityInfo)
+        helpWater: ActivityInfo
+    @Field(() => ActivityInfo)
+        thiefCrop: ActivityInfo
+    @Field(() => ActivityInfo)
+        thiefAnimalProduct: ActivityInfo
+    @Field(() => ActivityInfo)
+        cureAnimal: ActivityInfo
+    @Field(() => ActivityInfo)
+        helpCureAnimal: ActivityInfo
+    @Field(() => ActivityInfo)
+        harvestCrop: ActivityInfo
 }
 
+@ObjectType()
 export class ActivityInfo {
-    experiencesGain: number
-    energyConsume: number
+    @Field(() => Int)
+        experiencesGain: number
+    @Field(() => Int)
+        energyConsume: number
 }
 
 export class CropRandomness {

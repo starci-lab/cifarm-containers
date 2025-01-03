@@ -3,7 +3,7 @@ import { Resolver, Query, Args } from "@nestjs/graphql"
 import { PlacedItemTypesService } from "./placed-item-types.service"
 import { PlacedItemTypeEntity } from "@src/databases"
 import { GetPlacedItemTypesArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
+import { GraphQLCacheInterceptor } from "@src/graphql/interceptors/graphql-cache.interceptor"
 
 @Resolver()
 export class PlacedItemTypesResolver {

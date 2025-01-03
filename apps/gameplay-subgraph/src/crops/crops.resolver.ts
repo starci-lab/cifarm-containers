@@ -3,7 +3,7 @@ import { Resolver, Query, Args } from "@nestjs/graphql"
 import { CropsService } from "./crops.service"
 import { CropEntity } from "@src/databases"
 import { GetCropsArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
+import { GraphQLCacheInterceptor } from "@src/graphql/interceptors/graphql-cache.interceptor"
 
 @Resolver()
 export class CropsResolver {

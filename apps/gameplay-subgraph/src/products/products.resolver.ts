@@ -1,7 +1,7 @@
 import { Logger, UseInterceptors } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
 import { ProductEntity } from "@src/databases"
-import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
+import { GraphQLCacheInterceptor } from "@src/graphql/interceptors/graphql-cache.interceptor"
 import { GetProductsArgs } from "./products.dto"
 import { ProductService } from "./products.service"
 

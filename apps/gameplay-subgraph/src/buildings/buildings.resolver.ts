@@ -3,7 +3,7 @@ import { Logger, UseInterceptors } from "@nestjs/common"
 import { BuildingEntity } from "@src/databases"
 import { BuildingsService } from "./buildings.service"
 import { GetBuildingsArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/interceptors/graphql.cache.interceptor"
+import { GraphQLCacheInterceptor } from "@src/graphql/interceptors/graphql-cache.interceptor"
 
 @Resolver()
 export class BuildingsResolver {
