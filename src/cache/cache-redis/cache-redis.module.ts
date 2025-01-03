@@ -15,8 +15,8 @@ export class CacheRedisModule {
                     useFactory: async () => {
                         const store = await redisStore({
                             socket: {
-                                host: envConfig().database.redis.cache.host,
-                                port: envConfig().database.redis.cache.port
+                                host: envConfig().databases.redis.cache.host,
+                                port: envConfig().databases.redis.cache.port
                             }
                         })
                 

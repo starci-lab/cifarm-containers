@@ -1,7 +1,8 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query } from "@nestjs/graphql"
 import { SystemsService } from "./systems.service"
 import { Activities } from "@src/databases"
+import { GraphQLCacheInterceptor } from "@src/cache"
 
 @Resolver()
 export class SystemsResolver {
@@ -9,6 +10,7 @@ export class SystemsResolver {
 
     constructor(private readonly systemsService: SystemsService) {}
 
+    @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => Activities, {
         name: "activities"
     })

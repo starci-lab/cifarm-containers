@@ -32,8 +32,8 @@ export class BullModule {
             imports: [
                 NestBullModule.forRoot({
                     connection: {
-                        host: envConfig().database.redis.job.host,
-                        port: envConfig().database.redis.job.port
+                        host: envConfig().databases.redis.job.host,
+                        port: envConfig().databases.redis.job.port
                     }
                 })
             ],

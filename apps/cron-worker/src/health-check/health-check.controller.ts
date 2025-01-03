@@ -24,8 +24,8 @@ export class HealthCheckController {
                 this.microservice.pingCheck<RedisOptions>(HealthCheckDependency.CacheRedis, {
                     transport: Transport.REDIS,
                     options: {
-                        host: envConfig().database.redis.cache.host,
-                        port: envConfig().database.redis.cache.port
+                        host: envConfig().databases.redis.cache.host,
+                        port: envConfig().databases.redis.cache.port
                     },
                     timeout: HEALTH_CHECK_TIMEOUT,
                 }),
@@ -33,8 +33,8 @@ export class HealthCheckController {
                 this.microservice.pingCheck<RedisOptions>(HealthCheckDependency.JobRedis, {
                     transport: Transport.REDIS,
                     options: {
-                        host: envConfig().database.redis.job.host,
-                        port: envConfig().database.redis.job.port
+                        host: envConfig().databases.redis.job.host,
+                        port: envConfig().databases.redis.job.port
                     },
                     timeout: HEALTH_CHECK_TIMEOUT,
                 }),

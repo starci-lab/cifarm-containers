@@ -17,11 +17,11 @@ export class TelegramUserTrackerPostgreSQLModule {
             imports: [
                 TypeOrmModule.forRoot({
                     type: "postgres",
-                    host: envConfig().database.postgresql.telegramUserTracker.main.host,
-                    port: envConfig().database.postgresql.telegramUserTracker.main.port,
-                    username: envConfig().database.postgresql.telegramUserTracker.main.username,
-                    password: envConfig().database.postgresql.telegramUserTracker.main.password,
-                    database: envConfig().database.postgresql.telegramUserTracker.main.dbName,
+                    host: envConfig().databases.postgresql.telegramUserTracker.main.host,
+                    port: envConfig().databases.postgresql.telegramUserTracker.main.port,
+                    username: envConfig().databases.postgresql.telegramUserTracker.main.username,
+                    password: envConfig().databases.postgresql.telegramUserTracker.main.password,
+                    database: envConfig().databases.postgresql.telegramUserTracker.main.dbName,
                     entities: telegramUserTrackerPostgreSqlEntites(),
                     synchronize: true,
                     poolSize: 10,

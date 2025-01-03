@@ -19,18 +19,18 @@ export class GameplayPostgreSQLModule {
     public static forRoot(options: GameplayPostgreSQLOptions = {}) {
         const map: Record<GameplayPostgreSQLType, TypeORMConfig> = {
             [GameplayPostgreSQLType.Main]: {
-                host: envConfig().database.postgresql.gameplay.main.host,
-                port: envConfig().database.postgresql.gameplay.main.port,
-                username: envConfig().database.postgresql.gameplay.main.username,
-                password: envConfig().database.postgresql.gameplay.main.password,
-                database: envConfig().database.postgresql.gameplay.main.dbName,
+                host: envConfig().databases.postgresql.gameplay.main.host,
+                port: envConfig().databases.postgresql.gameplay.main.port,
+                username: envConfig().databases.postgresql.gameplay.main.username,
+                password: envConfig().databases.postgresql.gameplay.main.password,
+                database: envConfig().databases.postgresql.gameplay.main.dbName,
             },
             [GameplayPostgreSQLType.Test]: {
-                host: envConfig().database.postgresql.gameplay.test.host,
-                port: envConfig().database.postgresql.gameplay.test.port,
-                username: envConfig().database.postgresql.gameplay.test.username,
-                password: envConfig().database.postgresql.gameplay.test.password,
-                database: envConfig().database.postgresql.gameplay.test.dbName,
+                host: envConfig().databases.postgresql.gameplay.test.host,
+                port: envConfig().databases.postgresql.gameplay.test.port,
+                username: envConfig().databases.postgresql.gameplay.test.username,
+                password: envConfig().databases.postgresql.gameplay.test.password,
+                database: envConfig().databases.postgresql.gameplay.test.dbName,
             }
         }
         return {

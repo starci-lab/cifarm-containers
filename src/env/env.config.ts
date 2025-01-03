@@ -75,7 +75,7 @@ export const envConfig = () => ({
             healthCheckPort: Number(process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT)
         }
     },
-    database: {
+    databases: {
         mongo: {
             mongo1: {
                 dbName: process.env.MONGO_1_DB_NAME,

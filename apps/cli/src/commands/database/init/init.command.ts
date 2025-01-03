@@ -32,11 +32,11 @@ export class InitCommand extends CommandRunner {
         }
         await this.dataSource.manager.save(GameplayPostgreSQLEntity, {
             id: dataSource?.id,
-            host: envConfig().database.postgresql.gameplay.main.host,
-            port: envConfig().database.postgresql.gameplay.main.port,
-            username: envConfig().database.postgresql.gameplay.main.username,
-            password: envConfig().database.postgresql.gameplay.main.password,
-            dbName: envConfig().database.postgresql.gameplay.main.dbName,
+            host: envConfig().databases.postgresql.gameplay.main.host,
+            port: envConfig().databases.postgresql.gameplay.main.port,
+            username: envConfig().databases.postgresql.gameplay.main.username,
+            password: envConfig().databases.postgresql.gameplay.main.password,
+            dbName: envConfig().databases.postgresql.gameplay.main.dbName,
             selected: true,
             type: GameplayPostgreSQLType.Main
         })
@@ -51,11 +51,11 @@ export class InitCommand extends CommandRunner {
             }
             await this.dataSource.manager.save(GameplayPostgreSQLEntity, {
                 id: dataSource?.id,
-                host: envConfig().database.postgresql.gameplay.test.host,
-                port: envConfig().database.postgresql.gameplay.test.port,
-                username: envConfig().database.postgresql.gameplay.test.username,
-                password: envConfig().database.postgresql.gameplay.test.password,
-                dbName: envConfig().database.postgresql.gameplay.test.dbName,
+                host: envConfig().databases.postgresql.gameplay.test.host,
+                port: envConfig().databases.postgresql.gameplay.test.port,
+                username: envConfig().databases.postgresql.gameplay.test.username,
+                password: envConfig().databases.postgresql.gameplay.test.password,
+                dbName: envConfig().databases.postgresql.gameplay.test.dbName,
                 selected: false,
                 type: GameplayPostgreSQLType.Test
             })
@@ -63,11 +63,11 @@ export class InitCommand extends CommandRunner {
 
         // Telegram user tracker PostgreSQL
         await this.dataSource.manager.save(TelegramUserTrackerPostgreSQLEntity, {
-            host: envConfig().database.postgresql.telegramUserTracker.main.host,
-            port: envConfig().database.postgresql.telegramUserTracker.main.port,
-            username: envConfig().database.postgresql.telegramUserTracker.main.username,
-            password: envConfig().database.postgresql.telegramUserTracker.main.password,
-            dbName: envConfig().database.postgresql.telegramUserTracker.main.dbName,
+            host: envConfig().databases.postgresql.telegramUserTracker.main.host,
+            port: envConfig().databases.postgresql.telegramUserTracker.main.port,
+            username: envConfig().databases.postgresql.telegramUserTracker.main.username,
+            password: envConfig().databases.postgresql.telegramUserTracker.main.password,
+            dbName: envConfig().databases.postgresql.telegramUserTracker.main.dbName,
             selected: true
         })
 

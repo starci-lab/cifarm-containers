@@ -64,11 +64,11 @@ describe("RetainProductService", () => {
                 }),
                 TypeOrmModule.forRoot({
                     type: "postgres",
-                    host: envConfig().database.postgres.gameplay.test.host,
-                    port: envConfig().database.postgres.gameplay.test.port,
-                    username: envConfig().database.postgres.gameplay.test.user,
-                    password: envConfig().database.postgres.gameplay.test.pass,
-                    database: envConfig().database.postgres.gameplay.test.dbName,
+                    host: envConfig().databases.postgres.gameplay.test.host,
+                    port: envConfig().databases.postgres.gameplay.test.port,
+                    username: envConfig().databases.postgres.gameplay.test.user,
+                    password: envConfig().databases.postgres.gameplay.test.pass,
+                    database: envConfig().databases.postgres.gameplay.test.dbName,
                     autoLoadEntities: true,
                     synchronize: true
                 }),
