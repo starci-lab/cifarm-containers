@@ -1,9 +1,8 @@
-import { Logger, UseInterceptors } from "@nestjs/common"
+import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { PlacedItemsService } from "./placed-items.service"
 import { PlacedItemEntity } from "@src/databases"
 import { GetPlacedItemsArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/graphql/interceptors/graphql-cache.interceptor"
 
 @Resolver()
 export class PlacedItemsResolver {
@@ -14,7 +13,6 @@ export class PlacedItemsResolver {
     @Query(() => [PlacedItemEntity], {
         name: "placeditems"
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getPlacedItems(@Args("args") args: GetPlacedItemsArgs): Promise<Array<PlacedItemEntity>> {
         return this.placeditemsService.getPlacedItems(args)
     }
@@ -23,7 +21,6 @@ export class PlacedItemsResolver {
         name: "placeditem",
         nullable:true
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getPlacedItemById(@Args("id") id: string): Promise<PlacedItemEntity> {
         this.logger.debug(`getPlacedItemById: id=${id}`)
         return this.placeditemsService.getPlacedItemById(id)

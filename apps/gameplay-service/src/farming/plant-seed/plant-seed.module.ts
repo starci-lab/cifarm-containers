@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { InventoryModule, LevelModule } from "@src/gameplay"
+import { GameplayModule } from "@src/gameplay"
 import { EnergyModule } from "@src/gameplay/energy/energy.module"
 import { PlantSeedController } from "./plant-seed.controller"
 import { PlantSeedService } from "./plant-seed.service"
@@ -10,8 +10,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
     imports: [
         GameplayPostgreSQLModule.forRoot(),
         EnergyModule,
-        LevelModule,
-        InventoryModule
+        GameplayModule
     ],
     controllers: [PlantSeedController],
     providers: [PlantSeedService],

@@ -1,12 +1,13 @@
 import { Module } from "@nestjs/common"
 import { SystemsService } from "./systems.service"
 import { SystemsResolver } from "./systems.resolver"
-import { GraphQLInterceptorsModule } from "@src/graphql"
+import { CacheRedisModule } from "@src/cache"
+import { CryptoModule } from "@src/crypto"
  
 
 @Module({
     imports: [ 
-        GraphQLInterceptorsModule
+        CacheRedisModule.forRoot(), CryptoModule
     ],
     providers: [SystemsService, SystemsResolver]
 })

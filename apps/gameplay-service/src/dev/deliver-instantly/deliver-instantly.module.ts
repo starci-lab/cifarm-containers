@@ -2,7 +2,7 @@ import { Global, Module } from "@nestjs/common"
 import { DeliveryInstantlyController } from "./deliver-instantly.controller"
 import { DeliverInstantlyService } from "./deliver-instantly.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
-import { CacheRedisModule } from "@src/databases/cache-redis"
+import { CacheRedisModule } from "@src/cache/cache-redis"
 
 @Global()
 @Module({

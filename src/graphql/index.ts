@@ -1,2 +1,2 @@
 export * from "./graphql.module"
-export * from "./interceptors"
+export * from "../cache/interceptors"

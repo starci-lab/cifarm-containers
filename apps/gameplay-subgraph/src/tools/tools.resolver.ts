@@ -3,7 +3,7 @@ import { Resolver, Query, Args } from "@nestjs/graphql"
 import { ToolsService } from "./tools.service"
 import { ToolEntity } from "@src/databases"
 import { GetToolsArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/graphql/interceptors/graphql-cache.interceptor"
+import { GraphQLCacheInterceptor } from "@src/cache/interceptors/graphql-cache.interceptor"
 
 @Resolver()
 export class ToolsResolver {

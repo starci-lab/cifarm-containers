@@ -3,7 +3,7 @@ import { Resolver, Query, Args } from "@nestjs/graphql"
 import { TilesService } from "./tiles.service"
 import { TileEntity } from "@src/databases"
 import { GetTilesArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/graphql/interceptors/graphql-cache.interceptor"
+import { GraphQLCacheInterceptor } from "@src/graphql"
 
 @Resolver()
 export class TilesResolver {

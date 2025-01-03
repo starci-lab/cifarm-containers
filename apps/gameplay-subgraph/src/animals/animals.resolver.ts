@@ -3,7 +3,6 @@ import { Resolver, Query, Args } from "@nestjs/graphql"
 import { AnimalsService } from "./animals.service"
 import { AnimalEntity } from "@src/databases"
 import { GetAnimalsArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/graphql/interceptors/graphql-cache.interceptor"
 import TimerInterceptor from "@src/interceptors/timer.interceptor"
 
 @Resolver()
@@ -15,7 +14,7 @@ export class AnimalsResolver {
     @Query(() => [AnimalEntity], {
         name: "animals"
     })
-    @UseInterceptors(TimerInterceptor, GraphQLCacheInterceptor)
+    @UseInterceptors(TimerInterceptor)
     async getAnimals(@Args("args") args: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         const result = await this.animalsService.getAnimals(args)
         return result
@@ -24,7 +23,7 @@ export class AnimalsResolver {
          name: "animals",
          nullable:true
      })
-    @UseInterceptors(TimerInterceptor, GraphQLCacheInterceptor)
+    @UseInterceptors(TimerInterceptor)
     async getAnimalById(@Args("id") id: string): Promise<AnimalEntity> {
         const result = await this.animalsService.getAnimalById(id)
         return result

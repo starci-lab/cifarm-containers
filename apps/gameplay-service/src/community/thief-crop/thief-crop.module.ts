@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { EnergyModule, InventoryModule, LevelModule, ThiefModule } from "@src/gameplay"
+import { EnergyModule, GameplayModule } from "@src/gameplay"
 import { ThiefCropController } from "./thief-crop.controller"
 import { TheifCropService } from "./thief-crop.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
@@ -16,9 +16,7 @@ import { EnvModule } from "@src/env"
             producerOnly: true
         }),
         EnergyModule,
-        LevelModule,
-        ThiefModule,
-        InventoryModule
+        GameplayModule
     ],
     providers: [TheifCropService],
     exports: [TheifCropService],

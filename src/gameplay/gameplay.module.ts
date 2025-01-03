@@ -1,18 +1,26 @@
 import { Module } from "@nestjs/common"
-import { EnergyModule } from "./energy"
-import { LevelModule } from "./level"
-import { ThiefModule } from "./thief"
-import { GoldBalanceModule, TokenBalanceModule } from "./wallet"
-import { InventoryModule } from "./inventory"
+import { LevelService } from "./level"
+import { ThiefService } from "./thief"
+import { GoldBalanceService, TokenBalanceService } from "./wallet"
+import { EnergyService } from "@apps/cron-scheduler"
+import { InventoryService } from "./inventory"
 
 @Module({
-    imports: [
-        EnergyModule,
-        InventoryModule,
-        LevelModule,
-        ThiefModule,
-        GoldBalanceModule,
-        TokenBalanceModule
+    providers: [
+        LevelService,
+        ThiefService,
+        EnergyService,
+        GoldBalanceService,
+        TokenBalanceService,
+        InventoryService
+    ],
+    exports: [
+        LevelService,
+        ThiefService,
+        EnergyService,
+        GoldBalanceService,
+        TokenBalanceService,
+        InventoryService
     ]
 })
 export class GameplayModule {}

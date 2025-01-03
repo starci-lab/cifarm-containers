@@ -2,14 +2,14 @@ import { Global, Module } from "@nestjs/common"
 import { RetainProductService } from "./retain-product.service"
 import { RetainProductController } from "./retain-product.controller"
 import { GameplayPostgreSQLModule } from "@src/databases"
-import { InventoryModule } from "@src/gameplay"
+import { GameplayModule } from "@src/gameplay"
 
 
 @Global()
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
-        InventoryModule
+        GameplayModule
     ],
     providers: [RetainProductService],
     exports: [RetainProductService],

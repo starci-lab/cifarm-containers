@@ -2,7 +2,7 @@ import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { UpgradeService } from "./upgrades.service"
 import { UpgradeEntity } from "@src/databases"
-import { GetUpgradesArgs } from "./"
+import { GetUpgradesArgs } from "./upgrades.dto"
 import { GraphQLCacheInterceptor } from "@src/interceptors"
 
 @Resolver()

@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { CacheRedisModule } from "@src/databases"
+import { CacheRedisModule } from "@src/cache"
 import { RequestMessageController } from "./request-message.controller"
 import { RequestMessageService } from "./request-message.service"
 

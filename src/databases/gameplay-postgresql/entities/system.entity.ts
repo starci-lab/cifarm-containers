@@ -13,6 +13,14 @@ export class SystemEntity extends StringAbstractEntity {
 }
 
 @ObjectType()
+export class ActivityInfo {
+    @Field(() => Int)
+        experiencesGain: number
+    @Field(() => Int)
+        energyConsume: number
+}
+
+@ObjectType()
 export class Activities {
     @Field(() => ActivityInfo)
         water: ActivityInfo
@@ -40,14 +48,6 @@ export class Activities {
         helpCureAnimal: ActivityInfo
     @Field(() => ActivityInfo)
         harvestCrop: ActivityInfo
-}
-
-@ObjectType()
-export class ActivityInfo {
-    @Field(() => Int)
-        experiencesGain: number
-    @Field(() => Int)
-        energyConsume: number
 }
 
 export class CropRandomness {

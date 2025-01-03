@@ -1,9 +1,8 @@
-import { Logger, UseInterceptors } from "@nestjs/common"
+import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { SuppliesService } from "./supplies.service"
 import { SupplyEntity } from "@src/databases"
 import { GetSuppliesArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/graphql/interceptors/graphql-cache.interceptor"
 
 @Resolver()
 export class SuppliesResolver {
@@ -14,7 +13,6 @@ export class SuppliesResolver {
     @Query(() => [SupplyEntity], {
         name: "supplies"
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getSupplies(@Args("args") args: GetSuppliesArgs): Promise<Array<SupplyEntity>> {
         return this.suppliesService.getSupplies(args)
     }
@@ -23,7 +21,6 @@ export class SuppliesResolver {
         name: "supply",
         nullable:true
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getSupplyById(@Args("id") id: string): Promise<SupplyEntity | null> {
         this.logger.debug(`getSupplyById: id=${id}`)
         return this.suppliesService.getSupplyById(id)

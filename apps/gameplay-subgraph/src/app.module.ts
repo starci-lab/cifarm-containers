@@ -1,14 +1,11 @@
 import { Module } from "@nestjs/common"
 
-import { AnimalInfoThievedByUsersModule } from "./animal-info-thieved-by-users"
 import { AnimalInfosModule } from "./animal-infos"
 import { AnimalsModule } from "./animals"
 import { BuildingInfosModule } from "./building-infos"
 import { BuildingsModule } from "./buildings"
 import { CropsModule } from "./crops"
 import { InventoriesModule } from "./inventories"
-import { InventoryTypesModule } from "./inventory-types"
-import { PlacedItemTypesModule } from "./placed-item-types"
 import { PlacedItemsModule } from "./placed-items"
 import { ProductsModule } from "./products"
 import { SeedGrowthInfosModule } from "./seed-growth-infos"
@@ -19,24 +16,20 @@ import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
 import { UsersModule } from "./users"
 import { EnvModule } from "@src/env"
-import { CacheRedisModule, GameplayPostgreSQLModule } from "@src/databases"
+import { GameplayPostgreSQLModule } from "@src/databases"
 import { GraphQLModule } from "@src/graphql"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
         GameplayPostgreSQLModule.forRoot(),
-        CacheRedisModule.forRoot(),
         GraphQLModule.forSubgraph(),
-        AnimalInfoThievedByUsersModule,
         AnimalInfosModule,
         AnimalsModule,
         BuildingInfosModule,
         BuildingsModule,
         CropsModule,
         InventoriesModule,
-        InventoryTypesModule,
-        PlacedItemTypesModule,
         PlacedItemsModule,
         ProductsModule,
         SeedGrowthInfosModule,
