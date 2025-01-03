@@ -91,6 +91,10 @@ export abstract class PaginatedArgs {
         offset?: number = 0
 }
 
+export abstract class PaginatedArgsWithUserId extends PaginatedArgs {
+    userId: string
+}
+
 export class SocketConnectionParams  {
     @IsOptional()
     @IsString()

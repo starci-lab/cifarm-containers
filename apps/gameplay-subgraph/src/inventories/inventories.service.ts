@@ -1,4 +1,4 @@
-import { GetInventoriesArgs } from "./"
+import { GetInventoriesArgs, GetInventoriesByUserIdArgs } from "./"
 import { Injectable, Logger } from "@nestjs/common"
 import { InventoryEntity } from "@src/databases"
 import { DataSource } from "typeorm"
@@ -41,6 +41,27 @@ export class InventoryService {
                 where: { id },
                 relations: this.relations
             })
+        } finally {
+            await queryRunner.release()
+        }
+    }
+
+    async getInventoriesByUserId({
+        userId,
+        limit = 10,
+        offset = 0
+    }: GetInventoriesByUserIdArgs): Promise<Array<InventoryEntity>> {
+        this.logger.debug(`GetInventoriesByUserId: userId=${userId}, limit=${limit}, offset=${offset}`)
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            const inventories = await queryRunner.manager.find(InventoryEntity, {
+                where: { userId },
+                take: limit,
+                skip: offset,
+                relations: this.relations
+            })
+            return inventories
         } finally {
             await queryRunner.release()
         }
