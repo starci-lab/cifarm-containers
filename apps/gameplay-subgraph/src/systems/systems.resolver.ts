@@ -1,8 +1,7 @@
 import { Logger } from "@nestjs/common"
-import { Resolver, Query, Args } from "@nestjs/graphql"
+import { Resolver, Query } from "@nestjs/graphql"
 import { SystemsService } from "./systems.service"
-import { SystemEntity } from "@src/databases"
-import { GetSystemsArgs } from "./"
+import { Activities } from "@src/databases"
 
 @Resolver()
 export class SystemsResolver {
@@ -10,19 +9,10 @@ export class SystemsResolver {
 
     constructor(private readonly systemsService: SystemsService) {}
 
-    @Query(() => [SystemEntity], {
-        name: "systems"
+    @Query(() => Activities, {
+        name: "activities"
     })
-    async getSystems(@Args("args") args: GetSystemsArgs): Promise<Array<SystemEntity>> {
-        return this.systemsService.getSystems(args)
-    }
-
-     @Query(() => SystemEntity, {
-         name: "system",
-         nullable:true
-     })
-    async getSystemById(@Args("id") id: string): Promise<SystemEntity | null> {
-        this.logger.debug(`getSystemById: id=${id}`)
-        return this.systemsService.getSystemById(id)
+    async getActivities(): Promise<Activities> {
+        return this.systemsService.getActivities()
     }
 }
