@@ -85,7 +85,7 @@ describe("Upgrade Building flow", () => {
 
         // Upgrade the building
         const { data: upgradeResponse } = await axios.post("/upgrade-building", {
-            placedItemId: placedItemBuilding.id,
+            placedItemBuildingId: placedItemBuilding.id,
         })
 
         expect(upgradeResponse).toBeDefined()

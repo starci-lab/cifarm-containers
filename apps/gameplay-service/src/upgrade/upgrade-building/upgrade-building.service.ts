@@ -25,7 +25,7 @@ export class UpgradeBuildingService {
 
     async upgradeBuilding(request: UpgradeBuildingRequest): Promise<UpgradeBuildingResponse> {
         this.logger.debug(
-            `Starting upgrade for placedItem ${request.placedItemId} by user ${request.userId}`
+            `Starting upgrade for placedItem ${request.placedItemBuildingId} by user ${request.userId}`
         )
 
         const queryRunner = this.dataSource.createQueryRunner()
@@ -34,7 +34,7 @@ export class UpgradeBuildingService {
         try {
             // Fetch placed item
             const placedItem = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemId, userId: request.userId },
+                where: { id: request.placedItemBuildingId, userId: request.userId },
                 relations: {
                     buildingInfo: {
                         building: {
@@ -45,7 +45,7 @@ export class UpgradeBuildingService {
             })
 
             if (!placedItem) {
-                throw new PlacedItemNotFoundException(request.placedItemId)
+                throw new PlacedItemNotFoundException(request.placedItemBuildingId)
             }
 
             const buildingInfo = placedItem.buildingInfo
@@ -61,7 +61,7 @@ export class UpgradeBuildingService {
             )
 
             if (currentUpgradeLevel === maxUpgradeLevel) {
-                throw new BuildingAlreadyMaxUpgradeException(request.placedItemId)
+                throw new BuildingAlreadyMaxUpgradeException(request.placedItemBuildingId)
             }
 
             // Fetch the next upgrade level
@@ -70,7 +70,7 @@ export class UpgradeBuildingService {
             )
 
             if (!nextUpgrade) {
-                throw new BuildingNextUpgradeNotFoundException(request.placedItemId)
+                throw new BuildingNextUpgradeNotFoundException(request.placedItemBuildingId)
             }
 
             const user = await queryRunner.manager.findOne(UserEntity, {

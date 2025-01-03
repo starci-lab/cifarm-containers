@@ -239,7 +239,7 @@ describe("Thief Animal Product flow", () => {
     })
 
     afterAll(async () => {
-        // await dataSource.manager.delete(UserEntity, user.id)
-        // await dataSource.manager.delete(UserEntity, thiefUser.id)
+        await dataSource.manager.delete(UserEntity, user.id)
+        await dataSource.manager.delete(UserEntity, thiefUser.id)
     })
 })
