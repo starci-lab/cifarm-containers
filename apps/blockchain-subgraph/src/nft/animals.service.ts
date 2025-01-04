@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity } from "@src/database"
 import { DataSource } from "typeorm"
 import { GetAnimalsArgs } from "./"
+import { AnimalEntity } from "@src/databases"
 
 @Injectable()
 export class AnimalsService {
