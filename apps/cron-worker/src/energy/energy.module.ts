@@ -1,14 +1,14 @@
 import { Module } from "@nestjs/common"
-import { EnergyWorker } from "./energy.worker"
 import { BullModule, BullQueueName } from "@src/bull"
-import { EnergyModule as EnergyGameplayModule } from "@src/gameplay"
+import { GameplayModule } from "@src/gameplay"
+import { EnergyWorker } from "./energy.worker"
 
 @Module({
     imports: [
         BullModule.registerQueue({
             queueName: BullQueueName.Energy
         }),
-        EnergyGameplayModule
+        GameplayModule
     ],
     providers: [EnergyWorker]
 })

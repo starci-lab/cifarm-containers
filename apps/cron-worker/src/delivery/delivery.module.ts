@@ -1,15 +1,14 @@
 import { Module } from "@nestjs/common"
 import { BullModule, BullQueueName } from "@src/bull"
+import { GameplayModule } from "@src/gameplay"
 import { DeliveryWorker } from "./delivery.worker"
-import { GoldBalanceModule, TokenBalanceModule } from "@src/gameplay"
 
 @Module({
     imports: [
         BullModule.registerQueue({
             queueName: BullQueueName.Delivery
         }),
-        GoldBalanceModule,
-        TokenBalanceModule
+        GameplayModule
     ],
     providers: [DeliveryWorker]
 })

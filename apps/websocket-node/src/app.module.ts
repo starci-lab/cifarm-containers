@@ -4,7 +4,8 @@ import { DefaultModule } from "./default"
 import { ServeStaticModule } from "@nestjs/serve-static"
 import { join } from "path"
 import { EnvModule } from "@src/env"
-import { CacheRedisModule, GameplayPostgreSQLModule } from "@src/databases"
+import { GameplayPostgreSQLModule } from "@src/databases"
+import { CacheRedisModule } from "@src/cache"
 
 @Module({
     imports: [
