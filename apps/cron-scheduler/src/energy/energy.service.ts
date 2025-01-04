@@ -46,7 +46,6 @@ export class EnergyService {
                 where: {
                     id: TempId.EnergyRegenerationLastSchedule
                 },
-                cache: false
             })
             const { date } = value as EnergyGrowthLastSchedule
 

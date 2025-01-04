@@ -50,7 +50,6 @@ export class AnimalService {
                 where: {
                     id: TempId.AnimalGrowthLastSchedule
                 },
-                cache: false
             })
             const { date } = value as AnimalGrowthLastSchedule
 

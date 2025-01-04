@@ -53,7 +53,6 @@ export class CropService {
                 where: {
                     id: TempId.CropGrowthLastSchedule
                 },
-                cache: false
             })
             const { date } = value as CropGrowthLastSchedule
 
