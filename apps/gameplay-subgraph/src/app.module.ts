@@ -16,13 +16,11 @@ import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
 import { UsersModule } from "./users"
 import { EnvModule } from "@src/env"
-import { GameplayPostgreSQLModule } from "@src/databases"
 import { GraphQLModule } from "@src/graphql"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
-        GameplayPostgreSQLModule.forRoot(),
         GraphQLModule.forSubgraph(),
         AnimalInfosModule,
         AnimalsModule,
