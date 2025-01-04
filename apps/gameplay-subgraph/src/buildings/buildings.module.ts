@@ -3,10 +3,11 @@ import { BuildingsResolver } from "./buildings.resolver"
 import { BuildingsService } from "./buildings.service"
 import { CryptoModule } from "@src/crypto"
 import { CacheRedisModule } from "@src/cache"
+import { GameplayPostgreSQLModule } from "@src/databases"
  
 
 @Module({
-    imports: [ CryptoModule, CacheRedisModule.forRoot() ],
+    imports: [ CryptoModule, CacheRedisModule.forRoot(),  GameplayPostgreSQLModule.forRoot() ],
     providers: [ BuildingsService, BuildingsResolver ]
 })
 export class BuildingsModule {}
