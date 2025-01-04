@@ -1,9 +1,8 @@
-import { Logger, UseInterceptors } from "@nestjs/common"
+import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { TilesService } from "./tiles.service"
 import { TileEntity } from "@src/databases"
-import { GetTilesArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/graphql"
+import { GetTilesArgs } from "./tiles.dto"
 
 @Resolver()
 export class TilesResolver {
@@ -14,7 +13,6 @@ export class TilesResolver {
     @Query(() => [TileEntity], {
         name: "tiles"
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getTiles(@Args("args") args: GetTilesArgs): Promise<Array<TileEntity>> {
         return this.tilesService.getTiles(args)
     }
@@ -23,7 +21,6 @@ export class TilesResolver {
         name: "tile",
         nullable:true
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getTileById(@Args("id") id: string): Promise<TileEntity | null> {
         this.logger.debug(`getTileById: id=${id}`)
         return this.tilesService.getTileById(id)

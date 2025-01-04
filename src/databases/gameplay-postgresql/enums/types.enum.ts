@@ -53,5 +53,5 @@ export enum AppearanceChance {
     Common = "common",
     Uncommon = "uncommon",
     Rare = "rare",
-    VeryRare = "veryRare"  
+    VeryRare = "veryRare",  
 } 

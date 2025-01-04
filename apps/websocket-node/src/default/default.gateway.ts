@@ -5,7 +5,8 @@ import {
     OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
-    WebSocketServer
+    WebSocketServer,
+    WsResponse
 } from "@nestjs/websockets"
 import { Server, Socket } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
@@ -59,7 +60,11 @@ export class DefaultGateway implements OnGatewayConnection, OnGatewayDisconnect,
     
     // for testing
     @SubscribeMessage("ping")
-    handlePing(): string {
-        return "pong"
+    handlePing():  WsResponse<string> {
+        this.logger.debug("Received ping")
+        return {
+            event: "ping",
+            data: "pong"
+        }
     }
 }

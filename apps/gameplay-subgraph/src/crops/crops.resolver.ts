@@ -1,9 +1,8 @@
-import { Logger, UseInterceptors } from "@nestjs/common"
+import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { CropsService } from "./crops.service"
 import { CropEntity } from "@src/databases"
 import { GetCropsArgs } from "./crops.dto"
-import { GraphQLCacheInterceptor } from "@src/cache"
 
 @Resolver()
 export class CropsResolver {
@@ -14,7 +13,6 @@ export class CropsResolver {
     @Query(() => [CropEntity], {
         name: "crops"
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getCrops(@Args("args") args: GetCropsArgs): Promise<Array<CropEntity>> {
         this.logger.debug(`getCrops: args=${JSON.stringify(args)}`)
         return this.cropsService.getCrops(args)
@@ -24,7 +22,6 @@ export class CropsResolver {
         name: "crop",
         nullable:true
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getCropById(@Args("id") id: string): Promise<CropEntity> {
         this.logger.debug(`getCropById: id=${id}`)
         return this.cropsService.getCropById(id)

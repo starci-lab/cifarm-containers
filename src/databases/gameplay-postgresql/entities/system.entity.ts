@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import JSON from "graphql-type-json"
@@ -51,41 +51,77 @@ export class Activities {
         harvestCrop: ActivityInfo
 }
 
+@ObjectType()
 export class CropRandomness {
-    thief3: number
-    thief2: number
-    needWater: number
-    isWeedyOrInfested: number
+    @Field(() => Float)
+        thief3: number
+    @Field(() => Float)
+        thief2: number
+    @Field(() => Float)
+        needWater: number
+    @Field(() => Float)
+        isWeedyOrInfested: number
 }
 
+@ObjectType()
 export class AnimalRandomness {
-    sickChance: number
-    thief3: number
-    thief2: number
+    @Field(() => Float)
+        sickChance: number
+    @Field(() => Float)
+        thief3: number
+    @Field(() => Float)
+        thief2: number
 }
 
+@ObjectType()
 export class Positions {
     //starter tiles
-    tiles: Array<Position>
+    @Field(() => [Position])
+        tiles: Array<Position>
     //home
-    home: Position
+    @Field(() => Position)
+        home: Position
 }
 
+@ObjectType()
 export class Starter {
-    golds: number
-    positions: Positions
+    @Field(() => Int)
+        golds: number
+    @Field(() => Positions)
+        positions: Positions
 }
 
-export class SpinInfo {
-    appearanceChanceSlots: Record<AppearanceChance, SlotInfo>
-}
  
+@ObjectType()
 export class SlotInfo {
-    count: number
-    thresholdMin: number
-    thresholdMax: number
+    @Field(() => Int)
+        count: number
+    @Field(() => Float)
+        thresholdMin: number
+    @Field(() => Float)
+        thresholdMax: number
 }
 
+@ObjectType()
+export class AppearanceChanceSlots {
+    @Field(() => SlotInfo)
+    [AppearanceChance.Common]: SlotInfo
+    @Field(() => SlotInfo)
+    [AppearanceChance.Rare]: SlotInfo
+    @Field(() => SlotInfo)
+    [AppearanceChance.Uncommon]: SlotInfo
+    @Field(() => SlotInfo)
+    [AppearanceChance.VeryRare]: SlotInfo
+}
+
+@ObjectType()
+export class SpinInfo {
+    @Field(() => AppearanceChanceSlots)
+        appearanceChanceSlots: AppearanceChanceSlots
+}
+
+@ObjectType()
 export class EnergyRegenTime {
-    time: number // In milliseconds
+    @Field(() => Int)
+        time: number // In milliseconds
 }
