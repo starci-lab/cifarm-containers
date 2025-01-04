@@ -1,9 +1,5 @@
 import { InputType } from "@nestjs/graphql"
-import { PaginatedArgs, PaginatedArgsWithUserId } from "@src/common"
+import { PaginatedArgs } from "@src/graphql"
 
-@InputType({
-    description: "GetInventoriesArgs"
-})
+@InputType()
 export class GetInventoriesArgs extends PaginatedArgs {}
-
-export class GetInventoriesByUserIdArgs extends PaginatedArgsWithUserId {}

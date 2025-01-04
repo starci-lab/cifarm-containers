@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common"
-import { Resolver, Query, Args } from "@nestjs/graphql"
+import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { AnimalsService } from "./animals.service"
 import { AnimalEntity } from "@src/databases"
 import { GetAnimalsArgs } from "./animals.dto"
@@ -14,15 +14,13 @@ export class AnimalsResolver {
         name: "animals"
     })
     async getAnimals(@Args("args") args: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
-        const result = await this.animalsService.getAnimals(args)
-        return result
+        return await this.animalsService.getAnimals(args)
     }
-     @Query(() => AnimalEntity, {
-         name: "animals",
-         nullable:true
-     })
-    async getAnimalById(@Args("id") id: string): Promise<AnimalEntity> {
-        const result = await this.animalsService.getAnimalById(id)
-        return result
+    @Query(() => AnimalEntity, {
+        name: "animal",
+        nullable: true
+    })
+    async getAnimal(@Args("id", { type: () => ID }) id: string): Promise<AnimalEntity> {
+        return await this.animalsService.getAnimal(id)
     }
 }

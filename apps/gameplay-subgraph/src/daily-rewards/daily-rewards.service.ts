@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DailyRewardEntity, GameplayPostgreSQLService } from "@src/databases"
 import { DataSource } from "typeorm"
-import { GetDailyRewardsArgs } from "./"
+import { GetDailyRewardsArgs } from "./daily-rewards.dto"
 
 @Injectable()
 export class DailyRewardsService {
@@ -13,6 +13,21 @@ export class DailyRewardsService {
         private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
     ) {
         this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
+
+    async getDailyReward(id: string): Promise<DailyRewardEntity> {
+        this.logger.debug(`GetDailyRewardById: id=${id}`)
+
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+        try {
+            return await queryRunner.manager.findOne(DailyRewardEntity, {
+                where: { id },
+                relations: {}
+            })
+        } finally {
+            await queryRunner.release()
+        }
     }
 
     async getDailyRewards({
@@ -27,21 +42,6 @@ export class DailyRewardsService {
             return await queryRunner.manager.find(DailyRewardEntity, {
                 take: limit,
                 skip: offset,
-                relations: {}
-            })
-        } finally {
-            await queryRunner.release()
-        }
-    }
-
-    async getDailyRewardById(id: string): Promise<DailyRewardEntity> {
-        this.logger.debug(`GetDailyRewardById: id=${id}`)
-
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-        try {
-            return await queryRunner.manager.findOne(DailyRewardEntity, {
-                where: { id },
                 relations: {}
             })
         } finally {

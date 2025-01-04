@@ -24,6 +24,6 @@ export class ProductResolver {
     })
     async getProductById(@Args("id") id: string): Promise<ProductEntity | null> {
         this.logger.debug(`getProductById: id=${id}`)
-        return this.productsService.getProductById(id)
+        return this.productsService.getProduct(id)
     }
 }

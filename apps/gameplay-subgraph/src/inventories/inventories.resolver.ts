@@ -1,10 +1,10 @@
-import { Logger } from "@nestjs/common"
-import { Args, Query, Resolver } from "@nestjs/graphql"
+import { Logger, UseGuards } from "@nestjs/common"
+import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { InventoryEntity } from "@src/databases"
 import { GetInventoriesArgs } from "./inventories.dto"
 import { InventoryService } from "./inventories.service"
-import { UserLike } from "@src/jwt"
-import { GraphqlUser } from "@src/decorators"
+import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
+import { GraphQLUser } from "@src/decorators"
 
 @Resolver()
 export class InventoryResolver {
@@ -12,33 +12,20 @@ export class InventoryResolver {
 
     constructor(private readonly inventoriesService: InventoryService) {}
 
+    @UseGuards(GraphQLJwtAuthGuard)
     @Query(() => [InventoryEntity], {
         name: "inventories"
     })
-    async getInventories(@Args("args") args: GetInventoriesArgs): Promise<Array<InventoryEntity>> {
-        this.logger.debug(`getInventories: args=${JSON.stringify(args)}`)
-        return this.inventoriesService.getInventories(args)
+    async getInventories(@GraphQLUser() user: UserLike, @Args("args") args: GetInventoriesArgs): Promise<Array<InventoryEntity>> {
+        return this.inventoriesService.getInventories(user, args)
     }
 
+    @UseGuards(GraphQLJwtAuthGuard)
     @Query(() => InventoryEntity, {
         name: "inventory",
-        nullable:true
+        nullable: true
     })
-    async getInventoryById(@Args("id") id: string): Promise<InventoryEntity> {
-        this.logger.debug(`getInventoryById: id=${id}`)
-        return this.inventoriesService.getInventoryById(id)
-    }
-
-    @Query(() => InventoryEntity, {
-        name: "inventoriesByUserId",
-        nullable:true
-    })
-    async getInventoryByUserId(@GraphqlUser() user: UserLike, @Args("args") args: GetInventoriesArgs): Promise<Array<InventoryEntity>> {
-        this.logger.debug(`getInventoryByUserId: userId=${user.id} args=${JSON.stringify(args)}`)
-
-        return this.inventoriesService.getInventoriesByUserId({
-            ...args,
-            userId: user?.id
-        })
+    async getInventory(@Args("id", { type: () => ID }) id: string): Promise<InventoryEntity> {
+        return this.inventoriesService.getInventory(id)
     }
 }

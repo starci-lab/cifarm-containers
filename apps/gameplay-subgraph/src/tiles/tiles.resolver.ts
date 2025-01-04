@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common"
-import { Resolver, Query, Args } from "@nestjs/graphql"
+import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { TilesService } from "./tiles.service"
 import { TileEntity } from "@src/databases"
 import { GetTilesArgs } from "./tiles.dto"
@@ -19,10 +19,10 @@ export class TilesResolver {
 
     @Query(() => TileEntity, {
         name: "tile",
-        nullable:true
+        nullable: true
     })
-    async getTileById(@Args("id") id: string): Promise<TileEntity | null> {
+    async getTile(@Args("id", { type: () => ID }) id: string): Promise<TileEntity | null> {
         this.logger.debug(`getTileById: id=${id}`)
-        return this.tilesService.getTileById(id)
+        return this.tilesService.getTile(id)
     }
 }

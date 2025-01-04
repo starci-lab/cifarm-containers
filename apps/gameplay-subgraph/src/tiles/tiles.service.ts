@@ -1,15 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
-import { GetTilesArgs } from "./"
+import { GetTilesArgs } from "./tiles.dto"
 import { GameplayPostgreSQLService, TileEntity } from "@src/databases"
 
 @Injectable()
 export class TilesService {
     private readonly logger = new Logger(TilesService.name)
-
-    private readonly relations = {
-        // Add relations here as needed
-    }
 
     private readonly dataSource: DataSource
         
@@ -27,7 +23,6 @@ export class TilesService {
             const tiles = await queryRunner.manager.find(TileEntity, {
                 take: limit,
                 skip: offset,
-                relations: this.relations
             })
             return tiles
         } finally {
@@ -35,14 +30,13 @@ export class TilesService {
         }
     }
 
-    async getTileById(id: string): Promise<TileEntity | null> {
+    async getTile(id: string): Promise<TileEntity | null> {
         this.logger.debug(`GetTileById: id=${id}`)
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
             const tile = await queryRunner.manager.findOne(TileEntity, {
                 where: { id },
-                relations: this.relations
             })
             return tile
         } finally {

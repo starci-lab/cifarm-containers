@@ -11,7 +11,7 @@ export const WsUser = createParamDecorator((_, ctx: ExecutionContext) => {
     return data.user
 })
 
-export const GraphqlUser = createParamDecorator((_: unknown, context: ExecutionContext) => {
+export const GraphQLUser = createParamDecorator((_: unknown, context: ExecutionContext) => {
     const ctx = GqlExecutionContext.create(context)
     return ctx.getContext().req.user
 })

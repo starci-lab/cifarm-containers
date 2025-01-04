@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { AnimalEntity, GameplayPostgreSQLService } from "@src/databases"
 import { DataSource } from "typeorm"
-import { GetAnimalsArgs } from "./"
+import { GetAnimalsArgs } from "./animals.dto"
 
 @Injectable()
 export class AnimalsService {
@@ -40,7 +40,7 @@ export class AnimalsService {
         return animals
     }
 
-    async getAnimalById(id: string) {
+    async getAnimal(id: string) {
         this.logger.debug(`GetAnimals: id=${id}`)
 
         let animal: AnimalEntity
