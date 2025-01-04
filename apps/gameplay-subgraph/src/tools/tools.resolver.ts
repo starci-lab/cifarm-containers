@@ -1,9 +1,8 @@
-import { Logger, UseInterceptors } from "@nestjs/common"
+import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { ToolsService } from "./tools.service"
 import { ToolEntity } from "@src/databases"
-import { GetToolsArgs } from "./"
-import { GraphQLCacheInterceptor } from "@src/cache/interceptors/graphql-cache.interceptor"
+import { GetToolsArgs } from "./tools.dto"
 
 @Resolver()
 export class ToolsResolver {
@@ -14,7 +13,6 @@ export class ToolsResolver {
     @Query(() => [ToolEntity], {
         name: "tools"
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getTools(@Args("args") args: GetToolsArgs): Promise<Array<ToolEntity>> {
         this.logger.debug(`getTools: args=${JSON.stringify(args)}`)
         return this.toolsService.getTools(args)
@@ -24,7 +22,6 @@ export class ToolsResolver {
         name: "tool",
         nullable:true
     })
-    @UseInterceptors(GraphQLCacheInterceptor)
     async getToolById(@Args("id") id: string): Promise<ToolEntity | null> {
         this.logger.debug(`getToolById: id=${id}`)
         return this.toolsService.getToolById(id)

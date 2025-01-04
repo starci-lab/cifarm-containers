@@ -1,8 +1,7 @@
-import { Logger, UseInterceptors } from "@nestjs/common"
+import { Logger } from "@nestjs/common"
 import { Resolver, Query } from "@nestjs/graphql"
 import { SystemsService } from "./systems.service"
 import { Activities, AnimalRandomness, CropRandomness, EnergyRegenTime, SpinInfo, Starter } from "@src/databases"
-import { GraphQLCacheInterceptor } from "@src/cache"
 
 @Resolver()
 export class SystemsResolver {
@@ -10,7 +9,6 @@ export class SystemsResolver {
 
     constructor(private readonly systemsService: SystemsService) {}
 
-    @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => Activities, {
         name: "activities"
     })
@@ -18,7 +16,6 @@ export class SystemsResolver {
         return this.systemsService.getActivities()
     }
 
-    @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => CropRandomness, {
         name: "cropRandomness"
     })
@@ -26,7 +23,6 @@ export class SystemsResolver {
         return this.systemsService.getCropRandomness()
     }
 
-    @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => AnimalRandomness, {
         name: "animalRandomness"
     })
@@ -34,7 +30,6 @@ export class SystemsResolver {
         return this.systemsService.getAnimalRandomness()
     }
 
-    @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => Starter, {
         name: "starter"
     })
@@ -42,7 +37,6 @@ export class SystemsResolver {
         return this.systemsService.getStarter()
     }
 
-    @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => SpinInfo, {
         name: "spinInfo"
     })
@@ -50,7 +44,6 @@ export class SystemsResolver {
         return this.systemsService.getSpinInfo()
     }
 
-    @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => EnergyRegenTime, {
         name: "energyRegenTime"
     })
