@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from "@nestjs/common"
 import { readFileSync } from "fs"
 import { join } from "path"
-import { TelegramUserEntity } from "@src/databases"
+import { GameplayPostgreSQLService, TelegramUserEntity } from "@src/databases"
 import { envConfig } from "@src/env"
 import { Telegraf } from "telegraf"
 import { DataSource } from "typeorm"
@@ -10,7 +10,12 @@ import { DataSource } from "typeorm"
 export class CiFarmService implements OnModuleInit {
     private bot: Telegraf
 
-    constructor(private readonly dataSource: DataSource) {
+    private readonly dataSource: DataSource
+        
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     onModuleInit() {

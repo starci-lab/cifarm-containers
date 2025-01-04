@@ -12,7 +12,7 @@ import { Socket } from "socket.io"
 import { LinkUserSessionResponse, SyncPlacedItemsParams } from "./broadcast.dto"
 import { Server } from "socket.io"
 import { DataSource } from "typeorm"
-import { PlacedItemEntity } from "@src/databases"
+import { GameplayPostgreSQLService, PlacedItemEntity } from "@src/databases"
 import { WsUser } from "@src/decorators"
 import { UserLike, WsJwtAuthGuard } from "@src/jwt"
 import { Cron } from "@nestjs/schedule"
@@ -33,8 +33,13 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
     private readonly logger = new Logger(BroadcastGateway.name)
     private readonly sessionMap = new Map<string, string>()
 
+    private readonly dataSource: DataSource
+    
     constructor(
-        private readonly dataSource: DataSource) { }
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     @WebSocketServer()
     private server: Server

@@ -1,6 +1,6 @@
 import { GetInventoriesArgs, GetInventoriesByUserIdArgs } from "./"
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity } from "@src/databases"
+import { GameplayPostgreSQLService, InventoryEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 
 @Injectable()
@@ -11,7 +11,13 @@ export class InventoryService {
         inventoryType: true,
     }
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+        
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getInventories({
         limit = 10,

@@ -1,12 +1,12 @@
 import { GetAnimalInfosArgs } from "./"
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalInfoEntity } from "@src/databases"
+import { AnimalInfoEntity, GameplayPostgreSQLService } from "@src/databases"
 import { DataSource } from "typeorm"
 
 @Injectable()
 export class AnimalInfosService {
-   
     private readonly logger = new Logger(AnimalInfosService.name)
+    private readonly dataSource: DataSource
 
     private readonly relations = {
         animal: true,
@@ -14,7 +14,11 @@ export class AnimalInfosService {
         thiefedBy: true,
     }
 
-    constructor(private readonly dataSource: DataSource) {}
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getAnimalInfos({
         limit = 10,

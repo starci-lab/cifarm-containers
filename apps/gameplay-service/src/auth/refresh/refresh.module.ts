@@ -3,10 +3,14 @@ import { BlockchainModule } from "@src/blockchain"
 import { JwtModule } from "@src/jwt"
 import { RefreshController } from "./refresh.controller"
 import { RefreshService } from "./refresh.service"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
-    imports: [JwtModule, BlockchainModule],
+    imports: [
+        GameplayPostgreSQLModule.forRoot(),
+        JwtModule, BlockchainModule
+    ],
     controllers: [RefreshController],
     providers: [RefreshService],
     exports: [RefreshService]

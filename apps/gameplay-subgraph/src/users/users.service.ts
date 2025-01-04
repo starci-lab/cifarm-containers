@@ -2,6 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
 import { GetUsersArgs } from "./"
 import { UserEntity } from "@src/databases/gameplay-postgresql/entities"
+import { GameplayPostgreSQLService } from "@src/databases"
 
 @Injectable()
 export class UserService {
@@ -12,7 +13,13 @@ export class UserService {
         placedItems: true,
     }
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+        
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getUsers({ limit = 10, offset = 0 }: GetUsersArgs): Promise<Array<UserEntity>> {
         this.logger.debug(`GetUsers: limit=${limit}, offset=${offset}`)

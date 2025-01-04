@@ -31,7 +31,6 @@ module.exports = {
     externals: [nodeExternals()],
     plugins: [
         new GeneratePackageJsonPlugin(basePackage, {
-            debug: true,
             resolveContextPaths: [__dirname],
             useInstalledVersions: true,
             excludeDependencies: [          
