@@ -124,6 +124,27 @@ export const envConfig = () => ({
             job: {
                 host: process.env.JOB_REDIS_HOST,
                 port: Number(process.env.JOB_REDIS_PORT)
+            },
+
+            // Redis cluster
+            cluster: {
+                enabled: process.env.REDIS_CLUSTER_ENABLED === "true",
+                node1: {
+                    host: process.env.REDIS_CLUSTER_NODE_1_HOST,
+                    port: process.env.REDIS_CLUSTER_NODE_1_PORT
+                },
+                node2: {
+                    host: process.env.REDIS_CLUSTER_NODE_2_HOST,
+                    port: process.env.REDIS_CLUSTER_NODE_2_PORT
+                },
+                node3: {
+                    host: process.env.REDIS_CLUSTER_NODE_3_HOST,
+                    port: process.env.REDIS_CLUSTER_NODE_3_PORT
+                }
+            },
+            default: {
+                host: process.env.REDIS_DEFAULT_HOST,
+                port: Number(process.env.REDIS_DEFAULT_PORT)
             }
         }
     },
