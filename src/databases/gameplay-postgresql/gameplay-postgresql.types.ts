@@ -1,5 +1,6 @@
 export interface GameplayPostgreSQLOptions {
-    type?: GameplayPostgreSQLType
+    type?: GameplayPostgreSQLType,
+    cache?: boolean
 }
 
 export enum GameplayPostgreSQLType {
