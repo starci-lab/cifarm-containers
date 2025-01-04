@@ -114,38 +114,62 @@ export const envConfig = () => ({
         },
         redis: {
             cache: {
+                cluster: {
+                    enabled: process.env.CACHE_REDIS_CLUSTER_ENABLED === "true",
+                    node1: {
+                        host: process.env.CACHE_REDIS_CLUSTER_NODE_1_HOST,
+                        port: process.env.CACHE_REDIS_CLUSTER_NODE_1_PORT
+                    },
+                    node2: {
+                        host: process.env.CACHE_REDIS_CLUSTER_NODE_2_HOST,
+                        port: process.env.CACHE_REDIS_CLUSTER_NODE_2_PORT
+                    },
+                    node3: {
+                        host: process.env.CACHE_REDIS_CLUSTER_NODE_3_HOST,
+                        port: process.env.CACHE_REDIS_CLUSTER_NODE_3_PORT
+                    }
+                },
                 host: process.env.CACHE_REDIS_HOST,
-                port: Number(process.env.CACHE_REDIS_PORT)
+                port: Number(process.env.CACHE_REDIS_PORT),
             },
             adapter: {
+                cluster: {
+                    enabled: process.env.ADAPTER_REDIS_CLUSTER_ENABLED === "true",
+                    node1: {
+                        host: process.env.ADAPTER_REDIS_CLUSTER_NODE_1_HOST,
+                        port: process.env.ADAPTER_REDIS_CLUSTER_NODE_1_PORT
+                    },
+                    node2: {
+                        host: process.env.ADAPTER_REDIS_CLUSTER_NODE_2_HOST,
+                        port: process.env.ADAPTER_REDIS_CLUSTER_NODE_2_PORT
+                    },
+                    node3: {
+                        host: process.env.ADAPTER_REDIS_CLUSTER_NODE_3_HOST,
+                        port: process.env.ADAPTER_REDIS_CLUSTER_NODE_3_PORT
+                    }
+                },
                 host: process.env.ADAPTER_REDIS_HOST,
-                port: Number(process.env.ADAPTER_REDIS_PORT)
+                port: Number(process.env.ADAPTER_REDIS_PORT),
             },
             job: {
+                cluster: {
+                    enabled: process.env.JOB_REDIS_CLUSTER_ENABLED === "true",
+                    node1: {
+                        host: process.env.JOB_REDIS_CLUSTER_NODE_1_HOST,
+                        port: process.env.JOB_REDIS_CLUSTER_NODE_1_PORT
+                    },
+                    node2: {
+                        host: process.env.JOB_REDIS_CLUSTER_NODE_2_HOST,
+                        port: process.env.JOB_REDIS_CLUSTER_NODE_2_PORT
+                    },
+                    node3: {
+                        host: process.env.JOB_REDIS_CLUSTER_NODE_3_HOST,
+                        port: process.env.JOB_REDIS_CLUSTER_NODE_3_PORT
+                    }
+                },
                 host: process.env.JOB_REDIS_HOST,
-                port: Number(process.env.JOB_REDIS_PORT)
+                port: Number(process.env.JOB_REDIS_PORT),
             },
-
-            // Redis cluster
-            cluster: {
-                enabled: process.env.REDIS_CLUSTER_ENABLED === "true",
-                node1: {
-                    host: process.env.REDIS_CLUSTER_NODE_1_HOST,
-                    port: process.env.REDIS_CLUSTER_NODE_1_PORT
-                },
-                node2: {
-                    host: process.env.REDIS_CLUSTER_NODE_2_HOST,
-                    port: process.env.REDIS_CLUSTER_NODE_2_PORT
-                },
-                node3: {
-                    host: process.env.REDIS_CLUSTER_NODE_3_HOST,
-                    port: process.env.REDIS_CLUSTER_NODE_3_PORT
-                }
-            },
-            default: {
-                host: process.env.REDIS_DEFAULT_HOST,
-                port: Number(process.env.REDIS_DEFAULT_PORT)
-            }
         }
     },
     messageBrokers: {
