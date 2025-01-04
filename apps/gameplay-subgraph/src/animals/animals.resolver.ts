@@ -4,6 +4,7 @@ import { AnimalsService } from "./animals.service"
 import { AnimalEntity } from "@src/databases"
 import { GetAnimalsArgs } from "./"
 import TimerInterceptor from "@src/interceptors/timer.interceptor"
+import { GraphQLCacheInterceptor } from "@src/cache"
 
 @Resolver()
 export class AnimalsResolver {
@@ -15,6 +16,7 @@ export class AnimalsResolver {
         name: "animals"
     })
     @UseInterceptors(TimerInterceptor)
+    @UseInterceptors(GraphQLCacheInterceptor)
     async getAnimals(@Args("args") args: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         const result = await this.animalsService.getAnimals(args)
         return result
@@ -24,6 +26,7 @@ export class AnimalsResolver {
          nullable:true
      })
     @UseInterceptors(TimerInterceptor)
+    @UseInterceptors(GraphQLCacheInterceptor)
     async getAnimalById(@Args("id") id: string): Promise<AnimalEntity> {
         const result = await this.animalsService.getAnimalById(id)
         return result

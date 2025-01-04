@@ -1,8 +1,8 @@
 import { Logger } from "@nestjs/common"
-import { Resolver, Query, Args } from "@nestjs/graphql"
+import { Args, Query, Resolver } from "@nestjs/graphql"
 import { BuildingInfoEntity } from "@src/databases"
-import { BuildingInfosService } from "./building-infos.service"
 import { GetBuildingInfosArgs } from "./building-infos.dto"
+import { BuildingInfosService } from "./building-infos.service"
 
 @Resolver()
 export class BuildingInfosResolver {

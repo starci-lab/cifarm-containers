@@ -1,8 +1,9 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseInterceptors } from "@nestjs/common"
 import { Resolver, Query, Args } from "@nestjs/graphql"
 import { SuppliesService } from "./supplies.service"
 import { SupplyEntity } from "@src/databases"
 import { GetSuppliesArgs } from "./"
+import { GraphQLCacheInterceptor } from "@src/cache"
 
 @Resolver()
 export class SuppliesResolver {
@@ -10,6 +11,7 @@ export class SuppliesResolver {
 
     constructor(private readonly suppliesService: SuppliesService) {}
 
+    @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => [SupplyEntity], {
         name: "supplies"
     })
@@ -17,6 +19,7 @@ export class SuppliesResolver {
         return this.suppliesService.getSupplies(args)
     }
 
+    @UseInterceptors(GraphQLCacheInterceptor)
     @Query(() => SupplyEntity, {
         name: "supply",
         nullable:true

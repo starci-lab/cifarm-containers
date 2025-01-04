@@ -1,8 +1,9 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseInterceptors } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
 import { ProductEntity } from "@src/databases"
 import { GetProductsArgs } from "./products.dto"
 import { ProductService } from "./products.service"
+import { GraphQLCacheInterceptor } from "@src/cache"
 
 @Resolver()
 export class ProductResolver {
@@ -13,6 +14,7 @@ export class ProductResolver {
     @Query(() => [ProductEntity], {
         name: "products"
     })
+    @UseInterceptors(GraphQLCacheInterceptor)
     async getProducts(@Args("args") args: GetProductsArgs): Promise<Array<ProductEntity>> {
         this.logger.debug(`getProducts: args=${JSON.stringify(args)}`)
         return this.productsService.getProducts(args)
@@ -22,6 +24,7 @@ export class ProductResolver {
         name: "product",
         nullable:true
     })
+    @UseInterceptors(GraphQLCacheInterceptor)
     async getProductById(@Args("id") id: string): Promise<ProductEntity | null> {
         this.logger.debug(`getProductById: id=${id}`)
         return this.productsService.getProductById(id)
