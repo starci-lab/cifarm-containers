@@ -45,11 +45,12 @@ export class EnergyService {
             const { value } = await queryRunner.manager.findOne(TempEntity, {
                 where: {
                     id: TempId.EnergyRegenerationLastSchedule
-                }
+                },
+                cache: false
             })
             const { date } = value as EnergyGrowthLastSchedule
 
-            this.logger.debug(`Check ${count} user's energy`)
+            // this.logger.debug(`Check ${count} user's energy`)
             if (count === 0) {
                 this.logger.verbose("No user's energy to check")
                 return
@@ -83,7 +84,7 @@ export class EnergyService {
         }))
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
             const jobs = await this.EnergyQueue.addBulk(batches)
-            this.logger.verbose(`Added ${jobs.at(0).name} jobs to the queue`)
+            this.logger.verbose(`Added ${jobs.at(0).name} jobs to the regen energy queue. Time: ${time}`)
 
             await queryRunner.startTransaction()
             try {

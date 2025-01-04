@@ -49,13 +49,16 @@ export class AnimalService {
             const { value } = await queryRunner.manager.findOne(TempEntity, {
                 where: {
                     id: TempId.AnimalGrowthLastSchedule
-                }
+                },
+                cache: false
             })
             const { date } = value as AnimalGrowthLastSchedule
 
-            this.logger.debug(`Found ${count} animals that need to be grown`)
+            //date is 1 second ago
+
+            // this.logger.debug(`Found ${count} animals that need to be grown`)
             if (count === 0) {
-                this.logger.verbose("No animals to grow")
+                // this.logger.verbose("No animals to grow")
                 return
             }
             
@@ -87,7 +90,7 @@ export class AnimalService {
                     }))
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
             const jobs = await this.animalQueue.addBulk(batches)
-            this.logger.verbose(`Added ${jobs.at(0).name} jobs to the queue`)
+            this.logger.verbose(`Added ${jobs.at(0).name} jobs to the animal queue. Time: ${time}`)
             
             await queryRunner.startTransaction()
             try {

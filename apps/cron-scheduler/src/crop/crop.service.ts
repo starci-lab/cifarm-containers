@@ -48,17 +48,18 @@ export class CropService {
                 }
             })
             
-            //get the last scheduled time
+            //get the last scheduled time, get from db not cache
             const { value } = await queryRunner.manager.findOne(TempEntity, {
                 where: {
                     id: TempId.CropGrowthLastSchedule
-                }
+                },
+                cache: false
             })
             const { date } = value as CropGrowthLastSchedule
 
-            this.logger.debug(`Found ${count} crops that need to be grown`)
+            // this.logger.debug(`Found ${count} crops that need to be grown`)
             if (count === 0) {
-                this.logger.verbose("No crops to grow")
+                // this.logger.verbose("No crops to grow")
                 return
             }
 
@@ -88,9 +89,8 @@ export class CropService {
                 utcTime: dayjs().utc().valueOf()
             }
         }))
-            //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
             const jobs = await this.cropQueue.addBulk(batches)
-            this.logger.verbose(`Added ${jobs.at(0).name} jobs to the queue`)
+            this.logger.verbose(`Added ${jobs.at(0).name} jobs to the crop queue. Time: ${time}`)
 
             await queryRunner.startTransaction()
             try {

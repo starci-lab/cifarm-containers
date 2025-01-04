@@ -23,10 +23,9 @@ export class AnimalWorker extends WorkerHost  {
     }
     
     public override async process(job: Job<AnimalJobData>): Promise<void> {
-        this.logger.verbose(`Processing animal job: ${job.id}`)
         const { time, skip, take, utcTime } = job.data
 
-        this.logger.verbose(`time: ${time}, skip: ${skip}, take: ${take}, utcTime: ${utcTime}`)
+        this.logger.verbose(`[AnimalWorker] time: ${time}, skip: ${skip}, take: ${take}, utcTime: ${utcTime}`)
     
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
