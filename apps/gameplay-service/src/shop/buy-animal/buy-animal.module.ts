@@ -1,12 +1,14 @@
 import { Global, Module } from "@nestjs/common"
+import { GameplayPostgreSQLModule } from "@src/databases"
+import { GameplayModule } from "@src/gameplay"
 import { BuyAnimalController } from "./buy-animal.controller"
 import { BuyAnimalService } from "./buy-animal.service"
-import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
+        GameplayModule
     ],
     controllers: [BuyAnimalController],
     providers: [BuyAnimalService],

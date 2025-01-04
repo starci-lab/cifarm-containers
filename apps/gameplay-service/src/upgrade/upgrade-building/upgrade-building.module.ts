@@ -1,14 +1,14 @@
 import { Global, Module } from "@nestjs/common"
+import { GameplayPostgreSQLModule } from "@src/databases"
+import { GameplayModule } from "@src/gameplay"
 import { UpgradeBuildingController } from "./upgrade-building.controller"
 import { UpgradeBuildingService } from "./upgrade-building.service"
-import { GameplayPostgreSQLModule } from "@src/databases"
-import { GoldBalanceModule } from "@src/gameplay"
 
 @Global()
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
-        GoldBalanceModule
+        GameplayModule
     ],
     controllers: [UpgradeBuildingController],
     providers: [UpgradeBuildingService],
