@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
 import { GetTilesArgs } from "./"
-import { TileEntity } from "@src/databases"
+import { GameplayPostgreSQLService, TileEntity } from "@src/databases"
 
 @Injectable()
 export class TilesService {
@@ -11,7 +11,13 @@ export class TilesService {
         // Add relations here as needed
     }
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+        
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getTiles({ limit = 10, offset = 0 }: GetTilesArgs): Promise<Array<TileEntity>> {
         this.logger.debug(`GetTiles: limit=${limit}, offset=${offset}`)

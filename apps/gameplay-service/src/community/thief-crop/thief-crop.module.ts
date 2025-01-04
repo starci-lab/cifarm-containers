@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { EnergyModule, GameplayModule } from "@src/gameplay"
+import { GameplayModule } from "@src/gameplay"
 import { ThiefCropController } from "./thief-crop.controller"
 import { TheifCropService } from "./thief-crop.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
@@ -15,7 +15,6 @@ import { EnvModule } from "@src/env"
             groupId: KafkaGroupId.PlacedItemsBroadcast,
             producerOnly: true
         }),
-        EnergyModule,
         GameplayModule
     ],
     providers: [TheifCropService],

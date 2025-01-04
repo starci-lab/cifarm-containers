@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     GenerateSignatureRequest,
     GenerateSignatureResponse
-} from "./generate-generate-signature.dto"
+} from "./generate-signature.dto"
 import {
     chainKeyToPlatform,
     defaultChainKey,

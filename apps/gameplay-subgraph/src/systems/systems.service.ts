@@ -1,12 +1,18 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
-import { Activities, SystemEntity, SystemId } from "@src/databases"
+import { Activities, GameplayPostgreSQLService, SystemEntity, SystemId } from "@src/databases"
 
 @Injectable()
 export class SystemsService {
     private readonly logger = new Logger(SystemsService.name)
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+        
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getActivities(): Promise<Activities> {
         const queryRunner = this.dataSource.createQueryRunner()

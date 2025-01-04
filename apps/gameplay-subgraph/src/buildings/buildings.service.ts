@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity } from "@src/databases"
+import { BuildingEntity, GameplayPostgreSQLService } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetBuildingsArgs } from "./"
 
@@ -12,7 +12,13 @@ export class BuildingsService {
         upgrades: true
     }
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+        
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getBuildings({
         limit = 10,

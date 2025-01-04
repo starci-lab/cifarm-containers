@@ -4,6 +4,7 @@ import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
 import {
     EnergyRegenTime,
+    GameplayPostgreSQLService,
     SystemEntity,
     SystemId,
     UserEntity
@@ -19,12 +20,14 @@ dayjs.extend(utc)
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
     private readonly logger = new Logger(EnergyWorker.name)
-
+    private readonly dataSource: DataSource
+        
     constructor(
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly energySerice: EnergyService
     ) {
         super()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     public override async process(job: Job<EnergyJobData>): Promise<void> {

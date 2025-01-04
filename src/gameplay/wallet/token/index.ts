@@ -1,4 +1,3 @@
-export * from "./token.module"
 export * from "./token.service"
 import {
     AddParams as AddTokenParams,

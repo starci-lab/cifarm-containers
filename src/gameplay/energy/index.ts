@@ -1,3 +1,11 @@
-export * from "./energy.dto"
 export * from "./energy.service"
-export * from "./energy.module"
+import {
+    AddParams as AddEnergyParams,
+    AddResult as AddEnergyAddResult,
+    SubstractParams as SubstractEnergyParams,
+    SubstractResult as SubstractEnergyResult,
+} from "./energy.dto"
+
+export { AddEnergyParams, AddEnergyAddResult
+    , SubstractEnergyParams, SubstractEnergyResult
+}

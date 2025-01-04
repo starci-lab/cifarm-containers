@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { RequestMessageResponse } from "./request-message.dto"
 import { Cache } from "cache-manager"
 import { v4 } from "uuid"
-import { CacheRedisService } from "@src/databases"
+import { CacheRedisService } from "@src/cache"
 
 @Injectable()
 export class RequestMessageService {

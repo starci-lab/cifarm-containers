@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { SupplyEntity } from "@src/databases"
+import { GameplayPostgreSQLService, SupplyEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetSuppliesArgs } from "./"
 
@@ -11,7 +11,13 @@ export class SuppliesService {
         inventoryType: true,
     }
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+        
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getSupplies({ limit = 10, offset = 0 }: GetSuppliesArgs): Promise<Array<SupplyEntity>> {
         this.logger.debug(`GetSupplies: limit=${limit}, offset=${offset}`)

@@ -1,18 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { UserEntity } from "@src/databases"
-import { DataSource } from "typeorm"
+import { ExperienceCannotBeZeroOrNegativeException } from "@src/exceptions"
 import {
     AddExperiencesParams,
-    AddExperiencesResult,
-    GetLevelParams,
-    GetLevelResult
+    AddExperiencesResult
 } from "./level.dto"
-import { ExperienceCannotBeZeroOrNegativeException, UserNotFoundException } from "@src/exceptions"
 
 @Injectable()
 export class LevelService {
     private readonly logger: Logger = new Logger(LevelService.name)
-    constructor(private readonly dataSource: DataSource) {}
 
     private computeExperiencesQuota(level: number): number {
         //the formula to calculate the experience quota
@@ -28,15 +23,6 @@ export class LevelService {
         // 9: 1350
         // 10: 1625
         return 50 * level + 25 * Math.pow(level - 1, 2)
-    }
-
-    public async getLevel(params: GetLevelParams): Promise<GetLevelResult> {
-        const user = await this.findUserById(params.userId)
-        return {
-            level: user.level,
-            experiences: user.experiences,
-            experienceQuota: this.computeExperiencesQuota(user.level)
-        }
     }
 
     public addExperiences(params: AddExperiencesParams): AddExperiencesResult {
@@ -58,13 +44,5 @@ export class LevelService {
             level,
             experiences: current
         }
-    }
-
-    private async findUserById(userId: string): Promise<UserEntity> {
-        const user = await this.dataSource.manager.findOne(UserEntity, {
-            where: { id: userId }
-        })
-        if (!user) throw new UserNotFoundException(userId)
-        return user
     }
 }

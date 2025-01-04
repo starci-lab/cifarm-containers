@@ -4,25 +4,28 @@ import { Job } from "bullmq"
 import { DataSource} from "typeorm"
 import { DeliverysWorkerProcessTransactionFailedException } from "@src/exceptions"
 import { DeliveryJobData } from "@apps/cron-scheduler"
-import { DeliveringProductEntity, UserEntity } from "@src/databases"
+import { DeliveringProductEntity, GameplayPostgreSQLService, UserEntity } from "@src/databases"
 import { bullData, BullQueueName } from "@src/bull"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
 
 @Processor(bullData[BullQueueName.Delivery].name)
 export class DeliveryWorker extends WorkerHost {
     private readonly logger = new Logger(DeliveryWorker.name)
-
-    constructor(private readonly dataSource: DataSource,
+    private readonly dataSource: DataSource
+    
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
     ) {
         super()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     public override async process(job: Job<DeliveryJobData>): Promise<void> {
         this.logger.verbose(`Processing delivery job: ${job.id}`)
 
-        const { skip, take, utcTime } = job.data
+        const { skip, take } = job.data
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

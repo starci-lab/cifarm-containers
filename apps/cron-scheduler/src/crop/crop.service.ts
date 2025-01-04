@@ -4,7 +4,7 @@ import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
-import { Collection, CollectionEntity, CropCurrentState, CropGrowthLastSchedule, SeedGrowthInfoEntity, SpeedUpData, TempEntity, TempId } from "@src/databases"
+import { Collection, CollectionEntity, CropCurrentState, CropGrowthLastSchedule, GameplayPostgreSQLService, SeedGrowthInfoEntity, SpeedUpData, TempEntity, TempId } from "@src/databases"
 import { CropJobData } from "./crop.dto"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
@@ -16,11 +16,14 @@ dayjs.extend(utc)
 @Injectable()
 export class CropService {
     private readonly logger = new Logger(CropService.name)
+    private readonly dataSource: DataSource
     constructor(
         @InjectQueue(bullData[BullQueueName.Crop].name) private cropQueue: Queue,
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly leaderElectionService: LeaderElectionService,
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
     
     @Cron("*/1 * * * * *")
     async handle() {

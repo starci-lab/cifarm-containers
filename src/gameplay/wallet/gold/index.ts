@@ -1,4 +1,3 @@
-export * from "./gold.module"
 export * from "./gold.service"
 
 import {

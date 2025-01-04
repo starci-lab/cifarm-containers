@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { SeedGrowthInfoEntity } from "@src/databases"
+import { GameplayPostgreSQLService, SeedGrowthInfoEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetSeedGrowthInfosArgs } from "./"
 
@@ -14,7 +14,13 @@ export class SeedGrowthInfosService {
         placedItem: true,
     }
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+        
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getSeedGrowthInfos({
         limit = 10,

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity } from "@src/databases"
+import { AnimalEntity, GameplayPostgreSQLService } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetAnimalsArgs } from "./"
 
@@ -14,7 +14,13 @@ export class AnimalsService {
         placedItemType: true,
     }
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+    
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         this.logger.debug(`GetAnimals: limit=${limit}, offset=${offset}`)

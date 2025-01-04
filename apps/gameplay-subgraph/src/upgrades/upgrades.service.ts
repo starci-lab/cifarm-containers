@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DataSource } from "typeorm"
 import { GetUpgradesArgs } from "./"
-import { UpgradeEntity } from "@src/databases"
+import { GameplayPostgreSQLService, UpgradeEntity } from "@src/databases"
 
 @Injectable()
 export class UpgradeService {
@@ -11,7 +11,13 @@ export class UpgradeService {
         building: true,
     }
 
-    constructor(private readonly dataSource: DataSource) {}
+    private readonly dataSource: DataSource
+    
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     async getUpgrades({ limit = 10, offset = 0 }: GetUpgradesArgs): Promise<Array<UpgradeEntity>> {
         this.logger.debug(`GetUpgrades: limit=${limit}, offset=${offset}`)

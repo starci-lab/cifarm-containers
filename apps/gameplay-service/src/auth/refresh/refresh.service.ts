@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { SessionEntity, UserEntity } from "@src/databases"
+import { GameplayPostgreSQLService, SessionEntity, UserEntity } from "@src/databases"
 import { UserIsNotLoginException, UserNotFoundException, UserRefreshIsInvalidException } from "@src/exceptions"
 import { JwtService } from "@src/jwt"
 import { DataSource, DeepPartial } from "typeorm"
@@ -8,13 +8,16 @@ import { RefreshRequest, RefreshResponse } from "./refresh.dto"
 @Injectable()
 export class RefreshService {
     private readonly logger = new Logger(RefreshService.name)
+    private readonly dataSource: DataSource
 
     constructor(
-    private readonly dataSource: DataSource,
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
     private readonly jwtService: JwtService,
     // @Inject(CACHE_MANAGER)
     // private cacheManager: Cache
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     public async refresh(request: RefreshRequest): Promise<RefreshResponse> {
         const { refreshToken } = request

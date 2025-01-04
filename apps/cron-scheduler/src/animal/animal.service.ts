@@ -2,7 +2,7 @@ import { InjectQueue } from "@nestjs/bullmq"
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName } from "@src/bull"
-import { AnimalCurrentState, AnimalGrowthLastSchedule, AnimalInfoEntity, Collection, CollectionEntity, SpeedUpData, TempEntity, TempId } from "@src/databases"
+import { AnimalCurrentState, AnimalGrowthLastSchedule, AnimalInfoEntity, Collection, CollectionEntity, GameplayPostgreSQLService, SpeedUpData, TempEntity, TempId } from "@src/databases"
 import { LeaderElectionService } from "@src/leader-election"
 import { Queue } from "bullmq"
 import dayjs from "dayjs"
@@ -15,11 +15,14 @@ dayjs.extend(utc)
 @Injectable()
 export class AnimalService {
     private readonly logger = new Logger(AnimalService.name)
+    private readonly dataSource: DataSource
     constructor(
         @InjectQueue(bullData[BullQueueName.Animal].name) private animalQueue: Queue,
-        private readonly dataSource: DataSource,
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly leaderElectionService: LeaderElectionService,
-    ) {}
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
 
     @Cron("*/1 * * * * *")
     async handle() {

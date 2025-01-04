@@ -5,23 +5,27 @@ import { Queue } from "bullmq"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { DeliveryJobData } from "./delivery.dto"
-import { CacheKey, DeliveringProductEntity } from "@src/databases"
+import { DeliveringProductEntity, GameplayPostgreSQLService } from "@src/databases"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { isProduction } from "@src/env"
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
 import { bullData, BullQueueName } from "@src/bull"
+import { CacheKey } from "@src/cache"
 dayjs.extend(utc)
 
 @Injectable()
 export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
+    private readonly dataSource: DataSource
 
     constructor(
         @InjectQueue(bullData[BullQueueName.Delivery].name) private deliveryQueue: Queue,
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
-        private readonly dataSource: DataSource
-    ) {}
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    }
     
     @Cron("*/1 * * * * *")
     public async triggerDeliveryProducts() {

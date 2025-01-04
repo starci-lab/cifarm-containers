@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common"
-import { AnimalCurrentState, AnimalInfoEntity, AnimalRandomness, SystemEntity, SystemId } from "@src/databases"
+import { AnimalCurrentState, AnimalInfoEntity, AnimalRandomness, GameplayPostgreSQLService, SystemEntity, SystemId } from "@src/databases"
 import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import utc from "dayjs/plugin/utc"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
@@ -13,9 +13,13 @@ dayjs.extend(utc)
 @Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost  {
     private readonly logger = new Logger(AnimalWorker.name)
+    private readonly dataSource: DataSource
     
-    constructor(private readonly dataSource: DataSource) {
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+    ) {
         super()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
     
     public override async process(job: Job<AnimalJobData>): Promise<void> {

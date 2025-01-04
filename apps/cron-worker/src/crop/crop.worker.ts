@@ -5,6 +5,7 @@ import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import {
     CropCurrentState,
     CropRandomness,
+    GameplayPostgreSQLService,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId
@@ -19,9 +20,13 @@ dayjs.extend(utc)
 @Processor(bullData[BullQueueName.Crop].name)
 export class CropWorker extends WorkerHost {
     private readonly logger = new Logger(CropWorker.name)
+    private readonly dataSource: DataSource
 
-    constructor(private readonly dataSource: DataSource) {
+    constructor(
+        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
+    ) {
         super()
+        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     public override async process(job: Job<CropJobData>): Promise<void> {
