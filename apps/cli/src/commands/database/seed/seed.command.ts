@@ -301,7 +301,8 @@ export class SeedCommand extends CommandRunner {
             }
         }
         const energyRegenTime: EnergyRegenTime = {
-            time: 5 * 1000 * 1000 // 5 minutes
+            // 5 minutes
+            time: 60 * 5
         }
 
         const data: Array<DeepPartial<SystemEntity>> = [

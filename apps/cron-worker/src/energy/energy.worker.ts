@@ -32,7 +32,9 @@ export class EnergyWorker extends WorkerHost {
 
     public override async process(job: Job<EnergyJobData>): Promise<void> {
         this.logger.verbose(`Processing job: ${job.id}`)
-        const { time, skip, take } = job.data
+        const { time, skip, take, utcTime } = job.data
+
+        this.logger.verbose(`Processing job: ${job.id}, time: ${time}, skip: ${skip}, take: ${take} utcTime: ${utcTime}`)
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

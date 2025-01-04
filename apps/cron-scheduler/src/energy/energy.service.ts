@@ -49,9 +49,9 @@ export class EnergyService {
             })
             const { date } = value as EnergyGrowthLastSchedule
 
-            this.logger.debug(`Found ${count} user's energy that need to be regenrated`)
+            this.logger.debug(`Check ${count} user's energy`)
             if (count === 0) {
-                this.logger.verbose("No user's energy to regenerate")
+                this.logger.verbose("No user's energy to check")
                 return
             }
 
@@ -87,6 +87,10 @@ export class EnergyService {
 
             await queryRunner.startTransaction()
             try {
+                await queryRunner.manager.delete(CollectionEntity, {
+                    collection: Collection.EnergySpeedUp
+                })
+
                 await queryRunner.manager.save(TempEntity, {
                     id: TempId.EnergyRegenerationLastSchedule,
                     value: {

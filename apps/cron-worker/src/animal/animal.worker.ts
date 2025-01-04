@@ -52,7 +52,6 @@ export class AnimalWorker extends WorkerHost  {
                 }
             })
             const { sickChance } = system.value as AnimalRandomness
-            this.logger.verbose(`Animal job processed34234432: ${animalInfos.length}`)
             animalInfos = animalInfos.map((animalInfo) => {
 
                 if(animalInfo.isAdult){
