@@ -55,8 +55,12 @@ export class GraphQLModule {
                     plugins: [responseCachePlugin()],
                     playground: false,
                     buildSchemaOptions: {
-                        orphanedTypes: []
+                        orphanedTypes: [],
+                        directives: [
+                            
+                        ]
                     }
+
                 })
             ],
             providers: [],
