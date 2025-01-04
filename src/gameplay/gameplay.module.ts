@@ -2,8 +2,8 @@ import { Module } from "@nestjs/common"
 import { LevelService } from "./level"
 import { ThiefService } from "./thief"
 import { GoldBalanceService, TokenBalanceService } from "./wallet"
-import { EnergyService } from "@apps/cron-scheduler"
 import { InventoryService } from "./inventory"
+import { EnergyService } from "./energy"
 
 @Module({
     providers: [
