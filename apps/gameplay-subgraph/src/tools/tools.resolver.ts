@@ -3,6 +3,7 @@ import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { ToolsService } from "./tools.service"
 import { ToolEntity } from "@src/databases"
 import { GetToolsArgs } from "./tools.dto"
+import { CacheControl } from "@src/decorators"
 
 @Resolver()
 export class ToolsResolver {
@@ -10,6 +11,7 @@ export class ToolsResolver {
 
     constructor(private readonly toolsService: ToolsService) {}
 
+    @CacheControl({ maxAge: 100 })
     @Query(() => ToolEntity, {
         name: "tool",
         nullable: true
@@ -19,6 +21,7 @@ export class ToolsResolver {
         return this.toolsService.getTool(id)
     }
 
+    @CacheControl({ maxAge: 100 })
     @Query(() => [ToolEntity], {
         name: "tools"
     })

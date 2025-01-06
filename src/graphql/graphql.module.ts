@@ -1,12 +1,14 @@
 import { IntrospectAndCompose } from "@apollo/gateway"
+import { ApolloServerPluginCacheControl } from "@apollo/server/plugin/cacheControl"
 import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default"
-import { ApolloGatewayDriverConfig, ApolloGatewayDriver, ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo"
+import { ApolloFederationDriver, ApolloFederationDriverConfig, ApolloGatewayDriver, ApolloGatewayDriverConfig } from "@nestjs/apollo"
 import { Module } from "@nestjs/common"
-import { GraphQLModule as NestGraphQLModule } from "@nestjs/graphql"
-import { envConfig } from "@src/env"
-import { getHttpUrl } from "@src/common"
-import responseCachePlugin from "@apollo/server-plugin-response-cache"
+import { Int, GraphQLModule as NestGraphQLModule } from "@nestjs/graphql"
 import { CacheAdapter } from "@src/cache"
+import { getHttpUrl } from "@src/common"
+import { envConfig } from "@src/env"
+import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } from "graphql"
+import responseCachePlugin from "@apollo/server-plugin-response-cache"
 
 @Module({})
 export class GraphQLModule { 
@@ -18,7 +20,9 @@ export class GraphQLModule {
                 NestGraphQLModule.forRoot<ApolloGatewayDriverConfig>({
                     driver: ApolloGatewayDriver,
                     server: {
-                        plugins: [ApolloServerPluginLandingPageLocalDefault()],
+                        plugins: [
+                            ApolloServerPluginLandingPageLocalDefault(),
+                        ],
                         playground: false,
                         path: "/graphql",
                     },
@@ -52,15 +56,38 @@ export class GraphQLModule {
                         federation: 2,
                     },
                     cache: new CacheAdapter(),
-                    plugins: [responseCachePlugin()],
+                    plugins: [
+                        ApolloServerPluginCacheControl(), responseCachePlugin()
+                    ],
                     playground: false,
                     buildSchemaOptions: {
                         orphanedTypes: [],
                         directives: [
-                            
+                            new GraphQLDirective({
+                                name: "cacheControl",
+                                args: {
+                                    maxAge: { type: Int },
+                                    scope: {
+                                        type: new GraphQLEnumType({
+                                            name: "CacheControlScope",
+                                            values: {
+                                                PUBLIC: {},
+                                                PRIVATE: {},
+                                            },
+                                        }),
+                                    },
+                                    inheritMaxAge: { type: GraphQLBoolean },
+                                },
+                                locations: [
+                                    DirectiveLocation.FIELD_DEFINITION,
+                                    DirectiveLocation.OBJECT,
+                                    DirectiveLocation.INTERFACE,
+                                    DirectiveLocation.UNION,
+                                    DirectiveLocation.QUERY,
+                                ],
+                            }),
                         ]
                     }
-
                 })
             ],
             providers: [],
