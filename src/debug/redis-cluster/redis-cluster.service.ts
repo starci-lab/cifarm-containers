@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
-import { envConfig, RedisType } from "@src/env"
-import { Cluster } from "ioredis"
+import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
+import { Cluster, NatMap } from "ioredis"
 import { DEBUG_REDIS_CLUSTER_OPTIONS } from "./redis-cluster.constants"
 import { DebugRedisClusterOptions } from "./redis-cluster.types"
 import { ChildProcessDockerRedisClusterService } from "@src/child-process"
@@ -24,12 +24,15 @@ export class DebugRedisClusterService implements OnModuleInit {
         this.logger.debug("Debugging Redis cluster connection...")
         this.logger.debug(`Redis type: ${this.type}`)
         //check if cluster enabled
-        if (!envConfig().databases.redis.cache.cluster.enabled) {
+        if (!redisClusterEnabled(this.type)) {
             this.logger.debug("Redis cluster is disabled. Skipp debugging")
             return
         }
 
-        const natMap = await this.childProcessDockerRedisClusterService.getNatMap()
+        let natMap: NatMap
+        if (!redisClusterRunInDocker(this.type)) {
+            natMap = await this.childProcessDockerRedisClusterService.getNatMap()
+        }
 
         //check if cluster run in Docker
         this.connection = new Cluster(
@@ -43,7 +46,6 @@ export class DebugRedisClusterService implements OnModuleInit {
                 redisOptions: {
                     password: envConfig().databases.redis[RedisType.Cache].password
                 },
-                //nat - for local Docker development only, not for production
                 natMap
             }
         )

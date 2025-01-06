@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common"
 import { CHILD_PROCESS_DOCKER_REDIS_CLUSTER_OPTIONS } from "./redis-cluster.constants"
-import { ChildProcessDockerRedisClusterOptions, DockerContainerData, DockerContainerDataRaw } from "./redis-cluster.types"
+import { ChildProcessDockerRedisClusterOptions, DockerContainerData, DockerContainerProfileRaw } from "./redis-cluster.types"
 import { ChildProcessService } from "../../base"
 import { CacheMemoryService } from "@src/cache"
 import { Cache } from "cache-manager"
@@ -55,7 +55,7 @@ export class ChildProcessDockerRedisClusterService {
         }
 
         const networkInfo = await this.childProcessService.execAsync(`docker network inspect ${networkId}`)
-        const containers = JSON.parse(networkInfo)[0].Containers as Record<string, DockerContainerDataRaw>
+        const containers = JSON.parse(networkInfo)[0].Containers as Record<string, DockerContainerProfileRaw>
         
         const result : Record<string, DockerContainerData> = {}
         // get container ids

@@ -4,7 +4,7 @@ export interface ChildProcessDockerRedisClusterOptions {
     type?: RedisType
 }
 
-export interface DockerContainerDataRaw {
+export interface DockerContainerProfileRaw {
     "Name": string
     "EndpointID": string
     "MacAddress": string
