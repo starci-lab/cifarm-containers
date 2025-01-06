@@ -12,6 +12,7 @@ import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
 import { EnvModule } from "@src/env"
 import { GraphQLModule } from "@src/graphql"
+import { RedisClusterDebugModule } from "@src/debug"
 
 @Module({
     imports: [
@@ -28,6 +29,9 @@ import { GraphQLModule } from "@src/graphql"
         TilesModule,
         ToolsModule,
         UpgradesModule,
+
+        //===DEBUG===//
+        RedisClusterDebugModule,
     ]
 }) 
 export class AppModule {}

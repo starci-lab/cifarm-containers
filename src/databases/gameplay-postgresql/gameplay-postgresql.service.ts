@@ -6,6 +6,7 @@ export class GameplayPostgreSQLService {
     constructor(
         private readonly dataSource: DataSource
     ) { }
+
     public getDataSource(): DataSource {
         return this.dataSource
     }

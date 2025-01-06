@@ -1,4 +1,6 @@
+import { dockerNatMap } from "@src/debug"
 import { envConfig, isRedisClusterEnabled, RedisClusterType } from "@src/env"
+import { ClusterNode, ClusterOptions } from "ioredis"
 
 export const SLOTS_REFRESH_TIMEOUT = 3000
 export const MAX_RETRIES_PER_REQUEST = 3
@@ -32,13 +34,8 @@ interface RedisCacheOptions extends BaseCacheOptions {
 interface RedisClusterCacheOptions extends BaseCacheOptions {
     type: CacheType.IOREDIS_CLUSTER;
     options: {
-        startupNodes: Array<{ host: string; port: number }>;
-        scaleReads: "slave" | "master" | "all";
-        slotsRefreshTimeout: number;
-        redisOptions: {
-            maxRetriesPerRequest: number;
-            showFriendlyErrorStack: boolean;
-        };
+        startupNodes: Array<ClusterNode>;
+        options?: ClusterOptions
     };
 }
 
@@ -66,12 +63,16 @@ export const createCacheOptions = (): CacheOptions => {
                         port: Number(envConfig().databases.redis.cache.port)
                     }
                 ],
-                scaleReads: "slave",
-                slotsRefreshTimeout: SLOTS_REFRESH_TIMEOUT,
-                redisOptions: {
-                    maxRetriesPerRequest: MAX_RETRIES_PER_REQUEST,
-                    showFriendlyErrorStack: SHOW_FRIENDLY_ERROR_STACK
-                }
+                options: {
+                    scaleReads: "slave",
+                    slotsRefreshTimeout: SLOTS_REFRESH_TIMEOUT,
+                    redisOptions: {
+                        maxRetriesPerRequest: MAX_RETRIES_PER_REQUEST,
+                        showFriendlyErrorStack: SHOW_FRIENDLY_ERROR_STACK,
+                        password: envConfig().databases.redis.cache.password,
+                    },
+                    natMap: dockerNatMap()
+                } 
             }
         }
     }
