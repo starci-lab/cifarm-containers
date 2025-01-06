@@ -5,11 +5,13 @@ import { GameplayModule } from "@src/gameplay"
 import { JwtModule } from "@src/jwt"
 import { VerifySignatureController } from "./verify-signature.controller"
 import { VerifySignatureService } from "./verify-signature.service"
+import { CacheRedisModule } from "@src/cache"
 
 @Global()
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
+        CacheRedisModule.forRoot(),
         GameplayModule,
         BlockchainModule,
         JwtModule

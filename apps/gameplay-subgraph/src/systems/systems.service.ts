@@ -21,7 +21,8 @@ export class SystemsService {
             const { value : activities } = await queryRunner.manager.findOne(SystemEntity, {
                 where: {
                     id: SystemId.Activities
-                }
+                },
+                cache: 1000000
             })
             return activities as Activities
         } finally {
@@ -36,7 +37,8 @@ export class SystemsService {
             const { value : cropRandomness } = await queryRunner.manager.findOne(SystemEntity, {
                 where: {
                     id: SystemId.CropRandomness
-                }
+                },
+                cache: 1000000
             })
             return cropRandomness as CropRandomness
         } finally {

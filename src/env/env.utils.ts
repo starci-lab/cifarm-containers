@@ -31,10 +31,10 @@ export const enum RedisClusterType {
 export const isRedisClusterEnabled = (type: RedisClusterType = RedisClusterType.Cache): boolean => {
     switch (type) {
     case RedisClusterType.Cache:
-        return envConfig().databases.redis.cache.cluster.enabled
+        return envConfig().databases.redis.cache.clusterEnabled
     case RedisClusterType.Job:
-        return envConfig().databases.redis.job.cluster.enabled
+        return envConfig().databases.redis.job.clusterEnabled
     case RedisClusterType.Adaptper:
-        return envConfig().databases.redis.adapter.cluster.enabled
+        return envConfig().databases.redis.adapter.clusterEnabled
     }
 }

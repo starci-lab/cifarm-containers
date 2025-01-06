@@ -114,61 +114,23 @@ export const envConfig = () => ({
         },
         redis: {
             cache: {
-                cluster: {
-                    enabled: process.env.CACHE_REDIS_CLUSTER_ENABLED === "true",
-                    node1: {
-                        host: process.env.CACHE_REDIS_CLUSTER_NODE_1_HOST,
-                        port: process.env.CACHE_REDIS_CLUSTER_NODE_1_PORT
-                    },
-                    node2: {
-                        host: process.env.CACHE_REDIS_CLUSTER_NODE_2_HOST,
-                        port: process.env.CACHE_REDIS_CLUSTER_NODE_2_PORT
-                    },
-                    node3: {
-                        host: process.env.CACHE_REDIS_CLUSTER_NODE_3_HOST,
-                        port: process.env.CACHE_REDIS_CLUSTER_NODE_3_PORT
-                    }
-                },
+                // in k8s, redis cluster are hiden behind service, so we do not need to specify many nodes
+                clusterEnabled: process.env.CACHE_REDIS_CLUSTER_ENABLED === "true",
                 host: process.env.CACHE_REDIS_HOST,
                 port: Number(process.env.CACHE_REDIS_PORT),
+                password: process.env.CACHE_REDIS_PASSWORD,
             },
             adapter: {
-                cluster: {
-                    enabled: process.env.ADAPTER_REDIS_CLUSTER_ENABLED === "true",
-                    node1: {
-                        host: process.env.ADAPTER_REDIS_CLUSTER_NODE_1_HOST,
-                        port: process.env.ADAPTER_REDIS_CLUSTER_NODE_1_PORT
-                    },
-                    node2: {
-                        host: process.env.ADAPTER_REDIS_CLUSTER_NODE_2_HOST,
-                        port: process.env.ADAPTER_REDIS_CLUSTER_NODE_2_PORT
-                    },
-                    node3: {
-                        host: process.env.ADAPTER_REDIS_CLUSTER_NODE_3_HOST,
-                        port: process.env.ADAPTER_REDIS_CLUSTER_NODE_3_PORT
-                    }
-                },
+                clusterEnabled: process.env.ADAPTER_REDIS_CLUSTER_ENABLED === "true",
                 host: process.env.ADAPTER_REDIS_HOST,
                 port: Number(process.env.ADAPTER_REDIS_PORT),
+                password: process.env.ADAPTER_REDIS_PASSWORD,
             },
             job: {
-                cluster: {
-                    enabled: process.env.JOB_REDIS_CLUSTER_ENABLED === "true",
-                    node1: {
-                        host: process.env.JOB_REDIS_CLUSTER_NODE_1_HOST,
-                        port: process.env.JOB_REDIS_CLUSTER_NODE_1_PORT
-                    },
-                    node2: {
-                        host: process.env.JOB_REDIS_CLUSTER_NODE_2_HOST,
-                        port: process.env.JOB_REDIS_CLUSTER_NODE_2_PORT
-                    },
-                    node3: {
-                        host: process.env.JOB_REDIS_CLUSTER_NODE_3_HOST,
-                        port: process.env.JOB_REDIS_CLUSTER_NODE_3_PORT
-                    }
-                },
+                clusterEnabled: process.env.JOB_REDIS_CLUSTER_ENABLED === "true",
                 host: process.env.JOB_REDIS_HOST,
                 port: Number(process.env.JOB_REDIS_PORT),
+                password: process.env.JOB_REDIS_PASSWORD,
             },
         }
     },

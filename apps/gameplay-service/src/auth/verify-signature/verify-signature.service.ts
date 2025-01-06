@@ -1,9 +1,8 @@
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/blockchain"
 import { CacheNotFound, VerifySignatureTransactionFailedException } from "@src/exceptions"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 
-import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import {
     GameplayPostgreSQLService,
     PlacedItemEntity,
@@ -29,15 +28,16 @@ import { EnergyService } from "@src/gameplay"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
 import { JwtService } from "@src/jwt"
+import { CacheRedisService } from "@src/cache"
 
 @Injectable()
 export class VerifySignatureService {
     private readonly logger = new Logger(VerifySignatureService.name)
 
     private readonly dataSource: DataSource
+    private readonly cacheManager: Cache
     constructor(
-        @Inject(CACHE_MANAGER)
-        private readonly cacheManager: Cache,
+        private readonly cacheRedisService: CacheRedisService,
         private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
         private readonly evmAuthService: EvmAuthService,
         private readonly solanaAuthService: SolanaAuthService,
@@ -49,6 +49,7 @@ export class VerifySignatureService {
         private readonly energyService: EnergyService
     ) {
         this.dataSource = this.gameplayPostgreSQLService.getDataSource()
+        this.cacheManager = this.cacheRedisService.getCacheManager()
     }
 
     public async verifySignature({

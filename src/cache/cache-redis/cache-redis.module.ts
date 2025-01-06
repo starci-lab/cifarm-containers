@@ -1,33 +1,18 @@
-import { CacheModule, CacheStore } from "@nestjs/cache-manager"
+import { createCache } from "cache-manager"
 import { Module } from "@nestjs/common"
-import { redisStore } from "cache-manager-redis-yet"
 import { CacheRedisService } from "./cache-redis.service"
-import { envConfig } from "@src/env"
+import { CacheKeyv } from "./cache-adapter.class"
+import { CACHE_REDIS_MANAGER } from "./cache-redis.types"
 
 @Module({})
 export class CacheRedisModule {
     public static forRoot() {
+        const cache = createCache({
+            stores: [new CacheKeyv()]
+        })
         return {
             module: CacheRedisModule,
-            imports: [
-                CacheModule.registerAsync({
-                    isGlobal: true,
-                    useFactory: async () => {
-                        const store = await redisStore({
-                            socket: {
-                                host: envConfig().databases.redis.cache.host,
-                                port: envConfig().databases.redis.cache.port
-                            }
-                        })
-                
-                        return {
-                            store: store as unknown as CacheStore,
-                            ttl: 3 * 60000 // 3 minutes (milliseconds)
-                        }
-                    }
-                })
-            ],
-            providers: [CacheRedisService],
+            providers: [CacheRedisService, { provide: CACHE_REDIS_MANAGER, useValue: cache }],
             exports: [CacheRedisService]
         }
     }

@@ -1,83 +1,89 @@
-import { envConfig } from "@src/env"
-import { CACHE_DURATION, MAX_RETRIES_PER_REQUEST, SHOW_FRIENDLY_ERROR_STACK, SLOTS_REFRESH_TIMEOUT } from "../databases.constants"
+import { envConfig, isRedisClusterEnabled, RedisClusterType } from "@src/env"
 
-export interface CacheOptions {
-    /**
-     * Type of caching.
-     * - "database": Caching values in a database table.
-     * - "redis": Caching values in Redis.
-     * - "ioredis": Caching values using ioredis.
-     * - "ioredis/cluster": Caching values in Redis Cluster.
-     */
-    type: "database" | "redis" | "ioredis" | "ioredis/cluster"
+export const SLOTS_REFRESH_TIMEOUT = 3000
+export const MAX_RETRIES_PER_REQUEST = 3
+export const SHOW_FRIENDLY_ERROR_STACK = true
+export const CACHE_DURATION = 1 * 24 * 60 * 60 * 1000
 
-    /**
-     * Redis or database connection options.
-     */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    options?: any
-
-    /**
-     * Enables caching for all queries globally.
-     */
-    alwaysEnabled?: boolean
-
-    /**
-     * Cache expiration duration in milliseconds.
-     */
-    duration?: number
-
-    /**
-     * Ignore cache-related errors and fallback to database.
-     */
-    ignoreErrors?: boolean
+// Enum to define different cache types
+export enum CacheType {
+    DATABASE = "database",
+    REDIS = "redis",
+    IOREDIS = "ioredis",
+    IOREDIS_CLUSTER = "ioredis/cluster"
 }
 
-export const createCacheOptions = (cluster: boolean = false): CacheOptions => {
-    if (cluster) {
+interface BaseCacheOptions {
+    duration: number;           // Cache expiration duration in milliseconds
+    alwaysEnabled: boolean;     // Enables caching globally for all queries
+    ignoreErrors: boolean;      // Ignore cache errors and fallback to database
+}
+
+interface RedisCacheOptions extends BaseCacheOptions {
+    type: CacheType.REDIS | CacheType.IOREDIS;
+    options: {
+        socket: {
+            host: string;
+            port: number;
+        };
+    };
+}
+
+interface RedisClusterCacheOptions extends BaseCacheOptions {
+    type: CacheType.IOREDIS_CLUSTER;
+    options: {
+        startupNodes: Array<{ host: string; port: number }>;
+        scaleReads: "slave" | "master" | "all";
+        slotsRefreshTimeout: number;
+        redisOptions: {
+            maxRetriesPerRequest: number;
+            showFriendlyErrorStack: boolean;
+        };
+    };
+}
+
+export type CacheOptions = RedisCacheOptions | RedisClusterCacheOptions;
+
+export const createCacheOptions = (): CacheOptions => {
+    // Check if Redis cluster is enabled for cache
+    const useCluster = isRedisClusterEnabled(RedisClusterType.Cache)
+
+    // Base cache options
+    const baseConfig: BaseCacheOptions = {
+        duration: CACHE_DURATION,
+        alwaysEnabled: !useCluster,  // Only disable globally for cluster
+        ignoreErrors: true,
+    }
+
+    if (useCluster) {
         return {
-            type: "ioredis/cluster" as const,
+            ...baseConfig,
+            type: CacheType.IOREDIS_CLUSTER,
             options: {
                 startupNodes: [
                     {
-                        host: envConfig().databases.redis.cache.cluster.node1.host,
-                        port: Number(envConfig().databases.redis.cache.cluster.node1.port),
-                    },
-                    {
-                        host: envConfig().databases.redis.cache.cluster.node2.host,
-                        port: Number(envConfig().databases.redis.cache.cluster.node2.port),
-                    },
-                    {
-                        host: envConfig().databases.redis.cache.cluster.node3.host,
-                        port: Number(envConfig().databases.redis.cache.cluster.node3.port),
-                    },
+                        host: envConfig().databases.redis.cache.host,
+                        port: Number(envConfig().databases.redis.cache.port)
+                    }
                 ],
-                scaleReads: "all",
-                clusterRetryStrategy: (times: number) => Math.min(times * 50, 2000),
+                scaleReads: "slave",
                 slotsRefreshTimeout: SLOTS_REFRESH_TIMEOUT,
                 redisOptions: {
                     maxRetriesPerRequest: MAX_RETRIES_PER_REQUEST,
-                    showFriendlyErrorStack: SHOW_FRIENDLY_ERROR_STACK,
-                },
-            },
-            alwaysEnabled: true,
-            // Cache expiry in 1 days
-            duration: CACHE_DURATION,
-            ignoreErrors: true,
+                    showFriendlyErrorStack: SHOW_FRIENDLY_ERROR_STACK
+                }
+            }
         }
-    } 
-    
+    }
+
     return {
-        type: "redis" as const,
+        ...baseConfig,
+        type: CacheType.REDIS,
         options: {
             socket: {
                 host: envConfig().databases.redis.cache.host,
-                port: Number(envConfig().databases.redis.cache.port),
-            },
-        },
-        alwaysEnabled: true,
-        // Cache expiry in 1 days
-        duration: CACHE_DURATION,
-        ignoreErrors: true,
+                port: Number(envConfig().databases.redis.cache.port)
+            }
+        }
     }
 }

@@ -4,3 +4,5 @@ export enum CacheKey {
     AnimalGrowthLastSchedule = "AnimalGrowthLastSchedule",
     EnergyRegenerationLastSchedule = "EnergyRegenerationLastSchedule"
 }
+
+export const CACHE_REDIS_MANAGER = "CACHE_REDIS_MANAGER"

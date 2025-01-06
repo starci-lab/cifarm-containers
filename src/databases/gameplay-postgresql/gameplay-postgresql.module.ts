@@ -1,21 +1,13 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { TypeORMConfig } from "@src/common"
-import { envConfig, isRedisClusterEnabled, RedisClusterType } from "@src/env"
+import { envConfig } from "@src/env"
 import { createCacheOptions } from "../utils"
 import { gameplayPostgreSqlEntites } from "./entities"
 import { GameplayPostgreSQLService } from "./gameplay-postgresql.service"
 import { GameplayPostgreSQLOptions, GameplayPostgreSQLType } from "./gameplay-postgresql.types"
 
-@Module({
-    imports: [
-        
-    ],
-    controllers: [],
-    providers: [
-        GameplayPostgreSQLService
-    ]
-})
+@Module({})
 export class GameplayPostgreSQLModule {
     public static forRoot(options: GameplayPostgreSQLOptions = {
         cache: false
@@ -36,6 +28,7 @@ export class GameplayPostgreSQLModule {
                 database: envConfig().databases.postgresql.gameplay.test.dbName,
             }
         }
+        
         return {
             module: GameplayPostgreSQLModule,
             imports: [
@@ -46,7 +39,7 @@ export class GameplayPostgreSQLModule {
                     synchronize: true,
                     poolSize: 10000,
                     connectTimeoutMS: 5000,
-                    cache: createCacheOptions(isRedisClusterEnabled(RedisClusterType.Cache))
+                    cache: createCacheOptions()
                 }),
                 TypeOrmModule.forFeature(gameplayPostgreSqlEntites())
             ],
