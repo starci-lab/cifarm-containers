@@ -7,7 +7,7 @@ import { CACHE_MEMORY_MANAGER } from "./memory.constants"
 export class CacheMemoryModule {
     public static forRoot() {
         // Create a cache manager with a memory store
-        const cache = createCache({
+        const cacheManager = createCache({
             stores: [
                 new Keyv({
                     store: new CacheableMemory({ ttl: 60000, lruSize: 5000 })
@@ -17,7 +17,7 @@ export class CacheMemoryModule {
 
         return {
             module: CacheMemoryModule,
-            providers: [{ provide: CACHE_MEMORY_MANAGER, useValue: cache }, CacheMemoryService],
+            providers: [{ provide: CACHE_MEMORY_MANAGER, useValue: cacheManager }, CacheMemoryService],
             exports: [CacheMemoryService]
         }
     }

@@ -65,8 +65,9 @@ export const createCacheOptions = (params?: CreateCacheOptionsParams): CacheOpti
                     redisOptions: {
                         maxRetriesPerRequest: MAX_RETRIES_PER_REQUEST,
                         showFriendlyErrorStack: SHOW_FRIENDLY_ERROR_STACK,
-                        password: envConfig().databases.redis[RedisType.Cache].password,
+                        password: envConfig().databases.redis[RedisType.Cache].password || undefined,
                     },
+                    showFriendlyErrorStack: SHOW_FRIENDLY_ERROR_STACK,
                     natMap: params?.natMap
                 } 
             }
@@ -79,6 +80,7 @@ export const createCacheOptions = (params?: CreateCacheOptionsParams): CacheOpti
         options: {
             host: envConfig().databases.redis[RedisType.Cache].host,
             port: envConfig().databases.redis[RedisType.Cache].port,
+            password: envConfig().databases.redis[RedisType.Cache].password || undefined
         }
     }
 }

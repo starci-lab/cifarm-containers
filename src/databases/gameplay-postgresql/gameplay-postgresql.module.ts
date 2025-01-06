@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { TypeORMConfig } from "@src/common"
-import { envConfig, RedisType } from "@src/env"
+import { envConfig, redisClusterRunInDocker, RedisType } from "@src/env"
 import { createCacheOptions } from "../utils"
 import { gameplayPostgreSqlEntites } from "./entities"
 import { GameplayPostgreSQLService } from "./gameplay-postgresql.service"
@@ -10,14 +10,11 @@ import {
     ChildProcessDockerRedisClusterModule,
     ChildProcessDockerRedisClusterService
 } from "@src/child-process"
+import { NatMap } from "ioredis"
 
 @Module({})
 export class GameplayPostgreSQLModule {
-    public static forRoot(
-        options: GameplayPostgreSQLOptions = {
-            cache: false
-        }
-    ) {
+    public static forRoot(options: GameplayPostgreSQLOptions = {}) {
         const map: Record<GameplayPostgreSQLType, TypeORMConfig> = {
             [GameplayPostgreSQLType.Main]: {
                 host: envConfig().databases.postgresql.gameplay.main.host,
@@ -46,7 +43,11 @@ export class GameplayPostgreSQLModule {
                     ],
                     inject: [ChildProcessDockerRedisClusterService],
                     useFactory: async (service: ChildProcessDockerRedisClusterService) => {
-                        const natMap = await service.getNatMap()
+                        let natMap: NatMap
+                        if (redisClusterRunInDocker()) {
+                            natMap = await service.getNatMap()
+                        }
+
                         return {
                             type: "postgres",
                             ...map[options.type || GameplayPostgreSQLType.Main],

@@ -6,7 +6,6 @@ import { GraphQLModule as NestGraphQLModule } from "@nestjs/graphql"
 import { envConfig } from "@src/env"
 import { getHttpUrl } from "@src/common"
 import responseCachePlugin from "@apollo/server-plugin-response-cache"
-import { CacheAdapter } from "@src/cache"
 
 @Module({})
 export class GraphQLModule { 
@@ -51,7 +50,6 @@ export class GraphQLModule {
                     autoSchemaFile: {
                         federation: 2,
                     },
-                    cache: new CacheAdapter(),
                     plugins: [responseCachePlugin()],
                     playground: false,
                     buildSchemaOptions: {

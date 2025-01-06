@@ -1,2 +1,2 @@
-export * from "./cache-redis"
+export * from "./redis"
 export * from "./memory"

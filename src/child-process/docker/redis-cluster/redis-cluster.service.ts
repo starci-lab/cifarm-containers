@@ -6,6 +6,8 @@ import { CacheMemoryService } from "@src/cache"
 import { Cache } from "cache-manager"
 import { NatMap } from "ioredis"
 import { envConfig, RedisType } from "@src/env"
+import { NodeAddressMap } from "@redis/client/dist/lib/cluster/cluster-slots"
+import { LOCALHOST } from "@src/common"
 
 @Injectable()
 export class ChildProcessDockerRedisClusterService {
@@ -79,11 +81,26 @@ export class ChildProcessDockerRedisClusterService {
         return result
     }
 
+    //for ioRedis
+    // local purpose only, product we use service discovery
     public async getNatMap(): Promise<NatMap> {
         const containers = await this.getContainers()
         return Object.values(containers).reduce((acc, container) => {
             acc[`${container.ipV4}:${container.internalPort}`] = {
-                host: "127.0.0.1",
+                host: LOCALHOST,
+                port: container.externalPort
+            }
+            return acc
+        }, {})
+    }
+
+    // for keyv typesave
+    // local purpose only, product we use service discovery
+    public async getNodeAddressMap(): Promise<NodeAddressMap> {
+        const containers = await this.getContainers()
+        return Object.values(containers).reduce((acc, container) => {
+            acc[`${container.ipV4}:${container.internalPort}`] = {
+                host: LOCALHOST,
                 port: container.externalPort
             }
             return acc

@@ -13,6 +13,7 @@ import { UpgradesModule } from "./upgrades"
 import { EnvModule, RedisType } from "@src/env"
 import { GraphQLModule } from "@src/graphql"
 import { DebugRedisClusterModule } from "@src/debug"
+import { CacheRedisModule } from "@src/cache"
 
 @Module({
     imports: [
@@ -34,6 +35,7 @@ import { DebugRedisClusterModule } from "@src/debug"
         DebugRedisClusterModule.forRoot({
             type: RedisType.Cache
         }),
+        //CacheRedisModule.forRoot()
     ]
 }) 
 export class AppModule {}
