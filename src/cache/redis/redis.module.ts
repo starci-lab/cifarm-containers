@@ -3,13 +3,14 @@ import { DynamicModule, Module } from "@nestjs/common"
 import { CACHE_REDIS_MANAGER } from "./redis.types"
 import { Keyv } from "keyv"
 import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
-import KeyvRedis, { createCluster } from "@keyv/redis"
+import KeyvRedis from "@keyv/redis"
 import {
     ChildProcessDockerRedisClusterModule,
     ChildProcessDockerRedisClusterService
 } from "@src/child-process"
 import { CacheRedisService } from "./redis.service"
 import { NodeAddressMap } from "@redis/client/dist/lib/cluster/cluster-slots"
+import { RedisKeyvManager } from "./keyv-manager.class"
 
 @Module({})
 export class CacheRedisModule {
@@ -37,22 +38,10 @@ export class CacheRedisModule {
                                 await childProcessDockerRedisClusterService.getNodeAddressMap()
                             }
                             
-                            // create the cluster
-                            const cluster = createCluster({
-                                rootNodes: [
-                                    {
-                                        url: `redis://${envConfig().databases.redis[RedisType.Cache].host}:${envConfig().databases.redis[RedisType.Cache].port}`,
-                                    }
-                                ],
-                                defaults: {
-                                    password: envConfig().databases.redis[RedisType.Cache].password || undefined
-                                },
-                                nodeAddressMap
-                            })
-
+                            const keyvManager = new RedisKeyvManager(nodeAddressMap)
                             // create the cache manager
                             return createCache({
-                                stores: [new Keyv(new KeyvRedis(cluster))]
+                                stores: [keyvManager.createKeyv()]
                             })
                         },
                         inject: [ChildProcessDockerRedisClusterService]
