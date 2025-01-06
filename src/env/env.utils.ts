@@ -1,4 +1,5 @@
 import { envConfig, NodeEnv } from "./env.config"
+import { RedisType } from "./env.types"
 
 //sw2s
 export const getEnvValue = <ValueType = string>(values: {
@@ -22,19 +23,10 @@ export const runInKubernetes = (): boolean => {
     return !!envConfig().kubernetes.serviceHost
 }
 
-export const enum RedisClusterType {
-    Cache = "cache",
-    Job = "job",
-    Adaptper = "adapter",
+export const redisClusterEnabled = (type: RedisType = RedisType.Cache): boolean => {
+    return envConfig().databases.redis[type].cluster.enabled
 }
 
-export const isRedisClusterEnabled = (type: RedisClusterType = RedisClusterType.Cache): boolean => {
-    switch (type) {
-    case RedisClusterType.Cache:
-        return envConfig().databases.redis.cache.clusterEnabled
-    case RedisClusterType.Job:
-        return envConfig().databases.redis.job.clusterEnabled
-    case RedisClusterType.Adaptper:
-        return envConfig().databases.redis.adapter.clusterEnabled
-    }
+export const redisClusterRunInDocker = (type: RedisType = RedisType.Cache): boolean => {
+    return envConfig().databases.redis[type].cluster.runInDocker
 }

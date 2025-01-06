@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { DynamicModule, Module, Global } from "@nestjs/common"
-import { LEADER_ELECTION_OPTIONS, LeaderElectionOptions } from "./leader-election.types"
+import { LeaderElectionOptions } from "./leader-election.types"
 import { LeaderElectionService } from "./leader-election.service"
+import { LEADER_ELECTION_OPTIONS } from "./leader-election.constants"
 
 @Global()
 @Module({})

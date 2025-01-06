@@ -10,9 +10,9 @@ import { SystemsModule } from "./systems"
 import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
-import { EnvModule } from "@src/env"
+import { EnvModule, RedisType } from "@src/env"
 import { GraphQLModule } from "@src/graphql"
-import { RedisClusterDebugModule } from "@src/debug"
+import { DebugRedisClusterModule } from "@src/debug"
 
 @Module({
     imports: [
@@ -31,7 +31,9 @@ import { RedisClusterDebugModule } from "@src/debug"
         UpgradesModule,
 
         //===DEBUG===//
-        RedisClusterDebugModule,
+        DebugRedisClusterModule.forRoot({
+            type: RedisType.Cache
+        }),
     ]
 }) 
 export class AppModule {}

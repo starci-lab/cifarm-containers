@@ -1,6 +1,5 @@
-import { dockerNatMap } from "@src/debug"
-import { envConfig, isRedisClusterEnabled, RedisClusterType } from "@src/env"
-import { ClusterNode, ClusterOptions } from "ioredis"
+import { envConfig, redisClusterEnabled, RedisType } from "@src/env"
+import { ClusterNode, ClusterOptions, NatMap, RedisOptions } from "ioredis"
 
 export const SLOTS_REFRESH_TIMEOUT = 3000
 export const MAX_RETRIES_PER_REQUEST = 3
@@ -9,8 +8,6 @@ export const CACHE_DURATION = 1 * 24 * 60 * 60 * 1000
 
 // Enum to define different cache types
 export enum CacheType {
-    DATABASE = "database",
-    REDIS = "redis",
     IOREDIS = "ioredis",
     IOREDIS_CLUSTER = "ioredis/cluster"
 }
@@ -22,13 +19,8 @@ interface BaseCacheOptions {
 }
 
 interface RedisCacheOptions extends BaseCacheOptions {
-    type: CacheType.REDIS | CacheType.IOREDIS;
-    options: {
-        socket: {
-            host: string;
-            port: number;
-        };
-    };
+    type: CacheType.IOREDIS;
+    options: RedisOptions
 }
 
 interface RedisClusterCacheOptions extends BaseCacheOptions {
@@ -41,9 +33,13 @@ interface RedisClusterCacheOptions extends BaseCacheOptions {
 
 export type CacheOptions = RedisCacheOptions | RedisClusterCacheOptions;
 
-export const createCacheOptions = (): CacheOptions => {
+export interface CreateCacheOptionsParams {
+    natMap?: NatMap
+}
+
+export const createCacheOptions = (params?: CreateCacheOptionsParams): CacheOptions => {
     // Check if Redis cluster is enabled for cache
-    const useCluster = isRedisClusterEnabled(RedisClusterType.Cache)
+    const useCluster = redisClusterEnabled(RedisType.Cache)
 
     // Base cache options
     const baseConfig: BaseCacheOptions = {
@@ -59,8 +55,8 @@ export const createCacheOptions = (): CacheOptions => {
             options: {
                 startupNodes: [
                     {
-                        host: envConfig().databases.redis.cache.host,
-                        port: Number(envConfig().databases.redis.cache.port)
+                        host: envConfig().databases.redis[RedisType.Cache].host,
+                        port: Number(envConfig().databases.redis[RedisType.Cache].port)
                     }
                 ],
                 options: {
@@ -69,9 +65,9 @@ export const createCacheOptions = (): CacheOptions => {
                     redisOptions: {
                         maxRetriesPerRequest: MAX_RETRIES_PER_REQUEST,
                         showFriendlyErrorStack: SHOW_FRIENDLY_ERROR_STACK,
-                        password: envConfig().databases.redis.cache.password,
+                        password: envConfig().databases.redis[RedisType.Cache].password,
                     },
-                    natMap: dockerNatMap()
+                    natMap: params?.natMap
                 } 
             }
         }
@@ -79,12 +75,10 @@ export const createCacheOptions = (): CacheOptions => {
 
     return {
         ...baseConfig,
-        type: CacheType.REDIS,
+        type: CacheType.IOREDIS,
         options: {
-            socket: {
-                host: envConfig().databases.redis.cache.host,
-                port: Number(envConfig().databases.redis.cache.port)
-            }
+            host: envConfig().databases.redis[RedisType.Cache].host,
+            port: envConfig().databases.redis[RedisType.Cache].port,
         }
     }
 }

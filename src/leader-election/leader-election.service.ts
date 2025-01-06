@@ -5,9 +5,10 @@ import {
     Inject,
 } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
-import { LEADER_ELECTION_OPTIONS, LeaderElectionOptions, LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT } from "./leader-election.types"
+import { LeaderElectionOptions } from "./leader-election.types"
 import { envConfig, runInKubernetes } from "@src/env"
 import { CoordinationV1Api, KubeConfig, V1Lease, V1MicroTime, Watch } from "@kubernetes/client-node"
+import { LEADER_ELECTION_OPTIONS, LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT } from "./leader-election.constants"
 
 @Injectable()
 export class LeaderElectionService implements OnApplicationBootstrap {

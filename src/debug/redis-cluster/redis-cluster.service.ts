@@ -1,48 +1,53 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
-import { envConfig, runInKubernetes } from "@src/env"
-import { Cluster, NatMap } from "ioredis"
+import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { envConfig, RedisType } from "@src/env"
+import { Cluster } from "ioredis"
+import { DEBUG_REDIS_CLUSTER_OPTIONS } from "./redis-cluster.constants"
+import { DebugRedisClusterOptions } from "./redis-cluster.types"
+import { ChildProcessDockerRedisClusterService } from "@src/child-process"
 
 @Injectable()
-export class RedisClusterDebugService implements OnModuleInit {
-    private readonly logger = new Logger(RedisClusterDebugService.name)
+export class DebugRedisClusterService implements OnModuleInit {
+    private readonly logger = new Logger(DebugRedisClusterService.name)
 
     private connection: Cluster
+    private type: RedisType
+    constructor(
+        private readonly childProcessDockerRedisClusterService: ChildProcessDockerRedisClusterService,
+        @Inject(DEBUG_REDIS_CLUSTER_OPTIONS)
+        private readonly options?: DebugRedisClusterOptions,
+    ) { 
+        this.type = options?.type || RedisType.Cache
+    }
+
     async onModuleInit() {
+        //check if debugging enabled
         this.logger.debug("Debugging Redis cluster connection...")
+        this.logger.debug(`Redis type: ${this.type}`)
         //check if cluster enabled
-        if (!envConfig().databases.redis.cache.clusterEnabled) {
-            this.logger.warn("Redis cluster is not enabled")
+        if (!envConfig().databases.redis.cache.cluster.enabled) {
+            this.logger.debug("Redis cluster is disabled. Skipp debugging")
             return
         }
-        this.logger.debug("Redis cluster is enabled")
+
+        const natMap = await this.childProcessDockerRedisClusterService.getNatMap()
+
+        //check if cluster run in Docker
         this.connection = new Cluster(
             [
                 {
-                    host: envConfig().databases.redis.cache.host,
-                    port: envConfig().databases.redis.cache.port
+                    host: envConfig().databases.redis[this.type].host,
+                    port: envConfig().databases.redis[this.type].port
                 }
             ],
             {
                 redisOptions: {
-                    password: envConfig().databases.redis.cache.password
+                    password: envConfig().databases.redis[RedisType.Cache].password
                 },
                 //nat - for local Docker development only, not for production
-                natMap: dockerNatMap()
+                natMap
             }
         )
         const pong = await this.connection.ping()
         this.logger.debug(`Redis cluster ping response: ${pong}`)
     }
 }
-
-export const dockerNatMap = () : NatMap | undefined =>
-    !runInKubernetes()
-        ? {
-            "172.25.0.7:6379": { host: "127.0.0.1", port: 6382 },
-            "172.25.0.3:6379": { host: "127.0.0.1", port: 6381 },
-            "172.25.0.2:6379": { host: "127.0.0.1", port: 6379 },
-            "172.25.0.4:6379": { host: "127.0.0.1", port: 6384 },
-            "172.25.0.6:6379": { host: "127.0.0.1", port: 6380 },
-            "172.25.0.5:6379": { host: "127.0.0.1", port: 6383 }
-        }
-        : undefined

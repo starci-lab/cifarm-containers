@@ -1,4 +1,5 @@
 import { SupportedChainKey, Network } from "../blockchain/blockchain.config"
+import { RedisType } from "./env.types"
 
 export enum NodeEnv {
     Production = "production",
@@ -113,24 +114,36 @@ export const envConfig = () => ({
             },
         },
         redis: {
-            cache: {
+            [RedisType.Cache]: {
                 // in k8s, redis cluster are hiden behind service, so we do not need to specify many nodes
-                clusterEnabled: process.env.CACHE_REDIS_CLUSTER_ENABLED === "true",
                 host: process.env.CACHE_REDIS_HOST,
                 port: Number(process.env.CACHE_REDIS_PORT),
                 password: process.env.CACHE_REDIS_PASSWORD,
+                cluster: {
+                    enabled: process.env.CACHE_REDIS_CLUSTER_ENABLED === "true",
+                    runInDocker: process.env.CACHE_REDIS_CLUSTER_RUN_IN_DOCKER === "true",
+                    dockerNetworkName: process.env.CACHE_REDIS_CLUSTER_DOCKER_NETWORK_NAME
+                }
             },
-            adapter: {
-                clusterEnabled: process.env.ADAPTER_REDIS_CLUSTER_ENABLED === "true",
+            [RedisType.Adaptper]: {
                 host: process.env.ADAPTER_REDIS_HOST,
                 port: Number(process.env.ADAPTER_REDIS_PORT),
                 password: process.env.ADAPTER_REDIS_PASSWORD,
+                cluster: {
+                    enabled: process.env.ADAPTER_REDIS_CLUSTER_ENABLED === "true",
+                    runInDocker: process.env.ADAPTER_REDIS_CLUSTER_RUN_IN_DOCKER === "true",
+                    dockerNetworkName: process.env.ADAPTER_REDIS_CLUSTER_DOCKER_NETWORK_NAME
+                }
             },
-            job: {
-                clusterEnabled: process.env.JOB_REDIS_CLUSTER_ENABLED === "true",
+            [RedisType.Job]: {
                 host: process.env.JOB_REDIS_HOST,
                 port: Number(process.env.JOB_REDIS_PORT),
                 password: process.env.JOB_REDIS_PASSWORD,
+                cluster: {
+                    enabled: process.env.JOB_REDIS_CLUSTER_ENABLED === "true",
+                    runInDocker: process.env.JOB_REDIS_CLUSTER_RUN_IN_DOCKER === "true",
+                    dockerNetworkName: process.env.JOB_REDIS_CLUSTER_DOCKER_NETWORK_NAME
+                }
             },
         }
     },
