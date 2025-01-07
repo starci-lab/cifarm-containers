@@ -21,7 +21,7 @@ const bootstrap = async () => {
 const bootstrapHealthCheck = async () => {
     const app = await NestFactory.create(
         HealthCheckModule.forRoot({
-            useDependencies: [
+            dependencies: [
                 HealthCheckDependency.CacheRedis,
                 HealthCheckDependency.GameplayPostgreSQL,
                 HealthCheckDependency.Kafka

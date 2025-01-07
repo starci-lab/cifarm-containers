@@ -189,40 +189,40 @@ export class HealthCheckController {
         const healthIndicators: Array<HealthIndicatorFunction> = []
 
         // Add ping checks based on the dependencies that are enabled
-        if (this.options.useDependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
             healthIndicators.push(async () => this.pingCheckGameplayPostgreSql())
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.CacheRedis)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.CacheRedis)) {
             healthIndicators.push(async () => this.pingCheckRedis(RedisType.Cache))
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.AdapterRedis)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.AdapterRedis)) {
             healthIndicators.push(async () => this.pingCheckRedis(RedisType.Adapter))
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.JobRedis)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.JobRedis)) {
             healthIndicators.push(async () => this.pingCheckRedis(RedisType.Job))
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.Kafka)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.Kafka)) {
             healthIndicators.push(async () => this.pingCheckKafka())
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.GameplayService)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.GameplayService)) {
             healthIndicators.push(async () => this.pingCheckGameplayService())
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.GameplaySubgraph)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.GameplaySubgraph)) {
             healthIndicators.push(async () => this.pingCheckGameplaySubgraph())
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.WebsocketNode)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.WebsocketNode)) {
             healthIndicators.push(async () => this.pingCheckWebsocketNode())
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.GraphQLGateway)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.GraphQLGateway)) {
             healthIndicators.push(async () => this.pingCheckGraphQLGateway())
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.RestApiGateway)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.RestApiGateway)) {
             healthIndicators.push(async () => this.pingCheckRestApiGateway())
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.CronScheduler)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.CronScheduler)) {
             healthIndicators.push(async () => this.pingCheckCronScheduler())
         }
-        if (this.options.useDependencies.includes(HealthCheckDependency.CronWorker)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.CronWorker)) {
             healthIndicators.push(async () => this.pingCheckCronWorker())
         }
 

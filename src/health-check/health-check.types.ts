@@ -15,5 +15,5 @@ export enum HealthCheckDependency {
 }
 
 export interface HealthCheckOptions {
-    useDependencies: Array<HealthCheckDependency>
+    dependencies: Array<HealthCheckDependency>
 }

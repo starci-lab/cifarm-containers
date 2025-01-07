@@ -15,13 +15,13 @@ export class HealthCheckModule {
             EnvModule.forRoot()
         ]
         // if gameplay postgresql is used
-        if (options.useDependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
+        if (options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
             imports.push(GameplayPostgreSQLModule.forRoot())
             imports.push(GameplayPostgreSQLModule.forFeature())
         }
         // if adapter redis is used
         if (
-            options.useDependencies.includes(HealthCheckDependency.AdapterRedis)
+            options.dependencies.includes(HealthCheckDependency.AdapterRedis)
         ) {
             imports.push(ChildProcessDockerRedisClusterModule.forRoot({
                 type: RedisType.Adapter
@@ -29,7 +29,7 @@ export class HealthCheckModule {
         }
         // if cache redis is used
         if (
-            options.useDependencies.includes(HealthCheckDependency.CacheRedis)
+            options.dependencies.includes(HealthCheckDependency.CacheRedis)
         ) {
             imports.push(ChildProcessDockerRedisClusterModule.forRoot({
                 type: RedisType.Cache
@@ -37,7 +37,7 @@ export class HealthCheckModule {
         }
         // if job redis is used
         if (
-            options.useDependencies.includes(HealthCheckDependency.JobRedis)
+            options.dependencies.includes(HealthCheckDependency.JobRedis)
         ) {
             imports.push(ChildProcessDockerRedisClusterModule.forRoot({
                 type: RedisType.Job
