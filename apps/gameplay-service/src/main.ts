@@ -3,7 +3,7 @@ import { grpcData, GrpcServiceName } from "@src/grpc"
 import { envConfig } from "@src/env"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { getLoopbackAddress } from "@src/common"
-import { HealthCheckModule } from "./health-check"
+import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { AppModule } from "./app.module"
 
 const bootstrap = async () => {
@@ -16,13 +16,19 @@ const bootstrap = async () => {
         }
     })
     await app.listen()
-} 
-
+}
 
 const bootstrapHealthCheck = async () => {
-    const app = await NestFactory.create(HealthCheckModule)
+    const app = await NestFactory.create(
+        HealthCheckModule.forRoot({
+            useDependencies: [
+                HealthCheckDependency.CacheRedis,
+                HealthCheckDependency.GameplayPostgreSQL,
+                HealthCheckDependency.Kafka
+            ]
+        })
+    )
     await app.listen(envConfig().containers.gameplayService.healthCheckPort)
 }
 
 bootstrap().then(bootstrapHealthCheck)
-  

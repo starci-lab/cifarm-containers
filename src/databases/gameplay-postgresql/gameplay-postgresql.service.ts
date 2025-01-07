@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common"
 import { DataSource } from "typeorm"
 
 @Injectable()
-export class GameplayPostgreSQLService{
+export class GameplayPostgreSQLService {
     constructor(
         private readonly dataSource: DataSource
     ) { }

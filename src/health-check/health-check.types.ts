@@ -1,5 +1,5 @@
 export enum HealthCheckDependency {
-    GameplayPostgreSql = "gameplay-postgres",
+    GameplayPostgreSQL = "gameplay-postgres",
     TelegramUserTrackerPostgreSQL = "telegram-user-tracker-postgres",
     CacheRedis = "cache-redis",
     AdapterRedis = "adapter-redis",
@@ -7,4 +7,13 @@ export enum HealthCheckDependency {
     Kafka = "kafka",
     GameplayService = "gameplay-service",
     GameplaySubgraph = "gameplay-subgraph",
+    GraphQLGateway = "graphql-gateway",
+    RestApiGateway = "rest-api-gateway",
+    WebsocketNode = "websocket-node",
+    CronScheduler = "cron-scheduler",
+    CronWorker = "cron-worker",
+}
+
+export interface HealthCheckOptions {
+    useDependencies: Array<HealthCheckDependency>
 }

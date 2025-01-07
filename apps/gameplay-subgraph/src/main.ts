@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
-import { HealthCheckModule } from "./health-check"
+import { HealthCheckModule, HealthCheckDependency } from "@src/health-check"
 import { envConfig } from "@src/env"
 
 const bootstrap = async () => {
@@ -8,7 +8,10 @@ const bootstrap = async () => {
     await app.listen(envConfig().containers.gameplaySubgraph.port)
 }
 const bootstrapHealthCheck = async () => {
-    const app = await NestFactory.create(HealthCheckModule)
+    const app = await NestFactory.create(HealthCheckModule.forRoot({
+        useDependencies: [ HealthCheckDependency.CacheRedis, HealthCheckDependency.GameplayPostgreSQL ]
+    }))
+    
     await app.listen(envConfig().containers.gameplaySubgraph.healthCheckPort)
 }
 
