@@ -41,7 +41,8 @@ export class CacheRedisModule {
                             const keyvManager = new RedisKeyvManager(nodeAddressMap)
                             // create the cache manager
                             return createCache({
-                                stores: [keyvManager.createKeyv()]
+                                stores: [keyvManager.createKeyv()],
+                                ttl: envConfig().cacheTimeoutMs
                             })
                         },
                         inject: [ChildProcessDockerRedisClusterService]

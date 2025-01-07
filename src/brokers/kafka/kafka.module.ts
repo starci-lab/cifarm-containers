@@ -3,8 +3,8 @@ import { KafkaClientService } from "./kafka.service"
 import { KAFKA_NAME } from "./kafka.constants"
 import { KafkaOptions } from "./kafka.types"
 import { ClientsModule, Transport } from "@nestjs/microservices"
+import { envConfig } from "@src/env"
 import { v4 } from "uuid"
-import { kafkaBrokers } from "./kafka.utils"
 
 @Module({})
 export class KafkaModule {
@@ -18,8 +18,15 @@ export class KafkaModule {
                         transport: Transport.KAFKA,
                         options: {
                             client: {
-                                clientId: `kafka-${v4()}`,
-                                brokers: kafkaBrokers()
+                                clientId: v4(),
+                                brokers: [
+                                    `${envConfig().messageBrokers.kafka.host}:${envConfig().messageBrokers.kafka.port}`
+                                ],
+                                sasl: {
+                                    mechanism: "scram-sha-256",
+                                    username: envConfig().messageBrokers.kafka.username,
+                                    password: envConfig().messageBrokers.kafka.password
+                                }
                             },
                             producerOnlyMode: options.producerOnly,
                             consumer: {
@@ -29,10 +36,8 @@ export class KafkaModule {
                     }
                 ])
             ],
-            providers: [
-                KafkaClientService ],
-            exports: [ KafkaClientService ]
+            providers: [KafkaClientService],
+            exports: [KafkaClientService]
         }
     }
 }
-

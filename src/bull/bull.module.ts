@@ -2,7 +2,9 @@ import { Module } from "@nestjs/common"
 import { BullRegisterOptions } from "./bull.types"
 import { bullData } from "./bull.constants"
 import { BullModule as NestBullModule } from "@nestjs/bullmq"
-import { envConfig } from "@src/env"
+import { envConfig, RedisType } from "@src/env"
+import { ChildProcessDockerRedisClusterModule, ChildProcessDockerRedisClusterService } from "@src/child-process"
+import { Cluster } from "ioredis"
 
 @Module({})
 export class BullModule { 
@@ -30,10 +32,30 @@ export class BullModule {
         return {
             module: BullModule,
             imports: [
-                NestBullModule.forRoot({
-                    connection: {
-                        host: envConfig().databases.redis.job.host,
-                        port: envConfig().databases.redis.job.port
+                NestBullModule.forRootAsync({
+                    imports: [ 
+                        ChildProcessDockerRedisClusterModule.forRoot({
+                            type: RedisType.Job
+                        }) 
+                    ],
+                    inject: [ ChildProcessDockerRedisClusterService ],
+                    useFactory: async (childProcessDockerRedisClusterService :ChildProcessDockerRedisClusterService) => {
+                        const natMap = await childProcessDockerRedisClusterService.getNatMap()
+                        const connection = new Cluster([
+                            {
+                                host: envConfig().databases.redis[RedisType.Adapter].host,
+                                port: Number(envConfig().databases.redis[RedisType.Adapter].port)
+                            }
+                        ], {
+                            scaleReads: "slave",
+                            redisOptions: {
+                                password: envConfig().databases.redis[RedisType.Cache].password || undefined,
+                            },
+                            natMap
+                        })
+                        return {
+                            connection
+                        }
                     }
                 })
             ],

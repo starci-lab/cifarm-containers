@@ -1,11 +1,11 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
-import { RedisIoAdapter } from "@src/adapters"
+import { RedisIoAdapter } from "@src/ws"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { v4 } from "uuid"
 import { HealthCheckModule } from "./health-check"
 import { envConfig } from "@src/env"
-import { kafkaBrokers, KafkaGroupId } from "@src/brokers"
+import { KafkaGroupId } from "@src/brokers"
+import { v4 } from "uuid"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -14,8 +14,15 @@ const bootstrap = async () => {
             transport: Transport.KAFKA,
             options: {
                 client: {
-                    clientId: `websocket-node-${v4()}`,
-                    brokers: kafkaBrokers(false),
+                    clientId: v4(),
+                    brokers: [
+                        `${envConfig().messageBrokers.kafka.host}:${envConfig().messageBrokers.kafka.port}`
+                    ],
+                    sasl: {
+                        mechanism: "scram-sha-256",
+                        username: envConfig().messageBrokers.kafka.username,
+                        password: envConfig().messageBrokers.kafka.password
+                    }
                 },
                 consumer: {
                     groupId: KafkaGroupId.PlacedItemsBroadcast
