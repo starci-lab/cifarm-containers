@@ -1,9 +1,10 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { exec } from "child_process"
 import os from "os"
 
 @Injectable()
 export class ChildProcessService {
+    private logger = new Logger(ChildProcessService.name)
     private platform: NodeJS.Platform
     constructor() {
         this.platform = os.platform()
@@ -16,6 +17,7 @@ export class ChildProcessService {
                 shell: this.platform === "win32" ? "powershell.exe" : "/bin/bash"
             }, (error, stdout, stderr) => {
                 if (error) {
+                    this.logger.error(`Error: ${stderr || error.message}`)
                     reject(`Error: ${stderr || error.message}`)
                 }
                 resolve(stdout)
