@@ -8,7 +8,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
         BullModule.registerQueue({
             queueName: BullQueueName.Animal
         }),
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
     ],
     providers: [AnimalWorker]
 })

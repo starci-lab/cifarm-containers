@@ -9,7 +9,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
         BullModule.registerQueue({
             queueName: BullQueueName.Energy
         }),
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         GameplayModule
     ],
     providers: [EnergyWorker]

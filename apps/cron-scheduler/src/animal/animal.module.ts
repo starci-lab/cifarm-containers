@@ -5,7 +5,7 @@ import { AnimalService } from "./animal.service"
 
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         BullModule.registerQueue({
             queueName: BullQueueName.Animal
         })

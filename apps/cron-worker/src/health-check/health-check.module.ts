@@ -8,6 +8,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
     imports: [
         EnvModule.forRoot(),
         GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         TerminusModule],
     controllers: [HealthCheckController],
     providers: [],

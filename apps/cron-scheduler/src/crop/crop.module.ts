@@ -5,7 +5,7 @@ import { CropService } from "./crop.service"
 
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         BullModule.registerQueue({
             queueName: BullQueueName.Crop
         })

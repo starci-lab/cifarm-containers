@@ -9,9 +9,9 @@ import { DeliveringProductEntity, GameplayPostgreSQLService } from "@src/databas
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { isProduction } from "@src/env"
-import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager"
 import { bullData, BullQueueName } from "@src/bull"
-import { CacheKey } from "@src/cache"
+import { CACHE_REDIS_MANAGER, CacheKey } from "@src/cache"
+import { Cache } from "cache-manager"
 dayjs.extend(utc)
 
 @Injectable()
@@ -21,7 +21,7 @@ export class DeliveryService {
 
     constructor(
         @InjectQueue(bullData[BullQueueName.Delivery].name) private deliveryQueue: Queue,
-        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+        @Inject(CACHE_REDIS_MANAGER) private cacheManager: Cache,
         private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
     ) {
         this.dataSource = this.gameplayPostgreSqlService.getDataSource()

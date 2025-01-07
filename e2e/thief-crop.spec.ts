@@ -42,6 +42,7 @@ describe("Thief crop flow", () => {
             imports: [
                 EnvModule.forRoot(),
                 GameplayPostgreSQLModule.forRoot(),
+                GameplayPostgreSQLModule.forFeature(),
                 GrpcModule.register({
                     name: GrpcServiceName.Gameplay,
                 }),
