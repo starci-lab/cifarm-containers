@@ -4,7 +4,7 @@ import { UnfollowService } from "./unfollow.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [GameplayPostgreSQLModule.forRoot()],
+    imports: [GameplayPostgreSQLModule.forFeature()],
     controllers: [UnfollowController],
     providers: [UnfollowService],
     exports: [UnfollowService]

@@ -7,7 +7,7 @@ import { BuyTileService } from "./buy-tile.service"
 @Global()
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         GameplayModule
     ],
     controllers: [BuyTileController],

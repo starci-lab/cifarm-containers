@@ -4,7 +4,7 @@ import { ReturnService } from "./return.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [GameplayPostgreSQLModule.forRoot()],
+    imports: [GameplayPostgreSQLModule.forFeature()],
     controllers: [ReturnController],
     providers: [ReturnService]
 })

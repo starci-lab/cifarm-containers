@@ -6,7 +6,7 @@ import { GameplayModule } from "@src/gameplay"
 
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         GameplayModule
     ],
     controllers: [RecoverTileController],

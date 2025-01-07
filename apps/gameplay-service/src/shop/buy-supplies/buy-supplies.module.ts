@@ -8,7 +8,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
 @Global()
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         GameplayModule
     ],
     providers: [BuySuppliesService],

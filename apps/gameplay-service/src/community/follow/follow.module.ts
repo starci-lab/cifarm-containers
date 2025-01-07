@@ -4,7 +4,7 @@ import { FollowService } from "./follow.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [ GameplayPostgreSQLModule.forRoot() ],
+    imports: [ GameplayPostgreSQLModule.forFeature() ],
     controllers: [FollowController],
     providers: [FollowService],
     exports: [FollowService]

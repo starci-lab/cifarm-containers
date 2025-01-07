@@ -7,7 +7,7 @@ import { UpgradeBuildingService } from "./upgrade-building.service"
 @Global()
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         GameplayModule
     ],
     controllers: [UpgradeBuildingController],

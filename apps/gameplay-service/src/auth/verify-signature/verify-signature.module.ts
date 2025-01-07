@@ -10,7 +10,7 @@ import { CacheRedisModule } from "@src/cache"
 @Global()
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         CacheRedisModule.forRoot(),
         GameplayModule,
         BlockchainModule,

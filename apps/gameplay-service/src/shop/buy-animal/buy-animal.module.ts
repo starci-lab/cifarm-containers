@@ -7,7 +7,7 @@ import { BuyAnimalService } from "./buy-animal.service"
 @Global()
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         GameplayModule
     ],
     controllers: [BuyAnimalController],

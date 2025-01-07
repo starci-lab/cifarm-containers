@@ -10,7 +10,7 @@ import { EnvModule } from "@src/env"
 @Module({
     imports: [
         EnvModule.forRoot(),
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         KafkaModule.forRoot({
             groupId: KafkaGroupId.PlacedItemsBroadcast,
             producerOnly: true

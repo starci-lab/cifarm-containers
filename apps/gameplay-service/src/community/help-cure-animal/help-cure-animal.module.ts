@@ -8,7 +8,7 @@ import { KafkaModule, KafkaGroupId } from "@src/brokers"
 @Global()
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         KafkaModule.forRoot({
             groupId: KafkaGroupId.PlacedItemsBroadcast,
             producerOnly: true

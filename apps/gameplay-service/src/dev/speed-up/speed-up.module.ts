@@ -6,7 +6,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
-    imports: [GameplayPostgreSQLModule.forRoot()],
+    imports: [GameplayPostgreSQLModule.forFeature()],
     providers: [SpeedUpService],
     exports: [SpeedUpService],
     controllers: [SpeedUpController]

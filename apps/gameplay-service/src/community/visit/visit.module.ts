@@ -4,7 +4,7 @@ import { VisitService } from "./visit.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [GameplayPostgreSQLModule.forRoot()],
+    imports: [GameplayPostgreSQLModule.forFeature()],
     controllers: [VisitController],
     providers: [VisitService]
 })

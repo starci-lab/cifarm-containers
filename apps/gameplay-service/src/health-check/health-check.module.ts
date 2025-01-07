@@ -9,6 +9,7 @@ import { ChildProcessDockerRedisClusterModule } from "@src/child-process"
     imports: [
         EnvModule.forRoot(),
         GameplayPostgreSQLModule.forRoot(),
+        GameplayPostgreSQLModule.forFeature(),
         TerminusModule,
         ChildProcessDockerRedisClusterModule.forRoot({
             type: RedisType.Cache
