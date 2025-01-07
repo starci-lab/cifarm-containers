@@ -1,30 +1,32 @@
 import { InjectQueue } from "@nestjs/bullmq"
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
+import { bullData, BullQueueName } from "@src/bull"
+import { CacheKey, CacheRedisService } from "@src/cache"
+import { DeliveringProductEntity, GameplayPostgreSQLService } from "@src/databases"
+import { isProduction } from "@src/env"
 import { Queue } from "bullmq"
+import { Cache } from "cache-manager"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { DeliveryJobData } from "./delivery.dto"
-import { DeliveringProductEntity, GameplayPostgreSQLService } from "@src/databases"
-import dayjs from "dayjs"
-import utc from "dayjs/plugin/utc"
-import { isProduction } from "@src/env"
-import { bullData, BullQueueName } from "@src/bull"
-import { CACHE_REDIS_MANAGER, CacheKey } from "@src/cache"
-import { Cache } from "cache-manager"
 dayjs.extend(utc)
 
 @Injectable()
 export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
     private readonly dataSource: DataSource
+    private readonly cacheManager: Cache
 
     constructor(
         @InjectQueue(bullData[BullQueueName.Delivery].name) private deliveryQueue: Queue,
-        @Inject(CACHE_REDIS_MANAGER) private cacheManager: Cache,
+        private readonly cacheRedisService: CacheRedisService,
         private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
     ) {
         this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+        this.cacheManager = this.cacheRedisService.getCacheManager()
     }
     
     @Cron("*/1 * * * * *")

@@ -1,23 +1,21 @@
 import { Module } from "@nestjs/common"
 //import { AnimalModule } from "./animal"
 
+import { EventEmitterModule } from "@nestjs/event-emitter"
+import { ScheduleModule } from "@nestjs/schedule"
+import { BullModule } from "@src/bull"
+import { GameplayPostgreSQLModule } from "@src/databases"
+import { EnvModule } from "@src/env"
 import { LeaderElectionModule } from "@src/leader-election"
 import { AnimalModule } from "./animal"
 import { CropModule } from "./crop"
 import { DeliveryModule } from "./delivery"
-import { EnvModule } from "@src/env"
-import { ScheduleModule } from "@nestjs/schedule"
-import { GameplayPostgreSQLModule } from "@src/databases"
-import { EventEmitterModule } from "@nestjs/event-emitter"
-import { BullModule } from "@src/bull"
 import { EnergyModule } from "./energy"
-import { CacheRedisModule } from "@src/cache"
 @Module({
     imports: [
         EnvModule.forRoot(),
         ScheduleModule.forRoot(),
         BullModule.forRoot(),
-        CacheRedisModule.forRoot(),
         GameplayPostgreSQLModule.forRoot(),
         EventEmitterModule.forRoot(),
         //register here for global access
