@@ -2,13 +2,17 @@ import { Module } from "@nestjs/common"
 import { HealthCheckController } from "./health-check.controller"
 import { TerminusModule } from "@nestjs/terminus"
 import { GameplayPostgreSQLModule } from "@src/databases"
-import { EnvModule } from "@src/env"
+import { EnvModule, RedisType } from "@src/env"
+import { ChildProcessDockerRedisClusterModule } from "@src/child-process"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
         GameplayPostgreSQLModule.forRoot(),
-        TerminusModule
+        TerminusModule,
+        ChildProcessDockerRedisClusterModule.forRoot({
+            type: RedisType.Cache
+        })
     ],
     controllers: [HealthCheckController],
     providers: [],

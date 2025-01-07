@@ -1,16 +1,16 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
+import { TypeORMConfig } from "@src/common"
+import { envConfig, redisClusterRunInDocker, RedisType } from "@src/env"
+import { gameplayPostgreSqlEntites } from "./entities"
+import { GameplayPostgreSQLService } from "./gameplay-postgresql.service"
+import { GameplayPostgreSQLOptions, GameplayPostgreSQLType } from "./gameplay-postgresql.types"
 import {
     ChildProcessDockerRedisClusterModule,
     ChildProcessDockerRedisClusterService
 } from "@src/child-process"
-import { TypeORMConfig } from "@src/common"
-import { envConfig, redisClusterRunInDocker, RedisType } from "@src/env"
 import { NatMap } from "ioredis"
-import { createCacheOptions } from "../utils"
-import { gameplayPostgreSqlEntites } from "./entities"
-import { GameplayPostgreSQLService } from "./gameplay-postgresql.service"
-import { GameplayPostgreSQLOptions, GameplayPostgreSQLType } from "./gameplay-postgresql.types"
+import { DbCacheManager } from "@src/cache"
 
 @Module({})
 export class GameplayPostgreSQLModule {
@@ -55,9 +55,7 @@ export class GameplayPostgreSQLModule {
                             synchronize: true,
                             poolSize: 10000,
                             connectTimeoutMS: 5000,
-                            cache: createCacheOptions({
-                                natMap
-                            }),
+                            cache: new DbCacheManager().createCacheOptions({ natMap})
                         }
                     }
                 }),

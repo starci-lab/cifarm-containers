@@ -27,6 +27,7 @@ export interface ChainCredentialsConfig {
 export const envConfig = () => ({
     port: Number(process.env.PORT),
     nodeEnv: (process.env.NODE_ENV ?? NodeEnv.Development) as NodeEnv,
+    cacheTimeoutMs: Number.parseInt(process.env.CACHE_TIMEOUT_MS),
     cors: {
         origin:
             process.env.NODE_ENV !== "production"
@@ -125,7 +126,7 @@ export const envConfig = () => ({
                     dockerNetworkName: process.env.CACHE_REDIS_CLUSTER_DOCKER_NETWORK_NAME
                 }
             },
-            [RedisType.Adaptper]: {
+            [RedisType.Adapter]: {
                 host: process.env.ADAPTER_REDIS_HOST,
                 port: Number(process.env.ADAPTER_REDIS_PORT),
                 password: process.env.ADAPTER_REDIS_PASSWORD,
@@ -148,19 +149,11 @@ export const envConfig = () => ({
         }
     },
     messageBrokers: {
-        rabbitMq: {
-            rabbitMq1: {
-                user: process.env.RABBITMQ_1_USER,
-                password: process.env.RABBITMQ_1_PASSWORD,
-                port: process.env.RABBITMQ_1_PORT,
-                host: process.env.RABBITMQ_1_HOST
-            }
-        },
         kafka: {
-            kafka1: {
-                host: process.env.KAFKA_1_HOST,
-                port: process.env.KAFKA_1_PORT
-            }
+            host: process.env.KAFKA_HOST,
+            port: process.env.KAFKA_PORT,
+            username: process.env.KAFKA_USERNAME,
+            password: process.env.KAFKA_PASSWORD
         }
     },
     zookeeper: {
