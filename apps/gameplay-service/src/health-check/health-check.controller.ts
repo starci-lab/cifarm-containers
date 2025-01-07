@@ -25,8 +25,9 @@ export class HealthCheckController {
         return this.health.check([
             async () => this.db.pingCheck(HealthCheckDependency.GameplayPostgreSql, { timeout: HEALTH_CHECK_TIMEOUT }),
             async () => {
+                const clusterEnabled = redisClusterEnabled(RedisType.Cache)
                 // Check if Redis cluster is enabled
-                if (!redisClusterEnabled(RedisType.Cache)) {
+                if (!clusterEnabled) {
                     // Redis cluster is not enabled
                     return await this.microservice.pingCheck<RedisOptions>(HealthCheckDependency.CacheRedis, {
                         transport: Transport.REDIS,
