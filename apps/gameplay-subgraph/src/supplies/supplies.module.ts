@@ -5,7 +5,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
  
 
 @Module({
-    imports: [ GameplayPostgreSQLModule.forRoot() ],
+    imports: [ GameplayPostgreSQLModule.forFeature() ],
     providers: [SuppliesService, SuppliesResolver]
 })
 export class SuppliesModule {}

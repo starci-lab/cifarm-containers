@@ -4,7 +4,7 @@ import { AnimalsService } from "./animals.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [GameplayPostgreSQLModule.forRoot()],
+    imports: [GameplayPostgreSQLModule.forFeature()],
     providers: [AnimalsService, AnimalsResolver]
 })
 export class AnimalsModule {}

@@ -7,7 +7,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
  
 
 @Module({
-    imports: [ CryptoModule, CacheRedisModule.forRoot(),  GameplayPostgreSQLModule.forRoot() ],
+    imports: [ CryptoModule, CacheRedisModule.forRoot(),  GameplayPostgreSQLModule.forFeature() ],
     providers: [ BuildingsService, BuildingsResolver ]
 })
 export class BuildingsModule {}

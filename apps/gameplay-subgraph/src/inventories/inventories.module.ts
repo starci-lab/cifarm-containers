@@ -5,7 +5,7 @@ import { GameplayPostgreSQLModule } from "@src/databases"
 import { JwtModule } from "@src/jwt"
 
 @Module({
-    imports: [ GameplayPostgreSQLModule.forRoot(), JwtModule ],
+    imports: [ GameplayPostgreSQLModule.forFeature(), JwtModule ],
     providers: [InventoryService, InventoryResolver]
 })
 export class InventoriesModule {}

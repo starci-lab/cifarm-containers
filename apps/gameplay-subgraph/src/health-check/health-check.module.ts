@@ -5,7 +5,7 @@ import { EnvModule } from "@src/env"
 import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [EnvModule.forRoot(), GameplayPostgreSQLModule.forRoot(), TerminusModule],
+    imports: [EnvModule.forRoot(), GameplayPostgreSQLModule.forRoot(), GameplayPostgreSQLModule.forFeature(), TerminusModule],
     controllers: [HealthCheckController],
     providers: [],
     exports: []

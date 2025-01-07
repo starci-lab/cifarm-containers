@@ -4,7 +4,7 @@ import { TilesService } from "./tiles.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [ GameplayPostgreSQLModule.forRoot() ],
+    imports: [ GameplayPostgreSQLModule.forFeature() ],
     providers: [ TilesService, TilesResolver ]
 })
 export class TilesModule {}
