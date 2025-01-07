@@ -30,7 +30,7 @@ export class DebugRedisClusterService implements OnModuleInit {
         }
 
         let natMap: NatMap
-        if (!redisClusterRunInDocker(this.type)) {
+        if (redisClusterRunInDocker(this.type)) {
             natMap = await this.childProcessDockerRedisClusterService.getNatMap()
         }
 

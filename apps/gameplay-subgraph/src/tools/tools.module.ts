@@ -4,7 +4,7 @@ import { ToolsService } from "./tools.service"
 import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [GameplayPostgreSQLModule.forRoot() ],
+    imports: [GameplayPostgreSQLModule.forFeature()],
     providers: [ ToolsService, ToolsResolver ]
 })
 export class ToolsModule {}

@@ -13,21 +13,22 @@ import { UpgradesModule } from "./upgrades"
 import { EnvModule, RedisType } from "@src/env"
 import { GraphQLModule } from "@src/graphql"
 import { DebugRedisClusterModule } from "@src/debug"
-import { CacheRedisModule } from "@src/cache"
+import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
     imports: [
+        GameplayPostgreSQLModule.forRoot(),
         EnvModule.forRoot(),
         GraphQLModule.forSubgraph(),
-        AnimalsModule,
-        BuildingsModule,
-        CropsModule,
-        InventoriesModule,
-        PlacedItemsModule,
-        ProductsModule,
-        SuppliesModule,
-        SystemsModule,
-        TilesModule,
+        // AnimalsModule,
+        // BuildingsModule,
+        // CropsModule,
+        // InventoriesModule,
+        // PlacedItemsModule,
+        // ProductsModule,
+        // SuppliesModule,
+        // SystemsModule,
+        // TilesModule,
         ToolsModule,
         UpgradesModule,
 
