@@ -40,23 +40,26 @@ export class HealthCheckController {
         private readonly db: TypeOrmHealthIndicator,
         private readonly http: HttpHealthIndicator,
         // private gameplayPostgreSQLService: GameplayPostgreSQLService,
-        private readonly moduleRef: ModuleRef
+        private readonly moduleRef: ModuleRef,
     ) {
         if (options.dependencies.includes(HealthCheckDependency.JobRedis)) {
             this.execDockerRedisClusterServices[RedisType.Job] = this.moduleRef.get(
                 JOB_REDIS_INJECTION_TOKEN,
+                // not in current module
                 { strict: false }
             )
         }
         if (options.dependencies.includes(HealthCheckDependency.CacheRedis)) {
             this.execDockerRedisClusterServices[RedisType.Cache] = this.moduleRef.get(
                 CACHE_REDIS_INJECTION_TOKEN,
+                // not in current module
                 { strict: false }
             )
         }
         if (options.dependencies.includes(HealthCheckDependency.AdapterRedis)) {
             this.execDockerRedisClusterServices[RedisType.Adapter] = this.moduleRef.get(
                 ADAPTER_REDIS_INJECTION_TOKEN,
+                // not in current module
                 { strict: false }
             )
         }

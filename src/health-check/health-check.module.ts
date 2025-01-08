@@ -19,6 +19,7 @@ export class HealthCheckModule extends ConfigurableModuleClass {
             TerminusModule,
             EnvModule.forRoot()
         ]
+
         // if gameplay postgresql is used
         if (options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
             imports.push(PostgreSQLModule.forRoot())

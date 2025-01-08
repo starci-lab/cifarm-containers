@@ -6,11 +6,9 @@ import { ExecService } from "./exec.service"
 @Module({})
 export class ExecModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
-        const providers: Array<Provider> = []
+        // define the providers and exports
+        const providers: Array<Provider> = [ExecService]
         const exports: Array<Provider> = []
-
-        // add the ExecService to the providers
-        providers.push(ExecService)
 
         // if the redisCluster is enabled and running in docker
         const redisCluster = options?.docker?.redisCluster
@@ -19,10 +17,12 @@ export class ExecModule extends ConfigurableModuleClass {
             exports.push(ExecDockerRedisClusterService)
             // if an injectionToken is provided, add it to the providers
             if (redisCluster.injectionToken) {
-                providers.push({
+                const provider: Provider = {
                     provide: redisCluster.injectionToken,
                     useExisting: ExecDockerRedisClusterService
-                })
+                }
+                providers.push(provider)
+                exports.push(provider)
             }
         }
 
