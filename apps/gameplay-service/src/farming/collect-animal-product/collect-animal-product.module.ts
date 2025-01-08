@@ -1,17 +1,13 @@
-import { Module, Global } from "@nestjs/common"
+import { Global, Module } from "@nestjs/common"
+import { GameplayModule } from "@src/gameplay"
 import { CollectAnimalProductController } from "./collect-animal-product.controller"
 import { CollectAnimalProductService } from "./collect-animal-product.service"
-import { GameplayModule } from "@src/gameplay"
-import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Global()
 @Module({
-    imports: [
-        GameplayPostgreSQLModule.forFeature(),
-        GameplayModule,
-    ],
+    imports: [GameplayModule],
     controllers: [CollectAnimalProductController],
     providers: [CollectAnimalProductService],
-    exports: [CollectAnimalProductService],
+    exports: [CollectAnimalProductService]
 })
 export class CollectAnimalProductModule {}

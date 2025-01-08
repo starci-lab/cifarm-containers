@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { GameplayPostgreSQLService, InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity, PlacedItemType } from "@src/databases"
+import {  InjectPostgreSQL, InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity, PlacedItemType } from "@src/databases"
 import { PlacedItemNotFoundException, PlacedItemTypeNotTileException } from "@src/exceptions"
 import { InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
@@ -9,12 +9,11 @@ import { RecoverTileRequest, RecoverTileResponse } from "./recover-tile.dto"
 export class RecoverTileService {
     private readonly logger = new Logger(RecoverTileService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly inventoryService: InventoryService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async recoverTile(request: RecoverTileRequest): Promise<RecoverTileResponse> {

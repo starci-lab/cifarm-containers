@@ -1,18 +1,17 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { RequestMessageResponse } from "./request-message.dto"
+import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { v4 } from "uuid"
-import { CacheRedisService } from "@src/cache"
+import { RequestMessageResponse } from "./request-message.dto"
 
 @Injectable()
 export class RequestMessageService {
     private readonly logger = new Logger(RequestMessageService.name)
 
-    private readonly cacheManager: Cache
     constructor(
-        private readonly cacheRedisService: CacheRedisService
+        @InjectCache()
+        private readonly cacheManager: Cache
     ) {
-        this.cacheManager = this.cacheRedisService.getCacheManager()
     }
 
     public async requestMessage(): Promise<RequestMessageResponse> {

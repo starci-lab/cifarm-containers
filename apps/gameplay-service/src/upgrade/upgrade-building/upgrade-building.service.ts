@@ -1,26 +1,25 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DataSource } from "typeorm"
-import { GameplayPostgreSQLService, PlacedItemEntity, UserEntity } from "@src/databases"
+import { InjectPostgreSQL, PlacedItemEntity, UserEntity } from "@src/databases"
 import {
-    PlacedItemNotFoundException,
     BuildingAlreadyMaxUpgradeException,
-    UpgradeBuildingTransactionFailedException,
     BuildingNextUpgradeNotFoundException,
+    PlacedItemNotFoundException,
+    UpgradeBuildingTransactionFailedException,
     UserNotFoundException,
 } from "@src/exceptions"
-import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"
 import { GoldBalanceService } from "@src/gameplay"
+import { DataSource } from "typeorm"
+import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"
 
 @Injectable()
 export class UpgradeBuildingService {
     private readonly logger = new Logger(UpgradeBuildingService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async upgradeBuilding(request: UpgradeBuildingRequest): Promise<UpgradeBuildingResponse> {

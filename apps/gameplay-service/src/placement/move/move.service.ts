@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { GameplayPostgreSQLService, PlacedItemEntity, UserEntity } from "@src/databases"
+import { InjectPostgreSQL, PlacedItemEntity, UserEntity } from "@src/databases"
 import { PlacedItemNotFoundException, UserIsNotOwnerPlacedItemException } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import { MoveRequest } from "./move.dto"
@@ -8,11 +8,10 @@ import { MoveRequest } from "./move.dto"
 export class MoveService {
     private readonly logger = new Logger(MoveService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async move(request:MoveRequest) {

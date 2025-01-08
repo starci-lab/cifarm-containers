@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
-    PlacedItemEntity,
+    PlacedItemEntity
 } from "@src/databases"
 import {
     InventoryNotFoundException,
@@ -16,11 +16,10 @@ import { PlaceTileRequest, PlaceTileResponse } from "./place-tile.dto"
 export class PlaceTileService {
     private readonly logger = new Logger(PlaceTileService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async placeTile(request: PlaceTileRequest): Promise<PlaceTileResponse> {

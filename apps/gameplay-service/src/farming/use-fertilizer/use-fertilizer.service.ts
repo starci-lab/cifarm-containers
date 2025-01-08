@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
@@ -27,13 +27,12 @@ import { UseFertilizerRequest, UseFertilizerResponse } from "./use-fertilizer.dt
 export class UseFertilizerService {
     private readonly logger = new Logger(UseFertilizerService.name)
     
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async useFertilizer(request: UseFertilizerRequest): Promise<UseFertilizerResponse> {

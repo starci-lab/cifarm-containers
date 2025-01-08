@@ -1,25 +1,24 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, GameplayPostgreSQLService, PlacedItemEntity, PlacedItemTypeEntity, UserEntity } from "@src/databases"
+import { BuildingEntity, InjectPostgreSQL, PlacedItemEntity, PlacedItemTypeEntity, UserEntity } from "@src/databases"
 import {
     BuildingNotAvailableInShopException,
     BuildingNotFoundException,
     ConstructBuildingTransactionFailedException,
     PlacedItemTypeNotFoundException
 } from "@src/exceptions"
+import { GoldBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
-import { GoldBalanceService } from "@src/gameplay"
 
 @Injectable()
 export class ConstructBuildingService {
     private readonly logger = new Logger(ConstructBuildingService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,        
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,      
         private readonly goldBalanceService: GoldBalanceService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {

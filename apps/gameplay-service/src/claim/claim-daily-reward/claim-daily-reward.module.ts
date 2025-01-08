@@ -1,15 +1,10 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
+import { GameplayModule } from "@src/gameplay"
 import { ClaimDailyRewardSpinController } from "./claim-daily-reward.controller"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
-import { GameplayModule } from "@src/gameplay"
-import { GameplayPostgreSQLModule } from "@src/databases"
 
-@Global()
 @Module({
-    imports: [
-        GameplayPostgreSQLModule.forFeature(),
-        GameplayModule
-    ],
+    imports: [GameplayModule],
     providers: [ClaimDailyRewardService],
     exports: [ClaimDailyRewardService],
     controllers: [ClaimDailyRewardSpinController]

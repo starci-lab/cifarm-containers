@@ -3,7 +3,7 @@ import {
     Activities,
     AnimalCurrentState,
     AnimalInfoEntity,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
@@ -27,13 +27,12 @@ import { FeedAnimalRequest, FeedAnimalResponse } from "./feed-animal.dto"
 export class FeedAnimalService {
     private readonly logger = new Logger(FeedAnimalService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async feedAnimal(request: FeedAnimalRequest): Promise<FeedAnimalResponse> {

@@ -1,41 +1,39 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    HelpCureAnimalTransactionFailedException,
-    PlacedItemAnimalNotFoundException,
-    PlacedItemAnimalNotSickException
-} from "@src/exceptions"
-import { DataSource } from "typeorm"
+import { ClientKafka } from "@nestjs/microservices"
+import { KafkaPattern } from "@src/brokers"
+import { InjectKafka } from "@src/brokers/kafka/kafka.decorators"
 import {
     Activities,
     AnimalCurrentState,
     AnimalInfoEntity,
+    InjectPostgreSQL,
     PlacedItemEntity,
     PlacedItemType,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/databases"
+import {
+    HelpCureAnimalTransactionFailedException,
+    PlacedItemAnimalNotFoundException,
+    PlacedItemAnimalNotSickException
+} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
+import { DataSource } from "typeorm"
 import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
-import { GameplayPostgreSQLService } from "@src/databases"
-import { KafkaClientService, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class HelpCureAnimalService {
     private readonly logger = new Logger(HelpCureAnimalService.name)
 
-    private readonly dataSource: DataSource
-    private readonly clientKafka: ClientKafka
     constructor(
-        private readonly kafkaClientService: KafkaClientService,
-        private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
-    ) {
-        this.dataSource = this.gameplayPostgreSQLService.getDataSource()
-        this.clientKafka = this.kafkaClientService.getClient()
-    }
+    ) {}
 
     async helpCureAnimal(request: HelpCureAnimalRequest): Promise<HelpCureAnimalResponse> {
         this.logger.debug(`Help cure animal for user ${request.neighborUserId}`)
@@ -113,10 +111,9 @@ export class HelpCureAnimalService {
                 throw new HelpCureAnimalTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(
-                KafkaPattern.PlacedItemsBroadcast, {
-                    userId: request.neighborUserId
-                })
+            this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
+                userId: request.neighborUserId
+            })
 
             return {}
         } finally {

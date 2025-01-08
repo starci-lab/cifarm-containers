@@ -1,18 +1,17 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { InjectPostgreSQL, UserEntity } from "@src/databases"
 import { UpdateTutorialTransactionFailedException } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import { UpdateTutorialRequest, UpdateTutorialResponse } from "./update-tutorial.dto"
-import { GameplayPostgreSQLService, UserEntity } from "@src/databases"
 
 @Injectable()
 export class UpdateTutorialService {
     private readonly logger = new Logger(UpdateTutorialService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async updateTutorial(request: UpdateTutorialRequest): Promise<UpdateTutorialResponse> {
