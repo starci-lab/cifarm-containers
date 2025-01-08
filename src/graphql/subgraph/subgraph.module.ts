@@ -9,7 +9,6 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./subgraph.module-definit
 export class GraphQLSubgraphModule extends ConfigurableModuleClass {
     public static forRoot(options: typeof OPTIONS_TYPE = {}) {
         const dynamicModule = super.forRoot(options)
-
         return {
             ...dynamicModule,
             imports: [

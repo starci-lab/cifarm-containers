@@ -17,7 +17,7 @@ const basePackage = {
         "@nestjs/platform-express": "^10.0.0",
         "pg": "8.13.1",
         "@apollo/subgraph": "2.9.3",
-        "@apollo/server": "4.11.2",
+        "@apollo/server": "^4.11.3",
         "ioredis": "^5.4.2",
     }
 }

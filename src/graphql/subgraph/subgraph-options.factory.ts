@@ -1,5 +1,5 @@
 import responseCachePlugin from "@apollo/server-plugin-response-cache"
-import { ApolloServerPluginCacheControl } from "@apollo/server/dist/esm/plugin/cacheControl"
+import { ApolloServerPluginCacheControl } from "@apollo/server/plugin/cacheControl"
 import { ApolloDriverConfig } from "@nestjs/apollo"
 import { Injectable } from "@nestjs/common"
 import { Int } from "@nestjs/graphql"
@@ -8,7 +8,7 @@ import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } 
 
 @Injectable()
 export class SubgraphOptionsFactory {
-    constructor(private keyvService: KeyvService) {}
+    constructor(private keyvService: KeyvService) { }
 
     createSubgraphOptions(): Omit<ApolloDriverConfig, "driver"> {
         return {

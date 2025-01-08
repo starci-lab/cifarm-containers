@@ -21,9 +21,8 @@ import { JwtModule } from "@src/jwt"
 @Module({
     imports: [
         //core modules
-        PostgreSQLModule.forRoot(),
         EnvModule.forRoot(),
-        GraphQLSubgraphModule.forRoot(),
+        PostgreSQLModule.forRoot(),
         CryptoModule.register({
             isGlobal: true
         }),
@@ -33,6 +32,7 @@ import { JwtModule } from "@src/jwt"
         JwtModule.register({
             isGlobal: true
         }),
+        GraphQLSubgraphModule.forRoot(),
 
         //functional modules
         AnimalsModule,
