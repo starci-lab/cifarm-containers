@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DailyRewardEntity, GameplayPostgreSQLService } from "@src/databases"
+import { DailyRewardEntity, InjectPostgreSQL } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetDailyRewardsArgs } from "./daily-rewards.dto"
 
@@ -7,13 +7,10 @@ import { GetDailyRewardsArgs } from "./daily-rewards.dto"
 export class DailyRewardsService {
     private readonly logger = new Logger(DailyRewardsService.name)
 
-    private readonly dataSource: DataSource
-        
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) { }
 
     async getDailyReward(id: string): Promise<DailyRewardEntity> {
         this.logger.debug(`GetDailyRewardById: id=${id}`)

@@ -1,11 +1,8 @@
 import { Module } from "@nestjs/common"
 import { DailyRewardsResolver } from "./daily-rewards.resolver"
 import { DailyRewardsService } from "./daily-rewards.service"
-import { GameplayPostgreSQLModule } from "@src/databases"
- 
 
 @Module({
-    imports: [ GameplayPostgreSQLModule.forFeature() ],
-    providers: [ DailyRewardsService, DailyRewardsResolver ]
+    providers: [DailyRewardsService, DailyRewardsResolver]
 })
 export class DailyRewardsModule {}

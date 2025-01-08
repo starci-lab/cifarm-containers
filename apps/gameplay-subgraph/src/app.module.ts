@@ -1,9 +1,6 @@
 import { Module } from "@nestjs/common"
-import { GameplayPostgreSQLModule } from "@src/databases"
 import { DebugRedisClusterModule } from "@src/debug"
 import { EnvModule, RedisType } from "@src/env"
-import { GraphQLModule } from "@src/graphql"
-import { AnimalsModule } from "./animals"
 import { BuildingsModule } from "./buildings"
 import { CropsModule } from "./crops"
 import { InventoriesModule } from "./delivering-products"
@@ -14,12 +11,30 @@ import { SystemsModule } from "./systems"
 import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
+import { PostgreSQLModule } from "@src/databases"
+import { GraphQLSubgraphModule } from "@src/graphql"
+import { AnimalsModule } from "./animals"
+import { CryptoModule } from "@src/crypto"
+import { CacheModule } from "@src/cache"
+import { JwtModule } from "@src/jwt"
 
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forRoot(),
+        //core modules
+        PostgreSQLModule.forRoot(),
         EnvModule.forRoot(),
-        GraphQLModule.forSubgraph(),
+        GraphQLSubgraphModule.forRoot(),
+        CryptoModule.register({
+            isGlobal: true
+        }),
+        CacheModule.register({
+            isGlobal: true
+        }),
+        JwtModule.register({
+            isGlobal: true
+        }),
+        
+        //functional modules
         AnimalsModule,
         BuildingsModule,
         CropsModule,
@@ -32,11 +47,10 @@ import { UpgradesModule } from "./upgrades"
         ToolsModule,
         UpgradesModule,
 
-        //===DEBUG===//
-        DebugRedisClusterModule.forRoot({
+        //debug modules
+        DebugRedisClusterModule.register({
             type: RedisType.Cache
         }),
-        //CacheRedisModule.forRoot()
     ]
 }) 
 export class AppModule {}

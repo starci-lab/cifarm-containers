@@ -1,26 +1,22 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity, GameplayPostgreSQLService } from "@src/databases"
-import { DataSource } from "typeorm"
+import { AnimalEntity, InjectPostgreSQL } from "@src/databases"
+import { DataSource, FindOptionsRelations } from "typeorm"
 import { GetAnimalsArgs } from "./animals.dto"
 
 @Injectable()
 export class AnimalsService {
-    
     private readonly logger = new Logger(AnimalsService.name)
 
-    private readonly relations = {
+    private readonly relations: FindOptionsRelations<AnimalEntity> = {
         product: true,
         inventoryType: true,
-        placedItemType: true,
+        placedItemType: true
     }
 
-    private readonly dataSource: DataSource
-    
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) {}
 
     async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         this.logger.debug(`GetAnimals: limit=${limit}, offset=${offset}`)

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { GameplayPostgreSQLService, ToolEntity } from "@src/databases"
+import { InjectPostgreSQL, ToolEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetToolsArgs } from "./tools.dto"
 
@@ -7,12 +7,11 @@ import { GetToolsArgs } from "./tools.dto"
 export class ToolsService {
     private readonly logger = new Logger(ToolsService.name)
 
-    private readonly dataSource: DataSource
+    
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) { }
 
     async getTool(id: string): Promise<ToolEntity | null> {
         this.logger.debug(`GetToolById: id=${id}`)
