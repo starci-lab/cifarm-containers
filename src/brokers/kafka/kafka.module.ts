@@ -8,12 +8,12 @@ import { KafkaGroupId } from "./kafka.types"
 
 @Module({})
 export class KafkaModule extends ConfigurableModuleClass {
-    public static forRoot(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
+    public static register(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
         const groupId = options.groupId ?? KafkaGroupId.PlacedItemsBroadcast
         const producerOnly = options.producerOnly ?? false
-
+        const dynamicModule = super.register(options)
         return {
-            module: KafkaModule,
+            ...dynamicModule,
             imports: [
                 ClientsModule.register([
                     {

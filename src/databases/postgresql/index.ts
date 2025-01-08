@@ -1,5 +1,4 @@
-export * from "./gameplay/entities"
 export * from "./postgresql.module"
 export * from "./postgresql.types"
-export * from "./gameplay-postgresql.service"
-export * from "./gameplay/enums"
+export * from "./gameplay"
+export * from "./telegram"

@@ -9,7 +9,7 @@ import {
     MicroserviceHealthIndicator,
     TypeOrmHealthIndicator
 } from "@nestjs/terminus"
-import { ChildProcessDockerRedisClusterService } from "@src/exec"
+import { ExecDockerRedisClusterService } from "@src/exec"
 import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
 import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 import {
@@ -34,7 +34,7 @@ export class HealthCheckController {
         private db: TypeOrmHealthIndicator,
         private http: HttpHealthIndicator,
         // private gameplayPostgreSQLService: GameplayPostgreSQLService,
-        private childProcessDockerRedisClusterService: ChildProcessDockerRedisClusterService
+        private execDockerRedisClusterService: ExecDockerRedisClusterService
     ) { }
 
     // Ping check for Redis
@@ -57,9 +57,11 @@ export class HealthCheckController {
             )
         }
         let natMap: NatMap
+        // Check if Redis cluster is running in Docker
         if (redisClusterRunInDocker(type)) {
-            natMap = await this.childProcessDockerRedisClusterService.getNatMap()
+            natMap = this.execDockerRedisClusterService.getNatMap()
         }
+
         return await this.microservice.pingCheck<RedisOptions>(type, {
             transport: Transport.REDIS,
             options: {
