@@ -1,7 +1,7 @@
 import { SupportedChainKey, Network } from "@src/blockchain"
 import { Container, NodeEnv, RedisType } from "./env.types"
 import { DEFAULT_CACHE_TIMEOUT_MS, DEFAULT_HEALTH_PORT, DEFAULT_KAFKA_PORT, DEFAULT_PORT, DEFAULT_POSTGRES_PORT, DEFAULT_REDIS_PORT, LOCALHOST } from "./env.constants"
-import { PostgreSQLDatabase, DatabaseContext } from "@src/databases"
+import { PostgreSQLDatabase, PostgreSQLContext } from "@src/databases"
 import { Brokers } from "@src/brokers"
 
 export const envConfig = () => ({
@@ -59,14 +59,14 @@ export const envConfig = () => ({
     databases: {
         postgresql: {
             [PostgreSQLDatabase.Gameplay]: {
-                [DatabaseContext.Main]: {
+                [PostgreSQLContext.Main]: {
                     dbName: process.env.GAMEPLAY_POSTGRESQL_DBNAME ?? "gameplay",
                     host: process.env.GAMEPLAY_POSTGRESQL_HOST ?? LOCALHOST,
                     port: Number.parseInt(process.env.GAMEPLAY_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
                     username: process.env.GAMEPLAY_POSTGRESQL_USERNAME,
                     password: process.env.GAMEPLAY_POSTGRESQL_PASSWORD
                 },
-                [DatabaseContext.Mock]: {
+                [PostgreSQLContext.Mock]: {
                     dbName: process.env.GAMEPLAY_MOCK_POSTGRESQL_DBNAME ?? "gameplay",
                     host: process.env.GAMEPLAY_MOCK_POSTGRESQL_HOST ?? LOCALHOST,
                     port: Number.parseInt(process.env.GAMEPLAY_MOCK_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
@@ -75,14 +75,14 @@ export const envConfig = () => ({
                 }
             },
             [PostgreSQLDatabase.Telegram]: {
-                [DatabaseContext.Main]: {
+                [PostgreSQLContext.Main]: {
                     dbName: process.env.TELEGRAM_POSTGRESQL_DBNAME ?? "telegram",
                     host: process.env.TELEGRAM_POSTGRESQL_HOST ?? LOCALHOST,
                     port: Number.parseInt(process.env.TELEGRAM_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
                     username: process.env.TELEGRAM_POSTGRESQL_USERNAME,
                     password: process.env.TELEGRAM_POSTGRESQL_PASSWORD,
                 },
-                [DatabaseContext.Mock]: {
+                [PostgreSQLContext.Mock]: {
                     dbName: process.env.TELEGRAM_MOCK_POSTGRESQL_DBNAME ?? "telegram",
                     host: process.env.TELEGRAM_MOCK_POSTGRESQL_HOST ?? LOCALHOST,
                     port: Number.parseInt(process.env.TELEGRAM_MOCK_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,

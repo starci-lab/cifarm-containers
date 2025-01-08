@@ -3,7 +3,7 @@ import { BullRegisterOptions } from "./bull.types"
 import { bullData } from "./bull.constants"
 import { BullModule as NestBullModule } from "@nestjs/bullmq"
 import { envConfig, RedisType } from "@src/env"
-import { ChildProcessDockerRedisClusterModule, ChildProcessDockerRedisClusterService } from "@src/child-process"
+import { ChildProcessDockerRedisClusterModule, ChildProcessDockerRedisClusterService } from "@src/exec"
 import { Cluster } from "ioredis"
 
 @Module({})

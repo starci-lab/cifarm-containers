@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common"
 import { HealthCheckController } from "./health-check.controller"
 import { TerminusModule } from "@nestjs/terminus"
 import { GameplayPostgreSQLModule } from "@src/databases"
-import { ChildProcessDockerRedisClusterModule } from "@src/child-process"
+import { ChildProcessDockerRedisClusterModule } from "@src/exec"
 import { RedisType } from "@src/env"
 
 @Module({

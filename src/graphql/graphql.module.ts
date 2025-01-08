@@ -8,7 +8,7 @@ import { getHttpUrl } from "@src/common"
 import { envConfig, redisClusterRunInDocker, RedisType } from "@src/env"
 import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } from "graphql"
 import responseCachePlugin from "@apollo/server-plugin-response-cache"
-import { ChildProcessDockerRedisClusterModule, ChildProcessDockerRedisClusterService } from "@src/child-process"
+import { ChildProcessDockerRedisClusterModule, ChildProcessDockerRedisClusterService } from "@src/exec"
 import { RedisKeyvManager } from "@src/cache"
 import { NodeAddressMap } from "@redis/client/dist/lib/cluster/cluster-slots"
 

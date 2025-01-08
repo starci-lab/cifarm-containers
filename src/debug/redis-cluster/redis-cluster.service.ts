@@ -3,7 +3,7 @@ import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } fr
 import { Cluster, NatMap } from "ioredis"
 import { DEBUG_REDIS_CLUSTER_OPTIONS } from "./redis-cluster.constants"
 import { DebugRedisClusterOptions } from "./redis-cluster.types"
-import { ChildProcessDockerRedisClusterService } from "@src/child-process"
+import { ChildProcessDockerRedisClusterService } from "@src/exec"
 
 @Injectable()
 export class DebugRedisClusterService implements OnModuleInit {

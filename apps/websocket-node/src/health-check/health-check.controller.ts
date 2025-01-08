@@ -1,7 +1,7 @@
 import { Controller, Get, Logger } from "@nestjs/common"
 import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
 import { HealthCheck, HealthCheckService, MicroserviceHealthIndicator, TypeOrmHealthIndicator } from "@nestjs/terminus"
-import { ChildProcessDockerRedisClusterService } from "@src/child-process"
+import { ChildProcessDockerRedisClusterService } from "@src/exec"
 import { envConfig, redisClusterRunInDocker, RedisType } from "@src/env"
 import { HEALTH_CHECK_ENDPOINT, HEALTH_CHECK_TIMEOUT, HealthCheckDependency } from "@src/health-check"
 import { NatMap } from "ioredis"

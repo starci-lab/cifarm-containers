@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { HEALTH_CHECK_OPTIONS } from "./health-check.constants"
 import { TerminusModule } from "@nestjs/terminus"
-import { ChildProcessDockerRedisClusterModule } from "@src/child-process"
+import { ChildProcessDockerRedisClusterModule } from "@src/exec"
 import { GameplayPostgreSQLModule } from "@src/databases"
 import { EnvModule, RedisType } from "@src/env"
 import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"

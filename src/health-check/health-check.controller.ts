@@ -9,7 +9,7 @@ import {
     MicroserviceHealthIndicator,
     TypeOrmHealthIndicator
 } from "@nestjs/terminus"
-import { ChildProcessDockerRedisClusterService } from "@src/child-process"
+import { ChildProcessDockerRedisClusterService } from "@src/exec"
 import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
 import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 import {

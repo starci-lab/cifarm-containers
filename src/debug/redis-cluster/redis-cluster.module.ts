@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common"
 import { DebugRedisClusterService } from "./redis-cluster.service"
 import { DebugRedisClusterOptions } from "./redis-cluster.types"
 import { DEBUG_REDIS_CLUSTER_OPTIONS } from "./redis-cluster.constants"
-import { ChildProcessDockerRedisClusterModule } from "@src/child-process"
+import { ChildProcessDockerRedisClusterModule } from "@src/exec"
 import { RedisType } from "@src/env"
 
 @Module({})
