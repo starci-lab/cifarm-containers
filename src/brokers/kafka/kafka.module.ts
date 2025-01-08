@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common"
+import { DynamicModule, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { envConfig } from "@src/env"
 import { v4 } from "uuid"
@@ -8,7 +8,7 @@ import { KafkaGroupId } from "./kafka.types"
 
 @Module({})
 export class KafkaModule extends ConfigurableModuleClass {
-    public static forRoot(options: typeof OPTIONS_TYPE = {}) {
+    public static forRoot(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
         const groupId = options.groupId ?? KafkaGroupId.PlacedItemsBroadcast
         const producerOnly = options.producerOnly ?? false
 
