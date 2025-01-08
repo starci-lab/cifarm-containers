@@ -1,17 +1,28 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { exec as nodeExec, execSync as nodeExecSync } from "child_process"
 import os from "os"
+import { MODULE_OPTIONS_TOKEN } from "./exec.module-definition"
+import { ExecOptions } from "./exec.types"
 
 @Injectable()
 export class ExecService {
     private logger = new Logger(ExecService.name)
     private shell: "powershell.exe" | "/bin/bash"
-    constructor() {
+    private debug: boolean
+    constructor(
+        @Inject(MODULE_OPTIONS_TOKEN)
+        private options: ExecOptions
+    ) {
         const platform = os.platform()
         this.shell = platform === "win32" ? "powershell.exe" : "/bin/bash"
+        this.debug = options.debug || true
     }
     public async exec(command: string): Promise<string> {
-        this.logger.debug(`Executing command: ${command}`)
+        // Log the command if debug is enabled
+        if (this.debug) {
+            this.logger.debug(`Executing command: ${command}`)
+        }
+        
         return new Promise((resolve, reject) => {
             nodeExec(
                 command,
@@ -30,7 +41,10 @@ export class ExecService {
     }
 
     public execSync(command: string): string {
-        this.logger.debug(`Executing command: ${command}`)
+        // Log the command if debug is enabled
+        if (this.debug) {
+            this.logger.debug(`Executing command: ${command}`)
+        }
         return nodeExecSync(command, {
             encoding: "utf8",
             shell: this.shell

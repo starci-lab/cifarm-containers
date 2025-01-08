@@ -14,3 +14,7 @@ export interface TransactionHttpResponseData {
 }
 
 export type Atomic = string | number | boolean | object
+
+export interface BaseOptions {
+    debug?: boolean
+}
