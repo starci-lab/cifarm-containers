@@ -15,9 +15,9 @@ export class GraphQLSubgraphModule extends ConfigurableModuleClass {
             imports: [
                 NestGraphQLModule.forRootAsync<ApolloFederationDriverConfig>({
                     driver: ApolloFederationDriver,
-                    imports: [SubgraphOptionsModule.forRoot()],
+                    imports: [SubgraphOptionsModule.register()],
                     inject: [SubgraphOptionsFactory],
-                    useFactory: async (subgraphOptionsFactory: SubgraphOptionsFactory) =>
+                    useFactory: (subgraphOptionsFactory: SubgraphOptionsFactory) =>
                         subgraphOptionsFactory.createSubgraphOptions()
                 })
             ]

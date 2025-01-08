@@ -16,7 +16,7 @@ export class PostgreSQLModule extends ConfigurableModuleClass {
             providers: [...dynamicModule.providers],
             imports: [
                 TypeOrmModule.forRootAsync({
-                    imports: [PostgreSQLOptionsModule.forRoot(options)],
+                    imports: [PostgreSQLOptionsModule.register(options)],
                     inject: [PostgreSQLOptionsFactory],
                     name: dataSourceName,
                     useFactory: (postgreSQLOptionsFactory: PostgreSQLOptionsFactory) =>

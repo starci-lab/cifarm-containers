@@ -8,19 +8,15 @@ import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } 
 
 @Injectable()
 export class SubgraphOptionsFactory {
-    constructor(
-        private keyvService: KeyvService
-    ) {}
+    constructor(private keyvService: KeyvService) {}
 
     createSubgraphOptions(): Omit<ApolloDriverConfig, "driver"> {
         return {
             autoSchemaFile: {
-                federation: 2,
+                federation: 2
             },
             cache: this.keyvService.createKeyvAdapter(),
-            plugins: [
-                ApolloServerPluginCacheControl(), responseCachePlugin()
-            ],
+            plugins: [ApolloServerPluginCacheControl(), responseCachePlugin()],
             playground: false,
             buildSchemaOptions: {
                 orphanedTypes: [],
@@ -34,20 +30,20 @@ export class SubgraphOptionsFactory {
                                     name: "CacheControlScope",
                                     values: {
                                         PUBLIC: {},
-                                        PRIVATE: {},
-                                    },
-                                }),
+                                        PRIVATE: {}
+                                    }
+                                })
                             },
-                            inheritMaxAge: { type: GraphQLBoolean },
+                            inheritMaxAge: { type: GraphQLBoolean }
                         },
                         locations: [
                             DirectiveLocation.FIELD_DEFINITION,
                             DirectiveLocation.OBJECT,
                             DirectiveLocation.INTERFACE,
                             DirectiveLocation.UNION,
-                            DirectiveLocation.QUERY,
-                        ],
-                    }),
+                            DirectiveLocation.QUERY
+                        ]
+                    })
                 ]
             }
         }

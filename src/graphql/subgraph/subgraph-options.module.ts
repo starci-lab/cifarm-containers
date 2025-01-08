@@ -11,7 +11,7 @@ import { KeyvModule } from "@src/cache"
     exports: [SubgraphOptionsFactory]
 })
 export class SubgraphOptionsModule extends ConfigurableModuleClass {
-    static forRoot(options: typeof OPTIONS_TYPE = {}) {
-        return super.forRoot(options)
+    static register(options: typeof OPTIONS_TYPE = {}) {
+        return super.register(options)
     }
 }

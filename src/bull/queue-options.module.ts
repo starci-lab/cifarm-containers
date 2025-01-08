@@ -18,7 +18,7 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./queue-options.module-de
     exports: [QueueOptionsFactory]
 })
 export class QueueOptionsModule extends ConfigurableModuleClass {
-    static forRoot(options: typeof OPTIONS_TYPE = {}) {
-        return super.forRoot(options)
+    static register(options: typeof OPTIONS_TYPE = {}) {
+        return super.register(options)
     }
 }

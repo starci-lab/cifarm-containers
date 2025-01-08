@@ -24,7 +24,7 @@ import { RedisType } from "@src/env"
     ]
 })
 export class PostgreSQLOptionsModule extends ConfigurableModuleClass {
-    static forRoot(options: typeof OPTIONS_TYPE = {}) {
-        return super.forRoot(options)
+    static register(options: typeof OPTIONS_TYPE = {}) {
+        return super.register(options)
     }
 }
