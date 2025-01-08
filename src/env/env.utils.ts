@@ -1,19 +1,5 @@
-import { envConfig, NodeEnv } from "./env.config"
-import { RedisType } from "./env.types"
-
-//sw2s
-export const getEnvValue = <ValueType = string>(values: {
-    development?: ValueType
-    production?: ValueType
-}): ValueType => {
-    const { development, production } = values
-    switch (envConfig().nodeEnv) {
-    case NodeEnv.Production:
-        return production
-    default:
-        return development
-    }
-}
+import { envConfig } from "./env.config"
+import { NodeEnv, RedisType } from "./env.types"
 
 export const isProduction = (): boolean => {
     return envConfig().nodeEnv === NodeEnv.Production

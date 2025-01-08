@@ -1,5 +1,5 @@
 import { createCache } from "cache-manager"
-import { DynamicModule, Module } from "@nestjs/common"
+import { DynamicModule, Module, Provider } from "@nestjs/common"
 import { CACHE_REDIS_MANAGER } from "./redis.types"
 import { Keyv } from "keyv"
 import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
@@ -11,9 +11,18 @@ import {
 import { CacheRedisService } from "./redis.service"
 import { NodeAddressMap } from "@redis/client/dist/lib/cluster/cluster-slots"
 import { RedisKeyvManager } from "./keyv-manager.class"
+import { ConfigurableModuleClass } from "./redis.module-definition"
 
 @Module({})
-export class CacheRedisModule {
+export class CacheRedisModule extends ConfigurableModuleClass {
+    static forFeature(): DynamicModule {
+        return {
+            module: CacheRedisModule,
+            providers: [CacheRedisService],
+            exports: [CacheRedisService]
+        }
+    }
+
     static forRoot(): DynamicModule {
         const clusterEnabled = redisClusterEnabled(RedisType.Cache)
         if (clusterEnabled) {
@@ -25,7 +34,7 @@ export class CacheRedisModule {
                     })
                 ],
                 providers: [
-                    {
+                    {   
                         provide: CACHE_REDIS_MANAGER,
                         useFactory: async (
                             childProcessDockerRedisClusterService: ChildProcessDockerRedisClusterService
@@ -46,10 +55,8 @@ export class CacheRedisModule {
                             })
                         },
                         inject: [ChildProcessDockerRedisClusterService]
-                    },
-                    CacheRedisService
-                ],
-                exports: [CacheRedisService]
+                    }
+                ]
             }
         }
 
@@ -64,16 +71,16 @@ export class CacheRedisModule {
             ]
         })
 
+        const sharedCacheRedisProviders: Array<Provider> = [{
+            provide: CACHE_REDIS_MANAGER,
+            useValue: cacheManager
+        }]
+
         return {
+            global: true,
             module: CacheRedisModule,
-            providers: [
-                {
-                    provide: CACHE_REDIS_MANAGER,
-                    useValue: cacheManager
-                },
-                CacheRedisService
-            ],
-            exports: [CacheRedisService]
+            providers: sharedCacheRedisProviders,
+            exports: sharedCacheRedisProviders
         }
     }
 }

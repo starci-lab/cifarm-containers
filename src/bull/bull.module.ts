@@ -14,14 +14,15 @@ export class BullModule {
             module: BullModule,
             imports: [
                 NestBullModule.registerQueue({
-                    name: bullData[options.queueName].name
+                    name: bullData[options.queueName].name,
+                    prefix: bullData[options.queueName].prefix,
                 })
             ],
-            providers: [
-            ],
+            providers: [],
             exports: [
                 NestBullModule.registerQueue({
-                    name: bullData[options.queueName].name
+                    name: bullData[options.queueName].name,
+                    prefix: bullData[options.queueName].prefix,
                 })
             ]
         }
@@ -51,6 +52,7 @@ export class BullModule {
                             redisOptions: {
                                 password: envConfig().databases.redis[RedisType.Cache].password || undefined,
                             },
+
                             natMap
                         })
                         return {

@@ -116,6 +116,15 @@
         "tsConfigPath": "apps/telegram-bot/tsconfig.app.json",
         "webpackConfigPath": "apps/telegram-bot/webpack.config.js"
       }
+    },
+    "test": {
+      "type": "application",
+      "root": "apps/test",
+      "entryFile": "main",
+      "sourceRoot": "apps/test/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/test/tsconfig.app.json"
+      }
     }
   }
 }

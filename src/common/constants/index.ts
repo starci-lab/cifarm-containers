@@ -1,1 +1,1 @@
-export * from "./base.constants"
+export * from "../../env/base.constants"
