@@ -24,7 +24,7 @@ import { JwtStrategy } from "./strategies"
     ]
 })
 export class JwtModule extends ConfigurableModuleClass {
-    static forRoot(options: typeof OPTIONS_TYPE = {}) : DynamicModule{
+    static forRoot(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
         return super.forRoot(options)
     }
 }

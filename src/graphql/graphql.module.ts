@@ -1,19 +1,19 @@
 import { IntrospectAndCompose } from "@apollo/gateway"
+import responseCachePlugin from "@apollo/server-plugin-response-cache"
 import { ApolloServerPluginCacheControl } from "@apollo/server/plugin/cacheControl"
 import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default"
 import { ApolloFederationDriver, ApolloFederationDriverConfig, ApolloGatewayDriver, ApolloGatewayDriverConfig } from "@nestjs/apollo"
 import { Module } from "@nestjs/common"
 import { Int, GraphQLModule as NestGraphQLModule } from "@nestjs/graphql"
+import { KeyvManagerService } from "@src/cache/keyv-manager.service"
 import { getHttpUrl } from "@src/common"
-import { envConfig, redisClusterRunInDocker, RedisType } from "@src/env"
+import { envConfig, RedisType } from "@src/env"
+import { ExecDockerRedisClusterService, ExecModule, ExecService } from "@src/exec"
 import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } from "graphql"
-import responseCachePlugin from "@apollo/server-plugin-response-cache"
-import { ChildProcessDockerRedisClusterModule, ChildProcessDockerRedisClusterService } from "@src/exec"
-import { RedisKeyvManager } from "@src/cache"
-import { NodeAddressMap } from "@redis/client/dist/lib/cluster/cluster-slots"
+import { ConfigurableModuleClass } from "./graphql.module-definition"
 
 @Module({})
-export class GraphQLModule { 
+export class GraphQLModule extends ConfigurableModuleClass { 
     //gateway
     public static forGateway() {
         return {
@@ -55,19 +55,18 @@ export class GraphQLModule {
                 NestGraphQLModule.forRootAsync<ApolloFederationDriverConfig>({
                     driver: ApolloFederationDriver,
                     imports: [
-                        ChildProcessDockerRedisClusterModule.forRoot({
-                            type: RedisType.Cache
+                        ExecModule.register({
+                            docker: {
+                                redisCluster: {
+                                    networkName:
+                                        envConfig().databases.redis[RedisType.Cache].cluster.dockerNetworkName
+                                }
+                            }
                         })
                     ],
-                    inject: [ChildProcessDockerRedisClusterService],
-                    useFactory: async (childProcessDockerRedisClusterService: ChildProcessDockerRedisClusterService) => {
-                        let nodeAddressMap: NodeAddressMap
-                        // if running in docker, get the node address map
-                        if (redisClusterRunInDocker(RedisType.Cache)) {
-                            nodeAddressMap = await childProcessDockerRedisClusterService.getNodeAddressMap()
-                        }
-
-                        const keyvManager = new RedisKeyvManager(nodeAddressMap)
+                    inject: [ExecService],
+                    useFactory: async (execDockerRedisClusterService: ExecDockerRedisClusterService) => {
+                        const keyvManager = new KeyvManagerService(execDockerRedisClusterService)
                         return {
                             autoSchemaFile: {
                                 federation: 2,

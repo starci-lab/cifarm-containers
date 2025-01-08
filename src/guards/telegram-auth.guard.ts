@@ -1,8 +1,8 @@
-import { envConfig } from "@src/grpc"
 import { TelegramAuthorizationFailedException } from "@src/exceptions"
 import { CanActivate, ExecutionContext, Logger } from "@nestjs/common"
 import { validate, parse } from "@telegram-apps/init-data-node"
 import { Observable } from "rxjs"
+import { envConfig } from "@src/env"
 
 export interface TelegramData {
     userId: number
@@ -23,7 +23,6 @@ export class TelegramAuthorizationGuard implements CanActivate {
         botType = botType || BotType.Ciwallet
 
         const botTokenMap = {
-            [BotType.Ciwallet]: envConfig().secrets.telegram.botTokens.ciwallet,
             [BotType.Cifarm]: envConfig().secrets.telegram.botTokens.cifarm,
         }
  
