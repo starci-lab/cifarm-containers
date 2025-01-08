@@ -23,9 +23,9 @@ import { EnergyModule } from "./energy"
             leaseName: "cron-scheduler-leader-election",
             logAtLevel: "debug",
         }),
-        CropModule,
-        AnimalModule,
-        DeliveryModule,
+        // CropModule,
+        // AnimalModule,
+        // DeliveryModule,
         EnergyModule
     ]
 })

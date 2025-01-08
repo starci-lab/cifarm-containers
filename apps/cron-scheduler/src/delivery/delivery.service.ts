@@ -1,7 +1,6 @@
-import { InjectQueue } from "@nestjs/bullmq"
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
-import { bullData, BullQueueName } from "@src/bull"
+import { bullData, BullQueueName, BullService } from "@src/bull"
 import { CacheKey, CacheRedisService } from "@src/cache"
 import { DeliveringProductEntity, GameplayPostgreSQLService } from "@src/databases"
 import { isProduction } from "@src/env"
@@ -19,14 +18,16 @@ export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
     private readonly dataSource: DataSource
     private readonly cacheManager: Cache
+    private readonly deliveryQueue: Queue
 
     constructor(
-        @InjectQueue(bullData[BullQueueName.Delivery].name) private deliveryQueue: Queue,
+        private readonly bullService: BullService,
         private readonly cacheRedisService: CacheRedisService,
         private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
     ) {
         this.dataSource = this.gameplayPostgreSqlService.getDataSource()
         this.cacheManager = this.cacheRedisService.getCacheManager()
+        this.deliveryQueue = this.bullService.getQueue()
     }
     
     @Cron("*/1 * * * * *")
@@ -49,7 +50,6 @@ export class DeliveryService {
         await queryRunner.connect()
 
         try {
-            this.logger.debug("Fetching distinct users with delivering products.")
 
             const { count } = await queryRunner.manager
                 .createQueryBuilder(DeliveringProductEntity, "delivering_products")
