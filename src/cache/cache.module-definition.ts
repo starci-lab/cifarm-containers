@@ -3,7 +3,7 @@ import { CacheOptions } from "./cache.types"
 
 export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } =
     new ConfigurableModuleBuilder<CacheOptions>().setClassMethodName("forRoot").setExtras({
-        isGlobal: true
+        isGlobal: false
     },
     (definition, extras) => ({
         ...definition,

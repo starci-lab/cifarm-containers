@@ -8,7 +8,8 @@ import { EventEmitter2 } from "@nestjs/event-emitter"
 import { LeaderElectionOptions } from "./leader-election.types"
 import { envConfig, runInKubernetes } from "@src/env"
 import { CoordinationV1Api, KubeConfig, V1Lease, V1MicroTime, Watch } from "@kubernetes/client-node"
-import { LEADER_ELECTION_OPTIONS, LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT } from "./leader-election.constants"
+import { LEADERSHIP_ELECTED_EVENT, LEADERSHIP_LOST_EVENT } from "./leader-election.constants"
+import { MODULE_OPTIONS_TOKEN } from "./leader-election.module-definition"
 
 @Injectable()
 export class LeaderElectionService implements OnApplicationBootstrap {
@@ -32,7 +33,7 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
 
     constructor(
-        @Inject(LEADER_ELECTION_OPTIONS) private options: LeaderElectionOptions,
+        @Inject(MODULE_OPTIONS_TOKEN) private options: LeaderElectionOptions,
         private readonly eventEmitter: EventEmitter2
     ) {
         // Set up the lease name with a fallback default value

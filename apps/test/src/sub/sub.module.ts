@@ -1,13 +1,8 @@
-import { Module } from "@nestjs/common";
-import { SubService } from "./sub.service";
-import { BullModule, BullQueueName } from "@src/bull";
+import { Module } from "@nestjs/common"
+import { SubService } from "./sub.service"
 
 @Module({
-    imports: [
-        BullModule.registerQueue({
-            queueName: BullQueueName.Crop
-        })
-    ],
+    imports: [],
     providers: [SubService],
 })
 export class SubModule {}
