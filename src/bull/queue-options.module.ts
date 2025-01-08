@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { RedisType } from "@src/env"
 import { ExecModule } from "@src/exec"
-import { QueueOptionsFactory } from "./queue.options-factory"
+import { QueueOptionsFactory } from "./queue-options.factory"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./queue-options.module-definition"
 
 @Module({

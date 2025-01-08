@@ -4,7 +4,7 @@ import { gameplayPostgreSqlEntities } from "./gameplay/entities"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./postgresql.module-definition"
 import { getPostgreSqlDataSourceName } from "./postgresql.utils"
 import { PostgreSQLOptionsModule } from "./postgresql-options.module"
-import { PostgreSQLOptionsFactory } from "./postgresql.options-factory"
+import { PostgreSQLOptionsFactory } from "./postgresql-options.factory"
 
 @Module({})
 export class PostgreSQLModule extends ConfigurableModuleClass {

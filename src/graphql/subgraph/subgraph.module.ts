@@ -1,7 +1,7 @@
 import { ApolloFederationDriver, ApolloFederationDriverConfig } from "@nestjs/apollo"
 import { Module } from "@nestjs/common"
 import { GraphQLModule as NestGraphQLModule } from "@nestjs/graphql"
-import { SubgraphOptionsFactory } from "./subgraph-options-factory"
+import { SubgraphOptionsFactory } from "./subgraph-options.factory"
 import { SubgraphOptionsModule } from "./subgraph-options.module"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./subgraph.module-definition"
 
