@@ -35,6 +35,5 @@ export class SubService implements OnModuleInit {
         // console.log(this.kafka)
         // const iaoli = this.kafka.send("test", "hentai")
         console.log(this.leaderElectionService.isLeaderInstance())
-
     }
 }

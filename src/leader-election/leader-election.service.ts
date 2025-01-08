@@ -68,7 +68,6 @@ export class LeaderElectionService implements OnApplicationBootstrap {
 
         // Initialize the Watch object to watch Kubernetes resources
         this.watch = new Watch(kubeConfig)
-
         // Check if the application is running inside a Kubernetes cluster
         if (!runInKubernetes()) {
             // If not running in Kubernetes, assume the current instance is the leader
