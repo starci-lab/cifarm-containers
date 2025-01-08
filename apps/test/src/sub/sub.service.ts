@@ -15,8 +15,7 @@ export class SubService implements OnModuleInit {
     ) {
     }
     async onModuleInit() {
-        console.log(this.cache)
-        await this.cache.set("foo", "bar")
-        console.log(await this.cache.get("foo"))
+        const t = await this.dataSource.manager.find(AnimalEntity)
+        console.log(t)
     }
 }
