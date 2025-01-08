@@ -12,5 +12,5 @@ export interface BullQueueData {
 }
 
 export interface BullRegisterOptions {
-    queueName: BullQueueName
+    queueName?: BullQueueName
 }

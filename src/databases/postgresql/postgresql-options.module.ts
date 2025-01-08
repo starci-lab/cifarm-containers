@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./postgresql-options.module-definition"
-import { PostgreSQLOptions } from "./postgresql.options"
+import { PostgreSQLOptionsFactory } from "./postgresql.options-factory"
 import { CacheOptionsService } from "../cache-options.service"
 import { ExecModule } from "@src/exec"
 import { RedisType } from "@src/env"
@@ -17,10 +17,10 @@ import { RedisType } from "@src/env"
     ],
     providers: [
         CacheOptionsService,
-        PostgreSQLOptions
+        PostgreSQLOptionsFactory
     ],
     exports: [
-        PostgreSQLOptions
+        PostgreSQLOptionsFactory
     ]
 })
 export class PostgreSQLOptionsModule extends ConfigurableModuleClass {

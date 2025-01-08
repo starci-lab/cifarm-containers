@@ -8,7 +8,7 @@ import { CONNECTION_TIMEOUT_MS, POOL_SIZE } from "./postgresql.constants"
 import { PostgreSQLContext, PostgreSQLDatabase } from "../databases.types"
 
 @Injectable()
-export class PostgreSQLOptions implements TypeOrmOptionsFactory {
+export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
     private database: string
     private context: string
     constructor(

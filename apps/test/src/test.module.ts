@@ -5,9 +5,16 @@ import { PostgreSQLModule } from "@src/databases"
 import { SubModule } from "./sub/sub.module"
 import { EnvModule } from "@src/env"
 import { CacheModule } from "@src/cache"
+import { BullModule } from "@src/bull"
 
 @Module({
-    imports: [SubModule, EnvModule.forRoot(), PostgreSQLModule.forRoot(), CacheModule.forRoot()],
+    imports: [
+        SubModule,
+        EnvModule.forRoot(),
+        PostgreSQLModule.forRoot(),
+        CacheModule.forRoot(),
+        BullModule.forRoot()
+    ],
     controllers: [TestController],
     providers: [TestService]
 })
