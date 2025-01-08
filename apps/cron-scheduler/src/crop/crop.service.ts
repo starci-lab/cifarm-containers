@@ -4,7 +4,17 @@ import { Cron } from "@nestjs/schedule"
 import { Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
-import { Collection, CollectionEntity, CropCurrentState, CropGrowthLastSchedule, GameplayPostgreSQLService, SeedGrowthInfoEntity, SpeedUpData, TempEntity, TempId } from "@src/databases"
+import {
+    Collection,
+    CollectionEntity,
+    CropCurrentState,
+    CropGrowthLastSchedule,
+    GameplayPostgreSQLService,
+    SeedGrowthInfoEntity,
+    SpeedUpData,
+    TempEntity,
+    TempId
+} from "@src/databases"
 import { CropJobData } from "./crop.dto"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
@@ -18,13 +28,13 @@ export class CropService {
     private readonly logger = new Logger(CropService.name)
     private readonly dataSource: DataSource
     constructor(
-        @InjectQueue(bullData[BullQueueName.Crop].name) private cropQueue: Queue,
+        @InjectQueue(bullData[BullQueueName.Crop].name) private readonly cropQueue: Queue,
         private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
-        private readonly leaderElectionService: LeaderElectionService,
+        private readonly leaderElectionService: LeaderElectionService
     ) {
         this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
-    
+
     @Cron("*/1 * * * * *")
     async handle() {
         if (!this.leaderElectionService.isLeaderInstance()) return
@@ -39,7 +49,8 @@ export class CropService {
             count = await queryRunner.manager.count(SeedGrowthInfoEntity, {
                 where: {
                     //Not fully matured and need water
-                    currentState: Not(CropCurrentState.FullyMatured) && Not(CropCurrentState.NeedWater)
+                    currentState:
+                        Not(CropCurrentState.FullyMatured) && Not(CropCurrentState.NeedWater)
                 }
             })
             const speedUps = await queryRunner.manager.find(CollectionEntity, {
@@ -47,12 +58,12 @@ export class CropService {
                     collection: Collection.CropSpeedUp
                 }
             })
-            
+
             //get the last scheduled time, get from db not cache
             const { value } = await queryRunner.manager.findOne(TempEntity, {
                 where: {
                     id: TempId.CropGrowthLastSchedule
-                },
+                }
             })
             const { date } = value as CropGrowthLastSchedule
 
@@ -68,26 +79,25 @@ export class CropService {
 
             let time = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1
             if (speedUps.length) {
-                for (const { data } of speedUps)
-                {
-                    const { time : additionalTime } = data as SpeedUpData
+                for (const { data } of speedUps) {
+                    const { time: additionalTime } = data as SpeedUpData
                     time += Number(additionalTime)
                 }
             }
 
             // Create batches
             const batches: Array<{
-            name: string
-            data: CropJobData
-        }> = Array.from({ length: batchCount }, (_, i) => ({
-            name: v4(),
-            data: {
-                skip: i * batchSize,
-                take: Math.min((i + 1) * batchSize, count),
-                time,
-                utcTime: dayjs().utc().valueOf()
-            }
-        }))
+                name: string
+                data: CropJobData
+            }> = Array.from({ length: batchCount }, (_, i) => ({
+                name: v4(),
+                data: {
+                    skip: i * batchSize,
+                    take: Math.min((i + 1) * batchSize, count),
+                    time,
+                    utcTime: dayjs().utc().valueOf()
+                }
+            }))
             const jobs = await this.cropQueue.addBulk(batches)
             this.logger.verbose(`Added ${jobs.at(0).name} jobs to the crop queue. Time: ${time}`)
 

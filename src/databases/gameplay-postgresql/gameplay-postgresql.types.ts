@@ -1,10 +1,6 @@
-export interface GameplayPostgreSQLOptions {
-    type?: GameplayPostgreSQLType,
-    cache?: boolean
-}
+import { DatabaseContext } from "../databases.types"
 
-export enum GameplayPostgreSQLType {
-    Main = "main",
-    Test = "test"
+export interface GameplayPostgreSQLOptions {
+    context?: DatabaseContext
 }
 

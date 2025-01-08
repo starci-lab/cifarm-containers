@@ -1,50 +1,20 @@
-import { envConfig, redisClusterEnabled, RedisType } from "@src/env"
-import { ClusterNode, ClusterOptions, NatMap, RedisOptions } from "ioredis"
+import { CreateCacheOptionsParams, CacheOptions, CacheType } from "@src/cache"
+import { redisClusterEnabled, RedisType, envConfig } from "@src/env"
+import { BaseCacheOptions, RedisCacheOptions, RedisClusterCacheOptions } from "./classes.types"
 
-// Enum to define different cache types
-export enum CacheType {
-    IoRedis = "ioredis",
-    IoRedisCluster = "ioredis/cluster"
-}
-
-interface BaseCacheOptions {
-    duration: number;           // Cache expiration duration in milliseconds
-    alwaysEnabled: boolean;     // Enables caching globally for all queries
-    ignoreErrors: boolean;      // Ignore cache errors and fallback to database
-}
-
-interface RedisCacheOptions extends BaseCacheOptions {
-    type: CacheType.IoRedis;
-    options: RedisOptions
-}
-
-interface RedisClusterCacheOptions extends BaseCacheOptions {
-    type: CacheType.IoRedisCluster;
-    options: {
-        startupNodes: Array<ClusterNode>;
-        options?: ClusterOptions
-    };
-}
-
-export type CacheOptions = RedisCacheOptions | RedisClusterCacheOptions;
-
-export interface CreateCacheOptionsParams {
-    natMap?: NatMap
-}
-
-export class DbCacheManager {
+export class CacheManager {
     private baseConfig: BaseCacheOptions
     private useCluster: boolean
-    
+
     constructor() {
         // Determine if Redis cluster is enabled
         this.useCluster = redisClusterEnabled(RedisType.Cache)
-        
+
         // Base cache options setup
         this.baseConfig = {
             duration: envConfig().cacheTimeoutMs,
-            alwaysEnabled: !this.useCluster,  // Only disable globally for cluster
-            ignoreErrors: true,
+            alwaysEnabled: !this.useCluster, // Only disable globally for cluster
+            ignoreErrors: true
         }
     }
 
@@ -83,7 +53,7 @@ export class DbCacheManager {
                 options: {
                     scaleReads: "slave",
                     redisOptions: {
-                        password: envConfig().databases.redis[RedisType.Cache].password || undefined,
+                        password: envConfig().databases.redis[RedisType.Cache].password || undefined
                     },
                     natMap: params?.natMap
                 }

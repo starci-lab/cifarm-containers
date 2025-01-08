@@ -23,6 +23,7 @@ export class EnergyService {
         private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
     ) {
         this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+        console.log(EnergyQueue)
     }
     
     @Cron("*/1 * * * * *")

@@ -1,36 +1,15 @@
-import { SupportedChainKey, Network } from "../blockchain/blockchain.config"
-import { RedisType } from "./env.types"
-
-export enum NodeEnv {
-    Production = "production",
-    Development = "development"
-}
-
-export interface NearPair {
-    privateKey: string
-    accountId: string
-}
-
-export interface ChainCredentialsConfig {
-    [SupportedChainKey.Near]: {
-        tokenMinter: Record<Network, NearPair>
-        tokenBurner: Record<Network, NearPair>
-        nftMinter: Record<Network, NearPair>
-        nftBurner: Record<Network, NearPair>
-        nftUpdater: Record<Network, NearPair>
-        admin: Record<Network, NearPair>
-        // creator is account used for create near account
-        creator: Record<Network, NearPair>
-    }
-}
+import { SupportedChainKey, Network } from "@src/blockchain"
+import { Container, NodeEnv, RedisType } from "./env.types"
+import { DEFAULT_CACHE_TIMEOUT_MS, DEFAULT_HEALTH_PORT, DEFAULT_KAFKA_PORT, DEFAULT_PORT, DEFAULT_POSTGRES_PORT, DEFAULT_REDIS_PORT, LOCALHOST } from "./env.constants"
+import { PostgreSQLDatabase, DatabaseContext } from "@src/databases"
+import { Brokers } from "@src/brokers"
 
 export const envConfig = () => ({
-    port: Number(process.env.PORT),
     nodeEnv: (process.env.NODE_ENV ?? NodeEnv.Development) as NodeEnv,
-    cacheTimeoutMs: Number.parseInt(process.env.CACHE_TIMEOUT_MS),
+    cacheTimeoutMs: Number.parseInt(process.env.CACHE_TIMEOUT_MS) ?? DEFAULT_CACHE_TIMEOUT_MS,
     cors: {
         origin:
-            process.env.NODE_ENV !== "production"
+            process.env.NODE_ENV !== NodeEnv.Production
                 ? "*"
                 : process.env.CORS_ORIGIN === "false"
                     ? false
@@ -39,86 +18,84 @@ export const envConfig = () => ({
                         : process.env.CORS_ORIGIN.split(",")
     },
     containers: {
-        restApiGateway: {
-            host: process.env.REST_API_GATEWAY_HOST,
-            port: Number(process.env.REST_API_GATEWAY_PORT),
-            healthCheckPort: Number(process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT)
+        [Container.RestApiGateway]: {
+            host: process.env.REST_API_GATEWAY_HOST ?? LOCALHOST,
+            port: Number.parseInt(process.env.REST_API_GATEWAY_PORT) ?? DEFAULT_PORT,
+            healthCheckPort: Number.parseInt(process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
-        websocketNode: {
-            host: process.env.WEBSOCKET_NODE_HOST,
-            port: Number(process.env.WEBSOCKET_NODE_PORT),
-            healthCheckPort: Number(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT)
+        [Container.WebsocketNode]: {
+            host: process.env.WEBSOCKET_NODE_HOST ?? LOCALHOST,
+            port: Number.parseInt(process.env.WEBSOCKET_NODE_PORT) ?? DEFAULT_PORT,
+            healthCheckPort: Number.parseInt(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
-        gameplayService: {
-            host: process.env.GAMEPLAY_SERVICE_HOST,
-            port: Number(process.env.GAMEPLAY_SERVICE_PORT),
-            healthCheckPort: Number(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT)
+        [Container.GameplayService]: {
+            host: process.env.GAMEPLAY_SERVICE_HOST ?? LOCALHOST,
+            port: Number.parseInt(process.env.GAMEPLAY_SERVICE_PORT) ?? DEFAULT_PORT,
+            healthCheckPort: Number.parseInt(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
-        graphqlGateway: {
-            host: process.env.GRAPHQL_GATEWAY_HOST,
-            port: Number(process.env.GRAPHQL_GATEWAY_PORT),
-            healthCheckPort: Number(process.env.GRAPHQL_GATEWAY_HEALTH_CHECK_PORT)
+        [Container.GraphqlGateway]: {
+            host: process.env.GRAPHQL_GATEWAY_HOST ?? LOCALHOST,
+            port: Number.parseInt(process.env.GRAPHQL_GATEWAY_PORT) ?? DEFAULT_PORT,
+            healthCheckPort: Number.parseInt(process.env.GRAPHQL_GATEWAY_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
-        gameplaySubgraph: {
-            host: process.env.GAMEPLAY_SUBGRAPH_HOST,
-            port: Number(process.env.GAMEPLAY_SUBGRAPH_PORT),
-            healthCheckPort: Number(process.env.GAMEPLAY_SUBGRAPH_HEALTH_CHECK_PORT)
+        [Container.GameplaySubgraph]: {
+            host: process.env.GAMEPLAY_SUBGRAPH_HOST ?? LOCALHOST,
+            port: Number.parseInt(process.env.GAMEPLAY_SUBGRAPH_PORT) ?? DEFAULT_PORT,
+            healthCheckPort: Number.parseInt(process.env.GAMEPLAY_SUBGRAPH_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
-        cronWorker: {
-            host: process.env.CRON_WORKER_HOST,
-            healthCheckPort: Number(process.env.CRON_WORKER_HEALTH_CHECK_PORT)
+        [Container.CronWorker]: {
+            host: process.env.CRON_WORKER_HOST ?? LOCALHOST,
+            healthCheckPort: Number.parseInt(process.env.CRON_WORKER_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
-        cronScheduler: {
-            host: process.env.CRON_SCHEDULER_HOST,
-            healthCheckPort: Number(process.env.CRON_SCHEDULER_HEALTH_CHECK_PORT)
+        [Container.CronScheduler]: {
+            host: process.env.CRON_SCHEDULER_HOST ?? LOCALHOST,
+            healthCheckPort: Number.parseInt(process.env.CRON_SCHEDULER_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
-        telegramBot: {
-            host: process.env.TELEGRAM_BOT_HOST,
-            healthCheckPort: Number(process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT)
+        [Container.TelegramBot]: {
+            host: process.env.TELEGRAM_BOT_HOST ?? LOCALHOST,
+            healthCheckPort: Number.parseInt(process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         }
     },
     databases: {
-        mongo: {
-            mongo1: {
-                dbName: process.env.MONGO_1_DB_NAME,
-                host: process.env.MONGO_1_HOST,
-                port: process.env.MONGO_1_PORT,
-                user: process.env.MONGO_1_USER,
-                pass: process.env.MONGO_1_PASS
-            }
-        },
         postgresql: {
-            gameplay: {
-                main: {
-                    dbName: process.env.GAMEPLAY_POSTGRESQL_DBNAME,
-                    host: process.env.GAMEPLAY_POSTGRESQL_HOST,
-                    port: Number(process.env.GAMEPLAY_POSTGRESQL_PORT),
+            [PostgreSQLDatabase.Gameplay]: {
+                [DatabaseContext.Main]: {
+                    dbName: process.env.GAMEPLAY_POSTGRESQL_DBNAME ?? "gameplay",
+                    host: process.env.GAMEPLAY_POSTGRESQL_HOST ?? LOCALHOST,
+                    port: Number.parseInt(process.env.GAMEPLAY_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
                     username: process.env.GAMEPLAY_POSTGRESQL_USERNAME,
                     password: process.env.GAMEPLAY_POSTGRESQL_PASSWORD
                 },
-                test: {
-                    dbName: process.env.GAMEPLAY_TEST_POSTGRESQL_DBNAME,
-                    host: process.env.GAMEPLAY_TEST_POSTGRESQL_HOST,
-                    port: Number(process.env.GAMEPLAY_TEST_POSTGRESQL_PORT),
-                    username: process.env.GAMEPLAY_TEST_POSTGRESQL_USERNAME,
-                    password: process.env.GAMEPLAY_TEST_POSTGRESQL_PASSWORD
+                [DatabaseContext.Mock]: {
+                    dbName: process.env.GAMEPLAY_MOCK_POSTGRESQL_DBNAME ?? "gameplay",
+                    host: process.env.GAMEPLAY_MOCK_POSTGRESQL_HOST ?? LOCALHOST,
+                    port: Number.parseInt(process.env.GAMEPLAY_MOCK_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
+                    username: process.env.GAMEPLAY_MOCK_POSTGRESQL_USERNAME, 
+                    password: process.env.GAMEPLAY_MOCK_POSTGRESQL_PASSWORD
                 }
             },
-            telegramUserTracker: {
-                main: {
-                    dbName: process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_DBNAME,
-                    host: process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_HOST,
-                    port: Number(process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_PORT),
-                    username: process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_USERNAME,
-                    password: process.env.TELEGRAM_USER_TRACKER_POSTGRESQL_PASSWORD,
+            [PostgreSQLDatabase.Telegram]: {
+                [DatabaseContext.Main]: {
+                    dbName: process.env.TELEGRAM_POSTGRESQL_DBNAME ?? "telegram",
+                    host: process.env.TELEGRAM_POSTGRESQL_HOST ?? LOCALHOST,
+                    port: Number.parseInt(process.env.TELEGRAM_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
+                    username: process.env.TELEGRAM_POSTGRESQL_USERNAME,
+                    password: process.env.TELEGRAM_POSTGRESQL_PASSWORD,
+                },
+                [DatabaseContext.Mock]: {
+                    dbName: process.env.TELEGRAM_MOCK_POSTGRESQL_DBNAME ?? "telegram",
+                    host: process.env.TELEGRAM_MOCK_POSTGRESQL_HOST ?? LOCALHOST,
+                    port: Number.parseInt(process.env.TELEGRAM_MOCK_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
+                    username: process.env.TELEGRAM_MOCK_POSTGRESQL_USERNAME,
+                    password: process.env.TELEGRAM_MOCK_POSTGRESQL_PASSWORD,
                 },
             },
         },
         redis: {
             [RedisType.Cache]: {
                 // in k8s, redis cluster are hiden behind service, so we do not need to specify many nodes
-                host: process.env.CACHE_REDIS_HOST,
-                port: Number(process.env.CACHE_REDIS_PORT),
+                host: process.env.CACHE_REDIS_HOST ?? LOCALHOST,
+                port: Number.parseInt(process.env.CACHE_REDIS_PORT) ?? DEFAULT_REDIS_PORT,
                 password: process.env.CACHE_REDIS_PASSWORD,
                 cluster: {
                     enabled: process.env.CACHE_REDIS_CLUSTER_ENABLED === "true",
@@ -128,7 +105,7 @@ export const envConfig = () => ({
             },
             [RedisType.Adapter]: {
                 host: process.env.ADAPTER_REDIS_HOST,
-                port: Number(process.env.ADAPTER_REDIS_PORT),
+                port: Number.parseInt(process.env.ADAPTER_REDIS_PORT) ?? DEFAULT_REDIS_PORT,
                 password: process.env.ADAPTER_REDIS_PASSWORD,
                 cluster: {
                     enabled: process.env.ADAPTER_REDIS_CLUSTER_ENABLED === "true",
@@ -138,7 +115,7 @@ export const envConfig = () => ({
             },
             [RedisType.Job]: {
                 host: process.env.JOB_REDIS_HOST,
-                port: Number(process.env.JOB_REDIS_PORT),
+                port: Number.parseInt(process.env.JOB_REDIS_PORT) ?? DEFAULT_REDIS_PORT,
                 password: process.env.JOB_REDIS_PASSWORD,
                 cluster: {
                     enabled: process.env.JOB_REDIS_CLUSTER_ENABLED === "true",
@@ -148,35 +125,21 @@ export const envConfig = () => ({
             },
         }
     },
-    messageBrokers: {
-        kafka: {
-            host: process.env.KAFKA_HOST,
-            port: process.env.KAFKA_PORT,
-            username: process.env.KAFKA_USERNAME,
-            password: process.env.KAFKA_PASSWORD
+    brokers: {
+        [Brokers.Kafka]: {
+            host: process.env.KAFKA_HOST ?? LOCALHOST,
+            port: process.env.KAFKA_PORT ?? DEFAULT_KAFKA_PORT,
+            sasl: {
+                enabled: process.env.KAFKA_SASL_ENABLED === "true",
+                username: process.env.KAFKA_SASL_USERNAME,
+                password: process.env.KAFKA_SASL_PASSWORD
+            }
         }
-    },
-    zookeeper: {
-        host: process.env.ZOOKEEPER_HOST,
-        port: process.env.ZOOKEEPER_PORT
-    },
-    nakama: {
-        host: process.env.NAKAMA_HOST,
-        port: process.env.NAKAMA_PORT,
-        ssl: process.env.NAKAMA_SSL === "true",
-        key: process.env.NAKAMA_KEY,
-        authenticationId: process.env.NAKAMA_AUTHENTICATION_ID
-    },
-    redis: {
-        host: process.env.REDIS_HOST,
-        port: Number(process.env.REDIS_PORT ?? 6379),
-        ttl: Number(process.env.REDIS_TTL)
     },
     secrets: {
         salt: process.env.SALT,
         telegram: {
             botTokens: {
-                ciwallet: process.env.TELEGRAM_CIWALLET_BOT_TOKEN,
                 cifarm: process.env.TELEGRAM_CIFARM_BOT_TOKEN
             },
             mockAuthorization: process.env.TELEGRAM_MOCK_AUTHORIZATION
@@ -189,28 +152,6 @@ export const envConfig = () => ({
         admin: {
             username: process.env.ADMIN_USERNAME,
             password: process.env.ADMIN_PASSWORD
-        }
-    },
-    kafka: {
-        headless: {
-            headless1: {
-                host: process.env.HEADLESS_KAFKA_1_HOST,
-                port: process.env.HEADLESS_KAFKA_1_PORT
-            },
-            headless2: {
-                host: process.env.HEADLESS_KAFKA_2_HOST,
-                port: process.env.HEADLESS_KAFKA_2_PORT
-            },
-            headless3: {
-                host: process.env.HEADLESS_KAFKA_3_HOST,
-                port: process.env.HEADLESS_KAFKA_3_PORT
-            }
-        },
-        default: {
-            default1: {
-                host: process.env.KAFKA_1_HOST,
-                port: process.env.KAFKA_1_PORT
-            }
         }
     },
     chainCredentials: {
@@ -288,7 +229,7 @@ export const envConfig = () => ({
         }
     },
     kubernetes: {
-        namespace: process.env.POD_NAMESPACE,
+        namespace: process.env.POD_NAMESPACE ?? "containers",
         serviceHost: process.env.KUBERNETES_SERVICE_HOST,
         hostname: process.env.KUBERNETES_HOSTNAME,
     },
@@ -296,21 +237,5 @@ export const envConfig = () => ({
         username: process.env.SOCKET_IO_ADMIN_USERNAME,
         password: process.env.SOCKET_IO_ADMIN_PASSWORD
     },
-    //productionUrl
     productionUrl: process.env.PRODUCTION_URL,
-    telegramBots: {
-        ciFarm: {
-            token: process.env.TELEGRAM_CIFARM_BOT_TOKEN,
-            miniAppUrl: process.env.TELEGRAM_CIFARM_MINIAPP_URL,
-        },
-        ciWallet: {
-            token: process.env.TELEGRAM_CIWALLET_BOT_TOKEN,
-            miniAppUrl: process.env.TELEGRAM_CIWALLET_MINIAPP_URL,
-        },
-    },
 })
-
-export interface NearPair {
-    privateKey: string
-    accountId: string
-}

@@ -13,10 +13,12 @@ import { PlacementModule } from "./placement"
 import { ProfileModule } from "./profile"
 import { ShopModule } from "./shop"
 import { UpgradeModule } from "./upgrade"
+import { CacheRedisModule } from "@src/cache"
 
 @Module({
     imports: [
         GameplayPostgreSQLModule.forRoot(),
+        CacheRedisModule.forRoot(),
         EnvModule.forRoot(),
         AuthModule,
         ClaimModule,

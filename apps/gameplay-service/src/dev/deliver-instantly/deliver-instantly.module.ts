@@ -7,7 +7,7 @@ import { CacheRedisModule } from "@src/cache/redis"
 @Global()
 @Module({
     imports: [
-        CacheRedisModule.forRoot(),
+        CacheRedisModule.forFeature(),
         GameplayPostgreSQLModule.forFeature(),
     ],
     providers: [DeliverInstantlyService],
