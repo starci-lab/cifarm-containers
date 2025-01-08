@@ -1,10 +1,12 @@
-import { Module } from "@nestjs/common"
-import { BullRegisterOptions } from "./bull.types"
-import { bullData } from "./bull.constants"
 import { BullModule as NestBullModule } from "@nestjs/bullmq"
-import { envConfig, RedisType } from "@src/env"
+import { Module } from "@nestjs/common"
 import { ChildProcessDockerRedisClusterModule, ChildProcessDockerRedisClusterService } from "@src/child-process"
+import { envConfig, RedisType } from "@src/env"
 import { Cluster } from "ioredis"
+import { BULL_REGISTER_OPTIONS, bullData } from "./bull.constants"
+import { BullService } from "./bull.service"
+import { BullRegisterOptions } from "./bull.types"
+import { formatWithBraces } from "./bull.utils"
 
 @Module({})
 export class BullModule { 
@@ -14,15 +16,18 @@ export class BullModule {
             module: BullModule,
             imports: [
                 NestBullModule.registerQueue({
-                    name: bullData[options.queueName].name
+                    name: formatWithBraces(bullData[options.queueName].name)
                 })
             ],
             providers: [
+                {
+                    provide: BULL_REGISTER_OPTIONS,
+                    useValue: options,
+                },
+                BullService,
             ],
             exports: [
-                NestBullModule.registerQueue({
-                    name: bullData[options.queueName].name
-                })
+                BullService
             ]
         }
     }
@@ -43,13 +48,14 @@ export class BullModule {
                         const natMap = await childProcessDockerRedisClusterService.getNatMap()
                         const connection = new Cluster([
                             {
-                                host: envConfig().databases.redis[RedisType.Adapter].host,
-                                port: Number(envConfig().databases.redis[RedisType.Adapter].port)
+                                host: envConfig().databases.redis[RedisType.Job].host,
+                                port: Number(envConfig().databases.redis[RedisType.Job].port)
                             }
                         ], {
-                            scaleReads: "slave",
+                            scaleReads: "master",
                             redisOptions: {
-                                password: envConfig().databases.redis[RedisType.Cache].password || undefined,
+                                password: envConfig().databases.redis[RedisType.Job].password || undefined,
+                                enableAutoPipelining: true
                             },
                             natMap
                         })

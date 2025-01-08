@@ -18,3 +18,5 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         batchSize: 10000
     }
 }
+
+export const BULL_REGISTER_OPTIONS = "BULL_REGISTER_OPTIONS"
