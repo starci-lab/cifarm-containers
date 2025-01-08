@@ -23,3 +23,5 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: "{energy}"
     }
 }
+
+export const BULL_REGISTER_OPTIONS = "BULL_REGISTER_OPTIONS"

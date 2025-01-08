@@ -1,7 +1,6 @@
-import { InjectQueue } from "@nestjs/bullmq"
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
-import { bullData, BullQueueName } from "@src/bull"
+import { bullData, BullQueueName, BullService } from "@src/bull"
 import { AnimalCurrentState, AnimalGrowthLastSchedule, AnimalInfoEntity, Collection, CollectionEntity, GameplayPostgreSQLService, SpeedUpData, TempEntity, TempId } from "@src/databases"
 import { LeaderElectionService } from "@src/leader-election"
 import { Queue } from "bullmq"
@@ -16,18 +15,19 @@ dayjs.extend(utc)
 export class AnimalService {
     private readonly logger = new Logger(AnimalService.name)
     private readonly dataSource: DataSource
+    private readonly animalQueue: Queue
     constructor(
-        @InjectQueue(bullData[BullQueueName.Animal].name) private animalQueue: Queue,
+        private readonly bullService: BullService,
         private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
         private readonly leaderElectionService: LeaderElectionService,
     ) {
         this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+        this.animalQueue = this.bullService.getQueue()
     }
 
     @Cron("*/1 * * * * *")
     async handle() {
         if (!this.leaderElectionService.isLeaderInstance()) return
-        this.logger.verbose("Checking for animals that need to be grown")
 
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
@@ -109,7 +109,8 @@ export class AnimalService {
                 throw error
             }
 
-        } finally {
+        } 
+        finally {
             await queryRunner.release()
         }
     }

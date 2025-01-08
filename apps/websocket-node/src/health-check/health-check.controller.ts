@@ -22,7 +22,7 @@ export class HealthCheckController {
     @HealthCheck()
     healthz() {
         return this.health.check([
-            async () => this.db.pingCheck(HealthCheckDependency.GameplayPostgreSql, { timeout: HEALTH_CHECK_TIMEOUT }),
+            async () => this.db.pingCheck(HealthCheckDependency.GameplayPostgreSQL, { timeout: HEALTH_CHECK_TIMEOUT }),
             async () => {
                 let natMap: NatMap
                 if (redisClusterRunInDocker(RedisType.Adapter)) {

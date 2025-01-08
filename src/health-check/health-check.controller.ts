@@ -20,7 +20,6 @@ import {
 
 import { NatMap } from "ioredis"
 import { v4 } from "uuid"
-import { GameplayPostgreSQLService } from "@src/databases"
 import { getHttpUrl } from "@src/common"
 
 @Controller()
@@ -34,7 +33,7 @@ export class HealthCheckController {
         private microservice: MicroserviceHealthIndicator,
         private db: TypeOrmHealthIndicator,
         private http: HttpHealthIndicator,
-        private gameplayPostgreSQLService: GameplayPostgreSQLService,
+        // private gameplayPostgreSQLService: GameplayPostgreSQLService,
         private childProcessDockerRedisClusterService: ChildProcessDockerRedisClusterService
     ) { }
 
@@ -82,12 +81,12 @@ export class HealthCheckController {
                 client: {
                     clientId: v4(),
                     brokers: [
-                        `${envConfig().messageBrokers.kafka.host}:${envConfig().messageBrokers.kafka.port}`
+                        `${envConfig().brokers.kafka.host}:${envConfig().brokers.kafka.port}`
                     ],
                     sasl: {
                         mechanism: "scram-sha-256",
-                        username: envConfig().messageBrokers.kafka.username,
-                        password: envConfig().messageBrokers.kafka.password
+                        username: envConfig().brokers.kafka.sasl.username,
+                        password: envConfig().brokers.kafka.sasl.password
                     }
                 }
             },
@@ -99,7 +98,7 @@ export class HealthCheckController {
     private async pingCheckGameplayPostgreSql(): Promise<HealthIndicatorResult> {
         return this.db.pingCheck(HealthCheckDependency.GameplayPostgreSQL, {
             timeout: HEALTH_CHECK_TIMEOUT,
-            connection: this.gameplayPostgreSQLService.getDataSource()
+            // connection: this.gameplayPostgreSQLService.getDataSource()
         })
     }
 

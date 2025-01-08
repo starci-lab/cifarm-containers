@@ -1,14 +1,17 @@
-import { Module } from "@nestjs/common"
-import { KafkaClientService } from "./kafka.service"
-import { KAFKA_NAME } from "./kafka.constants"
-import { KafkaOptions } from "./kafka.types"
+import { DynamicModule, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { envConfig } from "@src/env"
 import { v4 } from "uuid"
+import { KAFKA_NAME } from "./kafka.constants"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./kafka.module-definition"
+import { KafkaGroupId } from "./kafka.types"
 
 @Module({})
-export class KafkaModule {
-    public static forRoot(options: KafkaOptions) {
+export class KafkaModule extends ConfigurableModuleClass {
+    public static forRoot(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
+        const groupId = options.groupId ?? KafkaGroupId.PlacedItemsBroadcast
+        const producerOnly = options.producerOnly ?? false
+
         return {
             module: KafkaModule,
             imports: [
@@ -20,24 +23,22 @@ export class KafkaModule {
                             client: {
                                 clientId: v4(),
                                 brokers: [
-                                    `${envConfig().messageBrokers.kafka.host}:${envConfig().messageBrokers.kafka.port}`
+                                    `${envConfig().brokers.kafka.host}:${envConfig().brokers.kafka.port}`
                                 ],
-                                sasl: {
+                                sasl: envConfig().brokers.kafka.sasl.enabled && {
                                     mechanism: "scram-sha-256",
-                                    username: envConfig().messageBrokers.kafka.username,
-                                    password: envConfig().messageBrokers.kafka.password
+                                    username: envConfig().brokers.kafka.sasl.username,
+                                    password: envConfig().brokers.kafka.sasl.password
                                 }
                             },
-                            producerOnlyMode: options.producerOnly,
+                            producerOnlyMode: producerOnly,
                             consumer: {
-                                groupId: options.groupId
+                                groupId: groupId
                             }
                         }
                     }
                 ])
             ],
-            providers: [KafkaClientService],
-            exports: [KafkaClientService]
         }
     }
 }
