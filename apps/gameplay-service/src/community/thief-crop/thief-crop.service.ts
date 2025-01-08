@@ -1,9 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { ClientKafka } from "@nestjs/microservices"
+import { KafkaPattern } from "@src/brokers"
 import {
     Activities,
     CropCurrentState,
     CropRandomness,
-    GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -24,26 +25,20 @@ import {
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
-import { KafkaClientService, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
-export class TheifCropService{
+export class TheifCropService {
     private readonly logger = new Logger(TheifCropService.name)
-
-    private readonly dataSource: DataSource
-    private readonly clientKafka: ClientKafka
     constructor(
-        private readonly kafkaClientService: KafkaClientService,
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly thiefService: ThiefService,
-        private readonly inventoryService: InventoryService,
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-        this.clientKafka = this.kafkaClientService.getClient()
-    }
+        private readonly inventoryService: InventoryService
+    ) {}
 
     async theifCrop(request: ThiefCropRequest): Promise<ThiefCropResponse> {
         this.logger.debug(`Thief crop for user ${request.neighborUserId}`)
@@ -143,7 +138,7 @@ export class TheifCropService{
                 }
             })
             console.log(existingInventories)
-            
+
             const updatedInventories = this.inventoryService.add({
                 entities: existingInventories,
                 userId: request.userId,
@@ -203,3 +198,11 @@ export class TheifCropService{
         }
     }
 }
+function InjectKafka(): (target: typeof TheifCropService, propertyKey: undefined, parameterIndex: 0) => void {
+    throw new Error("Function not implemented.")
+}
+
+function InjectPostgreSQL(): (target: typeof TheifCropService, propertyKey: undefined, parameterIndex: 1) => void {
+    throw new Error("Function not implemented.")
+}
+

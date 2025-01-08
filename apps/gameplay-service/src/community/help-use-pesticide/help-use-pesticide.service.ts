@@ -1,15 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    HelpUsePesticideTransactionFailedException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotNeedUsePesticideException,
-    PlacedItemTileNotPlantedException,
-} from "@src/exceptions"
-import { DataSource } from "typeorm"
+import { ClientKafka } from "@nestjs/microservices"
+import { KafkaPattern } from "@src/brokers"
 import {
     Activities,
     CropCurrentState,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     PlacedItemEntity,
     PlacedItemType,
     SeedGrowthInfoEntity,
@@ -17,26 +12,28 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
+import {
+    HelpUsePesticideTransactionFailedException,
+    PlacedItemTileNotFoundException,
+    PlacedItemTileNotNeedUsePesticideException,
+    PlacedItemTileNotPlantedException
+} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
+import { DataSource } from "typeorm"
 import { HelpUsePesticideRequest, HelpUsePesticideResponse } from "./help-use-pesticide.dto"
-import { KafkaClientService, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafka } from "@src/brokers/kafka/kafka.decorators"
 
 @Injectable()
 export class HelpUsePesticideService {
     private readonly logger = new Logger(HelpUsePesticideService.name)
-
-    private readonly dataSource: DataSource
-    private readonly clientKafka: ClientKafka
     constructor(
-        private readonly kafkaClientService: KafkaClientService,
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-        this.clientKafka = this.kafkaClientService.getClient()
-    }
+    ) {}
 
     async helpUsePesticide(request: HelpUsePesticideRequest): Promise<HelpUsePesticideResponse> {
         this.logger.debug(`Help use pesticide for user ${request.neighborUserId}`)
@@ -78,7 +75,7 @@ export class HelpUsePesticideService {
             const {
                 helpWater: { energyConsume, experiencesGain }
             } = value as Activities
-            
+
             //get user
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
@@ -94,7 +91,7 @@ export class HelpUsePesticideService {
                 entity: user,
                 energy: energyConsume
             })
-            
+
             const experiencesChanges = this.levelService.addExperiences({
                 entity: user,
                 experiences: experiencesGain
@@ -102,7 +99,7 @@ export class HelpUsePesticideService {
 
             await queryRunner.startTransaction()
             try {
-            // update user
+                // update user
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...energyChanges,
                     ...experiencesChanges
@@ -122,16 +119,15 @@ export class HelpUsePesticideService {
                 this.logger.error(`Help use pesticide failed: ${error}`)
                 await queryRunner.rollbackTransaction()
                 throw new HelpUsePesticideTransactionFailedException(error)
-            } 
+            }
 
-            this.clientKafka.emit(
-                KafkaPattern.PlacedItemsBroadcast, {
-                    userId: request.neighborUserId
-                })
+            this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
+                userId: request.neighborUserId
+            })
 
             return {}
         } finally {
             await queryRunner.release()
-        }   
+        }
     }
 }

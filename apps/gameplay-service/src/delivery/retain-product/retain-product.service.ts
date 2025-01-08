@@ -1,23 +1,22 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DeliveringProductEntity, GameplayPostgreSQLService, InventoryEntity, InventoryType, InventoryTypeEntity } from "@src/databases"
+import { DeliveringProductEntity, InjectPostgreSQL, InventoryEntity, InventoryType, InventoryTypeEntity } from "@src/databases"
 import {
     DeliveringProductNotFoundException,
     RetainProductTransactionFailedException
 } from "@src/exceptions"
+import { InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { RetainProductRequest, RetainProductResponse } from "./retain-product.dto"
-import { InventoryService } from "@src/gameplay"
 
 @Injectable()
 export class RetainProductService {
     private readonly logger = new Logger(RetainProductService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly inventoryService: InventoryService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async retainProduct(request: RetainProductRequest): Promise<RetainProductResponse> {

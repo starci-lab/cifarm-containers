@@ -1,15 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    HelpWaterTransactionFailedException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotNeedWaterException,
-    PlacedItemTileNotPlantedException,
-} from "@src/exceptions"
-import { DataSource } from "typeorm"
+import { ClientKafka } from "@nestjs/microservices"
+import { KafkaPattern } from "@src/brokers"
+import { InjectKafka } from "@src/brokers/kafka/kafka.decorators"
 import {
     Activities,
     CropCurrentState,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     PlacedItemEntity,
     PlacedItemType,
     SeedGrowthInfoEntity,
@@ -17,26 +13,28 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
+import {
+    HelpWaterTransactionFailedException,
+    PlacedItemTileNotFoundException,
+    PlacedItemTileNotNeedWaterException,
+    PlacedItemTileNotPlantedException
+} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
+import { DataSource } from "typeorm"
 import { HelpWaterRequest, HelpWaterResponse } from "./help-water.dto"
-import { ClientKafka } from "@nestjs/microservices"
-import { KafkaClientService, KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class HelpWaterService {
     private readonly logger = new Logger(HelpWaterService.name)
 
-    private readonly dataSource: DataSource
-    private readonly clientKafka: ClientKafka
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
-        private readonly kafkaClientService: KafkaClientService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-        this.clientKafka = this.kafkaClientService.getClient()
-    }
+    ) {}
 
     async helpWater(request: HelpWaterRequest): Promise<HelpWaterResponse> {
         this.logger.debug(`Help water for user ${request.neighborUserId}`)
@@ -78,7 +76,7 @@ export class HelpWaterService {
             const {
                 helpWater: { energyConsume, experiencesGain }
             } = value as Activities
-            
+
             //get user
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
@@ -94,7 +92,7 @@ export class HelpWaterService {
                 entity: user,
                 energy: energyConsume
             })
-            
+
             const experiencesChanges = this.levelService.addExperiences({
                 entity: user,
                 experiences: experiencesGain
@@ -102,7 +100,7 @@ export class HelpWaterService {
 
             await queryRunner.startTransaction()
             try {
-            // update user
+                // update user
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...energyChanges,
                     ...experiencesChanges
@@ -128,7 +126,7 @@ export class HelpWaterService {
                 this.logger.error(`Failed to help water for user ${request.neighborUserId}`)
                 await queryRunner.rollbackTransaction()
                 throw new HelpWaterTransactionFailedException(error)
-            } 
+            }
         } finally {
             await queryRunner.release()
         }

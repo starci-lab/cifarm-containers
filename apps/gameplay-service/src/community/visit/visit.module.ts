@@ -1,10 +1,9 @@
 import { Module } from "@nestjs/common"
 import { VisitController } from "./visit.controller"
 import { VisitService } from "./visit.service"
-import { GameplayPostgreSQLModule } from "@src/databases"
 
 @Module({
-    imports: [GameplayPostgreSQLModule.forFeature()],
+    imports: [],
     controllers: [VisitController],
     providers: [VisitService]
 })

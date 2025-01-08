@@ -1,16 +1,11 @@
 import { Global, Module } from "@nestjs/common"
-import { RetainProductService } from "./retain-product.service"
-import { RetainProductController } from "./retain-product.controller"
-import { GameplayPostgreSQLModule } from "@src/databases"
 import { GameplayModule } from "@src/gameplay"
-
+import { RetainProductController } from "./retain-product.controller"
+import { RetainProductService } from "./retain-product.service"
 
 @Global()
 @Module({
-    imports: [
-        GameplayPostgreSQLModule.forFeature(),
-        GameplayModule
-    ],
+    imports: [GameplayModule],
     providers: [RetainProductService],
     exports: [RetainProductService],
     controllers: [RetainProductController]

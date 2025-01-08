@@ -1,17 +1,16 @@
-import { Cache } from "@nestjs/cache-manager"
 import { Injectable, Logger } from "@nestjs/common"
-import { CacheKey, CacheRedisService } from "@src/cache"
+import { CacheKey, InjectCache } from "@src/cache"
+import { Cache } from "cache-manager"
 import { DeliverInstantlyResponse } from "./deliver-instantly.dto"
 
 @Injectable()
 export class DeliverInstantlyService {
     private readonly logger = new Logger(DeliverInstantlyService.name)
-
-    private readonly cacheManager: Cache
+    
     constructor(
-        private readonly cacheRedisService: CacheRedisService
+        @InjectCache()
+        private readonly cacheManager: Cache
     ) {
-        this.cacheManager = this.cacheRedisService.getCacheManager()
     }
 
     async deliverInstantly(): Promise<DeliverInstantlyResponse> {
