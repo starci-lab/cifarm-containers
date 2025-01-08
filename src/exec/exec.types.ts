@@ -1,7 +1,6 @@
-import { BaseOptions } from "@src/common"
 import { RedisType } from "@src/env"
 
-export interface ExecOptions extends BaseOptions {
+export interface ExecOptions {
     docker?: DockerOptions
 }
 

@@ -8,20 +8,17 @@ import { ExecOptions } from "./exec.types"
 export class ExecService {
     private logger = new Logger(ExecService.name)
     private shell: "powershell.exe" | "/bin/bash"
-    private debug: boolean
+
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
         private options: ExecOptions
     ) {
         const platform = os.platform()
         this.shell = platform === "win32" ? "powershell.exe" : "/bin/bash"
-        this.debug = options.debug || true
     }
     public async exec(command: string): Promise<string> {
         // Log the command if debug is enabled
-        if (this.debug) {
-            this.logger.debug(`Executing command: ${command}`)
-        }
+        this.logger.debug(`Executing command: ${command}`)
         
         return new Promise((resolve, reject) => {
             nodeExec(
@@ -42,9 +39,8 @@ export class ExecService {
 
     public execSync(command: string): string {
         // Log the command if debug is enabled
-        if (this.debug) {
-            this.logger.debug(`Executing command: ${command}`)
-        }
+        this.logger.debug(`Executing command: ${command}`)
+        
         return nodeExecSync(command, {
             encoding: "utf8",
             shell: this.shell
