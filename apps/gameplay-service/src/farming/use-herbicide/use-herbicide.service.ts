@@ -2,34 +2,33 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
     CropCurrentState,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     PlacedItemEntity,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/databases"
-import { DataSource } from "typeorm"
-import { UseHerbicideRequest, UseHerbicideResponse } from "./use-herbicide.dto"
 import {
-    PlacedItemTileNotNeedUseHerbicideException,
     PlacedItemTileNotFoundException,
+    PlacedItemTileNotNeedUseHerbicideException,
     PlacedItemTileNotPlantedException,
     UseHerbicideTransactionFailedException
 } from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
+import { DataSource } from "typeorm"
+import { UseHerbicideRequest, UseHerbicideResponse } from "./use-herbicide.dto"
 
 @Injectable()
 export class UseHerbicideService {
     private readonly logger = new Logger(UseHerbicideService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async useHerbicide(request: UseHerbicideRequest): Promise<UseHerbicideResponse> {

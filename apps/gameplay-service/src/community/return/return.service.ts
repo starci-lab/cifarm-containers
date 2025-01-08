@@ -1,18 +1,16 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ReturnRequest } from "./return.dto"
+import { InjectPostgreSQL, UserEntity } from "@src/databases"
 import { DataSource } from "typeorm"
-import { GameplayPostgreSQLService, UserEntity } from "@src/databases"
+import { ReturnRequest } from "./return.dto"
 
 @Injectable()
 export class ReturnService {
     private readonly logger = new Logger(ReturnRequest.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) {}
 
     async return(request: ReturnRequest) {
         this.logger.debug(`Return for user ${request.userId}`)

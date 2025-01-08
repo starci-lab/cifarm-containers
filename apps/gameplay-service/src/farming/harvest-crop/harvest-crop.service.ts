@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
     CropCurrentState,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -13,29 +13,27 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import { DataSource } from "typeorm"
-import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import {
+    HaverstCropTransactionFailedException,
     PlacedItemTileNotFoundException,
     PlacedItemTileNotFullyMaturedException,
-    PlacedItemTileNotPlantedException,
-    HaverstCropTransactionFailedException,
+    PlacedItemTileNotPlantedException
 } from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { DataSource } from "typeorm"
+import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 
 @Injectable()
 export class HarvestCropService {
     private readonly logger = new Logger(HarvestCropService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+    ) {}
 
     async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
@@ -121,9 +119,9 @@ export class HarvestCropService {
             })
 
             await queryRunner.startTransaction()
-            
+
             try {
-            // update user
+                // update user
                 await queryRunner.manager.update(UserEntity, user.id, {
                     ...energyChanges,
                     ...experiencesChanges
@@ -134,20 +132,20 @@ export class HarvestCropService {
                 //if current perennial count is equal to crop's perennial count, remove the crop, delete the seed growth info
                 if (
                     placedItemTile.seedGrowthInfo.currentPerennialCount >=
-                placedItemTile.seedGrowthInfo.crop.perennialCount
+                    placedItemTile.seedGrowthInfo.crop.perennialCount
                 ) {
                     await queryRunner.manager.remove(
                         SeedGrowthInfoEntity,
                         placedItemTile.seedGrowthInfo
                     )
                 } else {
-                // update seed growth info
+                    // update seed growth info
                     await queryRunner.manager.update(
                         SeedGrowthInfoEntity,
                         placedItemTile.seedGrowthInfo.id,
                         {
                             currentPerennialCount:
-                            placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
+                                placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
                             currentState: CropCurrentState.Normal,
                             currentStageTimeElapsed: 0
                         }

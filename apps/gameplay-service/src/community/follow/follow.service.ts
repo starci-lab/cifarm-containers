@@ -1,19 +1,18 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { FollowRequest } from "./follow.dto"
-import { DataSource } from "typeorm"
-import { UserEntity } from "@src/databases"
+import { InjectPostgreSQL, UserEntity, UsersFollowingUsersEntity } from "@src/databases"
 import { SelfFollowException, UserNotFoundException } from "@src/exceptions"
-import { GameplayPostgreSQLService, UsersFollowingUsersEntity } from "@src/databases"
+import { DataSource } from "typeorm"
+import { FollowRequest } from "./follow.dto"
 
 @Injectable()
 export class FollowService {
     private readonly logger = new Logger(FollowService.name)
 
-    private readonly dataSource: DataSource
+    
     constructor(
-        private readonly gameplayPostgreSQLService: GameplayPostgreSQLService
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
     ) {
-        this.dataSource = this.gameplayPostgreSQLService.getDataSource()
     }
 
     async follow(request: FollowRequest) {

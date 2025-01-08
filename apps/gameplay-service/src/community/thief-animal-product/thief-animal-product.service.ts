@@ -1,17 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    HaverstQuantityRemainingEqualMinHarvestQuantityException,
-    PlacedItemAnimalNotCurrentlyYieldingException,
-    PlacedItemAnimalNotFoundException,
-    ThiefAnimalProductTransactionFailedException
-} from "@src/exceptions"
-import { DataSource } from "typeorm"
+import { ClientKafka } from "@nestjs/microservices"
+import { KafkaPattern } from "@src/brokers"
 import {
     Activities,
     AnimalCurrentState,
     AnimalInfoEntity,
     AnimalRandomness,
-    GameplayPostgreSQLService,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -22,28 +16,30 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
+import {
+    HaverstQuantityRemainingEqualMinHarvestQuantityException,
+    PlacedItemAnimalNotCurrentlyYieldingException,
+    PlacedItemAnimalNotFoundException,
+    ThiefAnimalProductTransactionFailedException
+} from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
+import { DataSource } from "typeorm"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
-import { KafkaClientService, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class ThiefAnimalProductService {
     private readonly logger = new Logger(ThiefAnimalProductService.name)
 
-    private readonly dataSource: DataSource
-    private readonly clientKafka: ClientKafka
     constructor(
-        private readonly kafkaClientService: KafkaClientService,
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly theifService: ThiefService,
         private readonly inventoryService: InventoryService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-        this.clientKafka = this.kafkaClientService.getClient()
-    }
+    ) {}
 
     async theifAnimalProduct(
         request: ThiefAnimalProductRequest
@@ -65,7 +61,7 @@ export class ThiefAnimalProductService {
                 },
                 relations: {
                     animalInfo: {
-                        animal: true,
+                        animal: true
                     },
                     placedItemType: true
                 }
@@ -196,4 +192,19 @@ export class ThiefAnimalProductService {
             await queryRunner.release()
         }
     }
+}
+function InjectKafka(): (
+    target: typeof ThiefAnimalProductService,
+    propertyKey: undefined,
+    parameterIndex: 0
+) => void {
+    throw new Error("Function not implemented.")
+}
+
+function InjectPostgreSQL(): (
+    target: typeof ThiefAnimalProductService,
+    propertyKey: undefined,
+    parameterIndex: 1
+) => void {
+    throw new Error("Function not implemented.")
 }

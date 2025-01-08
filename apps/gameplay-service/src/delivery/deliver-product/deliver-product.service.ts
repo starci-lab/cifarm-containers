@@ -1,4 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { DeliveringProductEntity, InjectPostgreSQL, InventoryEntity } from "@src/databases"
 import {
     DeliverProductTransactionFailedException,
     InsufficientInventoryException,
@@ -7,18 +8,15 @@ import {
 } from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
 import { DeliverProductRequest, DeliverProductResponse } from "./deliver-product.dto"
-import { DeliveringProductEntity, GameplayPostgreSQLService, InventoryEntity } from "@src/databases"
 
 @Injectable()
 export class DeliverProductService {
     private readonly logger = new Logger(DeliverProductService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) {}
 
     async deliverProduct(request: DeliverProductRequest): Promise<DeliverProductResponse> {
         this.logger.debug(
@@ -73,10 +71,7 @@ export class DeliverProductService {
                 }
 
                 // Save delivering product in database
-                await queryRunner.manager.save(
-                    DeliveringProductEntity,
-                    deliveringProduct
-                )
+                await queryRunner.manager.save(DeliveringProductEntity, deliveringProduct)
 
                 await queryRunner.commitTransaction()
             } catch (error) {

@@ -49,6 +49,8 @@ export * from "./upgrade.entity"
 export * from "./user.entity"
 export * from "./session.entity"
 export * from "./temp.entity"
+export * from "./users-following-users.entity"
+export * from "./collection.entity"
 
 export const gameplayPostgreSqlEntities = () : Array<typeof AbstractEntity> => ([
     InventoryEntity,

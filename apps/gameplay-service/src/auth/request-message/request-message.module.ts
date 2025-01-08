@@ -1,11 +1,11 @@
 import { Global, Module } from "@nestjs/common"
 import { RequestMessageController } from "./request-message.controller"
 import { RequestMessageService } from "./request-message.service"
-import { CacheRedisModule } from "@src/cache"
+import { CacheModule } from "@src/cache"
 
 @Global()
 @Module({
-    imports: [CacheRedisModule.forFeature()],
+    imports: [CacheModule],
     controllers: [RequestMessageController],
     providers: [RequestMessageService],
     exports: [RequestMessageService]

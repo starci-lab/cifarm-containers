@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
     CropEntity,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
@@ -11,29 +11,27 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import { DataSource } from "typeorm"
-import { PlantSeedRequest, PlantSeedResponse } from "./plant-seed.dto"
 import {
     InventoryNotFoundException,
     PlacedItemTileAlreadyHasSeedException,
     PlacedItemTileNotFoundException,
-    PlantSeedTransactionFailedException,
+    PlantSeedTransactionFailedException
 } from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { DataSource } from "typeorm"
+import { PlantSeedRequest, PlantSeedResponse } from "./plant-seed.dto"
 
 @Injectable()
 export class PlantSeedService {
     private readonly logger = new Logger(PlantSeedService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+    ) {}
 
     async plantSeed(request: PlantSeedRequest): Promise<PlantSeedResponse> {
         const queryRunner = this.dataSource.createQueryRunner()

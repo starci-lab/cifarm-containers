@@ -3,15 +3,15 @@ import {
     Activities,
     AnimalCurrentState,
     AnimalInfoEntity,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     PlacedItemEntity,
     SystemEntity,
     SystemId,
     UserEntity
 } from "@src/databases"
 import {
-    PlacedItemAnimalNotFoundException,
     CureAnimalTransactionFailedException,
+    PlacedItemAnimalNotFoundException,
     PlacedItemAnimalNotSickException
 } from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
@@ -22,14 +22,12 @@ import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
 export class CureAnimalService {
     private readonly logger = new Logger(CureAnimalService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+    ) {}
 
     async cureAnimal(request: CureAnimalRequest): Promise<CureAnimalResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
@@ -37,9 +35,9 @@ export class CureAnimalService {
 
         try {
             const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { 
+                where: {
                     id: request.placedItemAnimalId,
-                    userId: request.userId,
+                    userId: request.userId
                 },
                 relations: {
                     animalInfo: true

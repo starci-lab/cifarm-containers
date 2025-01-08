@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     AnimalEntity,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     PlacedItemEntity,
     PlacedItemType,
     PlacedItemTypeEntity,
@@ -26,12 +26,11 @@ import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 export class BuyAnimalService {
     private readonly logger = new Logger(BuyAnimalService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {

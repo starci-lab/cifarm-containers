@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     AnimalCurrentState,
     AnimalInfoEntity,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -25,13 +25,11 @@ import {
 export class CollectAnimalProductService {
     private readonly logger = new Logger(CollectAnimalProductService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly inventoryService: InventoryService
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+    ) {}
 
     async collectAnimalProduct(
         request: CollectAnimalProductRequest
@@ -62,7 +60,7 @@ export class CollectAnimalProductService {
 
             const animalInfo = placedItemAnimal.animalInfo
 
-            if (!animalInfo || (animalInfo.currentState !== AnimalCurrentState.Yield)) {
+            if (!animalInfo || animalInfo.currentState !== AnimalCurrentState.Yield) {
                 throw new AnimalNotCurrentlyYieldingException(request.placedItemAnimalId)
             }
 
@@ -109,7 +107,7 @@ export class CollectAnimalProductService {
 
                 // Save updated placed item
                 await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
-                    currentState: AnimalCurrentState.Normal,
+                    currentState: AnimalCurrentState.Normal
                 })
 
                 // Commit transaction
@@ -123,8 +121,7 @@ export class CollectAnimalProductService {
         } catch (error) {
             this.logger.error("Collect Animal Product failed", error)
             throw error
-        }
-        finally {
+        } finally {
             await queryRunner.release()
         }
     }

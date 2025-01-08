@@ -1,15 +1,11 @@
 import { Global, Module } from "@nestjs/common"
 import { GameplayModule } from "@src/gameplay"
-import { HarvestCropService } from "./harvest-crop.service"
 import { HarvestCropController } from "./harvest-crop.controller"
-import { GameplayPostgreSQLModule } from "@src/databases"
+import { HarvestCropService } from "./harvest-crop.service"
 
 @Global()
 @Module({
-    imports: [
-        GameplayPostgreSQLModule.forFeature(),
-        GameplayModule
-    ],
+    imports: [GameplayModule],
     controllers: [HarvestCropController],
     providers: [HarvestCropService],
     exports: [HarvestCropService]

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
@@ -27,12 +27,11 @@ export class BuyTileService {
 
     private tileOrder = [TileId.BasicTile1, TileId.BasicTile2, TileId.BasicTile3]
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     async buyTile(request: BuyTileRequest): Promise<BuyTileResponse> {

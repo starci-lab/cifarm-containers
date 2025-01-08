@@ -4,7 +4,7 @@ import { CacheNotFound, VerifySignatureTransactionFailedException } from "@src/e
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 
 import {
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     PlacedItemEntity,
     PlacedItemTypeId,
     SessionEntity,
@@ -25,20 +25,20 @@ import {
 
 import { EnergyService } from "@src/gameplay"
 
+import { InjectCache } from "@src/cache"
+import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
-import { JwtService } from "@src/jwt"
-import { CacheRedisService } from "@src/cache"
 
 @Injectable()
 export class VerifySignatureService {
     private readonly logger = new Logger(VerifySignatureService.name)
 
-    private readonly dataSource: DataSource
-    private readonly cacheManager: Cache
     constructor(
-        private readonly cacheRedisService: CacheRedisService,
-        private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
+        @InjectCache()
+        private readonly cacheManager: Cache,
         private readonly evmAuthService: EvmAuthService,
         private readonly solanaAuthService: SolanaAuthService,
         private readonly aptosAuthService: AptosAuthService,
@@ -47,10 +47,7 @@ export class VerifySignatureService {
         private readonly nearAuthService: NearAuthService,
         private readonly jwtService: JwtService,
         private readonly energyService: EnergyService
-    ) {
-        this.dataSource = this.gameplayPostgreSQLService.getDataSource()
-        this.cacheManager = this.cacheRedisService.getCacheManager()
-    }
+    ) {}
 
     public async verifySignature({
         message,
@@ -189,7 +186,7 @@ export class VerifySignatureService {
             const userSession: DeepPartial<SessionEntity> = {
                 expiredAt: await this.jwtService.getExpiredAt(refreshToken),
                 token: refreshToken,
-                userId: user.id,
+                userId: user.id
             }
 
             // Create session
