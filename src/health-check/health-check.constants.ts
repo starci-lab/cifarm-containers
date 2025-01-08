@@ -1,3 +1,2 @@
 export const HEALTH_CHECK_ENDPOINT = "healthz"
 export const HEALTH_CHECK_TIMEOUT = 3000
-export const HEALTH_CHECK_OPTIONS = "HEALTH_CHECK_OPTIONS"

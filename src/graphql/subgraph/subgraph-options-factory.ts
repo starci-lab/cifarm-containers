@@ -3,23 +3,21 @@ import { ApolloServerPluginCacheControl } from "@apollo/server/dist/esm/plugin/c
 import { ApolloDriverConfig } from "@nestjs/apollo"
 import { Injectable } from "@nestjs/common"
 import { Int } from "@nestjs/graphql"
-import { KeyvManagerService } from "@src/cache/keyv-manager.service"
-import { ExecDockerRedisClusterService } from "@src/exec"
+import { KeyvService } from "@src/cache"
 import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } from "graphql"
 
 @Injectable()
 export class SubgraphOptionsFactory {
     constructor(
-        private readonly execDockerRedisClusterService: ExecDockerRedisClusterService
+        private keyvService: KeyvService
     ) {}
 
     createSubgraphOptions(): Omit<ApolloDriverConfig, "driver"> {
-        const keyvManager = new KeyvManagerService(this.execDockerRedisClusterService)
         return {
             autoSchemaFile: {
                 federation: 2,
             },
-            cache: keyvManager.createKeyvAdapter(),
+            cache: this.keyvService.createKeyvAdapter(),
             plugins: [
                 ApolloServerPluginCacheControl(), responseCachePlugin()
             ],

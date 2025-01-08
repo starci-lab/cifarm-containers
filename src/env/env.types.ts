@@ -53,3 +53,17 @@ export const enum RedisType {
     Job = "job",
     Adapter = "adapter"
 }
+
+export enum PostgreSQLDatabase {
+    Gameplay = "gameplay",
+    Telegram = "telegram"
+}
+
+export enum PostgreSQLContext {
+    Main = "main",
+    Mock = "mock"
+}
+
+export enum Brokers {
+    Kafka = "kafka",
+}

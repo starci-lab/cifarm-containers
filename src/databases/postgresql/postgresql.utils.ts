@@ -1,5 +1,5 @@
 import { PostgreSQLOptions } from "./postgresql.types"
-import { PostgreSQLContext, PostgreSQLDatabase } from "../databases.types"
+import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 
 export const getPostgreSqlDataSourceName = (options: PostgreSQLOptions = {}): string => {
     const context = options.context || PostgreSQLContext.Main

@@ -6,7 +6,7 @@ import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
 
 @Injectable()
-export class KeyvManagerService {
+export class KeyvService {
     constructor(private readonly execDockerRedisClusterService: ExecDockerRedisClusterService) {}
 
     // Method to create a KeyvRedis instance

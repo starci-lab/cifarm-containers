@@ -1,5 +1,5 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
-import { Network, SupportedChainKey } from "@src/blockchain"
+import { Network, SupportedChainKey } from "@src/env"
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
 import { InventoryEntity } from "./inventory.entity"

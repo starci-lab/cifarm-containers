@@ -1,23 +1,14 @@
 import { DynamicModule, Module } from "@nestjs/common"
-import { RedisType } from "@src/env"
-import { ExecModule } from "@src/exec"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./cache.module-definition"
-import { KeyvManagerService } from "./keyv-manager.service"
+import { KeyvModule } from "./keyv"
 import { createCacheManagerFactoryProvider } from "./cache.providers"
 import { CACHE_MANAGER } from "./cache.constants"
 
 @Module({
     imports: [
-        ExecModule.register({
-            docker: {
-                redisCluster: {
-                    type: RedisType.Cache
-                }
-            }
-        })
+        KeyvModule.register(),
     ],
     providers: [
-        KeyvManagerService,
         createCacheManagerFactoryProvider(),
     ],
     exports: [

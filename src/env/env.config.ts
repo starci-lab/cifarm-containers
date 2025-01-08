@@ -1,4 +1,13 @@
-import { Container, NodeEnv, SupportedChainKey, Network, RedisType } from "./env.types"
+import {
+    Container,
+    NodeEnv,
+    SupportedChainKey,
+    Network,
+    RedisType,
+    PostgreSQLDatabase,
+    PostgreSQLContext,
+    Brokers
+} from "./env.types"
 import {
     DEFAULT_CACHE_TIMEOUT_MS,
     DEFAULT_HEALTH_PORT,
@@ -8,9 +17,6 @@ import {
     DEFAULT_REDIS_PORT,
     LOCALHOST
 } from "./env.constants"
-import { PostgreSQLDatabase, PostgreSQLContext } from "@src/databases"
-import { Brokers } from "@src/brokers"
-
 export const envConfig = () => ({
     nodeEnv: (process.env.NODE_ENV ?? NodeEnv.Development) as NodeEnv,
     cacheTimeoutMs: Number.parseInt(process.env.CACHE_TIMEOUT_MS) ?? DEFAULT_CACHE_TIMEOUT_MS,

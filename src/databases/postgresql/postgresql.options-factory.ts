@@ -5,7 +5,7 @@ import { MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } from "./postgresql-options.module-
 import { envConfig, isProduction } from "@src/env"
 import { gameplayPostgreSqlEntities } from "./gameplay"
 import { CONNECTION_TIMEOUT_MS, POOL_SIZE } from "./postgresql.constants"
-import { PostgreSQLContext, PostgreSQLDatabase } from "../databases.types"
+import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 
 @Injectable()
 export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {

@@ -14,20 +14,19 @@ import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } fr
 import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 import {
     HEALTH_CHECK_ENDPOINT,
-    HEALTH_CHECK_OPTIONS,
     HEALTH_CHECK_TIMEOUT
 } from "./health-check.constants"
-
 import { NatMap } from "ioredis"
 import { v4 } from "uuid"
 import { getHttpUrl } from "@src/common"
+import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
 
 @Controller()
 export class HealthCheckController {
     private readonly logger = new Logger(HealthCheckController.name)
 
     constructor(
-        @Inject(HEALTH_CHECK_OPTIONS)
+        @Inject(MODULE_OPTIONS_TOKEN)
         private options: HealthCheckOptions,
         private health: HealthCheckService,
         private microservice: MicroserviceHealthIndicator,

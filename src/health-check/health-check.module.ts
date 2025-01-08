@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { TerminusModule } from "@nestjs/terminus"
-import { EnvModule, RedisType } from "@src/env"
+import { EnvModule, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
 import { HealthCheckController } from "./health-check.controller"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./health-check.module-definition"
 import { HealthCheckDependency } from "./health-check.types"
@@ -19,39 +19,57 @@ export class HealthCheckModule extends ConfigurableModuleClass {
             imports.push(PostgreSQLModule.forRoot())
         }
         // if adapter redis is used
-        if (options.dependencies.includes(HealthCheckDependency.AdapterRedis)) {
-            ExecModule.register({
-                docker: {
-                    redisCluster: {
-                        type: RedisType.Adapter,
+        if (
+            options.dependencies.includes(HealthCheckDependency.AdapterRedis) &&
+            redisClusterEnabled(RedisType.Adapter) &&
+            redisClusterRunInDocker(RedisType.Adapter)
+        ) {
+            imports.push(
+                ExecModule.register({
+                    docker: {
+                        redisCluster: {
+                            type: RedisType.Adapter
+                        }
                     }
-                }
-            })
+                })
+            )
         }
         // if cache redis is used
-        if (options.dependencies.includes(HealthCheckDependency.CacheRedis)) {
-            ExecModule.register({
-                docker: {
-                    redisCluster: {
-                        type: RedisType.Cache,
+        if (
+            options.dependencies.includes(HealthCheckDependency.CacheRedis) &&
+            redisClusterEnabled(RedisType.Cache) &&
+            redisClusterRunInDocker(RedisType.Cache)
+        ) {
+            imports.push(
+                ExecModule.register({
+                    docker: {
+                        redisCluster: {
+                            type: RedisType.Cache
+                        }
                     }
-                }
-            })
+                })
+            )
         }
         // if job redis is used
-        if (options.dependencies.includes(HealthCheckDependency.JobRedis)) {
-            ExecModule.register({
-                docker: {
-                    redisCluster: {
-                        type: RedisType.Job,
+        if (
+            options.dependencies.includes(HealthCheckDependency.JobRedis) &&
+            redisClusterEnabled(RedisType.Job) &&
+            redisClusterRunInDocker(RedisType.Job)
+        ) {
+            imports.push(
+                ExecModule.register({
+                    docker: {
+                        redisCluster: {
+                            type: RedisType.Job
+                        }
                     }
-                }
-            })
+                })
+            )
         }
         const dynamicModule = super.forRoot(options)
         return {
             ...dynamicModule,
-            imports: [...dynamicModule.imports, ...imports],
+            imports,
             controllers: [HealthCheckController]
         }
     }
