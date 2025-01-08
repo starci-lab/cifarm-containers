@@ -1,9 +1,10 @@
-import { Module } from "@nestjs/common"
-import { JwtService } from "./jwt.service"
+import { DynamicModule, Module } from "@nestjs/common"
 import { JwtService as NestJwtService } from "@nestjs/jwt"
-import { GraphQLJwtAuthGuard, WsJwtAuthGuard, RestJwtAuthGuard } from "./guards"
-import { JwtStrategy } from "./strategies"
 import { PassportModule } from "@nestjs/passport"
+import { GraphQLJwtAuthGuard, RestJwtAuthGuard, WsJwtAuthGuard } from "./guards"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./jwt.module-definition"
+import { JwtService } from "./jwt.service"
+import { JwtStrategy } from "./strategies"
 
 @Module({
     imports: [PassportModule],
@@ -22,4 +23,8 @@ import { PassportModule } from "@nestjs/passport"
         GraphQLJwtAuthGuard 
     ]
 })
-export class JwtModule {}
+export class JwtModule extends ConfigurableModuleClass {
+    static forRoot(options: typeof OPTIONS_TYPE = {}) : DynamicModule{
+        return super.forRoot(options)
+    }
+}
