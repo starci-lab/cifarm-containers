@@ -1,1 +1,1 @@
-export * from "./types.common"
+export * from "./common.types"

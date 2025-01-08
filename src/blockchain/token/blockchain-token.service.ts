@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { MintParams, MintResult, _mint } from "./mint.token"
+import { MintParams, MintResult, _mint } from "./mint"
 import { TransactionExecutionException } from "@src/exceptions"
 
 @Injectable()

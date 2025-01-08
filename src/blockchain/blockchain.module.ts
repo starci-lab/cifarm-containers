@@ -6,18 +6,8 @@ import { SpecialModule } from "./special"
 import { TokenModule } from "./token"
 
 @Module({
-    imports: [
-        AuthModule,
-        SpecialModule,
-        NftModule,
-        TokenModule
-    ],
+    imports: [AuthModule, SpecialModule, NftModule, TokenModule],
     providers: [],
-    exports: [
-        AuthModule,
-        SpecialModule,
-        NftModule,
-        TokenModule
-    ],
+    exports: [AuthModule, SpecialModule, NftModule, TokenModule]
 })
 export class BlockchainModule extends ConfigurableModuleClass {}
