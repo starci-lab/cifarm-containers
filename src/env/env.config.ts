@@ -1,6 +1,13 @@
-import { SupportedChainKey, Network } from "@src/blockchain"
-import { Container, NodeEnv, RedisType } from "./env.types"
-import { DEFAULT_CACHE_TIMEOUT_MS, DEFAULT_HEALTH_PORT, DEFAULT_KAFKA_PORT, DEFAULT_PORT, DEFAULT_POSTGRES_PORT, DEFAULT_REDIS_PORT, LOCALHOST } from "./env.constants"
+import { Container, NodeEnv, SupportedChainKey, Network, RedisType } from "./env.types"
+import {
+    DEFAULT_CACHE_TIMEOUT_MS,
+    DEFAULT_HEALTH_PORT,
+    DEFAULT_KAFKA_PORT,
+    DEFAULT_PORT,
+    DEFAULT_POSTGRES_PORT,
+    DEFAULT_REDIS_PORT,
+    LOCALHOST
+} from "./env.constants"
 import { PostgreSQLDatabase, PostgreSQLContext } from "@src/databases"
 import { Brokers } from "@src/brokers"
 
@@ -21,39 +28,51 @@ export const envConfig = () => ({
         [Container.RestApiGateway]: {
             host: process.env.REST_API_GATEWAY_HOST ?? LOCALHOST,
             port: Number.parseInt(process.env.REST_API_GATEWAY_PORT) ?? DEFAULT_PORT,
-            healthCheckPort: Number.parseInt(process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort:
+                Number.parseInt(process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT) ??
+                DEFAULT_HEALTH_PORT
         },
         [Container.WebsocketNode]: {
             host: process.env.WEBSOCKET_NODE_HOST ?? LOCALHOST,
             port: Number.parseInt(process.env.WEBSOCKET_NODE_PORT) ?? DEFAULT_PORT,
-            healthCheckPort: Number.parseInt(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort:
+                Number.parseInt(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
         [Container.GameplayService]: {
             host: process.env.GAMEPLAY_SERVICE_HOST ?? LOCALHOST,
             port: Number.parseInt(process.env.GAMEPLAY_SERVICE_PORT) ?? DEFAULT_PORT,
-            healthCheckPort: Number.parseInt(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort:
+                Number.parseInt(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT) ??
+                DEFAULT_HEALTH_PORT
         },
         [Container.GraphqlGateway]: {
             host: process.env.GRAPHQL_GATEWAY_HOST ?? LOCALHOST,
             port: Number.parseInt(process.env.GRAPHQL_GATEWAY_PORT) ?? DEFAULT_PORT,
-            healthCheckPort: Number.parseInt(process.env.GRAPHQL_GATEWAY_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort:
+                Number.parseInt(process.env.GRAPHQL_GATEWAY_HEALTH_CHECK_PORT) ??
+                DEFAULT_HEALTH_PORT
         },
         [Container.GameplaySubgraph]: {
             host: process.env.GAMEPLAY_SUBGRAPH_HOST ?? LOCALHOST,
             port: Number.parseInt(process.env.GAMEPLAY_SUBGRAPH_PORT) ?? DEFAULT_PORT,
-            healthCheckPort: Number.parseInt(process.env.GAMEPLAY_SUBGRAPH_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort:
+                Number.parseInt(process.env.GAMEPLAY_SUBGRAPH_HEALTH_CHECK_PORT) ??
+                DEFAULT_HEALTH_PORT
         },
         [Container.CronWorker]: {
             host: process.env.CRON_WORKER_HOST ?? LOCALHOST,
-            healthCheckPort: Number.parseInt(process.env.CRON_WORKER_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort:
+                Number.parseInt(process.env.CRON_WORKER_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
         [Container.CronScheduler]: {
             host: process.env.CRON_SCHEDULER_HOST ?? LOCALHOST,
-            healthCheckPort: Number.parseInt(process.env.CRON_SCHEDULER_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort:
+                Number.parseInt(process.env.CRON_SCHEDULER_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         },
         [Container.TelegramBot]: {
             host: process.env.TELEGRAM_BOT_HOST ?? LOCALHOST,
-            healthCheckPort: Number.parseInt(process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort:
+                Number.parseInt(process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
         }
     },
     databases: {
@@ -62,15 +81,19 @@ export const envConfig = () => ({
                 [PostgreSQLContext.Main]: {
                     dbName: process.env.GAMEPLAY_POSTGRESQL_DBNAME ?? "gameplay",
                     host: process.env.GAMEPLAY_POSTGRESQL_HOST ?? LOCALHOST,
-                    port: Number.parseInt(process.env.GAMEPLAY_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
+                    port:
+                        Number.parseInt(process.env.GAMEPLAY_POSTGRESQL_PORT) ??
+                        DEFAULT_POSTGRES_PORT,
                     username: process.env.GAMEPLAY_POSTGRESQL_USERNAME,
                     password: process.env.GAMEPLAY_POSTGRESQL_PASSWORD
                 },
                 [PostgreSQLContext.Mock]: {
                     dbName: process.env.GAMEPLAY_MOCK_POSTGRESQL_DBNAME ?? "gameplay",
                     host: process.env.GAMEPLAY_MOCK_POSTGRESQL_HOST ?? LOCALHOST,
-                    port: Number.parseInt(process.env.GAMEPLAY_MOCK_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
-                    username: process.env.GAMEPLAY_MOCK_POSTGRESQL_USERNAME, 
+                    port:
+                        Number.parseInt(process.env.GAMEPLAY_MOCK_POSTGRESQL_PORT) ??
+                        DEFAULT_POSTGRES_PORT,
+                    username: process.env.GAMEPLAY_MOCK_POSTGRESQL_USERNAME,
                     password: process.env.GAMEPLAY_MOCK_POSTGRESQL_PASSWORD
                 }
             },
@@ -78,18 +101,22 @@ export const envConfig = () => ({
                 [PostgreSQLContext.Main]: {
                     dbName: process.env.TELEGRAM_POSTGRESQL_DBNAME ?? "telegram",
                     host: process.env.TELEGRAM_POSTGRESQL_HOST ?? LOCALHOST,
-                    port: Number.parseInt(process.env.TELEGRAM_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
+                    port:
+                        Number.parseInt(process.env.TELEGRAM_POSTGRESQL_PORT) ??
+                        DEFAULT_POSTGRES_PORT,
                     username: process.env.TELEGRAM_POSTGRESQL_USERNAME,
-                    password: process.env.TELEGRAM_POSTGRESQL_PASSWORD,
+                    password: process.env.TELEGRAM_POSTGRESQL_PASSWORD
                 },
                 [PostgreSQLContext.Mock]: {
                     dbName: process.env.TELEGRAM_MOCK_POSTGRESQL_DBNAME ?? "telegram",
                     host: process.env.TELEGRAM_MOCK_POSTGRESQL_HOST ?? LOCALHOST,
-                    port: Number.parseInt(process.env.TELEGRAM_MOCK_POSTGRESQL_PORT) ?? DEFAULT_POSTGRES_PORT,
+                    port:
+                        Number.parseInt(process.env.TELEGRAM_MOCK_POSTGRESQL_PORT) ??
+                        DEFAULT_POSTGRES_PORT,
                     username: process.env.TELEGRAM_MOCK_POSTGRESQL_USERNAME,
-                    password: process.env.TELEGRAM_MOCK_POSTGRESQL_PASSWORD,
-                },
-            },
+                    password: process.env.TELEGRAM_MOCK_POSTGRESQL_PASSWORD
+                }
+            }
         },
         redis: {
             [RedisType.Cache]: {
@@ -122,7 +149,7 @@ export const envConfig = () => ({
                     runInDocker: process.env.JOB_REDIS_CLUSTER_RUN_IN_DOCKER === "true",
                     dockerNetworkName: process.env.JOB_REDIS_CLUSTER_DOCKER_NETWORK_NAME
                 }
-            },
+            }
         }
     },
     brokers: {
@@ -231,11 +258,11 @@ export const envConfig = () => ({
     kubernetes: {
         namespace: process.env.POD_NAMESPACE ?? "containers",
         serviceHost: process.env.KUBERNETES_SERVICE_HOST,
-        hostname: process.env.KUBERNETES_HOSTNAME,
+        hostname: process.env.KUBERNETES_HOSTNAME
     },
     socketIoAdmin: {
         username: process.env.SOCKET_IO_ADMIN_USERNAME,
         password: process.env.SOCKET_IO_ADMIN_PASSWORD
     },
-    productionUrl: process.env.PRODUCTION_URL,
+    productionUrl: process.env.PRODUCTION_URL
 })

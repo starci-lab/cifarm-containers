@@ -9,9 +9,9 @@ import { GraphQLGatewayModule } from "@src/graphql"
         //     isGlobal: false
         // })
 
-        GraphQLGatewayModule.forRoot({
+        // GraphQLGatewayModule.forRoot({
             
-        }),
+        // }),
 
     ],
     providers: [SubService],

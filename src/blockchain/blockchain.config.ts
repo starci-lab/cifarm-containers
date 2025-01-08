@@ -1,9 +1,5 @@
+import { SupportedChainKey, Network } from "@src/env"
 import { ChainKeyNotFoundException } from "@src/exceptions"
-
-export enum Network {
-  Testnet = "testnet",
-  Mainnet = "mainnet",
-}
 
 export interface NftCollectionInfo {
     collectionId: string
@@ -22,16 +18,6 @@ export interface ChainInfo {
     nftCollections: Record<string, Record<Network, NftCollectionInfo>>
 }
 
-export enum SupportedChainKey {
-    Sui = "sui",
-    Aptos = "aptos",
-    Avalanche = "avalanche",
-    Solana = "solana",
-    Bsc = "bsc",
-    Algorand = "algorand",
-    Polkadot = "polkadot",
-    Near = "near",
-  }
 
 const DEFAULT_FERTILE_TILE_NFT_IMAGE_URL = "https://violet-lazy-yak-333.mypinata.cloud/ipfs/Qmd1x1KvmS4geRkHtXjXwNdUuBWN3unugXMbjBb5wpdqdp"
 const DEFAULT_FERTILE_TILE_NFT_TITLE_PREFIX = "Fertile Tile #"
