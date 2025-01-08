@@ -1,6 +1,6 @@
 import { GetInventoriesArgs } from "./inventories.dto"
 import { Injectable, Logger } from "@nestjs/common"
-import { GameplayPostgreSQLService, InventoryEntity } from "@src/databases"
+import { InjectPostgreSQL, InventoryEntity } from "@src/databases"
 import { UserLike } from "@src/jwt"
 import { DataSource } from "typeorm"
 
@@ -8,13 +8,13 @@ import { DataSource } from "typeorm"
 export class InventoryService {
     private readonly logger = new Logger(InventoryService.name)
 
-    private readonly dataSource: DataSource
-
-    constructor(private readonly gameplayPostgreSqlService: GameplayPostgreSQLService) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
-
     
+
+    constructor(
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) {}
+
     async getInventory(id: string): Promise<InventoryEntity> {
         this.logger.debug(`GetInventoryById: id=${id}`)
         const queryRunner = this.dataSource.createQueryRunner()

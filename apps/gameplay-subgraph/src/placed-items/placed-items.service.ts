@@ -1,6 +1,6 @@
 import { GetPlacedItemsArgs } from "./"
 import { Injectable, Logger } from "@nestjs/common"
-import { GameplayPostgreSQLService, PlacedItemEntity } from "@src/databases"
+import { InjectPostgreSQL, PlacedItemEntity } from "@src/databases"
 import { UserLike } from "@src/jwt"
 import { DataSource, FindOptionsRelations } from "typeorm"
 
@@ -17,10 +17,10 @@ export class PlacedItemsService {
         placedItems: true
     }
 
-    private readonly dataSource: DataSource
-
-    constructor(private readonly gameplayPostgreSqlService: GameplayPostgreSQLService) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
+    constructor(
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) {
     }
 
     async getPlacedItem(id: string): Promise<PlacedItemEntity> {

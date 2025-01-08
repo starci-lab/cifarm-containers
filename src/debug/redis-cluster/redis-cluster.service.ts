@@ -1,10 +1,9 @@
 import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
 import { Cluster, NatMap } from "ioredis"
-import { DEBUG_REDIS_CLUSTER_OPTIONS } from "./redis-cluster.constants"
 import { DebugRedisClusterOptions } from "./redis-cluster.types"
-import { ChildProcessDockerRedisClusterService } from "@src/exec"
-
+import { ExecDockerRedisClusterService } from "@src/exec"
+import { MODULE_OPTIONS_TOKEN } from "./redis-cluster.module-definition"
 @Injectable()
 export class DebugRedisClusterService implements OnModuleInit {
     private readonly logger = new Logger(DebugRedisClusterService.name)
@@ -12,8 +11,8 @@ export class DebugRedisClusterService implements OnModuleInit {
     private connection: Cluster
     private type: RedisType
     constructor(
-        private readonly childProcessDockerRedisClusterService: ChildProcessDockerRedisClusterService,
-        @Inject(DEBUG_REDIS_CLUSTER_OPTIONS)
+        private readonly execDockerRedisClusterService: ExecDockerRedisClusterService,
+        @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options?: DebugRedisClusterOptions,
     ) { 
         this.type = options?.type || RedisType.Cache
@@ -31,7 +30,7 @@ export class DebugRedisClusterService implements OnModuleInit {
 
         let natMap: NatMap
         if (redisClusterRunInDocker(this.type)) {
-            natMap = await this.childProcessDockerRedisClusterService.getNatMap()
+            natMap = this.execDockerRedisClusterService.getNatMap()
         }
 
         //check if cluster run in Docker

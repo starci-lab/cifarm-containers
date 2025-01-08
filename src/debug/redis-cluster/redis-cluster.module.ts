@@ -1,25 +1,29 @@
 import { Module } from "@nestjs/common"
 import { DebugRedisClusterService } from "./redis-cluster.service"
-import { DebugRedisClusterOptions } from "./redis-cluster.types"
-import { DEBUG_REDIS_CLUSTER_OPTIONS } from "./redis-cluster.constants"
-import { ChildProcessDockerRedisClusterModule } from "@src/exec"
+import { ExecModule } from "@src/exec"
+import { OPTIONS_TYPE, ConfigurableModuleClass } from "./redis-cluster.module-definition"
 import { RedisType } from "@src/env"
 
 @Module({})
-export class DebugRedisClusterModule {
-    public static forRoot(options?: DebugRedisClusterOptions) {
+export class DebugRedisClusterModule extends ConfigurableModuleClass {
+    public static register(options: typeof OPTIONS_TYPE = {}) {
+        const type = options.type ?? RedisType.Cache
+        const dynamicModule = super.register(options)
         return {
-            module: DebugRedisClusterModule,
+            ...dynamicModule,
             imports: [
-                ChildProcessDockerRedisClusterModule.forRoot({
-                    type: RedisType.Cache
+                ExecModule.register({
+                    docker: {
+                        redisCluster: {
+                            type,
+                        }
+                    }
                 }),
             ],
             providers: [
-                DebugRedisClusterService,
-                { provide: DEBUG_REDIS_CLUSTER_OPTIONS, useValue: options }
+                ...dynamicModule.providers,
+                DebugRedisClusterService
             ],
-            exports: [DebugRedisClusterService]
         }
     }
 }

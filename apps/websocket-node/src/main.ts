@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
-import { RedisIoAdapter } from "@src/ws"
+import { RedisIoAdapter } from "@src/io"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { HealthCheckModule } from "./health-check"
 import { envConfig } from "@src/env"

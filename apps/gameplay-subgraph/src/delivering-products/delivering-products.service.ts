@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DeliveringProductEntity, GameplayPostgreSQLService } from "@src/databases"
-import { DataSource } from "typeorm"
+import { DeliveringProductEntity, InjectPostgreSQL } from "@src/databases"
+import { DataSource, FindOptionsRelations } from "typeorm"
 import { GetDeliveringProductsArgs } from "./delivering-products.dto"
 import { UserLike } from "@src/jwt"
 
@@ -8,15 +8,14 @@ import { UserLike } from "@src/jwt"
 export class DeliveringProductService {
     private readonly logger = new Logger(DeliveringProductService.name)
 
-    private readonly relations = {
+    private readonly relations: FindOptionsRelations<DeliveringProductEntity> = {
         product: true
     }
 
-    private readonly dataSource: DataSource
-
-    constructor(private readonly gameplayPostgreSqlService: GameplayPostgreSQLService) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+    constructor(
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) { }
 
     async getDeliveringProduct(id: string): Promise<DeliveringProductEntity | null> {
         this.logger.debug(`GetDeliveringProductById: id=${id}`)

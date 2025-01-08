@@ -1,19 +1,16 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { GameplayPostgreSQLService, SupplyEntity } from "@src/databases"
+import { InjectPostgreSQL, SupplyEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetSuppliesArgs, GetSupplyArgs } from "./supplies.dto"
 
 @Injectable()
 export class SuppliesService {
     private readonly logger = new Logger(SuppliesService.name)
-
-    private readonly dataSource: DataSource
-        
+ 
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) { }
     
     async getSupply({ id }: GetSupplyArgs): Promise<SupplyEntity | null> {
         this.logger.debug(`GetSupplyById: id=${id}`)

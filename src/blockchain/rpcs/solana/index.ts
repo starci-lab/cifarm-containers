@@ -1,7 +1,7 @@
 import { Network } from "../../blockchain.config"
-import { solanaHttpRpcUrl as _solanaHttpRpcUrl } from "./solana.solana"
+import { solanaHttpRpcUrl as _solanaHttpRpcUrl } from "./solana"
 
-export * from "./solana.solana"
+export * from "./solana"
 
 export const solanaHttpRpcUrl = (chainKey: string, network: Network) => {
     switch (chainKey) {

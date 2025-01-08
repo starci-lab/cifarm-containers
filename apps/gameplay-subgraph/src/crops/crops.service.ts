@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CropEntity, GameplayPostgreSQLService } from "@src/databases"
+import { CropEntity, InjectPostgreSQL,  } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetCropsArgs } from "./"
 
@@ -7,13 +7,10 @@ import { GetCropsArgs } from "./"
 export class CropsService {
     private readonly logger = new Logger(CropsService.name)
 
-    private readonly dataSource: DataSource
-        
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
-    ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-    }
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
+    ) { }
 
     async getCrops({ limit = 10, offset = 0 }: GetCropsArgs): Promise<Array<CropEntity>> {
         this.logger.debug(`GetCrops: limit=${limit}, offset=${offset}`)
