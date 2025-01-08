@@ -8,7 +8,9 @@ import { LeaderElectionService } from "./leader-election.service"
 export class LeaderElectionModule extends ConfigurableModuleClass {
     static forRoot(options: typeof OPTIONS_TYPE = {
     }): DynamicModule {
+        const dynamicModule = super.forRoot(options)
         return {
+            ...dynamicModule,
             module: LeaderElectionModule,
             providers: [
                 {
@@ -28,7 +30,9 @@ export class LeaderElectionModule extends ConfigurableModuleClass {
     }
 
     static forRootAsync(options: typeof ASYNC_OPTIONS_TYPE = {}): DynamicModule {
+        const dynamicModule = super.forRootAsync(options)
         return {
+            ...dynamicModule,
             module: LeaderElectionModule,
             providers: [
                 {
