@@ -1,5 +1,5 @@
 export interface KafkaOptions {
-    groupId: KafkaGroupId
+    groupId?: KafkaGroupId
     producerOnly?: boolean
 }
 
