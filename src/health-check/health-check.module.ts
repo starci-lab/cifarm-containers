@@ -1,15 +1,16 @@
 import { DynamicModule, Module } from "@nestjs/common"
-import { HEALTH_CHECK_OPTIONS } from "./health-check.constants"
 import { TerminusModule } from "@nestjs/terminus"
 import { ChildProcessDockerRedisClusterModule } from "@src/child-process"
 import { GameplayPostgreSQLModule } from "@src/databases"
 import { EnvModule, RedisType } from "@src/env"
-import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
+import { HEALTH_CHECK_OPTIONS } from "./health-check.constants"
 import { HealthCheckController } from "./health-check.controller"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./health-check.module-definition"
+import { HealthCheckDependency } from "./health-check.types"
 
 @Module({})
-export class HealthCheckModule {
-    public static forRoot(options: HealthCheckOptions) {
+export class HealthCheckModule extends ConfigurableModuleClass {
+    public static forRoot(options: typeof OPTIONS_TYPE) : DynamicModule {
         const imports: Array<typeof TerminusModule | DynamicModule> = [
             TerminusModule,
             EnvModule.forRoot()
@@ -17,7 +18,6 @@ export class HealthCheckModule {
         // if gameplay postgresql is used
         if (options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
             imports.push(GameplayPostgreSQLModule.forRoot())
-            imports.push(GameplayPostgreSQLModule.forFeature())
         }
         // if adapter redis is used
         if (
@@ -45,6 +45,7 @@ export class HealthCheckModule {
         }
 
         return {
+            ...super.forRoot(options),
             module: HealthCheckModule,
             imports,
             providers: [{ provide: HEALTH_CHECK_OPTIONS, useValue: options }],
