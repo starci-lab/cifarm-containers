@@ -1,11 +1,10 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { BlockchainNftBaseService } from "./base"
-import { BlockchainNftObserverService } from "./observer"
 import { IpfsService } from "./common"
+import { BlockchainNftObserverService } from "./observer"
+import { ConfigurableModuleClass } from "./nft.module-definition"
 
-@Global()
 @Module({
-    imports: [],
     providers: [
         IpfsService,
         BlockchainNftBaseService,
@@ -17,4 +16,4 @@ import { IpfsService } from "./common"
         BlockchainNftObserverService,
     ],
 })
-export class NftModule {}
+export class NftModule extends ConfigurableModuleClass {}

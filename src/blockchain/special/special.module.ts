@@ -1,10 +1,9 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
+import { ConfigurableModuleClass } from "../blockchain.module-definition"
 import { NearAccountsService } from "./near-accounts"
 
-@Global()
 @Module({
-    imports: [],
     providers: [NearAccountsService],
     exports: [NearAccountsService],
 })
-export class SpecialModule {}
+export class SpecialModule extends ConfigurableModuleClass {}

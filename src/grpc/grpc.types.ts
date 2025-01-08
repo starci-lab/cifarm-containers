@@ -10,5 +10,5 @@ export interface GrpcServiceData {
 }
 
 export interface GrpcRegisterOptions {
-    name: GrpcServiceName
+    name?: GrpcServiceName
 }

@@ -25,7 +25,7 @@ import { CACHE_MANAGER } from "./cache.constants"
     ]
 })
 export class CacheModule extends ConfigurableModuleClass {
-    static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
-        return super.forRoot(options)
+    static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
+        return super.register(options)
     }
 }

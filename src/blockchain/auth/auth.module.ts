@@ -1,14 +1,14 @@
 import { Global, Module } from "@nestjs/common"
 import { AlgorandAuthService } from "./algorand-auth.service"
 import { AptosAuthService } from "./aptos-auth.service"
+import { ConfigurableModuleClass } from "./auth.module-definition"
 import { EvmAuthService } from "./evm-auth.service"
+import { NearAuthService } from "./near-auth.service"
 import { PolkadotAuthService } from "./polkadot-auth.service"
 import { SolanaAuthService } from "./solana-auth.service"
-import { NearAuthService } from "./near-auth.service"
 
 @Global()
 @Module({
-    imports: [],
     providers: [
         EvmAuthService,
         AptosAuthService,
@@ -26,4 +26,4 @@ import { NearAuthService } from "./near-auth.service"
         NearAuthService
     ],
 })
-export class AuthModule {}
+export class AuthModule extends ConfigurableModuleClass {}

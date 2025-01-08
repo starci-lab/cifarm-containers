@@ -1,9 +1,10 @@
-import { Module } from "@nestjs/common"
+import { DynamicModule, Module } from "@nestjs/common"
+import { EnergyService } from "./energy"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./gameplay.module-definition"
+import { InventoryService } from "./inventory"
 import { LevelService } from "./level"
 import { ThiefService } from "./thief"
 import { GoldBalanceService, TokenBalanceService } from "./wallet"
-import { InventoryService } from "./inventory"
-import { EnergyService } from "./energy"
 
 @Module({
     providers: [
@@ -23,4 +24,8 @@ import { EnergyService } from "./energy"
         InventoryService
     ]
 })
-export class GameplayModule {}
+export class GameplayModule extends ConfigurableModuleClass {
+    static register(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
+        return super.register(options)
+    }
+}
