@@ -9,7 +9,7 @@ import {
 import { DockerRedisClusterOptions } from "./exec.types"
 import { ExecService } from "./exec.service"
 import { NatMap } from "ioredis"
-import { LOCALHOST } from "@src/env"
+import { envConfig, LOCALHOST, RedisType } from "@src/env"
 
 @Injectable()
 export class ExecDockerRedisClusterService {
@@ -20,7 +20,10 @@ export class ExecDockerRedisClusterService {
         @Inject(MODULE_OPTIONS_TOKEN) private execOptions: ExecOptions
     ) {
         this.options = this.execOptions?.docker?.redisCluster
-        this.networkName = this.options?.networkName
+        this.networkName =
+            envConfig().databases.redis[
+                this.options?.type || RedisType.Cache
+            ].cluster.dockerNetworkName
     }
 
     private getNetworkId() {

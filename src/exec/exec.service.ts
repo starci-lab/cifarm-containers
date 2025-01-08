@@ -11,11 +11,12 @@ export class ExecService {
         this.shell = platform === "win32" ? "powershell.exe" : "/bin/bash"
     }
     public async exec(command: string): Promise<string> {
+        this.logger.debug(`Executing command: ${command}`)
         return new Promise((resolve, reject) => {
             nodeExec(
                 command,
                 {
-                    shell: this.shell
+                    shell: this.shell,
                 },
                 (error, stdout, stderr) => {
                     if (error) {
@@ -29,8 +30,9 @@ export class ExecService {
     }
 
     public execSync(command: string): string {
+        this.logger.debug(`Executing command: ${command}`)
         return nodeExecSync(command, {
-            encoding: "base64",
+            encoding: "utf8",
             shell: this.shell
         })
     }

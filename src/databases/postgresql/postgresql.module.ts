@@ -1,39 +1,37 @@
-import { Module } from "@nestjs/common"
+import { DynamicModule, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { envConfig, isProduction, RedisType } from "@src/env"
 import { gameplayPostgreSqlEntities } from "./gameplay/entities"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./postgresql.module-definition"
 import { PostgreSQLContext, PostgreSQLDatabase } from "../databases.types"
 import { CONNECTION_TIMEOUT_MS, POOL_SIZE } from "./postgresql.constants"
-import { ExecModule, ExecDockerRedisClusterService } from "@src/exec"
+import { ExecModule } from "@src/exec"
 import { CacheOptionsService } from "../cache-options.service"
-import { getDataSourceName } from "./postgresql.utils"
+import { getPostgreSqlDataSourceName } from "./postgresql.utils"
 
-@Module({
-    imports: [
-        ExecModule.register({
-            docker: {
-                redisCluster: {
-                    networkName:
-                        envConfig().databases.redis[RedisType.Cache].cluster.dockerNetworkName
-                }
-            }
-        })
-    ],
-    providers: [ExecDockerRedisClusterService, CacheOptionsService]
-})
+@Module({})
 export class PostgreSQLModule extends ConfigurableModuleClass {
-    public static forRoot(options: typeof OPTIONS_TYPE = {}) {
+    public static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const database = options.database ?? PostgreSQLDatabase.Gameplay
         const context = options.context ?? PostgreSQLContext.Main
         const dynamicModule = super.forRoot(options)
-        const dataSourceName = getDataSourceName(options)
+        const dataSourceName = getPostgreSqlDataSourceName(options)
         return {
-            ...dynamicModule,
-            name: dataSourceName,  
+            ...dynamicModule, 
             imports: [
                 TypeOrmModule.forRootAsync({
+                    imports: [
+                        ExecModule.register({
+                            docker: {
+                                redisCluster: {
+                                    type: RedisType.Cache,
+                                }
+                            }
+                        }),
+                    ],
+                    extraProviders: [CacheOptionsService],
                     inject: [CacheOptionsService],
+                    name: dataSourceName, 
                     useFactory: async (cacheOptionsService: CacheOptionsService) => ({
                         type: "postgres",
                         host: envConfig().databases.postgresql[database][context].host,
@@ -46,7 +44,7 @@ export class PostgreSQLModule extends ConfigurableModuleClass {
                         connectTimeoutMS: CONNECTION_TIMEOUT_MS,
                         poolSize: POOL_SIZE,
                         cache: cacheOptionsService.createCacheOptions(),
-                    })
+                    }),
                 }),
                 TypeOrmModule.forFeature(gameplayPostgreSqlEntities(), dataSourceName)
             ]

@@ -1,60 +1,66 @@
 import { BullModule as NestBullModule } from "@nestjs/bullmq"
-import { envConfig, RedisType } from "@src/env"
-import { ChildProcessDockerRedisClusterModule, ChildProcessDockerRedisClusterService } from "@src/child-process"
-import { Cluster } from "ioredis"
-import { BULL_REGISTER_OPTIONS, bullData } from "./bull.constants"
-import { BullService } from "./bull.service"
+import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
+import { ExecDockerRedisClusterService } from "@src/exec"
+import Redis, { Cluster, NatMap } from "ioredis"
+import { bullData } from "./bull.constants"
 import { BullRegisterOptions } from "./bull.types"
-import { formatWithBraces } from "./bull.utils"
+import { Module } from "@nestjs/common"
+import { ConfigurableModuleClass } from "./bull.module-definition"
+import { OPTIONS_TYPE } from "@src/brokers"
 
 @Module({})
-export class BullModule { 
+export class BullModule extends ConfigurableModuleClass { 
     // register the queue
     public static registerQueue(options: BullRegisterOptions) {
+        const dynamicModule = NestBullModule.registerQueue({
+            name: bullData[options.queueName].name,
+            prefix: bullData[options.queueName].prefix,
+        })
         return {
             module: BullModule,
             imports: [
-                NestBullModule.registerQueue({
-                    name: bullData[options.queueName].name,
-                    prefix: bullData[options.queueName].prefix,
-                })
+                dynamicModule
             ],
-            providers: [],
             exports: [
-                NestBullModule.registerQueue({
-                    name: bullData[options.queueName].name,
-                    prefix: bullData[options.queueName].prefix,
-                })
+                dynamicModule
             ]
         }
     }
 
     // for root
-    public static forRoot() {
+    public static forRoot(options: typeof OPTIONS_TYPE = {}) {
+        const dynamicModule = super.forRoot(options)
         return {
-            module: BullModule,
+            ...dynamicModule,
             imports: [
                 NestBullModule.forRootAsync({
-                    imports: [ 
-                        ChildProcessDockerRedisClusterModule.forRoot({
-                            type: RedisType.Job
-                        }) 
-                    ],
-                    inject: [ ChildProcessDockerRedisClusterService ],
-                    useFactory: async (childProcessDockerRedisClusterService :ChildProcessDockerRedisClusterService) => {
-                        const natMap = await childProcessDockerRedisClusterService.getNatMap()
+                    inject: [ ExecDockerRedisClusterService ],
+                    useFactory: async (execDockerRedisClusterService: ExecDockerRedisClusterService) => {
+                        if (!redisClusterEnabled()) {
+                            const connection = new Redis({
+                                host: envConfig().databases.redis[RedisType.Job].host,
+                                port: Number(envConfig().databases.redis[RedisType.Job].port),
+                                password: envConfig().databases.redis[RedisType.Job].password || undefined,
+                            })
+                            return {
+                                connection
+                            }
+                        }
+                        let natMap: NatMap
+                        if (redisClusterRunInDocker()) {
+                            natMap = execDockerRedisClusterService.getNatMap()
+                        }
                         const connection = new Cluster([
                             {
                                 host: envConfig().databases.redis[RedisType.Job].host,
                                 port: Number(envConfig().databases.redis[RedisType.Job].port)
                             }
                         ], {
-                            scaleReads: "master",
+                            scaleReads: "all",
                             redisOptions: {
                                 password: envConfig().databases.redis[RedisType.Job].password || undefined,
                                 enableAutoPipelining: true
                             },
-
                             natMap
                         })
                         return {

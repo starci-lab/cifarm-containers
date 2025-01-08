@@ -1,3 +1,5 @@
+import { RedisType } from "@src/env"
+
 export interface ExecOptions {
     docker?: DockerOptions
 }
@@ -7,12 +9,6 @@ export interface DockerOptions {
 }
 
 export interface DockerRedisClusterOptions {
-    networkName?: string
-}
-
-import { RedisType } from "@src/env"
-
-export interface ChildProcessDockerRedisClusterOptions {
     type?: RedisType
 }
 

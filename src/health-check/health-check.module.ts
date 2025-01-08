@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { TerminusModule } from "@nestjs/terminus"
-import { envConfig, EnvModule, RedisType } from "@src/env"
+import { EnvModule, RedisType } from "@src/env"
 import { HealthCheckController } from "./health-check.controller"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./health-check.module-definition"
 import { HealthCheckDependency } from "./health-check.types"
@@ -23,8 +23,27 @@ export class HealthCheckModule extends ConfigurableModuleClass {
             ExecModule.register({
                 docker: {
                     redisCluster: {
-                        networkName:
-                            envConfig().databases.redis[RedisType.Cache].cluster.dockerNetworkName
+                        type: RedisType.Adapter,
+                    }
+                }
+            })
+        }
+        // if cache redis is used
+        if (options.dependencies.includes(HealthCheckDependency.CacheRedis)) {
+            ExecModule.register({
+                docker: {
+                    redisCluster: {
+                        type: RedisType.Cache,
+                    }
+                }
+            })
+        }
+        // if job redis is used
+        if (options.dependencies.includes(HealthCheckDependency.JobRedis)) {
+            ExecModule.register({
+                docker: {
+                    redisCluster: {
+                        type: RedisType.Job,
                     }
                 }
             })
