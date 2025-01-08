@@ -10,6 +10,8 @@ export interface DockerOptions {
 
 export interface DockerRedisClusterOptions {
     type?: RedisType
+    // custom injected token
+    injectionToken?: string
 }
 
 export interface DockerContainerRaw {

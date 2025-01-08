@@ -1,13 +1,4 @@
 
-export enum PostgreSQLDatabase {
-    Gameplay = "gameplay",
-    Telegram = "telegram"
-}
-
-export enum PostgreSQLContext {
-    Main = "main",
-    Mock = "mock"
-}
 
 export interface TypeORMConfig {
     host: string

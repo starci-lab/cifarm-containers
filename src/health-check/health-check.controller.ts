@@ -13,31 +13,59 @@ import { ExecDockerRedisClusterService } from "@src/exec"
 import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
 import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 import {
+    ADAPTER_REDIS_INJECTION_TOKEN,
+    CACHE_REDIS_INJECTION_TOKEN,
     HEALTH_CHECK_ENDPOINT,
-    HEALTH_CHECK_TIMEOUT
+    HEALTH_CHECK_TIMEOUT,
+    JOB_REDIS_INJECTION_TOKEN
 } from "./health-check.constants"
 import { NatMap } from "ioredis"
 import { v4 } from "uuid"
 import { getHttpUrl } from "@src/common"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
+import { ModuleRef } from "@nestjs/core"
 
 @Controller()
 export class HealthCheckController {
     private readonly logger = new Logger(HealthCheckController.name)
 
+    private execDockerRedisClusterServices: Partial<
+        Record<RedisType, ExecDockerRedisClusterService>
+    > = {}
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
-        private options: HealthCheckOptions,
-        private health: HealthCheckService,
-        private microservice: MicroserviceHealthIndicator,
-        private db: TypeOrmHealthIndicator,
-        private http: HttpHealthIndicator,
+        private readonly options: HealthCheckOptions,
+        private readonly health: HealthCheckService,
+        private readonly microservice: MicroserviceHealthIndicator,
+        private readonly db: TypeOrmHealthIndicator,
+        private readonly http: HttpHealthIndicator,
         // private gameplayPostgreSQLService: GameplayPostgreSQLService,
-        private execDockerRedisClusterService: ExecDockerRedisClusterService
-    ) { }
+        private readonly moduleRef: ModuleRef
+    ) {
+        if (options.dependencies.includes(HealthCheckDependency.JobRedis)) {
+            this.execDockerRedisClusterServices[RedisType.Job] = this.moduleRef.get(
+                JOB_REDIS_INJECTION_TOKEN,
+                { strict: false }
+            )
+        }
+        if (options.dependencies.includes(HealthCheckDependency.CacheRedis)) {
+            this.execDockerRedisClusterServices[RedisType.Cache] = this.moduleRef.get(
+                CACHE_REDIS_INJECTION_TOKEN,
+                { strict: false }
+            )
+        }
+        if (options.dependencies.includes(HealthCheckDependency.AdapterRedis)) {
+            this.execDockerRedisClusterServices[RedisType.Adapter] = this.moduleRef.get(
+                ADAPTER_REDIS_INJECTION_TOKEN,
+                { strict: false }
+            )
+        }
+    }
 
     // Ping check for Redis
-    private async pingCheckRedis(type: RedisType = RedisType.Cache): Promise<HealthIndicatorResult> {
+    private async pingCheckRedis(
+        type: RedisType = RedisType.Cache
+    ): Promise<HealthIndicatorResult> {
         const clusterEnabled = redisClusterEnabled(RedisType.Cache)
         // Check if Redis cluster is enabled
         if (!clusterEnabled) {
@@ -58,7 +86,7 @@ export class HealthCheckController {
         let natMap: NatMap
         // Check if Redis cluster is running in Docker
         if (redisClusterRunInDocker(type)) {
-            natMap = this.execDockerRedisClusterService.getNatMap()
+            natMap = this.execDockerRedisClusterServices[type].getNatMap()
         }
 
         return await this.microservice.pingCheck<RedisOptions>(type, {
@@ -98,7 +126,7 @@ export class HealthCheckController {
     // Ping check for gameplay Postgres
     private async pingCheckGameplayPostgreSql(): Promise<HealthIndicatorResult> {
         return this.db.pingCheck(HealthCheckDependency.GameplayPostgreSQL, {
-            timeout: HEALTH_CHECK_TIMEOUT,
+            timeout: HEALTH_CHECK_TIMEOUT
             // connection: this.gameplayPostgreSQLService.getDataSource()
         })
     }
@@ -128,7 +156,7 @@ export class HealthCheckController {
     }
 
     // Ping check for websocket node
-    private async pingCheckWebsocketNode(): Promise<HealthIndicatorResult>  {
+    private async pingCheckWebsocketNode(): Promise<HealthIndicatorResult> {
         return await this.http.pingCheck(
             HealthCheckDependency.WebsocketNode,
             getHttpUrl({

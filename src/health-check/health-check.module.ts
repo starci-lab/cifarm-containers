@@ -1,11 +1,16 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { TerminusModule } from "@nestjs/terminus"
 import { EnvModule, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
-import { HealthCheckController } from "./health-check.controller"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./health-check.module-definition"
 import { HealthCheckDependency } from "./health-check.types"
 import { PostgreSQLModule } from "@src/databases"
 import { ExecModule } from "@src/exec"
+import {
+    ADAPTER_REDIS_INJECTION_TOKEN,
+    CACHE_REDIS_INJECTION_TOKEN,
+    JOB_REDIS_INJECTION_TOKEN
+} from "./health-check.constants"
+import { HealthCheckController } from "./health-check.controller"
 
 @Module({})
 export class HealthCheckModule extends ConfigurableModuleClass {
@@ -28,7 +33,8 @@ export class HealthCheckModule extends ConfigurableModuleClass {
                 ExecModule.register({
                     docker: {
                         redisCluster: {
-                            type: RedisType.Adapter
+                            type: RedisType.Adapter,
+                            injectionToken: ADAPTER_REDIS_INJECTION_TOKEN
                         }
                     }
                 })
@@ -44,7 +50,8 @@ export class HealthCheckModule extends ConfigurableModuleClass {
                 ExecModule.register({
                     docker: {
                         redisCluster: {
-                            type: RedisType.Cache
+                            type: RedisType.Cache,
+                            injectionToken: CACHE_REDIS_INJECTION_TOKEN
                         }
                     }
                 })
@@ -60,7 +67,8 @@ export class HealthCheckModule extends ConfigurableModuleClass {
                 ExecModule.register({
                     docker: {
                         redisCluster: {
-                            type: RedisType.Job
+                            type: RedisType.Job,
+                            injectionToken: JOB_REDIS_INJECTION_TOKEN
                         }
                     }
                 })
