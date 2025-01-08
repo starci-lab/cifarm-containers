@@ -1,7 +1,6 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { NearAccountsService } from "./near-accounts"
 
-@Global()
 @Module({
     imports: [],
     providers: [NearAccountsService],

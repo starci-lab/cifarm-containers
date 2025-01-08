@@ -1,9 +1,8 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { BlockchainNftBaseService } from "./base"
 import { BlockchainNftObserverService } from "./observer"
 import { IpfsService } from "./common"
 
-@Global()
 @Module({
     imports: [],
     providers: [

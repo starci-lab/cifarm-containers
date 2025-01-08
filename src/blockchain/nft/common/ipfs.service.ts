@@ -4,7 +4,7 @@ import { CID } from "multiformats/cid"
 import { sha256 } from "multiformats/hashes/sha2"
 import { digest } from "multiformats"
 import axios from "axios"
-import { NftMetadata } from "."
+import { NftMetadata } from "./common.types"
 
 @Injectable()
 export class IpfsService {

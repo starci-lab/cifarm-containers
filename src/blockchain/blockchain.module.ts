@@ -5,12 +5,8 @@ import { AuthModule } from "./auth"
 import { NftModule } from "./nft"
 
 @Module({
-    imports: [
-        AuthModule,
-        SpecialModule,
-        NftModule,
-        TokenModule],
+    imports: [AuthModule, SpecialModule, NftModule, TokenModule],
     providers: [],
-    exports: [],
+    exports: [AuthModule, SpecialModule, NftModule, TokenModule]
 })
 export class BlockchainModule {}
