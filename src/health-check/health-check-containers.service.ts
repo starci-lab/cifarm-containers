@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common"
 import { HealthIndicatorResult, HttpHealthIndicator } from "@nestjs/terminus"
 import { getHttpUrl } from "@src/common"
 import { Container, envConfig } from "@src/env"
-import { HEALTH_CHECK_ENDPOINT } from "./health-check.constants"
+import { HEALTH_CHECK_ENDPOINT, HEALTH_CHECK_TIMEOUT } from "./health-check.constants"
 import { HealthCheckDependency } from "./health-check.types"
 
 @Injectable()
@@ -18,7 +18,9 @@ export class HealthCheckContainersService {
                 host: envConfig().containers[Container.GameplayService].host,
                 port: envConfig().containers[Container.GameplayService].healthCheckPort,
                 path: HEALTH_CHECK_ENDPOINT
-            })
+            }), {
+                timeout: HEALTH_CHECK_TIMEOUT
+            }
         )
     }
 
@@ -30,7 +32,9 @@ export class HealthCheckContainersService {
                 host: envConfig().containers[Container.GameplaySubgraph].host,
                 port: envConfig().containers[Container.GameplaySubgraph].healthCheckPort,
                 path: HEALTH_CHECK_ENDPOINT
-            })
+            }), {
+                timeout: HEALTH_CHECK_TIMEOUT
+            }
         )
     }
 
@@ -42,7 +46,9 @@ export class HealthCheckContainersService {
                 host: envConfig().containers[Container.WebsocketNode].host,
                 port: envConfig().containers[Container.WebsocketNode].healthCheckPort,
                 path: HEALTH_CHECK_ENDPOINT
-            })
+            }), {
+                timeout: HEALTH_CHECK_TIMEOUT
+            }
         )
     }
 
@@ -54,7 +60,9 @@ export class HealthCheckContainersService {
                 host: envConfig().containers[Container.GraphQLGateway].host,
                 port: envConfig().containers[Container.GraphQLGateway].healthCheckPort,
                 path: HEALTH_CHECK_ENDPOINT
-            })
+            }), {
+                timeout: HEALTH_CHECK_TIMEOUT
+            }
         )
     }
 
@@ -66,7 +74,9 @@ export class HealthCheckContainersService {
                 host: envConfig().containers[Container.RestApiGateway].host,
                 port: envConfig().containers[Container.RestApiGateway].healthCheckPort,
                 path: HEALTH_CHECK_ENDPOINT
-            })
+            }), {
+                timeout: HEALTH_CHECK_TIMEOUT
+            }
         )
     }
 
@@ -78,7 +88,9 @@ export class HealthCheckContainersService {
                 host: envConfig().containers[Container.CronScheduler].host,
                 port: envConfig().containers[Container.CronScheduler].healthCheckPort,
                 path: HEALTH_CHECK_ENDPOINT
-            })
+            }), {
+                timeout: HEALTH_CHECK_TIMEOUT
+            }
         )
     }
 
@@ -90,7 +102,9 @@ export class HealthCheckContainersService {
                 host: envConfig().containers[Container.CronWorker].host,
                 port: envConfig().containers[Container.CronWorker].healthCheckPort,
                 path: HEALTH_CHECK_ENDPOINT
-            })
+            }), {
+                timeout: HEALTH_CHECK_TIMEOUT
+            }
         )
     }
 }

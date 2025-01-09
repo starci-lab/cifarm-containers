@@ -17,6 +17,7 @@ import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
 import {
     ADAPTER_REDIS_INJECTION_TOKEN,
     CACHE_REDIS_INJECTION_TOKEN,
+    HEALTH_CHECK_TIMEOUT,
     JOB_REDIS_INJECTION_TOKEN
 } from "./health-check.constants"
 import { NatMap } from "ioredis"
@@ -69,7 +70,7 @@ export class HealthCheckCoreService {
                         port: envConfig().databases.redis[RedisType.Cache].port,
                         password: envConfig().databases.redis[RedisType.Cache].password || undefined
                     },
-                    timeout: 5000
+                    timeout: HEALTH_CHECK_TIMEOUT
                 }
             )
         }
@@ -88,7 +89,7 @@ export class HealthCheckCoreService {
                 preferredSlaves: true,
                 natMap
             },
-            timeout: 5000
+            timeout: HEALTH_CHECK_TIMEOUT
         })
     }
 
@@ -109,7 +110,7 @@ export class HealthCheckCoreService {
                     }
                 }
             },
-            timeout: 5000
+            timeout: HEALTH_CHECK_TIMEOUT
         })
     }
 
@@ -122,7 +123,7 @@ export class HealthCheckCoreService {
             [PostgreSQLDatabase.Telegram]: HealthCheckDependency.TelegramPostgreSQL
         }
         return this.db.pingCheck(map[database], {
-            timeout: 5000
+            timeout: HEALTH_CHECK_TIMEOUT
         })
     }
 }
