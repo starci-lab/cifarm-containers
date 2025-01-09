@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { TerminusModule } from "@nestjs/terminus"
-import { EnvModule, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
+import { EnvModule, PostgreSQLContext, PostgreSQLDatabase, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./health-check.module-definition"
 import { HealthCheckDependency } from "./health-check.types"
 import { PostgreSQLModule } from "@src/databases"
@@ -23,6 +23,12 @@ export class HealthCheckModule extends ConfigurableModuleClass {
         // if gameplay postgresql is used
         if (options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
             imports.push(PostgreSQLModule.forRoot())
+        }
+        if (options.dependencies.includes(HealthCheckDependency.TelegramPostgreSQL)) {
+            imports.push(PostgreSQLModule.forRoot({
+                context: PostgreSQLContext.Main,
+                database: PostgreSQLDatabase.Telegram
+            }))
         }
         // if adapter redis is used
         if (

@@ -10,7 +10,7 @@ import {
     TypeOrmHealthIndicator
 } from "@nestjs/terminus"
 import { ExecDockerRedisClusterService } from "@src/exec"
-import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
+import { envConfig, PostgreSQLContext, PostgreSQLDatabase, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
 import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 import {
     ADAPTER_REDIS_INJECTION_TOKEN,
@@ -24,6 +24,8 @@ import { v4 } from "uuid"
 import { getHttpUrl } from "@src/common"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
 import { ModuleRef } from "@nestjs/core"
+import { DataSource } from "typeorm"
+import { InjectPostgreSQL } from "@src/databases"
 
 @Controller()
 export class HealthCheckController {
@@ -40,6 +42,11 @@ export class HealthCheckController {
         private readonly db: TypeOrmHealthIndicator,
         private readonly http: HttpHealthIndicator,
         // private gameplayPostgreSQLService: GameplayPostgreSQLService,
+        @InjectPostgreSQL({
+            context: PostgreSQLContext.Main,
+            database: PostgreSQLDatabase.Telegram
+        })
+        private telegramPostgresDatasource: DataSource,
         private readonly moduleRef: ModuleRef,
     ) {
         if (options.dependencies.includes(HealthCheckDependency.JobRedis)) {
@@ -134,6 +141,14 @@ export class HealthCheckController {
         })
     }
 
+    // Ping check for telegram Postgres
+    private async pingCheckTelegramPostgreSql(): Promise<HealthIndicatorResult> {
+        return this.db.pingCheck(HealthCheckDependency.TelegramPostgreSQL, {
+            timeout: HEALTH_CHECK_TIMEOUT,
+            connection: this.telegramPostgresDatasource
+        })
+    }
+
     // Ping check for gameplay subgraph
     private async pingCheckGameplaySubgraph(): Promise<HealthIndicatorResult> {
         return await this.http.pingCheck(
@@ -222,6 +237,9 @@ export class HealthCheckController {
         // Add ping checks based on the dependencies that are enabled
         if (this.options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
             healthIndicators.push(async () => this.pingCheckGameplayPostgreSql())
+        }
+        if (this.options.dependencies.includes(HealthCheckDependency.TelegramPostgreSQL)) {
+            healthIndicators.push(async () => this.pingCheckTelegramPostgreSql())
         }
         if (this.options.dependencies.includes(HealthCheckDependency.CacheRedis)) {
             healthIndicators.push(async () => this.pingCheckRedis(RedisType.Cache))
