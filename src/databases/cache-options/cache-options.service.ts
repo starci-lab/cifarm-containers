@@ -5,7 +5,7 @@ import {
     RedisCacheType,
     RedisCacheOptions,
     RedisClusterCacheOptions
-} from "./databases.types"
+} from "../databases.types"
 import { Injectable } from "@nestjs/common"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
