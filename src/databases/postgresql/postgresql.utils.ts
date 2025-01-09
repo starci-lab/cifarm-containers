@@ -9,17 +9,17 @@ export const getPostgreSqlDataSourceName = (options: PostgreSQLOptions = {}): st
     return `${context}_${database}`
 }
 
-export const getPostgresEntities = <T>(
+export const getPostgresEntities = (
     options: PostgreSQLOptions = {},
-): Array<T> => {
-    const { database } = options
+) => {
+    // define the database
+    let { database } = options
+    database = database || PostgreSQLDatabase.Gameplay
 
-    switch (database) {
-    case PostgreSQLDatabase.Gameplay:
-        return gameplayPostgreSqlEntities() as Array<T>
-    case PostgreSQLDatabase.Telegram:
-        return telegramPostgreSqlEntities() as Array<T>
-    default:
-        return []
+    // define the map
+    const map = {
+        [PostgreSQLDatabase.Gameplay]: gameplayPostgreSqlEntities,
+        [PostgreSQLDatabase.Telegram]: telegramPostgreSqlEntities,
     }
+    return map[database]()
 }

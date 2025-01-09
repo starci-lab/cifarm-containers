@@ -11,8 +11,7 @@ export class PostgreSQLModule extends ConfigurableModuleClass {
     public static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const dynamicModule = super.forRoot(options)
         const dataSourceName = getPostgreSqlDataSourceName(options)
-
-        console.log(dynamicModule)
+        
         return {
             ...dynamicModule,
             imports: [

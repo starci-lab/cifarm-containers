@@ -11,7 +11,7 @@ export interface BullQueueData {
     prefix?: string
 }
 
-export interface RegisterQueuesOptions {
-    queueNames?: BullQueueName | Array<BullQueueName>
+export interface RegisterQueueOptions {
+    queueNames?: BullQueueName
     isGlobal?: boolean
 }
