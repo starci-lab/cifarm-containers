@@ -3,8 +3,8 @@ import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger"
 import { AppModule } from "./app.module"
 import { GameplayModule as GameplayModuleV1 } from "./v1"
-import { HealthCheckModule } from "./health-check"
 import { envConfig } from "@src/env"
+import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -79,7 +79,11 @@ const bootstrap = async () => {
 }
 
 const bootstrapHealthCheck = async () => {
-    const app = await NestFactory.create(HealthCheckModule)
+    const app = await NestFactory.create(HealthCheckModule.forRoot({
+        dependencies: [
+            HealthCheckDependency.GameplayService,
+        ]
+    }))
     await app.listen(envConfig().containers.restApiGateway.healthCheckPort)
 }
 

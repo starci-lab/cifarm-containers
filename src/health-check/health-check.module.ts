@@ -11,6 +11,7 @@ import {
     JOB_REDIS_INJECTION_TOKEN
 } from "./health-check.constants"
 import { HealthCheckController } from "./health-check.controller"
+import { HttpModule } from "@nestjs/axios"
 
 @Module({})
 export class HealthCheckModule extends ConfigurableModuleClass {
@@ -19,6 +20,10 @@ export class HealthCheckModule extends ConfigurableModuleClass {
             TerminusModule,
             EnvModule.forRoot()
         ]
+        if (options.dependencies.includes(HealthCheckDependency.GameplayService)) {
+            imports.push(HttpModule.register({
+            }))
+        }
 
         // if gameplay postgresql is used
         if (options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {

@@ -1,4 +1,5 @@
 import { Controller, Get, Inject, Logger } from "@nestjs/common"
+import { ModuleRef } from "@nestjs/core"
 import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
 import {
     HealthCheck,
@@ -9,9 +10,13 @@ import {
     MicroserviceHealthIndicator,
     TypeOrmHealthIndicator
 } from "@nestjs/terminus"
-import { ExecDockerRedisClusterService } from "@src/exec"
+import { getHttpUrl } from "@src/common"
+import { getPostgreSqlDataSourceName } from "@src/databases"
 import { envConfig, PostgreSQLContext, PostgreSQLDatabase, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
-import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
+import { ExecDockerRedisClusterService } from "@src/exec"
+import { NatMap } from "ioredis"
+import { DataSource } from "typeorm"
+import { v4 } from "uuid"
 import {
     ADAPTER_REDIS_INJECTION_TOKEN,
     CACHE_REDIS_INJECTION_TOKEN,
@@ -19,13 +24,8 @@ import {
     HEALTH_CHECK_TIMEOUT,
     JOB_REDIS_INJECTION_TOKEN
 } from "./health-check.constants"
-import { NatMap } from "ioredis"
-import { v4 } from "uuid"
-import { getHttpUrl } from "@src/common"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
-import { ModuleRef } from "@nestjs/core"
-import { DataSource } from "typeorm"
-import { InjectPostgreSQL } from "@src/databases"
+import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 
 @Controller()
 export class HealthCheckController {
@@ -34,6 +34,8 @@ export class HealthCheckController {
     private execDockerRedisClusterServices: Partial<
         Record<RedisType, ExecDockerRedisClusterService>
     > = {}
+    private telegramPostgresDatasource: DataSource
+
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: HealthCheckOptions,
@@ -42,11 +44,6 @@ export class HealthCheckController {
         private readonly db: TypeOrmHealthIndicator,
         private readonly http: HttpHealthIndicator,
         // private gameplayPostgreSQLService: GameplayPostgreSQLService,
-        @InjectPostgreSQL({
-            context: PostgreSQLContext.Main,
-            database: PostgreSQLDatabase.Telegram
-        })
-        private telegramPostgresDatasource: DataSource,
         private readonly moduleRef: ModuleRef,
     ) {
         if (options.dependencies.includes(HealthCheckDependency.JobRedis)) {
@@ -68,6 +65,15 @@ export class HealthCheckController {
                 ADAPTER_REDIS_INJECTION_TOKEN,
                 // not in current module
                 { strict: false }
+            )
+        }
+
+        if(options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
+            this.telegramPostgresDatasource = this.moduleRef.get(
+                getPostgreSqlDataSourceName({
+                    context: PostgreSQLContext.Main,
+                    database: PostgreSQLDatabase.Telegram
+                }),
             )
         }
     }
