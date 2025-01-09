@@ -21,7 +21,7 @@ import {
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HelpUsePesticideRequest, HelpUsePesticideResponse } from "./help-use-pesticide.dto"
-import { InjectKafka } from "@src/brokers/kafka/kafka.decorators"
+import { InjectKafka } from "@src/brokers"
 
 @Injectable()
 export class HelpUsePesticideService {

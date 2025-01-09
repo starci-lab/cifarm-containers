@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
 import { KafkaPattern } from "@src/brokers"
-import { InjectKafka } from "@src/brokers/kafka/kafka.decorators"
+import { InjectKafka } from "@src/brokers"
 import {
     Activities,
     AnimalCurrentState,

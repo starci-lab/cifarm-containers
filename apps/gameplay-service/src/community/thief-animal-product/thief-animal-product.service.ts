@@ -1,11 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
-import { KafkaPattern } from "@src/brokers"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
 import {
     Activities,
     AnimalCurrentState,
     AnimalInfoEntity,
     AnimalRandomness,
+    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -192,19 +193,4 @@ export class ThiefAnimalProductService {
             await queryRunner.release()
         }
     }
-}
-function InjectKafka(): (
-    target: typeof ThiefAnimalProductService,
-    propertyKey: undefined,
-    parameterIndex: 0
-) => void {
-    throw new Error("Function not implemented.")
-}
-
-function InjectPostgreSQL(): (
-    target: typeof ThiefAnimalProductService,
-    propertyKey: undefined,
-    parameterIndex: 1
-) => void {
-    throw new Error("Function not implemented.")
 }

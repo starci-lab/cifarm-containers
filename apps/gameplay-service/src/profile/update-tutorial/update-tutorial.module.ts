@@ -1,8 +1,7 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { UpdateTutorialController } from "./update-tutorial.controller"
 import { UpdateTutorialService } from "./update-tutorial.service"
 
-@Global()
 @Module({
     imports: [],
     providers: [UpdateTutorialService],

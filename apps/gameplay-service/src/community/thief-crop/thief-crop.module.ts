@@ -1,10 +1,10 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { EnvModule } from "@src/env"
 import { GameplayModule } from "@src/gameplay"
 import { ThiefCropController } from "./thief-crop.controller"
 import { TheifCropService } from "./thief-crop.service"
 
-@Global()
+ 
 @Module({
     imports: [EnvModule.forRoot(), GameplayModule],
     providers: [TheifCropService],

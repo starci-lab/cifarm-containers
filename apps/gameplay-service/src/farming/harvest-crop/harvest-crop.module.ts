@@ -1,9 +1,9 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { GameplayModule } from "@src/gameplay"
 import { HarvestCropController } from "./harvest-crop.controller"
 import { HarvestCropService } from "./harvest-crop.service"
 
-@Global()
+ 
 @Module({
     imports: [GameplayModule],
     controllers: [HarvestCropController],

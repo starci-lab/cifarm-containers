@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { chainKeyToPlatform, defaultChainKey, Network, Platform } from "@src/blockchain"
+import { chainKeyToPlatform, defaultChainKey, Platform } from "@src/blockchain"
 import { CacheNotFound, VerifySignatureTransactionFailedException } from "@src/exceptions"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 
@@ -29,6 +29,7 @@ import { InjectCache } from "@src/cache"
 import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
+import { Network } from "@src/env"
 
 @Injectable()
 export class VerifySignatureService {

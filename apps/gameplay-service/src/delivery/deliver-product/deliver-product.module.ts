@@ -1,8 +1,8 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { DeliverProductController } from "./deliver-product.controller"
 import { DeliverProductService } from "./deliver-product.service"
 
-@Global()
+ 
 @Module({
     imports: [],
     providers: [DeliverProductService],

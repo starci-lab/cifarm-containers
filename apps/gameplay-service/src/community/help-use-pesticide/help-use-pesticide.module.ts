@@ -1,9 +1,9 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { GameplayModule } from "@src/gameplay"
 import { HelpUsePesticideController } from "./help-use-pesticide.controller"
 import { HelpUsePesticideService } from "./help-use-pesticide.service"
 
-@Global()
+ 
 @Module({
     imports: [GameplayModule],
     providers: [HelpUsePesticideService],

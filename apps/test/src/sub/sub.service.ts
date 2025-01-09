@@ -5,7 +5,7 @@ import { DataSource } from "typeorm"
 import { Cache } from "cache-manager"
 import { BullQueueName, InjectQueue } from "@src/bull"
 import { Queue } from "bullmq"
-import { InjectKafka } from "@src/brokers/kafka/kafka.decorators"
+import { InjectKafka } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"
 import { LeaderElectionService } from "@src/leader-election"
 

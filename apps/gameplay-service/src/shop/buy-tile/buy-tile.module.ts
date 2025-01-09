@@ -1,9 +1,8 @@
-import { Global, Module } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { GameplayModule } from "@src/gameplay"
 import { BuyTileController } from "./buy-tile.controller"
 import { BuyTileService } from "./buy-tile.service"
 
-@Global()
 @Module({
     imports: [
         GameplayModule
