@@ -1,25 +1,24 @@
-import { Logger } from "@nestjs/common"
-import { AnimalCurrentState, AnimalInfoEntity, AnimalRandomness, GameplayPostgreSQLService, SystemEntity, SystemId } from "@src/databases"
-import { DataSource, LessThanOrEqual, Not } from "typeorm"
-import utc from "dayjs/plugin/utc"
-import { Processor, WorkerHost } from "@nestjs/bullmq"
-import dayjs from "dayjs"
 import { AnimalJobData } from "@apps/cron-scheduler"
-import { Job } from "bullmq"
-import { AnimalsWorkerProcessTransactionFailedException } from "@src/exceptions"
+import { Processor, WorkerHost } from "@nestjs/bullmq"
+import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
+import { AnimalCurrentState, AnimalInfoEntity, AnimalRandomness, InjectPostgreSQL, SystemEntity, SystemId } from "@src/databases"
+import { AnimalsWorkerProcessTransactionFailedException } from "@src/exceptions"
+import { Job } from "bullmq"
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+import { DataSource, LessThanOrEqual, Not } from "typeorm"
 dayjs.extend(utc)
 
 @Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost  {
     private readonly logger = new Logger(AnimalWorker.name)
-    private readonly dataSource: DataSource
     
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
     ) {
         super()
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
     
     public override async process(job: Job<AnimalJobData>): Promise<void> {

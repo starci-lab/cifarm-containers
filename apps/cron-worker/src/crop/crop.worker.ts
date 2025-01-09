@@ -1,32 +1,31 @@
+import { CropJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
-import { Job } from "bullmq"
-import { DataSource, LessThanOrEqual, Not } from "typeorm"
+import { bullData, BullQueueName } from "@src/bull"
 import {
     CropCurrentState,
     CropRandomness,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId
 } from "@src/databases"
 import { CropsWorkerProcessTransactionFailedException } from "@src/exceptions"
-import { CropJobData } from "@apps/cron-scheduler"
+import { Job } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
-import { bullData, BullQueueName } from "@src/bull"
+import { DataSource, LessThanOrEqual, Not } from "typeorm"
 dayjs.extend(utc)
 
 @Processor(bullData[BullQueueName.Crop].name)
 export class CropWorker extends WorkerHost {
     private readonly logger = new Logger(CropWorker.name)
-    private readonly dataSource: DataSource
 
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
     ) {
         super()
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     public override async process(job: Job<CropJobData>): Promise<void> {
@@ -38,7 +37,8 @@ export class CropWorker extends WorkerHost {
         try {
             let seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
                 where: {
-                    currentState: Not(CropCurrentState.NeedWater) && Not(CropCurrentState.FullyMatured),
+                    currentState:
+                        Not(CropCurrentState.NeedWater) && Not(CropCurrentState.FullyMatured),
                     createdAt: LessThanOrEqual(dayjs(utcTime).toDate())
                 },
                 relations: {

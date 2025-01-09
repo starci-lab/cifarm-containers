@@ -1,8 +1,8 @@
 import { NestFactory } from "@nestjs/core"
-import { grpcData, GrpcServiceName } from "@src/grpc"
-import { Container, envConfig } from "@src/env"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { getLoopbackAddress } from "@src/common"
+import { Container, envConfig } from "@src/env"
+import { grpcData, GrpcServiceName } from "@src/grpc"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { AppModule } from "./app.module"
 
@@ -28,7 +28,7 @@ const bootstrapHealthCheck = async () => {
             ]
         })
     )
-    await app.listen(envConfig().containers.gameplayService.healthCheckPort)
+    await app.listen(envConfig().containers[Container.GameplayService].healthCheckPort)
 }
 
 bootstrap().then(bootstrapHealthCheck)

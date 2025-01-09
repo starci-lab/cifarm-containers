@@ -1,25 +1,24 @@
+import { DeliveryJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
-import { Job } from "bullmq"
-import { DataSource} from "typeorm"
-import { DeliverysWorkerProcessTransactionFailedException } from "@src/exceptions"
-import { DeliveryJobData } from "@apps/cron-scheduler"
-import { DeliveringProductEntity, GameplayPostgreSQLService, UserEntity } from "@src/databases"
 import { bullData, BullQueueName } from "@src/bull"
+import { DeliveringProductEntity, InjectPostgreSQL, UserEntity } from "@src/databases"
+import { DeliverysWorkerProcessTransactionFailedException } from "@src/exceptions"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
+import { Job } from "bullmq"
+import { DataSource } from "typeorm"
 
 @Processor(bullData[BullQueueName.Delivery].name)
 export class DeliveryWorker extends WorkerHost {
     private readonly logger = new Logger(DeliveryWorker.name)
-    private readonly dataSource: DataSource
-    
+
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly tokenBalanceService: TokenBalanceService,
+        private readonly tokenBalanceService: TokenBalanceService
     ) {
         super()
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     public override async process(job: Job<DeliveryJobData>): Promise<void> {
@@ -32,7 +31,7 @@ export class DeliveryWorker extends WorkerHost {
 
         const userUpdatePromises = []
         const deliveringProductsRemovePromises = []
-        
+
         this.logger.debug(`Processed delivery job: ${job.id}`)
         try {
             const rawUserIds = await queryRunner.manager
@@ -56,7 +55,7 @@ export class DeliveryWorker extends WorkerHost {
                 const deliveringProducts = await queryRunner.manager.find(DeliveringProductEntity, {
                     where: { userId },
                     relations: {
-                        product: true,
+                        product: true
                     }
                 })
 
@@ -66,7 +65,9 @@ export class DeliveryWorker extends WorkerHost {
                 }
 
                 // Fetch user details
-                const user = await queryRunner.manager.findOne(UserEntity, { where: { id: userId } })
+                const user = await queryRunner.manager.findOne(UserEntity, {
+                    where: { id: userId }
+                })
 
                 if (!user) {
                     this.logger.warn(`User with ID ${userId} not found.`)
@@ -75,18 +76,22 @@ export class DeliveryWorker extends WorkerHost {
 
                 // Example logic: calculate total cost
                 const totalTokenAmount = deliveringProducts.reduce((sum, deliveringProducts) => {
-                    return sum + deliveringProducts.product.tokenAmount * deliveringProducts.quantity
+                    return (
+                        sum + deliveringProducts.product.tokenAmount * deliveringProducts.quantity
+                    )
                 }, 0)
 
                 // Update user balance via token balance service
                 const tokensChanged = this.tokenBalanceService.add({
                     entity: user,
-                    amount: totalTokenAmount,
+                    amount: totalTokenAmount
                 })
 
-                userUpdatePromises.push(queryRunner.manager.update(UserEntity, user.id, {
-                    ...tokensChanged,
-                }))
+                userUpdatePromises.push(
+                    queryRunner.manager.update(UserEntity, user.id, {
+                        ...tokensChanged
+                    })
+                )
 
                 deliveringProductsRemovePromises.push(
                     queryRunner.manager.delete(DeliveringProductEntity, { userId })
@@ -97,12 +102,11 @@ export class DeliveryWorker extends WorkerHost {
                 )
             })
 
-
             await queryRunner.startTransaction()
             try {
                 await Promise.all(userUpdatePromises)
                 await Promise.all(deliveringProductsRemovePromises)
-               
+
                 await queryRunner.commitTransaction()
             } catch (error) {
                 this.logger.error(`Transaction failed: ${error}`)
