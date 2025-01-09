@@ -1,12 +1,23 @@
 import { Module } from "@nestjs/common"
-import { EnvModule } from "@src/env"
-import { GraphQLModule } from "@src/graphql"
+import { getHttpUrl } from "@src/common"
+import { Container, envConfig, EnvModule } from "@src/env"
+import { GraphQLGatewayModule } from "@src/graphql"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
-        GraphQLModule.forGateway(),
+        GraphQLGatewayModule.forRoot({
+            subgraphs: [
+                {
+                    name: "gameplay",
+                    url: getHttpUrl({
+                        host: envConfig().containers[Container.GameplaySubgraph].host,
+                        port: envConfig().containers[Container.GameplaySubgraph].port,
+                        path: "graphql"
+                    })
+                }
+            ]
+        }),
     ],
-    providers: []
 })
 export class AppModule {}

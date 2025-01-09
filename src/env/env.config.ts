@@ -51,7 +51,7 @@ export const envConfig = () => ({
                 Number.parseInt(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT) ??
                 DEFAULT_HEALTH_PORT
         },
-        [Container.GraphqlGateway]: {
+        [Container.GraphQLGateway]: {
             host: process.env.GRAPHQL_GATEWAY_HOST ?? LOCALHOST,
             port: Number.parseInt(process.env.GRAPHQL_GATEWAY_PORT) ?? DEFAULT_PORT,
             healthCheckPort:
