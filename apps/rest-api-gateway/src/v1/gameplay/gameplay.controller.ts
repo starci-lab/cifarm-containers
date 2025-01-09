@@ -87,11 +87,12 @@ import {
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
-import { grpcData, GrpcService, GrpcServiceName } from "@src/grpc"
+import { grpcData, GrpcServiceName } from "@src/grpc"
 import { User } from "@src/decorators"
 import { RestJwtAuthGuard } from "@src/guards"
 import { lastValueFrom } from "rxjs"
 import { UserLike } from "@src/jwt"
+import { InjectGrpc } from "@src/grpc/grpc.decorators"
 
 @ApiTags("Gameplay")
 @Controller({
@@ -101,11 +102,10 @@ import { UserLike } from "@src/jwt"
 export class GameplayController implements OnModuleInit {
     private readonly logger = new Logger(GameplayController.name)
 
-    private clientGrpc: ClientGrpc
     constructor(
-        private grpcService: GrpcService
+        @InjectGrpc()
+        private clientGrpc: ClientGrpc
     ) {
-        this.clientGrpc = this.grpcService.getClient()
     }
 
     private gameplayService: IGameplayService
