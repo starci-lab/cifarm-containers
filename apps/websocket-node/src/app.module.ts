@@ -3,15 +3,20 @@ import { BroadcastModule } from "./broadcast"
 import { DefaultModule } from "./default"
 import { ServeStaticModule } from "@nestjs/serve-static"
 import { join } from "path"
-import { EnvModule } from "@src/env"
-import { GameplayPostgreSQLModule } from "@src/databases"
-import { CacheRedisModule } from "@src/cache"
+import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
+import { CacheModule } from "@src/cache"
+import { PostgreSQLModule } from "@src/databases"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
-        CacheRedisModule.forRoot(),
-        GameplayPostgreSQLModule.forRoot(),
+        CacheModule.register({
+            isGlobal: true
+        }),
+        PostgreSQLModule.forRoot({
+            context: PostgreSQLContext.Main,
+            database: PostgreSQLDatabase.Gameplay
+        }),
         BroadcastModule,
         DefaultModule,
         ServeStaticModule.forRoot({

@@ -1,4 +1,5 @@
 import { Logger, UseGuards } from "@nestjs/common"
+import { Cron } from "@nestjs/schedule"
 import {
     ConnectedSocket,
     OnGatewayConnection,
@@ -8,15 +9,13 @@ import {
     WebSocketGateway,
     WebSocketServer
 } from "@nestjs/websockets"
-import { Socket } from "socket.io"
-import { LinkUserSessionResponse, SyncPlacedItemsParams } from "./broadcast.dto"
-import { Server } from "socket.io"
-import { DataSource } from "typeorm"
-import { GameplayPostgreSQLService, PlacedItemEntity } from "@src/databases"
+import { InjectPostgreSQL, PlacedItemEntity } from "@src/databases"
 import { WsUser } from "@src/decorators"
-import { UserLike, WsJwtAuthGuard } from "@src/jwt"
-import { Cron } from "@nestjs/schedule"
 import { WsSessionNotLinkedException } from "@src/exceptions"
+import { UserLike, WsJwtAuthGuard } from "@src/jwt"
+import { Server, Socket } from "socket.io"
+import { DataSource } from "typeorm"
+import { LinkUserSessionResponse, SyncPlacedItemsParams } from "./broadcast.dto"
 
 const NAMESPACE = "broadcast"
 
@@ -33,12 +32,11 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
     private readonly logger = new Logger(BroadcastGateway.name)
     private readonly sessionMap = new Map<string, string>()
 
-    private readonly dataSource: DataSource
     
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     @WebSocketServer()

@@ -20,12 +20,12 @@ export class KafkaModule extends ConfigurableModuleClass {
                     client: {
                         clientId: v4(),
                         brokers: [
-                            `${envConfig().brokers.kafka.host}:${envConfig().brokers.kafka.port}`
+                            `${envConfig().brokers[Brokers.Kafka].host}:${envConfig().brokers[Brokers.Kafka].port}`
                         ],
-                        sasl: envConfig().brokers.kafka.sasl.enabled && {
+                        sasl: envConfig().brokers[Brokers.Kafka].sasl.enabled && {
                             mechanism: "scram-sha-256",
-                            username: envConfig().brokers.kafka.sasl.username,
-                            password: envConfig().brokers.kafka.sasl.password
+                            username: envConfig().brokers[Brokers.Kafka].sasl.username,
+                            password: envConfig().brokers[Brokers.Kafka].sasl.password
                         }
                     },
                     producerOnlyMode: producerOnly,

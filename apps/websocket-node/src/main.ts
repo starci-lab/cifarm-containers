@@ -1,11 +1,11 @@
 import { NestFactory } from "@nestjs/core"
-import { AppModule } from "./app.module"
-import { RedisIoAdapter } from "@src/io"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { HealthCheckModule } from "./health-check"
-import { envConfig } from "@src/env"
 import { KafkaGroupId } from "@src/brokers"
+import { Brokers, Container, envConfig } from "@src/env"
+import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
+import { RedisIoAdapter } from "@src/io"
 import { v4 } from "uuid"
+import { AppModule } from "./app.module"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -16,12 +16,12 @@ const bootstrap = async () => {
                 client: {
                     clientId: v4(),
                     brokers: [
-                        `${envConfig().messageBrokers.kafka.host}:${envConfig().messageBrokers.kafka.port}`
+                        `${envConfig().brokers[Brokers.Kafka].host}:${envConfig().brokers[Brokers.Kafka].port}`
                     ],
                     sasl: {
                         mechanism: "scram-sha-256",
-                        username: envConfig().messageBrokers.kafka.username,
-                        password: envConfig().messageBrokers.kafka.password
+                        username: envConfig().brokers[Brokers.Kafka].sasl.username,
+                        password: envConfig().brokers[Brokers.Kafka].sasl.password
                     }
                 },
                 consumer: {
@@ -36,11 +36,18 @@ const bootstrap = async () => {
     app.useWebSocketAdapter(redisIoAdapter)
     
     await app.startAllMicroservices()
-    await app.listen(envConfig().containers.websocketNode.port)
+    await app.listen(envConfig().containers[Container.WebsocketNode].port)
 }
 
 const bootstrapHealthCheck = async () => {
-    const app = await NestFactory.create(HealthCheckModule)
-    await app.listen(envConfig().containers.websocketNode.healthCheckPort)
+    const app = await NestFactory.create(
+        HealthCheckModule.forRoot({
+            dependencies: [
+                HealthCheckDependency.Kafka,
+                HealthCheckDependency.GameplayPostgreSQL,
+            ]
+        })
+    )
+    await app.listen(envConfig().containers[Container.WebsocketNode].healthCheckPort)
 }
 bootstrap().then(bootstrapHealthCheck)

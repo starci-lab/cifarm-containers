@@ -1,11 +1,9 @@
 import { Module } from "@nestjs/common"
-import { DefaultGateway } from "./default.gateway"
 import { CryptoModule } from "@src/crypto"
-import { EnvModule } from "@src/env"
+import { DefaultGateway } from "./default.gateway"
 
 @Module({
     imports: [
-        EnvModule.forRoot(),
         CryptoModule,
     ],
     controllers: [],
