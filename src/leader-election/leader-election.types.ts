@@ -2,6 +2,5 @@
 export interface LeaderElectionOptions {
     leaseName?: string;
     renewalInterval?: number;
-    logAtLevel?: "log" | "debug"
     awaitLeadership?: boolean;
 }

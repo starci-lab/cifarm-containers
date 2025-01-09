@@ -10,7 +10,7 @@ import {
 import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 import { HealthCheckCoreService } from "./health-check-core.service"
 import { HealthCheckContainersService } from "./health-check-containers.service"
-import { MODULE_OPTIONS_TOKEN } from "@src/brokers"
+import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
 import { PostgreSQLDatabase, RedisType } from "@src/env"
 
 @Controller()
