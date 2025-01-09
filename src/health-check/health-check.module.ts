@@ -21,13 +21,15 @@ import { HealthCheckController } from "./health-check.controller"
 import { HttpModule } from "@nestjs/axios"
 import { HealthCheckCoreService } from "./health-check-core.service"
 import { HealthCheckContainersService } from "./health-check-containers.service"
+import { KafkaOptionsModule } from "@src/brokers"
 
 @Module({})
 export class HealthCheckModule extends ConfigurableModuleClass {
     public static forRoot(options: typeof OPTIONS_TYPE): DynamicModule {
         const imports: Array<typeof TerminusModule | DynamicModule> = [
             TerminusModule,
-            EnvModule.forRoot()
+            EnvModule.forRoot(),
+            KafkaOptionsModule.register()
         ]
         if (options.dependencies.includes(HealthCheckDependency.GameplayService)) {
             imports.push(HttpModule.register({}))

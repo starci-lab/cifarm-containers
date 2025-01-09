@@ -3,14 +3,12 @@ import { HealthIndicatorResult } from "@nestjs/terminus"
 import { MicroserviceHealthIndicator, TypeOrmHealthIndicator } from "@nestjs/terminus"
 import { ModuleRef } from "@nestjs/core"
 import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
-import { v4 } from "uuid"
 import {
     envConfig,
     RedisType,
     redisClusterEnabled,
     redisClusterRunInDocker,
     PostgreSQLDatabase,
-    Brokers
 } from "@src/env"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
@@ -22,6 +20,7 @@ import {
     JOB_REDIS
 } from "./health-check.constants"
 import { NatMap } from "ioredis"
+import { KafkaOptionsFactory } from "@src/brokers"
 
 @Injectable()
 export class HealthCheckCoreService {
@@ -33,6 +32,7 @@ export class HealthCheckCoreService {
     // Kafka service
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN) private readonly options: HealthCheckOptions,
+        private readonly kafkaOptionsFactory: KafkaOptionsFactory,
         private readonly microservice: MicroserviceHealthIndicator,
         private readonly db: TypeOrmHealthIndicator,
         private readonly moduleRef: ModuleRef
@@ -99,17 +99,7 @@ export class HealthCheckCoreService {
         return await this.microservice.pingCheck<KafkaOptions>(HealthCheckDependency.Kafka, {
             transport: Transport.KAFKA,
             options: {
-                client: {
-                    clientId: v4(),
-                    brokers: [
-                        `${envConfig().brokers[Brokers.Kafka].host}:${envConfig().brokers[Brokers.Kafka].port}`
-                    ],
-                    sasl: {
-                        mechanism: "scram-sha-256",
-                        username: envConfig().brokers[Brokers.Kafka].sasl.username,
-                        password: envConfig().brokers[Brokers.Kafka].sasl.password
-                    }
-                }
+                client: this.kafkaOptionsFactory.createKafkaConfig(),
             },
             timeout: HEALTH_CHECK_TIMEOUT
         })
