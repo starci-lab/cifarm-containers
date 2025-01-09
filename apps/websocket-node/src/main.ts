@@ -1,37 +1,31 @@
 import { NestFactory } from "@nestjs/core"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { KafkaGroupId } from "@src/brokers"
-import { Brokers, Container, envConfig } from "@src/env"
+import { Container, envConfig } from "@src/env"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { RedisIoAdapter } from "@src/io"
-import { v4 } from "uuid"
 import { AppModule } from "./app.module"
+import { KafkaOptionsFactory } from "@src/brokers"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
+    const options = app.get(KafkaOptionsFactory)
+    
+    // Connect to Kafka microservice
     app.connectMicroservice<MicroserviceOptions>(
         {
             transport: Transport.KAFKA,
             options: {
-                client: {
-                    clientId: v4(),
-                    brokers: [
-                        `${envConfig().brokers[Brokers.Kafka].host}:${envConfig().brokers[Brokers.Kafka].port}`
-                    ],
-                    sasl: {
-                        mechanism: "scram-sha-256",
-                        username: envConfig().brokers[Brokers.Kafka].sasl.username,
-                        password: envConfig().brokers[Brokers.Kafka].sasl.password
-                    }
-                },
+                client: options.createKafkaConfig(),
                 consumer: {
                     groupId: KafkaGroupId.PlacedItemsBroadcast
                 },
             }
         }
     )
- 
-    const redisIoAdapter = new RedisIoAdapter(app)
+
+    // Use redis adapter for websocket
+    const redisIoAdapter = app.get(RedisIoAdapter)
     await redisIoAdapter.connectToRedis()
     app.useWebSocketAdapter(redisIoAdapter)
     

@@ -1,3 +1,4 @@
+import { GrpcOptions as NestGrpcOptions } from "@nestjs/microservices"
 export enum GrpcServiceName {
     Gameplay = "gameplay"
 }
@@ -9,6 +10,8 @@ export interface GrpcServiceData {
     protoPath: string
 }
 
-export interface GrpcRegisterOptions {
+export interface GrpcOptions {
     name?: GrpcServiceName
 }
+
+export type GrpcConfig = NestGrpcOptions["options"];

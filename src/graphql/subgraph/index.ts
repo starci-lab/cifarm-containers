@@ -1,2 +1,2 @@
 export * from "./subgraph.module"
-export * from "./subgraph-options.factory"
+export * from "./options"

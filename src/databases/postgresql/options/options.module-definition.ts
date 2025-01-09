@@ -1,5 +1,5 @@
 import { ConfigurableModuleBuilder } from "@nestjs/common"
-import { PostgreSQLOptionsOptions } from "./postgresql.types"
+import { PostgreSQLOptionsOptions } from "./options.types"
 
 export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } =
     new ConfigurableModuleBuilder<PostgreSQLOptionsOptions>()

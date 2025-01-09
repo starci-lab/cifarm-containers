@@ -1,26 +1,28 @@
 import { Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
 import { ConfigurableModuleClass } from "@src/brokers"
-import { grpcData, grpcUrlMap } from "./grpc.constants"
 import { OPTIONS_TYPE } from "./grpc.module-definition"
 import { GrpcServiceName } from "./grpc.types"
+import { GrpcOptionsFactory, GrpcOptionsModule } from "./options"
+import { getGrpcToken } from "./grpc.utils"
 
 @Module({})
 export class GrpcModule extends ConfigurableModuleClass {
     public static register(options: typeof OPTIONS_TYPE = {}) {
-        const url = grpcUrlMap()[options.name] ?? grpcUrlMap()[GrpcServiceName.Gameplay]
-        const data = grpcData[options.name] ?? grpcData[GrpcServiceName.Gameplay]
+        const name = options.name ?? GrpcServiceName.Gameplay
 
         const grpcDynamicModule = ClientsModule.registerAsync([
             {
-                name: data.name,
-                useFactory: async () => ({
+                name: getGrpcToken(name),
+                imports: [
+                    GrpcOptionsModule.register({
+                        options
+                    })
+                ],
+                inject: [GrpcOptionsFactory],
+                useFactory: (grpcOptionsFactory: GrpcOptionsFactory) => ({
                     transport: Transport.GRPC,
-                    options: {
-                        url,
-                        package: data.package,
-                        protoPath: data.protoPath
-                    }
+                    options: grpcOptionsFactory.createGrpcConfig()
                 })
             }
         ])
@@ -28,13 +30,8 @@ export class GrpcModule extends ConfigurableModuleClass {
         const dynamicModule = super.register(options)
         return {
             ...dynamicModule,
-            imports: [
-                grpcDynamicModule
-            ],
-            exports: [
-                grpcDynamicModule
-            ]
-            
+            imports: [grpcDynamicModule],
+            exports: [grpcDynamicModule]
         }
     }
 }

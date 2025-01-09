@@ -6,6 +6,7 @@ import { join } from "path"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { CacheModule } from "@src/cache"
 import { PostgreSQLModule } from "@src/databases"
+import { IoModule } from "@src/io"
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { PostgreSQLModule } from "@src/databases"
             context: PostgreSQLContext.Main,
             database: PostgreSQLDatabase.Gameplay
         }),
+        IoModule.register(),
         BroadcastModule,
         DefaultModule,
         ServeStaticModule.forRoot({

@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
 import { APP_FILTER } from "@nestjs/core"
-import { KafkaModule } from "@src/brokers"
+import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { CacheModule } from "@src/cache"
 import { PostgreSQLModule } from "@src/databases"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
@@ -30,7 +30,9 @@ import { JwtModule } from "@src/jwt"
         }),
         EnvModule,
         KafkaModule.register({
-            isGlobal: true
+            isGlobal: true,
+            producerOnlyMode: true,
+            groupId: KafkaGroupId.PlacedItemsBroadcast
         }),
         GameplayModule.register({
             isGlobal: true

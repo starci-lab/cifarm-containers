@@ -1,48 +1,37 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { ClientsModule, Transport } from "@nestjs/microservices"
-import { envConfig } from "@src/env"
-import { v4 } from "uuid"
 import { KAFKA } from "./kafka.constants"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./kafka.module-definition"
 import { KafkaGroupId } from "./kafka.types"
+import { KafkaOptionsFactory, KafkaOptionsModule } from "./options"
 
 @Module({})
 export class KafkaModule extends ConfigurableModuleClass {
-    public static register(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
+    public static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const groupId = options.groupId ?? KafkaGroupId.PlacedItemsBroadcast
-        const producerOnly = options.producerOnly ?? false
+        const producerOnlyMode = options.producerOnlyMode ?? false
         const dynamicModule = super.register(options)
-        const kafkaDynamicModule = ClientsModule.register([
+        const kafkaDynamicModule = ClientsModule.registerAsync([
             {
                 name: KAFKA,
-                transport: Transport.KAFKA,
-                options: {
-                    client: {
-                        clientId: v4(),
-                        brokers: [
-                            `${envConfig().brokers[Brokers.Kafka].host}:${envConfig().brokers[Brokers.Kafka].port}`
-                        ],
-                        sasl: envConfig().brokers[Brokers.Kafka].sasl.enabled && {
-                            mechanism: "scram-sha-256",
-                            username: envConfig().brokers[Brokers.Kafka].sasl.username,
-                            password: envConfig().brokers[Brokers.Kafka].sasl.password
+                imports: [KafkaOptionsModule.register()],
+                inject: [KafkaOptionsFactory],
+                useFactory: (kafkaOptionsFactory: KafkaOptionsFactory) => ({
+                    transport: Transport.KAFKA,
+                    options: {
+                        client: kafkaOptionsFactory.createKafkaConfig(),
+                        producerOnlyMode,
+                        consumer: {
+                            groupId
                         }
-                    },
-                    producerOnlyMode: producerOnly,
-                    consumer: {
-                        groupId: groupId
                     }
-                }
+                })
             }
         ])
         return {
             ...dynamicModule,
-            imports: [
-                kafkaDynamicModule
-            ],
-            exports: [
-                kafkaDynamicModule
-            ]
+            imports: [kafkaDynamicModule],
+            exports: [kafkaDynamicModule]
         }
     }
 }

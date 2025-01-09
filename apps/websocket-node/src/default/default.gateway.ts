@@ -10,19 +10,16 @@ import {
 } from "@nestjs/websockets"
 import { Server, Socket } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
-import { getEnvValue, isProduction, envConfig } from "@src/env"
+import { isProduction, envConfig } from "@src/env"
 import { getHttpUrl } from "@src/common"
 import { BcryptService } from "@src/crypto"
 
 @WebSocketGateway({
     cors: {
         origin: [
-            getEnvValue({
-                development: getHttpUrl({
-                    port: envConfig().containers.websocketNode.port,
-                }),
-                production: envConfig().productionUrl
-            })
+            isProduction() ? getHttpUrl({
+                port: envConfig().containers.websocketNode.port,
+            }) : envConfig().productionUrl,
         ],
         credentials: true
     },

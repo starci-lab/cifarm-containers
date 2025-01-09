@@ -1,12 +1,13 @@
 import { Inject, Injectable } from "@nestjs/common"
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from "@nestjs/typeorm"
 import { envConfig, isProduction, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
-import { CacheOptionsService } from "../cache-options"
-import { MODULE_OPTIONS_TOKEN } from "./postgresql-options.module-definition"
-import { CONNECTION_TIMEOUT_MS, POOL_SIZE } from "./postgresql.constants"
-import { getPostgresEntities } from "./postgresql.utils"
+import { CacheOptionsService } from "../../cache-options"
+import { MODULE_OPTIONS_TOKEN } from "./options.module-definition"
+import { CONNECTION_TIMEOUT_MS, POOL_SIZE } from "../postgresql.constants"
+import { getPostgresEntities } from "../postgresql.utils"
 import { DataSourceOptions } from "typeorm"
-import { PostgreSQLOptions, PostgreSQLOptionsOptions } from "./postgresql.types"
+import { PostgreSQLOptions } from "../postgresql.types"
+import { PostgreSQLOptionsOptions } from "./options.types"
 
 @Injectable()
 export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {

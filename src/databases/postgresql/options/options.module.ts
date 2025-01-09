@@ -1,7 +1,7 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common"
-import { ConfigurableModuleClass, OPTIONS_TYPE } from "./postgresql-options.module-definition"
-import { PostgreSQLOptionsFactory } from "./postgresql-options.factory"
-import { CacheOptionsModule } from "../cache-options"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./options.module-definition"
+import { PostgreSQLOptionsFactory } from "./options.factory"
+import { CacheOptionsModule } from "../../cache-options"
 
 @Module({})
 export class PostgreSQLOptionsModule extends ConfigurableModuleClass {

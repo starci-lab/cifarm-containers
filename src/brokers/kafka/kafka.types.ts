@@ -1,6 +1,6 @@
 export interface KafkaOptions {
     groupId?: KafkaGroupId
-    producerOnly?: boolean
+    producerOnlyMode?: boolean
 }
 
 export enum KafkaGroupId {

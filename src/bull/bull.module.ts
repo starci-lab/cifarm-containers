@@ -4,8 +4,7 @@ import { BullQueueName, RegisterQueueOptions } from "./bull.types"
 import { DynamicModule, Module } from "@nestjs/common"
 import { ConfigurableModuleClass } from "./bull.module-definition"
 import { OPTIONS_TYPE } from "@src/brokers"
-import { QueueOptionsModule } from "./queue-options.module"
-import { QueueOptionsFactory } from "./queue-options.factory"
+import { QueueOptionsModule, QueueOptionsFactory } from "./options"
 
 @Module({})
 export class BullModule extends ConfigurableModuleClass {
