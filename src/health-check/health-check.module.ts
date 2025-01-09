@@ -1,6 +1,13 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { TerminusModule } from "@nestjs/terminus"
-import { EnvModule, PostgreSQLContext, PostgreSQLDatabase, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
+import {
+    EnvModule,
+    PostgreSQLContext,
+    PostgreSQLDatabase,
+    redisClusterEnabled,
+    redisClusterRunInDocker,
+    RedisType
+} from "@src/env"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./health-check.module-definition"
 import { HealthCheckDependency } from "./health-check.types"
 import { PostgreSQLModule } from "@src/databases"
@@ -12,6 +19,8 @@ import {
 } from "./health-check.constants"
 import { HealthCheckController } from "./health-check.controller"
 import { HttpModule } from "@nestjs/axios"
+import { HealthCheckCoreService } from "./health-check-core.service"
+import { HealthCheckContainersService } from "./health-check-containers.service"
 
 @Module({})
 export class HealthCheckModule extends ConfigurableModuleClass {
@@ -21,8 +30,7 @@ export class HealthCheckModule extends ConfigurableModuleClass {
             EnvModule.forRoot()
         ]
         if (options.dependencies.includes(HealthCheckDependency.GameplayService)) {
-            imports.push(HttpModule.register({
-            }))
+            imports.push(HttpModule.register({}))
         }
 
         // if gameplay postgresql is used
@@ -30,10 +38,12 @@ export class HealthCheckModule extends ConfigurableModuleClass {
             imports.push(PostgreSQLModule.forRoot())
         }
         if (options.dependencies.includes(HealthCheckDependency.TelegramPostgreSQL)) {
-            imports.push(PostgreSQLModule.forRoot({
-                context: PostgreSQLContext.Main,
-                database: PostgreSQLDatabase.Telegram
-            }))
+            imports.push(
+                PostgreSQLModule.forRoot({
+                    context: PostgreSQLContext.Main,
+                    database: PostgreSQLDatabase.Telegram
+                })
+            )
         }
         // if adapter redis is used
         if (
@@ -90,6 +100,11 @@ export class HealthCheckModule extends ConfigurableModuleClass {
         return {
             ...dynamicModule,
             imports,
+            providers: [
+                ...dynamicModule.providers,
+                HealthCheckCoreService,
+                HealthCheckContainersService
+            ],
             controllers: [HealthCheckController]
         }
     }
