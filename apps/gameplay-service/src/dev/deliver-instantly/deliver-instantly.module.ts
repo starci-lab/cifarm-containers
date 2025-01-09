@@ -6,7 +6,6 @@ import { DeliverInstantlyService } from "./deliver-instantly.service"
 @Module({
     imports: [],
     providers: [DeliverInstantlyService],
-    exports: [DeliverInstantlyService],
     controllers: [DeliveryInstantlyController]
 })
 export class DeliveryInstantlyModule {}

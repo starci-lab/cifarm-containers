@@ -1,14 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    SpinCooldownException,
-    SpinSlotsNotEqual8Exception,
-    SpinTransactionFailedException
-} from "@src/exceptions"
-import { DataSource, DeepPartial } from "typeorm"
-import { SpinRequest, SpinResponse } from "./spin.dto"
-import {
     AppearanceChance,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
@@ -19,21 +12,27 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import dayjs from "dayjs"
+import {
+    SpinCooldownException,
+    SpinSlotsNotEqual8Exception,
+    SpinTransactionFailedException
+} from "@src/exceptions"
 import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/gameplay"
+import dayjs from "dayjs"
+import { DataSource, DeepPartial } from "typeorm"
+import { SpinRequest, SpinResponse } from "./spin.dto"
 
 @Injectable()
 export class SpinService {
     private readonly logger = new Logger(SpinService.name)
 
-    private readonly dataSource: DataSource
     constructor(
-        private readonly gameplayPostgreSQLService: GameplayPostgreSQLService,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
         private readonly inventoryService: InventoryService
     ) {
-        this.dataSource = this.gameplayPostgreSQLService.getDataSource()
     }
 
     async spin(request: SpinRequest): Promise<SpinResponse> {

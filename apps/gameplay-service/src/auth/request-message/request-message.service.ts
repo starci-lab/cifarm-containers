@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectCache } from "@src/cache"
-import { Cache } from "cache-manager"
 import { v4 } from "uuid"
 import { RequestMessageResponse } from "./request-message.dto"
+import { Cache } from "cache-manager"
 
 @Injectable()
 export class RequestMessageService {

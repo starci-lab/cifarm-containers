@@ -5,12 +5,16 @@ import { PostgreSQLOptionsModule } from "./postgresql-options.module"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./postgresql.module-definition"
 import { PostgreSQLOptions } from "./postgresql.types"
 import { getPostgresEntities, getPostgreSqlDataSourceName } from "./postgresql.utils"
+import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 
 @Module({})
 export class PostgreSQLModule extends ConfigurableModuleClass {
     public static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const dynamicModule = super.forRoot(options)
         const dataSourceName = getPostgreSqlDataSourceName(options)
+
+        options.context = options.context || PostgreSQLContext.Main
+        options.database = options.database || PostgreSQLDatabase.Gameplay
         
         return {
             ...dynamicModule,

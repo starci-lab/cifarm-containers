@@ -1,11 +1,12 @@
 import {
     envConfig,
+    Network,
+    SupportedChainKey,
 } from "@src/env"
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { Account } from "near-api-js"
 import { nearClient, nearKeyPair, nearKeyStore } from "../rpcs"
 import { NearUsernameExistsException } from "@src/exceptions"
-import { Network, SupportedChainKey } from "../blockchain.config"
 
 export type NearAccounts = Record<Network, Account>;
 //special service for near deposit, to create a new account

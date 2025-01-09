@@ -1,14 +1,10 @@
 import { Module } from "@nestjs/common"
-import { BlockchainModule } from "@src/blockchain"
-import { CacheModule } from "@src/cache"
-import { GameplayModule } from "@src/gameplay"
-import { JwtModule } from "@src/jwt"
 import { VerifySignatureController } from "./verify-signature.controller"
 import { VerifySignatureService } from "./verify-signature.service"
 
  
 @Module({
-    imports: [CacheModule, GameplayModule, BlockchainModule, JwtModule],
+    imports: [],
     controllers: [VerifySignatureController],
     providers: [VerifySignatureService],
     exports: [VerifySignatureService]

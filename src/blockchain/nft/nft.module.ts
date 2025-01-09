@@ -1,8 +1,8 @@
-import { Module } from "@nestjs/common"
+import { DynamicModule, Module } from "@nestjs/common"
 import { BlockchainNftBaseService } from "./base"
 import { IpfsService } from "./common"
 import { BlockchainNftObserverService } from "./observer"
-import { ConfigurableModuleClass } from "./nft.module-definition"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./nft.module-definition"
 
 @Module({
     providers: [
@@ -16,4 +16,8 @@ import { ConfigurableModuleClass } from "./nft.module-definition"
         BlockchainNftObserverService,
     ],
 })
-export class NftModule extends ConfigurableModuleClass {}
+export class NftModule extends ConfigurableModuleClass {
+    static register(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
+        return super.register(options)
+    }
+}

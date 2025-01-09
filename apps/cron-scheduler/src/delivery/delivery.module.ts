@@ -1,15 +1,13 @@
 import { Module } from "@nestjs/common"
 import { BullModule, BullQueueName } from "@src/bull"
-import { GameplayPostgreSQLModule } from "@src/databases"
 import { DeliveryService } from "./delivery.service"
-import { CacheRedisModule } from "@src/cache"
+import { CacheModule } from "@src/cache"
 
 @Module({
     imports: [
-        GameplayPostgreSQLModule.forFeature(),
-        CacheRedisModule.forRoot(),
+        CacheModule.register({}),
         BullModule.registerQueue({
-            queueName: BullQueueName.Delivery
+            queueNames: BullQueueName.Delivery
         })
     ],
     providers: [DeliveryService]
