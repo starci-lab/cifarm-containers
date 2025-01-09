@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
-import { EnvModule } from "src/env"
+import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "src/env"
 import { CiFarmService } from "./cifarm.service"
-import { TelegramUserTrackerPostgreSQLModule } from "@src/databases"
+import { PostgreSQLModule } from "@src/databases"
 
 @Module({})
 export class CiFarmModule {
@@ -10,7 +10,10 @@ export class CiFarmModule {
             module: CiFarmModule,
             imports: [
                 EnvModule.forRoot(),
-                TelegramUserTrackerPostgreSQLModule.forRoot()
+                PostgreSQLModule.forRoot({
+                    context:  PostgreSQLContext.Main,
+                    database: PostgreSQLDatabase.Telegram
+                }),
             ],
             providers: [
                 CiFarmService

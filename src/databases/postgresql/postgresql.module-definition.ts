@@ -3,15 +3,4 @@ import { PostgreSQLOptions } from "./postgresql.types"
 
 export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } =
     new ConfigurableModuleBuilder<PostgreSQLOptions>().setClassMethodName("forRoot")
-        .setExtras(
-            {
-                isGlobal: true
-            },
-            (definition, extras) => {
-                return {
-                    ...definition,
-                    global: extras.isGlobal
-                }
-            }
-        )
         .build()

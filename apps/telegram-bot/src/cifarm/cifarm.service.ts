@@ -1,8 +1,8 @@
 import { Injectable, OnModuleInit } from "@nestjs/common"
+import { InjectPostgreSQL, TelegramUserEntity } from "@src/databases"
+import { envConfig, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { readFileSync } from "fs"
 import { join } from "path"
-import { GameplayPostgreSQLService, TelegramUserEntity } from "@src/databases"
-import { envConfig } from "@src/env"
 import { Telegraf } from "telegraf"
 import { DataSource } from "typeorm"
 
@@ -10,16 +10,19 @@ import { DataSource } from "typeorm"
 export class CiFarmService implements OnModuleInit {
     private bot: Telegraf
 
-    private readonly dataSource: DataSource
+    
         
     constructor(
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectPostgreSQL({
+            context:  PostgreSQLContext.Main,
+            database: PostgreSQLDatabase.Telegram
+        })
+        private readonly dataSource: DataSource
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     onModuleInit() {
-        this.bot = new Telegraf(envConfig().telegramBots.ciFarm.token)
+        this.bot = new Telegraf(envConfig().secrets.telegram.botTokens.cifarm)
         this.initializeCommands()
     }
 
@@ -44,7 +47,7 @@ export class CiFarmService implements OnModuleInit {
                         caption,
                         reply_markup: {
                             inline_keyboard: [
-                                [{ text: "Play Cifarm", url: envConfig().telegramBots.ciFarm.miniAppUrl }],
+                                [{ text: "Play Cifarm", url: "https://t.me/cifarm_bot" }],
                             ],
                         },
                     }
