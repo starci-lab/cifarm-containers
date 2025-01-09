@@ -2,7 +2,8 @@ import { Injectable, Logger } from "@nestjs/common"
 import { AnimalEntity, InjectPostgreSQL } from "@src/databases"
 import { DataSource, FindOptionsRelations } from "typeorm"
 import { GetAnimalsArgs } from "./animals.dto"
-
+import { InjectCache } from "@src/cache"
+import { Cache } from "cache-manager"
 @Injectable()
 export class AnimalsService {
     private readonly logger = new Logger(AnimalsService.name)
@@ -14,9 +15,12 @@ export class AnimalsService {
     }
 
     constructor(
+        @InjectCache()
+        private readonly cache: Cache,
         @InjectPostgreSQL()
         private readonly dataSource: DataSource
-    ) {}
+    ) {
+    }
 
     async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         this.logger.debug(`GetAnimals: limit=${limit}, offset=${offset}`)

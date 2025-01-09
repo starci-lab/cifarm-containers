@@ -1,22 +1,13 @@
 import { Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./postgresql-options.module-definition"
 import { PostgreSQLOptionsFactory } from "./postgresql-options.factory"
-import { CacheOptionsService } from "../cache-options.service"
-import { ExecModule } from "@src/exec"
-import { RedisType } from "@src/env"
+import { CacheOptionsModule } from "../cache-options"
 
 @Module({
     imports: [
-        ExecModule.register({
-            docker: {
-                redisCluster: {
-                    type: RedisType.Cache,
-                }
-            }
-        }),
+        CacheOptionsModule.register()
     ],
     providers: [
-        CacheOptionsService,
         PostgreSQLOptionsFactory
     ],
     exports: [

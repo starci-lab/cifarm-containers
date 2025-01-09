@@ -2,7 +2,7 @@ export const enum Container {
     RestApiGateway = "restApiGateway",
     WebsocketNode = "websocketNode",
     GameplayService = "gameplayService",
-    GraphqlGateway = "graphqlGateway",
+    GraphQLGateway = "graphQlGateway",
     GameplaySubgraph = "gameplaySubgraph",
     CronWorker = "cronWorker",
     CronScheduler = "cronScheduler",

@@ -60,3 +60,6 @@ start.bat
 *.gql
 
 db
+
+.env.local
+.env.docker
