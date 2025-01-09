@@ -4,4 +4,3 @@ export interface PostgreSQLOptions {
     context?: PostgreSQLContext
     database?: PostgreSQLDatabase
 }
-

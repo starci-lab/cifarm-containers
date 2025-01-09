@@ -1,11 +1,10 @@
 import { Inject, Injectable } from "@nestjs/common"
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from "@nestjs/typeorm"
+import { envConfig, isProduction, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { CacheOptionsService } from "../cache-options.service"
 import { MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } from "./postgresql-options.module-definition"
-import { envConfig, isProduction } from "@src/env"
-import { gameplayPostgreSqlEntities } from "./gameplay"
 import { CONNECTION_TIMEOUT_MS, POOL_SIZE } from "./postgresql.constants"
-import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
+import { getPostgresEntities } from "./postgresql.utils"
 
 @Injectable()
 export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
@@ -28,7 +27,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
             username: envConfig().databases.postgresql[this.database][this.context].username,
             password: envConfig().databases.postgresql[this.database][this.context].password,
             database: envConfig().databases.postgresql[this.database][this.context].dbName,
-            entities: gameplayPostgreSqlEntities(),
+            entities: getPostgresEntities(this.options),
             synchronize: !isProduction(),
             connectTimeoutMS: CONNECTION_TIMEOUT_MS,
             poolSize: POOL_SIZE,

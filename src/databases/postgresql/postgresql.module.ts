@@ -1,10 +1,10 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { gameplayPostgreSqlEntities } from "./gameplay/entities"
 import { PostgreSQLOptionsFactory } from "./postgresql-options.factory"
 import { PostgreSQLOptionsModule } from "./postgresql-options.module"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./postgresql.module-definition"
-import { getPostgreSqlDataSourceName } from "./postgresql.utils"
+import { PostgreSQLOptions } from "./postgresql.types"
+import { getPostgresEntities, getPostgreSqlDataSourceName } from "./postgresql.utils"
 
 @Module({})
 export class PostgreSQLModule extends ConfigurableModuleClass {
@@ -23,7 +23,20 @@ export class PostgreSQLModule extends ConfigurableModuleClass {
                     useFactory: (postgreSQLOptionsFactory: PostgreSQLOptionsFactory) =>
                         postgreSQLOptionsFactory.createTypeOrmOptions()
                 }),
-                TypeOrmModule.forFeature(gameplayPostgreSqlEntities(), dataSourceName)
+                this.forFeature(options)
+            ],
+        }
+    }
+
+    private static forFeature(options: PostgreSQLOptions): DynamicModule {
+        const dataSourceName = getPostgreSqlDataSourceName(options)
+        return {
+            module: PostgreSQLModule,
+            imports: [
+                TypeOrmModule.forFeature(
+                    getPostgresEntities(options),
+                    dataSourceName
+                )
             ],
         }
     }
