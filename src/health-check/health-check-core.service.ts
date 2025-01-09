@@ -9,16 +9,17 @@ import {
     RedisType,
     redisClusterEnabled,
     redisClusterRunInDocker,
-    PostgreSQLDatabase
+    PostgreSQLDatabase,
+    Brokers
 } from "@src/env"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
 import {
-    ADAPTER_REDIS_INJECTION_TOKEN,
-    CACHE_REDIS_INJECTION_TOKEN,
+    ADAPTER_REDIS,
+    CACHE_REDIS,
     HEALTH_CHECK_TIMEOUT,
-    JOB_REDIS_INJECTION_TOKEN
+    JOB_REDIS
 } from "./health-check.constants"
 import { NatMap } from "ioredis"
 
@@ -39,19 +40,19 @@ export class HealthCheckCoreService {
         // Initialize Redis cluster services
         if (options.dependencies.includes(HealthCheckDependency.JobRedis)) {
             this.execDockerRedisClusterServices[RedisType.Job] = this.moduleRef.get(
-                JOB_REDIS_INJECTION_TOKEN,
+                JOB_REDIS,
                 { strict: false }
             )
         }
         if (options.dependencies.includes(HealthCheckDependency.CacheRedis)) {
             this.execDockerRedisClusterServices[RedisType.Cache] = this.moduleRef.get(
-                CACHE_REDIS_INJECTION_TOKEN,
+                CACHE_REDIS,
                 { strict: false }
             )
         }
         if (options.dependencies.includes(HealthCheckDependency.AdapterRedis)) {
             this.execDockerRedisClusterServices[RedisType.Adapter] = this.moduleRef.get(
-                ADAPTER_REDIS_INJECTION_TOKEN,
+                ADAPTER_REDIS,
                 { strict: false }
             )
         }

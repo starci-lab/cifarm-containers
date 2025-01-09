@@ -125,6 +125,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/test/tsconfig.app.json"
       }
+    },
+    "seeders": {
+      "type": "application",
+      "root": "apps/seeders",
+      "entryFile": "main",
+      "sourceRoot": "apps/seeders/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/seeders/tsconfig.app.json"
+      }
     }
   }
 }

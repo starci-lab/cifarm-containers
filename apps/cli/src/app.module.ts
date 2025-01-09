@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common"
-import { CommandsModule } from "./commands"
 import { EnvModule } from "@src/env"
+import { DatabaseModule } from "./database"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
-        CommandsModule
+        DatabaseModule,
     ]
 })
 export class AppModule {}

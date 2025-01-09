@@ -13,9 +13,9 @@ import { HealthCheckDependency } from "./health-check.types"
 import { PostgreSQLModule } from "@src/databases"
 import { ExecModule } from "@src/exec"
 import {
-    ADAPTER_REDIS_INJECTION_TOKEN,
-    CACHE_REDIS_INJECTION_TOKEN,
-    JOB_REDIS_INJECTION_TOKEN
+    ADAPTER_REDIS,
+    CACHE_REDIS,
+    JOB_REDIS
 } from "./health-check.constants"
 import { HealthCheckController } from "./health-check.controller"
 import { HttpModule } from "@nestjs/axios"
@@ -56,7 +56,7 @@ export class HealthCheckModule extends ConfigurableModuleClass {
                     docker: {
                         redisCluster: {
                             type: RedisType.Adapter,
-                            injectionToken: ADAPTER_REDIS_INJECTION_TOKEN
+                            injectionToken: ADAPTER_REDIS
                         }
                     }
                 })
@@ -73,7 +73,7 @@ export class HealthCheckModule extends ConfigurableModuleClass {
                     docker: {
                         redisCluster: {
                             type: RedisType.Cache,
-                            injectionToken: CACHE_REDIS_INJECTION_TOKEN
+                            injectionToken: CACHE_REDIS
                         }
                     }
                 })
@@ -90,7 +90,7 @@ export class HealthCheckModule extends ConfigurableModuleClass {
                     docker: {
                         redisCluster: {
                             type: RedisType.Job,
-                            injectionToken: JOB_REDIS_INJECTION_TOKEN
+                            injectionToken: JOB_REDIS
                         }
                     }
                 })
