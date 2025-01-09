@@ -5,7 +5,7 @@ import { EnergyService } from "./energy.service"
 @Module({
     imports: [
         BullModule.registerQueue({
-            queueNames: BullQueueName.Energy
+            queueName: BullQueueName.Energy
         })
     ],
     providers: [EnergyService]

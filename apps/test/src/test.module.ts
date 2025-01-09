@@ -21,7 +21,7 @@ import { GameplayModule } from "@src/gameplay"
         BullModule.forRoot(),
         BullModule.registerQueues({
             isGlobal: true,
-            queueNames: [
+            queueName: [
                 BullQueueName.Crop,
                 BullQueueName.Animal,
                 BullQueueName.Delivery,

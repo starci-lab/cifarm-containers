@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
-import { bullData, BullQueueName, BullService } from "@src/bull"
-import { CacheKey, CacheRedisService } from "@src/cache"
-import { DeliveringProductEntity, GameplayPostgreSQLService } from "@src/databases"
+import { bullData, BullQueueName, InjectQueue } from "@src/bull"
+import { CacheKey, InjectCache } from "@src/cache"
+import { DeliveringProductEntity, InjectPostgreSQL } from "@src/databases"
 import { isProduction } from "@src/env"
 import { Queue } from "bullmq"
 import { Cache } from "cache-manager"
@@ -16,18 +16,15 @@ dayjs.extend(utc)
 @Injectable()
 export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
-    private readonly dataSource: DataSource
-    private readonly cacheManager: Cache
-    private readonly deliveryQueue: Queue
+    
 
     constructor(
-        private readonly bullService: BullService,
-        private readonly cacheRedisService: CacheRedisService,
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectQueue(BullQueueName.Delivery) private readonly deliveryQueue: Queue,
+        @InjectCache()
+        private readonly cacheManager: Cache,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
-        this.cacheManager = this.cacheRedisService.getCacheManager()
-        this.deliveryQueue = this.bullService.getQueue()
     }
     
     @Cron("*/1 * * * * *")

@@ -8,6 +8,10 @@ import { EnvModule } from "@src/env"
 import { LeaderElectionModule } from "@src/leader-election"
 import { EnergyModule } from "./energy"
 import { PostgreSQLModule } from "@src/databases"
+import { AnimalModule } from "./animal"
+import { CropModule } from "./crop"
+import { DeliveryModule } from "./delivery"
+import { CacheModule } from "@src/cache"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -15,14 +19,16 @@ import { PostgreSQLModule } from "@src/databases"
         BullModule.forRoot(),
         PostgreSQLModule.forRoot(),
         EventEmitterModule.forRoot(),
+        CacheModule.register({
+            isGlobal: true
+        }),
         //register here for global access
         LeaderElectionModule.forRoot({
             leaseName: "cron-scheduler-leader-election",
-            logAtLevel: "debug",
         }),
-        // CropModule,
-        // AnimalModule,
-        // DeliveryModule,
+        CropModule,
+        AnimalModule,
+        DeliveryModule,
         EnergyModule
     ]
 })

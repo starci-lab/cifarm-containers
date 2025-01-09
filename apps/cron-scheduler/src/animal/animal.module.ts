@@ -5,7 +5,7 @@ import { AnimalService } from "./animal.service"
 @Module({
     imports: [
         BullModule.registerQueue({
-            queueNames: BullQueueName.Animal
+            queueName: BullQueueName.Animal
         })
     ],
     providers: [AnimalService]

@@ -1,44 +1,41 @@
-import { InjectQueue } from "@nestjs/bullmq"
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
-import { Queue } from "bullmq"
-import { DataSource, Not } from "typeorm"
-import { v4 } from "uuid"
+import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
     Collection,
     CollectionEntity,
     CropCurrentState,
     CropGrowthLastSchedule,
-    GameplayPostgreSQLService,
+    InjectPostgreSQL,
     SeedGrowthInfoEntity,
     SpeedUpData,
     TempEntity,
     TempId
 } from "@src/databases"
-import { CropJobData } from "./crop.dto"
+import { LeaderElectionService } from "@src/leader-election"
+import { Queue } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
-import { LeaderElectionService } from "@src/leader-election"
-import { bullData, BullQueueName } from "@src/bull"
+import { DataSource, Not } from "typeorm"
+import { v4 } from "uuid"
+import { CropJobData } from "./crop.dto"
 
 dayjs.extend(utc)
 
 @Injectable()
 export class CropService {
     private readonly logger = new Logger(CropService.name)
-    private readonly dataSource: DataSource
     constructor(
-        @InjectQueue(bullData[BullQueueName.Crop].name) private readonly cropQueue: Queue,
-        private readonly gameplayPostgreSqlService: GameplayPostgreSQLService,
+        @InjectQueue(BullQueueName.Crop) private readonly cropQueue: Queue,
+        @InjectPostgreSQL()
+        private readonly dataSource: DataSource,
         private readonly leaderElectionService: LeaderElectionService
     ) {
-        this.dataSource = this.gameplayPostgreSqlService.getDataSource()
     }
 
     @Cron("*/1 * * * * *")
     async handle() {
         if (!this.leaderElectionService.isLeaderInstance()) return
-        this.logger.verbose("Checking for crops that need to be grown")
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

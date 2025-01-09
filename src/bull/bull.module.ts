@@ -11,7 +11,7 @@ import { QueueOptionsFactory } from "./queue-options.factory"
 export class BullModule extends ConfigurableModuleClass {
     // register the queue
     public static registerQueue(options: RegisterQueueOptions = {}): DynamicModule {
-        const queueName = options.queueNames || BullQueueName.Crop
+        const queueName = options.queueName || BullQueueName.Crop
         // register the queue
         const registerQueueDynamicModule = NestBullModule.registerQueue({
             name: bullData[queueName].name,
