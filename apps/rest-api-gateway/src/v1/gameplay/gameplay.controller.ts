@@ -104,7 +104,7 @@ export class GameplayController implements OnModuleInit {
 
     constructor(
         @InjectGrpc()
-        private clientGrpc: ClientGrpc
+        private readonly clientGrpc: ClientGrpc
     ) {
     }
 

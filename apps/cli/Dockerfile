@@ -27,10 +27,8 @@ WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/dist/apps/cli .
 
 # Install only production dependencies
-RUN npm i --production
-
-# Add the shebang line to the main.js file
-RUN echo "#!/usr/bin/env node" | cat - main.js > temp && mv temp main.js \
+RUN npm i --production \
+&& echo "#!/usr/bin/env node" | cat - main.js > temp && mv temp main.js \
 && chmod +x main.js \
 && npm install -g . \
 && mkdir db \

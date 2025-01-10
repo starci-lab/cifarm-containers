@@ -5,8 +5,7 @@ import { Network, SupportedChainKey } from "@src/blockchain"
 import {
     GameplayPostgreSQLModule,
     InventoryEntity,
-    PlacedItemEntity,
-    UserEntity,
+    PlacedItemEntity
 } from "@src/databases"
 import { EnvModule } from "@src/env"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
