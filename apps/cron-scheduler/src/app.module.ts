@@ -23,7 +23,7 @@ import { CacheModule } from "@src/cache"
             isGlobal: true
         }),
         //register here for global access
-        LeaderElectionModule.forRoot({
+        LeaderElectionModule.register({
             leaseName: "cron-scheduler-leader-election",
         }),
         CropModule,

@@ -3,15 +3,22 @@ import { APP_INTERCEPTOR } from "@nestjs/core"
 import { EnvModule } from "@src/env"
 import { JwtModule } from "@src/jwt"
 import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
-import { AppModuleV1 } from "./v1"
-import { AppModuleV2 } from "./v2"
+import { AppV1Module } from "./v1"
+import { AppV2Module } from "./v2"
+import { GrpcModule, GrpcServiceName } from "@src/grpc"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
-        JwtModule,
-        AppModuleV1,
-        AppModuleV2
+        JwtModule.register({
+            isGlobal: true
+        }),
+        GrpcModule.register({
+            isGlobal: true,
+            name: GrpcServiceName.Gameplay
+        }),
+        AppV1Module,
+        AppV2Module,
     ],
     controllers: [],
     providers: [

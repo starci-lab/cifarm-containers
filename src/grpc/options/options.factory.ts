@@ -17,7 +17,7 @@ export class GrpcOptionsFactory {
         private readonly options: GrpcOptionsOptions
     ) {
         this.grpcServiceName = options.options.name ?? GrpcServiceName.Gameplay
-        this.url = grpcUrlMap()[this.grpcServiceName]
+        this.url = grpcUrlMap(options.useLoopbackAddress)[this.grpcServiceName]
         this.package = grpcData[this.grpcServiceName].package
         this.protoPath = grpcData[this.grpcServiceName].protoPath
     }
@@ -29,4 +29,8 @@ export class GrpcOptionsFactory {
             protoPath: this.protoPath
         }
     }
+}
+
+export interface CreateGrpcConfigParams {
+    useLoopbackAddress?: boolean
 }

@@ -18,6 +18,7 @@ import { AuthModule } from "./auth"
 import { GameplayModule } from "@src/gameplay"
 import { BlockchainModule } from "@src/blockchain"
 import { JwtModule } from "@src/jwt"
+import { GrpcOptionsModule, GrpcServiceName } from "@src/grpc"
 
 @Module({
     imports: [
@@ -53,6 +54,13 @@ import { JwtModule } from "@src/jwt"
         ProfileModule,
         ShopModule,
         UpgradeModule,
+
+        GrpcOptionsModule.register({
+            options: {
+                name: GrpcServiceName.Gameplay
+            },
+            useLoopbackAddress: true
+        })
     ],
     providers: [
         {

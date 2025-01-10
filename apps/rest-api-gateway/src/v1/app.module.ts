@@ -4,6 +4,6 @@ import { GameplayModule } from "./gameplay"
 @Module({
     imports: [GameplayModule],
     providers: [],
-    exports: []
+    exports: [GameplayModule]
 })
-export class AppModuleV1 {}
+export class AppV1Module {}

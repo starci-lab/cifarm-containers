@@ -1,10 +1,10 @@
-import { VersioningType } from "@nestjs/common"
 import { NestFactory } from "@nestjs/core"
-import { DocumentBuilder, SwaggerCustomOptions, SwaggerModule } from "@nestjs/swagger"
 import { AppModule } from "./app.module"
-import { GameplayModule as GameplayModuleV1 } from "./v1"
 import { envConfig } from "@src/env"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
+import { VersioningType } from "@nestjs/common"
+import { DocumentBuilder, SwaggerModule, SwaggerCustomOptions } from "@nestjs/swagger"
+import { GameplayModule as GameplayV1Module } from "./v1"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -50,7 +50,7 @@ const bootstrap = async () => {
         .build()
 
     const documentV1 = SwaggerModule.createDocument(app, configV1, {
-        include: [GameplayModuleV1],
+        include: [GameplayV1Module],
     })
 
     SwaggerModule.setup("/v1", app, documentV1, {
