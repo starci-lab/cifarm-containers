@@ -15,6 +15,7 @@ const bootstrapHealthCheck = async () => {
             HealthCheckDependency.GameplayPostgreSQL,
         ]
     }))
+    console.log(Number.parseInt(process.env.CRON_WORKER_HEALTH_CHECK_PORT))
     await app.listen(envConfig().containers[Container.CronWorker].healthCheckPort)
 }
 bootstrap().then(bootstrapHealthCheck)

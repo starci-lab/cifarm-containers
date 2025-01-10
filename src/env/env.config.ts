@@ -33,30 +33,39 @@ export const envConfig = () => ({
     containers: {
         [Container.RestApiGateway]: {
             host: process.env.REST_API_GATEWAY_HOST ?? LOCALHOST,
-            port: Number.parseInt(process.env.REST_API_GATEWAY_PORT) ?? DEFAULT_PORT,
-            healthCheckPort:
-                Number.parseInt(process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT) ??
-                DEFAULT_HEALTH_PORT
+            port: process.env.REST_API_GATEWAY_PORT
+                ? Number.parseInt(process.env.REST_API_GATEWAY_PORT)
+                : DEFAULT_PORT,
+            healthCheckPort: process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT)
+                : DEFAULT_HEALTH_PORT
         },
         [Container.WebsocketNode]: {
             host: process.env.WEBSOCKET_NODE_HOST ?? LOCALHOST,
-            port: Number.parseInt(process.env.WEBSOCKET_NODE_PORT) ?? DEFAULT_PORT,
-            healthCheckPort:
-                Number.parseInt(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            port: process.env.WEBSOCKET_NODE_PORT
+                ? Number.parseInt(process.env.WEBSOCKET_NODE_PORT)
+                : DEFAULT_PORT,
+            healthCheckPort: process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT)
+                : DEFAULT_HEALTH_PORT
         },
         [Container.GameplayService]: {
             host: process.env.GAMEPLAY_SERVICE_HOST ?? LOCALHOST,
-            port: Number.parseInt(process.env.GAMEPLAY_SERVICE_PORT) ?? DEFAULT_PORT,
-            healthCheckPort:
-                Number.parseInt(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT) ??
-                DEFAULT_HEALTH_PORT
+            port: process.env.GAMEPLAY_SERVICE_PORT
+                ? Number.parseInt(process.env.GAMEPLAY_SERVICE_PORT)
+                : DEFAULT_PORT,
+            healthCheckPort: process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT)
+                : DEFAULT_HEALTH_PORT
         },
         [Container.GraphQLGateway]: {
             host: process.env.GRAPHQL_GATEWAY_HOST ?? LOCALHOST,
-            port: Number.parseInt(process.env.GRAPHQL_GATEWAY_PORT) ?? DEFAULT_PORT,
-            healthCheckPort:
-                Number.parseInt(process.env.GRAPHQL_GATEWAY_HEALTH_CHECK_PORT) ??
-                DEFAULT_HEALTH_PORT
+            port: process.env.GRAPHQL_GATEWAY_PORT
+                ? Number.parseInt(process.env.GRAPHQL_GATEWAY_PORT)
+                : DEFAULT_PORT,
+            healthCheckPort: process.env.GRAPHQL_GATEWAY_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.GRAPHQL_GATEWAY_HEALTH_CHECK_PORT)
+                : DEFAULT_HEALTH_PORT
         },
         [Container.GameplaySubgraph]: {
             host: process.env.GAMEPLAY_SUBGRAPH_HOST ?? LOCALHOST,
@@ -67,18 +76,21 @@ export const envConfig = () => ({
         },
         [Container.CronWorker]: {
             host: process.env.CRON_WORKER_HOST ?? LOCALHOST,
-            healthCheckPort:
-                Number.parseInt(process.env.CRON_WORKER_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort: process.env.CRON_WORKER_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.CRON_WORKER_HEALTH_CHECK_PORT)
+                : DEFAULT_HEALTH_PORT
         },
         [Container.CronScheduler]: {
             host: process.env.CRON_SCHEDULER_HOST ?? LOCALHOST,
-            healthCheckPort:
-                Number.parseInt(process.env.CRON_SCHEDULER_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort: process.env.CRON_SCHEDULER_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.CRON_SCHEDULER_HEALTH_CHECK_PORT)
+                : DEFAULT_HEALTH_PORT
         },
         [Container.TelegramBot]: {
             host: process.env.TELEGRAM_BOT_HOST ?? LOCALHOST,
-            healthCheckPort:
-                Number.parseInt(process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT) ?? DEFAULT_HEALTH_PORT
+            healthCheckPort: process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT)
+                : DEFAULT_HEALTH_PORT
         }
     },
     databases: {

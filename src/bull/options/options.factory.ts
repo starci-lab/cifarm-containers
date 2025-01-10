@@ -11,12 +11,13 @@ export class QueueOptionsFactory {
     ) {}
 
     createQueueOptions() : QueueOptions {
-        console.log("called")
-        if (!redisClusterEnabled()) {
+        const clusterEnabled = redisClusterEnabled(RedisType.Job)
+        if (!clusterEnabled) {
             const connection = new Redis({
                 host: envConfig().databases.redis[RedisType.Job].host,
                 port: Number(envConfig().databases.redis[RedisType.Job].port),
                 password: envConfig().databases.redis[RedisType.Job].password || undefined,
+                maxRetriesPerRequest: null
             })
             return {
                 connection
