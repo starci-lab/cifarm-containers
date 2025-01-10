@@ -8,7 +8,7 @@ import { BroadcastGateway } from "./broadcast.gateway"
     imports: [
         KafkaModule.register({
             groupId: KafkaGroupId.PlacedItemsBroadcast,
-            producerOnly: true,
+            producerOnlyMode: true,
         }),
         JwtModule,
     ],

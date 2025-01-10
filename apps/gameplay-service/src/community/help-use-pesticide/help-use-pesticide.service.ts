@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
-import { KafkaPattern } from "@src/brokers"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
 import {
     Activities,
     CropCurrentState,
@@ -21,7 +21,6 @@ import {
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HelpUsePesticideRequest, HelpUsePesticideResponse } from "./help-use-pesticide.dto"
-import { InjectKafka } from "@src/brokers"
 
 @Injectable()
 export class HelpUsePesticideService {

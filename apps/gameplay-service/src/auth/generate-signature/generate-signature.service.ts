@@ -8,10 +8,6 @@ import {
     defaultChainKey,
     defaultNetwork,
     Platform,
-} from "@src/blockchain"
-import { ChainKeyNotFoundException } from "@src/exceptions"
-import { defaultBotType } from "@src/guards"
-import {
     AlgorandAuthService,
     AptosAuthService,
     EvmAuthService,
@@ -19,6 +15,8 @@ import {
     PolkadotAuthService,
     SolanaAuthService
 } from "@src/blockchain"
+import { ChainKeyNotFoundException } from "@src/exceptions"
+import { defaultBotType } from "@src/guards"
 import { RequestMessageService } from "../request-message"
 import { encode } from "bs58"
 import { envConfig, SupportedChainKey } from "@src/env"

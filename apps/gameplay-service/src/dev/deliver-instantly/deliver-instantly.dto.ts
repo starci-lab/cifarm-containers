@@ -1,2 +1,6 @@
-export class DeliverInstantlyRequest {}
-export class DeliverInstantlyResponse {}
+export class DeliverInstantlyRequest {
+    // Empty
+}
+export class DeliverInstantlyResponse {
+    // Empty
+}

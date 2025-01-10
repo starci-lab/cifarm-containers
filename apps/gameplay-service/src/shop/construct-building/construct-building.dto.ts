@@ -16,4 +16,6 @@ export class ConstructBuildingRequest extends UserIdRequest {
         position: Position
 }
 
-export class ConstructBuildingResponse {}
+export class ConstructBuildingResponse {
+    // Empty
+}

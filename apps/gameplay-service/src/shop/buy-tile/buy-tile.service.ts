@@ -25,7 +25,7 @@ import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
 export class BuyTileService {
     private readonly logger = new Logger(BuyTileService.name)
 
-    private tileOrder = [TileId.BasicTile1, TileId.BasicTile2, TileId.BasicTile3]
+    private readonly tileOrder = [TileId.BasicTile1, TileId.BasicTile2, TileId.BasicTile3]
 
     constructor(
         @InjectPostgreSQL()

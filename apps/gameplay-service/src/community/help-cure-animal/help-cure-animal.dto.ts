@@ -8,4 +8,6 @@ export class HelpCureAnimalRequest extends NeighborAndUserIdRequest {
         placedItemAnimalId: string
 }
 
-export class HelpCureAnimalResponse {}
+export class HelpCureAnimalResponse {
+    // Empty
+}

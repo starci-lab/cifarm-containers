@@ -8,4 +8,6 @@ export class HarvestCropRequest extends UserIdRequest {
         placedItemTileId: string
 }
 
-export class HarvestCropResponse {}
+export class HarvestCropResponse {
+    // Empty
+}

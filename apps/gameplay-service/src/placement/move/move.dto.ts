@@ -16,4 +16,6 @@ export class MoveRequest extends UserIdRequest {
     position: Position
 }
 
-export class MoveResponse {}
+export class MoveResponse {
+    // Empty
+}

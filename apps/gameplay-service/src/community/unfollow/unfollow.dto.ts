@@ -6,4 +6,6 @@ export class UnfollowRequest extends UserIdRequest {
         unfollowedUserId: string
 }
 
-export class UnfollowResponse {}
+export class UnfollowResponse {
+    // Empty
+}

@@ -8,4 +8,6 @@ export class UseFertilizerRequest extends UserIdRequest {
         placedItemTileId: string
 }
 
-export class UseFertilizerResponse {}
+export class UseFertilizerResponse {
+    // Empty
+}

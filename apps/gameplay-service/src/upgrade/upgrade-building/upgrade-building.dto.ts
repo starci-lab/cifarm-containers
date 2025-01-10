@@ -9,4 +9,6 @@ export class UpgradeBuildingRequest extends UserIdRequest {
 
 }
 
-export class UpgradeBuildingResponse {}
+export class UpgradeBuildingResponse {
+    // Empty
+}

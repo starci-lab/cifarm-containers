@@ -18,4 +18,6 @@ export class BuySuppliesRequest extends UserIdRequest {
         quantity: number
 }
 
-export class BuySuppliesResponse {}
+export class BuySuppliesResponse {
+    // Empty
+}

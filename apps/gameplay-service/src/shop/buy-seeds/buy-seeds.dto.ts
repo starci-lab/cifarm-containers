@@ -16,4 +16,6 @@ export class BuySeedsRequest extends UserIdRequest {
         quantity: number
 }
 
-export class BuySeedsResponse {}
+export class BuySeedsResponse {
+    // Empty
+}

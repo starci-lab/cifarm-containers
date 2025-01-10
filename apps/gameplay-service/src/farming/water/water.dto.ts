@@ -8,4 +8,6 @@ export class WaterRequest extends UserIdRequest {
         placedItemTileId: string
 }
 
-export class WaterResponse {}
+export class WaterResponse {
+    // Empty
+}

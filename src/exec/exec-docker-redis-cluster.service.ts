@@ -4,20 +4,20 @@ import {
     DockerContainerData,
     DockerContainerProfileRaw,
     DockerContainerRaw,
-    ExecOptions
+    ExecOptions,
+    DockerRedisClusterOptions
 } from "./exec.types"
-import { DockerRedisClusterOptions } from "./exec.types"
 import { ExecService } from "./exec.service"
 import { NatMap } from "ioredis"
 import { envConfig, LOCALHOST, RedisType } from "@src/env"
 
 @Injectable()
 export class ExecDockerRedisClusterService {
-    private options: DockerRedisClusterOptions
-    private networkName: string
+    private readonly options: DockerRedisClusterOptions
+    private readonly networkName: string
     constructor(
         private readonly execService: ExecService,
-        @Inject(MODULE_OPTIONS_TOKEN) private execOptions: ExecOptions
+        @Inject(MODULE_OPTIONS_TOKEN) private readonly execOptions: ExecOptions
     ) {
         this.options = this.execOptions?.docker?.redisCluster
         this.networkName =

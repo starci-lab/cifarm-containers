@@ -8,23 +8,23 @@ import {
     CropCurrentState,
     CropEntity,
     CropId,
-    GameplayPostgreSQLModule,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
     PlacedItemType,
+    PostgreSQLModule,
     ProductType,
     SeedGrowthInfoEntity,
     TileId,
-    UserEntity,
+    UserEntity
 } from "@src/databases"
+import { MODULE_OPTIONS_TOKEN } from "@src/databases/postgresql/postgresql.module-definition"
+import { EnvModule, Network, SupportedChainKey } from "@src/env"
 import { grpcData, GrpcModule, GrpcServiceName } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
 import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
-import { Network, SupportedChainKey } from "@src/blockchain"
-import { EnvModule } from "@src/env"
 
 describe("Thief crop flow", () => {
     let user: UserLike
@@ -41,8 +41,7 @@ describe("Thief crop flow", () => {
         const module = await Test.createTestingModule({
             imports: [
                 EnvModule.forRoot(),
-                GameplayPostgreSQLModule.forRoot(),
-                GameplayPostgreSQLModule.forFeature(),
+                PostgreSQLModule.forRoot(),
                 GrpcModule.register({
                     name: GrpcServiceName.Gameplay,
                 }),
@@ -50,7 +49,8 @@ describe("Thief crop flow", () => {
             ],
         }).compile()
 
-        dataSource = module.get<DataSource>(DataSource)
+        dataSource = module.get<DataSource>(MODULE_OPTIONS_TOKEN)
+        console.log(dataSource)
         jwtService = module.get<JwtService>(JwtService)
         const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcServiceName.Gameplay].name)
         gameplayService = clientGrpc.getService<IGameplayService>(grpcData[GrpcServiceName.Gameplay].service)

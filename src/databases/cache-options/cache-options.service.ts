@@ -12,8 +12,8 @@ import { NatMap } from "ioredis"
 
 @Injectable()
 export class CacheOptionsService {
-    private baseConfig: BaseCacheOptions
-    private useCluster: boolean
+    private readonly baseConfig: BaseCacheOptions
+    private readonly useCluster: boolean
 
     constructor(private readonly execDockerRedisClusterService: ExecDockerRedisClusterService) {
         // Determine if Redis cluster is enabled

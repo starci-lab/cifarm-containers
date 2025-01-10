@@ -10,13 +10,13 @@ import {
 import { erc721Abi } from "../../abis"
 import { PlatformNotFoundException } from "@src/exceptions"
 import { MulticallProvider } from "@ethers-ext/provider-multicall"
-import { AlgorandMetadata, NearNft, NftData } from "../common"
+import { AlgorandMetadata, NearNft, NftData, IpfsService } from "../common"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
 import { fetchAllDigitalAssetByOwner } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey, isSome } from "@metaplex-foundation/umi"
 import { Atomic } from "@src/common"
-import { IpfsService } from "../common"
-import { blockchainConfig, chainKeyToPlatform, Network, Platform } from "../../blockchain.config"
+import { blockchainConfig, chainKeyToPlatform, Platform } from "../../blockchain.config"
+import { Network } from "@src/env"
 
 export interface GetNftsByOwnerAddressParams {
   accountAddress: string;
@@ -160,6 +160,7 @@ export const _getSolanaNftsByOwnerAddress = async (
             })(),
         )
     }
+    await Promise.all(promises)
     return {
         records,
         count: nfts.length,

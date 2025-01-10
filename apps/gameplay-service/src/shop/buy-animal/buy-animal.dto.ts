@@ -20,4 +20,6 @@ export class BuyAnimalRequest extends UserIdRequest {
         position: Position
 }
 
-export class BuyAnimalResponse {}
+export class BuyAnimalResponse {
+    // Empty
+}

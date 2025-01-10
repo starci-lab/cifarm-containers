@@ -8,4 +8,6 @@ export class CollectAnimalProductRequest extends UserIdRequest {
         placedItemAnimalId: string
 }
 
-export class CollectAnimalProductResponse {}
+export class CollectAnimalProductResponse {
+    // Empty
+}

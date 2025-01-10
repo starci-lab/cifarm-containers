@@ -11,4 +11,6 @@ export class BuyTileRequest extends UserIdRequest {
         position: Position
 }
 
-export class BuyTileResponse {}
+export class BuyTileResponse {
+    // Empty
+}

@@ -6,4 +6,5 @@ export class FollowRequest extends UserIdRequest {
         followedUserId: string
 }
 
-export class FollowResponse {}
+export abstract class FollowResponse {
+}
