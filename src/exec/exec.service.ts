@@ -28,8 +28,9 @@ export class ExecService {
                 },
                 (error, stdout, stderr) => {
                     if (error) {
-                        this.logger.error(`Error: ${stderr || error.message}`)
-                        reject(`Error: ${stderr || error.message}`)
+                        const errorMessage = `Error: ${stderr || error.message}`
+                        this.logger.error(errorMessage)
+                        reject(new Error(errorMessage))
                     }
                     resolve(stdout)
                 }
