@@ -26,7 +26,7 @@ import { KafkaOptionsFactory } from "@src/brokers"
 export class HealthCheckCoreService {
     private readonly logger = new Logger(HealthCheckCoreService.name)
     // Redis cluster services
-    private execDockerRedisClusterServices: Partial<
+    private readonly execDockerRedisClusterServices: Partial<
         Record<RedisType, ExecDockerRedisClusterService>
     > = {}
     // Kafka service

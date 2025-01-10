@@ -17,13 +17,13 @@ export class LeaderElectionService implements OnApplicationBootstrap {
 
     private kubeClient: CoordinationV1Api
     private watch: Watch
-    private leaseName: string
-    private namespace: string
-    private renewalInterval: number
-    private durationInSeconds: number
+    private readonly leaseName: string
+    private readonly namespace: string
+    private readonly renewalInterval: number
+    private readonly durationInSeconds: number
     private isLeader = false
     private leaseRenewalTimeout: NodeJS.Timeout | null = null
-    private awaitLeadership: boolean
+    private readonly awaitLeadership: boolean
 
     LEADER_IDENTITY = `nestjs-${envConfig().kubernetes.hostname}`  // Unique identity for the leader
 
@@ -32,7 +32,7 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     }
 
     constructor(
-        @Inject(MODULE_OPTIONS_TOKEN) private options: LeaderElectionOptions,
+        @Inject(MODULE_OPTIONS_TOKEN) private readonly options: LeaderElectionOptions,
         private readonly eventEmitter: EventEmitter2
     ) {
         // Set up the lease name with a fallback default value

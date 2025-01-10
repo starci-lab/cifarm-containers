@@ -40,7 +40,7 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
     }
 
     @WebSocketServer()
-    private server: Server
+    private readonly server: Server
 
     afterInit() {
         this.logger.log(`Initialized gateway with namespace: ${NAMESPACE}`)

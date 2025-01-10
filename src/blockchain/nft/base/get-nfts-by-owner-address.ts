@@ -16,7 +16,8 @@ import { fetchAllDigitalAssetByOwner } from "@metaplex-foundation/mpl-token-meta
 import { publicKey, isSome } from "@metaplex-foundation/umi"
 import { Atomic } from "@src/common"
 import { IpfsService } from "../common"
-import { blockchainConfig, chainKeyToPlatform, Network, Platform } from "../../blockchain.config"
+import { blockchainConfig, chainKeyToPlatform, Platform } from "../../blockchain.config"
+import { Network } from "@src/env"
 
 export interface GetNftsByOwnerAddressParams {
   accountAddress: string;
@@ -160,6 +161,7 @@ export const _getSolanaNftsByOwnerAddress = async (
             })(),
         )
     }
+    await Promise.all(promises)
     return {
         records,
         count: nfts.length,

@@ -9,7 +9,7 @@ export class DebugRedisClusterService implements OnModuleInit {
     private readonly logger = new Logger(DebugRedisClusterService.name)
 
     private connection: Cluster
-    private type: RedisType
+    private readonly type: RedisType
     constructor(
         private readonly execDockerRedisClusterService: ExecDockerRedisClusterService,
         @Inject(MODULE_OPTIONS_TOKEN)

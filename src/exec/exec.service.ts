@@ -6,12 +6,12 @@ import { ExecOptions } from "./exec.types"
 
 @Injectable()
 export class ExecService {
-    private logger = new Logger(ExecService.name)
-    private shell: "powershell.exe" | "/bin/bash"
+    private readonly logger = new Logger(ExecService.name)
+    private readonly shell: "powershell.exe" | "/bin/bash"
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
-        private options: ExecOptions
+        private readonly options: ExecOptions
     ) {
         const platform = os.platform()
         this.shell = platform === "win32" ? "powershell.exe" : "/bin/bash"

@@ -8,7 +8,7 @@ import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } 
 
 @Injectable()
 export class SubgraphOptionsFactory {
-    constructor(private keyvService: KeyvService) { }
+    constructor(private readonly keyvService: KeyvService) { }
 
     createSubgraphOptions(): Omit<ApolloDriverConfig, "driver"> {
         return {

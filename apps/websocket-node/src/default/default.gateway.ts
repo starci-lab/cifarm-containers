@@ -41,7 +41,7 @@ export class DefaultGateway implements OnGatewayConnection, OnGatewayDisconnect,
     }
 
     @WebSocketServer()
-    private server: Server
+    private readonly server: Server
 
     afterInit() {
         // Initialize the admin UI for the namespace

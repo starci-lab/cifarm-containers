@@ -4,7 +4,7 @@ import chalk from "chalk"
 @Injectable()
 export class CliLogger implements LoggerService {
 
-    private logLevels: Map<string, { color: chalk.Chalk, emoji: string, logMethod: (...data: string[]) => void }> = new Map()
+    private readonly logLevels: Map<string, { color: chalk.Chalk, emoji: string, logMethod: (...data: string[]) => void }> = new Map()
 
     constructor() {
         // Initialize log level map
@@ -19,7 +19,8 @@ export class CliLogger implements LoggerService {
     private printLog(level: string, name: string, message: string, extra?: string) {
         const logLevel = this.logLevels.get(level)
         if (logLevel) {
-            const formattedMessage = `${logLevel.color(`[${name}]`)} ${message}`
+            const formattedName  = `[${name}]`
+            const formattedMessage = `${logLevel.color(formattedName)} ${message}`
             const formattedExtra = extra ? `${chalk.gray(extra)}` : ""   
             logLevel.logMethod(formattedMessage, formattedExtra ? ("\n" + formattedExtra) : "")    
         }
