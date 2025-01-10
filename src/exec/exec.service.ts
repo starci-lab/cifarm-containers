@@ -2,7 +2,6 @@ import { Inject, Injectable, Logger } from "@nestjs/common"
 import { $ } from "execa"
 import { MODULE_OPTIONS_TOKEN } from "./exec.module-definition"
 import { ExecOptions } from "./exec.types"
-import os from "os"
 
 @Injectable()
 export class ExecService {
@@ -13,7 +12,7 @@ export class ExecService {
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: ExecOptions
     ) {
-        const platform = os.platform()
+        const platform = process.platform
         this.shell = platform === "win32" ? "powershell.exe" : "/bin/bash"
     }
     public async exec(command: string, args: Array<string> = []): Promise<string> {
