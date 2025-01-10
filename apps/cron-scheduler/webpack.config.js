@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const path = require("path")
 const nodeExternals = require("webpack-node-externals")
 const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin")
@@ -14,6 +15,9 @@ const basePackage = {
         node: ">= 14",
     },
     dependencies: {
+        "pg": "8.13.1",
+        "ioredis": "^5.4.2",
+        "@nestjs/platform-express": "^10.0.0",
     }
 }
 
