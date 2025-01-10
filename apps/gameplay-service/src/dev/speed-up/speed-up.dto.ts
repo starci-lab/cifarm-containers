@@ -7,5 +7,5 @@ export class SpeedUpRequest {
         time: number
 }
 
-export abstract class SpeedUpResponse {
+export class SpeedUpResponse {
 }
