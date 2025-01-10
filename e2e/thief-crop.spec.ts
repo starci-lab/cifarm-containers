@@ -8,8 +8,6 @@ import {
     CropCurrentState,
     CropEntity,
     CropId,
-    getPostgreSqlDataSourceName,
-    InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
@@ -18,10 +16,10 @@ import {
     ProductType,
     SeedGrowthInfoEntity,
     TileId,
-    UserEntity,
+    UserEntity
 } from "@src/databases"
 import { MODULE_OPTIONS_TOKEN } from "@src/databases/postgresql/postgresql.module-definition"
-import { EnvModule, Network, PostgreSQLContext, PostgreSQLDatabase, SupportedChainKey } from "@src/env"
+import { EnvModule, Network, SupportedChainKey } from "@src/env"
 import { grpcData, GrpcModule, GrpcServiceName } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { lastValueFrom } from "rxjs"
