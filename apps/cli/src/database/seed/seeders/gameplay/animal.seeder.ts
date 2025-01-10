@@ -14,7 +14,7 @@ import { Seeder } from "typeorm-extension"
 
 export class AnimalSeeder implements Seeder {
     private readonly logger = new Logger(AnimalSeeder.name)
-    track = false
+    track = true
     public async run(dataSource: DataSource): Promise<void> {
         this.logger.debug("Seeding animals...")
         await dataSource.manager.insert(AnimalEntity, [

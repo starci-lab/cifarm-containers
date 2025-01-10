@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { ConfigurableModuleClass, OPTIONS_TYPE } from "./Subgraph-options.module-definition"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./options.module-definition"
 import { SubgraphOptionsFactory } from "./options.factory"
 import { KeyvModule } from "@src/cache"
 

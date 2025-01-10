@@ -6,8 +6,6 @@ import { v4 } from "uuid"
 
 @Injectable()
 export class KafkaOptionsFactory {
-    constructor( ) { }
-
     createKafkaConfig() : KafkaConfig {
         return {
             clientId: v4(),
@@ -17,7 +15,7 @@ export class KafkaOptionsFactory {
             sasl: envConfig().brokers[Brokers.Kafka].sasl.enabled && {
                 mechanism: "scram-sha-256",
                 username: envConfig().brokers[Brokers.Kafka].sasl.username,
-                password: envConfig().brokers[Brokers.Kafka].sasl.password
+                password: envConfig().brokers[Brokers.Kafka].sasl.password,
             }
         }
     }

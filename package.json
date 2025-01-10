@@ -92,6 +92,7 @@
     "graphql": "^16.9.0",
     "graphql-type-json": "^0.3.2",
     "ioredis": "^5.4.2",
+    "jks-js": "^1.1.4",
     "kafkajs": "^2.2.4",
     "keyv": "^5.2.3",
     "lodash.sortby": "4.7.0",

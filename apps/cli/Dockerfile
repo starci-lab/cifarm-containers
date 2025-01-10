@@ -30,9 +30,7 @@ COPY --from=build /usr/src/app/dist/apps/cli .
 RUN npm i --production \
 && echo "#!/usr/bin/env node" | cat - main.js > temp && mv temp main.js \
 && chmod +x main.js \
-&& npm install -g . \
-&& mkdir db \
-&& chown node:node db \
+&& npm install -g .
 
 # # Run as non-root user
 USER node
