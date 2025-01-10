@@ -30,15 +30,11 @@ COPY --from=build /usr/src/app/dist/apps/cli .
 RUN npm i --production
 
 # Add the shebang line to the main.js file
-RUN echo "#!/usr/bin/env node" | cat - main.js > temp && mv temp main.js
-# Make the main.js file executable
-RUN chmod +x main.js
-# Add the main.js file to the PATH
-RUN npm install -g .
-# Make a directory for the database
-RUN mkdir db
-# Allow the node user to write to the database directory
-RUN chown node:node db
+RUN echo "#!/usr/bin/env node" | cat - main.js > temp && mv temp main.js \
+&& chmod +x main.js \
+&& npm install -g . \
+&& mkdir db \
+&& chown node:node db \
 
 # # Run as non-root user
 USER node

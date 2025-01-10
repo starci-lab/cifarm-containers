@@ -1,35 +1,34 @@
+import { computeRaw, TransactionResult } from "@src/common"
+import { envConfig, Network, SupportedChainKey } from "@src/env"
+import { blockchainConfig, chainKeyToPlatform, Platform } from "../../blockchain.config"
 import { nearClient, nearKeyPair, nearKeyStore } from "../../rpcs"
-import { computeRaw } from "@src/common"
-import { TransactionResult } from "@src/common"
 import { NearNftMetadata } from "../common"
-import { blockchainConfig, chainKeyToPlatform, Network, Platform, SupportedChainKey } from "../../blockchain.config"
-import { envConfig } from "@src/env"
 
 export interface MintNftParams {
-  //specify other or not, since some blockchains may not require it
-  tokenId?: string;
-  nftCollectionKey: string;
-  //override default values
-  imageUrl?: string;
-  //serialized properties
-  properties?: string;
-  //to
-  toAddress: string;
-  //network
-  network: Network;
-  //chainKey
-  chainKey: SupportedChainKey;
-  //title, otherwise default
-  title?: string;
-  //description, otherwise empty
-  description?: string;
+    //specify other or not, since some blockchains may not require it
+    tokenId?: string
+    nftCollectionKey: string
+    //override default values
+    imageUrl?: string
+    //serialized properties
+    properties?: string
+    //to
+    toAddress: string
+    //network
+    network: Network
+    //chainKey
+    chainKey: SupportedChainKey
+    //title, otherwise default
+    title?: string
+    //description, otherwise empty
+    description?: string
 }
 
 //services from dependency injection
 
 export interface MintNftResult extends TransactionResult {
-  //tokenId
-  tokenId: string;
+    //tokenId
+    tokenId: string
 }
 
 export const _mintNearNft = async ({
@@ -41,10 +40,11 @@ export const _mintNearNft = async ({
     network,
     chainKey,
     title,
-    description,
+    description
 }: MintNftParams): Promise<MintNftResult> => {
     //near configuration
-    const { privateKey, accountId } = envConfig().chainCredentials[SupportedChainKey.Near].nftMinter[network]
+    const { privateKey, accountId } =
+        envConfig().chainCredentials[SupportedChainKey.Near].nftMinter[network]
 
     const keyPair = nearKeyPair(privateKey)
     const storageKey = nearKeyStore({ accountId, network, keyPair })
@@ -54,8 +54,7 @@ export const _mintNearNft = async ({
     const { nftCollections, decimals } = blockchainConfig[chainKey]
     const nftCollectionId = nftCollections[nftCollectionKey][network].collectionId
 
-    const { defaultImageUrl, defaultTitlePrefix } =
-    nftCollections[nftCollectionKey][network]
+    const { defaultImageUrl, defaultTitlePrefix } = nftCollections[nftCollectionKey][network]
 
     const metadata: NearNftMetadata = {
         media: imageUrl || defaultImageUrl,
@@ -63,11 +62,11 @@ export const _mintNearNft = async ({
         starts_at: Date.now().toString(),
         title: title || `${defaultTitlePrefix}${tokenId}`,
         copies: 1,
-        description,
+        description
     }
 
     const {
-        transaction_outcome: { id },
+        transaction_outcome: { id }
     } = await account.functionCall({
         contractId: nftCollectionId,
         methodName: "nft_mint",
@@ -75,21 +74,19 @@ export const _mintNearNft = async ({
             //tokenId
             token_id: tokenId,
             receiver_id: toAddress,
-            token_metadata: metadata,
+            token_metadata: metadata
         },
         //near is special blockchain, so we need to attach some NEAR tokens
-        attachedDeposit: computeRaw(0.1, decimals),
+        attachedDeposit: computeRaw(0.1, decimals)
     })
 
     return {
         tokenId,
-        transactionHash: id,
+        transactionHash: id
     }
 }
 
-export const _mintNft = async (
-    params: MintNftParams,
-) => {
+export const _mintNft = async (params: MintNftParams) => {
     const platform = chainKeyToPlatform(params.chainKey)
     switch (platform) {
     case Platform.Evm: {
