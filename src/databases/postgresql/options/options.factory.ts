@@ -11,9 +11,9 @@ import { PostgreSQLOptionsOptions } from "./options.types"
 
 @Injectable()
 export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
-    private baseOptions: PostgreSQLOptions
-    private database: PostgreSQLDatabase
-    private context: PostgreSQLContext
+    private readonly baseOptions: PostgreSQLOptions
+    private readonly database: PostgreSQLDatabase
+    private readonly context: PostgreSQLContext
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)

@@ -28,7 +28,6 @@ export class EnergyService {
     @Cron("*/1 * * * * *")
     async handle() {
         if (!this.leaderElectionService.isLeaderInstance()) return
-        this.logger.verbose("Checking for Energy that need to be regenrated")
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

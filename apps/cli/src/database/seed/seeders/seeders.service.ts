@@ -24,7 +24,7 @@ import {
 @Injectable()
 export class SeedersService {
     private readonly logger = new Logger(SeedersService.name)
-    private database: PostgreSQLDatabase
+    private readonly database: PostgreSQLDatabase
     private readonly seedTableName: string
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)

@@ -1,11 +1,10 @@
 import { NestFactory } from "@nestjs/core"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { KafkaGroupId } from "@src/brokers"
+import { KafkaGroupId, KafkaOptionsFactory } from "@src/brokers"
 import { Container, envConfig } from "@src/env"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { RedisIoAdapter } from "@src/io"
 import { AppModule } from "./app.module"
-import { KafkaOptionsFactory } from "@src/brokers"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)

@@ -7,10 +7,10 @@ import { grpcUrlMap } from "../grpc.utils"
 
 @Injectable()
 export class GrpcOptionsFactory {
-    private grpcServiceName: GrpcServiceName
-    private url: string
-    private package: string
-    private protoPath: string
+    private readonly grpcServiceName: GrpcServiceName
+    private readonly url: string
+    private readonly package: string
+    private readonly protoPath: string
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
