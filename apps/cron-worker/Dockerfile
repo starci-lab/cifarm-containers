@@ -1,4 +1,4 @@
-#docker build -t cifarm/cron-scheduler -f ./apps/cron-scheduler/Dockerfile . & docker push cifarm/cron-scheduler
+#docker build -t cifarm/cron-worker -f ./apps/cron-worker/Dockerfile . & docker push cifarm/cron-worker
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0
@@ -16,7 +16,7 @@ RUN npm ci
 
 # Copy remaining source code and build the application
 COPY . .
-RUN npx nest build cron-scheduler
+RUN npx nest build cron-worker
 
 # Production Stage (final image)
 FROM node:${NODE_VERSION}-alpine AS production
@@ -24,8 +24,7 @@ FROM node:${NODE_VERSION}-alpine AS production
 WORKDIR /usr/src/app
 
 # Copy only the build output and proto files
-COPY --from=build /usr/src/app/dist/apps/cron-scheduler .
-COPY --from=build /usr/src/app/proto ./proto
+COPY --from=build /usr/src/app/dist/apps/cron-worker .
 
 # Install only production dependencies
 RUN npm i --production

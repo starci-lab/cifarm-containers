@@ -25,7 +25,6 @@ WORKDIR /usr/src/app
 
 # Copy only the build output and proto files
 COPY --from=build /usr/src/app/dist/apps/websocket-node .
-COPY --from=build /usr/src/app/proto ./proto
 
 # Install only production dependencies
 RUN npm i --production
