@@ -17,6 +17,7 @@ import { HealthCheckContainersService } from "./health-check-containers.service"
 import { KafkaOptionsModule } from "@src/brokers"
 import { dataSourcesMap, redisMap } from "./health-check.utils"
 import { HttpModule } from "@nestjs/axios"
+import { HealthCheckDependency } from "./health-check.types"
 
 @Module({})
 export class HealthCheckModule extends ConfigurableModuleClass {
@@ -27,6 +28,21 @@ export class HealthCheckModule extends ConfigurableModuleClass {
             KafkaOptionsModule.register(),
             HttpModule.register({})
         ]
+
+        // if http
+        const httpDependencies: Array<HealthCheckDependency> = [
+            HealthCheckDependency.RestApiGateway,
+            HealthCheckDependency.GameplayService,
+            HealthCheckDependency.GraphQLGateway,
+            HealthCheckDependency.GameplaySubgraph,
+            HealthCheckDependency.CronScheduler,
+            HealthCheckDependency.CronWorker,
+            HealthCheckDependency.WebsocketNode
+        ]
+
+        if (httpDependencies.some((dependency) => options.dependencies.includes(dependency))) {
+            imports.push(HttpModule.register({}))
+        }
 
         // if gameplay postgresql is used
         const postgreSqlDatabases = Object.values(PostgreSQLDatabase)

@@ -24,7 +24,7 @@ const bootstrapHealthCheck = async () => {
             dependencies: [
                 HealthCheckDependency.CacheRedis,
                 HealthCheckDependency.GameplayPostgreSQL,
-                // HealthCheckDependency.Kafka
+                HealthCheckDependency.Kafka
             ]
         })
     )
