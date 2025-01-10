@@ -15,7 +15,7 @@ import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 @SubCommand({ name: "seed", description: "Seed static data into the data source" })
 export class SeedCommand extends CommandRunner {
     private readonly logger = new Logger(SeedCommand.name)
-    private readonly database: PostgreSQLDatabase
+    private database: PostgreSQLDatabase
     private context: PostgreSQLContext
 
     constructor(
