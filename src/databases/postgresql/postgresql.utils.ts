@@ -10,7 +10,7 @@ export const getPostgreSqlDataSourceName = (options: PostgreSQLOptions = {}): st
     return `${context}_${database}`
 }
 
-export const getPostgreSqlToken = (options: PostgreSQLOptions = {}) =>
+export const getPostgreSqlToken = (options: PostgreSQLOptions = {}): string =>
     getDataSourceToken(getPostgreSqlDataSourceName(options)) as string
 
 export const getPostgresEntities = (options: PostgreSQLOptions = {}) => {

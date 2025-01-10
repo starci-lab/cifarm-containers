@@ -9,102 +9,52 @@ import { HealthCheckDependency } from "./health-check.types"
 export class HealthCheckContainersService {
     constructor(
         private readonly http: HttpHealthIndicator
-    ) {
+    ) {}
+
+    // General method for pinging any container
+    private async pingCheckContainer(
+        dependency: HealthCheckDependency,
+        container: Container
+    ): Promise<HealthIndicatorResult> {
+        return await this.http.pingCheck(
+            dependency,
+            getHttpUrl({
+                host: envConfig().containers[container]?.host,
+                port: envConfig().containers[container]?.healthCheckPort,
+                path: HEALTH_CHECK_ENDPOINT
+            }),
+            {
+                timeout: HEALTH_CHECK_TIMEOUT
+            }
+        )
     }
+
+    // Ping checks for specific services
     public async pingCheckGameplayService(): Promise<HealthIndicatorResult> {
-        return await this.http.pingCheck(
-            HealthCheckDependency.GameplayService,
-            getHttpUrl({
-                host: envConfig().containers[Container.GameplayService].host,
-                port: envConfig().containers[Container.GameplayService].healthCheckPort,
-                path: HEALTH_CHECK_ENDPOINT
-            }), {
-                timeout: HEALTH_CHECK_TIMEOUT
-            }
-        )
+        return this.pingCheckContainer(HealthCheckDependency.GameplayService, Container.GameplayService)
     }
 
-    // Ping check for gameplay service
     public async pingCheckGameplaySubgraph(): Promise<HealthIndicatorResult> {
-        return await this.http.pingCheck(
-            HealthCheckDependency.GameplaySubgraph,
-            getHttpUrl({
-                host: envConfig().containers[Container.GameplaySubgraph].host,
-                port: envConfig().containers[Container.GameplaySubgraph].healthCheckPort,
-                path: HEALTH_CHECK_ENDPOINT
-            }), {
-                timeout: HEALTH_CHECK_TIMEOUT
-            }
-        )
+        return this.pingCheckContainer(HealthCheckDependency.GameplaySubgraph, Container.GameplaySubgraph)
     }
 
-    // Ping check for websocket node
     public async pingCheckWebsocketNode(): Promise<HealthIndicatorResult> {
-        return await this.http.pingCheck(
-            HealthCheckDependency.WebsocketNode,
-            getHttpUrl({
-                host: envConfig().containers[Container.WebsocketNode].host,
-                port: envConfig().containers[Container.WebsocketNode].healthCheckPort,
-                path: HEALTH_CHECK_ENDPOINT
-            }), {
-                timeout: HEALTH_CHECK_TIMEOUT
-            }
-        )
+        return this.pingCheckContainer(HealthCheckDependency.WebsocketNode, Container.WebsocketNode)
     }
 
-    // Ping check for graphql gateway
     public async pingCheckGraphQlGateway(): Promise<HealthIndicatorResult> {
-        return await this.http.pingCheck(
-            HealthCheckDependency.GraphQLGateway,
-            getHttpUrl({
-                host: envConfig().containers[Container.GraphQLGateway].host,
-                port: envConfig().containers[Container.GraphQLGateway].healthCheckPort,
-                path: HEALTH_CHECK_ENDPOINT
-            }), {
-                timeout: HEALTH_CHECK_TIMEOUT
-            }
-        )
+        return this.pingCheckContainer(HealthCheckDependency.GraphQLGateway, Container.GraphQLGateway)
     }
 
-    // Ping check for rest api gateway
     public async pingCheckRestApiGateway(): Promise<HealthIndicatorResult> {
-        return await this.http.pingCheck(
-            HealthCheckDependency.RestApiGateway,
-            getHttpUrl({
-                host: envConfig().containers[Container.RestApiGateway].host,
-                port: envConfig().containers[Container.RestApiGateway].healthCheckPort,
-                path: HEALTH_CHECK_ENDPOINT
-            }), {
-                timeout: HEALTH_CHECK_TIMEOUT
-            }
-        )
+        return this.pingCheckContainer(HealthCheckDependency.RestApiGateway, Container.RestApiGateway)
     }
 
-    // ping check for cron scheduler
     public async pingCheckCronScheduler(): Promise<HealthIndicatorResult> {
-        return await this.http.pingCheck(
-            HealthCheckDependency.CronScheduler,
-            getHttpUrl({
-                host: envConfig().containers[Container.CronScheduler].host,
-                port: envConfig().containers[Container.CronScheduler].healthCheckPort,
-                path: HEALTH_CHECK_ENDPOINT
-            }), {
-                timeout: HEALTH_CHECK_TIMEOUT
-            }
-        )
+        return this.pingCheckContainer(HealthCheckDependency.CronScheduler, Container.CronScheduler)
     }
 
-    // ping check for cron worker
     public async pingCheckCronWorker(): Promise<HealthIndicatorResult> {
-        return await this.http.pingCheck(
-            HealthCheckDependency.CronWorker,
-            getHttpUrl({
-                host: envConfig().containers[Container.CronWorker].host,
-                port: envConfig().containers[Container.CronWorker].healthCheckPort,
-                path: HEALTH_CHECK_ENDPOINT
-            }), {
-                timeout: HEALTH_CHECK_TIMEOUT
-            }
-        )
+        return this.pingCheckContainer(HealthCheckDependency.CronWorker, Container.CronWorker)
     }
 }

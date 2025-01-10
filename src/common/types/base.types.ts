@@ -20,6 +20,6 @@ export interface BaseOptionsOptions<TOptions> {
     injectionToken?: string
 }
 
-export interface IInjectionToken {
+export interface InjectionToken {
     injectionToken: string
 }
