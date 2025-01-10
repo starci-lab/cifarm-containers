@@ -47,7 +47,15 @@ import {
     UsePesticideRequest,
     UsePesticideResponse,
     WaterRequest,
-    WaterResponse
+    WaterResponse,
+    CollectAnimalProductRequest,
+    CollectAnimalProductResponse,
+    CureAnimalRequest,
+    CureAnimalResponse,
+    FeedAnimalRequest,
+    FeedAnimalResponse,
+    UseFertilizerRequest,
+    UseFertilizerResponse
 } from "./farming"
 import {
     BuyAnimalRequest,
@@ -74,16 +82,6 @@ import {
     SpeedUpRequest,
     SpeedUpResponse
 } from "./dev"
-import {
-    CollectAnimalProductRequest,
-    CollectAnimalProductResponse,
-    CureAnimalRequest,
-    CureAnimalResponse,
-    FeedAnimalRequest,
-    FeedAnimalResponse,
-    UseFertilizerRequest,
-    UseFertilizerResponse
-} from "./farming"
 import { MoveRequest, MoveResponse, PlaceTileRequest, PlaceTileResponse, RecoverTileRequest, RecoverTileResponse } from "./placement"
 import { UpdateTutorialRequest, UpdateTutorialResponse } from "./profile"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"

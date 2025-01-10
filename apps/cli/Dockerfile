@@ -35,7 +35,6 @@ RUN echo "#!/usr/bin/env node" | cat - main.js > temp && mv temp main.js
 RUN chmod +x main.js
 # Add the main.js file to the PATH
 RUN npm install -g .
-
 # Make a directory for the database
 RUN mkdir db
 # Allow the node user to write to the database directory

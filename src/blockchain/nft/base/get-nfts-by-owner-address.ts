@@ -10,12 +10,11 @@ import {
 import { erc721Abi } from "../../abis"
 import { PlatformNotFoundException } from "@src/exceptions"
 import { MulticallProvider } from "@ethers-ext/provider-multicall"
-import { AlgorandMetadata, NearNft, NftData } from "../common"
+import { AlgorandMetadata, NearNft, NftData, IpfsService } from "../common"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
 import { fetchAllDigitalAssetByOwner } from "@metaplex-foundation/mpl-token-metadata"
 import { publicKey, isSome } from "@metaplex-foundation/umi"
 import { Atomic } from "@src/common"
-import { IpfsService } from "../common"
 import { blockchainConfig, chainKeyToPlatform, Platform } from "../../blockchain.config"
 import { Network } from "@src/env"
 
