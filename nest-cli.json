@@ -97,15 +97,6 @@
         "webpackConfigPath": "apps/cli/webpack.config.js"
       }
     },
-    "blockchain-subgraph": {
-      "type": "application",
-      "root": "apps/blockchain-subgraph",
-      "entryFile": "main",
-      "sourceRoot": "apps/blockchain-subgraph/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/blockchain-subgraph/tsconfig.app.json"
-      }
-    },
     "telegram-bot": {
       "type": "application",
       "root": "apps/telegram-bot",
