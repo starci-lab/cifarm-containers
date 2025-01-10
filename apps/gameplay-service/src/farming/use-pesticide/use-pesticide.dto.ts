@@ -8,4 +8,6 @@ export class UsePesticideRequest extends UserIdRequest {
         placedItemTileId: string
 }
 
-export class UsePesticideResponse {}
+export class UsePesticideResponse {
+    // Empty
+}

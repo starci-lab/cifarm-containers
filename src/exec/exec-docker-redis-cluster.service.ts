@@ -4,9 +4,9 @@ import {
     DockerContainerData,
     DockerContainerProfileRaw,
     DockerContainerRaw,
-    ExecOptions
+    ExecOptions,
+    DockerRedisClusterOptions
 } from "./exec.types"
-import { DockerRedisClusterOptions } from "./exec.types"
 import { ExecService } from "./exec.service"
 import { NatMap } from "ioredis"
 import { envConfig, LOCALHOST, RedisType } from "@src/env"

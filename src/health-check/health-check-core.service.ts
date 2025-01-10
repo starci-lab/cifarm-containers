@@ -1,26 +1,25 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { HealthIndicatorResult } from "@nestjs/terminus"
-import { MicroserviceHealthIndicator, TypeOrmHealthIndicator } from "@nestjs/terminus"
 import { ModuleRef } from "@nestjs/core"
-import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
+import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
+import { HealthIndicatorResult, MicroserviceHealthIndicator, TypeOrmHealthIndicator } from "@nestjs/terminus"
+import { KafkaOptionsFactory } from "@src/brokers"
 import {
     envConfig,
-    RedisType,
+    PostgreSQLDatabase,
     redisClusterEnabled,
     redisClusterRunInDocker,
-    PostgreSQLDatabase,
+    RedisType,
 } from "@src/env"
 import { ExecDockerRedisClusterService } from "@src/exec"
-import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
-import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
+import { NatMap } from "ioredis"
 import {
     ADAPTER_REDIS,
     CACHE_REDIS,
     HEALTH_CHECK_TIMEOUT,
     JOB_REDIS
 } from "./health-check.constants"
-import { NatMap } from "ioredis"
-import { KafkaOptionsFactory } from "@src/brokers"
+import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
+import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 
 @Injectable()
 export class HealthCheckCoreService {

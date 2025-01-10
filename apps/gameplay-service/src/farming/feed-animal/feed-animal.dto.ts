@@ -8,4 +8,6 @@ export class FeedAnimalRequest extends UserIdRequest {
         placedItemAnimalId: string
 }
 
-export class FeedAnimalResponse {}
+export class FeedAnimalResponse {
+    // Empty
+}

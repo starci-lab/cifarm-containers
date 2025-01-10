@@ -12,4 +12,6 @@ export class UpdateTutorialRequest extends UserIdRequest {
         stepIndex: number
 }
 
-export class UpdateTutorialResponse {}
+export class UpdateTutorialResponse {
+    // Empty
+}

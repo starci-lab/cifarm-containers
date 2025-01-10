@@ -8,4 +8,6 @@ export class HelpUseHerbicideRequest extends NeighborAndUserIdRequest {
         placedItemTileId: string
 }
 
-export class HelpUseHerbicideResponse {}
+export class HelpUseHerbicideResponse {
+    // Empty
+}

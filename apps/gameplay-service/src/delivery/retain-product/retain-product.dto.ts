@@ -8,4 +8,6 @@ export class RetainProductRequest extends UserIdRequest {
         deliveringProductId: string
 }
 
-export class RetainProductResponse {}
+export class RetainProductResponse {
+    // Empty
+}

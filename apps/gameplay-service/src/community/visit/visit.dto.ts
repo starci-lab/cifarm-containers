@@ -9,4 +9,6 @@ export class VisitRequest extends UserIdRequest {
         isRandom: boolean
 }
 
-export class VisitResponse {}
+export class VisitResponse {
+    // Empty
+}

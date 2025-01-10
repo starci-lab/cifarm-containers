@@ -11,4 +11,6 @@ export class PlantSeedRequest extends UserIdRequest {
         placedItemTileId: string
 }
 
-export class PlantSeedResponse {}
+export class PlantSeedResponse {
+    // Empty
+}

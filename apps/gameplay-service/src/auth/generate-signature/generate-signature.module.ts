@@ -10,4 +10,6 @@ import { BlockchainModule } from "@src/blockchain"
     providers: [GenerateSignatureService],
     exports: [GenerateSignatureService]
 })
-export class GenerateSignatureModule {}
+export class GenerateSignatureModule {
+    // Empty
+}
