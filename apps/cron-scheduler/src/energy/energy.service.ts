@@ -17,7 +17,7 @@ export class EnergyService {
     private readonly logger = new Logger(EnergyService.name)
     
     constructor(
-        @InjectQueue(bullData[BullQueueName.Energy].name) private EnergyQueue: Queue,
+        @InjectQueue(bullData[BullQueueName.Energy].name) private readonly EnergyQueue: Queue,
         private readonly leaderElectionService: LeaderElectionService,
         
         @InjectPostgreSQL()
