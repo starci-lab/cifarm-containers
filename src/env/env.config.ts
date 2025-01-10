@@ -69,10 +69,12 @@ export const envConfig = () => ({
         },
         [Container.GameplaySubgraph]: {
             host: process.env.GAMEPLAY_SUBGRAPH_HOST ?? LOCALHOST,
-            port: Number.parseInt(process.env.GAMEPLAY_SUBGRAPH_PORT) ?? DEFAULT_PORT,
-            healthCheckPort:
-                Number.parseInt(process.env.GAMEPLAY_SUBGRAPH_HEALTH_CHECK_PORT) ??
-                DEFAULT_HEALTH_PORT
+            port: process.env.GAMEPLAY_SUBGRAPH_PORT
+                ? Number.parseInt(process.env.GAMEPLAY_SUBGRAPH_PORT)
+                : DEFAULT_PORT,
+            healthCheckPort: process.env.GAMEPLAY_SUBGRAPH_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.GAMEPLAY_SUBGRAPH_HEALTH_CHECK_PORT)
+                : DEFAULT_HEALTH_PORT
         },
         [Container.CronWorker]: {
             host: process.env.CRON_WORKER_HOST ?? LOCALHOST,
