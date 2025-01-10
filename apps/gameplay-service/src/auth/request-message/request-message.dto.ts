@@ -1,8 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsUUID } from "class-validator"
 
-export class RequestMessageRequest {
-    // Empty
+export abstract class RequestMessageRequest {
 }
 
 export class RequestMessageResponse {
