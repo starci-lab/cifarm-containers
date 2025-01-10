@@ -9,19 +9,14 @@ import {
     RedisType
 } from "@src/env"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./health-check.module-definition"
-import { HealthCheckDependency } from "./health-check.types"
 import { PostgreSQLModule } from "@src/databases"
 import { ExecModule } from "@src/exec"
-import {
-    ADAPTER_REDIS,
-    CACHE_REDIS,
-    JOB_REDIS
-} from "./health-check.constants"
 import { HealthCheckController } from "./health-check.controller"
-import { HttpModule } from "@nestjs/axios"
 import { HealthCheckCoreService } from "./health-check-core.service"
 import { HealthCheckContainersService } from "./health-check-containers.service"
 import { KafkaOptionsModule } from "@src/brokers"
+import { dataSourcesMap, redisMap } from "./health-check.utils"
+import { HttpModule } from "@nestjs/axios"
 
 @Module({})
 export class HealthCheckModule extends ConfigurableModuleClass {
@@ -29,75 +24,46 @@ export class HealthCheckModule extends ConfigurableModuleClass {
         const imports: Array<typeof TerminusModule | DynamicModule> = [
             TerminusModule,
             EnvModule.forRoot(),
-            KafkaOptionsModule.register()
+            KafkaOptionsModule.register(),
+            HttpModule.register({})
         ]
-        if (options.dependencies.includes(HealthCheckDependency.GameplayService)) {
-            imports.push(HttpModule.register({}))
-        }
 
         // if gameplay postgresql is used
-        if (options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
-            imports.push(PostgreSQLModule.forRoot())
-        }
-        if (options.dependencies.includes(HealthCheckDependency.TelegramPostgreSQL)) {
-            imports.push(
-                PostgreSQLModule.forRoot({
-                    context: PostgreSQLContext.Main,
-                    database: PostgreSQLDatabase.Telegram
-                })
-            )
-        }
-        // if adapter redis is used
-        if (
-            options.dependencies.includes(HealthCheckDependency.AdapterRedis) &&
-            redisClusterEnabled(RedisType.Adapter) &&
-            redisClusterRunInDocker(RedisType.Adapter)
-        ) {
-            imports.push(
-                ExecModule.register({
-                    docker: {
-                        redisCluster: {
-                            type: RedisType.Adapter,
-                            injectionToken: ADAPTER_REDIS
+        const postgreSqlDatabases = Object.values(PostgreSQLDatabase)
+        const _dataSourcesMap = dataSourcesMap()
+        // if gameplay postgresql is used
+        postgreSqlDatabases.forEach((database) => {
+            if (options.dependencies.includes(_dataSourcesMap[database].dependency)) {
+                imports.push(
+                    PostgreSQLModule.forRoot({
+                        context: PostgreSQLContext.Main,
+                        database
+                    })
+                )
+            }
+        })
+
+        const redisTypes = Object.values(RedisType)
+        const _redisMap = redisMap()
+        redisTypes.forEach((type) => {
+            if (
+                options.dependencies.includes(_redisMap[type].dependency) &&
+                redisClusterEnabled(type) &&
+                redisClusterRunInDocker(type)
+            ) {
+                imports.push(
+                    ExecModule.register({
+                        docker: {
+                            redisCluster: {
+                                type,
+                                injectionToken: _redisMap[type].token
+                            }
                         }
-                    }
-                })
-            )
-        }
-        // if cache redis is used
-        if (
-            options.dependencies.includes(HealthCheckDependency.CacheRedis) &&
-            redisClusterEnabled(RedisType.Cache) &&
-            redisClusterRunInDocker(RedisType.Cache)
-        ) {
-            imports.push(
-                ExecModule.register({
-                    docker: {
-                        redisCluster: {
-                            type: RedisType.Cache,
-                            injectionToken: CACHE_REDIS
-                        }
-                    }
-                })
-            )
-        }
-        // if job redis is used
-        if (
-            options.dependencies.includes(HealthCheckDependency.JobRedis) &&
-            redisClusterEnabled(RedisType.Job) &&
-            redisClusterRunInDocker(RedisType.Job)
-        ) {
-            imports.push(
-                ExecModule.register({
-                    docker: {
-                        redisCluster: {
-                            type: RedisType.Job,
-                            injectionToken: JOB_REDIS
-                        }
-                    }
-                })
-            )
-        }
+                    })
+                )
+            }
+        })
+
         const dynamicModule = super.forRoot(options)
         return {
             ...dynamicModule,

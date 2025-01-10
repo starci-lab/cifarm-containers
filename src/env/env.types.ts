@@ -48,7 +48,7 @@ export interface ChainCredentialsConfig {
     }
 }
 
-export const enum RedisType {
+export enum RedisType {
     Cache = "cache",
     Job = "job",
     Adapter = "adapter"

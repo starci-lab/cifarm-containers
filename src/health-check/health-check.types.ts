@@ -17,3 +17,8 @@ export enum HealthCheckDependency {
 export interface HealthCheckOptions {
     dependencies: Array<HealthCheckDependency>
 }
+
+export interface DependencyData {
+    dependency: HealthCheckDependency
+    token: string
+}

@@ -11,9 +11,18 @@ export class KeyvService {
 
     // Method to create a KeyvRedis instance
     private createKeyvRedis(): KeyvRedis<string> {
-        const clusterEnabled = redisClusterEnabled(RedisType.Cache)
         const url = `redis://${envConfig().databases.redis[RedisType.Cache].host}:${envConfig().databases.redis[RedisType.Cache].port}`
         const password = envConfig().databases.redis[RedisType.Cache].password || undefined
+
+        const clusterEnabled = redisClusterEnabled(RedisType.Cache)
+        if (!clusterEnabled) {
+            return new KeyvRedis(
+                createClient({
+                    url,
+                    password
+                })
+            )
+        }
         let nodeAddressMap: NatMap
         // If cluster run in docker, get the node address map
         if (redisClusterRunInDocker(RedisType.Cache)) {
