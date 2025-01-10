@@ -26,15 +26,19 @@ export class ExecDockerRedisClusterService {
             ].cluster.dockerNetworkName
     }
 
-    private getNetworkId() {
-        return this.execService.execSync(
-            `docker network inspect --format '{{.Id}}' ${this.networkName}`
-        )
+    private async getNetworkId() {
+        return await this.execService.exec("docker", [
+            "network",
+            "inspect",
+            "--format",
+            "'{{.Id}}'",
+            this.networkName
+        ])
     }
 
-    private getContainers(): Record<string, DockerContainerData> {
-        const networkId = this.getNetworkId()
-        const networkInfo = this.execService.execSync(`docker network inspect ${networkId}`)
+    private async getContainers(): Promise<Record<string, DockerContainerData>> {
+        const networkId = await this.getNetworkId()
+        const networkInfo = await this.execService.exec("docker", ["network", "inspect", networkId])
         const containers = JSON.parse(networkInfo)[0].Containers as Record<
             string,
             DockerContainerProfileRaw
@@ -43,8 +47,7 @@ export class ExecDockerRedisClusterService {
         const result: Record<string, DockerContainerData> = {}
         // get container ids
         const containerIds = Object.keys(containers)
-        const inspectCommands = `docker inspect ${containerIds.map((id) => id).join(" ")}`
-        const inspectResults = this.execService.execSync(inspectCommands)
+        const inspectResults = await this.execService.exec("docker", ["inspect", ...containerIds])
         const portBindingsMap: Record<string, { HostPort: string }[]>[] = (
             JSON.parse(inspectResults) as Array<DockerContainerRaw>
         ).map((container) => container["HostConfig"]["PortBindings"])
@@ -64,7 +67,7 @@ export class ExecDockerRedisClusterService {
         return result
     }
 
-    public getNatMap(): NatMap {
+    public async getNatMap(): Promise<NatMap> {
         const containers = this.getContainers()
         return Object.values(containers).reduce((acc, container) => {
             acc[`${container.ipV4}:${container.internalPort}`] = {

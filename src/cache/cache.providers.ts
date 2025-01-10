@@ -9,10 +9,11 @@ import { CacheType } from "./cache.types"
 export const createCacheManagerFactoryProvider = (): Provider => ({
     provide: CACHE_MANAGER,
     inject: [MODULE_OPTIONS_TOKEN, KeyvService],
-    useFactory: (options: typeof OPTIONS_TYPE, keyvService: KeyvService): Cache => {
+    useFactory: async (options: typeof OPTIONS_TYPE, keyvService: KeyvService): Promise<Cache> => {
         const cacheType = options.cacheType ?? CacheType.Redis
+        const keyv = await keyvService.createKeyv()
         return createCache({
-            stores: cacheType ? [keyvService.createKeyv()] : undefined,
+            stores: cacheType ? [keyv] : undefined,
             ttl: envConfig().cacheTimeoutMs
         })
     }

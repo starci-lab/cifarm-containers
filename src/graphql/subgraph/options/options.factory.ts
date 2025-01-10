@@ -10,12 +10,13 @@ import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } 
 export class SubgraphOptionsFactory {
     constructor(private readonly keyvService: KeyvService) { }
 
-    createSubgraphOptions(): Omit<ApolloDriverConfig, "driver"> {
+    async createSubgraphOptions(): Promise<Omit<ApolloDriverConfig, "driver">> {
+        const keyvAdapter = await this.keyvService.createKeyvAdapter()
         return {
             autoSchemaFile: {
                 federation: 2
             },
-            cache: this.keyvService.createKeyvAdapter(),
+            cache: keyvAdapter,
             plugins: [ApolloServerPluginCacheControl(), responseCachePlugin()],
             playground: false,
             buildSchemaOptions: {

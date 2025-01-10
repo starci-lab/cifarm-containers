@@ -10,7 +10,7 @@ export class KeyvService {
     constructor(private readonly execDockerRedisClusterService: ExecDockerRedisClusterService) {}
 
     // Method to create a KeyvRedis instance
-    private createKeyvRedis(): KeyvRedis<string> {
+    private async createKeyvRedis(): Promise<KeyvRedis<string>> {
         const url = `redis://${envConfig().databases.redis[RedisType.Cache].host}:${envConfig().databases.redis[RedisType.Cache].port}`
         const password = envConfig().databases.redis[RedisType.Cache].password || undefined
 
@@ -26,7 +26,7 @@ export class KeyvService {
         let nodeAddressMap: NatMap
         // If cluster run in docker, get the node address map
         if (redisClusterRunInDocker(RedisType.Cache)) {
-            nodeAddressMap = this.execDockerRedisClusterService.getNatMap()
+            nodeAddressMap = await this.execDockerRedisClusterService.getNatMap()
         }
         // If cluster is not enabled, create a KeyvRedis instance with a single client
         if (!clusterEnabled) {
@@ -53,12 +53,12 @@ export class KeyvService {
     }
 
     // Method to create a Keyv instance (wrapping around KeyvRedis)
-    public createKeyv(): Keyv<string> {
-        return new Keyv(this.createKeyvRedis())
+    public async createKeyv(): Promise<Keyv<string>> {
+        return new Keyv(await this.createKeyvRedis())
     }
 
     // Method to create KeyvAdater
-    public createKeyvAdapter(): KeyvAdapter<string> {
-        return new KeyvAdapter(this.createKeyv())
+    public async createKeyvAdapter(): Promise<KeyvAdapter<string>> {
+        return new KeyvAdapter(await this.createKeyv())
     }
 }

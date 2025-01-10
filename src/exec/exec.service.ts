@@ -1,8 +1,8 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { exec as nodeExec, execSync as nodeExecSync } from "child_process"
-import os from "os"
+import { $ } from "execa"
 import { MODULE_OPTIONS_TOKEN } from "./exec.module-definition"
 import { ExecOptions } from "./exec.types"
+import os from "os"
 
 @Injectable()
 export class ExecService {
@@ -16,35 +16,21 @@ export class ExecService {
         const platform = os.platform()
         this.shell = platform === "win32" ? "powershell.exe" : "/bin/bash"
     }
-    public async exec(command: string): Promise<string> {
+    public async exec(command: string, args: Array<string> = []): Promise<string> {
         // Log the command if debug is enabled
-        this.logger.debug(`Executing command: ${command}`)
-        
-        return new Promise((resolve, reject) => {
-            nodeExec(
-                command,
-                {
-                    shell: this.shell,
-                },
-                (error, stdout, stderr) => {
-                    if (error) {
-                        const errorMessage = `Error: ${stderr || error.message}`
-                        this.logger.error(errorMessage)
-                        reject(new Error(errorMessage))
-                    }
-                    resolve(stdout)
-                }
-            )
-        })
-    }
+        this.logger.debug(`Executing command: ${command} ${args.join(" ")}`)
 
-    public execSync(command: string): string {
-        // Log the command if debug is enabled
-        this.logger.debug(`Executing command: ${command}`)
-        
-        return nodeExecSync(command, {
-            encoding: "utf8",
-            shell: this.shell
+        // Execute the command
+        const { stdout, stderr } = await $(command, args, {
+            shell: this.shell,
         })
+
+        // Log the error (if any)
+        if (stderr) {
+            this.logger.error(`Command error: ${stderr}`)
+            throw new Error(stderr)
+        }
+
+        return stdout
     }
 }
