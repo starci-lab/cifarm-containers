@@ -29,12 +29,13 @@ describe("ConstructBuildingService", () => {
     it("Should construct a building successfully", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        // Step 1: Create a mock user
+        const userBeforeConstruction = await queryRunner.manager.save(UserEntity, mockUser)
+
         await queryRunner.startTransaction()
 
         try {
-            // Step 1: Create a mock user
-            const userBeforeConstruction = await queryRunner.manager.save(UserEntity, mockUser)
-
             // Step 2: Get building information
             const building = await queryRunner.manager.findOne(BuildingEntity, {
                 where: { id: BuildingId.Pasture, availableInShop: true }

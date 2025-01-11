@@ -29,10 +29,12 @@ describe("DeliverProductService", () => {
     it("Should deliver a product successfully", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        const userBeforeDeliverProduct = await queryRunner.manager.save(UserEntity, mockUser)
+
         await queryRunner.startTransaction()
 
         try {
-            const userBeforeDeliverProduct = await queryRunner.manager.save(UserEntity, mockUser)
 
             const inventory = await queryRunner.manager.save(InventoryEntity, {
                 userId: userBeforeDeliverProduct.id,

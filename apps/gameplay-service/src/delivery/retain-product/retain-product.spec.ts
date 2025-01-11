@@ -28,12 +28,15 @@ describe("RetainProductService", () => {
     it("Should retain a delivering product successfully", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
-        await queryRunner.startTransaction()
 
+        //Save user
+        const user = await queryRunner.manager.save(UserEntity, mockUser)
+
+        await queryRunner.startTransaction()
         try {
             // Insert delivering product
             const deliveringProduct = await queryRunner.manager.save(DeliveringProductEntity, {
-                userId: mockUser.id,
+                userId: user.id,
                 quantity: 5,
                 premium: false,
                 productId: ProductId.Egg,

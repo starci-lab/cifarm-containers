@@ -28,11 +28,10 @@ describe("UpgradeBuildingService", () => {
     it("Should upgrade a building successfully", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+        const user = await queryRunner.manager.save(UserEntity, mockUser)
+
         await queryRunner.startTransaction()
-
         try {
-            const user = await queryRunner.manager.save(UserEntity, mockUser)
-
             const placedItem = await queryRunner.manager.save(PlacedItemEntity, {
                 userId: user.id,
                 buildingInfo: {

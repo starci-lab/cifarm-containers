@@ -32,11 +32,11 @@ describe("CollectAnimalProductService", () => {
     it("Should collect animal product successfully", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+        const userInDB = await queryRunner.manager.save(UserEntity, mockUser)
+
         await queryRunner.startTransaction()
 
         try {
-            const userInDB = await queryRunner.manager.save(UserEntity, mockUser)
-
             const placedItemAnimal: DeepPartial<PlacedItemEntity> = {
                 userId: userInDB.id,
                 animalInfo: {

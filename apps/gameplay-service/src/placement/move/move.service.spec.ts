@@ -28,11 +28,12 @@ describe("PlacementMoveService", () => {
     it("should move placement successfully", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        const userBefore = await queryRunner.manager.save(UserEntity, mockUser)
+
         await queryRunner.startTransaction()
 
         try {
-            const userBefore = await queryRunner.manager.save(UserEntity, mockUser)
-
             // Save initial placed item
             const placedItemBuilding = await queryRunner.manager.save(PlacedItemEntity, {
                 userId: userBefore.id,

@@ -29,13 +29,14 @@ describe("BuyAnimalService", () => {
     it("Should construct a building and successfully buy animals for it", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        const userBeforeWorkflow = await queryRunner.manager.save(UserEntity, mockUser)
+
         await queryRunner.startTransaction()
 
         try {
             const buildingId = BuildingId.Pasture
             const animalId = AnimalId.Cow
-
-            const userBeforeWorkflow = await queryRunner.manager.save(UserEntity, mockUser)
 
             const placedItem: DeepPartial<PlacedItemEntity> = {
                 userId: userBeforeWorkflow.id,

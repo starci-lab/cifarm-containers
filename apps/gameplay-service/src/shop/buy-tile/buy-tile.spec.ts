@@ -29,12 +29,13 @@ describe("BuyTileService", () => {
     it("Should buy a tile successfully", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        // Step 1: Create a mock user
+        const userBeforeBuyTile = await queryRunner.manager.save(UserEntity, mockUser)
+
         await queryRunner.startTransaction()
 
         try {
-            // Step 1: Create a mock user
-            const userBeforeBuyTile = await queryRunner.manager.save(UserEntity, mockUser)
-
             // Step 2: Get tile information
             const tile = await queryRunner.manager.findOne(TileEntity, {
                 where: { id: TileId.BasicTile1, availableInShop: true }

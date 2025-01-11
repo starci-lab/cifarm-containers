@@ -1,3 +1,5 @@
+// npx jest apps/gameplay-service/src/shop/buy-seeds/buy-seeds.spec.ts
+
 import {
     CropEntity,
     CropId,
@@ -7,8 +9,8 @@ import {
 import { createTestModule, MOCK_USER } from "@src/testing"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuySeedsRequest } from "./buy-seeds.dto"
-import { BuySeedsService } from "./buy-seeds.service"
 import { BuySeedsModule } from "./buy-seeds.module"
+import { BuySeedsService } from "./buy-seeds.service"
 
 describe("BuySeedsService", () => {
     let dataSource: DataSource
@@ -19,7 +21,9 @@ describe("BuySeedsService", () => {
 
     beforeAll(async () => {
         const { module, dataSource: ds } = await createTestModule({
-            imports: [BuySeedsModule]
+            imports: [
+                BuySeedsModule
+            ]
         })
         dataSource = ds
         service = module.get<BuySeedsService>(BuySeedsService)
@@ -28,6 +32,9 @@ describe("BuySeedsService", () => {
     it("Should successfully buy seeds and update user and inventory", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        const userBeforeBuyingSeed = await queryRunner.manager.save(UserEntity, mockUser)
+
         await queryRunner.startTransaction()
 
         try {
@@ -35,13 +42,15 @@ describe("BuySeedsService", () => {
                 where: { id: CropId.Carrot }
             })
 
-            const userBeforeBuyingSeed = await queryRunner.manager.save(UserEntity, mockUser)
-
             const buySeedRequest: BuySeedsRequest = {
                 cropId: crop.id,
                 userId: userBeforeBuyingSeed.id,
                 quantity: 1
             }
+
+            console.log(
+                "userBeforeBuyingSeed", userBeforeBuyingSeed
+            )
 
             // Buy seeds
             await service.buySeeds(buySeedRequest)

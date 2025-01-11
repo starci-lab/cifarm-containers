@@ -29,12 +29,13 @@ describe("BuySuppliesService", () => {
     it("Should successfully buy supplies and update user and inventory", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        // Step 1: Create a mock user
+        const userBeforeBuyingSupply = await queryRunner.manager.save(UserEntity, mockUser)
+
         await queryRunner.startTransaction()
 
         try {
-            // Step 1: Create a mock user
-            const userBeforeBuyingSupply = await queryRunner.manager.save(UserEntity, mockUser)
-
             // Step 2: Get supply information
             const supply = await queryRunner.manager.findOne(SupplyEntity, {
                 where: { id: SupplyId.BasicFertilizer, availableInShop: true }
