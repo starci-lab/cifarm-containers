@@ -2,15 +2,15 @@ import { Inject, Injectable } from "@nestjs/common"
 import { Sha256Service } from "@src/crypto"
 import { PostgreSQLDatabase } from "@src/env"
 import { MODULE_OPTIONS_TOKEN } from "./cache-query.module-definition"
-import { PostgreSQLCacheQueryOptions } from "./cache-query.types"
+import { CacheQueryOptions } from "./cache-query.types"
 
 @Injectable()
-export class PostgreSQLCacheQueryService {
+export class CacheQueryService {
     private readonly useHash: boolean
     private readonly database: PostgreSQLDatabase
     constructor(
             @Inject(MODULE_OPTIONS_TOKEN)
-            private readonly options: PostgreSQLCacheQueryOptions,
+            private readonly options: CacheQueryOptions,
             private readonly sha256Service: Sha256Service
     ) {
         // Hash is enabled by default
@@ -22,7 +22,7 @@ export class PostgreSQLCacheQueryService {
         entityName,
         options
     }: GenerateCacheKeyParams): string {
-        const prefix = `postgresql:${this.database}:${entityName}`
+        const prefix = `databases:${this.database}:${entityName}`
         //switch-case for type ensuring
         let postfix = JSON.stringify(options)
         if (this.useHash) {

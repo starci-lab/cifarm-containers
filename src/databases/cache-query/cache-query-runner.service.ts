@@ -1,12 +1,12 @@
 import { EntityTarget, FindManyOptions, FindOneOptions, QueryRunner } from "typeorm"
 import { ClassLike } from "@src/common"
 import { Injectable } from "@nestjs/common"
-import { PostgreSQLCacheQueryService } from "./cache-query.service"
+import { CacheQueryService } from "./cache-query.service"
 
 @Injectable()
-export class PostgreSQLCacheQueryRunnerService {
+export class CacheQueryRunnerService {
     constructor(
-            private readonly cacheQueryService: PostgreSQLCacheQueryService
+            private readonly cacheQueryService: CacheQueryService
     ) { }
 
     public async findOne<ObjectLiteral>(

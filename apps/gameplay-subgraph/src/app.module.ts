@@ -11,7 +11,7 @@ import { SystemsModule } from "./systems"
 import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
-import { PostgreSQLCacheQueryModule, PostgreSQLModule } from "@src/databases"
+import { CacheQueryModule, PostgreSQLModule } from "@src/databases"
 import { GraphQLSubgraphModule } from "@src/graphql"
 import { AnimalsModule } from "./animals"
 import { CryptoModule } from "@src/crypto"
@@ -24,7 +24,7 @@ import { DebugRedisClusterModule } from "@src/debug"
         //core modules
         EnvModule.forRoot(),
         PostgreSQLModule.forRoot(),
-        PostgreSQLCacheQueryModule.register({
+        CacheQueryModule.register({
             isGlobal: true
         }),
         CryptoModule.register({

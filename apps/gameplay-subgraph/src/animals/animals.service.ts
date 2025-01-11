@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity, InjectPostgreSQL, PostgreSQLCacheQueryRunnerService } from "@src/databases"
+import { AnimalEntity, InjectPostgreSQL, CacheQueryRunnerService } from "@src/databases"
 import { DataSource, FindManyOptions, FindOptionsRelations } from "typeorm"
 import { GetAnimalsArgs } from "./animals.dto"
 
@@ -16,7 +16,7 @@ export class AnimalsService {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly postgreSqlCacheQueryRunnerService: PostgreSQLCacheQueryRunnerService
+        private readonly cacheQueryRunnerService: CacheQueryRunnerService
     ) {}
 
     async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
@@ -31,7 +31,7 @@ export class AnimalsService {
                 relations: this.relations
             }
 
-            return await this.postgreSqlCacheQueryRunnerService.find(
+            return await this.cacheQueryRunnerService.find(
                 queryRunner,
                 AnimalEntity,
                 options
@@ -47,7 +47,7 @@ export class AnimalsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return await this.postgreSqlCacheQueryRunnerService.findOne(queryRunner, AnimalEntity, {
+            return await this.cacheQueryRunnerService.findOne(queryRunner, AnimalEntity, {
                 where: {
                     id
                 },
