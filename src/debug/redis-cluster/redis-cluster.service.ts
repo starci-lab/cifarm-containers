@@ -53,13 +53,8 @@ export class DebugRedisClusterService implements OnModuleInit {
         const pong = await this.connection.ping()
         this.logger.debug(`Ping response: ${pong}`)
 
-        // Fetch keys
-        if (this.keys) {
-            this.logger.debug("Fetching keys...")
-            for (const key of this.keys) {
-                const value = await this.connection.get(key)
-                this.logger.debug(`Key: ${key}, Value: ${value}`)
-            }
-        }
+        // 
+        const value = await this.connection.keys("postgresql*")
+        console.log(value)
     }
 }
