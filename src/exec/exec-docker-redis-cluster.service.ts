@@ -48,7 +48,7 @@ export class ExecDockerRedisClusterService {
         // get container ids
         const containerIds = Object.keys(containers)
         const inspectResults = await this.execService.exec("docker", ["inspect", ...containerIds])
-        const portBindingsMap: Record<string, { HostPort: string }[]>[] = (
+        const portBindingsMap: Record<string, Array<{ HostPort: string }>>[] = (
             JSON.parse(inspectResults) as Array<DockerContainerRaw>
         ).map((container) => container["HostConfig"]["PortBindings"])
         // iterate over container ids and get the container data
