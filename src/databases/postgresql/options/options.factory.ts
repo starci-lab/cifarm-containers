@@ -45,11 +45,13 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
 
     async createTypeOrmOptions(): Promise<TypeOrmModuleOptions> {
         const options = this.createDataSourceOptions()
-        const cache = await this.cacheOptionsService.createCacheOptions()
+        const cache = this.cacheEnabled
+            ? await this.cacheOptionsService.createCacheOptions()
+            : false
         return {
             ...options,
             synchronize: !isProduction(),
-            cache: this.cacheEnabled ? cache : false
+            cache
         }
     }
 }
