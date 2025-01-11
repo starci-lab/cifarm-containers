@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, InjectPostgreSQL, PostgreSQLCacheQueryRunnerService } from "@src/databases"
+import { BuildingEntity, InjectPostgreSQL, CacheQueryRunnerService } from "@src/databases"
 import { DataSource, FindManyOptions, FindOptionsRelations } from "typeorm"
 import { GetBuildingsArgs } from "./buildings.dto"
 
@@ -15,7 +15,7 @@ export class BuildingsService {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly postgreSqlQueryRunnerService: PostgreSQLCacheQueryRunnerService
+        private readonly cacheQueryRunnerService: CacheQueryRunnerService
     ) {}
 
     async getBuildings({
@@ -33,7 +33,7 @@ export class BuildingsService {
                 relations: this.relations
             }
 
-            return await this.postgreSqlQueryRunnerService.find(
+            return await this.cacheQueryRunnerService.find(
                 queryRunner,
                 BuildingEntity,
                 options
@@ -49,7 +49,7 @@ export class BuildingsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return await this.postgreSqlQueryRunnerService.findOne(queryRunner, BuildingEntity, {
+            return await this.cacheQueryRunnerService.findOne(queryRunner, BuildingEntity, {
                 where: {
                     id
                 },

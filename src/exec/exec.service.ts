@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { $ } from "execa"
+import { execa } from "execa"
 import { MODULE_OPTIONS_TOKEN } from "./exec.module-definition"
 import { ExecOptions } from "./exec.types"
 
@@ -20,8 +20,8 @@ export class ExecService {
         this.logger.debug(`Executing command: ${command} ${args.join(" ")}`)
 
         // Execute the command
-        const { stdout, stderr } = await $(command, args, {
-            shell: this.shell,
+        const { stdout, stderr } = await execa(command, args, {
+            shell: this.shell
         })
 
         // Log the error (if any)
