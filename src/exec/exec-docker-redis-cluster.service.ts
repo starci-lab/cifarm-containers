@@ -67,8 +67,8 @@ export class ExecDockerRedisClusterService {
         return result
     }
 
-    public getNatMap(): NatMap {
-        const containers = this.getContainers()
+    public async getNatMap(): Promise<NatMap> {
+        const containers = await this.getContainers()
         return Object.values(containers).reduce((acc, container) => {
             acc[`${container.ipV4}:${container.internalPort}`] = {
                 host: LOCALHOST,
