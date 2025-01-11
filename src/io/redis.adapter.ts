@@ -30,7 +30,7 @@ export class RedisIoAdapter extends IoAdapter {
         // if cluster is enabled, create a cluster connection
         let nodeAddressMap: NatMap
         if (redisClusterRunInDocker(RedisType.Adapter)) {
-            nodeAddressMap = this.execDockerRedisClusterService.getNatMap()
+            nodeAddressMap = await this.execDockerRedisClusterService.getNatMap()
         }
         const pubClient = createCluster({
             rootNodes: [

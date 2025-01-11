@@ -1,9 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity, InjectPostgreSQL } from "@src/databases"
-import { DataSource, FindOptionsRelations } from "typeorm"
+import { AnimalEntity, InjectPostgreSQL, PostgreSQLCacheQueryRunnerService } from "@src/databases"
+import { DataSource, FindManyOptions, FindOptionsRelations } from "typeorm"
 import { GetAnimalsArgs } from "./animals.dto"
-import { InjectCache } from "@src/cache"
-import { Cache } from "cache-manager"
+
 @Injectable()
 export class AnimalsService {
     private readonly logger = new Logger(AnimalsService.name)
@@ -15,39 +14,40 @@ export class AnimalsService {
     }
 
     constructor(
-        @InjectCache()
-        private readonly cache: Cache,
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
-    ) {
-    }
+        private readonly dataSource: DataSource,
+        private readonly postgreSqlCacheQueryRunnerService: PostgreSQLCacheQueryRunnerService
+    ) {}
 
     async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         this.logger.debug(`GetAnimals: limit=${limit}, offset=${offset}`)
 
-        let animals: Array<AnimalEntity>
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            animals = await queryRunner.manager.find(AnimalEntity, {
+            const options: FindManyOptions<AnimalEntity> = {
                 take: limit,
                 skip: offset,
                 relations: this.relations
-            })
+            }
+
+            return await this.postgreSqlCacheQueryRunnerService.find(
+                queryRunner,
+                AnimalEntity,
+                options
+            )
         } finally {
             await queryRunner.release()
         }
-        return animals
     }
 
     async getAnimal(id: string) {
         this.logger.debug(`GetAnimals: id=${id}`)
 
-        let animal: AnimalEntity
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            animal = await queryRunner.manager.findOne(AnimalEntity, {
+            return await this.postgreSqlCacheQueryRunnerService.findOne(queryRunner, AnimalEntity, {
                 where: {
                     id
                 },
@@ -56,6 +56,5 @@ export class AnimalsService {
         } finally {
             await queryRunner.release()
         }
-        return animal
     }
 }

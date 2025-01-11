@@ -3,6 +3,7 @@ import { DataSource } from "typeorm"
 import {
     Activities,
     AnimalRandomness,
+    PostgreSQLCacheQueryRunnerService,
     CropRandomness,
     EnergyRegenTime,
     InjectPostgreSQL,
@@ -11,6 +12,8 @@ import {
     SystemEntity,
     SystemId
 } from "@src/databases"
+// import { ACTIVITIES_CACHE_NAME } from "./system.constants"
+// import { envConfig } from "@src/env"
 
 @Injectable()
 export class SystemsService {
@@ -18,19 +21,23 @@ export class SystemsService {
 
     constructor(
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly postgreSQLCacheQueryRunnerService: PostgreSQLCacheQueryRunnerService
     ) {}
 
     async getActivities(): Promise<Activities> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const { value: activities } = await queryRunner.manager.findOne(SystemEntity, {
-                where: {
-                    id: SystemId.Activities
-                },
-                cache: 1000000
-            })
+            const { value: activities } = await this.postgreSQLCacheQueryRunnerService.findOne(
+                queryRunner,
+                SystemEntity,
+                {
+                    where: {
+                        id: SystemId.Activities
+                    }
+                }
+            )
             return activities as Activities
         } finally {
             await queryRunner.release()
@@ -41,12 +48,15 @@ export class SystemsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const { value: cropRandomness } = await queryRunner.manager.findOne(SystemEntity, {
-                where: {
-                    id: SystemId.CropRandomness
-                },
-                cache: 1000000
-            })
+            const { value: cropRandomness } = await this.postgreSQLCacheQueryRunnerService.findOne(
+                queryRunner,
+                SystemEntity,
+                {
+                    where: {
+                        id: SystemId.CropRandomness
+                    }
+                }
+            )
             return cropRandomness as CropRandomness
         } finally {
             await queryRunner.release()
@@ -57,11 +67,12 @@ export class SystemsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const { value: animalRandomness } = await queryRunner.manager.findOne(SystemEntity, {
-                where: {
-                    id: SystemId.AnimalRandomness
-                }
-            })
+            const { value: animalRandomness } =
+                await this.postgreSQLCacheQueryRunnerService.findOne(queryRunner, SystemEntity, {
+                    where: {
+                        id: SystemId.AnimalRandomness
+                    }
+                })
             return animalRandomness as AnimalRandomness
         } finally {
             await queryRunner.release()
@@ -72,11 +83,15 @@ export class SystemsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const { value: starter } = await queryRunner.manager.findOne(SystemEntity, {
-                where: {
-                    id: SystemId.Starter
+            const { value: starter } = await this.postgreSQLCacheQueryRunnerService.findOne(
+                queryRunner,
+                SystemEntity,
+                {
+                    where: {
+                        id: SystemId.Starter
+                    }
                 }
-            })
+            )
             return starter as Starter
         } finally {
             await queryRunner.release()
@@ -87,11 +102,15 @@ export class SystemsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const { value: spinInfo } = await queryRunner.manager.findOne(SystemEntity, {
-                where: {
-                    id: SystemId.SpinInfo
+            const { value: spinInfo } = await this.postgreSQLCacheQueryRunnerService.findOne(
+                queryRunner,
+                SystemEntity,
+                {
+                    where: {
+                        id: SystemId.SpinInfo
+                    }
                 }
-            })
+            )
             return spinInfo as SpinInfo
         } finally {
             await queryRunner.release()
@@ -102,11 +121,15 @@ export class SystemsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const { value: energyRegenTime } = await queryRunner.manager.findOne(SystemEntity, {
-                where: {
-                    id: SystemId.EnergyRegenTime
+            const { value: energyRegenTime } = await this.postgreSQLCacheQueryRunnerService.findOne(
+                queryRunner,
+                SystemEntity,
+                {
+                    where: {
+                        id: SystemId.EnergyRegenTime
+                    }
                 }
-            })
+            )
             return energyRegenTime as EnergyRegenTime
         } finally {
             await queryRunner.release()

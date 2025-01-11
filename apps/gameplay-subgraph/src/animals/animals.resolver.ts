@@ -15,7 +15,7 @@ export class AnimalsResolver {
     })
     async getAnimals(@Args("args") args: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         return await this.animalsService.getAnimals(args)
-    }
+    } 
     @Query(() => AnimalEntity, {
         name: "animal",
         nullable: true

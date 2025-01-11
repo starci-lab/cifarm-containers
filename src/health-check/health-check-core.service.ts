@@ -101,7 +101,7 @@ export class HealthCheckCoreService implements OnModuleInit {
         }
 
         if (redisClusterRunInDocker(type)) {
-            natMap = this.execDockerRedisClusterServices[type].getNatMap()
+            natMap = await this.execDockerRedisClusterServices[type].getNatMap()
         }
 
         return this.microservice.pingCheck<RedisOptions>(type, {

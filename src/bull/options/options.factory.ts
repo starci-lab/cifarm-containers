@@ -10,7 +10,7 @@ export class QueueOptionsFactory {
         private readonly execDockerRedisClusterService: ExecDockerRedisClusterService
     ) {}
 
-    createQueueOptions() : QueueOptions {
+    public async createQueueOptions(): Promise<QueueOptions> {
         const clusterEnabled = redisClusterEnabled(RedisType.Job)
         if (!clusterEnabled) {
             const connection = new Redis({
@@ -25,7 +25,7 @@ export class QueueOptionsFactory {
         }
         let natMap: NatMap
         if (redisClusterRunInDocker()) {
-            natMap = this.execDockerRedisClusterService.getNatMap()
+            natMap = await this.execDockerRedisClusterService.getNatMap()
         }
         const connection = new Cluster([
             {

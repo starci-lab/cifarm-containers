@@ -26,7 +26,7 @@ export class PostgreSQLModule extends ConfigurableModuleClass {
                     ],
                     inject: [PostgreSQLOptionsFactory],
                     name: dataSourceName,
-                    useFactory: (postgreSQLOptionsFactory: PostgreSQLOptionsFactory) =>
+                    useFactory: async (postgreSQLOptionsFactory: PostgreSQLOptionsFactory) =>
                         postgreSQLOptionsFactory.createTypeOrmOptions()
                 }),
                 this.forFeature(options)

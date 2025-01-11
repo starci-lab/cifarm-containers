@@ -19,7 +19,7 @@ export const getLoopbackAddress = (port: number = 80) => {
 
 export const getHttpUrl = ({ host = "localhost", port, path }: GetHttpUrlParams) => {
     const prefix = "http://"
-    
+
     // Ensure path starts without a leading slash if it's provided
     const formattedPath = path?.startsWith("/") ? path.slice(1) : path
 
@@ -30,9 +30,31 @@ export const getHttpUrl = ({ host = "localhost", port, path }: GetHttpUrlParams)
     return `${prefix}${hostPort}${urlPath}`
 }
 
-
 export interface GetHttpUrlParams {
     host?: string
     port?: number
     path?: string
+}
+
+export interface RetryIfErrorOptions {
+    retries?: number
+    interval?: number
+}
+
+export const retryIfError = async <T>(
+    fn: () => Promise<T>,
+    options: RetryIfErrorOptions = {}
+): Promise<T> => {
+    const { retries = 3, interval = 2000 } = options
+    let error: Error | null = null
+    for (let i = 0; i < retries; i++) {
+        try {
+            return await fn()
+        } catch (ex) {
+            console.error(`Error occurred: ${ex.message}, retrying... (${i + 1}/${retries})`)
+            error = ex
+            await sleep(interval)
+        }
+    }
+    throw error
 }

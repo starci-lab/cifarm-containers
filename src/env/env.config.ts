@@ -19,7 +19,17 @@ import {
 } from "./env.constants"
 export const envConfig = () => ({
     nodeEnv: (process.env.NODE_ENV ?? NodeEnv.Development) as NodeEnv,
-    cacheTimeoutMs: Number.parseInt(process.env.CACHE_TIMEOUT_MS) ?? DEFAULT_CACHE_TIMEOUT_MS,
+    cacheTimeoutMs: {
+        manager: process.env.MANAGER_CACHE_TIMEOUT_MS
+            ? Number.parseInt(process.env.MANAGER_CACHE_TIMEOUT_MS)
+            : DEFAULT_CACHE_TIMEOUT_MS,
+        postgreSql: process.env.POSTGRESQL_CACHE_TIMEOUT_MS
+            ? Number.parseInt(process.env.POSTGRESQL_CACHE_TIMEOUT_MS)
+            : DEFAULT_CACHE_TIMEOUT_MS,
+        graphql: process.env.GRAPHQL_CACHE_TIMEOUT_MS
+            ? Number.parseInt(process.env.GRAPHQL_CACHE_TIMEOUT_MS)
+            : DEFAULT_CACHE_TIMEOUT_MS
+    },
     cors: {
         origin:
             process.env.NODE_ENV !== NodeEnv.Production

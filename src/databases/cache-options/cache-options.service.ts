@@ -5,7 +5,7 @@ import {
     RedisCacheType,
     RedisCacheOptions,
     RedisClusterCacheOptions
-} from "../databases.types"
+} from "./cache-options.types"
 import { Injectable } from "@nestjs/common"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
@@ -21,15 +21,15 @@ export class CacheOptionsService {
 
         // Base cache options setup
         this.baseConfig = {
-            duration: envConfig().cacheTimeoutMs,
-            alwaysEnabled: !this.useCluster, // Only disable globally for cluster
-            ignoreErrors: true
+            duration: envConfig().cacheTimeoutMs.postgreSql,
+            alwaysEnabled: false, // Only disable globally for cluster
+            ignoreErrors: true,
         }
     }
 
-    public createCacheOptions(): CacheOptions {
+    public async createCacheOptions(): Promise<CacheOptions> {
         if (this.useCluster) {
-            return this.createClusterCacheOptions()
+            return await this.createClusterCacheOptions()
         }
         return this.createSingleCacheOptions()
     }
@@ -47,11 +47,11 @@ export class CacheOptionsService {
         }
     }
 
-    private createClusterCacheOptions(): RedisClusterCacheOptions {
+    private async createClusterCacheOptions(): Promise<RedisClusterCacheOptions> {
         // Cluster Redis cache options
         let natMap: NatMap
         if (redisClusterRunInDocker(RedisType.Cache)) {
-            natMap = this.execDockerRedisClusterService.getNatMap()
+            natMap = await this.execDockerRedisClusterService.getNatMap()
         }
         return {
             ...this.baseConfig,
