@@ -11,7 +11,7 @@ import { SystemsModule } from "./systems"
 import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
-import { PostgreSQLCacheKeyModule, PostgreSQLModule } from "@src/databases"
+import { PostgreSQLCacheQueryRunnerModule, PostgreSQLModule } from "@src/databases"
 import { GraphQLSubgraphModule } from "@src/graphql"
 import { AnimalsModule } from "./animals"
 import { CryptoModule } from "@src/crypto"
@@ -23,7 +23,7 @@ import { JwtModule } from "@src/jwt"
         //core modules
         EnvModule.forRoot(),
         PostgreSQLModule.forRoot(),
-        PostgreSQLCacheKeyModule.register({
+        PostgreSQLCacheQueryRunnerModule.register({
             isGlobal: true
         }),
         CryptoModule.register({

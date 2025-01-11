@@ -1,10 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    AnimalEntity,
-    InjectPostgreSQL,
-    PostgreSQLCacheKeyService,
-    PostgreSQLCacheKeyType
-} from "@src/databases"
+import { AnimalEntity, InjectPostgreSQL, PostgreSQLCacheQueryRunnerService } from "@src/databases"
 import { DataSource, FindManyOptions, FindOptionsRelations } from "typeorm"
 import { GetAnimalsArgs } from "./animals.dto"
 
@@ -21,67 +16,45 @@ export class AnimalsService {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly postgreSqlCacheKeyService: PostgreSQLCacheKeyService
+        private readonly postgreSqlCacheQueryRunnerService: PostgreSQLCacheQueryRunnerService
     ) {}
 
     async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         this.logger.debug(`GetAnimals: limit=${limit}, offset=${offset}`)
 
-        let animals: Array<AnimalEntity>
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const options : FindManyOptions<AnimalEntity> = {
+            const options: FindManyOptions<AnimalEntity> = {
                 take: limit,
                 skip: offset,
-                relations: this.relations,
+                relations: this.relations
             }
 
-            animals = await queryRunner.manager.find(AnimalEntity, {
-                ...options,
-                cache: {
-                    id: this.postgreSqlCacheKeyService.generateCacheKey({
-                        entity: AnimalEntity,
-                        identifier: {
-                            type: PostgreSQLCacheKeyType.Pagination,
-                            options
-                        }
-                    }),
-                    milliseconds: 0
-                }
-            })
+            return await this.postgreSqlCacheQueryRunnerService.find(
+                queryRunner,
+                AnimalEntity,
+                options
+            )
         } finally {
             await queryRunner.release()
         }
-        return animals
     }
 
     async getAnimal(id: string) {
         this.logger.debug(`GetAnimals: id=${id}`)
 
-        let animal: AnimalEntity
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            animal = await queryRunner.manager.findOne(AnimalEntity, {
+            return await this.postgreSqlCacheQueryRunnerService.findOne(queryRunner, AnimalEntity, {
                 where: {
                     id
                 },
-                relations: this.relations,
-                cache: {
-                    id: this.postgreSqlCacheKeyService.generateCacheKey({
-                        entity: AnimalEntity,
-                        identifier: {
-                            type: PostgreSQLCacheKeyType.Id,
-                            id
-                        }
-                    }),
-                    milliseconds: 0
-                }
+                relations: this.relations
             })
         } finally {
             await queryRunner.release()
         }
-        return animal
     }
 }

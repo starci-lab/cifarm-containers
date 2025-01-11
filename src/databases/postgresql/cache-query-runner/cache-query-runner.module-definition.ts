@@ -1,8 +1,8 @@
 import { ConfigurableModuleBuilder } from "@nestjs/common"
-import { PostgreSQLCacheKeyOptions } from "./cache-key.types"
+import { PostgreSQLCacheQueryRunnerOptions } from "./cache-query-runner.types"
 
 export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } =
-    new ConfigurableModuleBuilder<PostgreSQLCacheKeyOptions>()
+    new ConfigurableModuleBuilder<PostgreSQLCacheQueryRunnerOptions>()
         .setExtras(
             {
                 isGlobal: false
