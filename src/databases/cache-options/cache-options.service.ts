@@ -1,4 +1,4 @@
-import { redisClusterEnabled, RedisType, envConfig, redisClusterRunInDocker } from "@src/env"
+import { redisClusterEnabled, RedisType, envConfig } from "@src/env"
 import {
     BaseCacheOptions,
     CacheOptions,
@@ -7,15 +7,14 @@ import {
     RedisClusterCacheOptions
 } from "./cache-options.types"
 import { Injectable } from "@nestjs/common"
-import { ExecDockerRedisClusterService } from "@src/exec"
-import { NatMap } from "ioredis"
+import { IoRedisFactory } from "@src/native"
 
 @Injectable()
 export class CacheOptionsService {
     private readonly baseConfig: BaseCacheOptions
     private readonly useCluster: boolean
 
-    constructor(private readonly execDockerRedisClusterService: ExecDockerRedisClusterService) {
+    constructor(private readonly ioRedisFactory: IoRedisFactory) {
         // Determine if Redis cluster is enabled
         this.useCluster = redisClusterEnabled(RedisType.Cache)
 
@@ -23,7 +22,7 @@ export class CacheOptionsService {
         this.baseConfig = {
             duration: envConfig().cacheTimeoutMs.postgreSql,
             alwaysEnabled: false, // Only disable globally for cluster
-            ignoreErrors: true,
+            ignoreErrors: true
         }
     }
 
@@ -39,37 +38,19 @@ export class CacheOptionsService {
         return {
             ...this.baseConfig,
             type: RedisCacheType.IoRedis,
-            options: {
-                host: envConfig().databases.redis[RedisType.Cache].host,
-                port: envConfig().databases.redis[RedisType.Cache].port,
-                password: envConfig().databases.redis[RedisType.Cache].password || undefined
-            }
+            options: this.ioRedisFactory.getSingleOptions()
         }
     }
 
     private async createClusterCacheOptions(): Promise<RedisClusterCacheOptions> {
         // Cluster Redis cache options
-        let natMap: NatMap
-        if (redisClusterRunInDocker(RedisType.Cache)) {
-            natMap = await this.execDockerRedisClusterService.getNatMap()
-        }
+        const [startupNodes, options] = await this.ioRedisFactory.getClusterOptions()
         return {
             ...this.baseConfig,
             type: RedisCacheType.IoRedisCluster,
             options: {
-                startupNodes: [
-                    {
-                        host: envConfig().databases.redis[RedisType.Cache].host,
-                        port: Number(envConfig().databases.redis[RedisType.Cache].port)
-                    }
-                ],
-                options: {
-                    scaleReads: "slave",
-                    redisOptions: {
-                        password: envConfig().databases.redis[RedisType.Cache].password || undefined
-                    },
-                    natMap
-                }
+                startupNodes,
+                options
             }
         }
     }
