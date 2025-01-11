@@ -23,7 +23,7 @@ export class CacheQueryService {
         options
     }: GenerateCacheKeyParams): string {
         const prefix = `databases:${this.database}:${entityName}`
-        //switch-case for type ensuring
+        // convert options to string
         let postfix = JSON.stringify(options)
         if (this.useHash) {
             postfix = this.sha256Service.hash(postfix)
