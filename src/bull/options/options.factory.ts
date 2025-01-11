@@ -1,12 +1,13 @@
-import { Inject, Injectable } from "@nestjs/common"
-import { IoRedisClientOrCluster, IOREDIS } from "@src/native"
+import { Injectable } from "@nestjs/common"
+import { IoRedisClientOrCluster } from "@src/native"
+import { InjectIoRedis } from "@src/native/ioredis/ioredis.decorator"
 import { QueueOptions } from "bullmq"
 
 @Injectable()
 export class QueueOptionsFactory {
     constructor(
         //either redis or cluster
-        @Inject(IOREDIS)
+        @InjectIoRedis()
         private readonly ioRedisClientOrCluster: IoRedisClientOrCluster
     ) {}
 

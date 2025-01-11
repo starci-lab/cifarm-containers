@@ -11,7 +11,7 @@ import { RedisType } from "@src/env"
         type: RedisType.Cache
     })],
     providers: [CacheQueryService, CacheQueryRunnerService],
-    exports: [CacheQueryRunnerService]
+    exports: [CacheQueryService, CacheQueryRunnerService]
 })
 export class CacheQueryModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE = {}) {

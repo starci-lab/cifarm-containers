@@ -1,14 +1,14 @@
-import { Inject, Injectable } from "@nestjs/common"
+import { Injectable } from "@nestjs/common"
 import { IoAdapter } from "@nestjs/platform-socket.io"
 import { createAdapter } from "@socket.io/redis-adapter"
 import { ServerOptions } from "http"
-import { REDIS, RedisClientOrCluster } from "@src/native"
+import { InjectRedis, RedisClientOrCluster } from "@src/native"
 
 @Injectable()
 export class RedisIoAdapter extends IoAdapter {
     private adapterConstructor: ReturnType<typeof createAdapter>
     constructor(
-        @Inject(REDIS)
+        @InjectRedis()
         private readonly redisClientOrCluster: RedisClientOrCluster
     ) {
         super()

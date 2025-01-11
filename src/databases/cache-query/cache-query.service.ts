@@ -1,9 +1,9 @@
-import { Inject, Injectable } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { Sha256Service } from "@src/crypto"
 import { PostgreSQLDatabase } from "@src/env"
 import { MODULE_OPTIONS_TOKEN } from "./cache-query.module-definition"
 import { CacheQueryOptions } from "./cache-query.types"
-import { IOREDIS, IoRedisClientOrCluster } from "@src/native"
+import { InjectIoRedis, IoRedisClientOrCluster } from "@src/native"
 import { PREFIX } from "./cache-query.constants"
 
 @Injectable()
@@ -12,10 +12,12 @@ export class CacheQueryService {
     private readonly database: PostgreSQLDatabase
     private readonly basePrefix: string
 
+    private readonly logger = new Logger(CacheQueryService.name)
+
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: CacheQueryOptions,
-        @Inject(IOREDIS)
+        @InjectIoRedis()
         private readonly ioRedisClientOrCluster: IoRedisClientOrCluster,
         private readonly sha256Service: Sha256Service
     ) {
@@ -35,8 +37,19 @@ export class CacheQueryService {
         return `${prefix}:${postfix}`
     }
 
-    public async getCacheKeys(): Promise<Array<string>> {
-        return await this.ioRedisClientOrCluster.keys(`${this.basePrefix}*`)
+    public async clear(): Promise<void> {
+        const keys = await this.ioRedisClientOrCluster.keys(`${this.basePrefix}*`)
+        this.logger.debug(`Clearing ${keys.length} cache keys`)
+        const promise: Array<Promise<number>> = []
+        for (const key of keys) {
+            promise.push(this.ioRedisClientOrCluster.del(key))
+        }
+        await Promise.all(promise)
+    }
+
+    // method to get the native Redis client
+    public getNativeRedis(): IoRedisClientOrCluster {
+        return this.ioRedisClientOrCluster
     }
 }
 

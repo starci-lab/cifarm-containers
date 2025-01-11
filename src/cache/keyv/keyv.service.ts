@@ -1,12 +1,12 @@
 import KeyvRedis, { Keyv } from "@keyv/redis"
 import { KeyvAdapter } from "@apollo/utils.keyvadapter"
-import { Inject, Injectable } from "@nestjs/common"
-import { REDIS, RedisClientOrCluster } from "@src/native"
+import { Injectable } from "@nestjs/common"
+import { InjectRedis, RedisClientOrCluster } from "@src/native"
 
 @Injectable()
 export class KeyvService {
     constructor(
-        @Inject(REDIS)
+        @InjectRedis()
         private readonly redisClientOrCluster: RedisClientOrCluster
     ) { }
 

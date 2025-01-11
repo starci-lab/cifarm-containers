@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common"
-// import { DebugRedisClusterModule } from "@src/debug"
-import { EnvModule, RedisType } from "@src/env"
+import { EnvModule } from "@src/env"
 import { BuildingsModule } from "./buildings"
 import { CropsModule } from "./crops"
 import { InventoriesModule } from "./delivering-products"
@@ -17,7 +16,6 @@ import { AnimalsModule } from "./animals"
 import { CryptoModule } from "@src/crypto"
 import { CacheModule } from "@src/cache"
 import { JwtModule } from "@src/jwt"
-import { DebugRedisClusterModule } from "@src/debug"
 
 @Module({
     imports: [
@@ -50,11 +48,6 @@ import { DebugRedisClusterModule } from "@src/debug"
         TilesModule,
         ToolsModule,
         UpgradesModule,
-
-        //debug modules
-        DebugRedisClusterModule.register({
-            type: RedisType.Cache,
-        }),
     ]
 }) 
 export class AppModule {}
