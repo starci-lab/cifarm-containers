@@ -1,18 +1,14 @@
 import { Module } from "@nestjs/common"
 import { RedisIoAdapter } from "./redis.adapter"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./io.module-definition"
-import { ExecModule } from "@src/exec"
 import { RedisType } from "@src/env"
+import { RedisModule } from "@src/native"
 
 @Module({
     imports: [
-        ExecModule.register({
-            docker: {
-                redisCluster: {
-                    type: RedisType.Adapter
-                }
-            }
-        })
+        RedisModule.register({
+            type: RedisType.Adapter
+        }),
     ],
     providers: [RedisIoAdapter],
     exports: [RedisIoAdapter]
