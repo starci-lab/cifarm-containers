@@ -14,8 +14,14 @@ export interface DockerRedisClusterOptions {
     injectionToken?: string
 }
 
+export type PortBindingsRaw = Record<string, Array<{ HostPort: string }>>
+
+export interface HostConfigRaw {
+    PortBindings: PortBindingsRaw
+}
+
 export interface DockerContainerRaw {
-    HostConfig: { PortBindings: Record<string, { HostPort: string }[]> }
+    HostConfig: HostConfigRaw
 }
 
 export interface DockerContainerProfileRaw {

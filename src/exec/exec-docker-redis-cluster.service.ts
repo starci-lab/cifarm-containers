@@ -5,7 +5,8 @@ import {
     DockerContainerProfileRaw,
     DockerContainerRaw,
     ExecOptions,
-    DockerRedisClusterOptions
+    DockerRedisClusterOptions,
+    PortBindingsRaw
 } from "./exec.types"
 import { ExecService } from "./exec.service"
 import { NatMap } from "ioredis"
@@ -48,13 +49,13 @@ export class ExecDockerRedisClusterService {
         // get container ids
         const containerIds = Object.keys(containers)
         const inspectResults = await this.execService.exec("docker", ["inspect", ...containerIds])
-        const portBindingsMap: Record<string, Array<{ HostPort: string }>>[] = (
+        const portBindingsList: Array<PortBindingsRaw> = (
             JSON.parse(inspectResults) as Array<DockerContainerRaw>
         ).map((container) => container["HostConfig"]["PortBindings"])
         // iterate over container ids and get the container data
         containerIds.forEach((id, index) => {
             const container = containers[id]
-            const portBindings = portBindingsMap[index]
+            const portBindings = portBindingsList[index]
             const internalPort = Object.keys(portBindings)[0]
             const externalPort = portBindings[internalPort][0]["HostPort"]
             result[id] = {
