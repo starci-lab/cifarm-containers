@@ -1,9 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity, InjectPostgreSQL } from "@src/databases"
-import { DataSource, FindOptionsRelations } from "typeorm"
+import {
+    AnimalEntity,
+    InjectPostgreSQL,
+    PostgreSQLCacheKeyService,
+    PostgreSQLCacheKeyType
+} from "@src/databases"
+import { DataSource, FindManyOptions, FindOptionsRelations } from "typeorm"
 import { GetAnimalsArgs } from "./animals.dto"
-import { InjectCache } from "@src/cache"
-import { Cache } from "cache-manager"
+
 @Injectable()
 export class AnimalsService {
     private readonly logger = new Logger(AnimalsService.name)
@@ -15,12 +19,10 @@ export class AnimalsService {
     }
 
     constructor(
-        @InjectCache()
-        private readonly cache: Cache,
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
-    ) {
-    }
+        private readonly dataSource: DataSource,
+        private readonly postgreSqlCacheKeyService: PostgreSQLCacheKeyService
+    ) {}
 
     async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
         this.logger.debug(`GetAnimals: limit=${limit}, offset=${offset}`)
@@ -29,10 +31,24 @@ export class AnimalsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            animals = await queryRunner.manager.find(AnimalEntity, {
+            const options : FindManyOptions<AnimalEntity> = {
                 take: limit,
                 skip: offset,
-                relations: this.relations
+                relations: this.relations,
+            }
+
+            animals = await queryRunner.manager.find(AnimalEntity, {
+                ...options,
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: AnimalEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Pagination,
+                            options
+                        }
+                    }),
+                    milliseconds: 0
+                }
             })
         } finally {
             await queryRunner.release()
@@ -51,7 +67,17 @@ export class AnimalsService {
                 where: {
                     id
                 },
-                relations: this.relations
+                relations: this.relations,
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: AnimalEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Id,
+                            id
+                        }
+                    }),
+                    milliseconds: 0
+                }
             })
         } finally {
             await queryRunner.release()

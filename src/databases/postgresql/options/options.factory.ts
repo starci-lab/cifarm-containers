@@ -24,7 +24,8 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
         this.baseOptions = this.options.options || {}
         this.database = this.baseOptions.database || PostgreSQLDatabase.Gameplay
         this.context = this.baseOptions.context || PostgreSQLContext.Main
-        this.cacheEnabled = this.baseOptions.cacheEnabled || false
+        // Cache is enabled by default
+        this.cacheEnabled = this.baseOptions.cacheEnabled || true
     }
 
     createDataSourceOptions(): DataSourceOptions {
@@ -51,7 +52,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
         return {
             ...options,
             synchronize: !isProduction(),
-            cache
+            cache, 
         }
     }
 }

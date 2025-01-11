@@ -14,7 +14,7 @@ export const createCacheManagerFactoryProvider = (): Provider => ({
         const keyv = await keyvService.createKeyv()
         return createCache({
             stores: cacheType ? [keyv] : undefined,
-            ttl: envConfig().cacheTimeoutMs
+            ttl: envConfig().cacheTimeoutMs.manager
         })
     }
 })

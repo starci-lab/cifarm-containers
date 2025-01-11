@@ -1,22 +1,21 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, InjectPostgreSQL } from "@src/databases"
-import { DataSource } from "typeorm"
+import { BuildingEntity, InjectPostgreSQL, PostgreSQLCacheKeyService, PostgreSQLCacheKeyType } from "@src/databases"
+import { DataSource, FindManyOptions, FindOptionsRelations } from "typeorm"
 import { GetBuildingsArgs } from "./buildings.dto"
 
 @Injectable()
 export class BuildingsService {
     private readonly logger = new Logger(BuildingsService.name)
 
-    private readonly relations = {
+    private readonly relations: FindOptionsRelations<BuildingEntity> = {
         placedItemType: true,
         upgrades: true
     }
-
-    
         
     constructor(
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly postgreSqlCacheKeyService: PostgreSQLCacheKeyService
     ) { }
 
     async getBuildings({
@@ -28,10 +27,24 @@ export class BuildingsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return await queryRunner.manager.find(BuildingEntity, {
+            const options: FindManyOptions<BuildingEntity> = {
                 take: limit,
                 skip: offset,
                 relations: this.relations
+            }
+            
+            return await queryRunner.manager.find(BuildingEntity, {
+                ...options,
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: BuildingEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Pagination,
+                            options
+                        }
+                    }),
+                    milliseconds: 0
+                }
             })
         } finally {
             await queryRunner.release()
@@ -46,7 +59,17 @@ export class BuildingsService {
         try {
             return await queryRunner.manager.findOne(BuildingEntity, {
                 where: { id },
-                relations: this.relations
+                relations: this.relations,
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: BuildingEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Id,
+                            id
+                        }
+                    }),
+                    milliseconds: 0
+                }
             })
         } finally {
             await queryRunner.release()

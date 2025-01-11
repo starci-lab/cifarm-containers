@@ -6,11 +6,15 @@ import {
     CropRandomness,
     EnergyRegenTime,
     InjectPostgreSQL,
+    PostgreSQLCacheKeyService,
+    PostgreSQLCacheKeyType,
     SpinInfo,
     Starter,
     SystemEntity,
     SystemId
 } from "@src/databases"
+// import { ACTIVITIES_CACHE_NAME } from "./system.constants"
+// import { envConfig } from "@src/env"
 
 @Injectable()
 export class SystemsService {
@@ -18,7 +22,8 @@ export class SystemsService {
 
     constructor(
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private postgreSqlCacheKeyService: PostgreSQLCacheKeyService
     ) {}
 
     async getActivities(): Promise<Activities> {
@@ -29,7 +34,17 @@ export class SystemsService {
                 where: {
                     id: SystemId.Activities
                 },
-                cache: 1000000
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: SystemEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Id,
+                            id: SystemId.Activities
+                        }
+                    }),
+                    // use default instead of hardcoding the value
+                    milliseconds: 0
+                }
             })
             return activities as Activities
         } finally {
@@ -45,7 +60,17 @@ export class SystemsService {
                 where: {
                     id: SystemId.CropRandomness
                 },
-                cache: 1000000
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: SystemEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Id,
+                            id: SystemId.CropRandomness
+                        }
+                    }),
+                    // use default instead of hardcoding the value
+                    milliseconds: 0
+                }
             })
             return cropRandomness as CropRandomness
         } finally {
@@ -60,6 +85,17 @@ export class SystemsService {
             const { value: animalRandomness } = await queryRunner.manager.findOne(SystemEntity, {
                 where: {
                     id: SystemId.AnimalRandomness
+                },
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: SystemEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Id,
+                            id: SystemId.AnimalRandomness
+                        }
+                    }),
+                    // use default instead of hardcoding the value
+                    milliseconds: 0
                 }
             })
             return animalRandomness as AnimalRandomness
@@ -75,6 +111,17 @@ export class SystemsService {
             const { value: starter } = await queryRunner.manager.findOne(SystemEntity, {
                 where: {
                     id: SystemId.Starter
+                },
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: SystemEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Id,
+                            id: SystemId.Starter
+                        }
+                    }),
+                    // use default instead of hardcoding the value
+                    milliseconds: 0
                 }
             })
             return starter as Starter
@@ -90,6 +137,17 @@ export class SystemsService {
             const { value: spinInfo } = await queryRunner.manager.findOne(SystemEntity, {
                 where: {
                     id: SystemId.SpinInfo
+                },
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: SystemEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Id,
+                            id: SystemId.SpinInfo
+                        }
+                    }),
+                    // use default instead of hardcoding the value
+                    milliseconds: 0
                 }
             })
             return spinInfo as SpinInfo
@@ -105,6 +163,17 @@ export class SystemsService {
             const { value: energyRegenTime } = await queryRunner.manager.findOne(SystemEntity, {
                 where: {
                     id: SystemId.EnergyRegenTime
+                },
+                cache: {
+                    id: this.postgreSqlCacheKeyService.generateCacheKey({
+                        entity: SystemEntity,
+                        identifier: {
+                            type: PostgreSQLCacheKeyType.Id,
+                            id: SystemId.EnergyRegenTime
+                        }
+                    }),
+                    // use default instead of hardcoding the value
+                    milliseconds: 0
                 }
             })
             return energyRegenTime as EnergyRegenTime

@@ -10,12 +10,14 @@ export class DebugRedisClusterService implements OnModuleInit {
 
     private connection: Cluster
     private readonly type: RedisType
+    private readonly keys: Array<string>
     constructor(
         private readonly execDockerRedisClusterService: ExecDockerRedisClusterService,
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options?: DebugRedisClusterOptions,
     ) { 
         this.type = options?.type || RedisType.Cache
+        this.keys = options?.keys || []
     }
 
     async onModuleInit() {
@@ -30,7 +32,7 @@ export class DebugRedisClusterService implements OnModuleInit {
 
         let natMap: NatMap
         if (redisClusterRunInDocker(this.type)) {
-            natMap = this.execDockerRedisClusterService.getNatMap()
+            natMap = await this.execDockerRedisClusterService.getNatMap()
         }
 
         //check if cluster run in Docker
@@ -49,6 +51,15 @@ export class DebugRedisClusterService implements OnModuleInit {
             }
         )
         const pong = await this.connection.ping()
-        this.logger.debug(`Redis cluster ping response: ${pong}`)
+        this.logger.debug(`Ping response: ${pong}`)
+
+        // Fetch keys
+        if (this.keys) {
+            this.logger.debug("Fetching keys...")
+            for (const key of this.keys) {
+                const value = await this.connection.get(key)
+                this.logger.debug(`Key: ${key}, Value: ${value}`)
+            }
+        }
     }
 }
