@@ -34,23 +34,23 @@ describe("CollectAnimalProductService", () => {
         await queryRunner.connect()
         const userInDB = await queryRunner.manager.save(UserEntity, mockUser)
 
+        const placedItemAnimal: DeepPartial<PlacedItemEntity> = {
+            userId: userInDB.id,
+            animalInfo: {
+                animalId: AnimalId.Chicken,
+                harvestQuantityRemaining: 10,
+                isAdult: true,
+                currentState: AnimalCurrentState.Yield,
+            },
+            x: 0,
+            y: 0,
+        }
+
+        const animalInfo = await queryRunner.manager.save(AnimalInfoEntity, placedItemAnimal)
+
         await queryRunner.startTransaction()
 
         try {
-            const placedItemAnimal: DeepPartial<PlacedItemEntity> = {
-                userId: userInDB.id,
-                animalInfo: {
-                    animalId: AnimalId.Chicken,
-                    harvestQuantityRemaining: 10,
-                    isAdult: true,
-                    currentState: AnimalCurrentState.Yield,
-                },
-                x: 0,
-                y: 0,
-            }
-
-            const animalInfo = await queryRunner.manager.save(AnimalInfoEntity, placedItemAnimal)
-
             const request: CollectAnimalProductRequest = {
                 userId: userInDB.id,
                 placedItemAnimalId: animalInfo.id

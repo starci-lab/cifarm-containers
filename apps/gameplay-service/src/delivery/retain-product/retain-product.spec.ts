@@ -30,29 +30,30 @@ describe("RetainProductService", () => {
         await queryRunner.connect()
 
         //Save user
-        const user = await queryRunner.manager.save(UserEntity, mockUser)
+        const user = await queryRunner.manager.save(UserEntity, {
+            ...mockUser,
+            deliveringProducts: [
+                {
+                    quantity: 5,
+                    premium: false,
+                    productId: ProductId.Egg,
+                    index: 1,
+                }
+            ]
+        })
 
         await queryRunner.startTransaction()
         try {
-            // Insert delivering product
-            const deliveringProduct = await queryRunner.manager.save(DeliveringProductEntity, {
-                userId: user.id,
-                quantity: 5,
-                premium: false,
-                productId: ProductId.Egg,
-                index: 1,
-            })
-
             const retainProductRequest: RetainProductRequest = {
-                userId: deliveringProduct.userId,
-                deliveringProductId: deliveringProduct.id
+                userId: user.id,
+                deliveringProductId: user.deliveringProducts[0].id
             }
 
             await service.retainProduct(retainProductRequest)
 
             // Verify that the delivering product is removed
             const deletedProduct = await queryRunner.manager.findOne(DeliveringProductEntity, {
-                where: { id: deliveringProduct.id }
+                where: { id: user.deliveringProducts[0].id }
             })
             expect(deletedProduct).toBeNull()
 

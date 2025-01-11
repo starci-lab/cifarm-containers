@@ -24,28 +24,28 @@ describe("PlacementMoveService", () => {
         dataSource = ds
         service = module.get<MoveService>(MoveService)
     })
-
+    
     it("should move placement successfully", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
-
+        
         const userBefore = await queryRunner.manager.save(UserEntity, mockUser)
+
+        // Save initial placed item
+        const placedItemBuilding = await queryRunner.manager.save(PlacedItemEntity, {
+            userId: userBefore.id,
+            x: 0,
+            y: 0,
+            buildingInfo: {
+                currentUpgrade: 1,
+                buildingId: BuildingId.Pasture,
+                occupancy: 0
+            }
+        })
 
         await queryRunner.startTransaction()
 
         try {
-            // Save initial placed item
-            const placedItemBuilding = await queryRunner.manager.save(PlacedItemEntity, {
-                userId: userBefore.id,
-                x: 0,
-                y: 0,
-                buildingInfo: {
-                    currentUpgrade: 1,
-                    buildingId: BuildingId.Pasture,
-                    occupancy: 0
-                }
-            })
-
             const request: MoveRequest = {
                 userId: userBefore.id,
                 position: { x: 10, y: 20 },

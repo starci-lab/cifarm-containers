@@ -5,7 +5,7 @@ import {
 } from "@src/databases"
 import { createTestModule, MOCK_USER } from "@src/testing"
 import { DataSource, DeepPartial } from "typeorm"
-import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"
+import { UpgradeBuildingRequest } from "./upgrade-building.dto"
 import { UpgradeBuildingModule } from "./upgrade-building.module"
 import { UpgradeBuildingService } from "./upgrade-building.service"
 
@@ -30,19 +30,19 @@ describe("UpgradeBuildingService", () => {
         await queryRunner.connect()
         const user = await queryRunner.manager.save(UserEntity, mockUser)
 
+        const placedItem = await queryRunner.manager.save(PlacedItemEntity, {
+            userId: user.id,
+            buildingInfo: {
+                currentUpgrade: 1,
+                buildingId: BuildingId.Pasture,
+                occupancy: 0,
+            },
+            x: 0,
+            y: 0,
+        })
+
         await queryRunner.startTransaction()
         try {
-            const placedItem = await queryRunner.manager.save(PlacedItemEntity, {
-                userId: user.id,
-                buildingInfo: {
-                    currentUpgrade: 1,
-                    buildingId: BuildingId.Pasture,
-                    occupancy: 0,
-                },
-                x: 0,
-                y: 0,
-            })
-
             const request: UpgradeBuildingRequest = {
                 placedItemBuildingId: placedItem.id,
                 userId: user.id,
@@ -51,8 +51,8 @@ describe("UpgradeBuildingService", () => {
             await service.upgradeBuilding(request)
 
             // Find
-            const placedItemBuildingFromDB: DeepPartial<PlacedItemEntity> = await queryRunner.manager.findOne(UpgradeBuildingResponse, {
-                where: { placedItemBuildingId: placedItem.id },
+            const placedItemBuildingFromDB: DeepPartial<PlacedItemEntity> = await queryRunner.manager.findOne(PlacedItemEntity, {
+                where: { id: placedItem.id },
             })
 
             expect(placedItemBuildingFromDB).toBeDefined()

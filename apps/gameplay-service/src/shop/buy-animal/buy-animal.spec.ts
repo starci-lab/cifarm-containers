@@ -3,6 +3,8 @@ import {
     AnimalId,
     BuildingId,
     PlacedItemEntity,
+    PlacedItemType,
+    PlacedItemTypeId,
     UserEntity
 } from "@src/databases"
 import { createTestModule, MOCK_USER } from "@src/testing"
@@ -27,29 +29,33 @@ describe("BuyAnimalService", () => {
     })
 
     it("Should construct a building and successfully buy animals for it", async () => {
+        const buildingId = BuildingId.Pasture
+        const animalId = AnimalId.Cow
+
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
 
         const userBeforeWorkflow = await queryRunner.manager.save(UserEntity, mockUser)
 
+        const placedItem: DeepPartial<PlacedItemEntity> = {
+            userId: userBeforeWorkflow.id,
+            x: 0,
+            y: 0,
+            buildingInfo: {
+                buildingId: buildingId,
+                occupancy: 0
+            },
+            placedItemType: {
+                id: PlacedItemTypeId.Pasture,
+                type: PlacedItemType.Building
+            }
+        }
+
+        const placedItemBuilding: PlacedItemEntity = await queryRunner.manager.save(PlacedItemEntity, placedItem)
+
         await queryRunner.startTransaction()
 
         try {
-            const buildingId = BuildingId.Pasture
-            const animalId = AnimalId.Cow
-
-            const placedItem: DeepPartial<PlacedItemEntity> = {
-                userId: userBeforeWorkflow.id,
-                x: 0,
-                y: 0,
-                buildingInfo: {
-                    buildingId: buildingId,
-                    occupancy: 0
-                }
-            }
-
-            const placedItemBuilding: PlacedItemEntity = await queryRunner.manager.save(PlacedItemEntity, placedItem)
-
             // Verify building was constructed
             const placedBuilding = await queryRunner.manager.findOne(PlacedItemEntity, {
                 where: { id: placedItemBuilding.id, userId: userBeforeWorkflow.id },
@@ -68,7 +74,7 @@ describe("BuyAnimalService", () => {
                 animalId: animalId,
                 userId: userBeforeWorkflow.id,
                 placedItemBuildingId: placedItemBuilding.id,
-                position: { x: 10, y: 10 }
+                position: { x: 10, y: 10 },
             }
 
             await service.buyAnimal(buyAnimalRequest)

@@ -32,16 +32,15 @@ describe("DeliverProductService", () => {
 
         const userBeforeDeliverProduct = await queryRunner.manager.save(UserEntity, mockUser)
 
+        const inventory = await queryRunner.manager.save(InventoryEntity, {
+            userId: userBeforeDeliverProduct.id,
+            inventoryTypeId: ProductId.Egg,
+            quantity: 20
+        })
+
         await queryRunner.startTransaction()
 
         try {
-
-            const inventory = await queryRunner.manager.save(InventoryEntity, {
-                userId: userBeforeDeliverProduct.id,
-                inventoryTypeId: ProductId.Egg,
-                quantity: 20
-            })
-
             const deliverProductRequest: DeliverProductRequest = {
                 userId: inventory.userId,
                 inventoryId: inventory.id,
