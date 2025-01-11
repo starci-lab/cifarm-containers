@@ -14,6 +14,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
     private readonly baseOptions: PostgreSQLOptions
     private readonly database: PostgreSQLDatabase
     private readonly context: PostgreSQLContext
+    private readonly cacheEnabled: boolean
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
@@ -23,6 +24,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
         this.baseOptions = this.options.options || {}
         this.database = this.baseOptions.database || PostgreSQLDatabase.Gameplay
         this.context = this.baseOptions.context || PostgreSQLContext.Main
+        this.cacheEnabled = this.baseOptions.cacheEnabled || false
     }
 
     createDataSourceOptions(): DataSourceOptions {
@@ -47,7 +49,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
         return {
             ...options,
             synchronize: !isProduction(),
-            cache
+            cache: this.cacheEnabled ? cache : false
         }
     }
 }
