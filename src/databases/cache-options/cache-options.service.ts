@@ -27,9 +27,9 @@ export class CacheOptionsService {
         }
     }
 
-    public createCacheOptions(): CacheOptions {
+    public async createCacheOptions(): Promise<CacheOptions> {
         if (this.useCluster) {
-            return this.createClusterCacheOptions()
+            return await this.createClusterCacheOptions()
         }
         return this.createSingleCacheOptions()
     }
@@ -47,11 +47,11 @@ export class CacheOptionsService {
         }
     }
 
-    private createClusterCacheOptions(): RedisClusterCacheOptions {
+    private async createClusterCacheOptions(): Promise<RedisClusterCacheOptions> {
         // Cluster Redis cache options
         let natMap: NatMap
         if (redisClusterRunInDocker(RedisType.Cache)) {
-            natMap = this.execDockerRedisClusterService.getNatMap()
+            natMap = await this.execDockerRedisClusterService.getNatMap()
         }
         return {
             ...this.baseConfig,
