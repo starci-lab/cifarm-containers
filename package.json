@@ -89,7 +89,6 @@
     "class-validator": "0.14.1",
     "concurrently": "^9.1.0",
     "ethers": "6.13.4",
-    "execa": "npm:@esm2cjs/execa@^6.1.1-cjs.1",
     "google-protobuf": "^3.21.4",
     "graphql": "^16.9.0",
     "graphql-type-json": "^0.3.2",
