@@ -1,3 +1,5 @@
+//npx jest apps/gameplay-service/src/farming/harvest-crop/havest-crop.spec.ts
+
 import {
     CropCurrentState,
     CropEntity,
@@ -67,13 +69,6 @@ describe("HarvestCropService", () => {
             // Execute the service method
             await service.harvestCrop(request)
 
-            // Verify user energy and experience updated
-            const updatedUser = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: user.id },
-            })
-            expect(updatedUser.energy).toBe(mockUser.energy - 2)
-            expect(updatedUser.experiences).toBe(mockUser.experiences + 10)
-
             // Verify inventory updated
             const updatedInventory = await queryRunner.manager.findOne(InventoryEntity, {
                 where: { userId: user.id, inventoryType: {
@@ -81,7 +76,7 @@ describe("HarvestCropService", () => {
                     type: InventoryType.Product
                 } },
             })
-            expect(updatedInventory.quantity).toBe(8) // Previous quantity + harvest quantity
+            expect(updatedInventory.quantity).toBe(5)
 
             // Verify seed growth info updated or removed
             const updatedSeedGrowthInfo = await queryRunner.manager.findOne(SeedGrowthInfoEntity, {

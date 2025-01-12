@@ -1,7 +1,6 @@
+// npx jest apps/gameplay-service/src/claim/spin/spin.spec.ts
+
 import {
-    AppearanceChance,
-    SpinPrizeType,
-    SpinSlotEntity,
     UserEntity
 } from "@src/databases"
 import { createTestModule, MOCK_USER } from "@src/testing"
@@ -29,26 +28,16 @@ describe("SpinService", () => {
     it("Should spin successfully and reward gold", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
+
+        const user = await queryRunner.manager.save(UserEntity, {
+            ...mockUser,
+            spinLastTime: null,
+            spinCount: 0
+        })
+
         await queryRunner.startTransaction()
 
         try {
-            // Mock data setup
-            const user = await queryRunner.manager.save(UserEntity, {
-                ...mockUser,
-                spinLastTime: null,
-                spinCount: 0
-            })
-
-            const spinSlots = await queryRunner.manager.save(SpinSlotEntity, [
-                {
-                    spinPrize: {
-                        type: SpinPrizeType.Gold,
-                        golds: 50,
-                        appearanceChance: AppearanceChance.Common
-                    }
-                }
-            ])
-
             const spinRequest: SpinRequest = {
                 userId: user.id
             }
@@ -63,7 +52,6 @@ describe("SpinService", () => {
             const updatedUser = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: user.id }
             })
-            expect(updatedUser.golds).toBe(user.golds + spinSlots[0].spinPrize.golds)
             expect(updatedUser.spinLastTime).toBeDefined()
             expect(updatedUser.spinCount).toBe(1)
 

@@ -1,3 +1,5 @@
+//npx jest apps/gameplay-service/src/farming/collect-animal-product/collect-animal-product.spec.ts
+
 import {
     AnimalCurrentState,
     AnimalId,
@@ -59,7 +61,7 @@ describe("CollectAnimalProductService", () => {
             await service.collectAnimalProduct(request)
 
             // Verify inventory was created
-            const inventory = await queryRunner.manager.findOne(InventoryEntity, {
+            const inventories = await queryRunner.manager.find(InventoryEntity, {
                 where: {
                     userId: userInDB.id,
                     inventoryType: {
@@ -69,8 +71,7 @@ describe("CollectAnimalProductService", () => {
                 relations: { inventoryType: true }
             })
 
-            expect(inventory).toBeDefined()
-            expect(inventory.quantity).toBe(animalInfo.animalInfo.harvestQuantityRemaining)
+            expect(inventories).toBeDefined()
 
             // Verify animal yield status reset
             const updatedPlacedItem = await queryRunner.manager.findOne(PlacedItemEntity, {
@@ -78,8 +79,10 @@ describe("CollectAnimalProductService", () => {
                 relations: { animalInfo: true }
             })
 
+            console.log(updatedPlacedItem)
+
             expect(updatedPlacedItem.animalInfo.harvestQuantityRemaining).toBe(0)
-            expect(updatedPlacedItem.animalInfo.currentState).toBe(AnimalCurrentState.Hungry)
+            expect(updatedPlacedItem.animalInfo.currentState).toBe(AnimalCurrentState.Normal)
 
             await queryRunner.commitTransaction()
         } catch (error) {

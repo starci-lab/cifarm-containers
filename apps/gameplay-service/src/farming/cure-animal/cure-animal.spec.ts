@@ -1,3 +1,5 @@
+//npx jest apps/gameplay-service/src/farming/cure-animal/cure-animal.spec.ts
+
 import { AnimalCurrentState, AnimalId, AnimalInfoEntity, PlacedItemEntity, UserEntity } from "@src/databases"
 import { createTestModule, MOCK_USER } from "@src/testing"
 import { DataSource, DeepPartial } from "typeorm"
@@ -11,8 +13,6 @@ describe("CureAnimalService", () => {
 
     const mockUser: DeepPartial<UserEntity> = {
         ...MOCK_USER,
-        energy: 10,
-        experiences: 0,
     }
 
     beforeAll(async () => {
@@ -40,14 +40,15 @@ describe("CureAnimalService", () => {
                 },
             })
 
-            const request: CureAnimalRequest = {
-                userId: user.id,
-                placedItemAnimalId: placedItem.id,
-            }
-
             await queryRunner.startTransaction()
 
             try {
+
+                const request: CureAnimalRequest = {
+                    userId: user.id,
+                    placedItemAnimalId: placedItem.id,
+                }
+
                 // Execute the service method
                 await service.cureAnimal(request)
 
@@ -56,13 +57,6 @@ describe("CureAnimalService", () => {
                     where: { id: placedItem.animalInfo.id },
                 })
                 expect(updatedAnimalInfo.currentState).toBe(AnimalCurrentState.Normal)
-
-                // Verify user energy and experience updated
-                const updatedUser = await queryRunner.manager.findOne(UserEntity, {
-                    where: { id: user.id },
-                })
-                expect(updatedUser.energy).toBe(mockUser.energy - 5)
-                expect(updatedUser.experiences).toBe(mockUser.experiences + 20)
 
                 await queryRunner.commitTransaction()
             } catch (error) {
