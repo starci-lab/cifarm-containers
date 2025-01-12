@@ -1,4 +1,5 @@
 import { Inject } from "@nestjs/common"
-import { IOREDIS } from "./ioredis.constants"
+import { RedisType } from "@src/env"
+import { getIoRedisToken } from "./ioredis.utils"
 
-export const InjectIoRedis = () => Inject(IOREDIS)
+export const InjectIoRedis = (type: RedisType = RedisType.Cache) => Inject(getIoRedisToken(type))

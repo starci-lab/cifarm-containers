@@ -1,17 +1,14 @@
-import { Injectable } from "@nestjs/common"
 import { createAdapter } from "@socket.io/redis-adapter"
 import { ServerOptions } from "http"
-import { InjectRedis, RedisClientOrCluster } from "@src/native"
-import { IoAdapter } from "./io.types"
+import { RedisClientOrCluster } from "@src/native"
+import { IoAdapter } from "@nestjs/platform-socket.io"
 
-@Injectable()
 export class RedisIoAdapter extends IoAdapter {
     private adapterConstructor: ReturnType<typeof createAdapter>
-    constructor(
-        @InjectRedis()
-        private readonly redisClientOrCluster: RedisClientOrCluster
-    ) {
-        super()
+    private redisClientOrCluster: RedisClientOrCluster
+
+    public setClient(redisClientOrCluster: RedisClientOrCluster) {
+        this.redisClientOrCluster = redisClientOrCluster
     }
 
     public async connect(): Promise<void> {
@@ -28,4 +25,3 @@ export class RedisIoAdapter extends IoAdapter {
         return server
     }
 }
-

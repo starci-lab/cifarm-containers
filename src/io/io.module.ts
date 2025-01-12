@@ -1,27 +1,16 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common"
-import { RedisIoAdapter } from "./redis-io.adapter"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./io.module-definition"
 import { MongoDatabase, RedisType } from "@src/env"
 import { MongoDbModule, RedisModule } from "@src/native"
 import { IoAdapterType } from "./io.types"
 import { NestExport, NestImport, NestProvider } from "@src/common"
-import { MongoIoAdapter } from "./mongo-io.adapter"
-import { IO_ADAPTER } from "./io.constants"
+import { IO_ADAPTER_FACTORY } from "./io.constants"
+import { RedisIoAdapterFactory } from "./redis"
+import { MongoDbIoAdapterFactory } from "./mongodb"
 
-@Module({
-    imports: [
-        RedisModule.register({
-            type: RedisType.Adapter
-        }),
-        MongoDbModule.register({
-            database: MongoDatabase.Adapter
-        })
-    ],
-    providers: [RedisIoAdapter],
-    exports: [RedisIoAdapter]
-})
+@Module({})
 export class IoModule extends ConfigurableModuleClass {
-    static register(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
+    static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const adapter = options.adapter || IoAdapterType.MongoDb
 
         // define the modules, providers, and exports arrays
@@ -37,12 +26,10 @@ export class IoModule extends ConfigurableModuleClass {
                     type: RedisType.Adapter
                 })
             )
-            // define the provider for the RedisIoAdapter
             const provider: Provider = {
-                provide: IO_ADAPTER,
-                useClass: RedisIoAdapter
+                provide: IO_ADAPTER_FACTORY,
+                useClass: RedisIoAdapterFactory
             }
-
             providers.push(provider)
             exports.push(provider)
             break
@@ -53,11 +40,11 @@ export class IoModule extends ConfigurableModuleClass {
                     database: MongoDatabase.Adapter
                 })
             )
-            // define the provider for the MongoIoAdapter
             const provider: Provider = {
-                provide: IO_ADAPTER,
-                useClass: MongoIoAdapter
+                provide: IO_ADAPTER_FACTORY,
+                useClass: MongoDbIoAdapterFactory
             }
+            // define the provider for the MongoIoAdapter
             providers.push(provider)
             exports.push(provider)
             break

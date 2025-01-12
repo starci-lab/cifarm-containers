@@ -4,8 +4,8 @@ import { DefaultModule } from "./default"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { CacheModule } from "@src/cache"
 import { IoAdapterType, IoModule } from "@src/io"
-import { join } from "path"
-import { ServeStaticModule } from "@nestjs/serve-static"
+// import { join } from "path"
+// import { ServeStaticModule } from "@nestjs/serve-static"
 import { CryptoModule } from "@src/crypto"
 import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { JwtModule } from "@src/jwt"
@@ -36,11 +36,11 @@ import { PostgreSQLModule } from "@src/databases"
             adapter: IoAdapterType.MongoDb
         }),
         BroadcastModule,
-        DefaultModule,
+        DefaultModule
 
-        ServeStaticModule.forRoot({
-            rootPath: join(process.cwd(), "node_modules", "@socket.io", "admin-ui", "ui", "dist"),
-        }),
+        // ServeStaticModule.forRoot({
+        //     rootPath: join(process.cwd(), "node_modules", "@socket.io", "admin-ui", "ui", "dist"),
+        // }),
     ],
     controllers: [],
     providers: []

@@ -1,8 +1,9 @@
-import { Module, Provider } from "@nestjs/common"
+import { Module } from "@nestjs/common"
 import { ExecModule } from "@src/exec"
 import { OPTIONS_TYPE, ConfigurableModuleClass } from "./redis.module-definition"
 import { RedisType } from "@src/env"
 import { createRedisFactoryProvider } from "./redis.providers"
+import { NestExport, NestProvider } from "@src/common"
 
 @Module({})
 export class RedisModule extends ConfigurableModuleClass {
@@ -10,10 +11,10 @@ export class RedisModule extends ConfigurableModuleClass {
         const type = options.type ?? RedisType.Cache
         const dynamicModule = super.register(options)
 
-        const providers: Array<Provider> = []
-        const exports: Array<Provider> = []
+        const providers: Array<NestProvider> = []
+        const exports: Array<NestExport> = []
 
-        const redisFactoryProvider = createRedisFactoryProvider()
+        const redisFactoryProvider = createRedisFactoryProvider(type)
 
         providers.push(redisFactoryProvider)
         exports.push(redisFactoryProvider)

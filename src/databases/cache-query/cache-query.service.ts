@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { Sha256Service } from "@src/crypto"
-import { PostgreSQLDatabase } from "@src/env"
+import { PostgreSQLDatabase, RedisType } from "@src/env"
 import { MODULE_OPTIONS_TOKEN } from "./cache-query.module-definition"
 import { CacheQueryOptions } from "./cache-query.types"
 import { InjectIoRedis, IoRedisClientOrCluster } from "@src/native"
@@ -17,7 +17,7 @@ export class CacheQueryService {
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: CacheQueryOptions,
-        @InjectIoRedis()
+        @InjectIoRedis(RedisType.Cache)
         private readonly ioRedisClientOrCluster: IoRedisClientOrCluster,
         private readonly sha256Service: Sha256Service
     ) {

@@ -1,21 +1,17 @@
 import { Provider } from "@nestjs/common"
-import { MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } from "./redis.module-definition"
 import { envConfig, redisClusterEnabled, redisClusterRunInDocker, RedisType } from "@src/env"
-import { REDIS } from "./redis.constants"
-import { ExecDockerRedisClusterService } from "@src/exec"
 import { createClient, createCluster } from "redis"
 import { RedisClientOrCluster } from "./redis.types"
 import { NatMap } from "ioredis"
+import { getRedisToken } from "./redis.utils"
+import { ExecDockerRedisClusterService } from "@src/exec"
 
-export const createRedisFactoryProvider = (): Provider => ({
-    provide: REDIS,
-    inject: [MODULE_OPTIONS_TOKEN, ExecDockerRedisClusterService],
+export const createRedisFactoryProvider = (type: RedisType = RedisType.Cache): Provider => ({
+    provide: getRedisToken(type),
+    inject: [ExecDockerRedisClusterService],
     useFactory: async (
-        options: typeof OPTIONS_TYPE,
         execDockerRedisClusterService: ExecDockerRedisClusterService
     ): Promise<RedisClientOrCluster> => {
-        const type = options.type || RedisType.Cache
-        
         const clusterEnabled = redisClusterEnabled(type)
 
         const url = `redis://${envConfig().databases.redis[type].host}:${envConfig().databases.redis[type].port}`

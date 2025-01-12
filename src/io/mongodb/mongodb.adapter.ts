@@ -1,21 +1,19 @@
-import { Injectable, Logger } from "@nestjs/common"
-import { IoAdapter } from "./io.types"
+import { Logger } from "@nestjs/common"
 import { createAdapter } from "@socket.io/mongo-adapter"
 import { ServerOptions } from "http"
-import { InjectMongoDb } from "@src/native"
 import { MongoClient } from "mongodb"
+import { IoAdapter } from "@nestjs/platform-socket.io"
 
 const COLLECTION = "socket.io-adapter-events"
 
-@Injectable()
-export class MongoIoAdapter extends IoAdapter {
-    private logger = new Logger(MongoIoAdapter.name)
+export class MongoDbIoAdapter extends IoAdapter {
+    private logger = new Logger(MongoDbIoAdapter.name)
+    private mongoClient: MongoClient
+
     private adapterConstructor: ReturnType<typeof createAdapter>
-    constructor(
-        @InjectMongoDb()
-        private readonly mongoClient: MongoClient,
-    ) {
-        super()
+
+    public async setClient(mongoClient: MongoClient) {
+        this.mongoClient = mongoClient
     }
 
     public async connect(): Promise<void> {

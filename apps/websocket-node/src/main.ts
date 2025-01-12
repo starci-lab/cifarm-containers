@@ -1,10 +1,11 @@
 import { NestFactory } from "@nestjs/core"
-import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { KafkaGroupId, KafkaOptionsFactory } from "@src/brokers"
 import { Container, envConfig } from "@src/env"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { AppModule } from "./app.module"
-import { IO_ADAPTER, IoAdapter } from "@src/io"
+import { IO_ADAPTER_FACTORY, IoAdapterFactory } from "@src/io"
+import { MicroserviceOptions, Transport } from "@nestjs/microservices"
+import { KafkaOptionsFactory, KafkaGroupId } from "@src/brokers"
+import { RedisIoAdapter } from "./d"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -22,13 +23,17 @@ const bootstrap = async () => {
             }
         }
     )
-
-    //Use adapter for websocket
-    const ioAdapter = app.get<IoAdapter>(IO_ADAPTER)
-    await ioAdapter.connect()
-    app.useWebSocketAdapter(ioAdapter)
-    
     await app.startAllMicroservices()
+    
+    // Use adapter for websocket
+    const factory = app.get<IoAdapterFactory>(IO_ADAPTER_FACTORY)
+    const adapter = factory.createAdapter(app)
+    await adapter.connect()
+    console.log(adapter)
+
+    // Use adapter for websocket
+    app.useWebSocketAdapter(adapter)
+    
     await app.listen(envConfig().containers[Container.WebsocketNode].port)
 }
 
@@ -43,4 +48,5 @@ const bootstrapHealthCheck = async () => {
     )
     await app.listen(envConfig().containers[Container.WebsocketNode].healthCheckPort)
 }
+
 bootstrap().then(bootstrapHealthCheck)

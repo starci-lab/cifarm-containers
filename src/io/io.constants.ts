@@ -1,1 +1,1 @@
-export const IO_ADAPTER = "IO_ADAPTER"
+export const IO_ADAPTER_FACTORY = "IO_ADAPTER_FACTORY"
