@@ -1,4 +1,4 @@
-// npx jest apps/gameplay-service/src/farming/use-herbicide/use-herbicide.spec.ts
+// npx jest apps/gameplay-service/src/farming/water/water.spec.ts
 
 import {
     CropCurrentState,
@@ -16,32 +16,34 @@ import {
     DataSource,
     DeepPartial,
 } from "typeorm"
-import { UseHerbicideRequest } from "./use-herbicide.dto"
-import { UseHerbicideModule } from "./use-herbicide.module"
-import { UseHerbicideService } from "./use-herbicide.service"
+import { WaterRequest } from "./water.dto"
+import { WaterModule } from "./water.module"
+import { WaterService } from "./water.service"
 
-describe("UseHerbicideService", () => {
+describe("WaterService", () => {
     let dataSource: DataSource
-    let service: UseHerbicideService
+    let service: WaterService
 
     const mockUser: DeepPartial<UserEntity> = {
         ...MOCK_USER,
+        energy: 50,
+        experiences: 0,
     }
 
     beforeAll(async () => {
         const { module, dataSource: ds } = await createTestModule({
-            imports: [UseHerbicideModule],
+            imports: [WaterModule],
         })
         dataSource = ds
-        service = module.get<UseHerbicideService>(UseHerbicideService)
+        service = module.get<WaterService>(WaterService)
     })
 
-    it("Should successfully use herbicide on weedy crops", async () => {
+    it("Should successfully water crops that need water", async () => {
         const queryRunner = dataSource.createQueryRunner()
         await queryRunner.connect()
 
         try {
-            // Mock user and placed item with weedy crop
+            // Mock user and placed item with crop needing water
             const user = await queryRunner.manager.save(UserEntity, mockUser)
 
             const cropId = CropId.BellPepper
@@ -58,11 +60,11 @@ describe("UseHerbicideService", () => {
                     isFertilized: false,
                     harvestQuantityRemaining: 0,
                     crop,
-                    currentState: CropCurrentState.IsWeedy,
+                    currentState: CropCurrentState.NeedWater,
                 } as DeepPartial<SeedGrowthInfoEntity>,
             })
 
-            const request: UseHerbicideRequest = {
+            const request: WaterRequest = {
                 userId: user.id,
                 placedItemTileId: placedItemTile.id,
             }
@@ -70,7 +72,7 @@ describe("UseHerbicideService", () => {
             await queryRunner.startTransaction()
             try {
                 // Execute service
-                const response = await service.useHerbicide(request)
+                const response = await service.water(request)
 
                 // Verify seed growth info updated
                 const updatedSeedGrowthInfo = await queryRunner.manager.findOne(SeedGrowthInfoEntity, {
