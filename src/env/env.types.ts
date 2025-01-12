@@ -71,3 +71,9 @@ export enum PostgreSQLContext {
 export enum Brokers {
     Kafka = "kafka",
 }
+
+export enum IoAdapterType {
+    Redis = "redis",
+    MongoDb = "mongodb",
+    Cluster = "cluster",
+}

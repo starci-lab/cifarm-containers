@@ -7,7 +7,8 @@ import {
     PostgreSQLDatabase,
     PostgreSQLContext,
     Brokers,
-    MongoDatabase
+    MongoDatabase,
+    IoAdapterType
 } from "./env.types"
 import {
     DEFAULT_CACHE_TIMEOUT_MS,
@@ -62,6 +63,7 @@ export const envConfig = () => ({
             adminUiPort: process.env.WEBSOCKET_NODE_ADMIN_UI_PORT
                 ? Number.parseInt(process.env.WEBSOCKET_NODE_ADMIN_UI_PORT)
                 : 8082,
+            adapter: (process.env.WEBSOCKET_NODE_ADAPTER ?? IoAdapterType.MongoDb) as IoAdapterType,
             cluster: {
                 enabled: process.env.WEBSOCKET_NODE_CLUSTER_ENABLED === "true",
                 numberOfWorkers: process.env.WEBSOCKET_NODE_CLUSTER_NUMBER_OF_WORKERS
