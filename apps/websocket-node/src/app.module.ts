@@ -31,7 +31,7 @@ import { PostgreSQLModule } from "@src/databases"
             database: PostgreSQLDatabase.Gameplay
         }),
         IoModule.register({
-            adapter: IoAdapterType.MongoDb
+            adapter: IoAdapterType.Cluster
         }),
         BroadcastModule,
         DefaultModule

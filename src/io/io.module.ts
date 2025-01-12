@@ -7,6 +7,7 @@ import { NestExport, NestImport, NestProvider } from "@src/common"
 import { IO_ADAPTER_FACTORY } from "./io.constants"
 import { RedisIoAdapterFactory } from "./redis"
 import { MongoDbIoAdapterFactory } from "./mongodb"
+import { ClusterIoAdapterFactory } from "./cluster"
 
 @Module({})
 export class IoModule extends ConfigurableModuleClass {
@@ -45,6 +46,15 @@ export class IoModule extends ConfigurableModuleClass {
                 useClass: MongoDbIoAdapterFactory
             }
             // define the provider for the MongoIoAdapter
+            providers.push(provider)
+            exports.push(provider)
+            break
+        }
+        case IoAdapterType.Cluster: {
+            const provider: Provider = {
+                provide: IO_ADAPTER_FACTORY,
+                useClass: ClusterIoAdapterFactory
+            }
             providers.push(provider)
             exports.push(provider)
             break

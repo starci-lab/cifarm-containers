@@ -6,7 +6,8 @@ export interface IoOptions {
 
 export enum IoAdapterType {
     Redis = "redis",
-    MongoDb = "mongodb"
+    MongoDb = "mongodb",
+    Cluster = "cluster",
 }
 
 export declare class IoAdapter extends NestIoAdapter {
