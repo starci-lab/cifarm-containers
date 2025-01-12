@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common"
 import { BroadcastModule } from "./broadcast"
 import { DefaultModule } from "./default"
-import { ServeStaticModule } from "@nestjs/serve-static"
-import { join } from "path"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { CacheModule } from "@src/cache"
 import { PostgreSQLModule } from "@src/databases"
 import { IoModule } from "@src/io"
+import { join } from "path"
+import { ServeStaticModule } from "@nestjs/serve-static"
 
 @Module({
     imports: [

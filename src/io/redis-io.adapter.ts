@@ -19,6 +19,7 @@ export class RedisIoAdapter extends IoAdapter {
         const pubClient = this.redisClientOrCluster
         const subClient = pubClient.duplicate()
         await Promise.all([pubClient.connect(), subClient.connect()])
+        await pubClient.set("test", "test")
         this.adapterConstructor = createAdapter(pubClient, subClient)
     }
 
@@ -28,3 +29,4 @@ export class RedisIoAdapter extends IoAdapter {
         return server
     }
 }
+

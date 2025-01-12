@@ -57,7 +57,13 @@ export const envConfig = () => ({
                 : DEFAULT_PORT,
             healthCheckPort: process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT
                 ? Number.parseInt(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT)
-                : DEFAULT_HEALTH_PORT
+                : DEFAULT_HEALTH_PORT,
+            cluster: {
+                enabled: process.env.WEBSOCKET_NODE_CLUSTER_ENABLED === "true",
+                numberOfWorkers: process.env.WEBSOCKET_NODE_CLUSTER_NUMBER_OF_WORKERS
+                    ? Number.parseInt(process.env.WEBSOCKET_NODE_CLUSTER_NUMBER_OF_WORKERS)
+                    : 3
+            }
         },
         [Container.GameplayService]: {
             host: process.env.GAMEPLAY_SERVICE_HOST ?? LOCALHOST,
