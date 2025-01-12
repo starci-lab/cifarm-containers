@@ -6,7 +6,8 @@ import {
     RedisType,
     PostgreSQLDatabase,
     PostgreSQLContext,
-    Brokers
+    Brokers,
+    MongoDatabase
 } from "./env.types"
 import {
     DEFAULT_CACHE_TIMEOUT_MS,
@@ -153,6 +154,15 @@ export const envConfig = () => ({
                     password: process.env.TELEGRAM_MOCK_POSTGRESQL_PASSWORD
                 }
             }
+        },
+        mongo: {
+            [MongoDatabase.Adapter]: {
+                host: process.env.ADAPTER_MONGO_HOST ?? LOCALHOST,
+                port: Number.parseInt(process.env.ADAPTER_MONGO_PORT) ?? DEFAULT_PORT,
+                username: process.env.ADAPTER_MONGO_USERNAME,
+                password: process.env.ADAPTER_MONGO_PASSWORD,
+                dbName: process.env.ADAPTER_MONGO_DBNAME
+            },
         },
         redis: {
             [RedisType.Cache]: {

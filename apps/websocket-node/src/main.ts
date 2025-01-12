@@ -3,7 +3,6 @@ import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { KafkaGroupId, KafkaOptionsFactory } from "@src/brokers"
 import { Container, envConfig } from "@src/env"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
-import { RedisIoAdapter } from "@src/io"
 import { AppModule } from "./app.module"
 
 const bootstrap = async () => {
@@ -24,9 +23,9 @@ const bootstrap = async () => {
     )
 
     // Use redis adapter for websocket
-    const redisIoAdapter = app.get(RedisIoAdapter)
-    await redisIoAdapter.connectToRedis()
-    app.useWebSocketAdapter(redisIoAdapter)
+    // const redisIoAdapter = app.get(RedisIoAdapter)
+    // await redisIoAdapter.connectToRedis()
+    // app.useWebSocketAdapter(redisIoAdapter)
     
     await app.startAllMicroservices()
     await app.listen(envConfig().containers[Container.WebsocketNode].port)

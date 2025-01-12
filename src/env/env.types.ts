@@ -59,6 +59,10 @@ export enum PostgreSQLDatabase {
     Telegram = "telegram"
 }
 
+export enum MongoDatabase {
+    Adapter = "adapter",
+}
+
 export enum PostgreSQLContext {
     Main = "main",
     Mock = "mock"
