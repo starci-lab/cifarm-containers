@@ -31,15 +31,11 @@ const addMicroservices = async (app: INestApplication) => {
     await app.startAllMicroservices()
 }
 
-const addListener = async (app: INestApplication) => {
-    await app.listen(envConfig().containers[Container.WebsocketNode].port)
-}
-
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
     await addAdapter(app)
     await addMicroservices(app)
-    await addListener(app)
+    await app.listen(envConfig().containers[Container.WebsocketNode].port)
 }
 
 const bootstrapMaster = async () => {
