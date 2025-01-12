@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
+import { InjectIoRedis, IoRedisClientOrCluster } from "@src/native"
 import { IoRedisClientOrCluster } from "@src/native"
-import { InjectIoRedis } from "@src/native/ioredis/ioredis.decorators"
 import { QueueOptions } from "bullmq"
 
 @Injectable()

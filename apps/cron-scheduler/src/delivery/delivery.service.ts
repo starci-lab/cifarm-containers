@@ -4,7 +4,7 @@ import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import { CacheKey, InjectCache } from "@src/cache"
 import { DeliveringProductEntity, InjectPostgreSQL } from "@src/databases"
 import { isProduction } from "@src/env"
-import { Queue } from "bullmq"
+import { BulkJobOptions, Queue } from "bullmq"
 import { Cache } from "cache-manager"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
@@ -61,13 +61,18 @@ export class DeliveryService {
             const batchSize = bullData[BullQueueName.Animal].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
-            const batches = Array.from({ length: batchCount }, (_, i) => ({
+            const batches: Array<{
+                name: string
+                data: DeliveryJobData,
+                opts?: BulkJobOptions
+            }> = Array.from({ length: batchCount }, (_, i) => ({
                 name: v4(),
                 data: {
                     skip: i * batchSize,
                     take: batchSize,
                     utcTime: utcNow.valueOf(),
                 } as DeliveryJobData,
+                opts: bullData[BullQueueName.Delivery].opts
             }))
 
             this.logger.verbose(`Adding ${batches.length} batches to the queue.`)
