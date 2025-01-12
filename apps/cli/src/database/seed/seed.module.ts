@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { SeedCommand } from "./seed.command"
 import { SeedersModule } from "./seeders"
-import { PostgreSQLOptionsModule } from "@src/databases"
+import { CacheQueryModule, PostgreSQLOptionsModule } from "@src/databases"
 import {
     MAIN_GAMEPLAY_POSTGRESQL,
     MAIN_TELEGRAM_POSTGRESQL,
@@ -34,6 +34,7 @@ import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
                 context: PostgreSQLContext.Mock
             }
         }),
+        CacheQueryModule.register(),
         SeedersModule.register()
     ],
     providers: [SeedCommand]

@@ -1,18 +1,14 @@
 import { Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./cache-options.module-definition"
 import { CacheOptionsService } from "./cache-options.service"
-import { ExecModule } from "@src/exec"
 import { RedisType } from "@src/env"
+import { IoRedisModule } from "@src/native"
 
 @Module({
     imports: [
-        ExecModule.register({
-            docker: {
-                redisCluster: {
-                    type: RedisType.Cache
-                }
-            }
-        })
+        IoRedisModule.register({
+            type: RedisType.Cache
+        }),
     ],
     providers: [CacheOptionsService],
     exports: [CacheOptionsService]

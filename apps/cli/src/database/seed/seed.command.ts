@@ -1,7 +1,7 @@
 import { CommandRunner, SubCommand, Option } from "nest-commander"
 import { SeedersService } from "./seeders"
 import { DataSource } from "typeorm"
-import { PostgreSQLOptionsFactory } from "@src/databases"
+import { PostgreSQLOptionsFactory, CacheQueryService } from "@src/databases"
 import { createDatabase } from "typeorm-extension"
 import { Inject, Logger } from "@nestjs/common"
 import {
@@ -27,73 +27,84 @@ export class SeedCommand extends CommandRunner {
         private readonly mainTelegramPostgreSQLOptionsFactory: PostgreSQLOptionsFactory,
         @Inject(MOCK_TELEGRAM_POSTGRESQL)
         private readonly mockTelegramPostgreSQLOptionsFactory: PostgreSQLOptionsFactory,
+        private readonly cacheQueryService: CacheQueryService,
         private readonly seedersService: SeedersService
     ) {
         super()
     }
 
     async run(_: Array<string>, options?: SeedCommandOptions): Promise<void> {
-        if (options?.database) {
-            const values = Object.values(PostgreSQLDatabase)
-            if (!values.includes(options.database as PostgreSQLDatabase)) {
-                this.logger.error(`Invalid database: ${options.database}`)
-                return
-            }
-            this.database = options.database as PostgreSQLDatabase
-        } else {
-            this.database = PostgreSQLDatabase.Gameplay
-        }
-
-        if (options?.mock) {
-            this.context = PostgreSQLContext.Mock
-        } else {
-            this.context = PostgreSQLContext.Main
-        }
-
-        const factoryMap: Record<
-            PostgreSQLDatabase,
-            Record<PostgreSQLContext, PostgreSQLOptionsFactory>
-        > = {
-            [PostgreSQLDatabase.Gameplay]: {
-                [PostgreSQLContext.Main]:
-                    this.mainGameplayPostgreSQLOptionsFactory,
-                [PostgreSQLContext.Mock]:
-                    this.mockGameplayPostgreSQLOptionsFactory
-            },
-            [PostgreSQLDatabase.Telegram]: {
-                [PostgreSQLContext.Main]:
-                    this.mainTelegramPostgreSQLOptionsFactory,
-                [PostgreSQLContext.Mock]:
-                    this.mockTelegramPostgreSQLOptionsFactory
-            }
-        }
-        const factory = factoryMap[this.database][this.context]
-
-        const dataSourceOptions = factory.createDataSourceOptions()
-        if (options?.create) {
-            await createDatabase({
-                options: dataSourceOptions
-            })
-        }
-        const dataSource = new DataSource(dataSourceOptions)
-        await dataSource.initialize()
-
-        if (options?.force) {
-            this.logger.debug("Forcing to recreate the seed data...")
-            await this.seedersService.clearSeeders(dataSource)
-            this.logger.verbose("Seed data cleared successfully.")
-        }
-
+        let dataSource: DataSource
         try {
+            if (options?.database) {
+                const values = Object.values(PostgreSQLDatabase)
+                if (!values.includes(options.database as PostgreSQLDatabase)) {
+                    this.logger.error(`Invalid database: ${options.database}`)
+                    return
+                }
+                this.database = options.database as PostgreSQLDatabase
+            } else {
+                this.database = PostgreSQLDatabase.Gameplay
+            }
+
+            if (options?.mock) {
+                this.context = PostgreSQLContext.Mock
+            } else {
+                this.context = PostgreSQLContext.Main
+            }
+
+            const factoryMap: Record<
+                PostgreSQLDatabase,
+                Record<PostgreSQLContext, PostgreSQLOptionsFactory>
+            > = {
+                [PostgreSQLDatabase.Gameplay]: {
+                    [PostgreSQLContext.Main]: this.mainGameplayPostgreSQLOptionsFactory,
+                    [PostgreSQLContext.Mock]: this.mockGameplayPostgreSQLOptionsFactory
+                },
+                [PostgreSQLDatabase.Telegram]: {
+                    [PostgreSQLContext.Main]: this.mainTelegramPostgreSQLOptionsFactory,
+                    [PostgreSQLContext.Mock]: this.mockTelegramPostgreSQLOptionsFactory
+                }
+            }
+            const factory = factoryMap[this.database][this.context]
+
+            const dataSourceOptions = factory.createDataSourceOptions()
+            if (options?.create) {
+                await createDatabase({
+                    options: dataSourceOptions
+                })
+            }
+            dataSource = new DataSource(dataSourceOptions)
+            await dataSource.initialize()
+
+            if (options?.force) {
+                //remove all cache keys
+                await this.cacheQueryService.clear()
+                this.logger.debug("Cache keys removed successfully.")
+
+                //clear seeders
+                this.logger.debug("Forcing to recreate the seed data...")
+                await this.seedersService.clearSeeders(dataSource)
+                this.logger.verbose("Seed data cleared successfully.")
+            }
+
+            //run seeders
             await this.seedersService.runSeeders({
                 dataSource,
                 seedTracking: true
             })
+            
+            this.logger.log("Seeders ran successfully")
         } catch (error) {
-            this.logger.error(`Seeders failed to run: ${error.message}`)
-            return
+            this.logger.error(`Seed command failed: ${error.message}`)
+        } finally {
+            //destroy the data source
+            if (dataSource) {
+                await dataSource.destroy()
+            }
+            //quit the redis client
+            await this.cacheQueryService.getNativeRedis().quit()
         }
-        this.logger.log("Seeders ran successfully")
     }
 
     @Option({

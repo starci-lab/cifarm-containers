@@ -1,18 +1,14 @@
 import { Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./keyv.module-definition"
 import { KeyvService } from "./keyv.service"
-import { ExecModule } from "@src/exec"
 import { RedisType } from "@src/env"
+import { RedisModule } from "@src/native"
 
 @Module({
     imports: [
-        ExecModule.register({
-            docker: {
-                redisCluster: {
-                    type: RedisType.Cache
-                }
-            }
-        })
+        RedisModule.register({
+            type: RedisType.Cache
+        }),
     ],
     providers: [KeyvService],
     exports: [KeyvService]

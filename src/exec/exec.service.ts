@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { execa } from "execa"
+import { execa } from "@esm2cjs/execa"
 import { MODULE_OPTIONS_TOKEN } from "./exec.module-definition"
 import { ExecOptions } from "./exec.types"
 
