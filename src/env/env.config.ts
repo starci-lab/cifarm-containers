@@ -59,6 +59,9 @@ export const envConfig = () => ({
             healthCheckPort: process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT
                 ? Number.parseInt(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT)
                 : DEFAULT_HEALTH_PORT,
+            adminUiPort: process.env.WEBSOCKET_NODE_ADMIN_UI_PORT
+                ? Number.parseInt(process.env.WEBSOCKET_NODE_ADMIN_UI_PORT)
+                : 8082,
             cluster: {
                 enabled: process.env.WEBSOCKET_NODE_CLUSTER_ENABLED === "true",
                 numberOfWorkers: process.env.WEBSOCKET_NODE_CLUSTER_NUMBER_OF_WORKERS
