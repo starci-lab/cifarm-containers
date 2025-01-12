@@ -1,3 +1,5 @@
+import { BulkJobOptions } from "bullmq"
+
 export enum BullQueueName {
     Crop = "crop",
     Animal = "animal",
@@ -9,6 +11,7 @@ export interface BullQueueData {
     name: string
     batchSize: number
     prefix?: string
+    opts?: BulkJobOptions
 }
 
 export interface RegisterQueueOptions {

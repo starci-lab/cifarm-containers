@@ -4,7 +4,7 @@ import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName } from "@src/bull"
 import { Collection, CollectionEntity, EnergyGrowthLastSchedule, InjectPostgreSQL, SpeedUpData, TempEntity, TempId, UserEntity } from "@src/databases"
 import { LeaderElectionService } from "@src/leader-election"
-import { Queue } from "bullmq"
+import { BulkJobOptions, Queue } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { DataSource } from "typeorm"
@@ -70,7 +70,8 @@ export class EnergyService {
             // Create batches
             const batches: Array<{
             name: string
-            data: EnergyJobData
+            data: EnergyJobData,
+            opts?: BulkJobOptions
         }> = Array.from({ length: batchCount }, (_, i) => ({
             name: v4(),
             data: {
@@ -78,7 +79,8 @@ export class EnergyService {
                 take: Math.min((i + 1) * batchSize, count),
                 time,
                 utcTime: dayjs().utc().valueOf()
-            }
+            },
+            opts: bullData[BullQueueName.Energy].opts
         }))
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
             const jobs = await this.EnergyQueue.addBulk(batches)

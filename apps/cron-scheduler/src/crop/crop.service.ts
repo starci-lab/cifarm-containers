@@ -13,7 +13,7 @@ import {
     TempId
 } from "@src/databases"
 import { LeaderElectionService } from "@src/leader-election"
-import { Queue } from "bullmq"
+import { BulkJobOptions, Queue } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { DataSource, Not } from "typeorm"
@@ -85,7 +85,8 @@ export class CropService {
             // Create batches
             const batches: Array<{
                 name: string
-                data: CropJobData
+                data: CropJobData,
+                opts?: BulkJobOptions
             }> = Array.from({ length: batchCount }, (_, i) => ({
                 name: v4(),
                 data: {
@@ -93,7 +94,8 @@ export class CropService {
                     take: Math.min((i + 1) * batchSize, count),
                     time,
                     utcTime: dayjs().utc().valueOf()
-                }
+                },
+                opts: bullData[BullQueueName.Crop].opts
             }))
             const jobs = await this.cropQueue.addBulk(batches)
             this.logger.verbose(`Added ${jobs.at(0).name} jobs to the crop queue. Time: ${time}`)
