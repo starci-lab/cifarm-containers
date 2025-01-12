@@ -18,10 +18,10 @@ export class ClusterIoAdapter extends IoAdapter {
     public createIOServer(port: number, options?: ServerOptions) {
         const server = super.createIOServer(port, options)
         server.adapter(this.adapterConstructor)
-
-        this.logger.debug(cluster.isWorker)
+        
+        // check if the current process is a worker, if so, setup the worker
+        // do not need to check env since if worker exist then cluster must be enabled
         if (cluster.isWorker) {
-            this.logger.debug(`Worker ${cluster.worker.id} is setting up sticky session.`)
             setupWorker(server)
         }
 
