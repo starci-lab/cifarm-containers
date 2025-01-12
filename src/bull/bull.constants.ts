@@ -2,9 +2,9 @@ import { BullQueueData, BullQueueName } from "./bull.types"
 import { formatWithBraces } from "./bull.utils"
 
 export const queueOptions = {
-    REMOVE_ON_COMPLETE_AGE: 3600, // keep up to 1 hour
-    REMOVE_ON_COMPLETE_COUNT: 1000, // keep up to 1000 jobs
-    REMOVE_ON_FAIL_AGE: 24 * 3600, // keep up to 24 hours
+    JOB_AGE: 24 * 3600, // 24 hours
+    COMPLETE_JOB_COUNT: 1000, // keep up to 1000 jobs
+    FAILED_JOB_COUNT: 5000, // keep up to 1000 jobs
 }
 
 export const bullData: Record<BullQueueName, BullQueueData>  = {
@@ -14,11 +14,12 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("crop"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.REMOVE_ON_COMPLETE_AGE,
-                count: queueOptions.REMOVE_ON_COMPLETE_COUNT
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.REMOVE_ON_FAIL_AGE
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.FAILED_JOB_COUNT
             },
         }
     },
@@ -28,11 +29,12 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("animal"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.REMOVE_ON_COMPLETE_AGE,
-                count: queueOptions.REMOVE_ON_COMPLETE_COUNT
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.REMOVE_ON_FAIL_AGE
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.FAILED_JOB_COUNT
             },
         }
     },
@@ -42,11 +44,12 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("delivery"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.REMOVE_ON_COMPLETE_AGE,
-                count: queueOptions.REMOVE_ON_COMPLETE_COUNT
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.REMOVE_ON_FAIL_AGE
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.FAILED_JOB_COUNT
             },
         }
     },
@@ -56,11 +59,12 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("energy"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.REMOVE_ON_COMPLETE_AGE,
-                count: queueOptions.REMOVE_ON_COMPLETE_COUNT
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.REMOVE_ON_FAIL_AGE
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.FAILED_JOB_COUNT
             },
         }
     }
