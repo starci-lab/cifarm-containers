@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common"
-import { IoAdapter } from "@nestjs/platform-socket.io"
 import { createAdapter } from "@socket.io/redis-adapter"
 import { ServerOptions } from "http"
 import { InjectRedis, RedisClientOrCluster } from "@src/native"
+import { IoAdapter } from "./io.types"
 
 @Injectable()
 export class RedisIoAdapter extends IoAdapter {
@@ -14,7 +14,7 @@ export class RedisIoAdapter extends IoAdapter {
         super()
     }
 
-    public async connectToRedis(): Promise<void> {
+    public async connect(): Promise<void> {
         // if cluster is not enabled, create a single connection
         const pubClient = this.redisClientOrCluster
         const subClient = pubClient.duplicate()

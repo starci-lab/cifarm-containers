@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { IoAdapter } from "@nestjs/platform-socket.io"
+import { IoAdapter } from "./io.types"
 import { createAdapter } from "@socket.io/mongo-adapter"
 import { ServerOptions } from "http"
 import { InjectMongoDb } from "@src/native"
@@ -18,7 +18,7 @@ export class MongoIoAdapter extends IoAdapter {
         super()
     }
 
-    public async connectToMongoDb(): Promise<void> {
+    public async connect(): Promise<void> {
         // if cluster is not enabled, create a single connection
         await this.mongoClient.connect()
         

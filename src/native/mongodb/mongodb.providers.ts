@@ -1,13 +1,12 @@
 import { Provider } from "@nestjs/common"
 import { MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } from "./mongodb.module-definition"
 import { MONGODB } from "./mongodb.constants"
-import { ExecDockerRedisClusterService } from "@src/exec"
 import { MongoClient } from "mongodb"
 import { envConfig, MongoDatabase } from "@src/env"
 
 export const createMongoDbFactoryProvider = (): Provider => ({
     provide: MONGODB,
-    inject: [MODULE_OPTIONS_TOKEN, ExecDockerRedisClusterService],
+    inject: [MODULE_OPTIONS_TOKEN],
     useFactory: async (
         options: typeof OPTIONS_TYPE
     ): Promise<MongoClient> => {
@@ -21,6 +20,7 @@ export const createMongoDbFactoryProvider = (): Provider => ({
         const auth = username && password ? `${username}:${password}@` : ""
 
         const uri = `mongodb://${auth}${host}:${port}/${dbName}`
+        console.log(uri)
 
         // Return the MongoClient with the constructed URI
         return new MongoClient(uri)

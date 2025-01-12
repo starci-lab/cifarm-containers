@@ -4,6 +4,7 @@ import { KafkaGroupId, KafkaOptionsFactory } from "@src/brokers"
 import { Container, envConfig } from "@src/env"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { AppModule } from "./app.module"
+import { IO_ADAPTER, IoAdapter } from "@src/io"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -22,10 +23,10 @@ const bootstrap = async () => {
         }
     )
 
-    // Use redis adapter for websocket
-    // const redisIoAdapter = app.get(RedisIoAdapter)
-    // await redisIoAdapter.connectToRedis()
-    // app.useWebSocketAdapter(redisIoAdapter)
+    //Use adapter for websocket
+    const ioAdapter = app.get<IoAdapter>(IO_ADAPTER)
+    await ioAdapter.connect()
+    app.useWebSocketAdapter(ioAdapter)
     
     await app.startAllMicroservices()
     await app.listen(envConfig().containers[Container.WebsocketNode].port)

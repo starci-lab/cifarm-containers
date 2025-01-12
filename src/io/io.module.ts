@@ -1,4 +1,4 @@
-import { DynamicModule, Module } from "@nestjs/common"
+import { DynamicModule, Module, Provider } from "@nestjs/common"
 import { RedisIoAdapter } from "./redis-io.adapter"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./io.module-definition"
 import { MongoDatabase, RedisType } from "@src/env"
@@ -6,6 +6,7 @@ import { MongoDbModule, RedisModule } from "@src/native"
 import { IoAdapterType } from "./io.types"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { MongoIoAdapter } from "./mongo-io.adapter"
+import { IO_ADAPTER } from "./io.constants"
 
 @Module({
     imports: [
@@ -36,8 +37,14 @@ export class IoModule extends ConfigurableModuleClass {
                     type: RedisType.Adapter
                 })
             )
-            providers.push(RedisIoAdapter)
-            exports.push(RedisIoAdapter)
+            // define the provider for the RedisIoAdapter
+            const provider: Provider = {
+                provide: IO_ADAPTER,
+                useClass: RedisIoAdapter
+            }
+
+            providers.push(provider)
+            exports.push(provider)
             break
         }
         case IoAdapterType.MongoDb: {
@@ -46,8 +53,13 @@ export class IoModule extends ConfigurableModuleClass {
                     database: MongoDatabase.Adapter
                 })
             )
-            providers.push(MongoIoAdapter)
-            exports.push(MongoIoAdapter)
+            // define the provider for the MongoIoAdapter
+            const provider: Provider = {
+                provide: IO_ADAPTER,
+                useClass: MongoIoAdapter
+            }
+            providers.push(provider)
+            exports.push(provider)
             break
         }
         }

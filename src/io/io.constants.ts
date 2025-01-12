@@ -1,0 +1,1 @@
+export const IO_ADAPTER = "IO_ADAPTER"

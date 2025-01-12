@@ -3,7 +3,7 @@ import { BroadcastModule } from "./broadcast"
 import { DefaultModule } from "./default"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { CacheModule } from "@src/cache"
-import { IoModule } from "@src/io"
+import { IoAdapterType, IoModule } from "@src/io"
 import { join } from "path"
 import { ServeStaticModule } from "@nestjs/serve-static"
 import { CryptoModule } from "@src/crypto"
@@ -32,9 +32,12 @@ import { PostgreSQLModule } from "@src/databases"
             context: PostgreSQLContext.Main,
             database: PostgreSQLDatabase.Gameplay
         }),
-        IoModule.register(),
+        IoModule.register({
+            adapter: IoAdapterType.MongoDb
+        }),
         BroadcastModule,
         DefaultModule,
+
         ServeStaticModule.forRoot({
             rootPath: join(process.cwd(), "node_modules", "@socket.io", "admin-ui", "ui", "dist"),
         }),
