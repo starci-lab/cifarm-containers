@@ -2,7 +2,7 @@ import { INestApplication, Injectable } from "@nestjs/common"
 import { InjectRedis, RedisClientOrCluster } from "@src/native"
 import { RedisIoAdapter } from "./redis.adapter"
 import { RedisType } from "@src/env"
-import { IoAdapterFactory } from "../io.types"
+import { IoAdapterFactory } from "../../io.types"
 
 @Injectable()
 export class RedisIoAdapterFactory implements IoAdapterFactory {

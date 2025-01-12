@@ -1,27 +1,23 @@
 import { NestFactory } from "@nestjs/core"
-import { Container, envConfig } from "@src/env"
+import { Container, envConfig, loadEnv } from "@src/env"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { AppModule } from "./app.module"
-import { IO_ADAPTER_FACTORY, IoAdapterFactory } from "@src/io"
+import { createPrimaryServer, IO_ADAPTER_FACTORY, IoAdapterFactory } from "@src/io"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { KafkaOptionsFactory, KafkaGroupId } from "@src/brokers"
 import cluster from "cluster"
-import { setupMaster, setupWorker } from "@socket.io/sticky"
 import { INestApplication, Logger } from "@nestjs/common"
-import { Server } from "socket.io"
 import { join } from "path"
 import { ServeStaticModule } from "@nestjs/serve-static"
-import { setupPrimary } from "@socket.io/cluster-adapter"
 
 const addAdapter = async (app: INestApplication) => {
     const factory = app.get<IoAdapterFactory>(IO_ADAPTER_FACTORY)
-    console.log(factory)
     const adapter = factory.createAdapter(app)
     await adapter.connect()
     app.useWebSocketAdapter(adapter)
 }
 
-const addKafka = async (app: INestApplication) => {
+const addMicroservices = async (app: INestApplication) => {
     const options = app.get(KafkaOptionsFactory)
     app.connectMicroservice<MicroserviceOptions>({
         transport: Transport.KAFKA,
@@ -42,45 +38,14 @@ const addListener = async (app: INestApplication) => {
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
     await addAdapter(app)
-    await addKafka(app)
+    await addMicroservices(app)
     await addListener(app)
 }
 
 const bootstrapMaster = async () => {
     const logger = new Logger(bootstrapMaster.name)
-    const app = await NestFactory.create(AppModule)
-
-    await addKafka(app)
-
-    logger.verbose(`Primary ${process.pid} is running`)
-    const numberOfWorkers =
-                envConfig().containers[Container.WebsocketNode].cluster.numberOfWorkers
-
-    // Setup sticky sessions for load balancing
-    setupMaster(app.getHttpServer(), {
-        loadBalancingMethod: "least-connection"
-    })
-
-    // Setup primary process
-    setupPrimary()
-
-    // Serialization setup for worker communication
-    cluster.setupPrimary({
-        serialization: "advanced"
-    })
-
-    // Fork workers
-    for (let i = 0; i < numberOfWorkers; i++) {
-        cluster.fork()
-    }
-
-    // Restart worker if it dies
-    cluster.on("exit", (worker) => {
-        console.log(`Worker ${worker.process.pid} died`)
-        cluster.fork()
-    })
-
-    await addListener(app)
+    await loadEnv()
+    await createPrimaryServer(envConfig().containers[Container.WebsocketNode].port, logger)
 }
 
 const bootstrapWorker = async () => {
@@ -88,11 +53,9 @@ const bootstrapWorker = async () => {
     logger.verbose(`Worker ${process.pid} started`)
 
     const app = await NestFactory.create(AppModule)
+    await addMicroservices(app)
     await addAdapter(app)
-
-    // Setup connection with the primary process
-    const io = new Server(app.getHttpServer())
-    setupWorker(io)
+    await app.listen(envConfig().containers[Container.WebsocketNode].cluster.workerPort)
 }
 
 const bootstrapAll = async () => {
@@ -102,7 +65,7 @@ const bootstrapAll = async () => {
     }
 
     if (cluster.isPrimary) {
-        await bootstrapMaster()
+        await bootstrapMaster().then(bootstrapHealthCheck).then(bootstrapAdminUi)
     } else {
         await bootstrapWorker()
     }

@@ -1,5 +1,5 @@
 import { INestApplication, Injectable } from "@nestjs/common"
-import { IoAdapterFactory } from "../io.types"
+import { IoAdapterFactory } from "../../io.types"
 import { ClusterIoAdapter } from "./cluster.adapter"
 
 @Injectable()

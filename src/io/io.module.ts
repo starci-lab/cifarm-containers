@@ -5,9 +5,7 @@ import { MongoDbModule, RedisModule } from "@src/native"
 import { IoAdapterType } from "./io.types"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { IO_ADAPTER_FACTORY } from "./io.constants"
-import { RedisIoAdapterFactory } from "./redis"
-import { MongoDbIoAdapterFactory } from "./mongodb"
-import { ClusterIoAdapterFactory } from "./cluster"
+import { ClusterIoAdapterFactory, MongoDbIoAdapterFactory, RedisIoAdapterFactory } from "./adapters"
 
 @Module({})
 export class IoModule extends ConfigurableModuleClass {

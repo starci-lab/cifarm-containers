@@ -3,7 +3,7 @@ import { InjectMongoDb } from "@src/native"
 import { MongoClient } from "mongodb"
 import { MongoDbIoAdapter } from "./mongodb.adapter"
 import { MongoDatabase } from "@src/env"
-import { IoAdapterFactory } from "../io.types"
+import { IoAdapterFactory } from "../../io.types"
 
 @Injectable()
 export class MongoDbIoAdapterFactory implements IoAdapterFactory {

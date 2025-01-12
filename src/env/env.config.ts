@@ -66,7 +66,10 @@ export const envConfig = () => ({
                 enabled: process.env.WEBSOCKET_NODE_CLUSTER_ENABLED === "true",
                 numberOfWorkers: process.env.WEBSOCKET_NODE_CLUSTER_NUMBER_OF_WORKERS
                     ? Number.parseInt(process.env.WEBSOCKET_NODE_CLUSTER_NUMBER_OF_WORKERS)
-                    : 3
+                    : 3,
+                workerPort: process.env.WEBSOCKET_NODE_CLUSTER_WORKER_PORT
+                    ? Number.parseInt(process.env.WEBSOCKET_NODE_CLUSTER_WORKER_PORT)
+                    : DEFAULT_PORT + 10
             }
         },
         [Container.GameplayService]: {

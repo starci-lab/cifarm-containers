@@ -1,5 +1,7 @@
+import { NestFactory } from "@nestjs/core"
 import { envConfig } from "./env.config"
 import { NodeEnv, RedisType } from "./env.types"
+import { ConfigOnlyModule } from "./config-only.module"
 
 export const isProduction = (): boolean => {
     return envConfig().nodeEnv === NodeEnv.Production
@@ -15,4 +17,9 @@ export const redisClusterEnabled = (type: RedisType = RedisType.Cache): boolean 
 
 export const redisClusterRunInDocker = (type: RedisType = RedisType.Cache): boolean => {
     return envConfig().databases.redis[type].cluster.runInDocker
+}
+
+export const loadEnv = async (): Promise<void> => {
+    const app = await NestFactory.createApplicationContext(ConfigOnlyModule)
+    await app.close()
 }

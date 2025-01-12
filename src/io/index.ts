@@ -1,6 +1,5 @@
 export * from "./io.module"
 export * from "./io.module-definition"
-export * from "./mongodb"
 export * from "./io.types"
 export * from "./io.constants"
-export * from "./redis"
+export * from "./adapters"
