@@ -10,8 +10,8 @@ import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } 
 export class SubgraphOptionsFactory {
     constructor(private readonly keyvService: KeyvService) { }
 
-    async createSubgraphOptions(): Promise<Omit<ApolloDriverConfig, "driver">> {
-        const keyvAdapter = await this.keyvService.createKeyvAdapter()
+    createSubgraphOptions(): Omit<ApolloDriverConfig, "driver"> {
+        const keyvAdapter = this.keyvService.createKeyvAdapter()
         return {
             autoSchemaFile: {
                 federation: 2
