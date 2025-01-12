@@ -3,7 +3,7 @@ import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import { AnimalCurrentState, AnimalGrowthLastSchedule, AnimalInfoEntity, Collection, CollectionEntity, InjectPostgreSQL, SpeedUpData, TempEntity, TempId } from "@src/databases"
 import { LeaderElectionService } from "@src/leader-election"
-import { Queue } from "bullmq"
+import { BulkJobOptions, Queue } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { DataSource, Not } from "typeorm"
@@ -74,7 +74,8 @@ export class AnimalService {
             // Create batches
             const batches: Array<{
                         name: string
-                        data: AnimalJobData
+                        data: AnimalJobData,
+                        opts?: BulkJobOptions
                     }> = Array.from({ length: batchCount }, (_, i) => ({
                         name: v4(),
                         data: {
@@ -82,7 +83,8 @@ export class AnimalService {
                             take: Math.min((i + 1) * batchSize, count),
                             time,
                             utcTime: dayjs().utc().valueOf()
-                        }
+                        },
+                        opts: bullData[BullQueueName.Animal].opts
                     }))
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
             const jobs = await this.animalQueue.addBulk(batches)

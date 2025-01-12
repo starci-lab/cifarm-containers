@@ -107,7 +107,8 @@ export class CollectAnimalProductService {
 
                 // Save updated placed item
                 await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
-                    currentState: AnimalCurrentState.Normal
+                    currentState: AnimalCurrentState.Normal,
+                    harvestQuantityRemaining: 0
                 })
 
                 // Commit transaction

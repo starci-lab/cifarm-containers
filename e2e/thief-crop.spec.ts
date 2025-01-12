@@ -18,7 +18,7 @@ import {
     TileId,
     UserEntity
 } from "@src/databases"
-import { MODULE_OPTIONS_TOKEN } from "@src/databases/postgresql/postgresql.module-definition"
+import { MODULE_OPTIONS_TOKEN } from "@src/databases/postgresql"
 import { EnvModule, Network, SupportedChainKey } from "@src/env"
 import { grpcData, GrpcModule, GrpcServiceName } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
