@@ -13,6 +13,7 @@ import { createTestModule, MOCK_USER } from "@src/testing"
 import { DataSource, DeepPartial } from "typeorm"
 import { HarvestCropRequest } from "./harvest-crop.dto"
 import { HarvestCropService } from "./harvest-crop.service"
+import { HarvestCropModule } from "./harvest-crop.module"
 
 describe("HarvestCropService", () => {
     let dataSource: DataSource
@@ -26,7 +27,7 @@ describe("HarvestCropService", () => {
 
     beforeAll(async () => {
         const { module, dataSource: ds } = await createTestModule({
-            imports: [HarvestCropService],
+            imports: [HarvestCropModule],
         })
         dataSource = ds
         service = module.get<HarvestCropService>(HarvestCropService)
@@ -44,6 +45,8 @@ describe("HarvestCropService", () => {
 
         const placedItem = await queryRunner.manager.save(PlacedItemEntity, {
             userId: user.id,
+            x: 0,
+            y: 0,
             seedGrowthInfo: {
                 crop,
                 currentState: CropCurrentState.FullyMatured,

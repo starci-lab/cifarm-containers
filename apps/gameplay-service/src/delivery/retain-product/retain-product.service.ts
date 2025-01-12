@@ -46,7 +46,7 @@ export class RetainProductService {
             const existingInventories = await queryRunner.manager.find(InventoryEntity, {
                 where: {
                     userId: request.userId,
-                    inventoryTypeId: inventoryType.id
+                    inventoryType: inventoryType
                 },
                 relations: {
                     inventoryType: true

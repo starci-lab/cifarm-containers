@@ -1,7 +1,6 @@
 import {
     AnimalCurrentState,
     AnimalId,
-    AnimalInfoEntity,
     InventoryEntity,
     PlacedItemEntity,
     ProductId,
@@ -46,7 +45,7 @@ describe("CollectAnimalProductService", () => {
             y: 0,
         }
 
-        const animalInfo = await queryRunner.manager.save(AnimalInfoEntity, placedItemAnimal)
+        const animalInfo = await queryRunner.manager.save(PlacedItemEntity, placedItemAnimal)
 
         await queryRunner.startTransaction()
 

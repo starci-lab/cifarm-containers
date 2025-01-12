@@ -34,20 +34,20 @@ describe("RecoverTileService", () => {
         // Setup user and placed item
         const user = await queryRunner.manager.save(UserEntity, mockUser)
 
+        //Add placedItem
+        const placedItemTile = await queryRunner.manager.save(PlacedItemEntity, {
+            userId: user.id,
+            x: 0,
+            y: 0,
+            placedItemType: {
+                id: PlacedItemTypeId.BasicTile1,
+                type: PlacedItemType.Tile
+            },
+        })
+
         await queryRunner.startTransaction()
 
         try {
-            //Add placedItem
-            const placedItemTile = await queryRunner.manager.save(PlacedItemEntity, {
-                userId: user.id,
-                x: 0,
-                y: 0,
-                placedItemType: {
-                    id: PlacedItemTypeId.BasicTile1,
-                    type: PlacedItemType.Tile
-                },
-            })
-
             // Setup request
             const request: RecoverTileRequest = {
                 userId: user.id,

@@ -47,11 +47,6 @@ describe("BuySeedsService", () => {
                 userId: userBeforeBuyingSeed.id,
                 quantity: 1
             }
-
-            console.log(
-                "userBeforeBuyingSeed", userBeforeBuyingSeed
-            )
-
             // Buy seeds
             await service.buySeeds(buySeedRequest)
 

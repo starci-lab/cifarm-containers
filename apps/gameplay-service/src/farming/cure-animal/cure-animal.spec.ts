@@ -2,6 +2,7 @@ import { AnimalCurrentState, AnimalId, AnimalInfoEntity, PlacedItemEntity, UserE
 import { createTestModule, MOCK_USER } from "@src/testing"
 import { DataSource, DeepPartial } from "typeorm"
 import { CureAnimalRequest } from "./cure-animal.dto"
+import { CureAnimalModule } from "./cure-animal.module"
 import { CureAnimalService } from "./cure-animal.service"
 
 describe("CureAnimalService", () => {
@@ -16,7 +17,7 @@ describe("CureAnimalService", () => {
 
     beforeAll(async () => {
         const { module, dataSource: ds } = await createTestModule({
-            imports: [CureAnimalService],
+            imports: [CureAnimalModule],
         })
         dataSource = ds
         service = module.get<CureAnimalService>(CureAnimalService)
@@ -31,6 +32,8 @@ describe("CureAnimalService", () => {
 
             const placedItem = await queryRunner.manager.save(PlacedItemEntity, {
                 userId: user.id,
+                x: 0,
+                y: 0,
                 animalInfo: {
                     currentState: AnimalCurrentState.Sick,
                     animalId: AnimalId.Cow,

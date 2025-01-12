@@ -1,6 +1,6 @@
 import {
     AnimalCurrentState,
-    AnimalInfoEntity,
+    AnimalId,
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
@@ -10,6 +10,7 @@ import {
 import { createTestModule, MOCK_USER } from "@src/testing"
 import { DataSource, DeepPartial } from "typeorm"
 import { FeedAnimalRequest } from "./feed-animal.dto"
+import { FeedAnimalModule } from "./feed-animal.module"
 import { FeedAnimalService } from "./feed-animal.service"
 
 describe("FeedAnimalService", () => {
@@ -24,7 +25,7 @@ describe("FeedAnimalService", () => {
 
     beforeAll(async () => {
         const { module, dataSource: ds } = await createTestModule({
-            imports: [FeedAnimalService],
+            imports: [FeedAnimalModule],
         })
         dataSource = ds
         service = module.get<FeedAnimalService>(FeedAnimalService)
@@ -39,16 +40,13 @@ describe("FeedAnimalService", () => {
             // Create mock user
             const user = await queryRunner.manager.save(UserEntity, mockUser)
 
-            // Create mock animal info
-            const animalInfo = await queryRunner.manager.save(AnimalInfoEntity, {
-                currentState: AnimalCurrentState.Hungry,
-                animalId: "mock-animal-id",
-            })
-
             // Create mock placed item
             const placedItem = await queryRunner.manager.save(PlacedItemEntity, {
                 userId: user.id,
-                animalInfo: animalInfo,
+                animalInfo: {
+                    currentState: AnimalCurrentState.Hungry,
+                    animalId: AnimalId.Cow,
+                },
             })
 
             // Create mock inventory
@@ -70,11 +68,12 @@ describe("FeedAnimalService", () => {
             const response = await service.feedAnimal(request)
 
             // Verify animal state updated
-            const updatedAnimalInfo = await queryRunner.manager.findOne(AnimalInfoEntity, {
-                where: { id: animalInfo.id },
+            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
+                where: { id: placedItem.id },
+                relations: { animalInfo: true },
             })
-            expect(updatedAnimalInfo.currentState).toBe(AnimalCurrentState.Normal)
-            expect(updatedAnimalInfo.currentHungryTime).toBe(0)
+            expect(placedItemAnimal.animalInfo.currentState).toBe(AnimalCurrentState.Normal)
+            expect(placedItemAnimal.animalInfo.currentHungryTime).toBe(0)
 
             // Verify user energy and experience updated
             const updatedUser = await queryRunner.manager.findOne(UserEntity, {

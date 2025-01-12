@@ -43,7 +43,12 @@ describe("BuyAnimalService", () => {
             y: 0,
             buildingInfo: {
                 buildingId: buildingId,
-                occupancy: 0
+                occupancy: 0,
+                currentUpgrade: 0,
+                placedItem: {
+                    x: 0,
+                    y: 0
+                }
             },
             placedItemType: {
                 id: PlacedItemTypeId.Pasture,
