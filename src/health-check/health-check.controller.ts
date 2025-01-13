@@ -11,7 +11,7 @@ import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 import { HealthCheckCoreService } from "./health-check-core.service"
 import { HealthCheckContainersService } from "./health-check-containers.service"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
-import { PostgreSQLDatabase, RedisType } from "@src/env"
+import { MongoDatabase, PostgreSQLDatabase, RedisType } from "@src/env"
 
 @Controller()
 export class HealthCheckController {
@@ -68,6 +68,9 @@ export class HealthCheckController {
         }
         if (this.options.dependencies.includes(HealthCheckDependency.CronWorker)) {
             healthIndicators.push(async () => this.healthCheckContainersService.pingCheckCronWorker())
+        }
+        if (this.options.dependencies.includes(HealthCheckDependency.AdapterMongoDb)) {
+            healthIndicators.push(async () => this.healthCheckCoreService.pingCheckMongoDb(MongoDatabase.Adapter))
         }
 
         // Check all the health indicators

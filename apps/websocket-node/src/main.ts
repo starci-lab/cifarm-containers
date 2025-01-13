@@ -60,16 +60,21 @@ const bootstrapAll = async () => {
     }
 
     if (cluster.isPrimary) {
-        await bootstrapMaster().then(bootstrapHealthCheck).then(bootstrapAdminUi)
+        //await bootstrapMaster().then(bootstrapHealthCheck).then(bootstrapAdminUi)
+        await bootstrapHealthCheck()
     } else {
-        await bootstrapWorker()
+        //await bootstrapWorker()
     }
 }
 
 const bootstrapHealthCheck = async () => {
     const app = await NestFactory.create(
         HealthCheckModule.forRoot({
-            dependencies: [HealthCheckDependency.Kafka, HealthCheckDependency.GameplayPostgreSQL]
+            dependencies: [
+                HealthCheckDependency.Kafka,
+                HealthCheckDependency.GameplayPostgreSQL,
+                HealthCheckDependency.AdapterMongoDb
+            ]
         })
     )
     await app.listen(envConfig().containers[Container.WebsocketNode].healthCheckPort)

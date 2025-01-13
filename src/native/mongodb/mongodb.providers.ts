@@ -14,7 +14,6 @@ export const createMongoDbFactoryProvider = (database: MongoDatabase = MongoData
         const auth = username && password ? `${username}:${password}@` : ""
 
         const uri = `mongodb://${auth}${host}:${port}/${dbName}`
-
         // Return the MongoClient with the constructed URI
         return new MongoClient(uri)
     }
