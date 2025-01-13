@@ -4,23 +4,19 @@ import { AxiosInstance } from "axios"
 
 @Injectable()
 export class TestService {
+    private readonly _axios: AxiosInstance
 
     //constructor
     constructor(
-        @InjectAxios({
-            type: AxiosType.AxiosWithNoAuth
-        })
+        @InjectAxios(AxiosType.NoAuth)
         private readonly axios: AxiosInstance,
-
-        @InjectAxios({
-            type: AxiosType.AxiosWithAuth
-        })
-        private readonly axiosAuth: AxiosInstance,
     ){
-        console.log("default axios", this.axios)
-        console.log("auth axios", this.axiosAuth)
+        this._axios = axios
+
+        this.getHello()
     }
-    getHello(): string {
-        return "Hello World!"
+    async getHello(): Promise<void> {
+        const { data } = await this.axios.get("https://jsonplaceholder.typicode.com/posts")
+        console.log(data)
     }
 }

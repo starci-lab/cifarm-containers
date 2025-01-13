@@ -1,9 +1,7 @@
 import { Module } from "@nestjs/common"
-import { AxiosType } from "@src/axios"
-import { AxiosOptionsModule } from "@src/axios/options"
+import { AxiosModule, AxiosType } from "@src/axios"
 import { EnvModule } from "@src/env"
 import { TestService } from "./test.service"
-import { getAxiosToken } from "@src/axios/axios.utils"
 
 @Module({
     imports: [
@@ -27,22 +25,9 @@ import { getAxiosToken } from "@src/axios/axios.utils"
         //     isGlobal: true
         // }),
         // LeaderElectionModule.forRoot()
-        AxiosOptionsModule.register({
-            injectionToken: getAxiosToken({
-                type: AxiosType.AxiosWithNoAuth
-            }),
-            options: {
-                type: AxiosType.AxiosWithNoAuth
-            }
-        }),
-        AxiosOptionsModule.register({
-            injectionToken: getAxiosToken({
-                type: AxiosType.AxiosWithAuth
-            }),
-            options: {
-                type: AxiosType.AxiosWithAuth
-            }
-        }),
+        AxiosModule.register({
+            type: AxiosType.NoAuth
+        })
     ],
     providers: [TestService]
 })
