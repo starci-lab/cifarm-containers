@@ -2,7 +2,7 @@
 
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
-import { Test } from "@nestjs/testing"
+import { AXIOS, AxiosModule } from "@src/axios"
 import { sleep } from "@src/common"
 import {
     CropCurrentState,
@@ -12,16 +12,17 @@ import {
     InventoryType,
     PlacedItemEntity,
     PlacedItemType,
-    PostgreSQLModule,
     ProductType,
     SeedGrowthInfoEntity,
     TileId,
     UserEntity
 } from "@src/databases"
 import { MODULE_OPTIONS_TOKEN } from "@src/databases/postgresql"
-import { EnvModule, Network, SupportedChainKey } from "@src/env"
+import { Network, SupportedChainKey } from "@src/env"
 import { grpcData, GrpcModule, GrpcServiceName } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
+import { createTestModule } from "@src/testing"
+import { AxiosInstance } from "axios"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
 import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
@@ -36,46 +37,50 @@ describe("Thief crop flow", () => {
     let dataSource: DataSource
     let jwtService: JwtService
     let gameplayService: IGameplayService
+    
+    let axiosInstance: AxiosInstance
 
     beforeAll(async () => {
-        const module = await Test.createTestingModule({
+        const { module } = await createTestModule({
             imports: [
-                EnvModule.forRoot(),
-                PostgreSQLModule.forRoot(),
                 GrpcModule.register({
                     name: GrpcServiceName.Gameplay,
                 }),
                 JwtModule,
+                AxiosModule.register({
+                    baseUrl: "http://localhost:3000",
+                    apiVersion: ApiVersion.V1,
+                })
             ],
-        }).compile()
+        })
 
         dataSource = module.get<DataSource>(MODULE_OPTIONS_TOKEN)
-        console.log(dataSource)
+
         jwtService = module.get<JwtService>(JwtService)
         const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcServiceName.Gameplay].name)
         gameplayService = clientGrpc.getService<IGameplayService>(grpcData[GrpcServiceName.Gameplay].service)
+        axiosInstance = module.get<AxiosInstance>(AXIOS)
 
-        // Sign in as main user
-        const authAxios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
-        const { data } = await authAxios.post("/generate-signature", {
+        const { data } = await axiosInstance.post("/generate-signature", {
             chainKey: SupportedChainKey.Avalanche,
             accountNumber: 1,
             network: Network.Testnet,
         })
-        const { data: verifySignatureData } = await authAxios.post("/verify-signature", data)
+
+        const { data: verifySignatureData } = await axiosInstance.post("/verify-signature", data)
 
         accessToken = verifySignatureData.accessToken
         user = await jwtService.decodeToken(accessToken)
 
-        // Sign in as thief
-        const { data: thiefData } = await authAxios.post("/generate-signature", {
+        const { data: thiefData } = await axiosInstance.post("/generate-signature", {
             chainKey: SupportedChainKey.Avalanche,
             accountNumber: 2,
             network: Network.Testnet,
         })
-        const { data: verifyThiefSignatureData } = await authAxios.post("/verify-signature", thiefData)
 
-        thiefAccessToken = verifyThiefSignatureData.accessToken
+        const { data: thiefVerifySignatureData } = await axiosInstance.post("/verify-signature", thiefData)
+
+        thiefAccessToken = thiefVerifySignatureData.accessToken
         thiefUser = await jwtService.decodeToken(thiefAccessToken)
     })
 
