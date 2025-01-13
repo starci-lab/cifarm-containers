@@ -12,19 +12,17 @@ import {
     PostgreSQLDatabase,
     redisClusterEnabled,
     redisClusterRunInDocker,
-    envConfig,
-    PostgreSQLDatabase,
-    MongoDatabase
+    MongoDatabase,
+    RedisType
 } from "@src/env"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
-import { RedisOptions } from "@nestjs/microservices"
 import { HEALTH_CHECK_TIMEOUT } from "./health-check.constants"
 import { HealthCheckOptions, HealthCheckDependency } from "./health-check.types"
-import { KafkaOptionsFactory } from "@src/brokers"
 import { dataSourcesMap, mongoDbMap, redisMap } from "./health-check.utils"
 import { DataSource } from "typeorm"
 import { MongoDbHealthIndicator } from "./mongodb"
+import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
 
 @Injectable()
 export class HealthCheckCoreService implements OnModuleInit {
@@ -96,11 +94,10 @@ export class HealthCheckCoreService implements OnModuleInit {
     }
 
     // Generalized Redis ping check method
-    private async pingCheckRedisCluster(
-        type: RedisType,
-        clusterEnabled: boolean,
-        natMap: NatMap | null = null
+    public async pingCheckRedis(
+        type: RedisType
     ): Promise<HealthIndicatorResult> {
+        const clusterEnabled = redisClusterEnabled(type)
         if (!clusterEnabled) {
             return this.microservice.pingCheck<RedisOptions>(`${type}Redis`, {
                 transport: Transport.REDIS,
@@ -113,6 +110,7 @@ export class HealthCheckCoreService implements OnModuleInit {
             })
         }
 
+        let natMap: NatMap
         if (redisClusterRunInDocker(type)) {
             natMap = await this.execDockerRedisClusterServices[type].getNatMap()
         }
@@ -128,12 +126,6 @@ export class HealthCheckCoreService implements OnModuleInit {
             },
             timeout: HEALTH_CHECK_TIMEOUT
         })
-    }
-
-    // Redis ping check method
-    public async pingCheckRedis(type: RedisType = RedisType.Cache): Promise<HealthIndicatorResult> {
-        const clusterEnabled = redisClusterEnabled(type)
-        return this.pingCheckRedisCluster(type, clusterEnabled)
     }
 
     // Kafka ping check method
