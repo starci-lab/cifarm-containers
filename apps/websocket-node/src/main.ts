@@ -60,10 +60,10 @@ const bootstrapAll = async () => {
     }
 
     if (cluster.isPrimary) {
-        //await bootstrapMaster().then(bootstrapHealthCheck).then(bootstrapAdminUi)
+        await bootstrapMaster().then(bootstrapHealthCheck).then(bootstrapAdminUi)
         await bootstrapHealthCheck()
     } else {
-        //await bootstrapWorker()
+        await bootstrapWorker()
     }
 }
 

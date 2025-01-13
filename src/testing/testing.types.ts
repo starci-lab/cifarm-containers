@@ -1,3 +1,10 @@
-import { ModuleMetadata } from "@nestjs/common"
+export enum TestContext {
+    Gameplay = "gameplay",
+    Telegram = "telegram",
+    Blockchain = "blockchain",
+    E2E = "e2e"
+}
 
-export type TestingOptions = ModuleMetadata
+export interface TestingOptions {
+    context?: TestContext
+}

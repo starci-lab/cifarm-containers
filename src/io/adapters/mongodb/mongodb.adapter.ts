@@ -17,9 +17,6 @@ export class MongoDbIoAdapter extends IoAdapter {
     }
 
     public async connect(): Promise<void> {
-        // if cluster is not enabled, create a single connection
-        await this.mongoClient.connect()
-        
         // Check if the collection already exists
         const collections = await this.mongoClient.db().listCollections({ name: COLLECTION }).toArray()
     

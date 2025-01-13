@@ -1,18 +1,18 @@
 import { ModuleMetadata } from "@nestjs/common"
 import { Test } from "@nestjs/testing"
-import { EnvModule } from "@src/env"
-// import { MOCK_DATABASE_OPTIONS } from "@src/testing"
-
-export async function createTestModule(metadata: ModuleMetadata) {
+import { TestContext } from "./testing.types"
+import { TestingModule } from "./testing.module"
+export const createTestModule = async (metadata: ModuleMetadata, context?: TestContext) => {
+    context = context || TestContext.Gameplay
     const module = await Test.createTestingModule({
         ...metadata,
         imports: [
-            EnvModule.forRoot(),
-            // PostgreSQLModule.forRoot(MOCK_DATABASE_OPTIONS),
-            ...metadata.imports,
-        ],
+            TestingModule.register({
+                context
+            }),
+            ...metadata.imports
+        ]
     }).compile()
 
-    // const dataSource = module.get<DataSource>(getPostgreSqlToken(MOCK_DATABASE_OPTIONS))
     return { module }
 }

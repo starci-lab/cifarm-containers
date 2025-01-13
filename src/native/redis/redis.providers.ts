@@ -13,33 +13,35 @@ export const createRedisFactoryProvider = (type: RedisType = RedisType.Cache): P
         execDockerRedisClusterService: ExecDockerRedisClusterService
     ): Promise<RedisClientOrCluster> => {
         const clusterEnabled = redisClusterEnabled(type)
-
+        let clientOrCluster: RedisClientOrCluster
         const url = `redis://${envConfig().databases.redis[type].host}:${envConfig().databases.redis[type].port}`
         const password = envConfig().databases.redis[type].password || undefined
 
         //case clusterEnabled is true
         if (!clusterEnabled) {
-            return createClient({
+            clientOrCluster = createClient({
                 url,
                 password
             })
-        } 
-
-        let nodeAddressMap: NatMap
-        if (redisClusterRunInDocker(type)) {
-            nodeAddressMap = await execDockerRedisClusterService.getNatMap()
+        } else {
+            let nodeAddressMap: NatMap
+            if (redisClusterRunInDocker(type)) {
+                nodeAddressMap = await execDockerRedisClusterService.getNatMap()
+            }
+            clientOrCluster = createCluster({
+                rootNodes: [
+                    {
+                        url
+                    }
+                ],
+                defaults: {
+                    password
+                },
+                nodeAddressMap
+            })
         }
-        return createCluster({
-            rootNodes: [
-                {
-                    url
-                }
-            ],
-            defaults: {
-                password
-            },
-            nodeAddressMap
-        })
+        await clientOrCluster.connect()
+        return clientOrCluster
     }
 }
 )

@@ -1,12 +1,7 @@
 import { INestApplication } from "@nestjs/common"
-import { IoAdapter as NestIoAdapter } from "@nestjs/platform-socket.io"
-import { IoAdapterType } from "@src/env"
+import { IoAdapter } from "@nestjs/platform-socket.io"
 export interface IoOptions {
-    adapter?: IoAdapterType
-}
-
-export declare class IoAdapter extends NestIoAdapter {
-    connect(): Promise<void>;
+    adapter?: IoAdapter
 }
 
 export interface IoAdapterFactory {

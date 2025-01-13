@@ -1,3 +1,3 @@
 export * from "./testing.utils"
 export * from "./testing.module"
-export * from "./testing.service"
+export * from "./gameplay"

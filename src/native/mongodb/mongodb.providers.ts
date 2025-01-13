@@ -9,6 +9,8 @@ export const createMongoDbFactoryProvider = (database: MongoDatabase = MongoData
         // Build the connection URI
         const uri = createMongoDbUri(database)
         // Return the MongoClient with the constructed URI
-        return new MongoClient(uri)
+        const client = new MongoClient(uri)
+        await client.connect()
+        return client
     }
 })
