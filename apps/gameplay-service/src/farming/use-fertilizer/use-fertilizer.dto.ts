@@ -9,5 +9,5 @@ export class UseFertilizerRequest extends UserIdRequest {
 }
 
 export class UseFertilizerResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

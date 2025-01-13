@@ -12,5 +12,5 @@ export class PlantSeedRequest extends UserIdRequest {
 }
 
 export class PlantSeedResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

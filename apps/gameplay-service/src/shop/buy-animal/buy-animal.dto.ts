@@ -21,5 +21,5 @@ export class BuyAnimalRequest extends UserIdRequest {
 }
 
 export class BuyAnimalResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

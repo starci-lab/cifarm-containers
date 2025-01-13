@@ -13,5 +13,5 @@ export class UpdateTutorialRequest extends UserIdRequest {
 }
 
 export class UpdateTutorialResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

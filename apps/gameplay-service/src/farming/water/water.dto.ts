@@ -9,5 +9,5 @@ export class WaterRequest extends UserIdRequest {
 }
 
 export class WaterResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

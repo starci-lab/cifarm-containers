@@ -9,5 +9,5 @@ export class RetainProductRequest extends UserIdRequest {
 }
 
 export class RetainProductResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

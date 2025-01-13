@@ -4,5 +4,5 @@ export class BroadcastPlacedItemsRequest extends UserIdRequest {}
 export class SyncPlacedItemsParams extends UserIdParams {}
 
 export class LinkUserSessionResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

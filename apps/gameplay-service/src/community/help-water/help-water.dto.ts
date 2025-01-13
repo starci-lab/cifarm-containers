@@ -9,5 +9,5 @@ export class HelpWaterRequest extends NeighborAndUserIdRequest {
 }
 
 export class HelpWaterResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

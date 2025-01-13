@@ -17,5 +17,5 @@ export class MoveRequest extends UserIdRequest {
 }
 
 export class MoveResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }
