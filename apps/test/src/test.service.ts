@@ -1,20 +1,12 @@
 import { Injectable } from "@nestjs/common"
-import { AxiosType, InjectAxios } from "@src/axios"
-import { AxiosInstance } from "axios"
+import { TestingService } from "@src/testing"
 
 @Injectable()
 export class TestService {
-    private readonly _axios: AxiosInstance
-
     //constructor
     constructor(
-        @InjectAxios(AxiosType.NoAuth)
-        private readonly axios: AxiosInstance,
+        private readonly testService: TestingService
     ){
-        this._axios = axios
-    }
-    async getHello(): Promise<void> {
-        const { data } = await this.axios.get("https://jsonplaceholder.typicode.com/posts")
-        console.log(data)
+        console.log(this.testService.generateMockUserForGameplay())
     }
 }

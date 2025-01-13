@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
-import { AxiosModule, AxiosType } from "@src/axios"
 import { EnvModule } from "@src/env"
+import { TestingModule } from "@src/testing/testing.module"
 import { TestService } from "./test.service"
 
 @Module({
@@ -25,9 +25,7 @@ import { TestService } from "./test.service"
         //     isGlobal: true
         // }),
         // LeaderElectionModule.forRoot()
-        AxiosModule.register({
-            type: AxiosType.NoAuth
-        })
+        TestingModule.register()
     ],
     providers: [TestService]
 })
