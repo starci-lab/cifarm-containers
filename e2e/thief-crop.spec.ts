@@ -3,6 +3,7 @@
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { AXIOS, AxiosModule } from "@src/axios"
+import { AxiosOptionsModule } from "@src/axios/options"
 import { sleep } from "@src/common"
 import {
     CropCurrentState,
@@ -25,7 +26,6 @@ import { createTestModule } from "@src/testing"
 import { AxiosInstance } from "axios"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
-import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
 
 describe("Thief crop flow", () => {
     let user: UserLike
@@ -47,9 +47,8 @@ describe("Thief crop flow", () => {
                     name: GrpcServiceName.Gameplay,
                 }),
                 JwtModule,
-                AxiosModule.register({
-                    baseUrl: "http://localhost:3000",
-                    apiVersion: ApiVersion.V1,
+                AxiosOptionsModule.register({
+                    injectionToken: 
                 })
             ],
         })
