@@ -56,7 +56,7 @@ export class HelpCureAnimalService {
                 }
             })
 
-            if (!placedItemAnimal || !placedItemAnimal.animalInfo) {
+            if (!(placedItemAnimal && placedItemAnimal.animalInfo)) {
                 throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
             }
 

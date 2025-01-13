@@ -28,7 +28,7 @@ import { DataSource } from "typeorm"
 @Injectable()
 export class HealthCheckCoreService implements OnModuleInit {
     private readonly logger = new Logger(HealthCheckCoreService.name)
-
+                       
     // Redis cluster services
     private readonly execDockerRedisClusterServices: Partial<
         Record<RedisType, ExecDockerRedisClusterService>
