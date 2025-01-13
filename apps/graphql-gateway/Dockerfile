@@ -14,7 +14,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --legacy-peer-deps
+RUN npm ci
 
 # Copy remaining source code and build the application
 COPY . .
@@ -27,7 +27,7 @@ FROM build AS production
 COPY --from=build /usr/src/app/dist/apps/graphql-gateway .
 
 # Install only production dependencies
-RUN npm i --production --legacy-peer-deps
+RUN npm i --production
 
 # Run as non-root user
 USER node
