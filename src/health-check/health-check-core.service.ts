@@ -1,29 +1,28 @@
-import { Injectable, Logger, Inject, OnModuleInit } from "@nestjs/common"
+import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { ModuleRef } from "@nestjs/core"
-import { Transport, KafkaOptions } from "@nestjs/microservices"
+import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
 import {
+    HealthIndicatorResult,
     MicroserviceHealthIndicator,
-    TypeOrmHealthIndicator,
-    HealthIndicatorResult
+    TypeOrmHealthIndicator
 } from "@nestjs/terminus"
-import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
+import { KafkaOptionsFactory } from "@src/brokers"
 import {
-    RedisType,
+    envConfig,
+    PostgreSQLDatabase,
     redisClusterEnabled,
     redisClusterRunInDocker,
-    envConfig,
-    PostgreSQLDatabase
+    RedisType
 } from "@src/env"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
-import { RedisOptions } from "@nestjs/microservices"
+import { DataSource } from "typeorm"
 import {
     HEALTH_CHECK_TIMEOUT,
 } from "./health-check.constants"
-import { HealthCheckOptions, HealthCheckDependency } from "./health-check.types"
-import { KafkaOptionsFactory } from "@src/brokers"
+import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
+import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 import { dataSourcesMap, redisMap } from "./health-check.utils"
-import { DataSource } from "typeorm"
 
 @Injectable()
 export class HealthCheckCoreService implements OnModuleInit {
