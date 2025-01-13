@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # Copy remaining source code and build the application
 COPY . .
@@ -33,7 +33,7 @@ RUN npm i --production \
 && npm install -g .
 
 # # Run as non-root user
-USER node
+USER node --legacy-peer-deps
 
 # Start the application
 CMD ["sleep", "infinity"]
