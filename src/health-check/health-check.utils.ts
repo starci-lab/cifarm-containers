@@ -1,5 +1,5 @@
-import { PostgreSQLDatabase, RedisType } from "@src/env"
-import { JOB_REDIS, CACHE_REDIS, ADAPTER_REDIS } from "./health-check.constants"
+import { MongoDatabase, PostgreSQLDatabase, RedisType } from "@src/env"
+import { JOB_REDIS, CACHE_REDIS, ADAPTER_REDIS, ADAPTER_MONGODB } from "./health-check.constants"
 import { HealthCheckDependency, DependencyData } from "./health-check.types"
 import { getPostgreSqlToken } from "@src/databases"
 
@@ -30,5 +30,12 @@ export const dataSourcesMap = (): Record<PostgreSQLDatabase, DependencyData> => 
         token: getPostgreSqlToken({
             database: PostgreSQLDatabase.Telegram
         })
+    }
+})
+
+export const mongoDbMap = (): Record<MongoDatabase, DependencyData> => ({
+    [MongoDatabase.Adapter]: {
+        dependency: HealthCheckDependency.AdapterMongoDb,
+        token: ADAPTER_MONGODB
     }
 })

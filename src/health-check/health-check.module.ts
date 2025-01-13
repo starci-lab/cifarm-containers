@@ -2,6 +2,7 @@ import { DynamicModule, Module } from "@nestjs/common"
 import { TerminusModule } from "@nestjs/terminus"
 import {
     EnvModule,
+    MongoDatabase,
     PostgreSQLContext,
     PostgreSQLDatabase,
     redisClusterEnabled,
@@ -15,9 +16,10 @@ import { HealthCheckController } from "./health-check.controller"
 import { HealthCheckCoreService } from "./health-check-core.service"
 import { HealthCheckContainersService } from "./health-check-containers.service"
 import { KafkaOptionsModule } from "@src/brokers"
-import { dataSourcesMap, redisMap } from "./health-check.utils"
+import { dataSourcesMap, mongoDbMap, redisMap } from "./health-check.utils"
 import { HttpModule } from "@nestjs/axios"
 import { HealthCheckDependency } from "./health-check.types"
+import { MongodbHealthModule } from "./mongodb"
 
 @Module({})
 export class HealthCheckModule extends ConfigurableModuleClass {
@@ -54,6 +56,19 @@ export class HealthCheckModule extends ConfigurableModuleClass {
                     PostgreSQLModule.forRoot({
                         context: PostgreSQLContext.Main,
                         database
+                    })
+                )
+            }
+        })
+
+        const mongoDatabases = Object.values(MongoDatabase)
+        const _mongoDbMap = mongoDbMap()
+        mongoDatabases.forEach((database) => {
+            if (options.dependencies.includes(_mongoDbMap[database].dependency)) {
+                imports.push(
+                    MongodbHealthModule.register({
+                        database: MongoDatabase.Adapter,
+                        injectionToken: _mongoDbMap[database].token
                     })
                 )
             }

@@ -21,7 +21,7 @@ export interface BaseOptionsOptions<TOptions> {
 }
 
 export interface InjectionToken {
-    injectionToken: string
+    injectionToken?: string
 }
 
 export interface ClassLike {

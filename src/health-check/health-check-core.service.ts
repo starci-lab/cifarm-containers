@@ -12,40 +12,42 @@ import {
     PostgreSQLDatabase,
     redisClusterEnabled,
     redisClusterRunInDocker,
+    MongoDatabase,
     RedisType
 } from "@src/env"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
+import { HEALTH_CHECK_TIMEOUT } from "./health-check.constants"
+import { HealthCheckOptions, HealthCheckDependency } from "./health-check.types"
+import { dataSourcesMap, mongoDbMap, redisMap } from "./health-check.utils"
 import { DataSource } from "typeorm"
-import {
-    HEALTH_CHECK_TIMEOUT,
-} from "./health-check.constants"
+import { MongoDbHealthIndicator } from "./mongodb"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
-import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
-import { dataSourcesMap, redisMap } from "./health-check.utils"
 
 @Injectable()
 export class HealthCheckCoreService implements OnModuleInit {
     private readonly logger = new Logger(HealthCheckCoreService.name)
-                       
+
     // Redis cluster services
     private readonly execDockerRedisClusterServices: Partial<
         Record<RedisType, ExecDockerRedisClusterService>
     > = {}
 
     private readonly dataSources: Partial<Record<PostgreSQLDatabase, DataSource>> = {}
+    private readonly mongoDbs: Partial<Record<MongoDatabase, MongoDbHealthIndicator>> = {}
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN) private readonly options: HealthCheckOptions,
         private readonly kafkaOptionsFactory: KafkaOptionsFactory,
         private readonly microservice: MicroserviceHealthIndicator,
         private readonly db: TypeOrmHealthIndicator,
-        private readonly moduleRef: ModuleRef,
-    ) { }
+        private readonly moduleRef: ModuleRef
+    ) {}
 
     onModuleInit() {
         this.initializeRedisServices()
         this.initializeDataSources()
+        this.initializeMongoDbIndicators()
     }
 
     // Helper function to initialize Redis services
@@ -58,12 +60,9 @@ export class HealthCheckCoreService implements OnModuleInit {
                 redisClusterEnabled(type) &&
                 redisClusterRunInDocker(type)
             ) {
-                this.execDockerRedisClusterServices[type] = this.moduleRef.get(
-                    map[type].token,
-                    {
-                        strict: false
-                    }
-                )
+                this.execDockerRedisClusterServices[type] = this.moduleRef.get(map[type].token, {
+                    strict: false
+                })
             }
         })
     }
@@ -81,12 +80,24 @@ export class HealthCheckCoreService implements OnModuleInit {
         })
     }
 
+    private initializeMongoDbIndicators() {
+        const mongoDatabases = Object.values(MongoDatabase)
+        const _mongoDbMap = mongoDbMap()
+        mongoDatabases.forEach((database) => {
+            if (this.options.dependencies.includes(_mongoDbMap[database].dependency)) {
+                this.mongoDbs[database] = this.moduleRef.get<MongoDbHealthIndicator>(
+                    _mongoDbMap[database].token,
+                    { strict: false }
+                )
+            }
+        })
+    }
+
     // Generalized Redis ping check method
-    private async pingCheckRedisCluster(
-        type: RedisType,
-        clusterEnabled: boolean,
-        natMap: NatMap | null = null
+    public async pingCheckRedis(
+        type: RedisType
     ): Promise<HealthIndicatorResult> {
+        const clusterEnabled = redisClusterEnabled(type)
         if (!clusterEnabled) {
             return this.microservice.pingCheck<RedisOptions>(`${type}Redis`, {
                 transport: Transport.REDIS,
@@ -99,6 +110,7 @@ export class HealthCheckCoreService implements OnModuleInit {
             })
         }
 
+        let natMap: NatMap
         if (redisClusterRunInDocker(type)) {
             natMap = await this.execDockerRedisClusterServices[type].getNatMap()
         }
@@ -114,12 +126,6 @@ export class HealthCheckCoreService implements OnModuleInit {
             },
             timeout: HEALTH_CHECK_TIMEOUT
         })
-    }
-
-    // Redis ping check method
-    public async pingCheckRedis(type: RedisType = RedisType.Cache): Promise<HealthIndicatorResult> {
-        const clusterEnabled = redisClusterEnabled(type)
-        return this.pingCheckRedisCluster(type, clusterEnabled)
     }
 
     // Kafka ping check method
@@ -145,5 +151,12 @@ export class HealthCheckCoreService implements OnModuleInit {
             connection: this.dataSources[database],
             timeout: HEALTH_CHECK_TIMEOUT
         })
+    }
+
+    // MongoDB ping check method
+    public async pingCheckMongoDb(
+        database: MongoDatabase = MongoDatabase.Adapter
+    ): Promise<HealthIndicatorResult> {
+        return this.mongoDbs[database].check()
     }
 }

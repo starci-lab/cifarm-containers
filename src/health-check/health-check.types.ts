@@ -12,6 +12,7 @@ export enum HealthCheckDependency {
     WebsocketNode = "websocket-node",
     CronScheduler = "cron-scheduler",
     CronWorker = "cron-worker",
+    AdapterMongoDb = "adapter-mongodb",
 }
 
 export interface HealthCheckOptions {
