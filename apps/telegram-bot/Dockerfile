@@ -27,7 +27,7 @@ WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/dist/apps/telegram-bot .
 
 # Install only production dependencies
-RUN npm i --ignore-scripts--production
+RUN npm i --ignore-scripts --production
 
 # Run as non-root user
 USER node

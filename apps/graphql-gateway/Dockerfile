@@ -27,7 +27,7 @@ FROM build AS production
 COPY --from=build /usr/src/app/dist/apps/graphql-gateway .
 
 # Install only production dependencies
-RUN npm i --ignore-scripts--production
+RUN npm i --ignore-scripts --production
 
 # Run as non-root user
 USER node

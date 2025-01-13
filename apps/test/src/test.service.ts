@@ -12,8 +12,6 @@ export class TestService {
         private readonly axios: AxiosInstance,
     ){
         this._axios = axios
-
-        this.getHello()
     }
     async getHello(): Promise<void> {
         const { data } = await this.axios.get("https://jsonplaceholder.typicode.com/posts")

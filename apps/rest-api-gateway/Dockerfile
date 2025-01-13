@@ -28,7 +28,7 @@ COPY --from=build /usr/src/app/dist/apps/rest-api-gateway .
 COPY --from=build /usr/src/app/proto ./proto
 
 # Install only production dependencies
-RUN npm i --ignore-scripts--production
+RUN npm i --ignore-scripts --production
 
 # Run as non-root user
 USER node
