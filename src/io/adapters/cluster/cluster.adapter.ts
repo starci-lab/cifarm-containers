@@ -6,7 +6,7 @@ import { setupWorker } from "@socket.io/sticky"
 import cluster from "cluster"
 
 export class ClusterIoAdapter extends IoAdapter {
-    private logger = new Logger(ClusterIoAdapter.name)
+    private readonly logger = new Logger(ClusterIoAdapter.name)
 
     private adapterConstructor: ReturnType<typeof createAdapter>
 
