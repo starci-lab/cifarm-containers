@@ -1,10 +1,10 @@
 // File: axios.module.ts
 
-import { HttpModule } from "@nestjs/axios"
 import { DynamicModule, Module } from "@nestjs/common"
-import { ConfigurableModuleClass, OPTIONS_TYPE } from "./axios.module-definition"
-import { AxiosOptionsFactory, AxiosOptionsModule } from "./options"
+import { NestExport, NestProvider } from "@src/common"
 import { AxiosType } from "./axios.constants"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./axios.module-definition"
+import { createAxiosFactoryProvider } from "./axios.providers"
 
 @Module({})
 export class AxiosModule extends ConfigurableModuleClass {
@@ -12,19 +12,19 @@ export class AxiosModule extends ConfigurableModuleClass {
         options.type = options.type || AxiosType.NoAuth
 
         const dynamicModule = super.register(options)
+
+        const providers: Array<NestProvider> = []
+        const exports: Array<NestExport> = []
+
+        const axiosFactoryProvider = createAxiosFactoryProvider(options.type)
+
+        providers.push(axiosFactoryProvider)
+        exports.push(axiosFactoryProvider)
         
         return {
             ...dynamicModule,
-            imports: [HttpModule.registerAsync({
-                imports: [
-                    AxiosOptionsModule.register({
-                        options
-                    })
-                ],
-                inject: [AxiosOptionsFactory],
-                useFactory: (axiosOptionsFactory: AxiosOptionsFactory) =>
-                    axiosOptionsFactory.createHttpOptions()
-            })]
+            providers: [...dynamicModule.providers, ...providers],
+            exports
         }
     }
 }

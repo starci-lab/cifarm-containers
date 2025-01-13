@@ -1,5 +1,5 @@
 import { Inject } from "@nestjs/common"
-import { AxiosOptions } from "./axios.types"
+import { AxiosType } from "./axios.constants"
 import { getAxiosToken } from "./axios.utils"
 
-export const InjectAxios = (options: AxiosOptions = {}) => Inject(getAxiosToken(options))
+export const InjectAxios = (type: AxiosType = AxiosType.NoAuth) => Inject(getAxiosToken(type))
