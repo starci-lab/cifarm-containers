@@ -9,7 +9,7 @@ import { AxiosType } from "./axios.constants"
 @Module({})
 export class AxiosModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
-        options.type = options.type || AxiosType.AxiosWithNoAuth
+        options.type = options.type || AxiosType.NoAuth
 
         const dynamicModule = super.register(options)
         

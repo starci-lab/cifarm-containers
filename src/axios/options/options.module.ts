@@ -1,6 +1,6 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common"
 import { NestExport, NestProvider } from "@src/common"
-import { AXIOS_INSTANCE_TOKEN, axiosConfigs } from "../axios.constants"
+import { AXIOS_INSTANCE_TOKEN, axiosMap } from "../axios.constants"
 import { createAxiosInstance } from "../axios.utils"
 import { AxiosOptionsFactory } from "./options.factory"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./options.module-definition"
@@ -15,7 +15,7 @@ export class AxiosOptionsModule extends ConfigurableModuleClass {
         const exports: Array<NestExport> = [AxiosOptionsFactory]
 
         if (options.injectionToken) {
-            const axiosConfig = axiosConfigs[options.options.type]
+            const axiosConfig = axiosMap[options.options.type]
 
             const provider: Provider = {
                 provide: options.injectionToken,

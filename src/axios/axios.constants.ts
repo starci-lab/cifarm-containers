@@ -11,25 +11,24 @@ export type AxiosValues = {
 }
 
 export const enum AxiosType {
-    AxiosWithAuth = "AxiosWithAuth",
-    AxiosWithNoAuth = "AxiosWithNoAuth"
+    Auth = "Auth",
+    NoAuth = "NoAuth"
 }
 
-export const axiosConfigs: Record<AxiosType, AxiosValues> = {
-    [AxiosType.AxiosWithAuth]: {
+export const axiosMap: Record<AxiosType, AxiosValues> = {
+    [AxiosType.Auth]: {
         baseUrl: DEFAULT_BASE_URL,
         version: ApiVersion.V1,
-        injectionToken: `${AxiosType.AxiosWithAuth}_TOKEN`,
+        injectionToken: `${AxiosType.Auth}_TOKEN`,
         config: {
             "axios-retry": {
                 retries: 3
             }
         },
-        
     },
-    [AxiosType.AxiosWithNoAuth]: {
+    [AxiosType.NoAuth]: {
         baseUrl: DEFAULT_BASE_URL,
         version: ApiVersion.V1,
-        injectionToken: `${AxiosType.AxiosWithNoAuth}_TOKEN`
+        injectionToken: `${AxiosType.NoAuth}_TOKEN`
     }
 }
