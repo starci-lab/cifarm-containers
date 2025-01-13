@@ -19,8 +19,12 @@ const basePackage = {
         "pg": "8.13.1",
         "@nestjs/platform-express": "^10.0.0",
         "ioredis": "^5.4.2",
-        "graphql": "^15.5.0",
-    }
+    },
+    overrides: {
+        "typeorm": {
+            "mongodb": "^6.12.0"
+        }
+    },
 }
 
 module.exports = {

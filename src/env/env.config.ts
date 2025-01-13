@@ -166,7 +166,7 @@ export const envConfig = () => ({
         mongo: {
             [MongoDatabase.Adapter]: {
                 host: process.env.ADAPTER_MONGODB_HOST ?? LOCALHOST,
-                port: Number.parseInt(process.env.ADAPTER_MONGODB_PORT) ?? DEFAULT_PORT,
+                port: process.env.ADAPTER_MONGODB_PORT ? Number.parseInt(process.env.ADAPTER_MONGODB_PORT) : DEFAULT_PORT,
                 username: process.env.ADAPTER_MONGODB_USERNAME,
                 password: process.env.ADAPTER_MONGODB_PASSWORD,
                 dbName: process.env.ADAPTER_MONGODB_DBNAME
