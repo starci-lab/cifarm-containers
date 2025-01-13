@@ -1,4 +1,4 @@
-import { DynamicModule, Module } from "@nestjs/common"
+import { DynamicModule, Module, Provider } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./mongodb.module-definition"
 import { NestProvider } from "@src/common"
 import { MongoDbModule } from "@src/native"
@@ -14,18 +14,17 @@ export class MongodbHealthModule extends ConfigurableModuleClass {
             database,
         })
 
-        const providers: Array<NestProvider> = [
-            MongoDbHealthIndicator,
-        ]
+        const providers: Array<NestProvider> = []
+        const exports: Array<NestProvider> = []
+        
         if (options.injectionToken) {
-            providers.push({
+            const provider: Provider = {
                 provide: options.injectionToken,
-                useExisting: MongoDbHealthIndicator,
-            })
+                useClass: MongoDbHealthIndicator,
+            }
+            providers.push(provider)
+            exports.push(provider)
         }
-        const exports: Array<NestProvider> = [
-            MongoDbHealthIndicator,
-        ]
 
         return {
             ...dynamicModule,

@@ -1,19 +1,16 @@
-import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
-import { ModuleRef } from "@nestjs/core"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { HealthIndicator } from "@nestjs/terminus"
 import { MODULE_OPTIONS_TOKEN } from "./mongodb.module-definition"
 import { MongoDbHealthOptions } from "./mongodb.types"
 import { MongoDatabase } from "@src/env"
 import { MongoClient } from "mongodb"
-import { getMongoDbToken } from "@src/native"
+import { createMongoDbUri } from "@src/native"
 
 @Injectable()
-export class MongoDbHealthIndicator extends HealthIndicator implements OnModuleInit {
+export class MongoDbHealthIndicator extends HealthIndicator {
     private readonly logger = new Logger(MongoDbHealthIndicator.name)
     private readonly database: MongoDatabase
-    private mongoClient: MongoClient
     constructor(
-        private readonly moduleRef: ModuleRef,
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: MongoDbHealthOptions
     ) {
@@ -21,19 +18,18 @@ export class MongoDbHealthIndicator extends HealthIndicator implements OnModuleI
         this.database = options.database || MongoDatabase.Adapter
     }
 
-    onModuleInit() {
-        this.mongoClient = this.moduleRef.get<MongoClient>(getMongoDbToken(this.database), { strict: false })
-    }
-
     public async check(key?: string) {
         key = key || this.database
         // Replace with the actual check
         let isHealthy = false
+        const mongoClient = new MongoClient(createMongoDbUri(this.database))
         try {
-            await this.mongoClient.connect()
+            await mongoClient.connect()
             isHealthy = true
         } catch (error) {
             this.logger.error(error)
+        } finally {
+            await mongoClient.close()
         }
         return super.getStatus(key, isHealthy, { message: "MongoDB is up and running" })
     }
