@@ -73,10 +73,11 @@ export class AnimalWorker extends WorkerHost  {
 
                         
                     }else{
-                        if(animalInfo.currentYieldTime == (animalInfo.animal.yieldTime * 0.5)){
-                            if(Math.random() < sickChance){
-                                animalInfo.currentState = AnimalCurrentState.Sick
-                            }
+                        if (
+                            animalInfo.currentYieldTime == animalInfo.animal.yieldTime * 0.5 &&
+                            Math.random() < sickChance
+                        ) {
+                            animalInfo.currentState = AnimalCurrentState.Sick
                         }
                     }
                 }else{

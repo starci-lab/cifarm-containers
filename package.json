@@ -83,6 +83,7 @@
     "@unique-nft/sr25519": "^0.0.2",
     "algosdk": "^3.0.0",
     "axios": "^1.7.8",
+    "axios-retry": "^4.5.0",
     "bcrypt": "^5.1.1",
     "bip39": "3.1.0",
     "bullmq": "^5.29.1",

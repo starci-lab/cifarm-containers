@@ -7,7 +7,7 @@ import { IoAdapter } from "@nestjs/platform-socket.io"
 const COLLECTION = "socket.io-adapter-events"
 
 export class MongoDbIoAdapter extends IoAdapter {
-    private logger = new Logger(MongoDbIoAdapter.name)
+    private readonly logger = new Logger(MongoDbIoAdapter.name)
     private mongoClient: MongoClient
 
     private adapterConstructor: ReturnType<typeof createAdapter>

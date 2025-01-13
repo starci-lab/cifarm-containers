@@ -126,7 +126,6 @@ export class VerifySignatureService {
         }
         default:
             this.logger.error(`Unknown platform: ${platform}`)
-            result = false
             break
         }
 
