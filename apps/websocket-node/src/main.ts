@@ -7,8 +7,7 @@ import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { KafkaOptionsFactory, KafkaGroupId } from "@src/brokers"
 import cluster from "cluster"
 import { INestApplication, Logger } from "@nestjs/common"
-import { join } from "path"
-import { ServeStaticModule } from "@nestjs/serve-static"
+import { AdminUiModule } from "./admin-ui.module"
 
 const addAdapter = async (app: INestApplication) => {
     const factory = app.get<IoAdapterFactory>(IO_ADAPTER_FACTORY)
@@ -77,11 +76,7 @@ const bootstrapHealthCheck = async () => {
 }
 
 const bootstrapAdminUi = async () => {
-    const app = await NestFactory.create(
-        ServeStaticModule.forRoot({
-            rootPath: join(process.cwd(), "node_modules", "@socket.io", "admin-ui", "ui", "dist")
-        })
-    )
+    const app = await NestFactory.create(AdminUiModule)
     await app.listen(envConfig().containers[Container.WebsocketNode].adminUiPort)
 }
 

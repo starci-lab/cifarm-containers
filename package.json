@@ -167,6 +167,11 @@
     "webpack-node-externals": "^3.0.0",
     "webpack-obfuscator": "^3.5.1"
   },
+  "overrides": {
+    "typeorm": {
+      "mongodb": "^6.12.0"
+    }
+  },
   "jest": {
     "moduleFileExtensions": [
       "js",
