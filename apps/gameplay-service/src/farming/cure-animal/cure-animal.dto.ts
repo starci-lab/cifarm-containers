@@ -9,5 +9,5 @@ export class CureAnimalRequest extends UserIdRequest {
 }
 
 export class CureAnimalResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

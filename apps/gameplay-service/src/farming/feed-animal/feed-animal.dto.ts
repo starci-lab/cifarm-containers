@@ -9,5 +9,5 @@ export class FeedAnimalRequest extends UserIdRequest {
 }
 
 export class FeedAnimalResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

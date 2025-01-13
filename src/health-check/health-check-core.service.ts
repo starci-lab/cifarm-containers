@@ -1,14 +1,15 @@
-import { Injectable, Logger, Inject, OnModuleInit } from "@nestjs/common"
+import { Inject, Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { ModuleRef } from "@nestjs/core"
-import { Transport, KafkaOptions } from "@nestjs/microservices"
+import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
 import {
+    HealthIndicatorResult,
     MicroserviceHealthIndicator,
-    TypeOrmHealthIndicator,
-    HealthIndicatorResult
+    TypeOrmHealthIndicator
 } from "@nestjs/terminus"
-import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
+import { KafkaOptionsFactory } from "@src/brokers"
 import {
-    RedisType,
+    envConfig,
+    PostgreSQLDatabase,
     redisClusterEnabled,
     redisClusterRunInDocker,
     envConfig,

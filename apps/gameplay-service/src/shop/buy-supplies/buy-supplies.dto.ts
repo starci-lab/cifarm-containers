@@ -19,5 +19,5 @@ export class BuySuppliesRequest extends UserIdRequest {
 }
 
 export class BuySuppliesResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

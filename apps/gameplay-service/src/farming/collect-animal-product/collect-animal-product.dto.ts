@@ -9,5 +9,5 @@ export class CollectAnimalProductRequest extends UserIdRequest {
 }
 
 export class CollectAnimalProductResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

@@ -10,5 +10,5 @@ export class VisitRequest extends UserIdRequest {
 }
 
 export class VisitResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

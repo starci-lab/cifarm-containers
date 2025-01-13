@@ -3,5 +3,5 @@ import { UserIdRequest } from "@src/common"
 export class ReturnRequest extends UserIdRequest {}
 
 export class ReturnResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

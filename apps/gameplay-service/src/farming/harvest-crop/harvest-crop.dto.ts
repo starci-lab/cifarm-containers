@@ -9,5 +9,5 @@ export class HarvestCropRequest extends UserIdRequest {
 }
 
 export class HarvestCropResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

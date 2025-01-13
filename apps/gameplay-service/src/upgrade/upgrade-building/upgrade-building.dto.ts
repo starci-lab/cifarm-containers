@@ -10,5 +10,5 @@ export class UpgradeBuildingRequest extends UserIdRequest {
 }
 
 export class UpgradeBuildingResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

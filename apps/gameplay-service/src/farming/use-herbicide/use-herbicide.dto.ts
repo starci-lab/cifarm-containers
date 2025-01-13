@@ -9,5 +9,5 @@ export class UseHerbicideRequest extends UserIdRequest {
 }
 
 export class UseHerbicideResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

@@ -12,5 +12,5 @@ export class BuyTileRequest extends UserIdRequest {
 }
 
 export class BuyTileResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

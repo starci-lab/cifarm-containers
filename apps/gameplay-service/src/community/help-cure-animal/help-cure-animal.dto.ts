@@ -9,5 +9,5 @@ export class HelpCureAnimalRequest extends NeighborAndUserIdRequest {
 }
 
 export class HelpCureAnimalResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

@@ -188,7 +188,8 @@ export const _getAptosNftsByOwnerAddress = async (
         accountAddress,
         collectionAddress: nftCollectionId,
     })
-    nfts = nfts.slice(skip ? skip : undefined, take ? take : undefined)
+    nfts =  nfts.slice(skip || undefined, take || undefined)
+
 
     const promises: Array<Promise<void>> = []
     const records: Array<NftData> = []
@@ -259,7 +260,8 @@ export const _getAlgorandNftsByOwnerAddress = async (
         promises.push(promise())
     }
     await Promise.all(promises)
-    const records = nfts.slice(skip ? skip : undefined, take ? take : undefined)
+    const records =  nfts.slice(skip || undefined, take || undefined)
+
 
     return {
         records,
@@ -306,7 +308,8 @@ export const _getPolkadotUniqueNetworkNftsByOwnerAddress = async ({
         promises.push(promise())
     }
     await Promise.all(promises)
-    const records = nfts.slice(skip ? skip : undefined, take ? take : undefined)
+    const records =  nfts.slice(skip || undefined, take || undefined)
+
 
     return {
         records,

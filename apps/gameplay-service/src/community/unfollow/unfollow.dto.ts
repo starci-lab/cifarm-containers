@@ -7,5 +7,5 @@ export class UnfollowRequest extends UserIdRequest {
 }
 
 export class UnfollowResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

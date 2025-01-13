@@ -17,5 +17,5 @@ export class ConstructBuildingRequest extends UserIdRequest {
 }
 
 export class ConstructBuildingResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }

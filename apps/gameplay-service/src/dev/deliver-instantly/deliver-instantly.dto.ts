@@ -1,6 +1,6 @@
 export class DeliverInstantlyRequest {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }
 export class DeliverInstantlyResponse {
-    // Empty
+    // This class is intentionally left empty for future extensions
 }
