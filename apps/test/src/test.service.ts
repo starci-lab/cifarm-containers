@@ -1,5 +1,5 @@
-import { Inject, Injectable } from "@nestjs/common"
-import { AXIOS_INSTANCE_TOKEN } from "@src/axios"
+import { Injectable } from "@nestjs/common"
+import { AxiosType, InjectAxios } from "@src/axios"
 import { AxiosInstance } from "axios"
 
 @Injectable()
@@ -7,10 +7,18 @@ export class TestService {
 
     //constructor
     constructor(
-        @Inject(AXIOS_INSTANCE_TOKEN)
+        @InjectAxios({
+            type: AxiosType.AxiosWithNoAuth
+        })
         private readonly axios: AxiosInstance,
+
+        @InjectAxios({
+            type: AxiosType.AxiosWithAuth
+        })
+        private readonly axiosAuth: AxiosInstance,
     ){
         console.log("default axios", this.axios)
+        console.log("auth axios", this.axiosAuth)
     }
     getHello(): string {
         return "Hello World!"
