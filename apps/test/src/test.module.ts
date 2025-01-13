@@ -1,37 +1,38 @@
 import { Module } from "@nestjs/common"
+import { ApiVersion, AxiosModule, AxiosType, DEFAULT_BASE_URL } from "@src/axios"
+import { AxiosOptionsModule } from "@src/axios/options"
+import { EnvModule } from "@src/env"
 import { TestController } from "./test.controller"
 import { TestService } from "./test.service"
-import { PostgreSQLModule } from "@src/databases"
-import { SubModule } from "./sub/sub.module"
-import { EnvModule } from "@src/env"
-import { CacheModule } from "@src/cache"
-import { BullModule, BullQueueName } from "@src/bull"
-import { KafkaModule } from "@src/brokers"
-import { LeaderElectionModule } from "@src/leader-election"
-import { GameplayModule } from "@src/gameplay"
 
 @Module({
     imports: [
-        SubModule,
+        // SubModule,
         EnvModule.forRoot(),
-        PostgreSQLModule.forRoot(),
-        CacheModule.register({
-            isGlobal: true
+        // PostgreSQLModule.forRoot(),
+        // CacheModule.register({
+        //     isGlobal: true
+        // }),
+        // BullModule.forRoot(),
+        // BullModule.registerQueues({
+        //     isGlobal: true,
+        //     queueName: [
+        //         BullQueueName.Crop,
+        //         BullQueueName.Animal,
+        //         BullQueueName.Delivery,
+        //         BullQueueName.Energy
+        //     ]
+        // }),
+        // KafkaModule.register({
+        //     isGlobal: true
+        // }),
+        // LeaderElectionModule.forRoot()
+        AxiosOptionsModule.register({
+            injectionToken: "TEST",
+            options: {
+                type: AxiosType.AxiosWithNoAuth
+            }
         }),
-        BullModule.forRoot(),
-        BullModule.registerQueues({
-            isGlobal: true,
-            queueName: [
-                BullQueueName.Crop,
-                BullQueueName.Animal,
-                BullQueueName.Delivery,
-                BullQueueName.Energy
-            ]
-        }),
-        KafkaModule.register({
-            isGlobal: true
-        }),
-        LeaderElectionModule.forRoot()
     ],
     controllers: [TestController],
     providers: [TestService]

@@ -12,11 +12,6 @@ export enum AxiosConfigType {
     WithAuth = "with-auth",
 }
 
-export enum ApiVersion {
-    V1 = "v1",
-    V2 = "v2",
-}
-
 export const createAxios = (type: AxiosConfigType, config: AxiosConfig): Axios => {
     const { version, accessToken } = config
     const baseURL = `http://localhost:${envConfig().containers.restApiGateway.port}/${version}/gameplay`
