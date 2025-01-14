@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { FollowService } from "./follow.service"
 import { GrpcMethod } from "@nestjs/microservices"
 import { FollowRequest } from "./follow.dto"
-import { grpcData, GrpcServiceName } from "@src/grpc"
+import { getGrpcData, GrpcName } from "@src/grpc"
 
 @Controller()
 export class FollowController {
@@ -10,7 +10,7 @@ export class FollowController {
 
     constructor(private readonly followService: FollowService) {}
 
-    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "Follow")
+    @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "Follow")
     public async follow(request: FollowRequest) {
         this.logger.debug("Follow called")
         return this.followService.follow(request)

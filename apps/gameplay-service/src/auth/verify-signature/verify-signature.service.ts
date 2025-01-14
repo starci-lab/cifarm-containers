@@ -1,16 +1,15 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CacheNotFound, VerifySignatureTransactionFailedException } from "@src/exceptions"
+import { GrpcCacheNotFound } from "@src/exceptions"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
-
 import {
     InjectPostgreSQL,
     PlacedItemEntity,
     PlacedItemTypeId,
-    SessionEntity,
     Starter,
     SystemEntity,
     SystemId,
-    UserEntity
+    UserEntity,
+    SessionEntity
 } from "@src/databases"
 import {
     AlgorandAuthService,
@@ -23,14 +22,13 @@ import {
     PolkadotAuthService,
     SolanaAuthService
 } from "@src/blockchain"
-
 import { EnergyService } from "@src/gameplay"
-
 import { InjectCache } from "@src/cache"
 import { Network } from "@src/env"
 import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
+import { GrpcInternalException } from "nestjs-grpc-exceptions"
 
 @Injectable()
 export class VerifySignatureService {
@@ -61,7 +59,7 @@ export class VerifySignatureService {
     }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
         const valid = await this.cacheManager.get(message)
         if (!valid) {
-            throw new CacheNotFound(message)
+            throw new GrpcCacheNotFound(message)
         }
         let result = false
         chainKey = chainKey || defaultChainKey
@@ -129,7 +127,7 @@ export class VerifySignatureService {
             break
         }
 
-        if (!result) throw new Error("Signature verification")
+        if (!result) throw new GrpcInternalException("Signature is invalid")
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -163,7 +161,6 @@ export class VerifySignatureService {
                             ...tile
                         })
                     )
-
                     user = await queryRunner.manager.save(UserEntity, {
                         username: `${chainKey}-${_accountAddress.substring(0, 5)}`,
                         accountAddress: _accountAddress,
@@ -173,25 +170,37 @@ export class VerifySignatureService {
                         golds,
                         placedItems: [home, ...tiles]
                     })
+
                     await queryRunner.commitTransaction()
                 } catch (error) {
-                    this.logger.error("Transaction verify signature failed", error.message)
+                    const errorMessage = `Transaction user creation failed, reason: ${error.message}`
+                    this.logger.error(errorMessage)
                     await queryRunner.rollbackTransaction()
-                    throw new VerifySignatureTransactionFailedException(error)
+                    throw new GrpcInternalException(errorMessage)
                 }
             }
-            const { accessToken, refreshToken } = await this.jwtService.generateAuthCredentials({
+
+            const {
+                accessToken,
+                refreshToken: { token: refreshToken, expiredAt }
+            } = await this.jwtService.generateAuthCredentials({
                 id: user.id
             })
 
-            const userSession: DeepPartial<SessionEntity> = {
-                expiredAt: await this.jwtService.getExpiredAt(refreshToken),
-                token: refreshToken,
-                userId: user.id
+            await queryRunner.startTransaction()
+            try {
+                await queryRunner.manager.save(SessionEntity, {
+                    expiredAt,
+                    token: refreshToken,
+                    userId: user.id,
+                })
+                await queryRunner.commitTransaction()
+            } catch (error) {
+                const errorMessage = `Transaction session creation failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
+                await queryRunner.rollbackTransaction()
+                throw new GrpcInternalException(errorMessage)
             }
-
-            // Create session
-            await queryRunner.manager.save(SessionEntity, userSession)
 
             return {
                 accessToken,

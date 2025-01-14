@@ -15,7 +15,7 @@ export class BuildingSeeder implements Seeder {
     track = true
     public async run(dataSource: DataSource): Promise<void> {
         this.logger.debug("Seeding buildings...")
-        await dataSource.manager.insert(BuildingEntity, [
+        await dataSource.manager.save(BuildingEntity, [
             {
                 id: BuildingId.Coop,
                 availableInShop: true,
@@ -83,7 +83,6 @@ export class BuildingSeeder implements Seeder {
                 availableInShop: false,
                 maxUpgrade: 0,
                 price: 0,
-                upgrades: [],
                 placedItemType: {
                     id: PlacedItemTypeId.Home,
                     type: PlacedItemType.Building

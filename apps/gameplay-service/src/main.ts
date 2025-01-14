@@ -1,19 +1,14 @@
 import { NestFactory } from "@nestjs/core"
 import { GrpcOptions, Transport } from "@nestjs/microservices"
 import { Container, envConfig } from "@src/env"
-import { GrpcOptionsFactory } from "@src/grpc"
+import { getGrpcData, GrpcName } from "@src/grpc"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { AppModule } from "./app.module"
 
 const bootstrap = async () => {
-    // create config app
-    const configApp = await NestFactory.create(AppModule)
-    const options = configApp.get(GrpcOptionsFactory).createGrpcConfig()
-
-    // create grpc app
-    const app = configApp.connectMicroservice<GrpcOptions>({
+    const app = await NestFactory.createMicroservice<GrpcOptions>(AppModule, {
         transport: Transport.GRPC,
-        options
+        options: getGrpcData(GrpcName.Gameplay).nestConfig
     })
     await app.listen()
 }

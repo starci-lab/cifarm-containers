@@ -1,13 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, SessionEntity, UserEntity } from "@src/databases"
-import {
-    UserIsNotLoginException,
-    UserNotFoundException,
-    UserRefreshIsInvalidException
-} from "@src/exceptions"
+import { InjectPostgreSQL, SessionEntity } from "@src/databases"
 import { JwtService } from "@src/jwt"
-import { DataSource, DeepPartial } from "typeorm"
+import { DataSource } from "typeorm"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
+import {
+    GrpcInternalException,
+    GrpcUnauthenticatedException
+} from "nestjs-grpc-exceptions"
+import { createUtcDayjs } from "@src/common"
 
 @Injectable()
 export class RefreshService {
@@ -17,59 +17,53 @@ export class RefreshService {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly jwtService: JwtService
-        // @Inject(CACHE_MANAGER)
-        // private cacheManager: Cache
     ) {}
 
     public async refresh(request: RefreshRequest): Promise<RefreshResponse> {
         const { refreshToken } = request
 
+        const queryRunner = this.dataSource.createQueryRunner()
+        await queryRunner.connect()
+
         //Get session
-        const refreshTokenFromDb = await this.dataSource.manager.findOne(SessionEntity, {
+        const session = await queryRunner.manager.findOne(SessionEntity, {
             where: {
                 token: refreshToken
             }
         })
+        if (!session) throw new GrpcUnauthenticatedException("Session not found")
 
-        if (!refreshTokenFromDb) throw new UserIsNotLoginException()
+        const { expiredAt, userId } = session
+        if (!createUtcDayjs().isAfter(expiredAt))
+            throw new GrpcUnauthenticatedException("Refresh token is expired")
 
-        const payload = await this.jwtService.verifyToken(refreshToken)
-        if (!payload || !payload.refresh) {
-            throw new UserRefreshIsInvalidException(payload.id)
-        }
-
-        const userId = payload.id
-
-        const user = await this.dataSource.manager.findOne(UserEntity, {
-            where: {
-                id: userId
-            },
-            relations: {}
-        })
-        if (!user) {
-            this.logger.warn(`User not found for ID: ${userId}`)
-            throw new UserNotFoundException(userId)
-        }
-
-        const { accessToken, refreshToken: newRefreshToken } =
-            await this.jwtService.generateAuthCredentials({
-                id: user.id
-            })
-
-        const userSession: DeepPartial<SessionEntity> = {
-            ...refreshTokenFromDb,
-            isActive: true,
-            expiredAt: await this.jwtService.getExpiredAt(refreshToken),
-            token: newRefreshToken,
-            userId: user.id
-        }
-
-        // Save session
-        await this.dataSource.manager.save(SessionEntity, userSession)
-
-        return {
+        const {
             accessToken,
-            refreshToken: newRefreshToken
+            refreshToken: { token: newRefreshToken, expiredAt: newExpiredAt }
+        } = await this.jwtService.generateAuthCredentials({
+            id: userId
+        })
+ 
+        await queryRunner.startTransaction()
+        try {
+            await queryRunner.manager.save(SessionEntity, {
+                expiredAt: newExpiredAt,
+                token: newRefreshToken,
+                userId
+            })
+            await queryRunner.commitTransaction()
+
+            return {
+                accessToken,
+                refreshToken: newRefreshToken
+            }
+        } catch (error) {
+            const errorMessage = `Transaction session creation failed, reason: ${error.message}`
+            this.logger.error(errorMessage)
+            await queryRunner.rollbackTransaction()
+            throw new GrpcInternalException(errorMessage)
+        } finally { 
+            await queryRunner.release()
         }
     }
 }

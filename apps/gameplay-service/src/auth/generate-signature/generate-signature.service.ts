@@ -13,10 +13,8 @@ import {
     EvmAuthService,
     NearAuthService,
     PolkadotAuthService,
-    SolanaAuthService
+    SolanaAuthService,
 } from "@src/blockchain"
-import { ChainKeyNotFoundException } from "@src/exceptions"
-import { defaultBotType } from "@src/guards"
 import { RequestMessageService } from "../request-message"
 import { encode } from "bs58"
 import { envConfig, SupportedChainKey } from "@src/env"
@@ -43,7 +41,7 @@ export class GenerateSignatureService {
         network = network || defaultNetwork
         const { message } = await this.requestMessageService.requestMessage()
         chainKey = chainKey ?? defaultChainKey
-        accountNumber = accountNumber ?? 0
+        accountNumber = accountNumber ?? 0 
 
         const platform = chainKeyToPlatform(chainKey)
         switch (platform) {
@@ -57,7 +55,6 @@ export class GenerateSignatureService {
                 chainKey,
                 network,
                 telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                botType: defaultBotType,
                 accountAddress: address
             }
         }
@@ -72,7 +69,6 @@ export class GenerateSignatureService {
                 chainKey,
                 network,
                 telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                botType: defaultBotType,
                 accountAddress: publicKey.toBase58()
             }
         }
@@ -87,7 +83,6 @@ export class GenerateSignatureService {
                 chainKey,
                 network,
                 telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                botType: defaultBotType,
                 accountAddress: this.aptosAuthService.toAddress(publicKey.toString())
             }
         }
@@ -104,7 +99,6 @@ export class GenerateSignatureService {
                 chainKey,
                 network,
                 telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                botType: defaultBotType,
                 accountAddress: addr.toString()
             }
         }
@@ -125,7 +119,6 @@ export class GenerateSignatureService {
                 chainKey,
                 network,
                 telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                botType: defaultBotType,
                 accountAddress: publicKey.toString()
             }
         }
@@ -139,12 +132,9 @@ export class GenerateSignatureService {
                 chainKey,
                 network,
                 telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
-                botType: defaultBotType,
                 accountAddress: `example.${envConfig().chainCredentials[SupportedChainKey.Near].creator[network].accountId}`
             }
         }
-        default:
-            throw new ChainKeyNotFoundException(chainKey)
         }
     }
 }

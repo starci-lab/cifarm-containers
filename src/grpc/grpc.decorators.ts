@@ -1,6 +1,6 @@
 import { Inject } from "@nestjs/common"
-import { GrpcServiceName } from "./grpc.types"
+import { GrpcName } from "./grpc.types"
 import { getGrpcToken } from "./grpc.utils"
 
-export const InjectGrpc = (grpcServiceName: GrpcServiceName = GrpcServiceName.Gameplay) =>
+export const InjectGrpc = (grpcServiceName: GrpcName = GrpcName.Gameplay) =>
     Inject(getGrpcToken(grpcServiceName))

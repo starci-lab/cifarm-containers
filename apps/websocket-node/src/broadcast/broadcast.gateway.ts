@@ -1,4 +1,4 @@
-import { Logger, UseGuards } from "@nestjs/common"
+import { Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import {
     ConnectedSocket,
@@ -10,65 +10,56 @@ import {
     WebSocketServer
 } from "@nestjs/websockets"
 import { InjectPostgreSQL, PlacedItemEntity } from "@src/databases"
-import { WsUser } from "@src/decorators"
-import { WsSessionNotLinkedException } from "@src/exceptions"
-import { UserLike, WsJwtAuthGuard } from "@src/jwt"
-import { Server, Socket } from "socket.io"
+import { Namespace, Socket } from "socket.io"
 import { DataSource } from "typeorm"
-import { LinkUserSessionResponse, SyncPlacedItemsParams } from "./broadcast.dto"
+import { SyncPlacedItemsParams } from "./broadcast.dto"
+import { SocketCoreService } from "@src/io/socket-base.service"
 
 const NAMESPACE = "broadcast"
 
 @WebSocketGateway({
     cors: {
-        // origin: [envConfig().cors.origin, "https://admin.socket.io"],
         origin: "*",
         credentials: true
     },
     namespace: NAMESPACE
 })
-
 export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
     private readonly logger = new Logger(BroadcastGateway.name)
-    private readonly sessionMap = new Map<string, string>()
 
-    
     constructor(
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
-    ) {
-    }
+        private readonly dataSource: DataSource,
+        private readonly socketCoreService: SocketCoreService
+    ) {}
 
     @WebSocketServer()
-    private readonly server: Server
+    private readonly server: Namespace
 
     afterInit() {
-        this.logger.log(`Initialized gateway with namespace: ${NAMESPACE}`)
-        // Initialize the admin UI for the namespace
+        this.logger.verbose(`Initialized gateway with namespace: ${NAMESPACE}`)
     }
 
-    private checkSessionLinked(clientId: string): string {
-        const userId = this.sessionMap.get(clientId)
-        if (!userId) {
-            throw new WsSessionNotLinkedException(clientId)
-        }
-        return userId
+    //process authentication
+    public handleConnection(@ConnectedSocket() client: Socket) {
+        //authenticate, otherwise disconnect
+        this.socketCoreService.authenticate(client)
     }
 
-    @Cron("*/5 * * * * *")
-    public printSessionKeys() {
-        this.logger.debug(Array.from(this.sessionMap.keys()))
+    async handleDisconnect(@ConnectedSocket() client: Socket) {
+        //disconnect the socket
+        this.socketCoreService.disconnect(client)
     }
 
     @Cron("*/1 * * * * *")
     public async broadcastPlacedItemsEverySecond() {
-        const uniqueUserIds = new Set<string>(this.sessionMap.values())
-        const userIds = Array.from(uniqueUserIds)
+        const socketIds = Array.from(this.server.adapter.sids.keys())
 
         // Create an array of promises for syncing placed items
-        const promises = userIds.map(async (userId) => {
+        const promises = socketIds.map(async (socketId) => {
+            const userId = await this.socketCoreService.getUserId(socketId)
             await this.broadcastPlacedItems({
-                userId,
+                userId
             })
         })
 
@@ -86,9 +77,7 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
                     userId
                 }
             })
-            this.server
-                .to(userId)
-                .emit("placed_items_updated", placedItems)
+            this.server.to(userId).emit("placed_items_updated", placedItems)
         } finally {
             await queryRunner.release()
         }
@@ -96,47 +85,9 @@ export class BroadcastGateway implements OnGatewayConnection, OnGatewayDisconnec
 
     @SubscribeMessage("broadcast_placed_items")
     public async handleBroadcastPlacedItems(@ConnectedSocket() client: Socket) {
-        //check if the user is in the room
-        //get the user id from the session map
-        const userId = this.checkSessionLinked(client.id)
-
         //find the clientid in room
         await this.broadcastPlacedItems({
-            userId,
+            userId
         })
-    }
-
-    async handleDisconnect(@ConnectedSocket() client: Socket) {
-        this.logger.debug(`Client disconnected: ${client.id}`)
-        //unlink the session with the client id
-        const userId = this.sessionMap.get(client.id)
-        if (userId) {
-            this.sessionMap.delete(client.id)
-        }
-    }
-
-    public handleConnection(@ConnectedSocket() client: Socket) {
-        this.logger.debug(`Client connected: ${client.id}`)
-    }
-
-    @UseGuards(WsJwtAuthGuard)
-    @SubscribeMessage("link_user_session")
-    public async linkUserSession(
-        @WsUser() user: UserLike,
-        @ConnectedSocket() client: Socket
-    ): Promise<LinkUserSessionResponse> {
-        this.logger.debug(`User authenticated: ${user.id} - ${client.id}`)
-        //join the room with user id
-        client.join(user.id)
-        const socketsInRoom = await client.in(user.id).fetchSockets() // Get all sockets in the room
-        socketsInRoom.forEach(socket => {
-            if (socket.id !== client.id) {
-                socket.disconnect(true) // Disconnect all clients except the current one
-            }
-        })
-        //link the session with the user id
-        this.sessionMap.set(client.id, user.id)
-
-        return {}
     }
 }

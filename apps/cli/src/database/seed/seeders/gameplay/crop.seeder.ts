@@ -9,7 +9,7 @@ export class CropSeeder implements Seeder {
     track = true
     public async run(dataSource: DataSource): Promise<void> {
         this.logger.debug("Seeding crops...")
-        await dataSource.manager.insert(CropEntity, [
+        await dataSource.manager.save(CropEntity, [
             {
                 id: CropId.Carrot,
                 price: 50,

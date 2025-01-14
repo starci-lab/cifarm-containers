@@ -8,7 +8,7 @@ import { sleep } from "@src/common"
 import { CropCurrentState, CropEntity, CropId, EnergyRegenTime, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, SystemEntity, SystemId, TileId, UserEntity } from "@src/databases"
 import { EnvModule } from "@src/env"
 import { grpcData, GrpcModule } from "@src/grpc"
-import { GrpcServiceName } from "@src/grpc/grpc.types"
+import { GrpcName } from "@src/grpc/grpc.types"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"
@@ -27,7 +27,7 @@ describe("Regenerate energy flow", () => {
                 EnvModule.forRoot(),
                 GameplayPostgreSQLModule.forRoot(),
                 GrpcModule.register({
-                    name: GrpcServiceName.Gameplay
+                    name: GrpcName.Gameplay
                 }),
                 JwtModule
             ],
@@ -45,8 +45,8 @@ describe("Regenerate energy flow", () => {
         accessToken = verifySignatureData.accessToken
         dataSource = module.get<DataSource>(DataSource)
         jwtService = module.get<JwtService>(JwtService)
-        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcServiceName.Gameplay].name)
-        gameplayService = clientGrpc.getService<IGameplayService>(grpcData[GrpcServiceName.Gameplay].service)
+        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcName.Gameplay].name)
+        gameplayService = clientGrpc.getService<IGameplayService>(getGrpcData(GrpcName.Gameplay).data.service)
 
         // Decode accessToken to get user
         user = await jwtService.decodeToken(accessToken)

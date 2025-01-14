@@ -23,7 +23,7 @@ export class PlacedItemEntity extends UuidAbstractEntity {
         userId: string
 
     @Field(() => UserEntity, { nullable: true })
-    @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })
+    @ManyToOne(() => UserEntity, (user) => user.placedItems, { onDelete: "CASCADE", eager: true })
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
         user?: UserEntity
 
@@ -71,7 +71,7 @@ export class PlacedItemEntity extends UuidAbstractEntity {
         parent: PlacedItemEntity
 
     @Field(() => String, { nullable: true })
-    @Column({ name: "placed_item_type_id", length: 36, nullable: true })
+    @Column({ name: "placed_item_type_id", type: "uuid", nullable: true })
         placedItemTypeId?: string
 
     @Field(() => PlacedItemTypeEntity, { nullable: true })

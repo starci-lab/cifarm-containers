@@ -173,7 +173,7 @@ export class SystemSeeder implements Seeder {
                 value: energyRegenTime
             }
         ]
-        await dataSource.manager.insert(SystemEntity, data)
+        await dataSource.manager.save(SystemEntity, data)
         this.logger.verbose("System seeded successfully.")
     }
 }

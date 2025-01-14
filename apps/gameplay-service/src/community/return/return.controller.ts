@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { grpcData, GrpcServiceName } from "@src/grpc"
+import { getGrpcData, GrpcName } from "@src/grpc"
 import { ReturnService } from "./return.service"
 import { ReturnRequest } from "./return.dto"
 
@@ -10,7 +10,7 @@ export class ReturnController {
 
     constructor(private readonly returnService: ReturnService) {}
 
-    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "Return")
+    @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "Return")
     async return(request: ReturnRequest) {
         this.logger.debug("Return called")
         await this.returnService.return(request)

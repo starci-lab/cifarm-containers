@@ -1,13 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common"
 import { MODULE_OPTIONS_TOKEN } from "./options.module-definition"
 import { GrpcOptionsOptions } from "./options.types"
-import { GrpcConfig, GrpcServiceName } from "../grpc.types"
-import { grpcData } from "../grpc.constants"
-import { grpcUrlMap } from "../grpc.utils"
+import { GrpcName, GrpcNestConfig } from "../grpc.types"
+import { getGrpcData } from "../grpc.constants"
 
 @Injectable()
 export class GrpcOptionsFactory {
-    private readonly grpcServiceName: GrpcServiceName
+    private readonly grpcName: GrpcName
     private readonly url: string
     private readonly package: string
     private readonly protoPath: string
@@ -16,13 +15,14 @@ export class GrpcOptionsFactory {
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: GrpcOptionsOptions
     ) {
-        this.grpcServiceName = options.options.name ?? GrpcServiceName.Gameplay
-        this.url = grpcUrlMap(options.useLoopbackAddress)[this.grpcServiceName]
-        this.package = grpcData[this.grpcServiceName].package
-        this.protoPath = grpcData[this.grpcServiceName].protoPath
+        this.grpcName = options.options.name ?? GrpcName.Gameplay
+        const { data, url } = getGrpcData(this.grpcName)
+        this.url = url
+        this.package = data.package
+        this.protoPath = data.protoPath
     }
 
-    public createGrpcConfig(): GrpcConfig {
+    public createGrpcConfig(): GrpcNestConfig {
         return {
             url: this.url,
             package: this.package,

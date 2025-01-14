@@ -1,6 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty, IsOptional } from "class-validator"
-import { BotType } from "@src/guards"
 import { Network } from "@src/env"
 
 export class GenerateSignatureRequest {
@@ -39,9 +38,6 @@ export class GenerateSignatureResponse {
 
     @ApiProperty({ example: "tranminhthien" })
         telegramInitDataRaw: string
-
-    @ApiProperty({ example: BotType.Ciwallet })
-        botType: BotType
 
     @ApiProperty({ example: "0xc0ffee" })
         accountAddress: string

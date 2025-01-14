@@ -1,6 +1,6 @@
 import { Body, Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { grpcData, GrpcServiceName } from "@src/grpc"
+import { getGrpcData, GrpcName } from "@src/grpc"
 import { MoveService } from "./move.service"
 import { MoveRequest } from "./move.dto"
 
@@ -11,7 +11,7 @@ export class MoveController {
             private readonly placementService: MoveService
     ){}
 
-    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "Move") 
+    @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "Move") 
     public async move(@Body() request: MoveRequest) {
         this.logger.debug(`Received request to move placement: ${JSON.stringify(request)}`)
         return await this.placementService.move(request)

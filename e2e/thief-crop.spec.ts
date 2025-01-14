@@ -10,7 +10,7 @@ import {
 } from "@src/databases"
 import { CropCurrentState, CropEntity, getPostgreSqlToken, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, ProductType, SeedGrowthInfoEntity, TileId } from "@src/databases/postgresql"
 import { Network, SupportedChainKey } from "@src/env"
-import { grpcData, GrpcModule, GrpcServiceName } from "@src/grpc"
+import { grpcData, GrpcModule, GrpcName } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { createTestModule, MOCK_DATABASE_OPTIONS, TestingModule } from "@src/testing"
 import { AxiosInstance } from "axios"
@@ -37,7 +37,7 @@ describe("Thief crop flow", () => {
                 TestingModule.register({
                     imports: [
                         GrpcModule.register({
-                            name: GrpcServiceName.Gameplay,
+                            name: GrpcName.Gameplay,
                         }),
                         JwtModule
                     ]
@@ -48,8 +48,8 @@ describe("Thief crop flow", () => {
         dataSource = module.get<DataSource>(getPostgreSqlToken(MOCK_DATABASE_OPTIONS))
 
         jwtService = module.get<JwtService>(JwtService)
-        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcServiceName.Gameplay].name)
-        gameplayService = clientGrpc.getService<IGameplayService>(grpcData[GrpcServiceName.Gameplay].service)
+        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcName.Gameplay].name)
+        gameplayService = clientGrpc.getService<IGameplayService>(getGrpcData(GrpcName.Gameplay).data.service)
         axiosWithAuthInstance = module.get<AxiosInstance>(getAxiosToken({
             type: AxiosType.AxiosWithAuth
         }))

@@ -13,7 +13,7 @@ import { JwtStrategy } from "./strategies"
         JwtService, 
     ],
     exports: [ 
-        JwtService, 
+        JwtService,
     ]
 })
 export class JwtModule extends ConfigurableModuleClass {

@@ -17,7 +17,7 @@ export class AnimalSeeder implements Seeder {
     track = true
     public async run(dataSource: DataSource): Promise<void> {
         this.logger.debug("Seeding animals...")
-        await dataSource.manager.insert(AnimalEntity, [
+        await dataSource.manager.save(AnimalEntity, [
             {
                 id: AnimalId.Chicken,
                 yieldTime: 60 * 60 * 24,

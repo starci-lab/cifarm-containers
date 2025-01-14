@@ -1,6 +1,6 @@
 import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
-import { grpcData, GrpcServiceName } from "@src/grpc"
+import { getGrpcData, GrpcName } from "@src/grpc"
 import { UpdateTutorialService } from "./update-tutorial.service"
 import { UpdateTutorialRequest } from "./update-tutorial.dto"
 
@@ -10,7 +10,7 @@ export class UpdateTutorialController {
 
     constructor(private readonly updateTutorialService: UpdateTutorialService) {}
 
-    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "UpdateTutorial")
+    @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "UpdateTutorial")
     public async updateTutorial(request: UpdateTutorialRequest) {
         this.logger.debug("UpdateTutorial called")
         return this.updateTutorialService.updateTutorial(request)

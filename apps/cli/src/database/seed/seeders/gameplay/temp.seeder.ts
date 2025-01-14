@@ -11,7 +11,7 @@ export class TempSeeder implements Seeder {
     track = true
     public async run(dataSource: DataSource): Promise<void> {
         this.logger.debug("Seeding temp...")
-        await dataSource.manager.insert(TempEntity, [
+        await dataSource.manager.save(TempEntity, [
             {
                 id: TempId.AnimalGrowthLastSchedule,
                 value: {

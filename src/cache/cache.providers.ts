@@ -12,6 +12,7 @@ export const createCacheManagerFactoryProvider = (): Provider => ({
     useFactory: (options: typeof OPTIONS_TYPE, keyvService: KeyvService): Cache => {
         const cacheType = options.cacheType ?? CacheType.Redis
         const keyv = keyvService.createKeyv()
+        console.log("called")
         return createCache({
             stores: cacheType ? [keyv] : undefined,
             ttl: envConfig().cacheTimeoutMs.manager

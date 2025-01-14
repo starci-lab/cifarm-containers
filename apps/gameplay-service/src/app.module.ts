@@ -1,10 +1,8 @@
 import { Module } from "@nestjs/common"
-import { APP_FILTER } from "@nestjs/core"
 import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { CacheModule } from "@src/cache"
 import { PostgreSQLModule } from "@src/databases"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
-import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { UpgradeModule } from "./upgrade"
 import { ClaimModule } from "./claim"
 import { CommunityModule } from "./community"
@@ -18,7 +16,9 @@ import { AuthModule } from "./auth"
 import { GameplayModule } from "@src/gameplay"
 import { BlockchainModule } from "@src/blockchain"
 import { JwtModule } from "@src/jwt"
-import { GrpcOptionsModule, GrpcServiceName } from "@src/grpc"
+import { APP_FILTER } from "@nestjs/core"
+import { BlockchainExceptionFilter } from "./filters"
+import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 
 @Module({
     imports: [
@@ -53,20 +53,17 @@ import { GrpcOptionsModule, GrpcServiceName } from "@src/grpc"
         PlacementModule,
         ProfileModule,
         ShopModule,
-        UpgradeModule,
-
-        GrpcOptionsModule.register({
-            options: {
-                name: GrpcServiceName.Gameplay
-            },
-            useLoopbackAddress: true
-        })
+        UpgradeModule
     ],
     providers: [
         {
             provide: APP_FILTER,
+            useClass: BlockchainExceptionFilter,
+        },
+        {
+            provide: APP_FILTER,
             useClass: GrpcServerExceptionFilter
-        }
+        },
     ]
 })
 export class AppModule {}

@@ -5,16 +5,26 @@ import { MongoDbModule, RedisModule } from "@src/native"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { IO_ADAPTER_FACTORY } from "./io.constants"
 import { ClusterIoAdapterFactory, MongoDbIoAdapterFactory, RedisIoAdapterFactory } from "./adapters"
+import { SocketCoreService } from "./socket-base.service"
+import { CacheModule } from "@src/cache"
+import { JwtModule } from "@src/jwt"
 
 @Module({})
 export class IoModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const adapter = options.adapter || IoAdapterType.MongoDb
-
+        const useGlobalImports = options.useGlobalImports || false
         // define the modules, providers, and exports arrays
         const imports: Array<NestImport> = []
-        const providers: Array<NestProvider> = []
-        const exports: Array<NestExport> = []
+        
+        //check if the global module is used
+        if (!useGlobalImports) {
+            imports.push(CacheModule.register())
+            imports.push(JwtModule.register())
+        }
+
+        const providers: Array<NestProvider> = [SocketCoreService]
+        const exports: Array<NestExport> = [SocketCoreService]
 
         // Use switch case for cleaner handling of different adapters
         switch (adapter) {

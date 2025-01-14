@@ -4,7 +4,7 @@ import { Test } from "@nestjs/testing"
 import {
     grpcData,
     GrpcModule,
-    GrpcServiceName,
+    GrpcName,
 } from "@src/grpc"
 import {
     AnimalCurrentState,
@@ -42,7 +42,7 @@ describe("Raise animal flow", () => {
                 EnvModule.forRoot(),
                 GameplayPostgreSQLModule.forRoot(),
                 GrpcModule.register({
-                    name: GrpcServiceName.Gameplay,
+                    name: GrpcName.Gameplay,
                 }),
                 JwtModule,
             ],
@@ -51,10 +51,10 @@ describe("Raise animal flow", () => {
         dataSource = module.get<DataSource>(DataSource)
         jwtService = module.get<JwtService>(JwtService)
         const clientGrpc = module.get<ClientGrpc>(
-            grpcData[GrpcServiceName.Gameplay].name
+            grpcData[GrpcName.Gameplay].name
         )
         gameplayService = clientGrpc.getService<IGameplayService>(
-            grpcData[GrpcServiceName.Gameplay].service
+            getGrpcData(GrpcName.Gameplay).data.service
         )
 
         // Sign in and retrieve accessToken

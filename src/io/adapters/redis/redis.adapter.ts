@@ -11,11 +11,10 @@ export class RedisIoAdapter extends IoAdapter {
         this.redisClientOrCluster = redisClientOrCluster
     }
 
-    public async connect(): Promise<void> {
+    public connect(): void {
         // if cluster is not enabled, create a single connection
         const pubClient = this.redisClientOrCluster
         const subClient = pubClient.duplicate()
-        await Promise.all([pubClient.connect(), subClient.connect()])
         this.adapterConstructor = createAdapter(pubClient, subClient)
     }
 

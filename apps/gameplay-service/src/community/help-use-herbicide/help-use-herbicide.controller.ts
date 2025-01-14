@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { HelpUseHerbicideService } from "./help-use-herbicide.service"
 import { HelpUseHerbicideRequest } from "./help-use-herbicide.dto"
-import { grpcData, GrpcServiceName } from "@src/grpc"
+import { getGrpcData, GrpcName } from "@src/grpc"
 
 @Controller()
 export class HelpUseHerbicideController {
@@ -10,7 +10,7 @@ export class HelpUseHerbicideController {
 
     constructor(private readonly helpUseHerbicideService: HelpUseHerbicideService) {}
 
-    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "HelpUseHerbicide")
+    @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "HelpUseHerbicide")
     public async helpUseHerbicide(request: HelpUseHerbicideRequest) {
         this.logger.debug("HelpUseHerbicide request called")
         return this.helpUseHerbicideService.helpUseHerbicide(request)

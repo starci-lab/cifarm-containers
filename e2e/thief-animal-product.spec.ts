@@ -22,7 +22,7 @@ import { EnvModule } from "@src/env"
 import {
     grpcData,
     GrpcModule,
-    GrpcServiceName,
+    GrpcName,
 } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { lastValueFrom } from "rxjs"
@@ -46,7 +46,7 @@ describe("Thief Animal Product flow", () => {
                 EnvModule.forRoot(),
                 GameplayPostgreSQLModule.forRoot(),
                 GrpcModule.register({
-                    name: GrpcServiceName.Gameplay,
+                    name: GrpcName.Gameplay,
                 }),
                 JwtModule,
             ],
@@ -54,8 +54,8 @@ describe("Thief Animal Product flow", () => {
 
         dataSource = module.get<DataSource>(DataSource)
         jwtService = module.get<JwtService>(JwtService)
-        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcServiceName.Gameplay].name)
-        gameplayService = clientGrpc.getService<IGameplayService>(grpcData[GrpcServiceName.Gameplay].service)
+        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcName.Gameplay].name)
+        gameplayService = clientGrpc.getService<IGameplayService>(getGrpcData(GrpcName.Gameplay).data.service)
 
         // Sign in as main user
         const authAxios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })

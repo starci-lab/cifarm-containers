@@ -1,27 +1,9 @@
-import { Injectable, CanActivate, Logger, ExecutionContext } from "@nestjs/common"
-import { JwtService } from "../jwt.service"
-import { WsAuthTokenNotFoundException, WsUnauthorizedException } from "@src/exceptions"
+import { Injectable, ExecutionContext } from "@nestjs/common"
+import { AuthGuard } from "@nestjs/passport"
 
 @Injectable()
-export class WsJwtAuthGuard implements CanActivate {
-    private readonly logger = new Logger(WsJwtAuthGuard.name)
-    constructor(
-        private readonly jwtService: JwtService,
-    ) {}
-
-    async canActivate(context: ExecutionContext): Promise<boolean> {
-        const client = context.switchToWs().getClient()
-        const token = client.handshake.auth.token
-        if (!token) {
-            this.logger.error("No auth token")
-            throw new WsAuthTokenNotFoundException()
-        }
-        const user = await this.jwtService.verifyToken(token)
-        if (!user) {
-            this.logger.error("Unauthorized")
-            throw new WsUnauthorizedException()
-        }
-        context.switchToWs().getClient().data.user = user
-        return true
+export class WsJwtAuthGuard extends AuthGuard("jwt") {
+    getRequest(context: ExecutionContext) {
+        return context.switchToWs().getClient()
     }
 }

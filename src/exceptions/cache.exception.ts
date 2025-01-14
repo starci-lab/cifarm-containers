@@ -1,7 +1,8 @@
-import { HttpException, HttpStatus } from "@nestjs/common"
+import { HttpStatus } from "@nestjs/common"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 
-export class CacheNotFound extends HttpException {
+export class GrpcCacheNotFound extends GrpcNotFoundException {
     constructor(key: string) {
-        super(`Cache entry with key not found: ${key}`, HttpStatus.NOT_FOUND)
+        super(`Cache entry with key not found: ${key}`)
     }
 }

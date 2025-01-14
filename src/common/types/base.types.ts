@@ -17,11 +17,11 @@ export type Atomic = string | number | boolean | object
 
 export interface BaseOptionsOptions<TOptions> {
     options?: TOptions
-    injectionToken?: string
 }
 
-export interface InjectionToken {
+export interface BaseOptions {
     injectionToken?: string
+    useGlobalImports?: boolean
 }
 
 export interface ClassLike {

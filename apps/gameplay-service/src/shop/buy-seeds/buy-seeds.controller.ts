@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { GrpcMethod } from "@nestjs/microservices"
 import { BuySeedsRequest } from "./buy-seeds.dto"
 import { BuySeedsService } from "./buy-seeds.service"
-import { grpcData, GrpcServiceName } from "@src/grpc"
+import { getGrpcData, GrpcName } from "@src/grpc"
 
 @Controller()
 export class BuySeedsController {
@@ -10,7 +10,7 @@ export class BuySeedsController {
 
     constructor(private readonly buySeedService: BuySeedsService) {}
 
-    @GrpcMethod(grpcData[GrpcServiceName.Gameplay].service, "BuySeeds")
+    @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "BuySeeds")
     public async buySeeds(request: BuySeedsRequest) {
         this.logger.debug("BuySeeds called")
         return this.buySeedService.buySeeds(request)

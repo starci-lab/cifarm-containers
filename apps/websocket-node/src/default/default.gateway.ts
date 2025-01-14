@@ -13,6 +13,7 @@ import { instrument } from "@socket.io/admin-ui"
 import { isProduction, envConfig } from "@src/env"
 import { getHttpUrl } from "@src/common"
 import { BcryptService } from "@src/crypto"
+import { Cron } from "@nestjs/schedule"
 
 @WebSocketGateway({
     cors: {
@@ -43,6 +44,13 @@ export class DefaultGateway implements OnGatewayConnection, OnGatewayDisconnect,
     @WebSocketServer()
     private readonly server: Server
 
+    @Cron("*/5 * * * * *")
+    public printSids() {
+        const adapter = this.server.of("/").adapter
+        const keys = adapter.sids.keys()
+        this.logger.debug(`Sids: ${Array.from(keys)}`)
+    }
+
     afterInit() {
         // Initialize the admin UI for the namespace
         instrument(this.server, {
@@ -51,6 +59,7 @@ export class DefaultGateway implements OnGatewayConnection, OnGatewayDisconnect,
                 password: this.bcryptService.hash(envConfig().socketIoAdmin.password),
                 type: "basic"
             },
+            namespaceName: "/admin",
             mode: isProduction() ? "production" : "development",
         })
     }

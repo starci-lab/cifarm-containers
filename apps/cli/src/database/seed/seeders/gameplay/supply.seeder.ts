@@ -8,7 +8,7 @@ export class SupplySeeder implements Seeder {
     track = true
     public async run(dataSource: DataSource): Promise<void> {
         this.logger.debug("Seeding supplies...")
-        await dataSource.manager.insert(SupplyEntity, [
+        await dataSource.manager.save(SupplyEntity, [
             {
                 id: SupplyId.BasicFertilizer,
                 type: SupplyType.AnimalFeed,

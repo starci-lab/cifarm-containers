@@ -8,7 +8,7 @@ export class SpinPrizeSeeder implements Seeder {
     track = true
     public async run(dataSource: DataSource): Promise<void> {
         this.logger.debug("Seeding spin prizes...")
-        await dataSource.manager.insert(SpinPrizeEntity, [
+        await dataSource.manager.save(SpinPrizeEntity, [
             {
                 type: SpinPrizeType.Gold,
                 appearanceChance: AppearanceChance.Common,

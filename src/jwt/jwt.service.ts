@@ -2,6 +2,9 @@ import { Injectable, Logger } from "@nestjs/common"
 import { JwtService as NestJwtService } from "@nestjs/jwt"
 import { envConfig } from "@src/env"
 import { AuthCredentials, UserLike } from "./jwt.types"
+import { v4 } from "uuid"
+import ms, { StringValue } from "ms"
+import { createUtcDayjs } from "@src/common"
 
 @Injectable()
 export class JwtService {
@@ -13,26 +16,23 @@ export class JwtService {
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(payload, {
                 secret: envConfig().secrets.jwt.secret,
-                expiresIn: envConfig().secrets.jwt.accessTokenExpiration,
+                expiresIn: envConfig().secrets.jwt.accessTokenExpiration
             }),
-            this.jwtService.signAsync({
-                ...payload,
-                refresh: true,
-            }, {
-                secret: envConfig().secrets.jwt.secret,
-                expiresIn: envConfig().secrets.jwt.refreshTokenExpiration,
-            }),
+            v4()
         ])
         return {
             accessToken,
-            refreshToken,
+            refreshToken: {
+                token: refreshToken,
+                expiredAt: await this.getExpiredAt()
+            }
         }
     }
 
     public async verifyToken(token: string): Promise<UserLike | null> {
         try {
             return await this.jwtService.verifyAsync(token, {
-                secret: envConfig().secrets.jwt.secret,
+                secret: envConfig().secrets.jwt.secret
             })
         } catch (ex) {
             this.logger.error(ex)
@@ -49,11 +49,11 @@ export class JwtService {
         }
     }
 
-    public async getExpiredAt(token: string): Promise<Date> {
+    private async getExpiredAt(): Promise<Date> {
         try {
-            const decodedToken = this.jwtService.decode(token) as { exp?: number }
-    
-            return new Date(decodedToken.exp * 1000)
+            const expiresIn = envConfig().secrets.jwt.refreshTokenExpiration
+            const expiresInMs = ms(expiresIn as StringValue)
+            return createUtcDayjs().add(expiresInMs, "millisecond").toDate()
         } catch (ex) {
             this.logger.error("Failed to get expiration time from token", ex.message)
             return null

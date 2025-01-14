@@ -8,7 +8,7 @@ import { Network, SupportedChainKey } from "@src/blockchain"
 import { sleep } from "@src/common"
 import { CacheKey, CacheRedisModule, CropCurrentState, CropEntity, CropId, DeliveringProductEntity, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
 import { EnvModule } from "@src/env"
-import { grpcData, GrpcModule, GrpcServiceName } from "@src/grpc"
+import { grpcData, GrpcModule, GrpcName } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { lastValueFrom } from "rxjs"
@@ -30,7 +30,7 @@ describe("Deliver product flow", () => {
                 GameplayPostgreSQLModule.forRoot(),
                 CacheRedisModule.forRoot(),
                 GrpcModule.register({
-                    name: GrpcServiceName.Gameplay,
+                    name: GrpcName.Gameplay,
                 }),
                 JwtModule
             ],
@@ -49,8 +49,8 @@ describe("Deliver product flow", () => {
         accessToken = verifySignatureData.accessToken
         dataSource = module.get<DataSource>(DataSource)
         jwtService = module.get<JwtService>(JwtService)
-        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcServiceName.Gameplay].name)
-        gameplayService = clientGrpc.getService<IGameplayService>(grpcData[GrpcServiceName.Gameplay].service)
+        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcName.Gameplay].name)
+        gameplayService = clientGrpc.getService<IGameplayService>(getGrpcData(GrpcName.Gameplay).data.service)
         cacheManager = module.get<Cache>(CACHE_MANAGER)
 
         // Decode accessToken to get user

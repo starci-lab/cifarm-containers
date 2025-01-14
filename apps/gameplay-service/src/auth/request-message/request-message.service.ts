@@ -11,8 +11,7 @@ export class RequestMessageService {
     constructor(
         @InjectCache()
         private readonly cacheManager: Cache
-    ) {
-    }
+    ) { }
 
     public async requestMessage(): Promise<RequestMessageResponse> {
         const message = v4()

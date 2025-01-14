@@ -10,7 +10,7 @@ export class ClusterIoAdapter extends IoAdapter {
 
     private adapterConstructor: ReturnType<typeof createAdapter>
 
-    public async connect(): Promise<void> {
+    public connect() {
         // if cluster is not enabled, create a single connection
         this.adapterConstructor = createAdapter()
     }

@@ -8,6 +8,7 @@ import { CryptoModule } from "@src/crypto"
 import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { JwtModule } from "@src/jwt"
 import { PostgreSQLModule } from "@src/databases"
+import { ScheduleModule } from "@nestjs/schedule"
 
 @Module({
     imports: [
@@ -30,8 +31,11 @@ import { PostgreSQLModule } from "@src/databases"
             context: PostgreSQLContext.Main,
             database: PostgreSQLDatabase.Gameplay
         }),
+        ScheduleModule.forRoot(),
         IoModule.register({
-            adapter: envConfig().containers[Container.WebsocketNode].adapter
+            adapter: envConfig().containers[Container.WebsocketNode].adapter,
+            isGlobal: true,
+            useGlobalImports: true
         }),
         BroadcastModule,
         DefaultModule
