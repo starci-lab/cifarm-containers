@@ -5,8 +5,7 @@ import { MongoDbModule, RedisModule } from "@src/native"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { IO_ADAPTER_FACTORY } from "./io.constants"
 import { ClusterIoAdapterFactory, MongoDbIoAdapterFactory, RedisIoAdapterFactory } from "./adapters"
-import { SocketCoreService } from "./socket-base.service"
-import { CacheModule } from "@src/cache"
+import { SocketCoreService } from "./socket-core.service"
 import { JwtModule } from "@src/jwt"
 
 @Module({})
@@ -19,7 +18,6 @@ export class IoModule extends ConfigurableModuleClass {
         
         //check if the global module is used
         if (!useGlobalImports) {
-            imports.push(CacheModule.register())
             imports.push(JwtModule.register())
         }
 

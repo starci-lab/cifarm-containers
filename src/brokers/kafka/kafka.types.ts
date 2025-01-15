@@ -4,9 +4,9 @@ export interface KafkaOptions {
 }
 
 export enum KafkaGroupId {
-    PlacedItemsBroadcast = "placed-items-broadcast",
+    PlacedItems = "placed-items",
 }
 
 export enum KafkaPattern {
-    PlacedItemsBroadcast = "placed.items.broadcast",
+    PlacedItems = "placed.items",
 }

@@ -33,7 +33,7 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
         KafkaModule.register({
             isGlobal: true,
             producerOnlyMode: true,
-            groupId: KafkaGroupId.PlacedItemsBroadcast
+            groupId: KafkaGroupId.PlacedItems
         }),
         GameplayModule.register({
             isGlobal: true

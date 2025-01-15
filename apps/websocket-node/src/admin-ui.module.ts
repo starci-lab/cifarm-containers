@@ -9,4 +9,4 @@ import { join } from "path"
         })
     ],
 })
-export class AdminUiModule {}
+export class AdminUIModule {}

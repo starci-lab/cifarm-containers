@@ -1,5 +1,6 @@
 import { Logger } from "@nestjs/common"
-import { setupPrimary } from "@socket.io/cluster-adapter"
+import { setupPrimary } from "@starci/socket-io-cluster-adapter"
+//import { setupPrimary } from "./cluster.dev"
 import { setupMaster } from "@socket.io/sticky"
 import { Container, envConfig } from "@src/env"
 import cluster from "cluster"

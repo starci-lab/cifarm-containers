@@ -7,7 +7,7 @@ import { MicroserviceOptions, Transport } from "@nestjs/microservices"
 import { KafkaOptionsFactory, KafkaGroupId } from "@src/brokers"
 import cluster from "cluster"
 import { INestApplication, Logger } from "@nestjs/common"
-import { AdminUiModule } from "./admin-ui.module"
+import { AdminUIModule } from "./admin-ui.module"
 
 const addAdapter = async (app: INestApplication) => {
     const factory = app.get<IoAdapterFactory>(IO_ADAPTER_FACTORY)
@@ -23,7 +23,7 @@ const addMicroservices = async (app: INestApplication) => {
         options: {
             client: options.createKafkaConfig(),
             consumer: {
-                groupId: KafkaGroupId.PlacedItemsBroadcast
+                groupId: KafkaGroupId.PlacedItems
             }
         }
     })
@@ -48,19 +48,19 @@ const bootstrapWorker = async () => {
     logger.verbose(`Worker ${process.pid} started`)
 
     const app = await NestFactory.create(AppModule)
-    await addMicroservices(app)
+    //await addMicroservices(app)
     await addAdapter(app)
     await app.listen(envConfig().containers[Container.WebsocketNode].cluster.workerPort)
 }
 
 const bootstrapAll = async () => {
     if (!envConfig().containers[Container.WebsocketNode].cluster.enabled) {
-        await bootstrap().then(bootstrapHealthCheck).then(bootstrapAdminUi)
+        await bootstrap().then(bootstrapHealthCheck).then(bootstrapAdminUI)
         return
     }
 
     if (cluster.isPrimary) {
-        await bootstrapMaster().then(bootstrapHealthCheck).then(bootstrapAdminUi)
+        await bootstrapMaster().then(bootstrapHealthCheck).then(bootstrapAdminUI)
     } else {
         await bootstrapWorker()
     }
@@ -79,8 +79,8 @@ const bootstrapHealthCheck = async () => {
     await app.listen(envConfig().containers[Container.WebsocketNode].healthCheckPort)
 }
 
-const bootstrapAdminUi = async () => {
-    const app = await NestFactory.create(AdminUiModule)
+const bootstrapAdminUI = async () => {
+    const app = await NestFactory.create(AdminUIModule)
     await app.listen(envConfig().containers[Container.WebsocketNode].adminUiPort)
 }
 

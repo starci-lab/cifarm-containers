@@ -8,7 +8,7 @@ import { KafkaOptionsFactory, KafkaOptionsModule } from "./options"
 @Module({})
 export class KafkaModule extends ConfigurableModuleClass {
     public static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
-        const groupId = options.groupId ?? KafkaGroupId.PlacedItemsBroadcast
+        const groupId = options.groupId ?? KafkaGroupId.PlacedItems
         const producerOnlyMode = options.producerOnlyMode ?? false
         const dynamicModule = super.register(options)
         const kafkaDynamicModule = ClientsModule.registerAsync([

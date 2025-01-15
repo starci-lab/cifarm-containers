@@ -26,9 +26,7 @@
       "entryFile": "main",
       "sourceRoot": "apps/websocket-node/src",
       "compilerOptions": {
-        "webpack": true,
-        "tsConfigPath": "apps/websocket-node/tsconfig.app.json",
-        "webpackConfigPath": "apps/websocket-node/webpack.config.js"
+        "tsConfigPath": "apps/websocket-node/tsconfig.app.json"
       }
     },
     "graphql-gateway": {

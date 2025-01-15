@@ -1,5 +1,6 @@
 import { Logger } from "@nestjs/common"
-import { createAdapter } from "@socket.io/cluster-adapter"
+import { createAdapter } from "@starci/socket-io-cluster-adapter"
+//import { createAdapter } from "./cluster.dev"
 import { ServerOptions } from "http"
 import { IoAdapter } from "@nestjs/platform-socket.io"
 import { setupWorker } from "@socket.io/sticky"

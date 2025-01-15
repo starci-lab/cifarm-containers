@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common"
-import { BroadcastModule } from "./broadcast"
 import { DefaultModule } from "./default"
 import { Container, envConfig, EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { CacheModule } from "@src/cache"
@@ -9,6 +8,7 @@ import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { JwtModule } from "@src/jwt"
 import { PostgreSQLModule } from "@src/databases"
 import { ScheduleModule } from "@nestjs/schedule"
+import { GameplayModule } from "./gameplay"
 
 @Module({
     imports: [
@@ -20,7 +20,7 @@ import { ScheduleModule } from "@nestjs/schedule"
             isGlobal: true
         }),
         KafkaModule.register({
-            groupId: KafkaGroupId.PlacedItemsBroadcast,
+            groupId: KafkaGroupId.PlacedItems,
             producerOnlyMode: true,
             isGlobal: true
         }),
@@ -37,7 +37,7 @@ import { ScheduleModule } from "@nestjs/schedule"
             isGlobal: true,
             useGlobalImports: true
         }),
-        BroadcastModule,
+        GameplayModule,
         DefaultModule
     ],
     controllers: [],

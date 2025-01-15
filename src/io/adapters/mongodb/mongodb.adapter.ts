@@ -39,6 +39,7 @@ export class MongoDbIoAdapter extends IoAdapter {
     public createIOServer(port: number, options?: ServerOptions) {
         const server = super.createIOServer(port, options)
         server.adapter(this.adapterConstructor)
+        
         return server
     }
 }
