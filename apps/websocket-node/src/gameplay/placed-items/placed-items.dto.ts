@@ -19,3 +19,8 @@ export interface SyncPlacedItemsPayload {
     //user id
     userId: string
 }
+
+
+export interface SyncPlacedItemsParams {
+    userId: string
+}
