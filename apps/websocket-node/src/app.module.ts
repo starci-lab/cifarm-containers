@@ -9,6 +9,7 @@ import { JwtModule } from "@src/jwt"
 import { PostgreSQLModule } from "@src/databases"
 import { ScheduleModule } from "@nestjs/schedule"
 import { GameplayModule } from "./gameplay"
+import { EventEmitterModule } from "@nestjs/event-emitter"
 
 @Module({
     imports: [
@@ -31,6 +32,7 @@ import { GameplayModule } from "./gameplay"
             context: PostgreSQLContext.Main,
             database: PostgreSQLDatabase.Gameplay
         }),
+        EventEmitterModule.forRoot(),
         ScheduleModule.forRoot(),
         IoModule.register({
             adapter: envConfig().containers[Container.WebsocketNode].adapter,

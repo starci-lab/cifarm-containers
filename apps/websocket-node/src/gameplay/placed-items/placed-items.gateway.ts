@@ -9,16 +9,13 @@ import {
     WsResponse
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
-import { SocketCoreService } from "@src/io/socket-core.service"
 import { PlacedItemsMessage } from "./placed-items.dto"
 import { Cron } from "@nestjs/schedule"
 import { NAMESPACE } from "../gameplay.constants"
 import { PlacedItemsService } from "./placed-items.service"
-import { ObservingData } from "../main"
-
-//events
-const PLACED_ITEMS_SYNCED = "placed_items_synced"
-const SYNC_PLACED_ITEMS = "sync_placed_items"
+import { PLACED_ITEMS_SYNCED, SYNC_PLACED_ITEMS } from "./placed-items.constants"
+import { EventEmitter2, OnEvent } from "@nestjs/event-emitter"
+import { VISITED_EMITTER2, MainGateway, VisitedEmitter2Payload } from "../main"
 
 @WebSocketGateway({
     cors: {
@@ -31,8 +28,9 @@ export class PlacedItemsGateway implements OnGatewayInit {
     private readonly logger = new Logger(PlacedItemsGateway.name)
 
     constructor(
+        private readonly mainGateway: MainGateway,
         private readonly placedItemsService: PlacedItemsService,
-        private readonly socketCoreService: SocketCoreService
+        private readonly eventEmitter: EventEmitter2
     ) {}
 
     @WebSocketServer()
@@ -46,12 +44,12 @@ export class PlacedItemsGateway implements OnGatewayInit {
     @Cron("*/1 * * * * *")
     public async processSyncPlacedItemsEverySecond() {
         //get all socket ids in this node
-        const sockets = this.getSocket()
+        const sockets = this.mainGateway.getSocket()
 
         //emit placed items to all clients
         const promises: Array<Promise<void>> = []
         for (const socket of sockets) {
-            const observing = this.getObserving(socket)
+            const observing = this.mainGateway.getObservingData(socket)
             if (observing && observing.userId) {
                 promises.push(
                     (async () => {
@@ -66,14 +64,6 @@ export class PlacedItemsGateway implements OnGatewayInit {
             } 
         }
         await Promise.all(promises)
-    }
-
-    private getObserving(client: Socket): ObservingData {
-        return client.data.observing
-    }
-
-    private getSocket(): Array<Socket> {
-        return Array.from(this.namespace.sockets.values())
     }
 
     //sync placed items for all socket visting userId
@@ -103,7 +93,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
         @ConnectedSocket() client: Socket
     ): Promise<WsResponse<PlacedItemsMessage>> {
         //emit placed items to all clients
-        const observing = this.getObserving(client)
+        const observing = this.mainGateway.getObservingData(client)
         if (!observing || !observing.userId) {
             throw new WsException("Observing user id not found")
         }
@@ -116,6 +106,16 @@ export class PlacedItemsGateway implements OnGatewayInit {
                 placedItems
             }
         }
+    }
+
+    @OnEvent(VISITED_EMITTER2)
+    public async handleVisitedEmitter2(payload: VisitedEmitter2Payload) {
+        const placedItems = await this.placedItemsService.getPlacedItems({
+            userId: payload.userId
+        })
+        this.namespace.to(payload.socketId).emit(PLACED_ITEMS_SYNCED, {
+            placedItems
+        })
     }
 }
 
