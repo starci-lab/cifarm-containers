@@ -20,13 +20,15 @@
         "webpackConfigPath": "apps/rest-api-gateway/webpack.config.js"
       }
     },
-    "websocket-node": {
+    "io-gameplay": {
       "type": "application",
-      "root": "apps/websocket-node",
+      "root": "apps/io-gameplay",
       "entryFile": "main",
-      "sourceRoot": "apps/websocket-node/src",
+      "sourceRoot": "apps/io-gameplay/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/websocket-node/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/io-gameplay/tsconfig.app.json",
+        "webpackConfigPath": "apps/io-gameplay/webpack.config.js"
       }
     },
     "graphql-gateway": {

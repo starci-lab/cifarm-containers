@@ -5,9 +5,9 @@ pipeline {
     
     environment {
         // Define the arguments as environment variables
-        DOCKERFILE_PATH = "./apps/websocket-node/Dockerfile"
+        DOCKERFILE_PATH = "./apps/io-gameplay/Dockerfile"
         CONTEXT_PATH = "git://github.com/starci-lab/cifarm-containers"  // You can adjust this if the context path is relative
-        IMAGE_NAME = "websocket-node"
+        IMAGE_NAME = "io-gameplay"
         TAG = "latest"  // Example tag for the image
         REPOSITORY = "cifarm"  // Replace with your actual Docker repository
     }

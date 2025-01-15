@@ -52,25 +52,25 @@ export const envConfig = () => ({
                 ? Number.parseInt(process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT)
                 : DEFAULT_HEALTH_PORT
         },
-        [Container.WebsocketNode]: {
-            host: process.env.WEBSOCKET_NODE_HOST ?? LOCALHOST,
-            port: process.env.WEBSOCKET_NODE_PORT
-                ? Number.parseInt(process.env.WEBSOCKET_NODE_PORT)
+        [Container.IoGameplay]: {
+            host: process.env.IO_GAMEPLAY_HOST ?? LOCALHOST,
+            port: process.env.IO_GAMEPLAY_PORT
+                ? Number.parseInt(process.env.IO_GAMEPLAY_PORT)
                 : DEFAULT_PORT,
-            healthCheckPort: process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT
-                ? Number.parseInt(process.env.WEBSOCKET_NODE_HEALTH_CHECK_PORT)
+            healthCheckPort: process.env.IO_GAMEPLAY_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.IO_GAMEPLAY_HEALTH_CHECK_PORT)
                 : DEFAULT_HEALTH_PORT,
-            adminUiPort: process.env.WEBSOCKET_NODE_ADMIN_UI_PORT
-                ? Number.parseInt(process.env.WEBSOCKET_NODE_ADMIN_UI_PORT)
+            adminUiPort: process.env.IO_GAMEPLAY_ADMIN_UI_PORT
+                ? Number.parseInt(process.env.IO_GAMEPLAY_ADMIN_UI_PORT)
                 : 8082,
-            adapter: (process.env.WEBSOCKET_NODE_ADAPTER ?? IoAdapterType.MongoDb) as IoAdapterType,
+            adapter: (process.env.IO_GAMEPLAY_ADAPTER ?? IoAdapterType.MongoDb) as IoAdapterType,
             cluster: {
-                enabled: process.env.WEBSOCKET_NODE_CLUSTER_ENABLED === "true",
-                numberOfWorkers: process.env.WEBSOCKET_NODE_CLUSTER_NUMBER_OF_WORKERS
-                    ? Number.parseInt(process.env.WEBSOCKET_NODE_CLUSTER_NUMBER_OF_WORKERS)
+                enabled: process.env.IO_GAMEPLAY_CLUSTER_ENABLED === "true",
+                numberOfWorkers: process.env.IO_GAMEPLAY_CLUSTER_NUMBER_OF_WORKERS
+                    ? Number.parseInt(process.env.IO_GAMEPLAY_CLUSTER_NUMBER_OF_WORKERS)
                     : 3,
-                workerPort: process.env.WEBSOCKET_NODE_CLUSTER_WORKER_PORT
-                    ? Number.parseInt(process.env.WEBSOCKET_NODE_CLUSTER_WORKER_PORT)
+                workerPort: process.env.IO_GAMEPLAY_CLUSTER_WORKER_PORT
+                    ? Number.parseInt(process.env.IO_GAMEPLAY_CLUSTER_WORKER_PORT)
                     : DEFAULT_PORT + 10
             }
         },

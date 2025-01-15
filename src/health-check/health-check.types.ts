@@ -9,7 +9,7 @@ export enum HealthCheckDependency {
     GameplaySubgraph = "gameplay-subgraph",
     GraphQLGateway = "graphql-gateway",
     RestApiGateway = "rest-api-gateway",
-    WebsocketNode = "websocket-node",
+    IoGameplay = "io-gameplay",
     CronScheduler = "cron-scheduler",
     CronWorker = "cron-worker",
     AdapterMongoDb = "adapter-mongodb",

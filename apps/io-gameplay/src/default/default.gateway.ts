@@ -18,7 +18,7 @@ import { BcryptService } from "@src/crypto"
     cors: {
         origin: [
             isProduction() ? getHttpUrl({
-                port: envConfig().containers.websocketNode.port,
+                port: envConfig().containers.ioGameplay.port,
             }) : envConfig().productionUrl,
         ],
         credentials: true

@@ -10,6 +10,6 @@ docker build -t cifarm/gameplay-subgraph -f ./apps/gameplay-subgraph/Dockerfile 
 docker build -t cifarm/graphql-gateway -f ./apps/graphql-gateway/Dockerfile . & docker push cifarm/graphql-gateway
 docker build -t cifarm/rest-api-gateway -f ./apps/rest-api-gateway/Dockerfile . & docker push cifarm/rest-api-gateway
 docker build -t cifarm/telegram-bot -f ./apps/telegram-bot/Dockerfile . & docker push cifarm/telegram-bot
-docker build -t cifarm/websocket-node -f ./apps/websocket-node/Dockerfile . & docker push cifarm/websocket-node
+docker build -t cifarm/io-gameplay -f ./apps/io-gameplay/Dockerfile . & docker push cifarm/io-gameplay
 
 echo "Docker build completed."
