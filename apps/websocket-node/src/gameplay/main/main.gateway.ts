@@ -13,7 +13,7 @@ import { Namespace, Socket } from "socket.io"
 import { SocketCoreService } from "@src/io/socket-core.service"
 import { NAMESPACE } from "../gameplay.constants"
 import { VisitedEmitter2Payload, ObservingData } from "./main.types"
-import { VISIT_EVENT, VISITED_EMITTER2 } from "./main.constants"
+import { VISIT_EVENT, VISITED_EMITTER2_EVENT } from "./main.constants"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 
 @WebSocketGateway({
@@ -90,7 +90,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, On
             userId: payload.userId,
             socketId: socket.id
         }
-        this.eventEmitter.emit(VISITED_EMITTER2, emitter2Payload)
+        this.eventEmitter.emit(VISITED_EMITTER2_EVENT, emitter2Payload)
     }
 }
 
