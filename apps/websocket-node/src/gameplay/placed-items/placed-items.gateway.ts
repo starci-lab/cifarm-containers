@@ -9,7 +9,7 @@ import {
     WsResponse
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
-import { PlacedItemsMessage, SyncPlacedItemsParams } from "./placed-items.dto"
+import { PlacedItemsMessage, SyncPlacedItemsParams } from "./placed-items.types"
 import { Cron } from "@nestjs/schedule"
 import { NAMESPACE } from "../gameplay.constants"
 import { PlacedItemsService } from "./placed-items.service"

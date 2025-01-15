@@ -2,7 +2,7 @@ import { Controller, Logger } from "@nestjs/common"
 import { PlacedItemsGateway } from "./placed-items.gateway"
 import { EventPattern, Payload } from "@nestjs/microservices"
 import { KafkaPattern } from "@src/brokers"
-import { SyncPlacedItemsPayload } from "./placed-items.dto"
+import { SyncPlacedItemsPayload } from "./placed-items.types"
 
 @Controller()
 export class PlacedItemsController {
