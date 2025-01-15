@@ -12,7 +12,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci --ignore-scripts
+RUN npm ci 
 
 # Copy remaining source code and build the application
 COPY . .
@@ -27,10 +27,10 @@ WORKDIR /usr/src/app
 COPY --from=build /usr/src/app/dist/apps/cli .
 
 # Install only production dependencies
-RUN npm i --ignore-scripts --production \
+RUN npm i  --production \
 && echo "#!/usr/bin/env node" | cat - main.js > temp && mv temp main.js \
 && chmod +x main.js \
-&& npm install --ignore-scripts -g .
+&& npm install  -g .
 
 # # Run as non-root user
 USER node

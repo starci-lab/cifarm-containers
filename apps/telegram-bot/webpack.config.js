@@ -4,7 +4,7 @@ const nodeExternals = require("webpack-node-externals")
 const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin")
 const CopyWebpackPlugin = require("copy-webpack-plugin")
 
-// Base package.json để làm cơ sở
+// base package
 const basePackage = {
     name: "telegram-bot",
     version: "1.0.0",

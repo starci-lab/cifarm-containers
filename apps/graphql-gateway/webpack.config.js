@@ -3,7 +3,8 @@ const path = require("path")
 const nodeExternals = require("webpack-node-externals")
 const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin")
 
-// Base package.json để làm cơ sở
+
+// base package
 const basePackage = {
     name: "graphql-gateway",
     version: "1.0.0",
@@ -16,7 +17,12 @@ const basePackage = {
     },
     dependencies: {
         "@nestjs/platform-express": "^10.0.0",
-    }
+    },
+    overrides: {
+        "typeorm": {
+            "mongodb": "^6.12.0"
+        }
+    },
 }
 
 module.exports = {
