@@ -2,8 +2,11 @@ syntax = "proto3";
 
 package gameplay_service;
 
+import "../common/entry.proto";
+
 message RefreshRequest {
   string refreshToken = 1;  // JWT refresh token
+  DeviceInfo deviceInfo = 2;  // Device information
 }
   
 message RefreshResponse {

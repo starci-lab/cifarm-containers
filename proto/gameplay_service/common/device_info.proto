@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message DeviceInfo {
+    string device = 1;
+    string os = 2;
+    string browser = 3;
+    string ipV4 = 4;
+}

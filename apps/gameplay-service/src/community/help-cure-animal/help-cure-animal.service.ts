@@ -110,7 +110,7 @@ export class HelpCureAnimalService {
                 throw new HelpCureAnimalTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
                 userId: request.neighborUserId
             })
 

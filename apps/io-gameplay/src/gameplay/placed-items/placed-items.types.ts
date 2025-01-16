@@ -1,6 +1,6 @@
 import { PlacedItemEntity } from "@src/databases"
 
-export interface PlacedItemsMessage {
+export interface PlacedItemsSyncedMessage {
     //placed items
     placedItems: Array<PlacedItemEntity>
 }
@@ -20,7 +20,14 @@ export interface SyncPlacedItemsPayload {
     userId: string
 }
 
-
 export interface SyncPlacedItemsParams {
+    userId: string
+}
+
+export interface GetVisitingUserIdsParams {
+    userId: string
+}
+
+export interface GetPlacedItemsParams {
     userId: string
 }

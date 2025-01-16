@@ -28,8 +28,6 @@ import {
     ThiefCropResponse,
     UnfollowRequest,
     UnfollowResponse,
-    VisitRequest,
-    VisitResponse
 } from "./community"
 import {
     DeliverProductRequest,
@@ -109,7 +107,6 @@ export interface IGameplayService {
     thiefAnimalProduct(request: ThiefAnimalProductRequest): Observable<ThiefAnimalProductResponse>
     thiefCrop(request: ThiefCropRequest): Observable<ThiefCropResponse>
     unfollow(request: UnfollowRequest): Observable<UnfollowResponse>
-    visit(request: VisitRequest): Observable<VisitResponse>
 
     // Delivery
     deliverProduct(request: DeliverProductRequest): Observable<DeliverProductResponse>

@@ -10,6 +10,7 @@ import { SystemsModule } from "./systems"
 import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UpgradesModule } from "./upgrades"
+import { UsersModule } from "./users"
 import { CacheQueryModule, PostgreSQLModule } from "@src/databases"
 import { GraphQLSubgraphModule } from "@src/graphql"
 import { AnimalsModule } from "./animals"
@@ -48,6 +49,7 @@ import { JwtModule } from "@src/jwt"
         TilesModule,
         ToolsModule,
         UpgradesModule,
+        UsersModule,
     ]
 }) 
 export class AppModule {}

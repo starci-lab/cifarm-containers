@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+import "./device_info.proto";

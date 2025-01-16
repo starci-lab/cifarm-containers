@@ -55,8 +55,12 @@ export class VerifySignatureService {
         signature,
         chainKey,
         network,
-        accountAddress
+        accountAddress,
+        deviceInfo
     }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
+        //use destructuring to get device, os, browser from deviceInfo, even if deviceInfo is null
+        const { device, os, browser, ipV4 } = { ...deviceInfo }
+
         const valid = await this.cacheManager.get(message)
         if (!valid) {
             throw new GrpcCacheNotFound(message)
@@ -191,8 +195,12 @@ export class VerifySignatureService {
             try {
                 await queryRunner.manager.save(SessionEntity, {
                     expiredAt,
-                    token: refreshToken,
+                    refreshToken,
                     userId: user.id,
+                    device,
+                    os,
+                    browser,
+                    ipV4
                 })
                 await queryRunner.commitTransaction()
             } catch (error) {

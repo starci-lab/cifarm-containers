@@ -7,7 +7,6 @@ import { HelpUseHerbicideModule } from "./help-use-herbicide"
 import { ThiefCropModule } from "./thief-crop"
 import { ThiefAnimalProductModule } from "./thief-animal-product"
 import { UnfollowModule } from "./unfollow"
-import { VisitModule } from "./visit"
 import { ReturnModule } from "./return"
 
 @Module({
@@ -20,7 +19,6 @@ import { ReturnModule } from "./return"
         HelpUseHerbicideModule,
         ThiefCropModule,
         ThiefAnimalProductModule,
-        VisitModule,
         ReturnModule
     ]
 })

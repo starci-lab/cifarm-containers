@@ -1,6 +1,6 @@
-import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Network, SupportedChainKey } from "@src/env"
-import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
+import { Column, Entity, OneToMany } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
 import { InventoryEntity } from "./inventory.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
@@ -63,7 +63,7 @@ export class UserEntity extends UuidAbstractEntity {
     @Column({ name: "daily_reward_streak", type: "int", default: 0 })
         dailyRewardStreak: number
 
-    @Field(() => Date)
+    @Field(() => Date, { nullable: true })
     @Column({ name: "daily_reward_last_claim_time", type: "timestamp without time zone", nullable: true })
         dailyRewardLastClaimTime?: Date
 
@@ -71,26 +71,13 @@ export class UserEntity extends UuidAbstractEntity {
     @Column({ name: "daily_reward_number_of_claim", type: "int", default: 0 })
         dailyRewardNumberOfClaim: number
 
-    @Field(() => Date)
+    @Field(() => Date, { nullable: true })
     @Column({ name: "spin_last_time", type: "timestamp without time zone", nullable: true })
         spinLastTime?: Date
 
     @Field(() => Int)
     @Column({ name: "spin_count", type: "int", default: 0 })
         spinCount: number
-
-    @Field(() => ID, { nullable: true })
-    @Column({ name: "visiting_user_id", type: "uuid", nullable: true })
-        visitingUserId?: string
-
-    @Field({ nullable: true })
-    @Column({ name: "is_random", type: "boolean", nullable: true })
-        isRandom?: boolean
-
-    @Field(() => UserEntity, { nullable: true })
-    @OneToOne(() => UserEntity, { nullable: true })
-    @JoinColumn({ name: "visiting_user_id" })
-        visitingUser?: UserEntity
 
     @Field(() => [InventoryEntity])
     @OneToMany(() => InventoryEntity, (inventory) => inventory.user, {

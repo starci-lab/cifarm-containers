@@ -120,7 +120,7 @@ export class HelpUsePesticideService {
                 throw new HelpUsePesticideTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
                 userId: request.neighborUserId
             })
 

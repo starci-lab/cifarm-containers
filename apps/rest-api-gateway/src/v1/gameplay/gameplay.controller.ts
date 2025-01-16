@@ -93,6 +93,7 @@ import { RestJwtAuthGuard } from "@src/guards"
 import { lastValueFrom } from "rxjs"
 import { UserLike } from "@src/jwt"
 import { InjectGrpc } from "@src/grpc/grpc.decorators"
+import { DeviceInfo, RequestDeviceInfo } from "@src/device"
 
 @ApiTags("Gameplay")
 @Controller({
@@ -141,9 +142,13 @@ export class GameplayController implements OnModuleInit {
     })
     @Post("verify-signature")
     public async verifySignature(
+        @RequestDeviceInfo() deviceInfo: DeviceInfo,
         @Body() request: VerifySignatureRequest
     ): Promise<VerifySignatureResponse> {
-        return await lastValueFrom(this.gameplayService.verifySignature(request))
+        return await lastValueFrom(this.gameplayService.verifySignature({
+            ...request,
+            deviceInfo
+        }))
     }
 
     @HttpCode(HttpStatus.OK)
@@ -152,9 +157,13 @@ export class GameplayController implements OnModuleInit {
     })
     @Post("refresh")
     public async refresh(
+        @RequestDeviceInfo() deviceInfo: DeviceInfo,
         @Body() request: RefreshRequest
     ): Promise<RefreshResponse> {
-        return await lastValueFrom(this.gameplayService.refresh(request))
+        return await lastValueFrom(this.gameplayService.refresh({
+            ...request,
+            deviceInfo
+        }))
     }
 
     // Claim

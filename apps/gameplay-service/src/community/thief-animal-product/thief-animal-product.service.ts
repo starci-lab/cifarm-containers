@@ -182,7 +182,7 @@ export class ThiefAnimalProductService {
                 throw new ThiefAnimalProductTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
                 userId: request.neighborUserId
             })
 

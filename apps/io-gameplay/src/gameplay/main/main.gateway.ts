@@ -12,7 +12,7 @@ import {
 import { Namespace, Socket } from "socket.io"
 import { SocketCoreService } from "@src/io/socket-core.service"
 import { NAMESPACE } from "../gameplay.constants"
-import { VisitedEmitter2Payload, ObservingData } from "./main.types"
+import { VisitedEmitter2Payload, ObservingData, HandleVisitPayload } from "./main.types"
 import { VISIT_EVENT, VISITED_EMITTER2_EVENT } from "./main.constants"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 
@@ -21,7 +21,8 @@ import { EventEmitter2 } from "@nestjs/event-emitter"
         origin: "*",
         credentials: true
     },
-    namespace: NAMESPACE
+    namespace: NAMESPACE,
+    transports: [ "websocket"]
 })
 export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
     private readonly logger = new Logger(MainGateway.name)
@@ -43,6 +44,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     //process authentication
     public async handleConnection(@ConnectedSocket() socket: Socket) {
         const user = await this.socketCoreService.authenticate(socket)
+        if (!user) return
         // join the room, indicate observering this user
         this.logger.verbose(`Client connected: ${socket.id}`)
         // set observing data
@@ -53,7 +55,6 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     }
 
     async handleDisconnect(@ConnectedSocket() socket: Socket) {
-        //disconnect
         this.logger.verbose(`Client disconnected: ${socket.id}`)
     }
 
@@ -92,8 +93,4 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         }
         this.eventEmitter.emit(VISITED_EMITTER2_EVENT, emitter2Payload)
     }
-}
-
-export interface HandleVisitPayload {
-    userId: string
 }

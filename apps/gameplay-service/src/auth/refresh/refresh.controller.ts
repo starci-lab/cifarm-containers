@@ -11,7 +11,7 @@ export class RefreshController {
     constructor(private readonly refreshService: RefreshService) {}
 
     @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "Refresh")
-    public async Refresh(request: RefreshRequest) {
+    public async refresh(request: RefreshRequest) {
         return this.refreshService.refresh(request)
     }
 }

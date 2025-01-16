@@ -4,6 +4,7 @@ import { ApolloGatewayDriver, ApolloGatewayDriverConfig } from "@nestjs/apollo"
 import { Module } from "@nestjs/common"
 import { GraphQLModule as NestGraphQLModule } from "@nestjs/graphql"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./gateway.module-definition"
+import { DefaultRemoteGraphQLDataSource } from "./default.remote-graphql-data-source"
 
 @Module({})
 export class GraphQLGatewayModule extends ConfigurableModuleClass { 
@@ -25,6 +26,9 @@ export class GraphQLGatewayModule extends ConfigurableModuleClass {
                         path: "/graphql",
                     },
                     gateway: {
+                        buildService: ({ url }) => {
+                            return new DefaultRemoteGraphQLDataSource({ url })
+                        },
                         supergraphSdl: new IntrospectAndCompose({
                             subgraphs
                         })

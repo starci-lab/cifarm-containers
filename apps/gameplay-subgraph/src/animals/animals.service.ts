@@ -1,16 +1,15 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { AnimalEntity, InjectPostgreSQL, CacheQueryRunnerService } from "@src/databases"
 import { DataSource, FindManyOptions, FindOptionsRelations } from "typeorm"
-import { GetAnimalsArgs } from "./animals.dto"
 
 @Injectable()
 export class AnimalsService {
     private readonly logger = new Logger(AnimalsService.name)
 
     private readonly relations: FindOptionsRelations<AnimalEntity> = {
+        placedItemType: true,
         product: true,
         inventoryType: true,
-        placedItemType: true
     }
 
     constructor(
@@ -19,18 +18,17 @@ export class AnimalsService {
         private readonly cacheQueryRunnerService: CacheQueryRunnerService
     ) {}
 
-    async getAnimals({ limit = 10, offset = 0 }: GetAnimalsArgs): Promise<Array<AnimalEntity>> {
-        this.logger.debug(`GetAnimals: limit=${limit}, offset=${offset}`)
+    async getAnimals(): Promise<Array<AnimalEntity>> {
+        this.logger.debug("GetAnimals") 
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
+
         try {
             const options: FindManyOptions<AnimalEntity> = {
-                take: limit,
-                skip: offset,
                 relations: this.relations
             }
-
+    
             return await this.cacheQueryRunnerService.find(
                 queryRunner,
                 AnimalEntity,
@@ -51,7 +49,6 @@ export class AnimalsService {
                 where: {
                     id
                 },
-                relations: this.relations
             })
         } finally {
             await queryRunner.release()

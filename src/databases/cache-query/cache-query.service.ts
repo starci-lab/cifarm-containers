@@ -55,5 +55,11 @@ export class CacheQueryService {
 
 interface GenerateCacheKeyParams {
     entityName: string
-    options: unknown
+    options: unknown,
+    findType: FindType
+}
+
+export enum FindType {
+    One = "One",
+    Many = "Many"
 }

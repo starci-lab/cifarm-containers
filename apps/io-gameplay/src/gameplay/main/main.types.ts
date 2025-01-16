@@ -9,3 +9,8 @@ export interface VisitedEmitter2Payload {
     // Socket ID of the user who is observing the game
     socketId: string
 }
+
+
+export interface HandleVisitPayload {
+    userId: string
+}

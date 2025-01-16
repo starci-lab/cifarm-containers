@@ -117,7 +117,7 @@ export class HelpWaterService {
                 await queryRunner.commitTransaction()
 
                 // send message to kafka
-                this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
+                this.clientKafka.emit(KafkaPattern.PlacedItems, {
                     neighborUserId: request.neighborUserId
                 })
                 return {}

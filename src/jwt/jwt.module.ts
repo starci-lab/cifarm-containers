@@ -6,7 +6,7 @@ import { JwtService } from "./jwt.service"
 import { JwtStrategy } from "./strategies"
 
 @Module({
-    imports: [PassportModule ],
+    imports: [ PassportModule ],
     providers: [
         JwtStrategy,
         NestJwtService, 

@@ -9,7 +9,7 @@ import {
     WsResponse
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
-import { PlacedItemsMessage, SyncPlacedItemsParams } from "./placed-items.types"
+import { PlacedItemsSyncedMessage, SyncPlacedItemsParams } from "./placed-items.types"
 import { Cron } from "@nestjs/schedule"
 import { NAMESPACE } from "../gameplay.constants"
 import { PlacedItemsService } from "./placed-items.service"
@@ -57,9 +57,10 @@ export class PlacedItemsGateway implements OnGatewayInit {
                         const placedItems = await this.placedItemsService.getPlacedItems({
                             userId: observing.userId
                         })
-                        socket.emit(PLACED_ITEMS_SYNCED_EVENT, {
+                        const data: PlacedItemsSyncedMessage = {
                             placedItems
-                        })
+                        }
+                        socket.emit(PLACED_ITEMS_SYNCED_EVENT, data)
                     })()
                 )
             }
@@ -79,9 +80,10 @@ export class PlacedItemsGateway implements OnGatewayInit {
                     const placedItems = await this.placedItemsService.getPlacedItems({
                         userId
                     })
-                    client.emit(PLACED_ITEMS_SYNCED_EVENT, {
+                    const data: PlacedItemsSyncedMessage = {
                         placedItems
-                    })
+                    }
+                    client.emit(PLACED_ITEMS_SYNCED_EVENT, data)
                 })()
             )
         }
@@ -92,7 +94,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
     @SubscribeMessage(SYNC_PLACED_ITEMS_EVENT)
     public async handleSyncPlacedItems(
         @ConnectedSocket() client: Socket
-    ): Promise<WsResponse<PlacedItemsMessage>> {
+    ): Promise<WsResponse<PlacedItemsSyncedMessage>> {
         //emit placed items to all clients
         const observing = this.mainGateway.getObservingData(client)
         if (!observing || !observing.userId) {
@@ -101,11 +103,12 @@ export class PlacedItemsGateway implements OnGatewayInit {
         const placedItems = await this.placedItemsService.getPlacedItems({
             userId: observing.userId
         })
+        const data: PlacedItemsSyncedMessage = {
+            placedItems
+        }
         return {
             event: PLACED_ITEMS_SYNCED_EVENT,
-            data: {
-                placedItems
-            }
+            data
         }
     }
 
@@ -114,8 +117,9 @@ export class PlacedItemsGateway implements OnGatewayInit {
         const placedItems = await this.placedItemsService.getPlacedItems({
             userId: payload.userId
         })
-        this.namespace.to(payload.socketId).emit(PLACED_ITEMS_SYNCED_EVENT, {
+        const data: PlacedItemsSyncedMessage = {
             placedItems
-        })
+        }
+        this.namespace.to(payload.socketId).emit(PLACED_ITEMS_SYNCED_EVENT, data)
     }
 }

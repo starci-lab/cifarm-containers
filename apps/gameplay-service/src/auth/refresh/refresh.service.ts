@@ -3,10 +3,7 @@ import { InjectPostgreSQL, SessionEntity } from "@src/databases"
 import { JwtService } from "@src/jwt"
 import { DataSource } from "typeorm"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
-import {
-    GrpcInternalException,
-    GrpcUnauthenticatedException
-} from "nestjs-grpc-exceptions"
+import { GrpcInternalException, GrpcUnauthenticatedException } from "nestjs-grpc-exceptions"
 import { createUtcDayjs } from "@src/common"
 
 @Injectable()
@@ -19,22 +16,26 @@ export class RefreshService {
         private readonly jwtService: JwtService
     ) {}
 
-    public async refresh(request: RefreshRequest): Promise<RefreshResponse> {
-        const { refreshToken } = request
+    public async refresh({
+        refreshToken,
+        deviceInfo
+    }: RefreshRequest): Promise<RefreshResponse> {
+        //use destructuring to get device, os, browser from deviceInfo, even if deviceInfo is null
+        const { device, os, browser, ipV4 } = { ...deviceInfo }
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
         //Get session
         const session = await queryRunner.manager.findOne(SessionEntity, {
             where: {
-                token: refreshToken
+                refreshToken: refreshToken
             }
         })
         if (!session) throw new GrpcUnauthenticatedException("Session not found")
 
         const { expiredAt, userId } = session
-        if (!createUtcDayjs().isAfter(expiredAt))
+        //if current time is after the expired time, throw error that refresh token is expired
+        if (createUtcDayjs().isAfter(expiredAt))
             throw new GrpcUnauthenticatedException("Refresh token is expired")
 
         const {
@@ -43,13 +44,17 @@ export class RefreshService {
         } = await this.jwtService.generateAuthCredentials({
             id: userId
         })
- 
+
         await queryRunner.startTransaction()
         try {
             await queryRunner.manager.save(SessionEntity, {
                 expiredAt: newExpiredAt,
-                token: newRefreshToken,
-                userId
+                refreshToken: newRefreshToken,
+                userId,
+                browser,
+                os,
+                device,
+                ipV4
             })
             await queryRunner.commitTransaction()
 
@@ -62,8 +67,8 @@ export class RefreshService {
             this.logger.error(errorMessage)
             await queryRunner.rollbackTransaction()
             throw new GrpcInternalException(errorMessage)
-        } finally { 
+        } finally {
             await queryRunner.release()
         }
-    }
+    } 
 }

@@ -2,7 +2,6 @@ import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { Logger } from "@nestjs/common"
 import { BuildingEntity } from "@src/databases"
 import { BuildingsService } from "./buildings.service"
-import { GetBuildingsArgs } from "./buildings.dto"
 
 @Resolver()
 export class BuildingsResolver {
@@ -18,9 +17,7 @@ export class BuildingsResolver {
     }
 
     @Query(() => [BuildingEntity], { name: "buildings" })
-    async getBuildings(
-        @Args("args") args: GetBuildingsArgs
-    ): Promise<Array<BuildingEntity>> {
-        return this.buildingsService.getBuildings(args)
+    async getBuildings(): Promise<Array<BuildingEntity>> {
+        return this.buildingsService.getBuildings()
     }
 }

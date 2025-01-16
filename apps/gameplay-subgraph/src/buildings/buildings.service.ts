@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { BuildingEntity, InjectPostgreSQL, CacheQueryRunnerService } from "@src/databases"
 import { DataSource, FindManyOptions, FindOptionsRelations } from "typeorm"
-import { GetBuildingsArgs } from "./buildings.dto"
 
 @Injectable()
 export class BuildingsService {
@@ -18,18 +17,11 @@ export class BuildingsService {
         private readonly cacheQueryRunnerService: CacheQueryRunnerService
     ) {}
 
-    async getBuildings({
-        limit = 10,
-        offset = 0
-    }: GetBuildingsArgs): Promise<Array<BuildingEntity>> {
-        this.logger.debug(`GetBuildings: limit=${limit}, offset=${offset}`)
-
+    async getBuildings(): Promise<Array<BuildingEntity>> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
             const options: FindManyOptions<BuildingEntity> = {
-                take: limit,
-                skip: offset,
                 relations: this.relations
             }
 

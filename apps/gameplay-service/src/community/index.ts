@@ -7,6 +7,4 @@ export * from "./return"
 export * from "./thief-animal-product"
 export * from "./thief-crop"
 export * from "./unfollow"
-export * from "./visit"
-
 export * from "./community.module"

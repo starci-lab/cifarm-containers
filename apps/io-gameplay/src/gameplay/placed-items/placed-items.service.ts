@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import { InjectPostgreSQL, PlacedItemEntity, UserEntity } from "@src/databases"
 import { DataSource, In } from "typeorm"
+import { GetVisitingUserIdsParams, GetPlacedItemsParams } from "./placed-items.types"
 
 @Injectable()
 export class PlacedItemsService {
@@ -36,12 +37,4 @@ export class PlacedItemsService {
             await queryRunner.release()
         }
     }
-}
-
-export interface GetVisitingUserIdsParams {
-    userId: string
-}
-
-export interface GetPlacedItemsParams {
-    userId: string
 }

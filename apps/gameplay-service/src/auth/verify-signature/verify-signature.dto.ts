@@ -1,9 +1,13 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiHideProperty, ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty, IsOptional, IsString } from "class-validator"
 import { Network, SupportedChainKey } from "@src/env"
 import { SignedMessage } from "@src/blockchain"
+import { DeviceInfo, RequestWithDeviceInfo } from "@src/device"
 
-export class VerifySignatureRequest implements SignedMessage {
+export class VerifySignatureRequest implements SignedMessage, RequestWithDeviceInfo {
+    @ApiHideProperty()
+        deviceInfo: DeviceInfo
+    
     @IsNotEmpty()
     @ApiProperty({ example: "hello world" })
         message: string

@@ -187,7 +187,7 @@ export class TheifCropService {
                 throw new ThiefCropTransactionFailedException(error)
             }
 
-            this.clientKafka.emit(KafkaPattern.PlacedItemsBroadcast, {
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
                 userId: request.neighborUserId
             })
 
