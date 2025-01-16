@@ -15,7 +15,7 @@ export interface TransactionHttpResponseData {
 
 export type Atomic = string | number | boolean | object
 
-export interface BaseOptionsOptions<TOptions> {
+export interface BaseOptionsOptions<TOptions> extends BaseOptions {
     options?: TOptions
 }
 
