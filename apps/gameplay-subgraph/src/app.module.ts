@@ -17,6 +17,8 @@ import { AnimalsModule } from "./animals"
 import { CryptoModule } from "@src/crypto"
 import { CacheModule } from "@src/cache"
 import { JwtModule } from "@src/jwt"
+import { PlacedItemTypesModule } from "./placed-item-types"
+import { SpinPrizesModule } from "./spin-prizes"
 
 @Module({
     imports: [
@@ -50,6 +52,8 @@ import { JwtModule } from "@src/jwt"
         ToolsModule,
         UpgradesModule,
         UsersModule,
+        PlacedItemTypesModule,
+        SpinPrizesModule
     ]
 }) 
 export class AppModule {}

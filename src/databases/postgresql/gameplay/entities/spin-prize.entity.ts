@@ -1,5 +1,5 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm"
+import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, RelationId } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
 import { CropEntity } from "./crop.entity"
 import { AppearanceChance, SpinPrizeType } from "../enums"
@@ -27,14 +27,15 @@ export class SpinPrizeEntity extends UuidAbstractEntity {
 
     @Field(() => String, { nullable: true })
     @Column({ name: "supply_id", nullable: true })
-        supplyId: string
+        supplyId?: string
 
+    @Field(() => SupplyEntity, { nullable: true })
     @ManyToOne(() => SupplyEntity, (supply) => supply.spinPrizes, { nullable: true })
     @JoinColumn({
         name: "supply_id",
         referencedColumnName: "id"
     })
-        supply: SupplyEntity
+        supply?: SupplyEntity
 
     @Field(() => Int, { nullable: true })
     @Column({ name: "golds", type: "int", nullable: true })
@@ -51,6 +52,10 @@ export class SpinPrizeEntity extends UuidAbstractEntity {
     @Field(() => String, { nullable: true })
     @Column({ name: "appearance_chance", type: "enum", enum: AppearanceChance })
         appearanceChance: AppearanceChance
+
+    @Field(() => [ID])
+    @RelationId((spinPrize: SpinPrizeEntity) => spinPrize.spinSlots)
+        spinSlotIds: Array<string>
 
     @Field(() => [SpinSlotEntity], { nullable: true })
     @OneToMany(() => SpinSlotEntity, (spin) => spin.spinPrize, {

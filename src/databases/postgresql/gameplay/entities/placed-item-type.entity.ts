@@ -1,4 +1,4 @@
-import { Field, ObjectType } from "@nestjs/graphql"
+import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
@@ -14,38 +14,42 @@ export class PlacedItemTypeEntity extends StringAbstractEntity {
     @Column({ name: "type", type: "enum", enum: PlacedItemType })
         type: PlacedItemType
 
-    @Field(() => String, { nullable: true })
+    @Field(() => ID, { nullable: true })
     @Column({ name: "tile_id", nullable: true })
-        tileId: string
+        tileId?: string
 
-    @OneToOne(() => TileEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne(() => TileEntity, { onDelete: "CASCADE", cascade: true, nullable: true })
     @JoinColumn({
         name: "tile_id",
         referencedColumnName: "id"
     })
         tile: TileEntity
+ 
+    @Field(() => ID, { nullable: true })
+    @Column({ name: "building_id", nullable: true })
+        buildingId?: string
 
-    @OneToOne(() => BuildingEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne(() => BuildingEntity, { onDelete: "CASCADE", cascade: true, nullable: true })
     @JoinColumn({
         name: "building_id",
         referencedColumnName: "id"
     })
         building: BuildingEntity
 
-    @Field(() => String, { nullable: true })
+    @Field(() => ID, { nullable: true })
     @Column({ name: "animal_id", nullable: true })
-        animalId: string
+        animalId?: string
 
-    @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", cascade: true, nullable: true })
     @JoinColumn({
         name: "animal_id",
         referencedColumnName: "id"
-    })
+    }) 
         animal: AnimalEntity
 
-    @Field(() => [PlacedItemEntity], { nullable: true })
+    @Field(() => [PlacedItemEntity])
     @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.placedItemType, {
         cascade: ["insert", "update"]
     })
-        placedItems?: Array<PlacedItemEntity>
+        placedItems: Array<PlacedItemEntity>
 }

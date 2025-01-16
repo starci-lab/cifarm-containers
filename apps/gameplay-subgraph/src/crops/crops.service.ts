@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CropEntity, InjectPostgreSQL,  } from "@src/databases"
+import { CacheQueryRunnerService, CropEntity, InjectPostgreSQL } from "@src/databases"
 import { DataSource } from "typeorm"
-import { GetCropsArgs } from "./"
 
 @Injectable()
 export class CropsService {
@@ -9,39 +8,27 @@ export class CropsService {
 
     constructor(
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
-    ) { }
+        private readonly dataSource: DataSource,
+        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+    ) {}
 
-    async getCrops({ limit = 10, offset = 0 }: GetCropsArgs): Promise<Array<CropEntity>> {
-        this.logger.debug(`GetCrops: limit=${limit}, offset=${offset}`)
-
+    async getCrops(): Promise<Array<CropEntity>> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return await queryRunner.manager.find(CropEntity, {
-                take: limit,
-                skip: offset,
-                relations: {
-                    inventoryType: true,
-                    product: true,
-                }
-            })
+            return await this.cacheQueryRunnerService.find(queryRunner, CropEntity)
         } finally {
             await queryRunner.release()
         }
     }
 
-    async getCropById(id: string): Promise<CropEntity> {
-        this.logger.debug(`GetCropById: id=${id}`)
-
+    async getCrop(id: string): Promise<CropEntity> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return await queryRunner.manager.findOne(CropEntity, {
-                where: { id },
-                relations: {
-                    inventoryType: true,
-                    product: true,
+            return await this.cacheQueryRunnerService.findOne(queryRunner, CropEntity, {
+                where: {
+                    id
                 }
             })
         } finally {

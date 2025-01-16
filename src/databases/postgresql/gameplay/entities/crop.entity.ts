@@ -1,5 +1,5 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToMany, OneToOne } from "typeorm"
+import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
+import { Column, Entity, OneToMany, OneToOne, RelationId } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { ProductEntity } from "./product.entity"
@@ -56,6 +56,10 @@ export class CropEntity extends StringAbstractEntity {
     @Column({ name: "maxStack", type: "int", default: 16 })
         maxStack: number
 
+    @Field(() => ID)
+    @RelationId((crop: CropEntity) => crop.product)
+        productId?: string
+
     @Field(() => ProductEntity, { nullable: true })
     @OneToOne(() => ProductEntity, (product) => product.crop, {
         nullable: true,
@@ -63,7 +67,11 @@ export class CropEntity extends StringAbstractEntity {
         cascade: ["insert"]
     })
         product?: ProductEntity
- 
+    
+    @Field(() => ID)
+    @RelationId((crop: CropEntity) => crop.inventoryType)
+        inventoryTypeId?: string
+
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.crop, {
         nullable: true,
@@ -72,11 +80,16 @@ export class CropEntity extends StringAbstractEntity {
     })
         inventoryType?: InventoryTypeEntity
 
+    @Field(() => [String])
+    @RelationId((crop: CropEntity) => crop.spinPrizes)
+        spinPrizeIds: Array<string>
+
     @Field(() => [SpinPrizeEntity], { nullable: true })
     @OneToMany(() => SpinPrizeEntity, (spinPrize) => spinPrize.crop, {
         nullable: true,
         onDelete: "CASCADE",
-        cascade: ["insert"]
+        cascade: ["insert", "update"]
     })
         spinPrizes?: Array<SpinPrizeEntity>
 }
+ 

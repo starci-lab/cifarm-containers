@@ -1,5 +1,5 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToOne } from "typeorm"
+import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
+import { Column, Entity, OneToOne, RelationId } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalType } from "../enums"
 import { InventoryTypeEntity } from "./inventory-type.entity"
@@ -57,27 +57,39 @@ export class AnimalEntity extends StringAbstractEntity {
     @Column({ name: "type", type: "enum", enum: AnimalType })
         type: AnimalType
 
-    @Field(() => ProductEntity, { nullable: true })
+    @Field(() => ID)
+    @RelationId((animal: AnimalEntity) => animal.product)
+        productId: string
+
+    @Field(() => ProductEntity)
     @OneToOne(() => ProductEntity, (product) => product.animal, {
         nullable: true,
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        product?: ProductEntity
+        product: ProductEntity
 
-    @Field(() => InventoryTypeEntity, { nullable: true })
+    @Field(() => ID)
+    @RelationId((animal: AnimalEntity) => animal.inventoryType)
+        inventoryTypeId: string
+
+    @Field(() => InventoryTypeEntity)
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.animal, {
         nullable: true,
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        inventoryType?: InventoryTypeEntity
+        inventoryType: InventoryTypeEntity
 
-    @Field(() => PlacedItemTypeEntity, { nullable: true })
+    @Field(() => ID, { nullable: true })
+    @RelationId((animal: AnimalEntity) => animal.placedItemType)
+        placedItemTypeId?: string
+
+    @Field(() => PlacedItemTypeEntity)
     @OneToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.animal, {
         nullable: true,
         onDelete: "CASCADE",
-        cascade: ["insert"]
+        cascade: ["insert", "update"]
     })
         placedItemType?: PlacedItemTypeEntity
 }

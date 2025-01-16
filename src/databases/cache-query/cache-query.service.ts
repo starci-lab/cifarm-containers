@@ -27,10 +27,13 @@ export class CacheQueryService {
         this.basePrefix = `${PREFIX}:${this.database}`
     }
 
-    public generateCacheKey({ entityName, options }: GenerateCacheKeyParams): string {
+    public generateCacheKey({ entityName, options, findType }: GenerateCacheKeyParams): string {
         const prefix = `${this.basePrefix}:${entityName}`
         // convert options to string
-        let postfix = JSON.stringify(options)
+        let postfix = JSON.stringify({
+            options,
+            findType
+        })
         if (this.useHash) {
             postfix = this.sha256Service.hash(postfix)
         }
@@ -55,7 +58,7 @@ export class CacheQueryService {
 
 interface GenerateCacheKeyParams {
     entityName: string
-    options: unknown,
+    options: unknown
     findType: FindType
 }
 
