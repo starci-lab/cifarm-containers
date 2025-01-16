@@ -12,7 +12,7 @@ export class SpinPrizeResolver {
     @Query(() => [SpinPrizeEntity], {
         name: "spinPrizes"
     })
-    async getPlacedItemTypes(): Promise<Array<SpinPrizeEntity>> {
+    async getSpinPrizes(): Promise<Array<SpinPrizeEntity>> {
         return this.spinPrizesService.getSpinPrizes()
     }
 
@@ -20,7 +20,7 @@ export class SpinPrizeResolver {
         name: "spinPrize",
         nullable: true
     })
-    async getPlacedItemType(@Args("id", { type: () => ID }) id: string): Promise<SpinPrizeEntity> {
+    async getSpinPrize(@Args("id", { type: () => ID }) id: string): Promise<SpinPrizeEntity> {
         return this.spinPrizesService.getSpinPrize(id)
     }
 }

@@ -19,6 +19,7 @@ import { CacheModule } from "@src/cache"
 import { JwtModule } from "@src/jwt"
 import { PlacedItemTypesModule } from "./placed-item-types"
 import { SpinPrizesModule } from "./spin-prizes"
+import { SpinSlotsModule } from "./spin-slots"
 
 @Module({
     imports: [
@@ -53,7 +54,8 @@ import { SpinPrizesModule } from "./spin-prizes"
         UpgradesModule,
         UsersModule,
         PlacedItemTypesModule,
-        SpinPrizesModule
+        SpinPrizesModule,
+        SpinSlotsModule
     ]
 }) 
 export class AppModule {}

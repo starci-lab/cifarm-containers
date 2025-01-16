@@ -13,7 +13,6 @@ export class SpinSlotEntity extends UuidAbstractEntity {
     @Field(() => SpinPrizeEntity, { nullable: true })
     @ManyToOne(() => SpinPrizeEntity, (spinPrize) => spinPrize.spinSlots, {
         onDelete: "CASCADE",
-        eager: true 
     })
     @JoinColumn({ name: "spin_prize_id", referencedColumnName: "id" })
         spinPrize: SpinPrizeEntity
