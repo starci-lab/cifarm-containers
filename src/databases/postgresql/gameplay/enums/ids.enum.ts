@@ -93,7 +93,7 @@ export enum SystemId {
     AnimalRandomness = "animalRandomness",
     Starter = "starter",
     SpinInfo = "spinInfo",
-    EnergyRegenTime = "energyRegenTime",
+    EnergyRegen = "energyRegen",
 }
 
 export enum TempId {

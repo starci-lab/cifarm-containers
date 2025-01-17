@@ -3,7 +3,7 @@ import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
 import {
-    EnergyRegenTime,
+    EnergyRegen,
     InjectPostgreSQL,
     SystemEntity,
     SystemId,
@@ -49,10 +49,10 @@ export class EnergyWorker extends WorkerHost {
 
             const system = await queryRunner.manager.findOne(SystemEntity, {
                 where: {
-                    id: SystemId.EnergyRegenTime
+                    id: SystemId.EnergyRegen
                 }
             })
-            const { time: energyRegenTime } = system.value as EnergyRegenTime // In Miniliseconds
+            const { time: energyRegenTime } = system.value as EnergyRegen // In Miniliseconds
 
             users = users.map((user) => {
                 // Check if user's energy is full

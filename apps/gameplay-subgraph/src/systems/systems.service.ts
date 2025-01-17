@@ -5,7 +5,7 @@ import {
     AnimalRandomness,
     CacheQueryRunnerService,
     CropRandomness,
-    EnergyRegenTime,
+    EnergyRegen,
     InjectPostgreSQL,
     SpinInfo,
     Starter,
@@ -117,7 +117,7 @@ export class SystemsService {
         }
     }
 
-    async getEnergyRegenTime(): Promise<EnergyRegenTime> {
+    async getEnergyRegen(): Promise<EnergyRegen> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -126,11 +126,11 @@ export class SystemsService {
                 SystemEntity,
                 {
                     where: {
-                        id: SystemId.EnergyRegenTime
+                        id: SystemId.EnergyRegen
                     }
                 }
             )
-            return energyRegenTime as EnergyRegenTime
+            return energyRegenTime as EnergyRegen
         } finally {
             await queryRunner.release()
         }

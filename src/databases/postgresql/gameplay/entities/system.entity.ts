@@ -121,7 +121,7 @@ export class SpinInfo {
 }
 
 @ObjectType()
-export class EnergyRegenTime {
+export class EnergyRegen {
     @Field(() => Int)
         time: number // In milliseconds
 }

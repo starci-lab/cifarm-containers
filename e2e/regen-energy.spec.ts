@@ -5,7 +5,7 @@ import { ClientGrpc } from "@nestjs/microservices"
 import { Test } from "@nestjs/testing"
 import { Network, SupportedChainKey } from "@src/blockchain"
 import { sleep } from "@src/common"
-import { CropCurrentState, CropEntity, CropId, EnergyRegenTime, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, SystemEntity, SystemId, TileId, UserEntity } from "@src/databases"
+import { CropCurrentState, CropEntity, CropId, EnergyRegen, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, SystemEntity, SystemId, TileId, UserEntity } from "@src/databases"
 import { EnvModule } from "@src/env"
 import { grpcData, GrpcModule } from "@src/grpc"
 import { GrpcName } from "@src/grpc/grpc.types"
@@ -174,10 +174,10 @@ describe("Regenerate energy flow", () => {
         // Get time config from db
         const system = await dataSource.manager.findOne(SystemEntity, {
             where: {
-                id: SystemId.EnergyRegenTime
+                id: SystemId.EnergyRegen
             }
         })
-        const { time: energyRegenTime } = system.value as EnergyRegenTime
+        const { time: energyRegenTime } = system.value as EnergyRegen
 
         // Speed up 1 energy regeneration
         await lastValueFrom(gameplayService.speedUp({ time: energyRegenTime }))

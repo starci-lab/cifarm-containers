@@ -4,7 +4,7 @@ import {
     AnimalRandomness,
     AppearanceChance,
     CropRandomness,
-    EnergyRegenTime,
+    EnergyRegen,
     SpinInfo,
     Starter,
     SystemEntity,
@@ -142,7 +142,7 @@ export class SystemSeeder implements Seeder {
                 }
             }
         }
-        const energyRegenTime: EnergyRegenTime = {
+        const energyRegen: EnergyRegen = {
             // 5 minutes
             time: 60 * 5
         }
@@ -169,8 +169,8 @@ export class SystemSeeder implements Seeder {
                 value: spinInfo
             },
             {
-                id: SystemId.EnergyRegenTime,
-                value: energyRegenTime
+                id: SystemId.EnergyRegen,
+                value: energyRegen
             }
         ]
         await dataSource.manager.save(SystemEntity, data)
