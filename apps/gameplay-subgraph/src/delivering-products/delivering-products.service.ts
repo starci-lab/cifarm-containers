@@ -1,16 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DeliveringProductEntity, InjectPostgreSQL } from "@src/databases"
-import { DataSource, FindOptionsRelations } from "typeorm"
-import { GetDeliveringProductsArgs } from "./delivering-products.dto"
+import { DataSource } from "typeorm"
+import { GetDeliveringProductsArgs, GetDeliveringProductsResponse } from "./delivering-products.dto"
 import { UserLike } from "@src/jwt"
 
 @Injectable()
-export class DeliveringProductService {
-    private readonly logger = new Logger(DeliveringProductService.name)
-
-    private readonly relations: FindOptionsRelations<DeliveringProductEntity> = {
-        product: true
-    }
+export class DeliveringProductsService {
+    private readonly logger = new Logger(DeliveringProductsService.name)
 
     constructor(
         @InjectPostgreSQL()
@@ -18,13 +14,11 @@ export class DeliveringProductService {
     ) { }
 
     async getDeliveringProduct(id: string): Promise<DeliveringProductEntity | null> {
-        this.logger.debug(`GetDeliveringProductById: id=${id}`)
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
             const deliveringProduct = await queryRunner.manager.findOne(DeliveringProductEntity, {
                 where: { id },
-                relations: this.relations
             })
             return deliveringProduct
         } finally {
@@ -35,20 +29,19 @@ export class DeliveringProductService {
     async getDeliveringProducts(
         { id }: UserLike,
         { limit = 10, offset = 0 }: GetDeliveringProductsArgs
-    ): Promise<Array<DeliveringProductEntity>> {
-        this.logger.debug(
-            `GetDeliveringProductsByUserId: userId=${id}, limit=${limit}, offset=${offset}`
-        )
+    ): Promise<GetDeliveringProductsResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const deliveringProducts = await queryRunner.manager.find(DeliveringProductEntity, {
+            const [data, count] = await queryRunner.manager.findAndCount(DeliveringProductEntity, {
                 where: { userId: id },
                 take: limit,
                 skip: offset,
-                relations: this.relations
             })
-            return deliveringProducts
+            return {
+                data,
+                count
+            }
         } finally {
             await queryRunner.release()
         }

@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common"
-import { DeliveringProductService } from "./delivering-products.service"
-import { DeliveringProductResolver } from "./delivering-products.resolver"
+import { DeliveringProductsService } from "./delivering-products.service"
+import { DeliveringProductsResolver } from "./delivering-products.resolver"
 
 @Module({
-    providers: [DeliveringProductService, DeliveringProductResolver]
+    providers: [DeliveringProductsService, DeliveringProductsResolver]
 })
-export class InventoriesModule {}
+export class DeliveringProductsModule {}

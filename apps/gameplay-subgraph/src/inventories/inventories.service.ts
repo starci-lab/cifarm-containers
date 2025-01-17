@@ -1,4 +1,4 @@
-import { GetInventoriesArgs } from "./inventories.dto"
+import { GetInventoriesArgs, GetInventoriesResponse } from "./inventories.dto"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectPostgreSQL, InventoryEntity } from "@src/databases"
 import { UserLike } from "@src/jwt"
@@ -8,15 +8,12 @@ import { DataSource } from "typeorm"
 export class InventoryService {
     private readonly logger = new Logger(InventoryService.name)
 
-    
-
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource
     ) {}
 
     async getInventory(id: string): Promise<InventoryEntity> {
-        this.logger.debug(`GetInventoryById: id=${id}`)
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -31,17 +28,19 @@ export class InventoryService {
     async getInventories(
         { id }: UserLike,
         { limit = 10, offset = 0 }: GetInventoriesArgs
-    ): Promise<Array<InventoryEntity>> {
-        this.logger.debug(`GetInventories: limit=${limit}, offset=${offset}`)
+    ): Promise<GetInventoriesResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const inventories = await queryRunner.manager.find(InventoryEntity, {
+            const [data, count] = await queryRunner.manager.findAndCount(InventoryEntity, {
                 take: limit,
                 skip: offset,
                 where: { userId: id }
             })
-            return inventories
+            return {
+                data,
+                count 
+            }
         } finally {
             await queryRunner.release()
         }

@@ -13,23 +13,29 @@ import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 @Module({
     imports: [
         PostgreSQLOptionsModule.register({
-            injectionToken: MAIN_GAMEPLAY_POSTGRESQL
+            injectionToken: MAIN_GAMEPLAY_POSTGRESQL,
+            options: {
+                synchronize: true
+            }
         }),
         PostgreSQLOptionsModule.register({
             injectionToken: MOCK_GAMEPLAY_POSTGRESQL,
             options: {
+                synchronize: true,
                 context: PostgreSQLContext.Mock
             }
         }),
         PostgreSQLOptionsModule.register({
             injectionToken: MAIN_TELEGRAM_POSTGRESQL,
             options: {
+                synchronize: true,
                 database: PostgreSQLDatabase.Telegram
             }
         }),
         PostgreSQLOptionsModule.register({
             injectionToken: MOCK_TELEGRAM_POSTGRESQL,
             options: {
+                synchronize: true,
                 database: PostgreSQLDatabase.Telegram,
                 context: PostgreSQLContext.Mock
             }

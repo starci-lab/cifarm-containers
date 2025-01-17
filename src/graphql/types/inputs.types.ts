@@ -1,4 +1,4 @@
-import { InputType, Field, Int, ID } from "@nestjs/graphql"
+import { InputType, Field, Int, ID, ObjectType } from "@nestjs/graphql"
 
 @InputType({
     isAbstract: true
@@ -16,4 +16,17 @@ export abstract class PaginatedArgs {
         limit?: number = 10
     @Field(() => Int, { nullable: true, defaultValue: 0 }) //default 0
         offset?: number = 0
+}
+
+@ObjectType({
+    isAbstract: true
+})
+export abstract class PaginatedResponse {
+    @Field(() => Int)
+        count: number
+}
+
+export interface IPaginatedResponse<TEntity> {
+    count: number
+    data: Array<TEntity>
 }

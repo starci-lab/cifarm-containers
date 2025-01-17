@@ -78,7 +78,7 @@ export class UserEntity extends UuidAbstractEntity {
     @Field(() => Int)
     @Column({ name: "spin_count", type: "int", default: 0 })
         spinCount: number
-
+        
     @Field(() => [InventoryEntity])
     @OneToMany(() => InventoryEntity, (inventory) => inventory.user, {
         cascade: true,

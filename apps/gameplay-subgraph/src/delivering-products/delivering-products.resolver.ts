@@ -1,17 +1,18 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseGuards } from "@nestjs/common"
 import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { DeliveringProductEntity } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
-import { UserLike } from "@src/jwt"
-import { DeliveringProductService } from "./delivering-products.service"
-import { GetDeliveringProductsArgs } from "./delivering-products.dto"
+import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
+import { DeliveringProductsService } from "./delivering-products.service"
+import { GetDeliveringProductsArgs, GetDeliveringProductsResponse } from "./delivering-products.dto"
 
 @Resolver()
-export class DeliveringProductResolver {
-    private readonly logger = new Logger(DeliveringProductResolver.name)
+export class DeliveringProductsResolver {
+    private readonly logger = new Logger(DeliveringProductsResolver.name)
 
-    constructor(private readonly deliveringProductsService: DeliveringProductService) {}
+    constructor(private readonly deliveringProductsService: DeliveringProductsService) {}
 
+    @UseGuards(GraphQLJwtAuthGuard)
     @Query(() => DeliveringProductEntity, {
         name: "deliveringProduct",
         nullable: true
@@ -23,16 +24,14 @@ export class DeliveringProductResolver {
         return this.deliveringProductsService.getDeliveringProduct(id)
     }
 
-    @Query(() => [DeliveringProductEntity], {
+    @UseGuards(GraphQLJwtAuthGuard)
+    @Query(() => GetDeliveringProductsResponse, {
         name: "deliveringProducts"
     })
     async getDeliveringProducts(
         @GraphQLUser() user: UserLike,
         @Args("args") args: GetDeliveringProductsArgs
-    ): Promise<Array<DeliveringProductEntity>> {
-        this.logger.debug(
-            `getDeliveringProductsByUserId: userId=${user?.id} args=${JSON.stringify(args)}`
-        )
+    ): Promise<GetDeliveringProductsResponse> {
         return this.deliveringProductsService.getDeliveringProducts(user, args)
     }
 }

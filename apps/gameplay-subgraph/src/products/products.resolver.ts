@@ -20,7 +20,7 @@ export class ProductResolver {
         name: "product",
         nullable:true
     })
-    async getProductById(@Args("id") id: string): Promise<ProductEntity | null> {
+    async getProduct(@Args("id") id: string): Promise<ProductEntity | null> {
         return this.productsService.getProduct(id)
     }
 }

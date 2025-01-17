@@ -1,10 +1,10 @@
-import { Logger } from "@nestjs/common"
-import { Resolver, Query, Args } from "@nestjs/graphql"
+import { Logger, UseGuards } from "@nestjs/common"
+import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { PlacedItemsService } from "./placed-items.service"
 import { PlacedItemEntity } from "@src/databases"
-import { GetPlacedItemsArgs } from "./"
+import { GetPlacedItemsArgs, GetPlacedItemsResponse } from "./placed-items.dto"
 import { GraphQLUser } from "@src/decorators"
-import { UserLike } from "@src/jwt"
+import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 
 @Resolver()
 export class PlacedItemsResolver {
@@ -12,22 +12,23 @@ export class PlacedItemsResolver {
 
     constructor(private readonly placeditemsService: PlacedItemsService) {}
 
+    @UseGuards(GraphQLJwtAuthGuard)
     @Query(() => PlacedItemEntity, {
-        name: "placeditem",
+        name: "placedItem",
         nullable: true
     })
-    async getPlacedItemById(@Args("id") id: string): Promise<PlacedItemEntity> {
-        this.logger.debug(`getPlacedItemById: id=${id}`)
+    async getPlacedItem(@Args("id", { type: () => ID }) id: string): Promise<PlacedItemEntity> {
         return this.placeditemsService.getPlacedItem(id)
     }
 
-    @Query(() => [PlacedItemEntity], {
-        name: "placeditems"
+    @UseGuards(GraphQLJwtAuthGuard)
+    @Query(() => GetPlacedItemsResponse, {
+        name: "placedItems"
     })
     async getPlacedItems(
         @GraphQLUser() user: UserLike,
         @Args("args") args: GetPlacedItemsArgs
-    ): Promise<Array<PlacedItemEntity>> {
+    ): Promise<GetPlacedItemsResponse> {
         return this.placeditemsService.getPlacedItems(user, args)
     }
 }

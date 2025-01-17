@@ -13,8 +13,6 @@ export class UsersService {
 
     //get single user, by id
     async getUser(id: string): Promise<UserEntity | null> {
-        this.logger.debug(`GetUser: id=${id}`)
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {

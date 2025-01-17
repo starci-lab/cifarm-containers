@@ -1,4 +1,4 @@
-import { GetPlacedItemsArgs } from "./"
+import { GetPlacedItemsArgs, GetPlacedItemsResponse } from "./placed-items.dto"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectPostgreSQL, PlacedItemEntity } from "@src/databases"
 import { UserLike } from "@src/jwt"
@@ -9,19 +9,15 @@ export class PlacedItemsService {
     private readonly logger = new Logger(PlacedItemsService.name)
 
     private readonly relations: FindOptionsRelations<PlacedItemEntity> = {
-        parent: true,
-        placedItemType: true,
-        seedGrowthInfo: true,
         animalInfo: true,
         buildingInfo: true,
-        placedItems: true
+        seedGrowthInfo: true
     }
 
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource
-    ) {
-    }
+    ) {}
 
     async getPlacedItem(id: string): Promise<PlacedItemEntity> {
         this.logger.debug(`GetPlacedItemById: id=${id}`)
@@ -40,19 +36,22 @@ export class PlacedItemsService {
     async getPlacedItems(
         { id }: UserLike,
         { limit = 10, offset = 0 }: GetPlacedItemsArgs
-    ): Promise<Array<PlacedItemEntity>> {
-        this.logger.debug(`GetPlacedItems: limit=${limit}, offset=${offset}`)
+    ): Promise<GetPlacedItemsResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return await queryRunner.manager.find(PlacedItemEntity, {
+            const [data, count] = await queryRunner.manager.findAndCount(PlacedItemEntity, {
                 take: limit,
                 skip: offset,
-                relations: this.relations,
                 where: {
                     userId: id
-                }
+                },
+                relations: this.relations
             })
+            return {
+                data,
+                count
+            }
         } finally {
             await queryRunner.release()
         }

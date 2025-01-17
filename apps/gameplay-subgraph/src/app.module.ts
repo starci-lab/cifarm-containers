@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common"
 import { EnvModule } from "@src/env"
 import { BuildingsModule } from "./buildings"
 import { CropsModule } from "./crops"
-import { InventoriesModule } from "./delivering-products"
+import { InventoriesModule } from "./inventories"
 import { PlacedItemsModule } from "./placed-items"
 import { ProductsModule } from "./products"
 import { SuppliesModule } from "./supplies"
@@ -22,6 +22,7 @@ import { SpinPrizesModule } from "./spin-prizes"
 import { SpinSlotsModule } from "./spin-slots"
 import { InventoryTypesModule } from "./inventory-types"
 import { DailyRewardsModule } from "./daily-rewards"
+import { DeliveringProductsModule } from "./delivering-products"
 
 @Module({
     imports: [
@@ -60,7 +61,8 @@ import { DailyRewardsModule } from "./daily-rewards"
         SpinSlotsModule,
         InventoryTypesModule,
         DailyRewardsModule,
-        UpgradesModule
+        UpgradesModule,
+        DeliveringProductsModule
     ]
 }) 
 export class AppModule {}
