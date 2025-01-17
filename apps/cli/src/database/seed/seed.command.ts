@@ -69,6 +69,7 @@ export class SeedCommand extends CommandRunner {
             const factory = factoryMap[this.database][this.context]
 
             const dataSourceOptions = factory.createDataSourceOptions()
+
             if (options?.create) {
                 await createDatabase({
                     options: dataSourceOptions

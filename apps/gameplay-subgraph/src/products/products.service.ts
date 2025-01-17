@@ -1,48 +1,36 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, ProductEntity } from "@src/databases"
-import { DataSource, FindOptionsRelations } from "typeorm"
-import { GetProductsArgs } from "./products.dto"
+import { CacheQueryRunnerService, InjectPostgreSQL, ProductEntity } from "@src/databases"
+import { DataSource } from "typeorm"
 
 @Injectable()
 export class ProductService {
     private readonly logger = new Logger(ProductService.name)
 
-    private readonly relations: FindOptionsRelations<ProductEntity> = {
-        crop: true,
-        animal: true,
-    }
-
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
+        private readonly cacheQueryRunnerService: CacheQueryRunnerService
     ) { }
 
     async getProduct(id: string): Promise<ProductEntity | null> {
-        this.logger.debug(`GetProductById: id=${id}`)
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const product = await queryRunner.manager.findOne(ProductEntity, {
-                where: { id },
-                relations: this.relations
+            return await this.cacheQueryRunnerService.findOne(queryRunner, ProductEntity, {
+                where: {
+                    id
+                }
             })
-            return product
         } finally {
             await queryRunner.release()
         }
     }
 
-    async getProducts({ limit = 10, offset = 0 }: GetProductsArgs): Promise<Array<ProductEntity>> {
-        this.logger.debug(`GetProducts: limit=${limit}, offset=${offset}`)
+    async getProducts(): Promise<Array<ProductEntity>> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const products = await queryRunner.manager.find(ProductEntity, {
-                take: limit,
-                skip: offset,
-                relations: this.relations,
-            })
-            return products
+            return await this.cacheQueryRunnerService.find(queryRunner, ProductEntity)
         } finally {
             await queryRunner.release()
         }

@@ -1,5 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToOne } from "typeorm"
+import { Column, Entity, OneToOne, RelationId } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { PlacedItemTypeEntity } from "./placed-item-type.entity"
@@ -23,19 +23,26 @@ export class TileEntity extends StringAbstractEntity {
     @Column({ name: "available_in_shop", type: "boolean" })
         availableInShop: boolean
 
+    @Field(() => String, { nullable: true })
+    @RelationId((tile: TileEntity) => tile.inventoryType)
+        inventoryTypeId?: string
+
     @Field(() => InventoryTypeEntity, { nullable: true })
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.tile, {
         nullable: true,
         onDelete: "CASCADE",
-        cascade: ["insert"]
+        cascade: ["insert", "update"]
     })
         inventoryType?: InventoryTypeEntity
 
-    @Field(() => PlacedItemTypeEntity, { nullable: true })
+    @Field(() => String)
+    @RelationId((tile: TileEntity) => tile.placedItemType)
+        placedItemTypeId: string
+
+    @Field(() => PlacedItemTypeEntity)
     @OneToOne(() => PlacedItemTypeEntity, (placedItemType) => placedItemType.tile, {
-        nullable: true,
         onDelete: "CASCADE",
-        cascade: ["insert"]
+        cascade: ["insert", "update"]
     })
-        placedItemType?: PlacedItemTypeEntity
+        placedItemType: PlacedItemTypeEntity
 }

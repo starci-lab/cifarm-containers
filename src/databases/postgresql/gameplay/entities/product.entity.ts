@@ -1,5 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
@@ -48,14 +48,17 @@ export class ProductEntity extends StringAbstractEntity {
     })
         animal: AnimalEntity
 
-    @Field(() => InventoryTypeEntity, { nullable: true })
+    @Field(() => String)
+    @RelationId((product: ProductEntity) => product.inventoryType)
+        inventoryTypeId: string
+
+    @Field(() => InventoryTypeEntity)
     @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.product, {
-        nullable: true,
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        inventoryType?: InventoryTypeEntity
-
+        inventoryType: InventoryTypeEntity
+     
     @Field(() => [DeliveringProductEntity])
     @OneToMany(() => DeliveringProductEntity, (deliveringProduct) => deliveringProduct.product)
         deliveringProducts?: Array<DeliveringProductEntity>

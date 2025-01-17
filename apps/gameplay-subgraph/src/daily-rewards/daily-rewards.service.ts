@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DailyRewardEntity, InjectPostgreSQL } from "@src/databases"
+import { CacheQueryRunnerService, DailyRewardEntity, InjectPostgreSQL } from "@src/databases"
 import { DataSource } from "typeorm"
-import { GetDailyRewardsArgs } from "./daily-rewards.dto"
 
 @Injectable()
 export class DailyRewardsService {
@@ -9,38 +8,29 @@ export class DailyRewardsService {
 
     constructor(
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly cacheQueryRunnerService: CacheQueryRunnerService
     ) { }
 
     async getDailyReward(id: string): Promise<DailyRewardEntity> {
-        this.logger.debug(`GetDailyRewardById: id=${id}`)
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return await queryRunner.manager.findOne(DailyRewardEntity, {
-                where: { id },
-                relations: {}
+            return await this.cacheQueryRunnerService.findOne(queryRunner, DailyRewardEntity, {
+                where: {
+                    id
+                }
             })
         } finally {
             await queryRunner.release()
         }
     }
 
-    async getDailyRewards({
-        limit = 10,
-        offset = 0
-    }: GetDailyRewardsArgs): Promise<Array<DailyRewardEntity>> {
-        this.logger.debug(`GetDailyRewards: limit=${limit}, offset=${offset}`)
-
+    async getDailyRewards(): Promise<Array<DailyRewardEntity>> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return await queryRunner.manager.find(DailyRewardEntity, {
-                take: limit,
-                skip: offset,
-                relations: {}
-            })
+            return await this.cacheQueryRunnerService.find(queryRunner, DailyRewardEntity)
         } finally {
             await queryRunner.release()
         }

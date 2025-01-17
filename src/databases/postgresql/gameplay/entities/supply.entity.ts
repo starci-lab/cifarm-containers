@@ -1,5 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToMany, OneToOne } from "typeorm"
+import { Column, Entity, OneToMany, OneToOne, RelationId } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { SupplyType } from "../enums"
 import { InventoryTypeEntity } from "./inventory-type.entity"
@@ -20,25 +20,27 @@ export class SupplyEntity extends StringAbstractEntity {
     @Column({ name: "available_in_shop", type: "boolean", default: false })
         availableInShop: boolean
 
-    @Field(() => Int)
-    @Column({ name: "maxStack", type: "int", default: 16 })
-        maxStack: number
-
     @Field(() => Int, { nullable: true })
     @Column({ name: "time_reduce", type: "int", nullable: true })
         fertilizerEffectTimeReduce?: number
 
-    @Field(() => InventoryTypeEntity, { nullable: true })
-    @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.supply, {
-        nullable: true,
-        onDelete: "CASCADE",
-        cascade: ["insert"]
-    })
-        inventoryType?: InventoryTypeEntity
+    @Field(() => String)
+    @RelationId((supply: SupplyEntity) => supply.inventoryType)
+        inventoryTypeId: string
 
-    @Field(() => [SpinPrizeEntity], { nullable: true })
+    @Field(() => InventoryTypeEntity)
+    @OneToOne(() => InventoryTypeEntity, (inventoryType) => inventoryType.supply, {
+        onDelete: "CASCADE",
+        cascade: ["insert", "update"]
+    })
+        inventoryType: InventoryTypeEntity
+
+    @Field(() => [String])
+    @RelationId((supply: SupplyEntity) => supply.spinPrizes)
+        spinPrizeIds: Array<string>
+
+    @Field(() => [SpinPrizeEntity])
     @OneToMany(() => SpinPrizeEntity, (spinPrize) => spinPrize.supply, {
-        nullable: true,
         onDelete: "CASCADE",
         cascade: ["insert"]
     })

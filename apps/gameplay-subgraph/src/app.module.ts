@@ -20,6 +20,8 @@ import { JwtModule } from "@src/jwt"
 import { PlacedItemTypesModule } from "./placed-item-types"
 import { SpinPrizesModule } from "./spin-prizes"
 import { SpinSlotsModule } from "./spin-slots"
+import { InventoryTypesModule } from "./inventory-types"
+import { DailyRewardsModule } from "./daily-rewards"
 
 @Module({
     imports: [
@@ -55,7 +57,10 @@ import { SpinSlotsModule } from "./spin-slots"
         UsersModule,
         PlacedItemTypesModule,
         SpinPrizesModule,
-        SpinSlotsModule
+        SpinSlotsModule,
+        InventoryTypesModule,
+        DailyRewardsModule,
+        UpgradesModule
     ]
 }) 
 export class AppModule {}

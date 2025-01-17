@@ -15,6 +15,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
     private readonly database: PostgreSQLDatabase
     private readonly context: PostgreSQLContext
     private readonly cacheEnabled: boolean
+    private readonly synchronize: boolean
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
@@ -26,6 +27,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
         this.context = this.baseOptions.context || PostgreSQLContext.Main
         // Cache is enabled by default
         this.cacheEnabled = this.baseOptions.cacheEnabled || true
+        this.synchronize = this.baseOptions.synchronize || !isProduction()
     }
 
     createDataSourceOptions(): DataSourceOptions {
@@ -40,7 +42,8 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
             database: dbName,
             entities: getPostgresEntities(this.baseOptions),
             connectTimeoutMS: CONNECTION_TIMEOUT_MS,
-            poolSize: POOL_SIZE
+            poolSize: POOL_SIZE,
+            synchronize: this.synchronize,
         }
     }
 
@@ -51,7 +54,6 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
             : false
         return {
             ...options,
-            synchronize: !isProduction(),
             cache, 
         }
     }

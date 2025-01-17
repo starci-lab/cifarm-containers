@@ -13,8 +13,6 @@ export class AnimalsService {
     ) {}
 
     async getAnimals(): Promise<Array<AnimalEntity>> {
-        this.logger.debug("GetAnimals") 
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 

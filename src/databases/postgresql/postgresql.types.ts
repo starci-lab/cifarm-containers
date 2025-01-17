@@ -4,4 +4,5 @@ export interface PostgreSQLOptions {
     context?: PostgreSQLContext
     database?: PostgreSQLDatabase
     cacheEnabled?: boolean
+    synchronize?: boolean
 }

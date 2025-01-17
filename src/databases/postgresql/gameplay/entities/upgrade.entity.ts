@@ -18,6 +18,10 @@ export class UpgradeEntity extends StringAbstractEntity {
     @Column({ name: "upgrade_level", type: "int" })
         upgradeLevel: number
 
+    @Field(() => String)
+    @Column({ name: "building_id", type: "uuid" })
+        buildingId: string
+
     @Field(() => BuildingEntity)
     @ManyToOne(() => BuildingEntity, (building: BuildingEntity) => building.upgrades)
     @JoinColumn({ name: "building_id", referencedColumnName: "id" })

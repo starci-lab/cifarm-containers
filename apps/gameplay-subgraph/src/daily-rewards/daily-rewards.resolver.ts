@@ -2,7 +2,6 @@ import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { DailyRewardsService } from "./daily-rewards.service"
 import { DailyRewardEntity } from "@src/databases"
-import { GetDailyRewardsArgs } from "./daily-rewards.dto"
 
 @Resolver()
 export class DailyRewardsResolver {
@@ -13,10 +12,8 @@ export class DailyRewardsResolver {
     @Query(() => [DailyRewardEntity], {
         name: "dailyRewards"
     })
-    async getDailyRewards(
-        @Args("args") args: GetDailyRewardsArgs
-    ): Promise<Array<DailyRewardEntity>> {
-        return this.dailyRewardsService.getDailyRewards(args)
+    async getDailyRewards(): Promise<Array<DailyRewardEntity>> {
+        return this.dailyRewardsService.getDailyRewards()
     }
 
     @Query(() => DailyRewardEntity, {
@@ -24,7 +21,6 @@ export class DailyRewardsResolver {
         nullable: true
     })
     async getDailyRewardById(@Args("id", { type: () => ID }) id: string): Promise<DailyRewardEntity> {
-        this.logger.debug(`getDailyRewardById: id=${id}`)
         return this.dailyRewardsService.getDailyReward(id)
     }
 }

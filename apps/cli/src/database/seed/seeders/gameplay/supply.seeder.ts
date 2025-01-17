@@ -15,7 +15,6 @@ export class SupplySeeder implements Seeder {
                 price: 50,
                 availableInShop: true,
                 fertilizerEffectTimeReduce: 60 * 30,
-                maxStack: 16,
                 inventoryType: {
                     id: SupplyId.BasicFertilizer,
                     asTool: true,
@@ -30,7 +29,6 @@ export class SupplySeeder implements Seeder {
                 type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,
-                maxStack: 16,
                 inventoryType: {
                     id: SupplyId.AnimalFeed,
                     asTool: true,

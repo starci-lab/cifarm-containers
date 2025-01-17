@@ -34,58 +34,58 @@ export class InventoryTypeEntity extends StringAbstractEntity {
 
     @Field(() => String, { nullable: true })
     @Column({ name: "crop_id", nullable: true })
-        cropId: string
+        cropId?: string
 
-    @OneToOne(() => CropEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne(() => CropEntity, { onDelete: "CASCADE", cascade: true, nullable: true })
     @JoinColumn({
         name: "crop_id",
         referencedColumnName: "id"
     })
-        crop: CropEntity
+        crop?: CropEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "animal_id", nullable: true })
-        animalId: string
+        animalId?: string
 
     @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", cascade: true })
     @JoinColumn({
         name: "animal_id",
         referencedColumnName: "id"
     })
-        animal: AnimalEntity
+        animal?: AnimalEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "supply_id", nullable: true })
-        supplyId: string
+        supplyId?: string
 
-    @OneToOne(() => SupplyEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne(() => SupplyEntity, { onDelete: "CASCADE", cascade: true, nullable: true })
     @JoinColumn({
         name: "supply_id",
         referencedColumnName: "id"
     })
-        supply: SupplyEntity
+        supply?: SupplyEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "product_id", nullable: true })
-        productId: string
+        productId?: string
 
-    @OneToOne(() => ProductEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne(() => ProductEntity, { onDelete: "CASCADE", cascade: true, nullable: true })
     @JoinColumn({
         name: "product_id",
         referencedColumnName: "id"
     })
-        product: ProductEntity
+        product?: ProductEntity
 
     @Field(() => String, { nullable: true })
     @Column({ name: "tile_id", nullable: true })
-        tileId: string
+        tileId?: string
 
-    @OneToOne(() => TileEntity, { onDelete: "CASCADE", cascade: true })
+    @OneToOne(() => TileEntity, { onDelete: "CASCADE", cascade: true, nullable: true })
     @JoinColumn({
         name: "tile_id",
         referencedColumnName: "id"
     })
-        tile: TileEntity
+        tile?: TileEntity
 
     @Field(() => [InventoryEntity], { nullable: true })
     @OneToMany(() => InventoryEntity, (inventory) => inventory.inventoryType, {
