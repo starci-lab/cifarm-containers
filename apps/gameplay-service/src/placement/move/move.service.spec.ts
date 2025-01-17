@@ -3,7 +3,7 @@ import {
     PlacedItemEntity,
     UserEntity
 } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { MoveRequest } from "./move.dto"
 import { MoveService } from "./move.service"

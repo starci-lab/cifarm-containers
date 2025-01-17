@@ -7,7 +7,7 @@ import {
     PlacedItemTypeId,
     UserEntity
 } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuyAnimalRequest } from "./buy-animal.dto"
 import { BuyAnimalService } from "./buy-animal.service"

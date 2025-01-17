@@ -1,17 +1,15 @@
 import { faker } from "@faker-js/faker"
 import { Injectable } from "@nestjs/common"
 import { InjectPostgreSQL, UserEntity } from "@src/databases"
-import { PostgreSQLContext, SupportedChainKey } from "@src/env"
-import { Network } from "ethers"
+import { Network, SupportedChainKey } from "@src/env"
 import { DataSource, DeepPartial, In } from "typeorm"
+import { v4 } from "uuid"
 
 @Injectable()
 export class GameplayMockUserService {
     private users: Array<UserEntity>
     constructor(
-        @InjectPostgreSQL({
-            context: PostgreSQLContext.Mock,
-        })
+        @InjectPostgreSQL()
         private readonly dataSource: DataSource
     ) {
         this.users = []
@@ -34,9 +32,9 @@ export class GameplayMockUserService {
         }
     }
 
-    public async generate(): Promise<DeepPartial<UserEntity>> {
-        const user: DeepPartial<UserEntity> = {
-            username: faker.internet.userName(),
+    public async generate(): Promise<UserEntity> {
+        const userPartial: DeepPartial<UserEntity> = {
+            username: faker.internet.username(),
             chainKey: faker.helpers.arrayElement(Object.values(SupportedChainKey)),
             network: faker.helpers.arrayElement(Object.values(Network)),
             accountAddress: faker.finance.ethereumAddress(),
@@ -51,19 +49,23 @@ export class GameplayMockUserService {
             dailyRewardStreak: faker.number.int({ min: 0, max: 7 }),
             dailyRewardNumberOfClaim: faker.number.int({ min: 0, max: 30 }),
             spinCount: faker.number.int({ min: 0, max: 100 }),
-            visitingUserId: faker.string.uuid(),
             dailyRewardLastClaimTime: faker.date.recent(),
             spinLastTime: faker.date.recent(),
-            isRandom: faker.datatype.boolean()
+            sessions: [
+                {
+                    refreshToken: v4(),
+                    expiredAt: faker.date.future(),
+                }
+            ]
         }
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         await queryRunner.startTransaction()
         try {
-            const newUser = await queryRunner.manager.save(UserEntity, user)
+            const user = await queryRunner.manager.save(UserEntity, userPartial)
             await queryRunner.commitTransaction()
-            this.users.push(newUser)
-            return newUser
+            this.users.push(user)
+            return user
         } catch (error) {
             await queryRunner.rollbackTransaction()
             throw error

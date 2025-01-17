@@ -1,16 +1,17 @@
 import { DynamicModule, Module } from "@nestjs/common"
-import { ConfigurableModuleClass, OPTIONS_TYPE } from "./testing.module-definition"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./infra.module-definition"
 import { NestExport, NestImport, NestProvider } from "@src/common"
-import { TestContext } from "./testing.types"
-import { PostgreSQLModule } from "@src/databases"
+import { TestContext } from "./infra.types"
+import { PostgreSQLMemoryModule } from "@src/databases"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { GameplayMockUserService } from "./gameplay"
-import { CacheModule } from "@src/cache"
-//import { KafkaModule } from "@src/brokers"
+import { CacheModule, CacheType } from "@src/cache"
 import { AxiosModule } from "@src/axios"
+import { BlockchainModule } from "@src/blockchain"
+import { JwtModule } from "@src/jwt"
 
 @Module({})
-export class TestingModule extends ConfigurableModuleClass {
+export class TestingInfraModule  extends ConfigurableModuleClass {
     public static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const context = options.context ?? TestContext.Gameplay
         const dynamicModule = super.register(options)
@@ -22,11 +23,19 @@ export class TestingModule extends ConfigurableModuleClass {
         switch (context) {
         case TestContext.Gameplay: {
             imports.push(
-                PostgreSQLModule.forRoot({
-                    context: PostgreSQLContext.Main,
-                    database: PostgreSQLDatabase.Gameplay
+                //since mem, so that main or mock no matter
+                PostgreSQLMemoryModule.register({
+                    database: PostgreSQLDatabase.Gameplay,
+                    isGlobal: true
                 }),
                 CacheModule.register({
+                    isGlobal: true,
+                    cacheType: CacheType.Memory
+                }),
+                BlockchainModule.register({
+                    isGlobal: true
+                }),
+                JwtModule.register({
                     isGlobal: true
                 })
             )
@@ -36,7 +45,7 @@ export class TestingModule extends ConfigurableModuleClass {
         }
         case TestContext.E2E: {
             imports.push(
-                PostgreSQLModule.forRoot({
+                PostgreSQLMemoryModule.register({
                     context: PostgreSQLContext.Main,
                     database: PostgreSQLDatabase.Gameplay
                 }),

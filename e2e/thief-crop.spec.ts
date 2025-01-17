@@ -12,7 +12,7 @@ import { CropCurrentState, CropEntity, getPostgreSqlToken, InventoryEntity, Inve
 import { Network, SupportedChainKey } from "@src/env"
 import { grpcData, GrpcModule, GrpcName } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
-import { createTestModule, MOCK_DATABASE_OPTIONS, TestingModule } from "@src/testing"
+import { createTestModule, MOCK_DATABASE_OPTIONS, TestingModule } from "@src/testing/infra"
 import { AxiosInstance } from "axios"
 import { lastValueFrom } from "rxjs"
 import { DataSource } from "typeorm"

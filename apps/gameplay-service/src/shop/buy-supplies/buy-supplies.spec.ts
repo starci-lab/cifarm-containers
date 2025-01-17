@@ -4,7 +4,7 @@ import {
     SupplyId,
     UserEntity
 } from "@src/databases"
-import { MOCK_USER, createTestModule } from "@src/testing"
+import { MOCK_USER, createTestModule } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuySuppliesRequest } from "./buy-supplies.dto"
 import { BuySuppliesService } from "./buy-supplies.service"

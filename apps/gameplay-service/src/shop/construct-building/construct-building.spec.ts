@@ -4,7 +4,7 @@ import {
     PlacedItemEntity,
     UserEntity
 } from "@src/databases"
-import { MOCK_USER, createTestModule } from "@src/testing"
+import { MOCK_USER, createTestModule } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest } from "./construct-building.dto"
 import { ConstructBuildingService } from "./construct-building.service"

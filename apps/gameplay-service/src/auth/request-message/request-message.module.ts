@@ -4,7 +4,6 @@ import { RequestMessageService } from "./request-message.service"
 
  
 @Module({
-    imports: [],
     controllers: [RequestMessageController],
     providers: [RequestMessageService],
     exports: [RequestMessageService]

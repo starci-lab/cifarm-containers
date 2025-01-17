@@ -6,7 +6,7 @@ import {
     InventoryEntity,
     UserEntity
 } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuySeedsRequest } from "./buy-seeds.dto"
 import { BuySeedsModule } from "./buy-seeds.module"

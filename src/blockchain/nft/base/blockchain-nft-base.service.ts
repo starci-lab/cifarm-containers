@@ -7,7 +7,7 @@ import { GetNftsByTokenIdsParams, _getNftsByTokenIds } from "./get-nfts-by-token
 import { GetNftByTokenIdParams, _getNftByTokenId } from "./get-nfts-by-token-id"
 import { IpfsService } from "../common"
 import { _mintNft, MintNftParams } from "./mint-nft.utils"
-import { Network } from "../../blockchain.config"
+import { Network } from "@src/env"
 
 export interface BlockchainNftBaseServiceConstructorParams {
     nftCollectionId: string

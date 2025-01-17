@@ -1,5 +1,5 @@
 import { UserEntity } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { UpdateTutorialRequest } from "./update-tutorial.dto"
 import { UpdateTutorialModule } from "./update-tutorial.module"

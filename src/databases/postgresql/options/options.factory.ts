@@ -16,6 +16,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
     private readonly context: PostgreSQLContext
     private readonly cacheEnabled: boolean
     private readonly synchronize: boolean
+    private readonly useMemeory: boolean
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
@@ -40,7 +41,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
             username,
             password,
             database: dbName,
-            entities: getPostgresEntities(this.baseOptions),
+            entities: getPostgresEntities(this.baseOptions.database),
             connectTimeoutMS: CONNECTION_TIMEOUT_MS,
             poolSize: POOL_SIZE,
             synchronize: this.synchronize,

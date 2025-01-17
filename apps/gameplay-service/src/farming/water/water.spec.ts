@@ -11,7 +11,7 @@ import {
 import {
     createTestModule,
     MOCK_USER,
-} from "@src/testing"
+} from "@src/testing/infra"
 import {
     DataSource,
     DeepPartial,

@@ -5,6 +5,6 @@ export enum TestContext {
     E2E = "e2e"
 }
 
-export interface TestingOptions {
+export interface TestingInfraOptions {
     context?: TestContext
 }

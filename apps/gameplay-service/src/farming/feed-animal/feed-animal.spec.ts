@@ -10,7 +10,7 @@ import {
     SupplyId,
     UserEntity
 } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { FeedAnimalRequest } from "./feed-animal.dto"
 import { FeedAnimalModule } from "./feed-animal.module"

@@ -1,7 +1,7 @@
 //npx jest apps/gameplay-service/src/community/follow/follow.spec.ts
 
 import { UserEntity, UsersFollowingUsersEntity } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { FollowRequest } from "./follow.dto"
 import { FollowModule } from "./follow.module"

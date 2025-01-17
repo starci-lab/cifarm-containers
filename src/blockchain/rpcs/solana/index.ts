@@ -1,4 +1,4 @@
-import { Network } from "../../blockchain.config"
+import { Network } from "@src/env"
 import { solanaHttpRpcUrl as _solanaHttpRpcUrl } from "./solana"
 
 export * from "./solana"

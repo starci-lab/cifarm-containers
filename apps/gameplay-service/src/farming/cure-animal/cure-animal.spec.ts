@@ -1,7 +1,7 @@
 //npx jest apps/gameplay-service/src/farming/cure-animal/cure-animal.spec.ts
 
 import { AnimalCurrentState, AnimalId, AnimalInfoEntity, PlacedItemEntity, UserEntity } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { CureAnimalRequest } from "./cure-animal.dto"
 import { CureAnimalModule } from "./cure-animal.module"

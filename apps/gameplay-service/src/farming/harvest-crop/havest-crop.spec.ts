@@ -11,7 +11,7 @@ import {
     SeedGrowthInfoEntity,
     UserEntity
 } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { HarvestCropRequest } from "./harvest-crop.dto"
 import { HarvestCropService } from "./harvest-crop.service"

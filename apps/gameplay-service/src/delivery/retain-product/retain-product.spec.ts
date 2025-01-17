@@ -3,7 +3,7 @@ import {
     ProductId,
     UserEntity
 } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { RetainProductRequest } from "./retain-product.dto"
 import { RetainProductService } from "./retain-product.service"

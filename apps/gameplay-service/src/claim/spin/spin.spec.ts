@@ -3,7 +3,7 @@
 import {
     UserEntity
 } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { SpinRequest } from "./spin.dto"
 import { SpinModule } from "./spin.module"

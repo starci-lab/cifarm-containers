@@ -4,7 +4,7 @@ import {
     ProductId,
     UserEntity
 } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { DeliverProductRequest } from "./deliver-product.dto"
 import { DeliverProductModule } from "./deliver-product.module"

@@ -8,7 +8,7 @@ import {
     ProductId,
     UserEntity
 } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing"
+import { createTestModule, MOCK_USER } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { CollectAnimalProductRequest } from "./collect-animal-product.dto"
 import { CollectAnimalProductModule } from "./collect-animal-product.module"

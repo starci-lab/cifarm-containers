@@ -4,7 +4,7 @@ import {
     TileId,
     UserEntity
 } from "@src/databases"
-import { MOCK_USER, createTestModule } from "@src/testing"
+import { MOCK_USER, createTestModule } from "@src/testing/infra"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuyTileRequest } from "./buy-tile.dto"
 import { BuyTileService } from "./buy-tile.service"

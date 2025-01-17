@@ -13,9 +13,8 @@ export const getPostgreSqlDataSourceName = (options: PostgreSQLOptions = {}): st
 export const getPostgreSqlToken = (options: PostgreSQLOptions = {}): string =>
     getDataSourceToken(getPostgreSqlDataSourceName(options)) as string
 
-export const getPostgresEntities = (options: PostgreSQLOptions = {}) => {
+export const getPostgresEntities = (database: PostgreSQLDatabase = PostgreSQLDatabase.Gameplay) => {
     // define the database
-    let { database } = options
     database = database || PostgreSQLDatabase.Gameplay
 
     // define the map

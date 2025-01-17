@@ -1,4 +1,4 @@
-import { createTestModule, GameplayMockUserService } from "@src/testing"
+import { createTestModule, GameplayMockUserService } from "@src/testing/infra"
 import { DataSource } from "typeorm"
 import { ClaimDailyRewardRequest } from "./claim-daily-reward.dto"
 import { ClaimDailyRewardModule } from "./claim-daily-reward.module"
