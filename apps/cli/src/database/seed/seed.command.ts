@@ -69,13 +69,20 @@ export class SeedCommand extends CommandRunner {
             const factory = factoryMap[this.database][this.context]
 
             const dataSourceOptions = factory.createDataSourceOptions()
+            const synchronize = dataSourceOptions.synchronize
 
             if (options?.create) {
                 await createDatabase({
                     options: dataSourceOptions
                 })
             }
-            dataSource = new DataSource(dataSourceOptions)
+
+            dataSource = new DataSource({
+                ...dataSourceOptions,
+                //synchornize the database is turned off when call the createDatabase function, so we need to turn it back here
+                synchronize
+            })
+
             await dataSource.initialize()
 
             if (options?.force) {
@@ -94,7 +101,7 @@ export class SeedCommand extends CommandRunner {
                 dataSource,
                 seedTracking: true
             })
-            
+
             this.logger.log("Seeders ran successfully")
         } catch (error) {
             this.logger.error(`Seed command failed: ${error.message}`)
