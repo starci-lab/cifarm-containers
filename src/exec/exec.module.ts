@@ -2,6 +2,7 @@ import { DynamicModule, Module, Provider } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./exec.module-definition"
 import { ExecDockerRedisClusterService } from "./exec-docker-redis-cluster.service"
 import { ExecService } from "./exec.service"
+import { ExecDockerCoreService } from "./exec-docker-core.service"
 
 @Module({})
 export class ExecModule extends ConfigurableModuleClass {
@@ -11,20 +12,32 @@ export class ExecModule extends ConfigurableModuleClass {
         const exports: Array<Provider> = []
 
         // if the redisCluster is enabled and running in docker
-        const redisCluster = options?.docker?.redisCluster
-        if (redisCluster) {
-            providers.push(ExecDockerRedisClusterService)
-            exports.push(ExecDockerRedisClusterService)
-            // if an injectionToken is provided, add it to the providers
-            if (redisCluster.injectionToken) {
-                const provider: Provider = {
-                    provide: redisCluster.injectionToken,
-                    useExisting: ExecDockerRedisClusterService
+        const docker = options?.docker
+
+        // add docker core providers
+        if (docker?.core) {
+            providers.push(ExecDockerCoreService)
+            exports.push(ExecDockerCoreService)
+        }
+
+        // add docker redis cluster providers
+        if (docker?.redisCluster) {
+            const redisCluster = docker?.redisCluster
+            if (redisCluster) {
+                providers.push(ExecDockerRedisClusterService)
+                exports.push(ExecDockerRedisClusterService)
+                // if an injectionToken is provided, add it to the providers
+                if (redisCluster.injectionToken) {
+                    const provider: Provider = {
+                        provide: redisCluster.injectionToken,
+                        useExisting: ExecDockerRedisClusterService
+                    }
+                    providers.push(provider)
+                    exports.push(provider)
                 }
-                providers.push(provider)
-                exports.push(provider)
             }
         }
+        
 
         const dynamicModule = super.register(options)
         return {

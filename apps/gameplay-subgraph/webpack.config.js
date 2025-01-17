@@ -19,7 +19,12 @@ const basePackage = {
         "@apollo/subgraph": "2.9.3",
         "@apollo/server": "^4.11.3",
         "ioredis": "^5.4.2",
-    }
+    },
+    overrides: {
+        "typeorm": {
+            "mongodb": "^6.12.0"
+        }
+    },
 }
 
 module.exports = {

@@ -20,7 +20,12 @@ const basePackage = {
     dependencies: {
         "sqlite3": "^5.1.7",
         "pg": "8.13.1",
-    }
+    },
+    overrides: {
+        "typeorm": {
+            "mongodb": "^6.12.0"
+        }
+    },
 }
 
 module.exports = {

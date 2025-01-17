@@ -17,7 +17,12 @@ const basePackage = {
     dependencies: {
         "kafkajs": "^2.2.4",
         "@nestjs/platform-express": "^10.0.0"
-    }
+    },
+    overrides: {
+        "typeorm": {
+            "mongodb": "^6.12.0"
+        }
+    },
 }
 
 module.exports = {

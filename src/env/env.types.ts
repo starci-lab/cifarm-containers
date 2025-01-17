@@ -1,4 +1,4 @@
-export const enum Container {
+export enum Container {
     RestApiGateway = "restApiGateway",
     IoGameplay = "ioGameplay",
     GameplayService = "gameplayService",
@@ -7,6 +7,7 @@ export const enum Container {
     CronWorker = "cronWorker",
     CronScheduler = "cronScheduler",
     TelegramBot = "telegramBot",
+    Cli = "cli",
 }
 
 export enum NodeEnv {

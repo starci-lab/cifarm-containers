@@ -5,6 +5,7 @@ export interface ExecOptions {
 }
 
 export interface DockerOptions {
+    core?: boolean
     redisCluster?: DockerRedisClusterOptions
 }
 
@@ -37,4 +38,9 @@ export interface DockerContainerData {
     ipV4: string
     internalPort: number
     externalPort: number
+}
+
+export interface ContainerInfo {
+    image: string
+    dockerfile: string
 }

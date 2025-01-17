@@ -19,12 +19,18 @@ export class ExecService {
         // Log the command if debug is enabled
         this.logger.debug(`Executing command: ${command} ${args.join(" ")}`)
 
-        // Execute the command
-        const { stdout, stderr } = await execa(command, args, {
-            shell: this.shell
+        const subprocess = execa(command, args, {
+            shell: this.shell,
         })
 
-        // Log the error (if any)
+        // Listen to stdout data events and log them
+        subprocess.stdout.on("data", (data) => {
+            this.logger.verbose(data.toString()) // Make sure to convert Buffer to string
+        })
+
+        // Execute the command
+        const { stdout, stderr } = await subprocess
+
         if (stderr) {
             this.logger.error(`Command error: ${stderr}`)
             throw new Error(stderr)

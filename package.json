@@ -7,6 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
+    "build:docker": "docker build -t cifarm/cli -f ./apps/cli/Dockerfile . & docker push cifarm/cli & docker build -t cifarm/gameplay-subgraph -f ./apps/gameplay-subgraph/Dockerfile . & docker push cifarm/gameplay-subgraph & docker build -t cifarm/graphql-gateway -f ./apps/graphql-gateway/Dockerfile . & docker push cifarm/graphql-gateway & docker build -t cifarm/cron-worker -f ./apps/cron-worker/Dockerfile . & docker push cifarm/cron-worker & docker build -t cifarm/rest-api-gateway -f ./apps/rest-api-gateway/Dockerfile . & docker push cifarm/rest-api-gateway & docker build -t cifarm/io-gameplay -f ./apps/io-gameplay/Dockerfile . & docker push cifarm/io-gameplay",
     "cli:dev": "nest build cli && node dist/apps/cli/main.js",
     "cli": "node dist/apps/cli/main.js",
     "format": "prettier --write \"apps/**/*.ts\" ",
