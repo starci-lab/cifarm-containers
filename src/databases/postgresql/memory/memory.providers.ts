@@ -5,7 +5,7 @@ import { DataType, newDb } from "pg-mem"
 import { PostgreSQLMemoryOptions } from "./memory.types"
 import { v4 } from "uuid"
 
-export const createPostgreSQLMemoryProvider = (
+export const createPostgreSQLMemoryFactory = (
     options: PostgreSQLMemoryOptions = {}
 ): Provider => {
     return {

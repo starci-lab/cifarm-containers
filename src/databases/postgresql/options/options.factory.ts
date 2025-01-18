@@ -25,7 +25,8 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
     ) {
         this.baseOptions = this.options.options || {}
         this.database = this.baseOptions.database || PostgreSQLDatabase.Gameplay
-        this.context = this.baseOptions.context || PostgreSQLContext.Main
+        this.context =
+            this.baseOptions.overrideContext || this.baseOptions.context || PostgreSQLContext.Main
         // Cache is enabled by default
         this.cacheEnabled = this.baseOptions.cacheEnabled || true
         this.synchronize = this.baseOptions.synchronize || !isProduction()
@@ -44,7 +45,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
             entities: getPostgresEntities(this.baseOptions.database),
             connectTimeoutMS: CONNECTION_TIMEOUT_MS,
             poolSize: POOL_SIZE,
-            synchronize: this.synchronize,
+            synchronize: this.synchronize
         }
     }
 
@@ -55,7 +56,7 @@ export class PostgreSQLOptionsFactory implements TypeOrmOptionsFactory {
             : false
         return {
             ...options,
-            cache, 
+            cache
         }
     }
 }

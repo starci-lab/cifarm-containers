@@ -2,31 +2,33 @@ import { DynamicModule, Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./infra.module-definition"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { TestContext } from "./infra.types"
-import { PostgreSQLMemoryModule } from "@src/databases"
+import { PostgreSQLMemoryModule, PostgreSQLModule } from "@src/databases"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
-import { GameplayMockUserService } from "./gameplay"
+import { ConnectionService, GameplayMockUserService } from "./gameplay"
 import { CacheModule, CacheType } from "@src/cache"
 import { AxiosModule } from "@src/axios"
 import { BlockchainModule } from "@src/blockchain"
 import { JwtModule } from "@src/jwt"
+import { GameplayModule } from "@src/gameplay"
 
 @Module({})
-export class TestingInfraModule  extends ConfigurableModuleClass {
+export class TestingInfraModule extends ConfigurableModuleClass {
     public static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const context = options.context ?? TestContext.Gameplay
         const dynamicModule = super.register(options)
 
-        const imports: Array<NestImport> = [EnvModule.forRoot(),]
+        const imports: Array<NestImport> = [EnvModule.forRoot()]
         const providers: Array<NestProvider> = []
         const exports: Array<NestExport> = []
 
         switch (context) {
         case TestContext.Gameplay: {
             imports.push(
-                //since mem, so that main or mock no matter
-                PostgreSQLMemoryModule.register({
+                PostgreSQLModule.forRoot({
+                    context: PostgreSQLContext.Main,
                     database: PostgreSQLDatabase.Gameplay,
-                    isGlobal: true
+                    cacheEnabled: false,
+                    overrideContext: PostgreSQLContext.Mock
                 }),
                 CacheModule.register({
                     isGlobal: true,
@@ -37,10 +39,15 @@ export class TestingInfraModule  extends ConfigurableModuleClass {
                 }),
                 JwtModule.register({
                     isGlobal: true
+                }),
+                GameplayModule.register({
+                    isGlobal: true
                 })
             )
-            providers.push(GameplayMockUserService)
-            exports.push(GameplayMockUserService)
+
+            const services = [ GameplayMockUserService, ConnectionService ]
+            providers.push(...services)
+            exports.push(...services)
             break
         }
         case TestContext.E2E: {
@@ -53,14 +60,7 @@ export class TestingInfraModule  extends ConfigurableModuleClass {
                     isGlobal: true
                 }),
                 AxiosModule.register({})
-                // KafkaModule.register({
-                //     groupId: options.groupId,
-                //     producerOnlyMode: options.producerOnlyMode,
-                //     isGlobal: true
-                // })
             )
-            providers.push(GameplayMockUserService)
-            exports.push(GameplayMockUserService)
             break
         }
         }

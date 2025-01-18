@@ -5,8 +5,9 @@ import { SignedMessage } from "@src/blockchain"
 import { DeviceInfo, RequestWithDeviceInfo } from "@src/device"
 
 export class VerifySignatureRequest implements SignedMessage, RequestWithDeviceInfo {
+    @IsOptional()
     @ApiHideProperty()
-        deviceInfo: DeviceInfo
+        deviceInfo?: DeviceInfo
     
     @IsNotEmpty()
     @ApiProperty({ example: "hello world" })

@@ -16,20 +16,9 @@ export class GameplayMockUserService {
     }
 
     public async clear(): Promise<void> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-        await queryRunner.startTransaction()
-        try {
-            await queryRunner.manager.delete(UserEntity, {
-                id: In(this.users.map((user) => user.id))
-            })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await this.dataSource.manager.delete(UserEntity, {
+            id: In(this.users.map((user) => user.id))
+        })
     }
 
     public async generate(): Promise<UserEntity> {
@@ -58,19 +47,8 @@ export class GameplayMockUserService {
                 }
             ]
         }
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-        await queryRunner.startTransaction()
-        try {
-            const user = await queryRunner.manager.save(UserEntity, userPartial)
-            await queryRunner.commitTransaction()
-            this.users.push(user)
-            return user
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        const user = await this.dataSource.manager.save(UserEntity, userPartial)
+        this.users.push(user)
+        return user
     }
 }

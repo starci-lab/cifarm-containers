@@ -12,5 +12,5 @@ export class DeviceInfo {
 }
 
 export interface RequestWithDeviceInfo {
-    deviceInfo: DeviceInfo
+    deviceInfo?: DeviceInfo
 }

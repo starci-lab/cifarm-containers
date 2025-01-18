@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./memory.module-definition"
 import { PostgreSQLDatabase } from "@src/env"
-import { createPostgreSQLMemoryProvider } from "./memory.providers"
+import { createPostgreSQLMemoryFactory } from "./memory.providers"
 import { NestProvider } from "@src/common"
 
 @Module({})
@@ -12,7 +12,7 @@ export class PostgreSQLMemoryCoreModule extends ConfigurableModuleClass {
 
         const providers: Array<NestProvider> = []
         const exports: Array<NestProvider> = []
-        const provider = createPostgreSQLMemoryProvider(options)
+        const provider = createPostgreSQLMemoryFactory(options)
         providers.push(provider)
         exports.push(provider)
 

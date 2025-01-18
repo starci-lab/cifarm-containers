@@ -1,6 +1,6 @@
 // npx jest apps/gameplay-service/src/auth/request-message/request-message.spec.ts 
 
-import { TestingInfraModule } from "@src/testing"
+import { ConnectionService, TestingInfraModule } from "@src/testing"
 import { Test } from "@nestjs/testing"
 import { Cache } from "cache-manager"
 import { CACHE_MANAGER } from "@src/cache"
@@ -10,8 +10,9 @@ import { isUUID } from "class-validator"
 describe("RequestMessageService", () => {
     let service: RequestMessageService
     let cache: Cache
+    let connectionService: ConnectionService
 
-    beforeEach(async () => {
+    beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [
                 TestingInfraModule.register(),
@@ -21,8 +22,9 @@ describe("RequestMessageService", () => {
             ]
         }).compile()
 
-        cache = moduleRef.get<Cache>(CACHE_MANAGER)
-        service = moduleRef.get<RequestMessageService>(RequestMessageService)
+        cache = moduleRef.get(CACHE_MANAGER)
+        service = moduleRef.get(RequestMessageService)
+        connectionService = moduleRef.get(ConnectionService)
     })
 
     it("should return a valid UUID and store it in the cache", async () => {
@@ -32,5 +34,9 @@ describe("RequestMessageService", () => {
         // Check if the message is stored in cache
         const cached = await cache.get(result.message)
         expect(cached).toBeTruthy()
+    })
+
+    afterAll(async () => {
+        await connectionService.closeAll()
     })
 })

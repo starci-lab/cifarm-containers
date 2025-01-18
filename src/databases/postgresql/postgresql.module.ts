@@ -9,10 +9,11 @@ import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 export class PostgreSQLModule extends ConfigurableModuleClass {
     public static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const dynamicModule = super.forRoot(options)
-        const dataSourceName = getPostgreSqlDataSourceName(options)
 
         options.context = options.context || PostgreSQLContext.Main
         options.database = options.database || PostgreSQLDatabase.Gameplay
+
+        const dataSourceName = getPostgreSqlDataSourceName(options)
         
         return {
             ...dynamicModule,

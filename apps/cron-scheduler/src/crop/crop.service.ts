@@ -55,7 +55,7 @@ export class CropService {
                     collection: Collection.CropSpeedUp
                 }
             })
-
+            
             //get the last scheduled time, get from db not cache
             const { value } = await queryRunner.manager.findOne(TempEntity, {
                 where: {

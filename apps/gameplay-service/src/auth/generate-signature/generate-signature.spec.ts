@@ -1,7 +1,7 @@
 // npx jest apps/gameplay-service/src/auth/generate-signature/generate-signature.spec.ts
 
 import { GenerateSignatureService } from "./generate-signature.service"
-import { TestingInfraModule } from "@src/testing"
+import { ConnectionService, TestingInfraModule } from "@src/testing"
 import { Test } from "@nestjs/testing"
 import { Cache } from "cache-manager"
 import { CACHE_MANAGER } from "@src/cache"
@@ -12,6 +12,7 @@ import { RequestMessageService } from "../request-message"
 describe("GenerateSignatureService", () => {
     let service: GenerateSignatureService
     let cache: Cache
+    let connectionService: ConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -24,8 +25,9 @@ describe("GenerateSignatureService", () => {
             ]
         }).compile()
 
-        service = moduleRef.get<GenerateSignatureService>(GenerateSignatureService)
-        cache = moduleRef.get<Cache>(CACHE_MANAGER)  // Ensure cache is injected
+        service = moduleRef.get(GenerateSignatureService)
+        cache = moduleRef.get(CACHE_MANAGER)  // Ensure cache is injected
+        connectionService = moduleRef.get(ConnectionService)
     })
 
     it("should generate a valid signature and store it in cache", async () => {
@@ -48,5 +50,9 @@ describe("GenerateSignatureService", () => {
         expect(result.chainKey).toBe(SupportedChainKey.Avalanche)
         expect(result.network).toBe(Network.Testnet)
         expect(result.publicKey).toBeTruthy()
+    })
+
+    afterAll(async () => {
+        await connectionService.closeAll()
     })
 })
