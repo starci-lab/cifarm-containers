@@ -9,17 +9,14 @@ import {
     PlacedItemEntity,
     ProductType
 } from "@src/databases"
-import {
-    AnimalNotCurrentlyYieldingException,
-    CollectAnimalProductTransactionFailedException,
-    PlacedItemAnimalNotFoundException
-} from "@src/exceptions"
 import { InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import {
     CollectAnimalProductRequest,
     CollectAnimalProductResponse
 } from "./collect-animal-product.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class CollectAnimalProductService {
@@ -54,14 +51,13 @@ export class CollectAnimalProductService {
                 }
             })
 
-            if (!placedItemAnimal) {
-                throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
+            if (!placedItemAnimal || placedItemAnimal.animalInfo) {
+                throw new GrpcNotFoundException("Animal not found")
             }
 
-            const animalInfo = placedItemAnimal.animalInfo
-
-            if (!animalInfo || animalInfo.currentState !== AnimalCurrentState.Yield) {
-                throw new AnimalNotCurrentlyYieldingException(request.placedItemAnimalId)
+            const { animalInfo } = placedItemAnimal
+            if (animalInfo.currentState !== AnimalCurrentState.Yield) {
+                throw new GrpcFailedPreconditionException("Animal is not ready to collect product")
             }
 
             //Get inventory type
@@ -114,13 +110,14 @@ export class CollectAnimalProductService {
                 // Commit transaction
                 await queryRunner.commitTransaction()
             } catch (error) {
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                this.logger.error("Collect Animal Product transaction failed", error)
-                throw new CollectAnimalProductTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } catch (error) {
-            this.logger.error("Collect Animal Product failed", error)
+            this.logger.error("Collect animal Product failed", error)
             throw error
         } finally {
             await queryRunner.release()

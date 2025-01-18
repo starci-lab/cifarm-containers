@@ -11,15 +11,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    InventoryNotFoundException,
-    PlacedItemTileAlreadyHasSeedException,
-    PlacedItemTileNotFoundException,
-    PlantSeedTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { PlantSeedRequest, PlantSeedResponse } from "./plant-seed.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class PlantSeedService {
@@ -49,7 +45,7 @@ export class PlantSeedService {
                     inventoryType: true
                 }
             })
-            if (!inventory) throw new InventoryNotFoundException(request.inventorySeedId)
+            if (!inventory) throw new GrpcNotFoundException("Seed not found in inventory")
 
             //check the tile
             const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
@@ -57,9 +53,10 @@ export class PlantSeedService {
                     id: request.placedItemTileId
                 }
             })
-            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
+                
             if (placedItemTile.seedGrowthInfo)
-                throw new PlacedItemTileAlreadyHasSeedException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile is already planted")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
@@ -123,9 +120,10 @@ export class PlantSeedService {
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Plant seed transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new PlantSeedTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

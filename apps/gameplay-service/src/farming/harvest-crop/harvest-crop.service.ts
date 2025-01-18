@@ -13,15 +13,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    HaverstCropTransactionFailedException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotFullyMaturedException,
-    PlacedItemTileNotPlantedException
-} from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class HarvestCropService {
@@ -48,13 +44,15 @@ export class HarvestCropService {
                 }
             })
 
-            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
 
-            if (!placedItemTile.seedGrowthInfo)
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+            if (placedItemTile.seedGrowthInfo)
+                throw new GrpcFailedPreconditionException("Tile is not planted")
 
-            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured)
-                throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
+            const { seedGrowthInfo } = placedItemTile
+
+            if (seedGrowthInfo.currentState !== CropCurrentState.FullyMatured)
+                throw new GrpcFailedPreconditionException("Crop is not fully matured")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
@@ -86,7 +84,7 @@ export class HarvestCropService {
             const product = await queryRunner.manager.findOne(ProductEntity, {
                 where: {
                     crop: {
-                        id: placedItemTile.seedGrowthInfo.crop.id
+                        id: seedGrowthInfo.crop.id
                     }
                 },
                 relations: {
@@ -114,7 +112,7 @@ export class HarvestCropService {
                 userId: request.userId,
                 data: {
                     inventoryType: inventoryType,
-                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
+                    quantity: seedGrowthInfo.harvestQuantityRemaining
                 }
             })
 
@@ -131,21 +129,21 @@ export class HarvestCropService {
 
                 //if current perennial count is equal to crop's perennial count, remove the crop, delete the seed growth info
                 if (
-                    placedItemTile.seedGrowthInfo.currentPerennialCount >=
-                    placedItemTile.seedGrowthInfo.crop.perennialCount
+                    seedGrowthInfo.currentPerennialCount >=
+                    seedGrowthInfo.crop.perennialCount
                 ) {
                     await queryRunner.manager.remove(
                         SeedGrowthInfoEntity,
-                        placedItemTile.seedGrowthInfo
+                        seedGrowthInfo
                     )
                 } else {
                     // update seed growth info
                     await queryRunner.manager.update(
                         SeedGrowthInfoEntity,
-                        placedItemTile.seedGrowthInfo.id,
+                        seedGrowthInfo.id,
                         {
                             currentPerennialCount:
-                                placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
+                                seedGrowthInfo.currentPerennialCount + 1,
                             currentState: CropCurrentState.Normal,
                             currentStageTimeElapsed: 0
                         }
@@ -153,9 +151,10 @@ export class HarvestCropService {
                 }
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Harvest crop transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new HaverstCropTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

@@ -12,16 +12,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    InventoryNotFoundException,
-    PlacedItemNotNeedUseFertilizerException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotPlantedException,
-    UseFertilizerTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { UseFertilizerRequest, UseFertilizerResponse } from "./use-fertilizer.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class UseFertilizerService {
@@ -46,13 +41,15 @@ export class UseFertilizerService {
                 }
             })
 
-            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
 
             if (!placedItemTile.seedGrowthInfo)
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+                throw new GrpcNotFoundException("Tile is not planted")
+            
+            const { seedGrowthInfo } = placedItemTile
 
-            if (placedItemTile.seedGrowthInfo.isFertilized)
-                throw new PlacedItemNotNeedUseFertilizerException(request.placedItemTileId)
+            if (seedGrowthInfo.isFertilized)
+                throw new GrpcFailedPreconditionException("Tile is already fertilized")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
@@ -98,7 +95,7 @@ export class UseFertilizerService {
                 }
             })
 
-            if(!inventory) throw new InventoryNotFoundException()
+            if (!inventory) throw new GrpcNotFoundException("Fertilizer not found in inventory")
 
             await queryRunner.startTransaction()
             try {
@@ -115,9 +112,9 @@ export class UseFertilizerService {
                 // update seed growth info
                 await queryRunner.manager.update(
                     SeedGrowthInfoEntity,
-                    placedItemTile.seedGrowthInfo.id,
+                    seedGrowthInfo.id,
                     {
-                        currentStageTimeElapsed: placedItemTile.seedGrowthInfo.currentStageTimeElapsed + fertilizer.fertilizerEffectTimeReduce,
+                        currentStageTimeElapsed: seedGrowthInfo.currentStageTimeElapsed + fertilizer.fertilizerEffectTimeReduce,
                         isFertilized: true
                     }
                 )
@@ -125,9 +122,10 @@ export class UseFertilizerService {
                 await queryRunner.commitTransaction()
                 return {}
             } catch (error) {
-                this.logger.error("Use Fertilizer transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new UseFertilizerTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             } 
         }catch (error) {
             this.logger.error("Use Fertilizer failed", error)

@@ -5,13 +5,10 @@ import {
     InventoryType,
     PlacedItemEntity
 } from "@src/databases"
-import {
-    InventoryNotFoundException,
-    InventoryTypeNotTileException,
-    PlaceTileTransactionFailedException
-} from "@src/exceptions"
 import { DataSource } from "typeorm"
 import { PlaceTileRequest, PlaceTileResponse } from "./place-tile.dto"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 @Injectable()
 export class PlaceTileService {
     private readonly logger = new Logger(PlaceTileService.name)
@@ -37,10 +34,10 @@ export class PlaceTileService {
                 }
             })
 
-            if (!inventory) throw new InventoryNotFoundException(request.inventoryTileId)
+            if (!inventory) throw new GrpcNotFoundException("Tile not found in inventory")
 
             if (inventory.inventoryType.type !== InventoryType.Tile)
-                throw new InventoryTypeNotTileException(request.inventoryTileId)
+                throw new GrpcFailedPreconditionException("Inventory item is not a tile")
 
             await queryRunner.startTransaction()
             try {
@@ -67,9 +64,10 @@ export class PlaceTileService {
                 this.logger.log(`Successfully placed tile with ID: ${placedTile.id}`)
                 return { placedItemTileId: placedTile.id }
             } catch (error) {
-                this.logger.error("Place Tile transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new PlaceTileTransactionFailedException(error)
+                throw new GrpcNotFoundException(errorMessage)
             }
         } catch (error) {
             this.logger.error("Place Tile failed", error)

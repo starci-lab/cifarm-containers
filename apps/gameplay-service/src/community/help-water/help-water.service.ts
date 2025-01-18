@@ -12,15 +12,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    HelpWaterTransactionFailedException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotNeedWaterException,
-    PlacedItemTileNotPlantedException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HelpWaterRequest, HelpWaterResponse } from "./help-water.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class HelpWaterService {
@@ -58,15 +54,15 @@ export class HelpWaterService {
             })
 
             if (!placedItemTile) {
-                throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+                throw new GrpcNotFoundException("Tile not found")
             }
 
             if (!placedItemTile.seedGrowthInfo) {
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile is not planted")
             }
 
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
-                throw new PlacedItemTileNotNeedWaterException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile does not need water")
             }
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -122,9 +118,10 @@ export class HelpWaterService {
                 })
                 return {}
             } catch (error) {
-                this.logger.error(`Failed to help water for user ${request.neighborUserId}`)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new HelpWaterTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
         } finally {
             await queryRunner.release()

@@ -1,9 +1,17 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {  InjectPostgreSQL, InventoryEntity, InventoryType, InventoryTypeEntity, PlacedItemEntity, PlacedItemType } from "@src/databases"
-import { PlacedItemNotFoundException, PlacedItemTypeNotTileException } from "@src/exceptions"
+import {
+    InjectPostgreSQL,
+    InventoryEntity,
+    InventoryType,
+    InventoryTypeEntity,
+    PlacedItemEntity,
+    PlacedItemType
+} from "@src/databases"
 import { InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { RecoverTileRequest, RecoverTileResponse } from "./recover-tile.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class RecoverTileService {
@@ -13,8 +21,7 @@ export class RecoverTileService {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly inventoryService: InventoryService
-    ) {
-    }
+    ) {}
 
     async recoverTile(request: RecoverTileRequest): Promise<RecoverTileResponse> {
         this.logger.debug(`Received request to recover tile: ${JSON.stringify(request)}`)
@@ -29,14 +36,15 @@ export class RecoverTileService {
                 }
             })
 
-            if (!placedItem) throw new PlacedItemNotFoundException(request.placedItemTileId)
-            if(placedItem.placedItemType.type != PlacedItemType.Tile) throw new PlacedItemTypeNotTileException()
+            if (!placedItem) throw new GrpcNotFoundException("Placed item not found")
+            if (placedItem.placedItemType.type != PlacedItemType.Tile)
+                throw new GrpcFailedPreconditionException("Placed item is not a tile")
 
             //Get inventory type
             const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
                 where: { tileId: placedItem.placedItemType.tileId, type: InventoryType.Tile }
             })
-                
+
             // Get inventory same type
             const existingInventories = await queryRunner.manager.find(InventoryEntity, {
                 where: {
@@ -47,7 +55,7 @@ export class RecoverTileService {
                     inventoryType: true
                 }
             })
-                            
+
             await queryRunner.startTransaction()
 
             try {
@@ -56,7 +64,7 @@ export class RecoverTileService {
                     id: request.placedItemTileId,
                     userId: request.userId
                 })
-                
+
                 const updatedInventories = this.inventoryService.add({
                     entities: existingInventories,
                     userId: request.userId,
@@ -73,17 +81,16 @@ export class RecoverTileService {
                 return {
                     inventoryTileId: updatedInventories[updatedInventories.length - 1].id
                 }
-            } catch (err) {
-                // Rollback transaction in case of error
-                this.logger.error("Recover Tile transaction failed, rolling back...", err)
+            } catch (error) {
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw err
+                throw new GrpcInternalException(errorMessage)
             }
-        }catch(err){
+        } catch (err) {
             this.logger.error(err)
             throw err
-        }
-        finally {
+        } finally {
             await queryRunner.release()
         }
     }

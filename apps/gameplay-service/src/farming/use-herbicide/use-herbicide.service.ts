@@ -9,15 +9,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotNeedUseHerbicideException,
-    PlacedItemTileNotPlantedException,
-    UseHerbicideTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { UseHerbicideRequest, UseHerbicideResponse } from "./use-herbicide.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class UseHerbicideService {
@@ -45,13 +41,13 @@ export class UseHerbicideService {
                 }
             })
 
-            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
 
             if (!placedItemTile.seedGrowthInfo)
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile is not planted")
 
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy)
-                throw new PlacedItemTileNotNeedUseHerbicideException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile is not weedy")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
@@ -97,9 +93,10 @@ export class UseHerbicideService {
                 )
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Use Pesticide transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new UseHerbicideTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

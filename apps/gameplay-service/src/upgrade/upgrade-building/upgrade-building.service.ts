@@ -1,15 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectPostgreSQL, PlacedItemEntity, UserEntity } from "@src/databases"
-import {
-    BuildingAlreadyMaxUpgradeException,
-    BuildingNextUpgradeNotFoundException,
-    PlacedItemNotFoundException,
-    UpgradeBuildingTransactionFailedException,
-    UserNotFoundException,
-} from "@src/exceptions"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class UpgradeBuildingService {
@@ -44,13 +39,13 @@ export class UpgradeBuildingService {
             })
 
             if (!placedItem) {
-                throw new PlacedItemNotFoundException(request.placedItemBuildingId)
+                throw new GrpcNotFoundException("Placed item not found")
             }
 
             const buildingInfo = placedItem.buildingInfo
 
             if (!buildingInfo) {
-                throw new PlacedItemNotFoundException("Building information not found for placed item.")
+                throw new GrpcFailedPreconditionException("Building info not found")
             }
 
             const currentUpgradeLevel = buildingInfo.currentUpgrade
@@ -60,7 +55,7 @@ export class UpgradeBuildingService {
             )
 
             if (currentUpgradeLevel === maxUpgradeLevel) {
-                throw new BuildingAlreadyMaxUpgradeException(request.placedItemBuildingId)
+                throw new GrpcFailedPreconditionException("Building already at max upgrade level")
             }
 
             // Fetch the next upgrade level
@@ -69,7 +64,7 @@ export class UpgradeBuildingService {
             )
 
             if (!nextUpgrade) {
-                throw new BuildingNextUpgradeNotFoundException(request.placedItemBuildingId)
+                throw new GrpcFailedPreconditionException("Next upgrade not found")
             }
 
             const user = await queryRunner.manager.findOne(UserEntity, {
@@ -77,7 +72,7 @@ export class UpgradeBuildingService {
             })
 
             if (!user) {
-                throw new UserNotFoundException(request.userId)
+                throw new GrpcNotFoundException("User not found")
             }
 
             // Check sufficient gold
@@ -105,9 +100,10 @@ export class UpgradeBuildingService {
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Upgrade transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new UpgradeBuildingTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

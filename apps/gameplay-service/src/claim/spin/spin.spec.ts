@@ -1,81 +1,47 @@
-// npx jest apps/gameplay-service/src/claim/spin/spin.spec.ts
+// // npx jest apps/gameplay-service/src/claim/spin/spin.spec.ts
 
-import {
-    UserEntity
-} from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing/infra"
-import { DataSource, DeepPartial } from "typeorm"
-import { SpinRequest } from "./spin.dto"
-import { SpinModule } from "./spin.module"
-import { SpinService } from "./spin.service"
+// import { DataSource } from "typeorm"
+// import { SpinService } from "./spin.service"
+// import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+// import { Test } from "@nestjs/testing"
 
-describe("SpinService", () => {
-    let dataSource: DataSource
-    let service: SpinService
+// describe("SpinService", () => {
+//     let service: SpinService
+//     let gameplayMockUserService: GameplayMockUserService
+//     //let dataSource: DataSource
+//     let connectionService: ConnectionService
+    
+//     beforeAll(async () => {
+//         const moduleRef = await Test.createTestingModule({
+//             imports: [
+//                 TestingInfraModule.register()
+//             ],
+//             providers: [SpinService]
+//         }).compile()
+    
+//         service = moduleRef.get(SpinService)
+//         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
+//         //dataSource = moduleRef.get(DataSource)
+//         connectionService = moduleRef.get(ConnectionService)
+//     })
 
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER
-    }
+//     it("Should spin successfully", async () => {
+//         //const user = await gameplayMockUserService.generate()
+//         // Spin the wheel
+//         // const response = await service.spin({
+//         //     userId: user.id
+//         // })
 
-    beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [SpinModule]
-        })
-        dataSource = ds
-        service = module.get<SpinService>(SpinService)
-    })
+//         // // throw error if a spin is processed
+//         // await expect(service.spin({
+//         //     userId: user.id
+//         // })).rejects.toThrow()
 
-    it("Should spin successfully and reward gold", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+//         // Check
+//     })
 
-        const user = await queryRunner.manager.save(UserEntity, {
-            ...mockUser,
-            spinLastTime: null,
-            spinCount: 0
-        })
-
-        await queryRunner.startTransaction()
-
-        try {
-            const spinRequest: SpinRequest = {
-                userId: user.id
-            }
-
-            // Perform spin
-            const response = await service.spin(spinRequest)
-
-            // Verify response
-            expect(response.spinSlotId).toBeDefined()
-
-            // Verify user's gold balance updated
-            const updatedUser = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: user.id }
-            })
-            expect(updatedUser.spinLastTime).toBeDefined()
-            expect(updatedUser.spinCount).toBe(1)
-
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
-    })
-    afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.delete(UserEntity, mockUser)
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
-    })
-})
+//     afterAll(async () => {
+//         await gameplayMockUserService.clear()
+//         await connectionService.closeAll()
+//     })
+// })

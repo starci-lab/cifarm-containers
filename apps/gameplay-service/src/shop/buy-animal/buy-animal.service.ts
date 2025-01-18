@@ -7,20 +7,11 @@ import {
     PlacedItemTypeEntity,
     UserEntity
 } from "@src/databases"
-import {
-    AnimalNotAvailableInShopException,
-    AnimalNotFoundException,
-    BuildingCapacityExceededException,
-    BuildingNotSameAnimalException,
-    BuyAnimalTransactionFailedException,
-    PlacedItemNotFoundException,
-    PlacedItemTypeNotBuildingException,
-    PlacedItemTypeNotFoundException,
-    UserNotFoundException
-} from "@src/exceptions"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
 import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class BuyAnimalService {
@@ -47,11 +38,11 @@ export class BuyAnimalService {
             })
 
             if (!animal) {
-                throw new AnimalNotFoundException(request.animalId)
+                throw new GrpcNotFoundException("Animal not found")
             }
 
             if (!animal.availableInShop) {
-                throw new AnimalNotAvailableInShopException(request.animalId)
+                throw new GrpcFailedPreconditionException("Animal not available in shop")
             }
 
             const placedItemBuilding = await queryRunner.manager.findOne(PlacedItemEntity, {
@@ -69,15 +60,15 @@ export class BuyAnimalService {
             })
 
             if (!placedItemBuilding)
-                throw new PlacedItemNotFoundException(request.placedItemBuildingId)
+                throw new GrpcNotFoundException("Building not found")
 
             //Check if placedItem is building
             if (placedItemBuilding.placedItemType.type != PlacedItemType.Building)
-                throw new PlacedItemTypeNotBuildingException(request.placedItemBuildingId)
+                throw new GrpcFailedPreconditionException("Placed item is not a building")
 
             //Check if building is same animal type
             if (placedItemBuilding.buildingInfo.building.type != animal.type)
-                throw new BuildingNotSameAnimalException(request.animalId)
+                throw new GrpcFailedPreconditionException("Building is not for this animal")
 
             //Find placedItemType
             const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
@@ -87,13 +78,13 @@ export class BuyAnimalService {
                 }
             })
 
-            if (!placedItemType) throw new PlacedItemTypeNotFoundException(request.animalId)
+            if (!placedItemType) throw new GrpcFailedPreconditionException("Animal type not found")
 
             const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
             })
 
-            if (!user) throw new UserNotFoundException(request.userId)
+            if (!user) throw new GrpcNotFoundException("User not found")
 
             const totalCost = animal.price
 
@@ -118,7 +109,7 @@ export class BuyAnimalService {
 
             //Check occupancy
             if (placedItemBuilding.buildingInfo.occupancy >= maxCapacity)
-                throw new BuildingCapacityExceededException(placedItemBuilding.id)
+                throw new GrpcFailedPreconditionException("Building is full")
 
             placedItemBuilding.buildingInfo.occupancy += 1
 
@@ -142,9 +133,10 @@ export class BuyAnimalService {
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Animal purchase transaction failed, rolling back..." + error.message)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new BuyAnimalTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

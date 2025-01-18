@@ -9,15 +9,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotNeedUsePesticideException,
-    PlacedItemTileNotPlantedException,
-    UsePesticideTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { UsePesticideRequest, UsePesticideResponse } from "./use-pesticide.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class UsePesticideService {
@@ -45,13 +41,13 @@ export class UsePesticideService {
                 }
             })
 
-            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
 
             if (!placedItemTile.seedGrowthInfo)
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile is not planted")
 
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested)
-                throw new PlacedItemTileNotNeedUsePesticideException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile is not infested")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
@@ -97,12 +93,13 @@ export class UsePesticideService {
                 )
 
                 await queryRunner.commitTransaction()
-                return {}
             } catch (error) {
-                this.logger.error("Use Pesticide transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new UsePesticideTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             } 
+            return {}
         }
         finally {
             await queryRunner.release()

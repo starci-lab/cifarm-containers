@@ -1,14 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { BuildingEntity, InjectPostgreSQL, PlacedItemEntity, PlacedItemTypeEntity, UserEntity } from "@src/databases"
-import {
-    BuildingNotAvailableInShopException,
-    BuildingNotFoundException,
-    ConstructBuildingTransactionFailedException,
-    PlacedItemTypeNotFoundException
-} from "@src/exceptions"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
+import { GrpcNotFoundException, GrpcInternalException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class ConstructBuildingService {
@@ -36,21 +32,17 @@ export class ConstructBuildingService {
             })
 
             if (!building) {
-                throw new BuildingNotFoundException(request.buildingId)
+                throw new GrpcNotFoundException("Building not found")
             }
 
             if (!building.availableInShop) {
-                throw new BuildingNotAvailableInShopException(request.buildingId)
+                throw new GrpcFailedPreconditionException("Building not available in shop")
             }
 
             // Fetch placed item type
             const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
                 where: { id: request.buildingId }
             })
-
-            if (!placedItemType) {
-                throw new PlacedItemTypeNotFoundException(request.buildingId)
-            }
 
             // Calculate total cost
             const totalCost = building.price
@@ -93,9 +85,10 @@ export class ConstructBuildingService {
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Construction transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new ConstructBuildingTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

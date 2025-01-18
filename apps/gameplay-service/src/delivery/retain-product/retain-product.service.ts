@@ -1,12 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DeliveringProductEntity, InjectPostgreSQL, InventoryEntity, InventoryType, InventoryTypeEntity } from "@src/databases"
-import {
-    DeliveringProductNotFoundException,
-    RetainProductTransactionFailedException
-} from "@src/exceptions"
 import { InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { RetainProductRequest, RetainProductResponse } from "./retain-product.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 
 @Injectable()
 export class RetainProductService {
@@ -34,7 +31,7 @@ export class RetainProductService {
             })
 
             if (!deliveringProduct) {
-                throw new DeliveringProductNotFoundException(request.deliveringProductId)
+                throw new GrpcNotFoundException("Delivering product not found")
             }
 
             //Get inventory type
@@ -77,9 +74,10 @@ export class RetainProductService {
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Retain transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new RetainProductTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

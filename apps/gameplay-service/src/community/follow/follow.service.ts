@@ -1,8 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectPostgreSQL, UserEntity, UsersFollowingUsersEntity } from "@src/databases"
-import { SelfFollowException, UserNotFoundException } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import { FollowRequest } from "./follow.dto"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class FollowService {
@@ -23,7 +24,7 @@ export class FollowService {
                 sensitivity: "base"
             }) === 0
         ) {
-            throw new SelfFollowException(request.followedUserId)
+            throw new GrpcFailedPreconditionException("Cannot follow self")
         }
 
         const queryRunner = this.dataSource.createQueryRunner()
@@ -34,7 +35,7 @@ export class FollowService {
                 where: { id: request.followedUserId }
             })
             if (!userExists) {
-                throw new UserNotFoundException(request.followedUserId)
+                throw new GrpcNotFoundException("User not found")
             }
             await queryRunner.manager.save(UsersFollowingUsersEntity, {
                 followerId: request.userId,

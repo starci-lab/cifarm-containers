@@ -7,14 +7,11 @@ import {
     InventoryTypeEntity,
     UserEntity
 } from "@src/databases"
-import {
-    BuySeedsTransactionFailedException,
-    CropNotAvailableInShopException,
-    CropNotFoundException
-} from "@src/exceptions"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class BuySeedsService {
@@ -40,8 +37,8 @@ export class BuySeedsService {
                 where: { id: request.cropId }
             })
 
-            if (!crop) throw new CropNotFoundException(request.cropId)
-            if (!crop.availableInShop) throw new CropNotAvailableInShopException(request.cropId)
+            if (!crop) throw new GrpcNotFoundException("Crop not found")
+            if (!crop.availableInShop) throw new GrpcFailedPreconditionException("Crop not available in shop")
 
             const totalCost = crop.price * request.quantity
 
@@ -95,10 +92,12 @@ export class BuySeedsService {
                 await queryRunner.manager.save(InventoryEntity, updatedInventories)
                 await queryRunner.commitTransaction()
 
-                return
+                return {}
             } catch (error) {
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new BuySeedsTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
         } finally {
             await queryRunner.release()

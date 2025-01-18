@@ -4,14 +4,13 @@ import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "
 import { Test } from "@nestjs/testing"
 import { isJWT, isUUID } from "class-validator"
 import { RefreshService } from "./refresh.service"
-import { getPostgreSqlToken, SessionEntity, UserEntity } from "@src/databases"
+import { getPostgreSqlToken, SessionEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 
 describe("RefreshService", () => {
     let service: RefreshService
     let gameplayMockUserService: GameplayMockUserService
     let dataSource: DataSource
-    let user: UserEntity
     let connectionService: ConnectionService
 
     beforeAll(async () => {
@@ -28,11 +27,8 @@ describe("RefreshService", () => {
         connectionService = moduleRef.get(ConnectionService)
     })
 
-    beforeEach(async () => {
-        user = await gameplayMockUserService.generate()
-    })
-
     it("should refresh user session and return valid access and refresh tokens", async () => {
+        const user = await gameplayMockUserService.generate()
         const session = await dataSource.manager.findOne(SessionEntity, {
             where: {
                 userId: user.id

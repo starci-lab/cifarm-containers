@@ -63,7 +63,7 @@ export class RefreshService {
                 refreshToken: newRefreshToken
             }
         } catch (error) {
-            const errorMessage = `Transaction session creation failed, reason: ${error.message}`
+            const errorMessage = `Transaction failed, reason: ${error.message}`
             this.logger.error(errorMessage)
             await queryRunner.rollbackTransaction()
             throw new GrpcInternalException(errorMessage)

@@ -12,15 +12,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    SpinCooldownException,
-    SpinSlotsNotEqual8Exception,
-    SpinTransactionFailedException
-} from "@src/exceptions"
 import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/gameplay"
-import dayjs from "dayjs"
 import { DataSource, DeepPartial } from "typeorm"
 import { SpinRequest, SpinResponse } from "./spin.dto"
+import { GrpcInternalException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
+import { createUtcDayjs } from "@src/common"
 
 @Injectable()
 export class SpinService {
@@ -48,9 +44,9 @@ export class SpinService {
             })
 
             // check if during 24-hour period user has already spun
-            const now = dayjs()
+            const now = createUtcDayjs()
             if (user.spinLastTime && now.diff(user.spinLastTime, "day") < 1) {
-                throw new SpinCooldownException(now.toDate(), user.spinLastTime)
+                throw new GrpcPermissionDeniedException("Spin is blocked for 24 hours")
             }
 
             // Spin the wheel
@@ -62,7 +58,7 @@ export class SpinService {
 
             //check if slot not equal to 8
             if (spinSlots.length !== 8) {
-                throw new SpinSlotsNotEqual8Exception(spinSlots.length)
+                throw new GrpcInternalException("Spin slots must be equal to 8")
             }
 
             //spinnn
@@ -109,9 +105,10 @@ export class SpinService {
                     })
                     await queryRunner.commitTransaction()
                 } catch (error) {
-                    this.logger.error("Spin transaction failed, rolling back...", error)
+                    const errorMessage = `Transaction failed, reason: ${error.message}`
+                    this.logger.error(errorMessage)
                     await queryRunner.rollbackTransaction()
-                    throw new SpinTransactionFailedException(error)
+                    throw new GrpcInternalException(errorMessage)
                 }
                 break
             }
@@ -152,9 +149,10 @@ export class SpinService {
                     await queryRunner.manager.save(InventoryEntity, updatedInventories)
                     await queryRunner.commitTransaction()
                 } catch (error) {
-                    this.logger.error("Spin transaction failed, rolling back...", error)
+                    const errorMessage = `Transaction failed, reason: ${error.message}`
+                    this.logger.error(errorMessage)
                     await queryRunner.rollbackTransaction()
-                    throw new SpinTransactionFailedException(error)
+                    throw new GrpcInternalException(errorMessage)
                 }
                 break
             }
@@ -193,9 +191,10 @@ export class SpinService {
                     await queryRunner.manager.save(InventoryEntity, updatedInventories)
                     await queryRunner.commitTransaction()
                 } catch (error) {
-                    this.logger.error("Spin transaction failed, rolling back...", error)
+                    const errorMessage = `Transaction failed, reason: ${error.message}`
+                    this.logger.error(errorMessage)
                     await queryRunner.rollbackTransaction()
-                    throw new SpinTransactionFailedException(error)
+                    throw new GrpcInternalException(errorMessage)
                 }
                 break
             }
@@ -212,9 +211,10 @@ export class SpinService {
                     })
                     await queryRunner.commitTransaction()
                 } catch (error) {
-                    this.logger.error("Spin transaction failed, rolling back...", error)
+                    const errorMessage = `Transaction failed, reason: ${error.message}`
+                    this.logger.error(errorMessage)
                     await queryRunner.rollbackTransaction()
-                    throw new SpinTransactionFailedException(error)
+                    throw new GrpcInternalException(errorMessage)
                 }
                 break
             }

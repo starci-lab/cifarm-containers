@@ -1,14 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DailyRewardEntity, InjectPostgreSQL, UserEntity } from "@src/databases"
-import {
-    DailyRewardAlreadyClaimedTodayException,
-    DailyRewardNotEqual5Exception,
-    DailyRewardTransactionFailedException
-} from "@src/exceptions"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
 import dayjs from "dayjs"
 import { DataSource, DeepPartial } from "typeorm"
 import { ClaimDailyRewardRequest, ClaimDailyRewardResponse } from "./claim-daily-reward.dto"
+import { GrpcInternalException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
 
 @Injectable()
 export class ClaimDailyRewardService {
@@ -35,7 +31,7 @@ export class ClaimDailyRewardService {
 
             // check if spin last time is same as today
             if (user.spinLastTime && dayjs(user.spinLastTime).isSame()) {
-                throw new DailyRewardAlreadyClaimedTodayException(user.spinLastTime)
+                throw new GrpcPermissionDeniedException("Spin already claimed today")
             }
 
             const dailyRewards = await queryRunner.manager.find(DailyRewardEntity, {
@@ -46,7 +42,7 @@ export class ClaimDailyRewardService {
 
             //check if daily rewards not equal to 5
             if (dailyRewards.length !== 5) {
-                throw new DailyRewardNotEqual5Exception(dailyRewards.length)
+                throw new GrpcInternalException("Daily rewards not equal to 5")
             }
 
             // Update user's daily reward
@@ -92,9 +88,10 @@ export class ClaimDailyRewardService {
 
                 this.logger.log(`Successfully claimed daily reward for user ${request.userId}`)
             } catch (error) {
-                this.logger.error("Claim daily reward transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new DailyRewardTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
 
             return {}

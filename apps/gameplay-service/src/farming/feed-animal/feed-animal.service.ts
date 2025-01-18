@@ -12,16 +12,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    FeedAnimalTransactionFailedException,
-    InventoryNotFoundException,
-    InventoryTypeNotSupplyException,
-    PlacedItemAnimalNotFoundException,
-    PlacedItemAnimalNotNeedFeedingException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { FeedAnimalRequest, FeedAnimalResponse } from "./feed-animal.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class FeedAnimalService {
@@ -50,13 +45,12 @@ export class FeedAnimalService {
                 }
             })
 
-            if (!placedItemAnimal)
-                throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
+            if (!placedItemAnimal || !placedItemAnimal.animalInfo)
+                throw new GrpcNotFoundException("Animal not found")
 
-            this.logger.verbose(`Feed animal: ${JSON.stringify(placedItemAnimal)}`)
-
-            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry)
-                throw new PlacedItemAnimalNotNeedFeedingException(request.placedItemAnimalId)
+            const { animalInfo } = placedItemAnimal
+            if (animalInfo.currentState !== AnimalCurrentState.Hungry)
+                throw new GrpcFailedPreconditionException("Animal is not hungry")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
@@ -100,10 +94,10 @@ export class FeedAnimalService {
                 }
             })
 
-            if (!inventory) throw new InventoryNotFoundException()
+            if (!inventory) throw new GrpcNotFoundException("Inventory not found")
 
             if (inventory.inventoryType.type !== InventoryType.Supply)
-                throw new InventoryTypeNotSupplyException(inventory.id)
+                throw new GrpcFailedPreconditionException("Inventory type is not supply")
 
             await queryRunner.startTransaction()
             try {
@@ -118,16 +112,17 @@ export class FeedAnimalService {
                 })
 
                 // Update animal state
-                await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
+                await queryRunner.manager.update(AnimalInfoEntity, animalInfo.id, {
                     currentState: AnimalCurrentState.Normal,
                     currentHungryTime: 0
                 })
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Feed Animal transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new FeedAnimalTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

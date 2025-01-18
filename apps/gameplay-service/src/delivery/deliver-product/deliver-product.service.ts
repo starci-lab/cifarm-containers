@@ -1,13 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DeliveringProductEntity, InjectPostgreSQL, InventoryEntity } from "@src/databases"
-import {
-    DeliverProductTransactionFailedException,
-    InsufficientInventoryException,
-    InventoryNotFoundException,
-    InventoryTypeNotDeliverableException
-} from "@src/exceptions"
 import { DataSource, DeepPartial } from "typeorm"
 import { DeliverProductRequest, DeliverProductResponse } from "./deliver-product.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class DeliverProductService {
@@ -36,17 +32,17 @@ export class DeliverProductService {
             })
 
             if (!inventory) {
-                throw new InventoryNotFoundException(request.inventoryId)
+                throw new GrpcNotFoundException("Inventory not found")
             }
 
             if (inventory.quantity < request.quantity) {
-                throw new InsufficientInventoryException(request.inventoryId, request.quantity)
+                throw new GrpcFailedPreconditionException("Not enough quantity to deliver")
             }
 
             // Check if inventory type is deliverable
             const inventoryType = inventory.inventoryType
             if (!inventoryType.deliverable) {
-                throw new InventoryTypeNotDeliverableException(request.inventoryId)
+                throw new GrpcFailedPreconditionException("Inventory type is not deliverable")
             }
 
             // Start transaction
@@ -75,9 +71,10 @@ export class DeliverProductService {
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Delivery transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new DeliverProductTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

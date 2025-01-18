@@ -10,16 +10,11 @@ import {
     TileId,
     UserEntity
 } from "@src/databases"
-import {
-    BuyTileTransactionFailedException,
-    PlacedItemIsLimitException,
-    PlacedItemTypeNotFoundException,
-    TileNotAvailableInShopException,
-    TileNotFoundException
-} from "@src/exceptions"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial, QueryRunner } from "typeorm"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class BuyTileService {
@@ -48,25 +43,21 @@ export class BuyTileService {
             })
 
             if (!tile) {
-                throw new TileNotFoundException(currentTileId)
+                throw new GrpcNotFoundException("Tile not found")
             }
 
             if (!tile.availableInShop) {
-                throw new TileNotAvailableInShopException(currentTileId)
+                throw new GrpcFailedPreconditionException("Tile not available in shop")
             }
 
             const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
                 where: { type: PlacedItemType.Tile, tileId: currentTileId }
             })
 
-            if (!placedItemType) {
-                throw new PlacedItemTypeNotFoundException(currentTileId)
-            }
-
             // Calculate total cost
             const totalCost = tile.price
 
-            const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+            const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
             })
 
@@ -98,9 +89,10 @@ export class BuyTileService {
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Purchase transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new BuyTileTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
 
             return {}
@@ -147,6 +139,6 @@ export class BuyTileService {
             }
         }
 
-        throw new PlacedItemIsLimitException(this.tileOrder[this.tileOrder.length - 1])
+        throw new GrpcFailedPreconditionException("No tile available")
     }
 }

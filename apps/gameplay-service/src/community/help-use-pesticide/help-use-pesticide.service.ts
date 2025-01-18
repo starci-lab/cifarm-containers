@@ -12,15 +12,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    HelpUsePesticideTransactionFailedException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotNeedUsePesticideException,
-    PlacedItemTileNotPlantedException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HelpUsePesticideRequest, HelpUsePesticideResponse } from "./help-use-pesticide.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class HelpUsePesticideService {
@@ -57,15 +53,15 @@ export class HelpUsePesticideService {
             })
 
             if (!placedItemTile) {
-                throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+                throw new GrpcNotFoundException("Tile not found")
             }
 
             if (!placedItemTile.seedGrowthInfo) {
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile is not planted")
             }
 
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested) {
-                throw new PlacedItemTileNotNeedUsePesticideException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile is not infested")
             }
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -115,9 +111,10 @@ export class HelpUsePesticideService {
 
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error(`Help use pesticide failed: ${error}`)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new HelpUsePesticideTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
 
             this.clientKafka.emit(KafkaPattern.PlacedItems, {

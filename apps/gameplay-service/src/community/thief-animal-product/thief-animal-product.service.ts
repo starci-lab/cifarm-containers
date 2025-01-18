@@ -17,15 +17,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    HaverstQuantityRemainingEqualMinHarvestQuantityException,
-    PlacedItemAnimalNotCurrentlyYieldingException,
-    PlacedItemAnimalNotFoundException,
-    ThiefAnimalProductTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class ThiefAnimalProductService {
@@ -69,20 +65,18 @@ export class ThiefAnimalProductService {
             })
 
             if (!placedItemAnimal) {
-                throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
+                throw new GrpcNotFoundException("Animal not found")
             }
 
             if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
-                throw new PlacedItemAnimalNotCurrentlyYieldingException(request.placedItemAnimalId)
+                throw new GrpcFailedPreconditionException("Animal is not yielding")
             }
 
             if (
                 placedItemAnimal.animalInfo.harvestQuantityRemaining ===
                 placedItemAnimal.animalInfo.animal.minHarvestQuantity
             ) {
-                throw new HaverstQuantityRemainingEqualMinHarvestQuantityException(
-                    placedItemAnimal.animalInfo.animal.minHarvestQuantity
-                )
+                throw new GrpcFailedPreconditionException("Animal is not ready to harvest")
             }
 
             const { value: activitiesValue } = await queryRunner.manager.findOne(SystemEntity, {
@@ -177,9 +171,10 @@ export class ThiefAnimalProductService {
                 })
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error(`Theif animal product transaction failed: ${error}`)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new ThiefAnimalProductTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
 
             this.clientKafka.emit(KafkaPattern.PlacedItems, {

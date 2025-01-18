@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Collection, CollectionEntity, InjectPostgreSQL, SpeedUpData } from "@src/databases"
-import { SpeedUpTransactionFailedException } from "@src/exceptions"
 import { DataSource } from "typeorm"
 import { SpeedUpRequest, SpeedUpResponse } from "./speed-up.dto"
+import { GrpcInternalException } from "nestjs-grpc-exceptions"
 
 @Injectable()
 export class SpeedUpService {
@@ -41,9 +41,10 @@ export class SpeedUpService {
                 ])
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error(error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new SpeedUpTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

@@ -9,15 +9,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotNeedWaterException,
-    PlacedItemTileNotPlantedException,
-    WaterTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { WaterRequest, WaterResponse } from "./water.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class WaterService {
@@ -45,13 +41,14 @@ export class WaterService {
                 }
             })
 
-            if (!placedItemTile) throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
 
             if (!placedItemTile.seedGrowthInfo)
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+                throw new GrpcFailedPreconditionException("Tile is not planted")
 
-            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater)
-                throw new PlacedItemTileNotNeedWaterException(request.placedItemTileId)
+            const { seedGrowthInfo } = placedItemTile
+            if (seedGrowthInfo.currentState !== CropCurrentState.NeedWater)
+                throw new GrpcFailedPreconditionException("Tile does not need water")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
@@ -90,7 +87,7 @@ export class WaterService {
                 // update seed growth info
                 await queryRunner.manager.update(
                     SeedGrowthInfoEntity,
-                    placedItemTile.seedGrowthInfo.id,
+                    seedGrowthInfo.id,
                     {
                         currentState: CropCurrentState.Normal
                     }
@@ -98,9 +95,10 @@ export class WaterService {
                 await queryRunner.commitTransaction()
             }
             catch (error) {
-                this.logger.error("Water transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new WaterTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }  
             return {}
         } finally {

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectPostgreSQL, UserEntity } from "@src/databases"
-import { UpdateTutorialTransactionFailedException } from "@src/exceptions"
 import { DataSource } from "typeorm"
+import { GrpcInternalException } from "nestjs-grpc-exceptions"
 import { UpdateTutorialRequest, UpdateTutorialResponse } from "./update-tutorial.dto"
 
 @Injectable()
@@ -39,9 +39,10 @@ export class UpdateTutorialService {
 
                 this.logger.log(`Update tutorial for user ${request.userId} successfully`)
             } catch (error) {
-                this.logger.error(`Update tutorial for user ${request.userId} failed`)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new UpdateTutorialTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
             return {}
         } finally {

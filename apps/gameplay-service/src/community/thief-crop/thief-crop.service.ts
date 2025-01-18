@@ -16,16 +16,10 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    HaverstQuantityRemainingEqualMinHarvestQuantityException,
-    PlacedItemTileNotFoundException,
-    PlacedItemTileNotFullyMaturedException,
-    PlacedItemTileNotPlantedException,
-    ThiefCropTransactionFailedException
-} from "@src/exceptions"
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 
 @Injectable()
 export class TheifCropService {
@@ -66,24 +60,22 @@ export class TheifCropService {
             })
 
             if (!placedItemTile) {
-                throw new PlacedItemTileNotFoundException(request.placedItemTileId)
+                throw new GrpcNotFoundException("Tile not found")
             }
 
             if (!placedItemTile.seedGrowthInfo) {
-                throw new PlacedItemTileNotPlantedException(request.placedItemTileId)
+                throw new GrpcNotFoundException("Tile is not planted")
             }
 
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
-                throw new PlacedItemTileNotFullyMaturedException(request.placedItemTileId)
+                throw new GrpcNotFoundException("Crop is not fully matured")
             }
 
             if (
                 placedItemTile.seedGrowthInfo.harvestQuantityRemaining ===
                 placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
             ) {
-                throw new HaverstQuantityRemainingEqualMinHarvestQuantityException(
-                    placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
-                )
+                throw new GrpcNotFoundException("Crop is already harvested")
             }
 
             const { value: activitiesValue } = await queryRunner.manager.findOne(SystemEntity, {
@@ -182,9 +174,10 @@ export class TheifCropService {
                 )
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error(`Theif crop transaction failed: ${error}`)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new ThiefCropTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
 
             this.clientKafka.emit(KafkaPattern.PlacedItems, {

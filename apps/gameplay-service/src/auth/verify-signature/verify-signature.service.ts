@@ -177,7 +177,7 @@ export class VerifySignatureService {
 
                     await queryRunner.commitTransaction()
                 } catch (error) {
-                    const errorMessage = `Transaction user creation failed, reason: ${error.message}`
+                    const errorMessage = `Transaction failed, reason: ${error.message}`
                     this.logger.error(errorMessage)
                     await queryRunner.rollbackTransaction()
                     throw new GrpcInternalException(errorMessage)
@@ -204,7 +204,7 @@ export class VerifySignatureService {
                 })
                 await queryRunner.commitTransaction()
             } catch (error) {
-                const errorMessage = `Transaction session creation failed, reason: ${error.message}`
+                const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)

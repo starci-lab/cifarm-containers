@@ -12,14 +12,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    HelpCureAnimalTransactionFailedException,
-    PlacedItemAnimalNotFoundException,
-    PlacedItemAnimalNotSickException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class HelpCureAnimalService {
@@ -57,11 +54,11 @@ export class HelpCureAnimalService {
             })
 
             if (!(placedItemAnimal && placedItemAnimal.animalInfo)) {
-                throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
+                throw new GrpcNotFoundException("Animal not found")
             }
 
             if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
-                throw new PlacedItemAnimalNotSickException(request.placedItemAnimalId)
+                throw new GrpcFailedPreconditionException("Animal is not sick")
             }
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -105,9 +102,10 @@ export class HelpCureAnimalService {
                 })
                 await queryRunner.commitTransaction()
             } catch (error) {
-                this.logger.error("Help cure animal transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new HelpCureAnimalTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
 
             this.clientKafka.emit(KafkaPattern.PlacedItems, {

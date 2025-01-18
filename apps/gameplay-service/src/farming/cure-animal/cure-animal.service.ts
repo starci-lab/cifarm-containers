@@ -9,14 +9,11 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import {
-    CureAnimalTransactionFailedException,
-    PlacedItemAnimalNotFoundException,
-    PlacedItemAnimalNotSickException
-} from "@src/exceptions"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class CureAnimalService {
@@ -44,11 +41,12 @@ export class CureAnimalService {
                 }
             })
 
-            if (!placedItemAnimal)
-                throw new PlacedItemAnimalNotFoundException(request.placedItemAnimalId)
+            if (!placedItemAnimal || !placedItemAnimal.animalInfo)
+                throw new GrpcNotFoundException("Animal not found")
 
-            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick)
-                throw new PlacedItemAnimalNotSickException(request.placedItemAnimalId)
+            const { animalInfo } = placedItemAnimal
+            if (animalInfo.currentState !== AnimalCurrentState.Sick)
+                throw new GrpcFailedPreconditionException("Animal is not sick")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.Activities }
@@ -75,7 +73,7 @@ export class CureAnimalService {
             await queryRunner.startTransaction()
             try {
                 // Update animal state
-                await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
+                await queryRunner.manager.update(AnimalInfoEntity, animalInfo.id, {
                     currentState: AnimalCurrentState.Normal
                 })
 
@@ -93,9 +91,10 @@ export class CureAnimalService {
                 await queryRunner.commitTransaction()
                 return {}
             } catch (error) {
-                this.logger.error("Cure Animal transaction failed, rolling back...", error)
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new CureAnimalTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
         } finally {
             await queryRunner.release()

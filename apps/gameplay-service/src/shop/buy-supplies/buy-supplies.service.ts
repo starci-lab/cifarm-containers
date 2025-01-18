@@ -1,14 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectPostgreSQL, InventoryEntity, InventoryTypeEntity, SupplyEntity, UserEntity } from "@src/databases"
-import {
-    BuySuppliesTransactionFailedException,
-    SupplyNotAvailableInShopException,
-    SupplyNotFoundException,
-    UserNotFoundException
-} from "@src/exceptions"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class BuySuppliesService {
@@ -34,9 +30,9 @@ export class BuySuppliesService {
             const supply = await queryRunner.manager.findOne(SupplyEntity, {
                 where: { id: request.supplyId }
             })
-            if (!supply) throw new SupplyNotFoundException(request.supplyId)
+            if (!supply) throw new GrpcNotFoundException("Supply not found")
             if (!supply.availableInShop)
-                throw new SupplyNotAvailableInShopException(request.supplyId)
+                throw new GrpcFailedPreconditionException("Supply not available in shop")
 
             const totalCost = supply.price * request.quantity
 
@@ -44,7 +40,7 @@ export class BuySuppliesService {
                 where: { id: request.userId }
             })
 
-            if (!user) throw new UserNotFoundException(request.userId)
+            if (!user) throw new GrpcNotFoundException("User not found")
 
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
@@ -94,9 +90,10 @@ export class BuySuppliesService {
                 await queryRunner.commitTransaction()
                 return
             } catch (error) {
-                this.logger.debug("rollback")
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
-                throw new BuySuppliesTransactionFailedException(error)
+                throw new GrpcInternalException(errorMessage)
             }
         } finally {
             await queryRunner.release()
