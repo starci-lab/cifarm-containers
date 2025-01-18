@@ -11,7 +11,6 @@ describe("RequestMessageService", () => {
     let service: RequestMessageService
     let cache: Cache
     let connectionService: ConnectionService
-
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [
@@ -24,6 +23,7 @@ describe("RequestMessageService", () => {
 
         cache = moduleRef.get(CACHE_MANAGER)
         service = moduleRef.get(RequestMessageService)
+        
         connectionService = moduleRef.get(ConnectionService)
     })
 

@@ -129,7 +129,6 @@ describe("VerifySignatureService", () => {
     afterAll(async () => {
         await gameplayMockUserService.clear()
         await connectionService.closeAll()
-        console.log(dataSource.isInitialized)
     })
 })
 

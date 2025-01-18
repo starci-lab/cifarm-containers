@@ -7,7 +7,8 @@ import { IoRedisModule } from "@src/native"
 @Module({
     imports: [
         IoRedisModule.register({
-            type: RedisType.Cache
+            type: RedisType.Cache,
+            optionsOnly: true
         }),
     ],
     providers: [CacheOptionsService],

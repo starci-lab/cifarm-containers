@@ -14,10 +14,12 @@ export class IoRedisModule extends ConfigurableModuleClass {
         const providers: Array<Provider> = [IoRedisFactory]
         const exports: Array<Provider> = [IoRedisFactory]
 
-        const ioRedisFactoryProvider = createIoRedisFactoryProvider(type)
+        if (!options.optionsOnly) {
+            const ioRedisFactoryProvider = createIoRedisFactoryProvider(type)
 
-        providers.push(ioRedisFactoryProvider)
-        exports.push(ioRedisFactoryProvider)
+            providers.push(ioRedisFactoryProvider)
+            exports.push(ioRedisFactoryProvider)
+        }
 
         return {
             ...dynamicModule,
