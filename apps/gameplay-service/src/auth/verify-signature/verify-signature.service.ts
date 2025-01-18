@@ -22,6 +22,7 @@ import {
     PolkadotAuthService,
     SolanaAuthService
 } from "@src/blockchain"
+
 import { EnergyService } from "@src/gameplay"
 import { InjectCache } from "@src/cache"
 import { Network } from "@src/env"

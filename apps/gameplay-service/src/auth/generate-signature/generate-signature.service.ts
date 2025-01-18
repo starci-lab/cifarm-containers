@@ -42,7 +42,7 @@ export class GenerateSignatureService {
         const { message } = await this.requestMessageService.requestMessage()
         chainKey = chainKey ?? defaultChainKey
         accountNumber = accountNumber ?? 0 
-
+        
         const platform = chainKeyToPlatform(chainKey)
         switch (platform) {
         case Platform.Evm: {
@@ -54,7 +54,6 @@ export class GenerateSignatureService {
                 signature,
                 chainKey,
                 network,
-                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
                 accountAddress: address
             }
         }
@@ -68,7 +67,6 @@ export class GenerateSignatureService {
                 signature,
                 chainKey,
                 network,
-                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
                 accountAddress: publicKey.toBase58()
             }
         }
@@ -82,7 +80,6 @@ export class GenerateSignatureService {
                 signature,
                 chainKey,
                 network,
-                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
                 accountAddress: this.aptosAuthService.toAddress(publicKey.toString())
             }
         }
@@ -98,7 +95,6 @@ export class GenerateSignatureService {
                 signature,
                 chainKey,
                 network,
-                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
                 accountAddress: addr.toString()
             }
         }
@@ -118,7 +114,6 @@ export class GenerateSignatureService {
                 signature,
                 chainKey,
                 network,
-                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
                 accountAddress: publicKey.toString()
             }
         }
@@ -131,7 +126,6 @@ export class GenerateSignatureService {
                 signature,
                 chainKey,
                 network,
-                telegramInitDataRaw: envConfig().secrets.telegram.mockAuthorization,
                 accountAddress: `example.${envConfig().chainCredentials[SupportedChainKey.Near].creator[network].accountId}`
             }
         }

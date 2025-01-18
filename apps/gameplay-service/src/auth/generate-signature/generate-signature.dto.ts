@@ -36,9 +36,6 @@ export class GenerateSignatureResponse {
     @ApiProperty({ example: "testnet" })
         network: Network
 
-    @ApiProperty({ example: "tranminhthien" })
-        telegramInitDataRaw: string
-
     @ApiProperty({ example: "0xc0ffee" })
         accountAddress: string
 }
