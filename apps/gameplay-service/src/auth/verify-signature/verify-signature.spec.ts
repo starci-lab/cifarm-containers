@@ -38,14 +38,14 @@ describe("VerifySignatureService", () => {
         connectionService = moduleRef.get(ConnectionService)
     })
 
-    const runVerificationFlow = async ({
+    const verifyAndValidateUserTokens = async ({
         message,
         publicKey,
         signature,
         chainKey,
         network,
         accountAddress
-    }: RunVerificationFlowParams) => {
+    }: VerifyAndValidateUserTokensParams) => {
         const { accessToken, refreshToken } = await service.verifySignature({
             message,
             publicKey,
@@ -60,12 +60,12 @@ describe("VerifySignatureService", () => {
                 ipV4: ""
             }
         })
-
-        // Assert: Check that the access token is a valid JWT and refresh token is a valid UUID
+    
+        // Assertions
         expect(isJWT(accessToken)).toBe(true)
         expect(isUUID(refreshToken)).toBe(true)
-
-        // Check user existence in the database
+    
+        // Check user existence and validate items
         const user = await dataSource.manager.findOne(UserEntity, {
             where: { accountAddress: publicKey },
             relations: {
@@ -74,25 +74,23 @@ describe("VerifySignatureService", () => {
                 }
             }
         })
-
+    
         expect(user).toBeTruthy()
-
-        // Check if the user has 6 tiles and 1 home
+    
+        // Check if user has the correct number of items
         expect(user.placedItems.length).toBe(7)
-
-        // Check if the user has 1 home
+    
         const home = user.placedItems.find(
             (item) => item.placedItemType.type === PlacedItemType.Building
         )
         expect(home).toBeTruthy()
-
-        // Check if the user has 6 tiles
+    
         const tiles = user.placedItems.filter(
             (item) => item.placedItemType.type === PlacedItemType.Tile
         )
         expect(tiles.length).toBe(6)
     }
-
+    
     it("should use actual flow", async () => {
         const { message } = await requestMessageService.requestMessage()
         const { publicKey: _publicKey, secretKey: _secretKey } = solanaAuthService.getFakeKeyPair(0)
@@ -100,7 +98,7 @@ describe("VerifySignatureService", () => {
         const publicKey = _publicKey.toBase58()
         const signature = solanaAuthService.signMessage(message, encode(_secretKey))
 
-        await runVerificationFlow({
+        await verifyAndValidateUserTokens({
             message,
             publicKey,
             signature,
@@ -118,7 +116,7 @@ describe("VerifySignatureService", () => {
                 network: Network.Testnet
             })
 
-        await runVerificationFlow({
+        await verifyAndValidateUserTokens({
             message,
             publicKey,
             signature,
@@ -135,7 +133,7 @@ describe("VerifySignatureService", () => {
     })
 })
 
-interface RunVerificationFlowParams {
+interface VerifyAndValidateUserTokensParams {
     message: string
     publicKey: string
     signature: string
