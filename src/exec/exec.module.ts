@@ -21,7 +21,9 @@ export class ExecModule extends ConfigurableModuleClass {
         }
 
         // add docker redis cluster providers
-        if (docker?.redisCluster) {
+        // default to true if not provided
+        const redisClusterEnabled = docker?.redisCluster && (docker.redisCluster.enabled ?? true)
+        if (redisClusterEnabled) {
             const redisCluster = docker?.redisCluster
             if (redisCluster) {
                 providers.push(ExecDockerRedisClusterService)
@@ -37,7 +39,6 @@ export class ExecModule extends ConfigurableModuleClass {
                 }
             }
         }
-        
 
         const dynamicModule = super.register(options)
         return {

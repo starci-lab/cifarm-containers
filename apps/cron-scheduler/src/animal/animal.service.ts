@@ -13,14 +13,12 @@ import {
     TempId
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import dayjs from "dayjs"
-import utc from "dayjs/plugin/utc"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
 import { AnimalJobData } from "./animal.dto"
-import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
 import { OnEvent } from "@nestjs/event-emitter"
-dayjs.extend(utc)
+import { LEADER_ELECTED_EMITTER2_EVENT, LEADER_LOST_EMITTER2_EVENT } from "@src/kubernetes/leader-election/leader-election.constant"
+import { createUtcDayjs } from "@src/common"
 
 @Injectable()
 export class AnimalService {
@@ -34,17 +32,13 @@ export class AnimalService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEvent(LeaderElectedEvent)
-    handleLeaderElected(event: { leaseName: string }) {
-        this.logger.debug(`Leader elected for ${event.leaseName}`)
-        // Logic when becoming leader
+    @OnEvent(LEADER_ELECTED_EMITTER2_EVENT)
+    handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEvent(LeaderLostEvent)
-    handleLeaderLost(event: { leaseName: string }) {
-        this.logger.debug(`Leader lost for ${event.leaseName}`)
-        // Logic when losing leadership
+    @OnEvent(LEADER_LOST_EMITTER2_EVENT)
+    handleLeaderLost() {
         this.isLeader = false
     }
 
@@ -54,6 +48,7 @@ export class AnimalService {
             return
         }
 
+        const utcNow = createUtcDayjs()
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -90,7 +85,7 @@ export class AnimalService {
             const batchSize = bullData[BullQueueName.Crop].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
-            let time = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1
+            let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
             if (speedUps.length) {
                 for (const { data } of speedUps) {
                     const { time: additionalTime } = data as SpeedUpData
@@ -109,7 +104,7 @@ export class AnimalService {
                     skip: i * batchSize,
                     take: Math.min((i + 1) * batchSize, count),
                     time,
-                    utcTime: dayjs().utc().valueOf()
+                    utcTime: utcNow.valueOf()
                 },
                 opts: bullData[BullQueueName.Animal].opts
             }))
@@ -125,7 +120,7 @@ export class AnimalService {
                 await queryRunner.manager.save(TempEntity, {
                     id: TempId.AnimalGrowthLastSchedule,
                     value: {
-                        date: dayjs().utc().toDate()
+                        date: utcNow.toDate()
                     }
                 })
                 await queryRunner.commitTransaction()

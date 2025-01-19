@@ -10,6 +10,7 @@ export interface DockerOptions {
 }
 
 export interface DockerRedisClusterOptions {
+    enabled: boolean
     type?: RedisType
     // custom injected token
     injectionToken?: string

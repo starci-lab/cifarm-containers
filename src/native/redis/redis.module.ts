@@ -25,6 +25,7 @@ export class RedisModule extends ConfigurableModuleClass {
                 ExecModule.register({
                     docker: {
                         redisCluster: {
+                            enabled: true,
                             type
                         }
                     }

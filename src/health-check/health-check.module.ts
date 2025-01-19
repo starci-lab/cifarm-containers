@@ -86,6 +86,7 @@ export class HealthCheckModule extends ConfigurableModuleClass {
                     ExecModule.register({
                         docker: {
                             redisCluster: {
+                                enabled: true,
                                 type,
                                 injectionToken: _redisMap[type].token
                             }

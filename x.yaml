@@ -1,0 +1,58 @@
+# ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: your-service-account
+  namespace: default
+
+# Role
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: default
+  name: lease-manager-role
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "watch", "list", "create", "update", "delete"]
+
+# RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: lease-manager-rolebinding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: your-service-account
+  namespace: default
+roleRef:
+  kind: Role
+  name: lease-manager-role
+  apiGroup: rbac.authorization.k8s.io
+
+## Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: your-deployment
+  namespace: default
+spec:
+  replicas: 13
+  selector:
+    matchLabels:
+      app: your-deployment
+  template:
+    metadata:
+      labels:
+        app: your-deployment
+    spec:
+      serviceAccountName: your-service-account
+      containers:
+      - name: your-deployment
+        image: your-image
+        ports:
+        - containerPort: 3014
+        env:
+        - name: NODE_ENV
+          value: production

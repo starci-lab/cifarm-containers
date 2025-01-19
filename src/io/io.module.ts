@@ -12,12 +12,11 @@ import { JwtModule } from "@src/jwt"
 export class IoModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const adapter = options.adapter || IoAdapterType.MongoDb
-        const useGlobalImports = options.useGlobalImports || false
         // define the modules, providers, and exports arrays
         const imports: Array<NestImport> = []
         
         //check if the global module is used
-        if (!useGlobalImports) {
+        if (!options.useGlobalImports) {
             imports.push(JwtModule.register())
         }
 
