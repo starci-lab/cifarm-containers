@@ -16,9 +16,8 @@ import { BulkJobOptions, Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
 import { AnimalJobData } from "./animal.dto"
-import { OnEvent } from "@nestjs/event-emitter"
-import { LEADER_ELECTED_EMITTER2_EVENT, LEADER_LOST_EMITTER2_EVENT } from "@src/kubernetes/leader-election/leader-election.constant"
 import { createUtcDayjs } from "@src/common"
+import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 
 @Injectable()
 export class AnimalService {
@@ -32,12 +31,12 @@ export class AnimalService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEvent(LEADER_ELECTED_EMITTER2_EVENT)
+    @OnEventLeaderElected()
     handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEvent(LEADER_LOST_EMITTER2_EVENT)
+    @OnEventLeaderLost()
     handleLeaderLost() {
         this.isLeader = false
     }

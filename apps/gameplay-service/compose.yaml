@@ -10,4 +10,4 @@ services:
     ports:
       - "3014:3014"
 
-#docker compose -f apps/gameplay-service/compose.yaml up -d
+#docker compose -f apps/gameplay-service/compose.yaml up --build -d

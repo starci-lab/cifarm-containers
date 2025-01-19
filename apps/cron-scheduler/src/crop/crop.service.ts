@@ -18,8 +18,7 @@ import utc from "dayjs/plugin/utc"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
 import { CropJobData } from "./crop.dto"
-import { OnEvent } from "@nestjs/event-emitter"
-import { LEADER_ELECTED_EMITTER2_EVENT, LEADER_LOST_EMITTER2_EVENT } from "@src/kubernetes"
+import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { createUtcDayjs } from "@src/common"
 
 dayjs.extend(utc)
@@ -37,15 +36,16 @@ export class CropService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEvent(LEADER_ELECTED_EMITTER2_EVENT)
+    @OnEventLeaderElected()
     handleLeaderElected() {
         this.isLeader = true
     }
-
-    @OnEvent(LEADER_LOST_EMITTER2_EVENT)
+    
+    @OnEventLeaderLost()
     handleLeaderLost() {
         this.isLeader = false
     }
+
 
     @Cron("*/1 * * * * *")
     async handle() {
