@@ -1,4 +1,4 @@
-#docker build -t cifarm/cron-scheduler -f ./apps/cron-scheduler/Dockerfile . & docker push cifarm/cron-scheduler
+# docker build -t cifarm/cron-scheduler -f ./apps/cron-scheduler/Dockerfile . & docker push cifarm/cron-scheduler
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0

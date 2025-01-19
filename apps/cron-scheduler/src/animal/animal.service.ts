@@ -1,14 +1,25 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
-import { AnimalCurrentState, AnimalGrowthLastSchedule, AnimalInfoEntity, Collection, CollectionEntity, InjectPostgreSQL, SpeedUpData, TempEntity, TempId } from "@src/databases"
-import { LeaderElectionService } from "@src/leader-election"
+import {
+    AnimalCurrentState,
+    AnimalGrowthLastSchedule,
+    AnimalInfoEntity,
+    Collection,
+    CollectionEntity,
+    InjectPostgreSQL,
+    SpeedUpData,
+    TempEntity,
+    TempId
+} from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
 import { AnimalJobData } from "./animal.dto"
+import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
+import { OnEvent } from "@nestjs/event-emitter"
 dayjs.extend(utc)
 
 @Injectable()
@@ -17,14 +28,31 @@ export class AnimalService {
     constructor(
         @InjectQueue(BullQueueName.Animal) private readonly animalQueue: Queue,
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly leaderElectionService: LeaderElectionService,
-    ) {
+        private readonly dataSource: DataSource
+    ) {}
+
+    // Flag to determine if the current instance is the leader
+    private isLeader = false
+
+    @OnEvent(LeaderElectedEvent)
+    handleLeaderElected(event: { leaseName: string }) {
+        this.logger.debug(`Leader elected for ${event.leaseName}`)
+        // Logic when becoming leader
+        this.isLeader = true
+    }
+
+    @OnEvent(LeaderLostEvent)
+    handleLeaderLost(event: { leaseName: string }) {
+        this.logger.debug(`Leader lost for ${event.leaseName}`)
+        // Logic when losing leadership
+        this.isLeader = false
     }
 
     @Cron("*/1 * * * * *")
     async handle() {
-        if (!this.leaderElectionService.isLeaderInstance()) return
+        if (!this.isLeader) {
+            return
+        }
 
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
@@ -46,7 +74,7 @@ export class AnimalService {
             const { value } = await queryRunner.manager.findOne(TempEntity, {
                 where: {
                     id: TempId.AnimalGrowthLastSchedule
-                },
+                }
             })
             const { date } = value as AnimalGrowthLastSchedule
 
@@ -57,39 +85,38 @@ export class AnimalService {
                 // this.logger.verbose("No animals to grow")
                 return
             }
-            
+
             //split into 10000 per batch
             const batchSize = bullData[BullQueueName.Crop].batchSize
             const batchCount = Math.ceil(count / batchSize)
-            
+
             let time = date ? dayjs().utc().diff(date, "milliseconds") / 1000.0 : 1
             if (speedUps.length) {
-                for (const { data } of speedUps)
-                {
-                    const { time : additionalTime } = data as SpeedUpData
+                for (const { data } of speedUps) {
+                    const { time: additionalTime } = data as SpeedUpData
                     time += Number(additionalTime)
                 }
             }
-            
+
             // Create batches
             const batches: Array<{
-                        name: string
-                        data: AnimalJobData,
-                        opts?: BulkJobOptions
-                    }> = Array.from({ length: batchCount }, (_, i) => ({
-                        name: v4(),
-                        data: {
-                            skip: i * batchSize,
-                            take: Math.min((i + 1) * batchSize, count),
-                            time,
-                            utcTime: dayjs().utc().valueOf()
-                        },
-                        opts: bullData[BullQueueName.Animal].opts
-                    }))
+                name: string
+                data: AnimalJobData
+                opts?: BulkJobOptions
+            }> = Array.from({ length: batchCount }, (_, i) => ({
+                name: v4(),
+                data: {
+                    skip: i * batchSize,
+                    take: Math.min((i + 1) * batchSize, count),
+                    time,
+                    utcTime: dayjs().utc().valueOf()
+                },
+                opts: bullData[BullQueueName.Animal].opts
+            }))
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
             const jobs = await this.animalQueue.addBulk(batches)
             this.logger.verbose(`Added ${jobs.at(0).name} jobs to the animal queue. Time: ${time}`)
-            
+
             await queryRunner.startTransaction()
             try {
                 await queryRunner.manager.delete(CollectionEntity, {
@@ -107,9 +134,7 @@ export class AnimalService {
                 await queryRunner.rollbackTransaction()
                 throw error
             }
-
-        } 
-        finally {
+        } finally {
             await queryRunner.release()
         }
     }

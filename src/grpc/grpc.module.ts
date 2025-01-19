@@ -10,7 +10,6 @@ import { getGrpcToken } from "./grpc.utils"
 export class GrpcModule extends ConfigurableModuleClass {
     public static register(options: typeof OPTIONS_TYPE = {}) {
         const name = options.name ?? GrpcName.Gameplay
-
         const grpcDynamicModule = ClientsModule.registerAsync([
             {
                 name: getGrpcToken(name),

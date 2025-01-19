@@ -1,11 +1,10 @@
 import { Module } from "@nestjs/common"
 //import { AnimalModule } from "./animal"
-
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { ScheduleModule } from "@nestjs/schedule"
 import { BullModule } from "@src/bull"
-import { EnvModule } from "@src/env"
-import { LeaderElectionModule } from "@src/leader-election"
+import { envConfig, EnvModule } from "@src/env"
+import { LeaderElectionModule } from "@aurory/nestjs-k8s-leader-election"
 import { EnergyModule } from "./energy"
 import { PostgreSQLModule } from "@src/databases"
 import { AnimalModule } from "./animal"
@@ -22,9 +21,14 @@ import { CacheModule } from "@src/cache"
         CacheModule.register({
             isGlobal: true
         }),
+        ScheduleModule.forRoot(),
         //register here for global access
-        LeaderElectionModule.register({
+        LeaderElectionModule.forRoot({
             leaseName: "cron-scheduler-leader-election",
+            logAtLevel: "debug",
+            awaitLeadership: true,
+            namespace: envConfig().kubernetes.namespace,
+            renewalInterval: 5000,
         }),
         CropModule,
         AnimalModule,

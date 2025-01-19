@@ -11,36 +11,57 @@ import utc from "dayjs/plugin/utc"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { DeliveryJobData } from "./delivery.dto"
+import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
+import { OnEvent } from "@nestjs/event-emitter"
 dayjs.extend(utc)
 
 @Injectable()
 export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
     
+    // Flag to determine if the current instance is the leader
+    private isLeader = false
 
-    constructor(
+    @OnEvent(LeaderElectedEvent)
+    handleLeaderElected(event: { leaseName: string }) {
+        this.logger.debug(`Leader elected for ${event.leaseName}`)
+        // Logic when becoming leader
+        this.isLeader = true
+    }
+    
+        @OnEvent(LeaderLostEvent)
+    handleLeaderLost(event: { leaseName: string }) {
+        this.logger.debug(`Leader lost for ${event.leaseName}`)
+        // Logic when losing leadership
+        this.isLeader = false
+    }
+    
+        constructor(
         @InjectQueue(BullQueueName.Delivery) private readonly deliveryQueue: Queue,
         @InjectCache()
         private readonly cacheManager: Cache,
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-    ) {
-    }
+        ) {
+        }
     
     @Cron("*/1 * * * * *")
-    public async triggerDeliveryProducts() {
-        if (!isProduction()) {
-            const hasValue = await this.cacheManager.get<boolean>(CacheKey.DeliverInstantly)
-            if (hasValue) {
-                await this.cacheManager.del(CacheKey.DeliverInstantly)
-                await this.handleDeliveryProducts()
+        public async triggerDeliveryProducts() {
+            if (!isProduction()) {
+                const hasValue = await this.cacheManager.get<boolean>(CacheKey.DeliverInstantly)
+                if (hasValue) {
+                    await this.cacheManager.del(CacheKey.DeliverInstantly)
+                    await this.handleDeliveryProducts()
+                }
             }
         }
-    }
     
     @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     // @Cron("*/1 * * * * *")
     public async handleDeliveryProducts() {
+        if (!this.isLeader) {
+            return
+        }
         const utcNow = dayjs().utc()
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()

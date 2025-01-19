@@ -58,8 +58,6 @@ import {
     RequestMessageResponse,
     RetainProductRequest,
     RetainProductResponse,
-    ReturnRequest,
-    ReturnResponse,
     SpinRequest,
     SpinResponse,
     ThiefAnimalProductRequest,
@@ -80,8 +78,6 @@ import {
     UsePesticideResponse,
     VerifySignatureRequest,
     VerifySignatureResponse,
-    VisitRequest,
-    VisitResponse,
     WaterRequest,
     WaterResponse
 } from "@apps/gameplay-service"
@@ -309,26 +305,6 @@ export class GameplayController implements OnModuleInit {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
-        type: ReturnResponse
-    })
-    @Post("/return")
-    public async return(
-        @User() user: UserLike,
-        @Body() request: ReturnRequest
-    ): Promise<ReturnResponse> {
-        this.logger.debug(`Processing user ${user?.id} return`)
-        return await lastValueFrom(
-            this.gameplayService.return({
-                ...request,
-                userId: user?.id
-            })
-        )
-    }
-
-    @UseGuards(RestJwtAuthGuard)
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @ApiResponse({
         type: ThiefAnimalProductResponse
     })
     @Post("/thief-animal-product")
@@ -384,27 +360,6 @@ export class GameplayController implements OnModuleInit {
             })
         )
     }
-
-    @UseGuards(RestJwtAuthGuard)
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @ApiResponse({
-        type: VisitResponse
-    })
-    @Post("/visit")
-    public async visit(
-        @User() user: UserLike,
-        @Body() request: VisitRequest
-    ): Promise<VisitResponse> {
-        this.logger.debug(`Processing user ${user?.id} visit`)
-        return await lastValueFrom(
-            this.gameplayService.visit({
-                ...request,
-                userId: user?.id
-            })
-        )
-    }
-
 
     // Delivery
     @UseGuards(RestJwtAuthGuard)

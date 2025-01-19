@@ -12,13 +12,14 @@ import {
     TempEntity,
     TempId
 } from "@src/databases"
-import { LeaderElectionService } from "@src/leader-election"
 import { BulkJobOptions, Queue } from "bullmq"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
 import { CropJobData } from "./crop.dto"
+import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
+import { OnEvent } from "@nestjs/event-emitter"
 
 dayjs.extend(utc)
 
@@ -28,14 +29,32 @@ export class CropService {
     constructor(
         @InjectQueue(BullQueueName.Crop) private readonly cropQueue: Queue,
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly leaderElectionService: LeaderElectionService
+        private readonly dataSource: DataSource
     ) {
+    }
+
+    // Flag to determine if the current instance is the leader
+    private isLeader = false
+
+    @OnEvent(LeaderElectedEvent)
+    handleLeaderElected(event: { leaseName: string }) {
+        this.logger.debug(`Leader elected for ${event.leaseName}`)
+        // Logic when becoming leader
+        this.isLeader = true
+    }
+
+    @OnEvent(LeaderLostEvent)
+    handleLeaderLost(event: { leaseName: string }) {
+        this.logger.debug(`Leader lost for ${event.leaseName}`)
+        // Logic when losing leadership
+        this.isLeader = false
     }
 
     @Cron("*/1 * * * * *")
     async handle() {
-        if (!this.leaderElectionService.isLeaderInstance()) return
+        if (!this.isLeader) {
+            return
+        }
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

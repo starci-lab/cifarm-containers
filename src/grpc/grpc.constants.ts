@@ -30,6 +30,7 @@ export const getGrpcData = (grpcName: GrpcName = GrpcName.Gameplay): GrpcConfigE
         data: { name, package: _package, protoPath, service }
     } = grpcDataMap()[grpcName]
     const url = `${host}:${port}`
+    const loopbackUrl = getLoopbackAddress(port)
     return {
         connection: {
             host,
@@ -42,11 +43,11 @@ export const getGrpcData = (grpcName: GrpcName = GrpcName.Gameplay): GrpcConfigE
             service
         },
         url,
-        loopbackUrl: `${getLoopbackAddress()}:${port}`,
+        loopbackUrl,
         nestConfig: {
             package: _package,
             protoPath,
-            url
+            url: loopbackUrl,
         }
     }
 }
