@@ -38,7 +38,7 @@ export class SocketCoreService {
         return sockets.at(0).id
     }
 
-    public async getUserId(socket: Socket): Promise<string> {
-        return socket.data.userId
+    public getUser(socket: Socket): UserLike {
+        return socket.data.user
     }
 }

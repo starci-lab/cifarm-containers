@@ -10,7 +10,7 @@ import {
     WebSocketServer
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
-import { SocketCoreService } from "@src/io/socket-core.service"
+import { SocketCoreService } from "@src/io"
 import { NAMESPACE } from "../gameplay.constants"
 import { VisitedEmitter2Payload, ObservingData, HandleVisitPayload } from "./main.types"
 import { VISIT_EVENT, VISITED_EMITTER2_EVENT } from "./main.constants"
@@ -66,7 +66,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         client.data.observing = observing
     }
     
-    public getSocket(): Array<Socket> {
+    public getSockets(): Array<Socket> {
         return Array.from(this.namespace.sockets.values())
     }  
 

@@ -69,7 +69,7 @@ export class SeedCommand extends CommandRunner {
             const factory = factoryMap[this.database][this.context]
 
             const dataSourceOptions = factory.createDataSourceOptions()
-            const synchronize = dataSourceOptions.synchronize
+            const clonedOptions = { ...dataSourceOptions }
 
             if (options?.create) {
                 await createDatabase({
@@ -77,11 +77,8 @@ export class SeedCommand extends CommandRunner {
                 })
             }
 
-            dataSource = new DataSource({
-                ...dataSourceOptions,
-                //synchornize the database is turned off when call the createDatabase function, so we need to turn it back here
-                synchronize
-            })
+            //initialize the data source with the cloned options, to avoid changing the original options
+            dataSource = new DataSource(clonedOptions)
 
             await dataSource.initialize()
 

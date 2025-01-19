@@ -1,6 +1,6 @@
 import { BaseOptions } from "@src/common"
 
-export interface KubernetesOptions  extends BaseOptions {
+export interface KubernetesOptions extends BaseOptions {
     leaderElection?: LeaderElectionOptions
 }
 

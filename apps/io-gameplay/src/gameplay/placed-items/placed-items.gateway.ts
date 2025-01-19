@@ -45,7 +45,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
     @Cron("*/1 * * * * *")
     public async processSyncPlacedItemsEverySecond() {
         //get all socket ids in this node
-        const sockets = this.mainGateway.getSocket()
+        const sockets = this.mainGateway.getSockets()
 
         //emit placed items to all clients
         const promises: Array<Promise<void>> = []
