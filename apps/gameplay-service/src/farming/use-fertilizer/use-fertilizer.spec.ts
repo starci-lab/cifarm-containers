@@ -19,7 +19,7 @@ import {
     getPostgreSqlToken,
     InventoryTypeId
 } from "@src/databases"
-import { EnergyNotEnoughException, EnergyService, LevelService } from "@src/gameplay"
+import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { v4 } from "uuid"
 import { GrpcFailedPreconditionException } from "@src/common"
@@ -34,7 +34,7 @@ describe("UseFertilizerService", () => {
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [UseFertilizerService, EnergyService, LevelService]
+            providers: [UseFertilizerService]
         }).compile()
 
         dataSource = moduleRef.get(getPostgreSqlToken())

@@ -3,6 +3,8 @@ import { InjectCache } from "@src/cache"
 import { InjectPostgreSQL } from "@src/databases"
 import { DataSource } from "typeorm"
 import { Cache } from "cache-manager"
+import { InjectKafka } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class ConnectionService {
@@ -11,6 +13,8 @@ export class ConnectionService {
             private readonly dataSource: DataSource,
             @InjectCache()
             private readonly cacheManager: Cache,
+            @InjectKafka()
+            private readonly clientKafka: ClientKafka
     ) { }
     public async closeAll(): Promise<void> {
         const promises: Array<Promise<void>> = []
@@ -21,6 +25,9 @@ export class ConnectionService {
         })())
         promises.push((async () => {
             await this.cacheManager.disconnect()
+        })())
+        promises.push((async () => {
+            await this.clientKafka.close()
         })())
         await Promise.all(promises)
     }

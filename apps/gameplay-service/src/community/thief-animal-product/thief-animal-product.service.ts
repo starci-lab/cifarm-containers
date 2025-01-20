@@ -20,7 +20,7 @@ import {
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcInternalException, GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
@@ -38,11 +38,12 @@ export class ThiefAnimalProductService {
         private readonly inventoryService: InventoryService
     ) {}
 
-    async theifAnimalProduct(
+    async thiefAnimalProduct(
         request: ThiefAnimalProductRequest
     ): Promise<ThiefAnimalProductResponse> {
-        this.logger.debug(`Theif animal product for user ${request.neighborUserId}`)
-
+        if (request.userId === request.neighborUserId) {
+            throw new GrpcInvalidArgumentException("Cannot thief from yourself")
+        }
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
@@ -57,10 +58,10 @@ export class ThiefAnimalProductService {
                     }
                 },
                 relations: {
-                    animalInfo: {
+                    animalInfo: true,
+                    placedItemType: {
                         animal: true
-                    },
-                    placedItemType: true
+                    }
                 }
             })
 
@@ -74,9 +75,9 @@ export class ThiefAnimalProductService {
 
             if (
                 placedItemAnimal.animalInfo.harvestQuantityRemaining ===
-                placedItemAnimal.animalInfo.animal.minHarvestQuantity
+                placedItemAnimal.placedItemType.animal.minHarvestQuantity
             ) {
-                throw new GrpcFailedPreconditionException("Animal is not ready to harvest")
+                throw new GrpcFailedPreconditionException("Animal's thief limit has been reached")
             }
 
             const { value: activitiesValue } = await queryRunner.manager.findOne(SystemEntity, {
@@ -109,7 +110,7 @@ export class ThiefAnimalProductService {
             const actualQuantity = Math.min(
                 computedQuantity,
                 placedItemAnimal.animalInfo.harvestQuantityRemaining -
-                    placedItemAnimal.animalInfo.animal.minHarvestQuantity
+                    placedItemAnimal.placedItemType.animal.minHarvestQuantity
             )
 
             // get inventories
@@ -118,11 +119,8 @@ export class ThiefAnimalProductService {
                     type: InventoryType.Product,
                     product: {
                         type: ProductType.Animal,
-                        animalId: placedItemAnimal.animalInfo.animalId
+                        animalId: placedItemAnimal.placedItemType.animalId
                     }
-                },
-                relations: {
-                    product: true
                 }
             })
 

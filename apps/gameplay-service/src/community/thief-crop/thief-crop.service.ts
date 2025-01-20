@@ -19,11 +19,12 @@ import {
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcInternalException, GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
-export class TheifCropService {
-    private readonly logger = new Logger(TheifCropService.name)
+export class ThiefCropService {
+    private readonly logger = new Logger(ThiefCropService.name)
     constructor(
         @InjectKafka()
         private readonly clientKafka: ClientKafka,
@@ -35,8 +36,10 @@ export class TheifCropService {
         private readonly inventoryService: InventoryService
     ) {}
 
-    async theifCrop(request: ThiefCropRequest): Promise<ThiefCropResponse> {
-        this.logger.debug(`Thief crop for user ${request.neighborUserId}`)
+    async thiefCrop(request: ThiefCropRequest): Promise<ThiefCropResponse> {
+        if (request.userId === request.neighborUserId) {
+            throw new GrpcInvalidArgumentException("Cannot thief from yourself")
+        }
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -68,14 +71,14 @@ export class TheifCropService {
             }
 
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
-                throw new GrpcNotFoundException("Crop is not fully matured")
+                throw new GrpcFailedPreconditionException("Crop is not fully matured")
             }
 
             if (
                 placedItemTile.seedGrowthInfo.harvestQuantityRemaining ===
                 placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
             ) {
-                throw new GrpcNotFoundException("Crop is already harvested")
+                throw new GrpcFailedPreconditionException("Crop's thief limit has been reached")
             }
 
             const { value: activitiesValue } = await queryRunner.manager.findOne(SystemEntity, {

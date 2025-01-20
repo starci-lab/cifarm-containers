@@ -13,3 +13,12 @@ export class Position {
     @ApiProperty({ example: 1, description: "Y coordinate" })
         y: number
 }
+
+export interface GameplayOptions {
+    theif?: TheifOptions
+}
+
+export interface TheifOptions {
+    minQuantity?: number
+    maxQuantity?: number
+}

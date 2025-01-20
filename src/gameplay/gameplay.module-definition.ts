@@ -1,7 +1,8 @@
 import { ConfigurableModuleBuilder } from "@nestjs/common"
+import { GameplayOptions } from "./gameplay.types"
 
 export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } =
-    new ConfigurableModuleBuilder()
+    new ConfigurableModuleBuilder<GameplayOptions>()
         .setExtras(
             {
                 isGlobal: false,

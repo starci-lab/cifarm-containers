@@ -10,6 +10,7 @@ import { AxiosModule } from "@src/axios"
 import { BlockchainModule } from "@src/blockchain"
 import { JwtModule } from "@src/jwt"
 import { GameplayModule } from "@src/gameplay"
+import { KafkaGroupId, KafkaModule } from "@src/brokers"
 
 @Module({})
 export class TestingInfraModule extends ConfigurableModuleClass {
@@ -42,6 +43,11 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                 }),
                 GameplayModule.register({
                     isGlobal: true
+                }),
+                KafkaModule.register({
+                    isGlobal: true,
+                    groupId: KafkaGroupId.PlacedItems,
+                    producerOnlyMode: true
                 })
             )
 
