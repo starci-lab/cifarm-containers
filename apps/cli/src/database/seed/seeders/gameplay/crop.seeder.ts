@@ -22,8 +22,7 @@ export class CropSeeder implements Seeder {
                 premium: false,
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
-                availableInShop: true,
-                maxStack: 16,
+                availableInShop: true,   
                 product: {
                     id: ProductId.Carrot,
                     isPremium: false,
@@ -35,7 +34,6 @@ export class CropSeeder implements Seeder {
                         id: ProductId.Carrot,
                         asTool: false,
                         deliverable: true,
-                        maxStack: 16,
                         placeable: false,
                         type: InventoryType.Product
                     }
@@ -44,7 +42,7 @@ export class CropSeeder implements Seeder {
                     id: InventoryTypeId.CarrotSeed,
                     asTool: false,
                     deliverable: false,
-                    maxStack: 16,
+                    
                     placeable: false,
                     type: InventoryType.Seed
                 }
@@ -61,8 +59,7 @@ export class CropSeeder implements Seeder {
                 premium: false,
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
-                availableInShop: true,
-                maxStack: 16,
+                availableInShop: true,       
                 product: {
                     id: ProductId.Potato,
                     isPremium: false,
@@ -74,7 +71,6 @@ export class CropSeeder implements Seeder {
                         id: ProductId.Potato,
                         asTool: false,
                         deliverable: true,
-                        maxStack: 16,
                         placeable: false,
                         type: InventoryType.Product
                     }
@@ -83,7 +79,6 @@ export class CropSeeder implements Seeder {
                     id: InventoryTypeId.PotatoSeed,
                     asTool: false,
                     deliverable: false,
-                    maxStack: 16,
                     placeable: false,
                     type: InventoryType.Seed
                 }
@@ -101,7 +96,6 @@ export class CropSeeder implements Seeder {
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
                 product: {
                     id: ProductId.Cucumber,
                     isPremium: false,
@@ -113,7 +107,6 @@ export class CropSeeder implements Seeder {
                         id: ProductId.Cucumber,
                         asTool: false,
                         deliverable: true,
-                        maxStack: 16,
                         placeable: false,
                         type: InventoryType.Product
                     }
@@ -121,8 +114,7 @@ export class CropSeeder implements Seeder {
                 inventoryType: {
                     id: InventoryTypeId.CucumberSeed,
                     asTool: false,
-                    deliverable: false,
-                    maxStack: 16,
+                    deliverable: false,  
                     placeable: false,
                     type: InventoryType.Seed
                 }
@@ -140,7 +132,6 @@ export class CropSeeder implements Seeder {
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
                 product: {
                     id: ProductId.Pineapple,
                     isPremium: false,
@@ -151,8 +142,7 @@ export class CropSeeder implements Seeder {
                     inventoryType: {
                         id: ProductId.Pineapple,
                         asTool: false,
-                        deliverable: true,
-                        maxStack: 16,
+                        deliverable: true,       
                         placeable: false,
                         type: InventoryType.Product
                     }
@@ -161,7 +151,6 @@ export class CropSeeder implements Seeder {
                     id: InventoryTypeId.PineappleSeed,
                     asTool: false,
                     deliverable: false,
-                    maxStack: 16,
                     placeable: false,
                     type: InventoryType.Seed
                 }
@@ -179,7 +168,6 @@ export class CropSeeder implements Seeder {
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
                 product: {
                     id: ProductId.Watermelon,
                     isPremium: false,
@@ -191,7 +179,6 @@ export class CropSeeder implements Seeder {
                         id: ProductId.Watermelon,
                         asTool: false,
                         deliverable: true,
-                        maxStack: 16,
                         placeable: false,
                         type: InventoryType.Product
                     }
@@ -200,7 +187,6 @@ export class CropSeeder implements Seeder {
                     id: InventoryTypeId.WatermelonSeed,
                     asTool: false,
                     deliverable: false,
-                    maxStack: 16,
                     placeable: false,
                     type: InventoryType.Seed
                 }
@@ -218,7 +204,6 @@ export class CropSeeder implements Seeder {
                 perennialCount: 3,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                maxStack: 16,
                 product: {
                     id: ProductId.BellPepper,
                     isPremium: false,
@@ -230,7 +215,6 @@ export class CropSeeder implements Seeder {
                         id: ProductId.BellPepper,
                         asTool: false,
                         deliverable: true,
-                        maxStack: 16,
                         placeable: false,
                         type: InventoryType.Product
                     }
@@ -239,7 +223,6 @@ export class CropSeeder implements Seeder {
                     id: InventoryTypeId.BellPepperSeed,
                     asTool: false,
                     deliverable: false,
-                    maxStack: 16,
                     placeable: false,
                     type: InventoryType.Seed
                 }

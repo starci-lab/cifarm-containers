@@ -1,9 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ExperienceCannotBeZeroOrNegativeException } from "@src/exceptions"
 import {
     AddExperiencesParams,
-    AddExperiencesResult
+    AddExperiencesResult,
+    ComputeTotalExperienceForLevelParams
 } from "./level.types"
+import { ExperienceCannotBeZeroOrNegativeException } from "../exceptions"
 
 @Injectable()
 export class LevelService {
@@ -44,5 +45,13 @@ export class LevelService {
             level,
             experiences: current
         }
+    }
+
+    public computeTotalExperienceForLevel({
+        experiences,
+        level
+    }: ComputeTotalExperienceForLevelParams): number {
+        const total = [...Array(level)].reduce((acc, _, i) => acc + this.computeExperiencesQuota(i + 1), 0)
+        return total + experiences
     }
 }

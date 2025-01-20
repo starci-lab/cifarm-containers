@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
+    Activities,
     AnimalCurrentState,
     AnimalInfoEntity,
     InjectPostgreSQL,
@@ -7,9 +8,13 @@ import {
     InventoryType,
     InventoryTypeEntity,
     PlacedItemEntity,
-    ProductType
+    PlacedItemType,
+    ProductType,
+    SystemEntity,
+    SystemId,
+    UserEntity
 } from "@src/databases"
-import { InventoryService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import {
     CollectAnimalProductRequest,
@@ -25,16 +30,14 @@ export class CollectAnimalProductService {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
+        private readonly energyService: EnergyService,
+        private readonly levelService: LevelService,
     ) {}
 
     async collectAnimalProduct(
         request: CollectAnimalProductRequest
     ): Promise<CollectAnimalProductResponse> {
-        this.logger.debug(
-            `Starting collect animal product for placedItem ${request?.placedItemAnimalId}`
-        )
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
@@ -42,21 +45,22 @@ export class CollectAnimalProductService {
             const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
                 where: {
                     id: request.placedItemAnimalId,
-                    userId: request.userId
+                    userId: request.userId,
+                    placedItemType: {
+                        type: PlacedItemType.Animal
+                    }
                 },
                 relations: {
-                    animalInfo: {
-                        animal: true
-                    }
+                    animalInfo: true,
+                    placedItemType: true
                 }
             })
 
-            if (!placedItemAnimal || placedItemAnimal.animalInfo) {
+            if (!placedItemAnimal) {
                 throw new GrpcNotFoundException("Animal not found")
             }
 
-            const { animalInfo } = placedItemAnimal
-            if (animalInfo.currentState !== AnimalCurrentState.Yield) {
+            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
                 throw new GrpcFailedPreconditionException("Animal is not ready to collect product")
             }
 
@@ -65,12 +69,9 @@ export class CollectAnimalProductService {
                 where: {
                     product: {
                         type: ProductType.Animal,
-                        animalId: animalInfo.animalId
+                        animalId: placedItemAnimal.placedItemType.animalId
                     },
                     type: InventoryType.Product
-                },
-                relations: {
-                    product: true
                 }
             })
 
@@ -91,10 +92,37 @@ export class CollectAnimalProductService {
                 userId: request.userId,
                 data: {
                     inventoryType: inventoryType,
-                    quantity: animalInfo.harvestQuantityRemaining
+                    quantity: placedItemAnimal.animalInfo.harvestQuantityRemaining
                 }
             })
 
+            const user = await queryRunner.manager.findOne(UserEntity, {
+                where: { id: request.userId }
+            })
+
+            const { value } = await queryRunner.manager.findOne(SystemEntity, {
+                where: { id: SystemId.Activities }
+            })
+            const {
+                cureAnimal: { energyConsume, experiencesGain }
+            } = value as Activities
+            
+            this.energyService.checkSufficient({
+                current: user.energy,
+                required: energyConsume
+            })
+            
+            // Subtract energy
+            const energyChanges = this.energyService.substract({
+                entity: user,
+                energy: energyConsume
+            })
+
+            // Update user energy and experience
+            const experiencesChanges = this.levelService.addExperiences({
+                entity: user,
+                experiences: experiencesGain
+            })
             queryRunner.startTransaction()
 
             try {
@@ -107,6 +135,12 @@ export class CollectAnimalProductService {
                     harvestQuantityRemaining: 0
                 })
 
+                // Update user energy and experience
+                await queryRunner.manager.update(UserEntity, user.id, {
+                    ...energyChanges,
+                    ...experiencesChanges
+                })
+
                 // Commit transaction
                 await queryRunner.commitTransaction()
             } catch (error) {
@@ -116,9 +150,6 @@ export class CollectAnimalProductService {
                 throw new GrpcInternalException(errorMessage)
             }
             return {}
-        } catch (error) {
-            this.logger.error("Collect animal Product failed", error)
-            throw error
         } finally {
             await queryRunner.release()
         }

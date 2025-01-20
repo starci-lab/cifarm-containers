@@ -28,6 +28,8 @@ export class Activities {
     @Field(() => ActivityInfo)
         feedAnimal: ActivityInfo
     @Field(() => ActivityInfo)
+        collectAnimalProduct: ActivityInfo
+    @Field(() => ActivityInfo)
         usePesticide: ActivityInfo
     @Field(() => ActivityInfo)
         useFertilizer: ActivityInfo

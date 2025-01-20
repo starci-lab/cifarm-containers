@@ -7,6 +7,7 @@ import {
     InventoryType,
     InventoryTypeEntity,
     PlacedItemEntity,
+    PlacedItemType,
     ProductEntity,
     SeedGrowthInfoEntity,
     SystemEntity,
@@ -36,7 +37,13 @@ export class HarvestCropService {
         await queryRunner.connect()
         try {
             const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: request.placedItemTileId },
+                where: {
+                    id: request.placedItemTileId,
+                    userId: request.userId,
+                    placedItemType: {
+                        type: PlacedItemType.Tile
+                    }
+                },
                 relations: {
                     seedGrowthInfo: {
                         crop: true
@@ -46,12 +53,10 @@ export class HarvestCropService {
 
             if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
 
-            if (placedItemTile.seedGrowthInfo)
+            if (!placedItemTile.seedGrowthInfo)
                 throw new GrpcFailedPreconditionException("Tile is not planted")
 
-            const { seedGrowthInfo } = placedItemTile
-
-            if (seedGrowthInfo.currentState !== CropCurrentState.FullyMatured)
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured)
                 throw new GrpcFailedPreconditionException("Crop is not fully matured")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -83,12 +88,7 @@ export class HarvestCropService {
             //get corresponding inventory type
             const product = await queryRunner.manager.findOne(ProductEntity, {
                 where: {
-                    crop: {
-                        id: seedGrowthInfo.crop.id
-                    }
-                },
-                relations: {
-                    crop: true
+                    cropId: placedItemTile.seedGrowthInfo.cropId
                 }
             })
 
@@ -112,7 +112,7 @@ export class HarvestCropService {
                 userId: request.userId,
                 data: {
                     inventoryType: inventoryType,
-                    quantity: seedGrowthInfo.harvestQuantityRemaining
+                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
                 }
             })
 
@@ -127,23 +127,23 @@ export class HarvestCropService {
 
                 await queryRunner.manager.save(InventoryEntity, updatedInventories)
 
-                //if current perennial count is equal to crop's perennial count, remove the crop, delete the seed growth info
+                //if current perennial count is equal to crop's perennial count - 1, remove the crop, delete the seed growth info
                 if (
-                    seedGrowthInfo.currentPerennialCount >=
-                    seedGrowthInfo.crop.perennialCount
+                    placedItemTile.seedGrowthInfo.currentPerennialCount + 1 >=
+                    placedItemTile.seedGrowthInfo.crop.perennialCount
                 ) {
                     await queryRunner.manager.remove(
                         SeedGrowthInfoEntity,
-                        seedGrowthInfo
+                        placedItemTile.seedGrowthInfo
                     )
                 } else {
                     // update seed growth info
                     await queryRunner.manager.update(
                         SeedGrowthInfoEntity,
-                        seedGrowthInfo.id,
+                        placedItemTile.seedGrowthInfo.id,
                         {
                             currentPerennialCount:
-                                seedGrowthInfo.currentPerennialCount + 1,
+                                placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
                             currentState: CropCurrentState.Normal,
                             currentStageTimeElapsed: 0
                         }

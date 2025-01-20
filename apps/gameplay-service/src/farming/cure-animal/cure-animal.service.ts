@@ -5,6 +5,7 @@ import {
     AnimalInfoEntity,
     InjectPostgreSQL,
     PlacedItemEntity,
+    PlacedItemType,
     SystemEntity,
     SystemId,
     UserEntity
@@ -34,7 +35,10 @@ export class CureAnimalService {
             const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
                 where: {
                     id: request.placedItemAnimalId,
-                    userId: request.userId
+                    userId: request.userId,
+                    placedItemType: {
+                        type: PlacedItemType.Animal
+                    }
                 },
                 relations: {
                     animalInfo: true

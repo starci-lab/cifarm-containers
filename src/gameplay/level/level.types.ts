@@ -30,3 +30,5 @@ export class AddExperiencesParams extends EntityParams<UserEntity> {
 }
 
 export type AddExperiencesResult = DeepPartial<UserEntity>
+
+export type ComputeTotalExperienceForLevelParams = Pick<UserEntity, "level" | "experiences">

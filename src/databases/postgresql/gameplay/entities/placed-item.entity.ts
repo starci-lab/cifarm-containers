@@ -72,7 +72,10 @@ export class PlacedItemEntity extends UuidAbstractEntity {
         placedItemIds?: Array<string>
     
     @Field(() => [PlacedItemEntity])
-    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.placedItemType)
+    @OneToMany(() => PlacedItemEntity, (placedItem) => placedItem.parent, {
+        cascade: true,
+        onDelete: "CASCADE"
+    })
         placedItems?: Array<PlacedItemEntity>
 
     @Field(() => String, { nullable: true })
@@ -80,7 +83,8 @@ export class PlacedItemEntity extends UuidAbstractEntity {
         parentId?: string
 
     @Field(() => String, { nullable: true })
-    @ManyToOne(() => PlacedItemEntity, (placedItem) => placedItem.id, { nullable: true })
+    @ManyToOne(() => PlacedItemEntity, (placedItem) => placedItem.placedItems, { nullable: true })
+    @JoinColumn({ name: "parent_id", referencedColumnName: "id" })
         parent: PlacedItemEntity
 
     @Field(() => String, { nullable: true })

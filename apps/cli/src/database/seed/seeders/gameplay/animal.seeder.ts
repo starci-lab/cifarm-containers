@@ -43,7 +43,6 @@ export class AnimalSeeder implements Seeder {
                         id: ProductId.Egg,
                         asTool: false,
                         deliverable: true,
-                        maxStack: 1,
                         placeable: true,
                         type: InventoryType.Product
                     }
@@ -86,7 +85,6 @@ export class AnimalSeeder implements Seeder {
                         id: ProductId.Milk,
                         asTool: false,
                         deliverable: true,
-                        maxStack: 1,
                         placeable: true,
                         type: InventoryType.Product
                     }

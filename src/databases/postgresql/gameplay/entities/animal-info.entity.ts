@@ -1,7 +1,6 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
+import { Column, Entity, JoinColumn, JoinTable, ManyToMany, OneToOne } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
-import { AnimalEntity } from "./animal.entity"
 import { AnimalCurrentState } from "../enums"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { UserEntity } from "./user.entity"
@@ -25,14 +24,14 @@ export class AnimalInfoEntity extends UuidAbstractEntity {
     @Column({ type: "boolean", default: false })
         isAdult: boolean
 
-    @Field(() => String)
-    @Column({ name: "animal_id" })
-        animalId: string
+    // @Field(() => String)
+    // @Column({ name: "animal_id" })
+    //     animalId: string
 
-    @Field(() => AnimalEntity)
-    @ManyToOne(() => AnimalEntity, { nullable: true, onDelete: "CASCADE" })
-    @JoinColumn({ name: "animal_id", referencedColumnName: "id" })
-        animal: AnimalEntity
+    // @Field(() => AnimalEntity)
+    // @ManyToOne(() => AnimalEntity, { nullable: true, onDelete: "CASCADE" })
+    // @JoinColumn({ name: "animal_id", referencedColumnName: "id" })
+    //     animal: AnimalEntity
 
     @Field(() => String)
     @Column({ type: "enum", enum: AnimalCurrentState, default: AnimalCurrentState.Normal })

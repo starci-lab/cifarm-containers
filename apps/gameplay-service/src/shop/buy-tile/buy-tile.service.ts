@@ -1,17 +1,14 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     InjectPostgreSQL,
-    InventoryEntity,
-    InventoryType,
     PlacedItemEntity,
     PlacedItemType,
     PlacedItemTypeEntity,
     TileEntity,
-    TileId,
     UserEntity
 } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
-import { DataSource, DeepPartial, QueryRunner } from "typeorm"
+import { DataSource, DeepPartial } from "typeorm"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
@@ -20,26 +17,19 @@ import { GrpcFailedPreconditionException } from "@src/common"
 export class BuyTileService {
     private readonly logger = new Logger(BuyTileService.name)
 
-    private readonly tileOrder = [TileId.BasicTile1, TileId.BasicTile2, TileId.BasicTile3]
-
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService
-    ) {
-    }
+    ) {}
 
     async buyTile(request: BuyTileRequest): Promise<BuyTileResponse> {
-        this.logger.debug(`Starting tile purchase for user ${request.userId}`)
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         try {
-            const currentTileId = await this.determineCurrentTileId(request.userId, queryRunner)
-
             const tile = await queryRunner.manager.findOne(TileEntity, {
-                where: { id: currentTileId }
+                where: { id: request.tileId }
             })
 
             if (!tile) {
@@ -51,18 +41,32 @@ export class BuyTileService {
             }
 
             const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
-                where: { type: PlacedItemType.Tile, tileId: currentTileId }
+                where: { type: PlacedItemType.Tile, tileId: request.tileId }
             })
 
-            // Calculate total cost
-            const totalCost = tile.price
-
+            // get users
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
             })
 
             // Check sufficient gold
-            this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
+            this.goldBalanceService.checkSufficient({ current: user.golds, required: tile.price })
+
+            // get tiles count
+            const count = await queryRunner.manager.count(PlacedItemEntity, {
+                where: {
+                    placedItemType: {
+                        tile: {
+                            id: request.tileId
+                        }
+                    }
+                }
+            })
+
+            // check tile count
+            if (count >= tile.maxOwnership) {
+                throw new GrpcFailedPreconditionException("Tile max ownership reached")
+            }
 
             // Prepare placed item entity
             const placedItem: DeepPartial<PlacedItemEntity> = {
@@ -75,7 +79,7 @@ export class BuyTileService {
             // Subtract gold
             const goldsChanged = this.goldBalanceService.subtract({
                 entity: user,
-                amount: totalCost
+                amount: tile.price
             })
             // Start transaction
             await queryRunner.startTransaction()
@@ -94,51 +98,9 @@ export class BuyTileService {
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
-
             return {}
         } finally {
             await queryRunner.release()
         }
-    }
-
-    private async determineCurrentTileId(
-        userId: string,
-        queryRunner: QueryRunner
-    ): Promise<string> {
-        for (const tileId of this.tileOrder) {
-            const tile = await queryRunner.manager.findOne(TileEntity, { where: { id: tileId } })
-            //check inventory
-            const inventoryTileCount = await queryRunner.manager.count(InventoryEntity, {
-                where: {
-                    userId,
-                    inventoryType: {
-                        tileId: tileId,
-                        type: InventoryType.Tile
-                    }
-                },
-                relations: {
-                    inventoryType: true
-                }
-            })
-
-            const placedItemsCount = await queryRunner.manager.count(PlacedItemEntity, {
-                where: {
-                    userId,
-                    placedItemType: {
-                        tileId: tileId,
-                        type: PlacedItemType.Tile
-                    }
-                },
-                relations: {
-                    placedItemType: true
-                }
-            })
-
-            if ((placedItemsCount + inventoryTileCount) < tile.maxOwnership) {
-                return tileId
-            }
-        }
-
-        throw new GrpcFailedPreconditionException("No tile available")
     }
 }

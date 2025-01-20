@@ -49,12 +49,12 @@ export class BuyAnimalService {
                     id: request.placedItemBuildingId
                 },
                 relations: {
-                    buildingInfo: {
+                    buildingInfo: true,
+                    placedItemType: {
                         building: {
                             upgrades: true
                         }
-                    },
-                    placedItemType: true
+                    }
                 }
             })
 
@@ -68,17 +68,22 @@ export class BuyAnimalService {
                 throw new GrpcFailedPreconditionException("Placed item is not a building")
 
             //Check if building is same animal type
-            if (placedItemBuilding.buildingInfo.building.type != animal.type)
+            if (placedItemBuilding.placedItemType.building.type != animal.type)
                 throw new GrpcFailedPreconditionException("Building is not for this animal")
 
             //Check if slot is occupied
             const maxCapacity =
-                placedItemBuilding.buildingInfo.building.upgrades[
+                placedItemBuilding.placedItemType.building.upgrades[
                     placedItemBuilding.buildingInfo.currentUpgrade
                 ].capacity
 
             //Check occupancy
-            if (placedItemBuilding.buildingInfo.occupancy >= maxCapacity)
+            const count = await queryRunner.manager.count(PlacedItemEntity, {
+                where: {
+                    parentId: placedItemBuilding.id
+                }
+            })
+            if (count >= maxCapacity)
                 throw new GrpcFailedPreconditionException("Building is full")
 
             //Find placedItemType
@@ -104,16 +109,12 @@ export class BuyAnimalService {
 
             const placedItemAnimal: DeepPartial<PlacedItemEntity> = {
                 userId: request.userId,
-                animalInfo: {
-                    animalId: request.animalId
-                },
+                animalInfo: {},
                 x: request.position.x,
                 y: request.position.y,
                 placedItemTypeId: placedItemType.id,
                 parentId: placedItemBuilding.id
             }
-
-            placedItemBuilding.buildingInfo.occupancy += 1
 
             // Subtract gold
             const goldsChanged = this.goldBalanceService.subtract({

@@ -23,6 +23,10 @@ export class SystemSeeder implements Seeder {
                 energyConsume: 1,
                 experiencesGain: 3
             },
+            collectAnimalProduct: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
             feedAnimal: {
                 energyConsume: 1,
                 experiencesGain: 3

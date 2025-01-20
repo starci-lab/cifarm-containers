@@ -28,8 +28,8 @@ export class InventoryTypeEntity extends StringAbstractEntity {
     @Column({ name: "as_tool", type: "boolean", default: false })
         asTool: boolean
 
-    @Field(() => Number, { defaultValue: 16 })
-    @Column({ name: "max_stack", type: "int", default: 16 })
+    @Field(() => Number)
+    @Column({ name: "max_stack", type: "int", default: 64 })
         maxStack: number
 
     @Field(() => String, { nullable: true })

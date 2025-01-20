@@ -38,20 +38,19 @@ describe("BuyAnimalService", () => {
     })
 
     it("should successfully buy an animal and update user and placed item", async () => {
+        const x = 0, y = 0
         const animal = await dataSource.manager.findOne(AnimalEntity, {
             where: { id: AnimalId.Chicken }
         })
-        const user = await gameplayMockUserService.generate({ golds: animal.price + 100 })
+        const user = await gameplayMockUserService.generate({ golds: animal.price + 10 })
 
         //create placed item building by data source
         const building = await dataSource.manager.save(PlacedItemEntity, {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.Coop,
-            x: 10,
-            y: 10,
-            buildingInfo: {
-                buildingId: BuildingId.Coop
-            }
+            x,
+            y,
+            buildingInfo: { }
         })
 
         const totalCost = animal.price
@@ -62,7 +61,7 @@ describe("BuyAnimalService", () => {
             userId: user.id,
             animalId: animal.id,
             placedItemBuildingId: building.id,
-            position: { x: 0, y: 0 }
+            position: { x, y }
         })
 
         const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
@@ -75,16 +74,15 @@ describe("BuyAnimalService", () => {
         const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
             where: {
                 userId: user.id,
-                animalInfo: { animalId: animal.id }
+                placedItemType: {
+                    animalId: animal.id
+                }
             },
-            relations: {
-                animalInfo: true
-            }
         })
 
         expect(placedItem).toBeDefined()
-        expect(placedItem.x).toBe(0)
-        expect(placedItem.y).toBe(0)
+        expect(placedItem.x).toBe(x)
+        expect(placedItem.y).toBe(y)
     })
 
     it("should throw GrpcNotFoundException when animal is not found", async () => {
@@ -94,11 +92,9 @@ describe("BuyAnimalService", () => {
         const building = await dataSource.manager.save(PlacedItemEntity, {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.Coop,
-            x: 10,
-            y: 10,
-            buildingInfo: {
-                buildingId: BuildingId.Coop
-            }
+            x: 0,
+            y: 0,
+            buildingInfo: {}
         })
 
         await expect(
@@ -138,8 +134,8 @@ describe("BuyAnimalService", () => {
         const nonBuildingPlacedItem = await dataSource.manager.save(PlacedItemEntity, {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.Chicken,
-            x: 10,
-            y: 10
+            x: 0,
+            y: 0
         })
 
         await expect(
@@ -156,7 +152,7 @@ describe("BuyAnimalService", () => {
         const animal = await dataSource.manager.findOne(AnimalEntity, {
             where: { id: AnimalId.Chicken }
         })
-        const user = await gameplayMockUserService.generate({ golds: animal.price + 100 })
+        const user = await gameplayMockUserService.generate({ golds: animal.price + 10 })
 
         //take the lowest upgrade level of the building
         const upgrade = await dataSource.manager.findOne(UpgradeEntity, {
@@ -167,12 +163,16 @@ describe("BuyAnimalService", () => {
         const building = await dataSource.manager.save(PlacedItemEntity, {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.Coop,
-            x: 10,
-            y: 10,
-            buildingInfo: {
-                buildingId: BuildingId.Coop,
-                occupancy: upgrade.capacity
-            }
+            x: 0,
+            y: 1,
+            buildingInfo: {},
+            placedItems: Array.from({ length: upgrade.capacity }, (_, i) => ({
+                userId: user.id,
+                x: i,
+                y: 0,
+                animalInfo: {},
+                placedItemTypeId: PlacedItemTypeId.Chicken
+            }))
         })
 
         await expect(
@@ -190,7 +190,7 @@ describe("BuyAnimalService", () => {
             where: { id: AnimalId.Chicken }
         })
         // generate user with golds less than animal price
-        const user = await gameplayMockUserService.generate({ golds: animal.price - 100 })
+        const user = await gameplayMockUserService.generate({ golds: animal.price - 10 })
 
         //create placed item building by data source
         const building = await dataSource.manager.save(PlacedItemEntity, {
@@ -198,9 +198,7 @@ describe("BuyAnimalService", () => {
             placedItemTypeId: PlacedItemTypeId.Coop,
             x: 10,
             y: 10,
-            buildingInfo: {
-                buildingId: BuildingId.Coop
-            }
+            buildingInfo: {}
         })
 
         await expect(

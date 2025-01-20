@@ -39,7 +39,7 @@ describe("BuySuppliesService", () => {
         })
         const quantity = 2
 
-        const user = await gameplayMockUserService.generate({ golds: supply.price * quantity + 100 })
+        const user = await gameplayMockUserService.generate({ golds: supply.price * quantity + 10 })
 
         const golds = user.golds
 

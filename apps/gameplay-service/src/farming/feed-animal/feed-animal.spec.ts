@@ -1,121 +1,221 @@
-//npx jest apps/gameplay-service/src/farming/feed-animal/feed-animal.spec.ts
+// npx jest apps/gameplay-service/src/farming/feed-animal/feed-animal.spec.ts
 
-import {
-    AnimalCurrentState,
-    AnimalId,
-    InventoryEntity,
-    InventoryType,
-    InventoryTypeEntity,
-    PlacedItemEntity,
-    SupplyId,
-    UserEntity
-} from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing/infra"
-import { DataSource, DeepPartial } from "typeorm"
-import { FeedAnimalRequest } from "./feed-animal.dto"
-import { FeedAnimalModule } from "./feed-animal.module"
+import { Test } from "@nestjs/testing"
+import { DataSource } from "typeorm"
 import { FeedAnimalService } from "./feed-animal.service"
+import {
+    ConnectionService,
+    GameplayMockUserService,
+    TestingInfraModule
+} from "@src/testing"
+import {
+    AnimalInfoEntity,
+    AnimalCurrentState,
+    PlacedItemEntity,
+    UserEntity,
+    InventoryEntity,
+    SupplyId,
+    SystemEntity,
+    SystemId,
+    Activities,
+    getPostgreSqlToken,
+    PlacedItemTypeId,
+} from "@src/databases"
+import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
+import { v4 } from "uuid"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 describe("FeedAnimalService", () => {
     let dataSource: DataSource
     let service: FeedAnimalService
-
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER,
-        energy: 10,
-        experiences: 0,
-    }
+    let connectionService: ConnectionService
+    let gameplayMockUserService: GameplayMockUserService
+    let levelService: LevelService
 
     beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [FeedAnimalModule],
-        })
-        dataSource = ds
-        service = module.get<FeedAnimalService>(FeedAnimalService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [FeedAnimalService]
+        }).compile()
+
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        service = moduleRef.get(FeedAnimalService)
+        connectionService = moduleRef.get(ConnectionService)
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
+        levelService = moduleRef.get(LevelService)
     })
 
-    it("Should successfully feed a hungry animal", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+    it("should successfully feed the hungry animal and update user stats and inventory", async () => {
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            collectAnimalProduct: { energyConsume, experiencesGain }
+        } = value as Activities
+    
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
 
-        // Create mock user
-        const user = await queryRunner.manager.save(UserEntity, mockUser)
-
-        // Create mock placed item
-        const placedItem = await queryRunner.manager.save(PlacedItemEntity, {
-            userId: user.id,
+        // Create placed animal in hungry state
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                currentState: AnimalCurrentState.Hungry
+            },
             x: 0,
             y: 0,
-            animalInfo: {
-                currentState: AnimalCurrentState.Hungry,
-                animalId: AnimalId.Cow,
-            },
+            placedItemTypeId: PlacedItemTypeId.Chicken,
+            userId: user.id
         })
 
-        const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-            where: {
-                type: InventoryType.Supply,
-                supplyId: SupplyId.AnimalFeed,
-            },
-        })
-
-        // Create mock inventory
-        const inventory = await queryRunner.manager.save(InventoryEntity, {
+        // Create inventory with animal feed
+        const quantity = 10
+        const inventory = await dataSource.manager.save(InventoryEntity, {
             userId: user.id,
-            quantity: 5,
-            inventoryType
+            inventoryTypeId: SupplyId.AnimalFeed,
+            quantity
         })
 
-        console.log(inventory)
+        // Call the service method to feed the animal
+        await service.feedAnimal({
+            userId: user.id,
+            placedItemAnimalId: placedItemAnimal.id
+        })
 
-        await queryRunner.startTransaction()
+        const userAfter = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["energy", "level", "experiences"]
+        })
 
-        try {
-            const request: FeedAnimalRequest = {
+        // Assert energy and experience changes
+        expect(user.energy - userAfter.energy).toBe(energyConsume)
+        expect(
+            levelService.computeTotalExperienceForLevel(userAfter) -
+                levelService.computeTotalExperienceForLevel(user)
+        ).toBe(experiencesGain)
+
+        // Assert animal state is updated to normal and hungry time reset
+        const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
+            where: { id: placedItemAnimal.animalInfoId }
+        })
+
+        expect(updatedAnimalInfo.currentState).toBe(AnimalCurrentState.Normal)
+
+        // Assert inventory quantity decreased by 1
+        const updatedInventory = await dataSource.manager.findOne(InventoryEntity, {
+            where: { id: inventory.id }
+        })
+
+        expect(updatedInventory.quantity).toBe(quantity - 1)
+    })
+
+    it("should throw GrpcNotFoundException when animal is not found by its ID", async () => {
+        const user = await gameplayMockUserService.generate()
+        const invalidPlacedItemAnimalId = v4()
+
+        await expect(
+            service.feedAnimal({
                 userId: user.id,
-                placedItemAnimalId: placedItem.id,
-            }
-
-            // Execute the service method
-            const response = await service.feedAnimal(request)
-
-            // Verify animal state updated
-            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: placedItem.id },
-                relations: { animalInfo: true },
+                placedItemAnimalId: invalidPlacedItemAnimalId
             })
-            expect(placedItemAnimal.animalInfo.currentState).toBe(AnimalCurrentState.Normal)
-            expect(placedItemAnimal.animalInfo.currentHungryTime).toBe(0)
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
 
-            // Verify inventory updated
-            const updatedInventory = await queryRunner.manager.findOne(InventoryEntity, {
-                where: { id: inventory.id },
+    it("should throw GrpcNotFoundException when animal belongs to a different user", async () => {
+        const user = await gameplayMockUserService.generate()
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                currentState: AnimalCurrentState.Hungry
+            },
+            x: 0,
+            y: 0,
+            userId: user.id,
+            placedItemTypeId: PlacedItemTypeId.Chicken
+        })
+
+        await expect(
+            service.feedAnimal({
+                userId: v4(), // Different user ID
+                placedItemAnimalId: placedItemAnimal.id
             })
-            expect(updatedInventory.quantity).toBe(4)
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
 
-            expect(response).toEqual({})
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+    it("should throw GrpcFailedPreconditionException when animal is not hungry", async () => {
+        const user = await gameplayMockUserService.generate()
+
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                currentState: AnimalCurrentState.Normal // Not hungry
+            },
+            x: 0,
+            y: 0,
+            userId: user.id,
+            placedItemTypeId: PlacedItemTypeId.Chicken
+        })
+
+        await expect(
+            service.feedAnimal({
+                userId: user.id,
+                placedItemAnimalId: placedItemAnimal.id
+            })
+        ).rejects.toThrow(GrpcFailedPreconditionException)
+    })
+
+    it("should throw GrpcNotFoundException when inventory is not found", async () => {
+        const user = await gameplayMockUserService.generate()
+
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                currentState: AnimalCurrentState.Hungry
+            },
+            x: 0,
+            y: 0,
+            userId: user.id,
+            placedItemTypeId: PlacedItemTypeId.Chicken
+        })
+
+        await expect(
+            service.feedAnimal({
+                userId: user.id,
+                placedItemAnimalId: placedItemAnimal.id
+            })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
+
+    it("should throw EnergyNotEnoughException when user energy is not enough", async () => {
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            collectAnimalProduct: { energyConsume }
+        } = value as Activities
+        
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume - 1
+        })
+        
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                currentState: AnimalCurrentState.Hungry
+            },
+            x: 0,
+            y: 0,
+            placedItemTypeId: PlacedItemTypeId.Chicken,
+            userId: user.id
+        })
+        
+        await expect(
+            service.feedAnimal({
+                userId: user.id,
+                placedItemAnimalId: placedItemAnimal.id
+            })
+        ).rejects.toThrow(EnergyNotEnoughException)
     })
 
     afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.delete(UserEntity, { id: mockUser.id })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

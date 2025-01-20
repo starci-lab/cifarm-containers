@@ -1,10 +1,10 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
-import { CropEntity } from "./crop.entity"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { UuidAbstractEntity } from "./abstract"
 import { UserEntity } from "./user.entity"
 import { CropCurrentState } from "../enums"
+import { CropEntity } from "./crop.entity"
 
 @ObjectType()
 @Entity("seed_growth_info")
@@ -22,7 +22,7 @@ export class SeedGrowthInfoEntity extends UuidAbstractEntity {
         totalTimeElapsed: number
 
     @Field(() => Int)
-    @Column({ name: "current_perennial_count", type: "int4", default: 1 })
+    @Column({ name: "current_perennial_count", type: "int4", default: 0 })
         currentPerennialCount: number
 
     @Field(() => Int)

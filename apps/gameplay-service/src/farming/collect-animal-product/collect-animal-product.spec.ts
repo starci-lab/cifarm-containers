@@ -1,111 +1,201 @@
-//npx jest apps/gameplay-service/src/farming/collect-animal-product/collect-animal-product.spec.ts
+// npx jest apps/gameplay-service/src/farming/collect-animal-product/collect-animal-product.spec.ts
 
-import {
-    AnimalCurrentState,
-    AnimalId,
-    InventoryEntity,
-    PlacedItemEntity,
-    ProductId,
-    UserEntity
-} from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing/infra"
-import { DataSource, DeepPartial } from "typeorm"
-import { CollectAnimalProductRequest } from "./collect-animal-product.dto"
-import { CollectAnimalProductModule } from "./collect-animal-product.module"
+import { Test } from "@nestjs/testing"
+import { DataSource } from "typeorm"
 import { CollectAnimalProductService } from "./collect-animal-product.service"
+import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import {
+    AnimalInfoEntity,
+    AnimalCurrentState,
+    PlacedItemEntity,
+    InventoryEntity,
+    UserEntity,
+    getPostgreSqlToken,
+    ProductType,
+    PlacedItemTypeId,
+    SystemEntity,
+    SystemId,
+    Activities,
+    InventoryType,
+    AnimalId
+} from "@src/databases"
+import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
+import { v4 } from "uuid"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 describe("CollectAnimalProductService", () => {
     let dataSource: DataSource
     let service: CollectAnimalProductService
-
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER
-    }
+    let connectionService: ConnectionService
+    let gameplayMockUserService: GameplayMockUserService
+    let levelService: LevelService
 
     beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [CollectAnimalProductModule]
-        })
-        dataSource = ds
-        service = module.get<CollectAnimalProductService>(CollectAnimalProductService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [CollectAnimalProductService]
+        }).compile()
+
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        service = moduleRef.get(CollectAnimalProductService)
+        connectionService = moduleRef.get(ConnectionService)
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
+        levelService = moduleRef.get(LevelService)
     })
 
-    it("Should collect animal product successfully", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-        const userInDB = await queryRunner.manager.save(UserEntity, mockUser)
+    it("should successfully collect animal product and update inventory", async () => {
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            collectAnimalProduct: { energyConsume, experiencesGain }
+        } = value as Activities
 
-        const placedItemAnimal: DeepPartial<PlacedItemEntity> = {
-            userId: userInDB.id,
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        const quantity = 10
+        const animalId = AnimalId.Chicken
+        // create
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
             animalInfo: {
-                animalId: AnimalId.Chicken,
-                harvestQuantityRemaining: 10,
-                isAdult: true,
+                animalId,
                 currentState: AnimalCurrentState.Yield,
+                harvestQuantityRemaining: quantity
             },
             x: 0,
             y: 0,
-        }
+            placedItemTypeId: PlacedItemTypeId.Chicken,
+            userId: user.id
+        })
 
-        const animalInfo = await queryRunner.manager.save(PlacedItemEntity, placedItemAnimal)
+        await service.collectAnimalProduct({
+            userId: user.id,
+            placedItemAnimalId: placedItemAnimal.id
+        })
 
-        await queryRunner.startTransaction()
+        const userAfter = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["energy", "level", "experiences"]
+        })
 
-        try {
-            const request: CollectAnimalProductRequest = {
-                userId: userInDB.id,
-                placedItemAnimalId: animalInfo.id
-            }
+        expect(user.energy - userAfter.energy).toBe(energyConsume)
+        expect(
+            levelService.computeTotalExperienceForLevel(userAfter) -
+                levelService.computeTotalExperienceForLevel(user)
+        ).toBe(experiencesGain)
 
-            // Collect animal product
-            await service.collectAnimalProduct(request)
-
-            // Verify inventory was created
-            const inventories = await queryRunner.manager.find(InventoryEntity, {
-                where: {
-                    userId: userInDB.id,
-                    inventoryType: {
-                        productId: ProductId.Egg
+        const inventory = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                userId: user.id,
+                inventoryType: {
+                    type: InventoryType.Product,
+                    product: {
+                        type: ProductType.Animal,
+                        animalId
                     }
-                },
-                relations: { inventoryType: true }
+                }
+            }
+        })
+
+        expect(inventory.quantity).toBe(quantity)
+
+        const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
+            where: { id: placedItemAnimal.animalInfoId }
+        })
+
+        expect(updatedAnimalInfo.currentState).toBe(AnimalCurrentState.Normal)
+    })
+
+    it("should throw GrpcNotFoundException when the animal is not found by its ID", async () => {
+        const user = await gameplayMockUserService.generate()
+        const invalidPlacedItemAnimalId = v4()
+
+        await expect(
+            service.collectAnimalProduct({
+                userId: user.id,
+                placedItemAnimalId: invalidPlacedItemAnimalId
             })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
 
-            expect(inventories).toBeDefined()
+    it("should throw EnergyNotEnoughException when user energy is not enough", async () => {
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            collectAnimalProduct: { energyConsume }
+        } = value as Activities
 
-            // Verify animal yield status reset
-            const updatedPlacedItem = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id: animalInfo.id },
-                relations: { animalInfo: true }
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume - 1
+        })
+
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                currentState: AnimalCurrentState.Yield
+            },
+            x: 0,
+            y: 0,
+            placedItemTypeId: PlacedItemTypeId.Chicken,
+            userId: user.id
+        })
+
+        await expect(
+            service.collectAnimalProduct({
+                userId: user.id,
+                placedItemAnimalId: placedItemAnimal.id
             })
+        ).rejects.toThrow(EnergyNotEnoughException)
+    })
 
-            console.log(updatedPlacedItem)
+    it("should throw GrpcNotFoundException when the animal belongs to a different user", async () => {
+        const user = await gameplayMockUserService.generate()
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                animalId: AnimalId.Chicken,
+                currentState: AnimalCurrentState.Yield
+            },
+            x: 0,
+            y: 0,
+            placedItemTypeId: PlacedItemTypeId.Chicken,
+            userId: user.id
+        })
 
-            expect(updatedPlacedItem.animalInfo.harvestQuantityRemaining).toBe(0)
-            expect(updatedPlacedItem.animalInfo.currentState).toBe(AnimalCurrentState.Normal)
+        await expect(
+            service.collectAnimalProduct({
+                userId: v4(),
+                placedItemAnimalId: placedItemAnimal.id
+            })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
 
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+    it("should throw GrpcFailedPreconditionException when animal is not ready to yield", async () => {
+        const user = await gameplayMockUserService.generate()
+        const animalId = AnimalId.Chicken
+        // create
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                animalId,
+                currentState: AnimalCurrentState.Normal,
+            },
+            x: 0,
+            y: 0,
+            placedItemTypeId: PlacedItemTypeId.Chicken,
+            userId: user.id
+        })
+
+        await expect(
+            service.collectAnimalProduct({
+                userId: user.id,
+                placedItemAnimalId: placedItemAnimal.id
+            })
+        ).rejects.toThrow(GrpcFailedPreconditionException)
     })
 
     afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.delete(UserEntity, mockUser)
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

@@ -1,107 +1,101 @@
+// npx jest apps/gameplay-service/src/shop/construct-building/construct-building.spec.ts
+
+import { Test } from "@nestjs/testing"
+import { DataSource } from "typeorm"
+import { ConstructBuildingService } from "./construct-building.service"
+import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     BuildingEntity,
     BuildingId,
     PlacedItemEntity,
-    UserEntity
+    UserEntity,
+    getPostgreSqlToken
 } from "@src/databases"
-import { MOCK_USER, createTestModule } from "@src/testing/infra"
-import { DataSource, DeepPartial } from "typeorm"
-import { ConstructBuildingRequest } from "./construct-building.dto"
-import { ConstructBuildingService } from "./construct-building.service"
-import { ConstructBuildingModule } from "./construct-building.module"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { UserInsufficientGoldException } from "@src/gameplay"
 
 describe("ConstructBuildingService", () => {
     let dataSource: DataSource
     let service: ConstructBuildingService
-
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER
-    }
+    let connectionService: ConnectionService
+    let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [ConstructBuildingModule]
-        })
-        dataSource = ds
-        service = module.get<ConstructBuildingService>(ConstructBuildingService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [ConstructBuildingService]
+        }).compile()
+
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        service = moduleRef.get(ConstructBuildingService)
+        connectionService = moduleRef.get(ConnectionService)
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
-    it("Should construct a building successfully", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+    it("should successfully construct a building and update user and placed item", async () => {
+        const x = 0, y = 0
+        const buildingId = BuildingId.Coop
+        const building = await dataSource.manager.findOne(BuildingEntity, {
+            where: { id: buildingId }
+        })
 
-        // Step 1: Create a mock user
-        const userBeforeConstruction = await queryRunner.manager.save(UserEntity, mockUser)
+        const user = await gameplayMockUserService.generate({ golds: building.price + 10 })
 
-        await queryRunner.startTransaction()
+        const golds = user.golds
 
-        try {
-            // Step 2: Get building information
-            const building = await queryRunner.manager.findOne(BuildingEntity, {
-                where: { id: BuildingId.Pasture, availableInShop: true }
+        await service.constructBuilding({
+            userId: user.id,
+            buildingId: building.id,
+            position: { x, y }
+        })
+
+        const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["golds"]
+        })
+
+        expect(golds - goldsAfter).toBe(building.price)
+
+        const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
+            where: { userId: user.id, placedItemType: { building: { id: buildingId } } }
+        })
+
+        expect(placedItem).toBeDefined()
+        expect(placedItem.x).toBe(x)
+        expect(placedItem.y).toBe(y)
+    })
+
+    it("should throw GrpcNotFoundException when building is not found", async () => {
+        const user = await gameplayMockUserService.generate()
+        const invalidBuildingId = "invalid_building_id" as BuildingId
+
+        await expect(
+            service.constructBuilding({
+                userId: user.id,
+                buildingId: invalidBuildingId,
+                position: { x: 0, y: 0 }
             })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
 
-            // Ensure the building exists
-            expect(building).toBeDefined()
 
-            // Step 3: Prepare and perform the construct building action
-            const constructBuildingRequest: ConstructBuildingRequest = {
+    it("should throw UserInsufficientGoldException when user has insufficient gold", async () => {
+        const building = await dataSource.manager.findOne(BuildingEntity, {
+            where: { id: BuildingId.Coop }
+        })
+        const user = await gameplayMockUserService.generate({ golds: building.price - 10 })
+
+        await expect(
+            service.constructBuilding({
+                userId: user.id,
                 buildingId: building.id,
-                userId: userBeforeConstruction.id,
-                position: { x: 10, y: 20 }
-            }
-
-            await service.constructBuilding(constructBuildingRequest)
-
-            // Step 4: Verify user's golds were updated
-            const userAfterConstruction = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: userBeforeConstruction.id }
+                position: { x: 0, y: 0 }
             })
-
-            expect(userAfterConstruction.golds).toBe(
-                mockUser.golds - building.price
-            )
-
-            // Step 5: Verify placed item was created
-            const placedItem = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: {
-                    userId: userBeforeConstruction.id,
-                    x: constructBuildingRequest.position.x,
-                    y: constructBuildingRequest.position.y
-                },
-                relations: { buildingInfo: true }
-            })
-
-            expect(placedItem).toBeDefined()
-            expect(placedItem.buildingInfo.buildingId).toBe(building.id)
-            expect(placedItem.buildingInfo.currentUpgrade).toBe(1)
-            expect(placedItem.buildingInfo.occupancy).toBe(0)
-            expect(placedItem.x).toBe(constructBuildingRequest.position.x)
-            expect(placedItem.y).toBe(constructBuildingRequest.position.y)
-
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            // Rollback transaction in case of error
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        ).rejects.toThrow(UserInsufficientGoldException)
     })
 
     afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.delete(UserEntity, mockUser)
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

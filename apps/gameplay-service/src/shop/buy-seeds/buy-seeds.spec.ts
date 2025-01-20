@@ -34,7 +34,7 @@ describe("BuySeedsService", () => {
         const quantity = 2
 
         const user = await gameplayMockUserService.generate({
-            golds: price * quantity + 100
+            golds: price * quantity + 10
         })
 
         const golds = user.golds
@@ -87,7 +87,7 @@ describe("BuySeedsService", () => {
         })
 
         const quantity = 2
-        const user = await gameplayMockUserService.generate({ golds: price * quantity - 100 })
+        const user = await gameplayMockUserService.generate({ golds: price * quantity - 10 })
 
         await expect(
             service.buySeeds({
@@ -97,7 +97,7 @@ describe("BuySeedsService", () => {
             })
         ).rejects.toThrow(UserInsufficientGoldException)
     })
-    
+
     afterAll(async () => {
         await gameplayMockUserService.clear()
         await connectionService.closeAll()

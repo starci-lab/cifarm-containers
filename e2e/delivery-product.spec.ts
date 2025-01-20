@@ -124,7 +124,7 @@ describe("Deliver product flow", () => {
 
         for (let stage = 2; stage <= crop.growthStages; stage++) {
             await lastValueFrom(gameplayService.speedUp({
-                time: crop.growthStageDuration + 100,
+                time: crop.growthStageDuration + 10,
             }))
             await sleep(1100)
 

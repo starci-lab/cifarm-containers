@@ -162,7 +162,7 @@ describe("Thief Animal Product flow", () => {
         //while stage is not mature
         while (!animalInfo.isAdult) {
             // Speed up and feed until the animal is an adult
-            await lastValueFrom(gameplayService.speedUp({ time: animal.hungerTime + 100 }))
+            await lastValueFrom(gameplayService.speedUp({ time: animal.hungerTime + 10 }))
             await sleep(1100)
         
             // check if the animal is hungry

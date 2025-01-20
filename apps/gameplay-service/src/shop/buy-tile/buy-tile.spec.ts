@@ -1,104 +1,128 @@
+// npx jest apps/gameplay-service/src/shop/buy-tile/buy-tile.spec.ts
+
+import { Test } from "@nestjs/testing"
+import { DataSource } from "typeorm"
+import { BuyTileService } from "./buy-tile.service"
+import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
-    PlacedItemEntity,
     TileEntity,
     TileId,
-    UserEntity
+    getPostgreSqlToken,
+    PlacedItemEntity,
+    PlacedItemTypeEntity,
+    UserEntity,
+    PlacedItemType
 } from "@src/databases"
-import { MOCK_USER, createTestModule } from "@src/testing/infra"
-import { DataSource, DeepPartial } from "typeorm"
-import { BuyTileRequest } from "./buy-tile.dto"
-import { BuyTileService } from "./buy-tile.service"
-import { BuyTileModule } from "./buy-tile.module"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 describe("BuyTileService", () => {
     let dataSource: DataSource
     let service: BuyTileService
-
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER
-    }
+    let connectionService: ConnectionService
+    let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [BuyTileModule]
-        })
-        dataSource = ds
-        service = module.get<BuyTileService>(BuyTileService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [BuyTileService]
+        }).compile()
+
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        service = moduleRef.get(BuyTileService)
+        connectionService = moduleRef.get(ConnectionService)
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
-    it("Should buy a tile successfully", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+    it("should successfully buy a tile and update user and placed item", async () => {
+        const x = 0, y = 0
 
-        // Step 1: Create a mock user
-        const userBeforeBuyTile = await queryRunner.manager.save(UserEntity, mockUser)
+        const tileId = TileId.BasicTile1
+        const tile = await dataSource.manager.findOne(TileEntity, {
+            where: { id: tileId }
+        })
+        const user = await gameplayMockUserService.generate({ golds: tile.price + 10 })
 
-        await queryRunner.startTransaction()
+        const totalCost = tile.price
+        const golds = user.golds
 
-        try {
-            // Step 2: Get tile information
-            const tile = await queryRunner.manager.findOne(TileEntity, {
-                where: { id: TileId.BasicTile1, availableInShop: true }
-            })
+        // Create placed item
+        await service.buyTile({
+            userId: user.id,
+            tileId,
+            position: { x: 0, y: 0 }
+        })
 
-            // Ensure the tile exists
-            expect(tile).toBeDefined()
+        const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["golds"]
+        })
 
-            // Step 3: Prepare and perform the buy tile action
-            const buyTileRequest: BuyTileRequest = {
-                userId: userBeforeBuyTile.id,
-                position: { x: 5, y: 10 }
+        expect(golds - goldsAfter).toBe(totalCost)
+
+        const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
+            where: {
+                userId: user.id,
+                placedItemType: {
+                    tile: { id: tileId }
+                }
             }
+        })
 
-            await service.buyTile(buyTileRequest)
+        expect(placedItem).toBeDefined()
+        expect(placedItem.x).toBe(x)
+        expect(placedItem.y).toBe(y)
+    })
 
-            // Step 4: Verify user's golds were updated
-            const userAfterBuyTile = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: userBeforeBuyTile.id }
+    it("should throw GrpcNotFoundException when tile is not found", async () => {
+        const user = await gameplayMockUserService.generate()
+        const invalidTileId = "invalid_tile_id" as TileId
+
+        await expect(
+            service.buyTile({
+                userId: user.id,
+                tileId: invalidTileId,
+                position: { x: 0, y: 0 }
             })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
 
-            expect(userAfterBuyTile.golds).toBe(
-                mockUser.golds - tile.price
-            )
+    it("should throw GrpcFailedPreconditionException when max ownership of tile is reached", async () => {
+        const tileId = TileId.BasicTile1
+        const tile = await dataSource.manager.findOne(TileEntity, {
+            where: { id: tileId }
+        })
 
-            // Step 5: Verify placed item was created
-            const placedItem = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: {
-                    userId: userBeforeBuyTile.id,
-                    x: buyTileRequest.position.x,
-                    y: buyTileRequest.position.y
-                },
-                relations: { placedItemType: true }
+        const user = await gameplayMockUserService.generate({ golds: tile.price + 10 })
+
+        // Create placed item tile and save placed item, util max ownership achieved
+
+        const placedItemType = await dataSource.manager.findOne(PlacedItemTypeEntity, {
+            where: { type: PlacedItemType.Tile, tileId },
+            select: ["id"]
+        })
+        await dataSource.manager.save(
+            PlacedItemEntity,
+            Array.from({ length: tile.maxOwnership }, (_, i) => ({
+                userId: user.id,
+                x: i,
+                y: 0,
+                placedItemTypeId: placedItemType.id
+            }))
+        )
+
+        // Simulate max ownership
+        await expect(
+            service.buyTile({
+                userId: user.id,
+                tileId,
+                position: { x: 1, y: 0 }
             })
-
-            expect(placedItem).toBeDefined()
-            expect(placedItem.x).toBe(buyTileRequest.position.x)
-            expect(placedItem.y).toBe(buyTileRequest.position.y)
-            expect(placedItem.placedItemType.tileId).toBe(TileId.BasicTile1)
-
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            // Rollback transaction in case of error
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        ).rejects.toThrow(GrpcFailedPreconditionException)
     })
 
     afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.delete(UserEntity, mockUser)
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

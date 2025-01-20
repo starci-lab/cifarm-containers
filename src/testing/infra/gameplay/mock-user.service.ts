@@ -21,7 +21,7 @@ export class GameplayMockUserService {
         })
     }
 
-    public async generate({ golds = 500, tokens = 100 }: GenerateParams = {}): Promise<UserEntity> {
+    public async generate({ golds = 500, tokens = 100, level = 1, energy = 50, experiences = 0 }: GenerateParams = {}): Promise<UserEntity> {
         const userPartial: DeepPartial<UserEntity> = {
             username: faker.internet.username(),
             chainKey: faker.helpers.arrayElement(Object.values(SupportedChainKey)),
@@ -29,10 +29,9 @@ export class GameplayMockUserService {
             accountAddress: faker.finance.ethereumAddress(),
             golds,
             tokens,
-            experiences: faker.number.int({ min: 0, max: 10000 }),
-            energy: faker.number.int({ min: 0, max: 100 }),
-            energyRegenTime: faker.number.float({ min: 0, max: 3600 }),
-            level: faker.number.int({ min: 1, max: 50 }),
+            experiences,
+            energy,
+            level,
             tutorialIndex: faker.number.int({ min: 0, max: 10 }),
             stepIndex: faker.number.int({ min: 0, max: 10 }),
             dailyRewardStreak: faker.number.int({ min: 0, max: 7 }),
@@ -56,4 +55,7 @@ export class GameplayMockUserService {
 export interface GenerateParams {
     golds?: number
     tokens?: number
+    level?: number
+    energy?: number
+    experiences?: number
 }

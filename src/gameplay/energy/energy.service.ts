@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common"
-import { EnergyExceedsMaximumException, EnergyNotEnoughException } from "@src/exceptions"
 import { AddParams, AddResult, SubstractParams, SubstractResult } from "./energy.types"
 import { CheckSufficientParams } from "@src/common"
+import { EnergyNotEnoughException } from "../exceptions"
 
 @Injectable()
 export class EnergyService {
@@ -10,17 +10,14 @@ export class EnergyService {
     public add(request: AddParams): AddResult {
         const { energy, entity } = request
         const maxEnergy = this.getMaxEnergy(entity.level)
-        if (request.entity.energy + request.energy > maxEnergy)
-            throw new EnergyExceedsMaximumException(entity.energy + energy, maxEnergy)
         return {
-            energy: entity.energy + energy
+            energy: Math.min(maxEnergy, entity.energy + energy)
         }
     }
 
     public substract(request: SubstractParams): SubstractResult {
         const { energy, entity } = request
-        if (entity.energy - energy < 0)
-            throw new EnergyExceedsMaximumException(entity.energy - request.energy, 0)
+        this.checkSufficient({ current: entity.energy, required: energy })
         return {
             energy: entity.energy - energy
         }

@@ -18,10 +18,6 @@ export class ConstructBuildingService {
     }
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
-        this.logger.debug(
-            `Starting building construction for user ${request.userId}, building id: ${request.buildingId}`
-        )
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
@@ -57,11 +53,7 @@ export class ConstructBuildingService {
             // Prepare placed item entity
             const placedItem: DeepPartial<PlacedItemEntity> = {
                 userId: request.userId,
-                buildingInfo: {
-                    currentUpgrade: 1,
-                    occupancy: 0,
-                    buildingId: building.id
-                },
+                buildingInfo: {},
                 x: request.position.x,
                 y: request.position.y,
                 placedItemTypeId: placedItemType.id

@@ -6,6 +6,7 @@ import {
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
+    PlacedItemType,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
@@ -39,7 +40,8 @@ export class PlantSeedService {
                     id: request.inventorySeedId,
                     inventoryType: {
                         type: InventoryType.Seed
-                    }
+                    },
+                    userId: request.userId
                 },
                 relations: {
                     inventoryType: true
@@ -50,11 +52,19 @@ export class PlantSeedService {
             //check the tile
             const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
                 where: {
-                    id: request.placedItemTileId
+                    id: request.placedItemTileId,
+                    userId: request.userId,
+                    placedItemType: {
+                        type: PlacedItemType.Tile
+                    }
+                },
+                relations: {
+                    seedGrowthInfo: true
                 }
             })
+           
             if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
-                
+
             if (placedItemTile.seedGrowthInfo)
                 throw new GrpcFailedPreconditionException("Tile is already planted")
 

@@ -7,6 +7,7 @@ import {
     InventoryEntity,
     InventoryType,
     PlacedItemEntity,
+    PlacedItemType,
     SupplyId,
     SystemEntity,
     SystemId,
@@ -38,7 +39,10 @@ export class FeedAnimalService {
             const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
                 where: {
                     id: request.placedItemAnimalId,
-                    userId: request.userId
+                    userId: request.userId,
+                    placedItemType: {
+                        type: PlacedItemType.Animal
+                    }
                 },
                 relations: {
                     animalInfo: true

@@ -1,8 +1,8 @@
-// npx jest apps/gameplay-service/src/farming/plant-seed/plant-seed.spec.ts
+// npx jest apps/gameplay-service/src/farming/harvest-crop/harvest-crop.spec.ts
 
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
-import { PlantSeedService } from "./plant-seed.service"
+import { HarvestCropService } from "./harvest-crop.service"
 import {
     ConnectionService,
     GameplayMockUserService,
@@ -10,28 +10,25 @@ import {
 } from "@src/testing"
 import {
     SeedGrowthInfoEntity,
-    CropEntity,
+    CropCurrentState,
     PlacedItemEntity,
-    InventoryEntity,
     UserEntity,
+    InventoryEntity,
     SystemEntity,
     SystemId,
     Activities,
     getPostgreSqlToken,
-    InventoryType,
-    CropId,
-    CropCurrentState,
-    InventoryTypeId,
     PlacedItemTypeId,
+    CropId
 } from "@src/databases"
 import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
 import { v4 } from "uuid"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
 
-describe("PlantSeedService", () => {
+describe("HarvestCropService", () => {
     let dataSource: DataSource
-    let service: PlantSeedService
+    let service: HarvestCropService
     let connectionService: ConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
@@ -39,51 +36,48 @@ describe("PlantSeedService", () => {
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [PlantSeedService]
+            providers: [HarvestCropService]
         }).compile()
 
         dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(PlantSeedService)
+        service = moduleRef.get(HarvestCropService)
         connectionService = moduleRef.get(ConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         levelService = moduleRef.get(LevelService)
     })
 
-    it("should successfully plant a seed and update the user's stats and inventory accordingly", async () => {
-        const quantity = 10
-
+    it("should successfully harvest the one-season crop and update the user's stats and inventory accordingly", async () => {
         const { value } = await dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
         })
         const {
-            water: { energyConsume, experiencesGain }
+            collectAnimalProduct: { energyConsume, experiencesGain }
         } = value as Activities
-
+    
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
         const cropId = CropId.Carrot
-        const crop = await dataSource.manager.findOne(CropEntity, {
-            where: { id: cropId }
-        })
-        const inventorySeeds = await dataSource.manager.save(InventoryEntity, {
-            inventoryTypeId: InventoryTypeId.CarrotSeed,
-            quantity: quantity,
+
+        const quantity = 10
+        // Create placed tile with a fully matured crop
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            seedGrowthInfo: {
+                currentState: CropCurrentState.FullyMatured,
+                currentPerennialCount: 0,
+                cropId,
+                harvestQuantityRemaining: quantity
+            },
+            x: 0,
+            y: 0,
+            placedItemTypeId: PlacedItemTypeId.StarterTile,
             userId: user.id
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
-            x: 0,
-            y: 0,
+        // Call the service method to harvest the crop
+        await service.harvestCrop({
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
-        })
-
-        // Call the service method to plant the seed
-        await service.plantSeed({
-            userId: user.id,
-            inventorySeedId: inventorySeeds.id,
             placedItemTileId: placedItemTile.id
         })
 
@@ -99,91 +93,104 @@ describe("PlantSeedService", () => {
                 levelService.computeTotalExperienceForLevel(user)
         ).toBe(experiencesGain)
 
-        // Assert inventory quantity decreased by 1
-        const updatedInventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: { id: inventorySeeds.id }
+        // Assert inventory quantity increased by harvested amount
+        const inventory = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                inventoryType: {
+                    product: {
+                        cropId
+                    }
+                }
+            }
         })
 
-        expect(updatedInventory.quantity).toBe(quantity - 1)
+        expect(inventory.quantity).toBe(quantity)
 
-        // Assert seed growth info was created
-        const seedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: { placedItemId: placedItemTile.id }
+        // Assert seed growth info is updated or removed
+        const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
+            where: { id: placedItemTile.seedGrowthInfo.id }
         })
 
-        expect(seedGrowthInfo).not.toBeNull()
-        expect(seedGrowthInfo.cropId).toBe(cropId)
-        expect(seedGrowthInfo.harvestQuantityRemaining).toBe(crop.maxHarvestQuantity)
-        expect(seedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
+        expect(updatedSeedGrowthInfo).toBeNull()
     })
 
-    it("should throw GrpcNotFoundException when seed is not found in inventory", async () => {
+    it("should throw GrpcNotFoundException when tile is not found by its ID", async () => {
         const user = await gameplayMockUserService.generate()
-        
-        const invalidInventorySeedId = v4()
-
-        await expect(
-            service.plantSeed({
-                userId: user.id,
-                inventorySeedId: invalidInventorySeedId,
-                placedItemTileId: v4()
-            })
-        ).rejects.toThrow(GrpcNotFoundException)
-    })
-
-    it("should throw GrpcNotFoundException when tile is not found", async () => {
-        const user = await gameplayMockUserService.generate()
-        const cropId = "crop_id" as CropId
-        const inventorySeed = await dataSource.manager.save(InventoryEntity, {
-            inventoryType: {
-                type: InventoryType.Seed,
-                cropId
-            },
-            quantity: 1,
-            userId: user.id
-        })
         const invalidPlacedItemTileId = v4()
 
         await expect(
-            service.plantSeed({
+            service.harvestCrop({
                 userId: user.id,
-                inventorySeedId: inventorySeed.id,
                 placedItemTileId: invalidPlacedItemTileId
             })
         ).rejects.toThrow(GrpcNotFoundException)
     })
 
-    it("should throw GrpcFailedPreconditionException when tile is already planted", async () => {
+    it("should throw GrpcNotFoundException when tile belongs to a different user", async () => {
         const user = await gameplayMockUserService.generate()
-
-        const inventorySeeds = await dataSource.manager.save(InventoryEntity, {
-            inventoryTypeId: InventoryTypeId.CarrotSeed,
-            quantity: 10,
-            userId: user.id,
-        })
-
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            seedGrowthInfo: {
+                currentState: CropCurrentState.FullyMatured,
+                cropId: CropId.Carrot,
+                harvestQuantityRemaining: 10,
+            },
             x: 0,
             y: 0,
             userId: user.id,
-            seedGrowthInfo: {
-                cropId: CropId.Carrot,
-                currentState: CropCurrentState.Normal,
-                harvestQuantityRemaining: 10
-            },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.StarterTile
         })
 
         await expect(
-            service.plantSeed({
+            service.harvestCrop({
+                userId: v4(), // Different user ID
+                placedItemTileId: placedItemTile.id
+            })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
+
+    it("should throw GrpcFailedPreconditionException when tile is not planted", async () => {
+        const user = await gameplayMockUserService.generate()
+
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            seedGrowthInfo: null, // Not planted
+            x: 0,
+            y: 0,
+            userId: user.id,
+            placedItemTypeId: PlacedItemTypeId.StarterTile
+        })
+
+        await expect(
+            service.harvestCrop({
                 userId: user.id,
-                inventorySeedId: inventorySeeds.id,
                 placedItemTileId: placedItemTile.id
             })
         ).rejects.toThrow(GrpcFailedPreconditionException)
     })
 
-    it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
+    it("should throw GrpcFailedPreconditionException when crop is not fully matured", async () => {
+        const user = await gameplayMockUserService.generate()
+
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            seedGrowthInfo: {
+                currentState: CropCurrentState.Normal, // Not fully matured
+                cropId: CropId.Carrot,
+                harvestQuantityRemaining: 10,
+            },
+            x: 0,
+            y: 0,
+            userId: user.id,
+            placedItemTypeId: PlacedItemTypeId.StarterTile
+        })
+
+        await expect(
+            service.harvestCrop({
+                userId: user.id,
+                placedItemTileId: placedItemTile.id
+            })
+        ).rejects.toThrow(GrpcFailedPreconditionException)
+    })
+
+    it("should throw EnergyNotEnoughException when user energy is not enough", async () => {
         const { value } = await dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
         })
@@ -194,24 +201,22 @@ describe("PlantSeedService", () => {
         const user = await gameplayMockUserService.generate({
             energy: energyConsume - 1
         })
-
-        const inventorySeeds = await dataSource.manager.save(InventoryEntity, {
-            inventoryTypeId: InventoryTypeId.CarrotSeed,
-            quantity: 10,
-            userId: user.id,
-        })
-
+        
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            seedGrowthInfo: {
+                currentState: CropCurrentState.FullyMatured,
+                cropId: CropId.Carrot,
+                harvestQuantityRemaining: 10,
+            },
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.StarterTile
         })
-
+        
         await expect(
-            service.plantSeed({
+            service.harvestCrop({
                 userId: user.id,
-                inventorySeedId: inventorySeeds.id,
                 placedItemTileId: placedItemTile.id
             })
         ).rejects.toThrow(EnergyNotEnoughException)
