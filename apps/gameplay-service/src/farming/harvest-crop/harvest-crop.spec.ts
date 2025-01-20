@@ -115,7 +115,17 @@ describe("HarvestCropService", () => {
     })
 
     it("should throw GrpcNotFoundException when tile is not found by its ID", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        
         const invalidPlacedItemTileId = v4()
 
         await expect(
@@ -127,7 +137,17 @@ describe("HarvestCropService", () => {
     })
 
     it("should throw GrpcNotFoundException when tile belongs to a different user", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
@@ -149,7 +169,16 @@ describe("HarvestCropService", () => {
     })
 
     it("should throw GrpcFailedPreconditionException when tile is not planted", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
 
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
             seedGrowthInfo: null, // Not planted
@@ -168,7 +197,16 @@ describe("HarvestCropService", () => {
     })
 
     it("should throw GrpcFailedPreconditionException when crop is not fully matured", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
 
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
             seedGrowthInfo: {

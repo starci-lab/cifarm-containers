@@ -18,7 +18,6 @@ import {
     SystemId,
     Activities,
     getPostgreSqlToken,
-    InventoryType,
     CropId,
     CropCurrentState,
     InventoryTypeId,
@@ -67,7 +66,7 @@ describe("PlantSeedService", () => {
         const crop = await dataSource.manager.findOne(CropEntity, {
             where: { id: cropId }
         })
-        const inventorySeeds = await dataSource.manager.save(InventoryEntity, {
+        const inventorySeed = await dataSource.manager.save(InventoryEntity, {
             inventoryTypeId: InventoryTypeId.CarrotSeed,
             quantity: quantity,
             userId: user.id
@@ -83,7 +82,7 @@ describe("PlantSeedService", () => {
         // Call the service method to plant the seed
         await service.plantSeed({
             userId: user.id,
-            inventorySeedId: inventorySeeds.id,
+            inventorySeedId: inventorySeed.id,
             placedItemTileId: placedItemTile.id
         })
 
@@ -101,7 +100,7 @@ describe("PlantSeedService", () => {
 
         // Assert inventory quantity decreased by 1
         const updatedInventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: { id: inventorySeeds.id }
+            where: { id: inventorySeed.id }
         })
 
         expect(updatedInventory.quantity).toBe(quantity - 1)
@@ -118,7 +117,16 @@ describe("PlantSeedService", () => {
     })
 
     it("should throw GrpcNotFoundException when seed is not found in inventory", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
         
         const invalidInventorySeedId = v4()
 
@@ -132,13 +140,19 @@ describe("PlantSeedService", () => {
     })
 
     it("should throw GrpcNotFoundException when tile is not found", async () => {
-        const user = await gameplayMockUserService.generate()
-        const cropId = "crop_id" as CropId
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
         const inventorySeed = await dataSource.manager.save(InventoryEntity, {
-            inventoryType: {
-                type: InventoryType.Seed,
-                cropId
-            },
+            inventoryTypeId: InventoryTypeId.CarrotSeed,
             quantity: 1,
             userId: user.id
         })
@@ -154,9 +168,18 @@ describe("PlantSeedService", () => {
     })
 
     it("should throw GrpcFailedPreconditionException when tile is already planted", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
 
-        const inventorySeeds = await dataSource.manager.save(InventoryEntity, {
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        const inventorySeed = await dataSource.manager.save(InventoryEntity, {
             inventoryTypeId: InventoryTypeId.CarrotSeed,
             quantity: 10,
             userId: user.id,
@@ -177,7 +200,7 @@ describe("PlantSeedService", () => {
         await expect(
             service.plantSeed({
                 userId: user.id,
-                inventorySeedId: inventorySeeds.id,
+                inventorySeedId: inventorySeed.id,
                 placedItemTileId: placedItemTile.id
             })
         ).rejects.toThrow(GrpcFailedPreconditionException)
@@ -195,7 +218,7 @@ describe("PlantSeedService", () => {
             energy: energyConsume - 1
         })
 
-        const inventorySeeds = await dataSource.manager.save(InventoryEntity, {
+        const inventorySeed = await dataSource.manager.save(InventoryEntity, {
             inventoryTypeId: InventoryTypeId.CarrotSeed,
             quantity: 10,
             userId: user.id,
@@ -211,7 +234,7 @@ describe("PlantSeedService", () => {
         await expect(
             service.plantSeed({
                 userId: user.id,
-                inventorySeedId: inventorySeeds.id,
+                inventorySeedId: inventorySeed.id,
                 placedItemTileId: placedItemTile.id
             })
         ).rejects.toThrow(EnergyNotEnoughException)

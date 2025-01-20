@@ -32,8 +32,8 @@ export class InventoryEntity extends UuidAbstractEntity {
     @JoinColumn({ name: "user_id", referencedColumnName: "id" })
         user?: UserEntity
 
-    @Field(() => String, { nullable: true })
-    @Column({ name: "inventory_type_id", nullable: true })
+    @Field(() => String)
+    @Column({ name: "inventory_type_id" })
         inventoryTypeId: string
 
     @Field(() => InventoryTypeEntity)

@@ -108,7 +108,19 @@ export enum InventoryTypeId {
     PineappleSeed = "pineappleSeed",
     WatermelonSeed = "watermelonSeed",
     CucumberSeed = "cucumberSeed",
-    BellPepperSeed = "bellPepperSeed"
+    BellPepperSeed = "bellPepperSeed",
+    BasicFertilizer = "basicFertilizer",
+    AnimalFeed = "animalFeed",
+    Egg = "egg",
+    Milk = "milk",
+    Carrot = "carrot",
+    Potato = "potato",
+    Pineapple = "pineapple",
+    Watermelon = "watermelon",
+    Cucumber = "cucumber",
+    BellPepper = "bellPepper",
+    Chicken = "chicken",
+    Cow = "cow",
 }
 
 export enum PlacedItemTypeId {

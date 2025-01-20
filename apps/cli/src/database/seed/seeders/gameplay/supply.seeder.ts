@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common"
-import { InventoryType, SupplyEntity, SupplyId, SupplyType } from "@src/databases"
+import { InventoryType, InventoryTypeId, SupplyEntity, SupplyId, SupplyType } from "@src/databases"
 import { DataSource } from "typeorm"
 import { Seeder } from "typeorm-extension"
 
@@ -11,12 +11,12 @@ export class SupplySeeder implements Seeder {
         await dataSource.manager.save(SupplyEntity, [
             {
                 id: SupplyId.BasicFertilizer,
-                type: SupplyType.AnimalFeed,
+                type: SupplyType.Fertilizer,
                 price: 50,
                 availableInShop: true,
                 fertilizerEffectTimeReduce: 60 * 30,
                 inventoryType: {
-                    id: SupplyId.BasicFertilizer,
+                    id: InventoryTypeId.BasicFertilizer,
                     asTool: true,
                     deliverable: false,
                     maxStack: 16,
@@ -30,7 +30,7 @@ export class SupplySeeder implements Seeder {
                 price: 50,
                 availableInShop: true,
                 inventoryType: {
-                    id: SupplyId.AnimalFeed,
+                    id: InventoryTypeId.AnimalFeed,
                     asTool: true,
                     deliverable: false,
                     maxStack: 16,

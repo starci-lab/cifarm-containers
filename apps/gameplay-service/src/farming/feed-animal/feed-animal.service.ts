@@ -52,8 +52,7 @@ export class FeedAnimalService {
             if (!placedItemAnimal || !placedItemAnimal.animalInfo)
                 throw new GrpcNotFoundException("Animal not found")
 
-            const { animalInfo } = placedItemAnimal
-            if (animalInfo.currentState !== AnimalCurrentState.Hungry)
+            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry)
                 throw new GrpcFailedPreconditionException("Animal is not hungry")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -116,7 +115,7 @@ export class FeedAnimalService {
                 })
 
                 // Update animal state
-                await queryRunner.manager.update(AnimalInfoEntity, animalInfo.id, {
+                await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
                     currentState: AnimalCurrentState.Normal,
                     currentHungryTime: 0
                 })

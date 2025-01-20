@@ -109,7 +109,16 @@ describe("CollectAnimalProductService", () => {
     })
 
     it("should throw GrpcNotFoundException when the animal is not found by its ID", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
         const invalidPlacedItemAnimalId = v4()
 
         await expect(
@@ -151,7 +160,17 @@ describe("CollectAnimalProductService", () => {
     })
 
     it("should throw GrpcNotFoundException when the animal belongs to a different user", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
         const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
             animalInfo: {
                 animalId: AnimalId.Chicken,
@@ -172,7 +191,17 @@ describe("CollectAnimalProductService", () => {
     })
 
     it("should throw GrpcFailedPreconditionException when animal is not ready to yield", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
         const animalId = AnimalId.Chicken
         // create
         const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {

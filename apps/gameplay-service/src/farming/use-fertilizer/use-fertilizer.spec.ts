@@ -1,131 +1,303 @@
 // npx jest apps/gameplay-service/src/farming/use-fertilizer/use-fertilizer.spec.ts
 
-import {
-    CropEntity,
-    CropId,
-    InventoryEntity,
-    InventoryType,
-    InventoryTypeEntity,
-    PlacedItemEntity,
-    SeedGrowthInfoEntity,
-    SupplyId,
-    UserEntity
-} from "@src/databases"
-import {
-    createTestModule,
-    MOCK_USER,
-} from "@src/testing/infra"
-import {
-    DataSource,
-    DeepPartial,
-} from "typeorm"
-import { UseFertilizerRequest } from "./use-fertilizer.dto"
-import { UseFertilizerModule } from "./use-fertilizer.module"
+import { Test } from "@nestjs/testing"
+import { DataSource } from "typeorm"
 import { UseFertilizerService } from "./use-fertilizer.service"
+import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import {
+    SeedGrowthInfoEntity,
+    SystemEntity,
+    SupplyEntity,
+    SupplyId,
+    UserEntity,
+    InventoryEntity,
+    SystemId,
+    Activities,
+    PlacedItemEntity,
+    CropId,
+    PlacedItemTypeId,
+    getPostgreSqlToken,
+    InventoryTypeId
+} from "@src/databases"
+import { EnergyNotEnoughException, EnergyService, LevelService } from "@src/gameplay"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { v4 } from "uuid"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 describe("UseFertilizerService", () => {
-    let dataSource: DataSource
     let service: UseFertilizerService
-
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER,
-        energy: 50,
-        experiences: 0,
-    }
+    let dataSource: DataSource
+    let gameplayMockUserService: GameplayMockUserService
+    let levelService: LevelService
+    let connectionService: ConnectionService
 
     beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [UseFertilizerModule],
-        })
-        dataSource = ds
-        service = module.get<UseFertilizerService>(UseFertilizerService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [UseFertilizerService, EnergyService, LevelService]
+        }).compile()
+
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        service = moduleRef.get(UseFertilizerService)
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
+        levelService = moduleRef.get(LevelService)
+        connectionService = moduleRef.get(ConnectionService)
     })
 
-    it("Should successfully use fertilizer", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+    it("should successfully use fertilizer on a tile and update user energy, experience, and tile state", async () => {
+        const cropId = CropId.Carrot
+        const supplyId = SupplyId.BasicFertilizer
+        const quantity = 10
 
-        try {
-            // Mock user, placed item, and seed growth info
-            const user = await queryRunner.manager.save(UserEntity, mockUser)
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume, experiencesGain }
+        } = value as Activities
 
-            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                where: {
-                    id: SupplyId.BasicFertilizer,
-                    type: InventoryType.Supply,
-                },
-            })
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
 
-            const inventory = await queryRunner.manager.save(InventoryEntity, {
+        // Create a tile and seed growth info
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            x: 0,
+            y: 0,
+            userId: user.id,
+            seedGrowthInfo: {
+                isFertilized: false,
+                currentStageTimeElapsed: 0,
+                cropId,
+                harvestQuantityRemaining: 10
+            },
+            placedItemTypeId: PlacedItemTypeId.BasicTile1
+        })
+
+        const supplyFertilizer = await dataSource.manager.findOne(SupplyEntity, {
+            where: { id: supplyId }
+        })
+
+        const inventoryFertilizer = await dataSource.manager.save(InventoryEntity, {
+            userId: user.id,
+            quantity,
+            inventoryTypeId: InventoryTypeId.BasicFertilizer
+        })
+
+        // Call the service to use fertilizer
+        await service.useFertilizer({
+            userId: user.id,
+            placedItemTileId: placedItemTile.id,
+            inventoryFertilizerId: inventoryFertilizer.id,
+        })
+
+        // Check if energy and experience were updated correctly
+        const userAfter = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["energy", "level", "experiences"]
+        })
+
+        expect(user.energy - userAfter.energy).toBe(energyConsume)
+        expect(
+            levelService.computeTotalExperienceForLevel(userAfter) -
+                levelService.computeTotalExperienceForLevel(user)
+        ).toBe(experiencesGain)
+
+        // Check if the tile's seed growth info was updated
+        const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
+            where: { id: placedItemTile.seedGrowthInfo.id }
+        })
+
+        expect(updatedSeedGrowthInfo.isFertilized).toBe(true)
+        expect(updatedSeedGrowthInfo.currentStageTimeElapsed).toBe(
+            placedItemTile.seedGrowthInfo.currentStageTimeElapsed +
+                supplyFertilizer.fertilizerEffectTimeReduce
+        )
+    })
+
+    it("should throw GrpcNotFoundException when tile is not found by its ID", async () => {
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        const invalidPlacedItemTileId = v4()
+
+        await expect(
+            service.useFertilizer({
                 userId: user.id,
-                inventoryType,
-                quantity: 3,
+                placedItemTileId: invalidPlacedItemTileId,
+                inventoryFertilizerId: v4()
             })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
 
-            const cropId = CropId.BellPepper
-            const crop = await queryRunner.manager.findOne(CropEntity, {
-                where: { id: cropId },
-            })
+    it("should throw GrpcNotFoundException when seed growth info does not exist on tile", async () => {
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
 
-            const placedItemTile = await queryRunner.manager.save(PlacedItemEntity, {
-                userId: user.id,
-                x: 1,
-                y: 1,
-                seedGrowthInfo: {
-                    currentStageTimeElapsed: 10,
-                    isFertilized: false,
-                    harvestQuantityRemaining: 0,
-                    crop
-                } as DeepPartial<SeedGrowthInfoEntity>,
-            })
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
 
-            const request: UseFertilizerRequest = {
+        const inventoryFertilizer = await dataSource.manager.save(InventoryEntity, {
+            userId: user.id,
+            quantity: 10,
+            inventoryTypeId: InventoryTypeId.BasicFertilizer
+        })
+
+
+        // Create a tile and seed growth info
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            x: 0,
+            y: 0,
+            userId: user.id,
+            placedItemTypeId: PlacedItemTypeId.BasicTile1
+        })
+
+        await expect(
+            service.useFertilizer({
                 userId: user.id,
                 placedItemTileId: placedItemTile.id,
-            }
+                inventoryFertilizerId: inventoryFertilizer.id
+            })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
 
-            await queryRunner.startTransaction()
-            try {
-                // Execute service
-                const response = await service.useFertilizer(request)
+    it("should throw GrpcFailedPreconditionException when tile is already fertilized", async () => {
+        const cropId = CropId.Carrot
 
-                // Verify inventory updated
-                const updatedInventory = await queryRunner.manager.findOne(InventoryEntity, {
-                    where: { id: inventory.id },
-                })
-                expect(updatedInventory.quantity).toBe(2)
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
 
-                // Verify seed growth info updated
-                const updatedSeedGrowthInfo = await queryRunner.manager.findOne(SeedGrowthInfoEntity, {
-                    where: { id: placedItemTile.seedGrowthInfo.id },
-                })
-                expect(updatedSeedGrowthInfo.isFertilized).toBe(true)
-                expect(updatedSeedGrowthInfo.currentStageTimeElapsed).toBe(30)
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
 
-                expect(response).toEqual({})
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                await queryRunner.rollbackTransaction()
-                throw error
-            }
-        } finally {
-            await queryRunner.release()
-        }
+        const inventoryFertilizer = await dataSource.manager.save(InventoryEntity, {
+            userId: user.id,
+            quantity: 10,
+            inventoryTypeId: InventoryTypeId.BasicFertilizer
+        })
+
+
+        // Create a tile and seed growth info
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            x: 0,
+            y: 0,
+            userId: user.id,
+            seedGrowthInfo: {
+                isFertilized: true,
+                currentStageTimeElapsed: 0,
+                cropId,
+                harvestQuantityRemaining: 10
+            },
+            placedItemTypeId: PlacedItemTypeId.BasicTile1
+        })
+
+        await expect(
+            service.useFertilizer({
+                userId: user.id,
+                placedItemTileId: placedItemTile.id,
+                inventoryFertilizerId: inventoryFertilizer.id
+            })
+        ).rejects.toThrow(GrpcFailedPreconditionException)
+    })
+
+    it("should throw GrpcNotFoundException when fertilizer is not found in inventory", async () => {
+        const cropId = CropId.Carrot
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Create a tile and seed growth info
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            x: 0,
+            y: 0,
+            userId: user.id,
+            seedGrowthInfo: {
+                isFertilized: false,
+                currentStageTimeElapsed: 0,
+                cropId,
+                harvestQuantityRemaining: 10
+            },
+            placedItemTypeId: PlacedItemTypeId.BasicTile1
+        })
+
+        await expect(
+            service.useFertilizer({
+                userId: user.id,
+                placedItemTileId: placedItemTile.id,
+                inventoryFertilizerId: v4()
+            })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
+
+    it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
+        const cropId = CropId.Carrot
+
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume - 1
+        })
+
+        const inventoryFertilizer = await dataSource.manager.save(InventoryEntity, {
+            userId: user.id,
+            quantity: 10,
+            inventoryTypeId: InventoryTypeId.BasicFertilizer
+        })
+
+        // Create a tile and seed growth info
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            x: 0,
+            y: 0,
+            userId: user.id,
+            seedGrowthInfo: {
+                isFertilized: false,
+                currentStageTimeElapsed: 0,
+                cropId,
+                harvestQuantityRemaining: 10
+            },
+            placedItemTypeId: PlacedItemTypeId.BasicTile1
+        })
+        await expect(
+            service.useFertilizer({
+                userId: user.id,
+                placedItemTileId: placedItemTile.id,
+                inventoryFertilizerId: inventoryFertilizer.id
+            })
+        ).rejects.toThrow(EnergyNotEnoughException)
     })
 
     afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.delete(UserEntity, { id: mockUser.id })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

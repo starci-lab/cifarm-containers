@@ -8,6 +8,7 @@ import {
     SeedGrowthInfoEntity,
     SupplyEntity,
     SupplyId,
+    SupplyType,
     SystemEntity,
     SystemId,
     UserEntity
@@ -21,14 +22,13 @@ import { GrpcFailedPreconditionException } from "@src/common"
 @Injectable()
 export class UseFertilizerService {
     private readonly logger = new Logger(UseFertilizerService.name)
-    
+
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
-    ) {
-    }
+    ) {}
 
     async useFertilizer(request: UseFertilizerRequest): Promise<UseFertilizerResponse> {
         const queryRunner = this.dataSource.createQueryRunner()
@@ -45,10 +45,8 @@ export class UseFertilizerService {
 
             if (!placedItemTile.seedGrowthInfo)
                 throw new GrpcNotFoundException("Tile is not planted")
-            
-            const { seedGrowthInfo } = placedItemTile
 
-            if (seedGrowthInfo.isFertilized)
+            if (placedItemTile.seedGrowthInfo.isFertilized)
                 throw new GrpcFailedPreconditionException("Tile is already fertilized")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -66,6 +64,25 @@ export class UseFertilizerService {
                 where: { id: SupplyId.BasicFertilizer }
             })
 
+            //inventory
+            const inventory = await queryRunner.manager.findOne(InventoryEntity, {
+                where: {
+                    userId: user.id,
+                    id: request.inventoryFertilizerId,
+                    inventoryType: {
+                        supply: {
+                            type: SupplyType.Fertilizer
+                        },
+                        type: InventoryType.Supply
+                    }
+                },
+                relations: {
+                    inventoryType: true
+                }
+            })
+
+            if (!inventory) throw new GrpcNotFoundException("Fertilizer not found in inventory")
+
             this.energyService.checkSufficient({
                 current: user.energy,
                 required: energyConsume
@@ -80,22 +97,6 @@ export class UseFertilizerService {
                 entity: user,
                 experiences: experiencesGain
             })
-
-            //inventory
-            const inventory = await queryRunner.manager.findOne(InventoryEntity, {
-                where: {
-                    userId: user.id,
-                    inventoryType: {
-                        id: SupplyId.BasicFertilizer,
-                        type: InventoryType.Supply
-                    }
-                },
-                relations: {
-                    inventoryType: true
-                }
-            })
-
-            if (!inventory) throw new GrpcNotFoundException("Fertilizer not found in inventory")
 
             await queryRunner.startTransaction()
             try {
@@ -112,26 +113,25 @@ export class UseFertilizerService {
                 // update seed growth info
                 await queryRunner.manager.update(
                     SeedGrowthInfoEntity,
-                    seedGrowthInfo.id,
+                    placedItemTile.seedGrowthInfo.id,
                     {
-                        currentStageTimeElapsed: seedGrowthInfo.currentStageTimeElapsed + fertilizer.fertilizerEffectTimeReduce,
+                        currentStageTimeElapsed:
+                            placedItemTile.seedGrowthInfo.currentStageTimeElapsed +
+                            fertilizer.fertilizerEffectTimeReduce,
                         isFertilized: true
                     }
                 )
 
                 await queryRunner.commitTransaction()
-                return {}
+
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
-            } 
-        }catch (error) {
-            this.logger.error("Use Fertilizer failed", error)
-            throw error
-        }
-        finally {
+            }
+            return {}
+        } finally {
             await queryRunner.release()
         }
     }

@@ -111,7 +111,16 @@ describe("FeedAnimalService", () => {
     })
 
     it("should throw GrpcNotFoundException when animal is not found by its ID", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
         const invalidPlacedItemAnimalId = v4()
 
         await expect(
@@ -143,7 +152,16 @@ describe("FeedAnimalService", () => {
     })
 
     it("should throw GrpcFailedPreconditionException when animal is not hungry", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
 
         const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
             animalInfo: {
@@ -164,7 +182,16 @@ describe("FeedAnimalService", () => {
     })
 
     it("should throw GrpcNotFoundException when inventory is not found", async () => {
-        const user = await gameplayMockUserService.generate()
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            useFertilizer: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
 
         const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
             animalInfo: {

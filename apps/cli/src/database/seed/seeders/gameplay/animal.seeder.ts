@@ -3,6 +3,7 @@ import {
     AnimalId,
     AnimalType,
     InventoryType,
+    InventoryTypeId,
     PlacedItemType,
     PlacedItemTypeId,
     ProductId,
@@ -40,7 +41,7 @@ export class AnimalSeeder implements Seeder {
                     type: ProductType.Animal,
                     animalId: AnimalId.Chicken,
                     inventoryType: {
-                        id: ProductId.Egg,
+                        id: InventoryTypeId.Egg,
                         asTool: false,
                         deliverable: true,
                         placeable: true,
@@ -48,7 +49,7 @@ export class AnimalSeeder implements Seeder {
                     }
                 },
                 inventoryType: {
-                    id: AnimalId.Chicken,
+                    id: InventoryTypeId.Chicken,
                     asTool: false,
                     deliverable: false,
                     maxStack: 1,
@@ -82,7 +83,7 @@ export class AnimalSeeder implements Seeder {
                     type: ProductType.Animal,
                     animalId: AnimalId.Cow,
                     inventoryType: {
-                        id: ProductId.Milk,
+                        id: InventoryTypeId.Milk,
                         asTool: false,
                         deliverable: true,
                         placeable: true,
@@ -90,7 +91,7 @@ export class AnimalSeeder implements Seeder {
                     }
                 },
                 inventoryType: {
-                    id: AnimalId.Cow,
+                    id: InventoryTypeId.Cow,
                     asTool: false,
                     deliverable: false,
                     maxStack: 1,
