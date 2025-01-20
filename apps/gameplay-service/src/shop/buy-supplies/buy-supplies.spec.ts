@@ -1,101 +1,105 @@
+// npx jest apps/gameplay-service/src/shop/buy-supplies/buy-supplies.spec.ts
+
+import { Test } from "@nestjs/testing"
+import { DataSource } from "typeorm"
+import { BuySuppliesService } from "./buy-supplies.service"
+import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
-    InventoryEntity,
     SupplyEntity,
     SupplyId,
+    getPostgreSqlToken,
+    InventoryEntity,
+    InventoryTypeEntity,
     UserEntity
 } from "@src/databases"
-import { MOCK_USER, createTestModule } from "@src/testing/infra"
-import { DataSource, DeepPartial } from "typeorm"
-import { BuySuppliesRequest } from "./buy-supplies.dto"
-import { BuySuppliesService } from "./buy-supplies.service"
-import { BuySuppliesModule } from "./buy-supplies.module"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { UserInsufficientGoldException } from "@src/gameplay"
 
 describe("BuySuppliesService", () => {
     let dataSource: DataSource
     let service: BuySuppliesService
-
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER
-    }
+    let connectionService: ConnectionService
+    let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [BuySuppliesModule]
-        })
-        dataSource = ds
-        service = module.get<BuySuppliesService>(BuySuppliesService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [BuySuppliesService]
+        }).compile()
+
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        service = moduleRef.get(BuySuppliesService)
+        connectionService = moduleRef.get(ConnectionService)
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
-    it("Should successfully buy supplies and update user and inventory", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+    it("should successfully buy supplies and update user and inventory", async () => {
+        const supply = await dataSource.manager.findOne(SupplyEntity, {
+            where: { id: SupplyId.AnimalFeed }
+        })
+        const quantity = 2
 
-        // Step 1: Create a mock user
-        const userBeforeBuyingSupply = await queryRunner.manager.save(UserEntity, mockUser)
+        const user = await gameplayMockUserService.generate({ golds: supply.price * quantity + 100 })
 
-        await queryRunner.startTransaction()
+        const golds = user.golds
 
-        try {
-            // Step 2: Get supply information
-            const supply = await queryRunner.manager.findOne(SupplyEntity, {
-                where: { id: SupplyId.BasicFertilizer, availableInShop: true }
-            })
+        const inventoryType = await dataSource.manager.findOne(InventoryTypeEntity, {
+            where: { supplyId: supply.id }
+        })
 
-            // Ensure the supply exists
-            expect(supply).toBeDefined()
+        await service.buySupplies({
+            userId: user.id,
+            supplyId: supply.id,
+            quantity: 2
+        })
 
-            // Step 3: Prepare and perform the buy supplies action
-            const buySuppliesRequest: BuySuppliesRequest = {
-                supplyId: supply.id,
-                userId: userBeforeBuyingSupply.id,
-                quantity: 1
+        const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["golds"]
+        })
+
+        expect(golds - goldsAfter).toBe(supply.price * quantity)
+
+        const updatedInventory = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                userId: user.id,
+                inventoryTypeId: inventoryType.id
             }
+        })
 
-            await service.buySupplies(buySuppliesRequest)
+        expect(updatedInventory.quantity).toBe(quantity)
+    })
 
-            // Step 4: Verify user's golds were updated
-            const userAfterBuyingSupply = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: userBeforeBuyingSupply.id }
+    it("should throw GrpcNotFoundException when supply is not found", async () => {
+        const user = await gameplayMockUserService.generate()
+        const invalidSupplyId = "invalid_supply_id" as SupplyId
+
+        await expect(
+            service.buySupplies({
+                userId: user.id,
+                supplyId: invalidSupplyId,
+                quantity: 2
             })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
 
-            expect(userAfterBuyingSupply.golds).toBe(
-                mockUser.golds - supply.price * buySuppliesRequest.quantity
-            )
+    it("should throw UserInsufficientGoldException when user has insufficient gold", async () => {
+        const supply = await dataSource.manager.findOne(SupplyEntity, {
+            where: { id: SupplyId.AnimalFeed }
+        })
+        const user = await gameplayMockUserService.generate({ golds: supply.price - 10 })
 
-            // Step 5: Verify inventory was updated
-            const inventory = await queryRunner.manager.findOne(InventoryEntity, {
-                where: {
-                    userId: userBeforeBuyingSupply.id,
-                    inventoryType: { supplyId: supply.id }
-                },
-                relations: { inventoryType: true }
+        await expect(
+            service.buySupplies({
+                userId: user.id,
+                supplyId: supply.id,
+                quantity: 2
             })
-
-            expect(inventory.quantity).toBe(buySuppliesRequest.quantity)
-
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            // Rollback transaction in case of error
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        ).rejects.toThrow(UserInsufficientGoldException)
     })
 
     afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.delete(UserEntity, mockUser)
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

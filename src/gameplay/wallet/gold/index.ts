@@ -5,6 +5,6 @@ import {
     AddResult as AddGoldAddResult,
     SubtractParams as SubtractGoldParams,
     SubtractResult as SubtractGoldResult
-} from "./gold.dto"
+} from "./gold.types"
 
 export { AddGoldParams, AddGoldAddResult, SubtractGoldParams, SubtractGoldResult }

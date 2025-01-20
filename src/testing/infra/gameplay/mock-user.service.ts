@@ -21,14 +21,14 @@ export class GameplayMockUserService {
         })
     }
 
-    public async generate(): Promise<UserEntity> {
+    public async generate({ golds = 500, tokens = 100 }: GenerateParams = {}): Promise<UserEntity> {
         const userPartial: DeepPartial<UserEntity> = {
             username: faker.internet.username(),
             chainKey: faker.helpers.arrayElement(Object.values(SupportedChainKey)),
             network: faker.helpers.arrayElement(Object.values(Network)),
             accountAddress: faker.finance.ethereumAddress(),
-            golds: faker.number.int({ min: 0, max: 1000 }),
-            tokens: faker.number.float({ min: 0, max: 5000 }),
+            golds,
+            tokens,
             experiences: faker.number.int({ min: 0, max: 10000 }),
             energy: faker.number.int({ min: 0, max: 100 }),
             energyRegenTime: faker.number.float({ min: 0, max: 3600 }),
@@ -43,7 +43,7 @@ export class GameplayMockUserService {
             sessions: [
                 {
                     refreshToken: v4(),
-                    expiredAt: faker.date.future(),
+                    expiredAt: faker.date.future()
                 }
             ]
         }
@@ -51,4 +51,9 @@ export class GameplayMockUserService {
         this.users.push(user)
         return user
     }
+}
+
+export interface GenerateParams {
+    golds?: number
+    tokens?: number
 }

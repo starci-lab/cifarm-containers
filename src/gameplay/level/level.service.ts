@@ -3,7 +3,7 @@ import { ExperienceCannotBeZeroOrNegativeException } from "@src/exceptions"
 import {
     AddExperiencesParams,
     AddExperiencesResult
-} from "./level.dto"
+} from "./level.types"
 
 @Injectable()
 export class LevelService {

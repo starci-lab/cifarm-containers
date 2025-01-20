@@ -15,7 +15,8 @@ import { NAMESPACE } from "../gameplay.constants"
 import { PlacedItemsService } from "./placed-items.service"
 import { PLACED_ITEMS_SYNCED_EVENT, SYNC_PLACED_ITEMS_EVENT } from "./placed-items.constants"
 import { OnEvent } from "@nestjs/event-emitter"
-import { VISITED_EMITTER2_EVENT, MainGateway, VisitedEmitter2Payload } from "../main"
+import { AuthGateway } from "../auth"
+import { VISITED_EMITTER2_EVENT, VisitedEmitter2Payload } from "../visit"
 
 @WebSocketGateway({
     cors: {
@@ -28,7 +29,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
     private readonly logger = new Logger(PlacedItemsGateway.name)
 
     constructor(
-        private readonly mainGateway: MainGateway,
+        private readonly authGateway: AuthGateway,
         private readonly placedItemsService: PlacedItemsService
     ) {}
 
@@ -45,12 +46,12 @@ export class PlacedItemsGateway implements OnGatewayInit {
     @Cron("*/1 * * * * *")
     public async processSyncPlacedItemsEverySecond() {
         //get all socket ids in this node
-        const sockets = this.mainGateway.getSockets()
+        const sockets = this.authGateway.getSockets()
 
         //emit placed items to all clients
         const promises: Array<Promise<void>> = []
         for (const socket of sockets) {
-            const observing = this.mainGateway.getObservingData(socket)
+            const observing = this.authGateway.getObservingData(socket)
             if (observing && observing.userId) {
                 promises.push(
                     (async () => {
@@ -96,7 +97,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
         @ConnectedSocket() client: Socket
     ): Promise<WsResponse<PlacedItemsSyncedMessage>> {
         //emit placed items to all clients
-        const observing = this.mainGateway.getObservingData(client)
+        const observing = this.authGateway.getObservingData(client)
         if (!observing || !observing.userId) {
             throw new WsException("Observing user id not found")
         }

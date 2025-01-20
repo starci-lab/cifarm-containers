@@ -1,19 +1,16 @@
 import { Logger } from "@nestjs/common"
 import {
     ConnectedSocket,
-    MessageBody,
     OnGatewayConnection,
     OnGatewayDisconnect,
     OnGatewayInit,
-    SubscribeMessage,
     WebSocketGateway,
     WebSocketServer
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
 import { SocketCoreService } from "@src/io"
 import { NAMESPACE } from "../gameplay.constants"
-import { VisitedEmitter2Payload, ObservingData, HandleVisitPayload } from "./main.types"
-import { VISIT_EVENT, VISITED_EMITTER2_EVENT } from "./main.constants"
+import { ObservingData } from "./auth.types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 
 @WebSocketGateway({
@@ -24,8 +21,8 @@ import { EventEmitter2 } from "@nestjs/event-emitter"
     namespace: NAMESPACE,
     transports: [ "websocket"]
 })
-export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
-    private readonly logger = new Logger(MainGateway.name)
+export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
+    private readonly logger = new Logger(AuthGateway.name)
 
     constructor(
         private readonly socketCoreService: SocketCoreService,
@@ -37,7 +34,7 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, On
 
     afterInit() {
         this.logger.verbose(
-            `Initialized gateway with name: ${MainGateway.name}, namespace: ${NAMESPACE}`
+            `Initialized gateway with name: ${AuthGateway.name}, namespace: ${NAMESPACE}`
         )
     }
 
@@ -69,28 +66,4 @@ export class MainGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     public getSockets(): Array<Socket> {
         return Array.from(this.namespace.sockets.values())
     }  
-
-    @SubscribeMessage(VISIT_EVENT)
-    public async handleVisit(
-        @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: HandleVisitPayload
-    ): Promise<void> {
-        //leave the current room
-        socket.leave(socket.data.observing.userId)
-
-        //join the new room
-        socket.join(payload.userId)
-
-        //set observing data
-        const observing: ObservingData = {
-            userId: payload.userId
-        }
-        this.setObservingData(socket, observing)
-
-        const emitter2Payload: VisitedEmitter2Payload = {
-            userId: payload.userId,
-            socketId: socket.id
-        }
-        this.eventEmitter.emit(VISITED_EMITTER2_EVENT, emitter2Payload)
-    }
 }

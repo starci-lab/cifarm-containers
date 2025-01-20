@@ -11,6 +11,6 @@ export interface VisitedEmitter2Payload {
 }
 
 
-export interface HandleVisitPayload {
+export interface VisitPayload {
     userId: string
 }

@@ -1,2 +1,2 @@
-export * from "./level.dto"
+export * from "./level.types"
 export * from "./level.service"

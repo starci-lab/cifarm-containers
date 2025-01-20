@@ -21,8 +21,7 @@ export class BuyAnimalService {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService
-    ) {
-    }
+    ) {}
 
     async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {
         this.logger.debug(
@@ -59,8 +58,10 @@ export class BuyAnimalService {
                 }
             })
 
-            if (!placedItemBuilding)
-                throw new GrpcNotFoundException("Building not found")
+            if (!placedItemBuilding) throw new GrpcNotFoundException("Building not found")
+
+            if (!placedItemBuilding.placedItemType)
+                throw new GrpcNotFoundException("Placed item type not found")
 
             //Check if placedItem is building
             if (placedItemBuilding.placedItemType.type != PlacedItemType.Building)
@@ -69,6 +70,16 @@ export class BuyAnimalService {
             //Check if building is same animal type
             if (placedItemBuilding.buildingInfo.building.type != animal.type)
                 throw new GrpcFailedPreconditionException("Building is not for this animal")
+
+            //Check if slot is occupied
+            const maxCapacity =
+                placedItemBuilding.buildingInfo.building.upgrades[
+                    placedItemBuilding.buildingInfo.currentUpgrade
+                ].capacity
+
+            //Check occupancy
+            if (placedItemBuilding.buildingInfo.occupancy >= maxCapacity)
+                throw new GrpcFailedPreconditionException("Building is full")
 
             //Find placedItemType
             const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
@@ -101,15 +112,6 @@ export class BuyAnimalService {
                 placedItemTypeId: placedItemType.id,
                 parentId: placedItemBuilding.id
             }
-
-            const maxCapacity =
-                placedItemBuilding.buildingInfo.building.upgrades[
-                    placedItemBuilding.buildingInfo.currentUpgrade
-                ].capacity
-
-            //Check occupancy
-            if (placedItemBuilding.buildingInfo.occupancy >= maxCapacity)
-                throw new GrpcFailedPreconditionException("Building is full")
 
             placedItemBuilding.buildingInfo.occupancy += 1
 

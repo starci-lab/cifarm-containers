@@ -1,10 +1,7 @@
 import { Injectable } from "@nestjs/common"
-import {
-    TokenCannotBeZeroOrNegativeException,
-    UserInsufficientTokenException
-} from "@src/exceptions"
-import { AddParams, AddResult, SubtractParams, SubtractResult } from "./token.dto"
+import { AddParams, AddResult, SubtractParams, SubtractResult } from "./token.types"
 import { CheckSufficientParams } from "@src/common"
+import { TokenCannotBeZeroOrNegativeException, UserInsufficientTokenException } from "../../exceptions"
 
 @Injectable()
 export class TokenBalanceService {
@@ -16,7 +13,7 @@ export class TokenBalanceService {
 
     public add(request: AddParams): AddResult {
         if (request.amount < 0)
-            throw new TokenCannotBeZeroOrNegativeException(request.amount.toString())
+            throw new TokenCannotBeZeroOrNegativeException(request.amount)
 
         return {
             tokens: request.amount + request.entity.tokens
@@ -25,7 +22,7 @@ export class TokenBalanceService {
 
     public subtract(request: SubtractParams): SubtractResult {
         if (request.amount < 0)
-            throw new TokenCannotBeZeroOrNegativeException(request.amount.toString())
+            throw new TokenCannotBeZeroOrNegativeException(request.amount)
 
         this.checkSufficient({
             current: request.entity.tokens,

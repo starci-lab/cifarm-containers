@@ -8,7 +8,7 @@ import { PlacedItemEntity } from "./placed-item.entity"
 @Entity("building_info")
 export class BuildingInfoEntity extends UuidAbstractEntity {
     @Field(() => Number)
-    @Column({ type: "int", nullable: true })
+    @Column({ type: "int", default: 0 })
         currentUpgrade: number
 
     @Field(() => Number)

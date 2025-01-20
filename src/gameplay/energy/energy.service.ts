@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { EnergyExceedsMaximumException, EnergyNotEnoughException } from "@src/exceptions"
-import { AddParams, AddResult, SubstractParams, SubstractResult } from "./energy.dto"
+import { AddParams, AddResult, SubstractParams, SubstractResult } from "./energy.types"
 import { CheckSufficientParams } from "@src/common"
 
 @Injectable()

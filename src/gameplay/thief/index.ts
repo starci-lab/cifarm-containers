@@ -1,2 +1,2 @@
-export * from "./thief.dto"
+export * from "./thief.types"
 export * from "./thief.service"

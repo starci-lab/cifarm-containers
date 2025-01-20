@@ -17,7 +17,7 @@ import { GameplayModule } from "@src/gameplay"
 import { BlockchainModule } from "@src/blockchain"
 import { JwtModule } from "@src/jwt"
 import { APP_FILTER } from "@nestjs/core"
-import { BlockchainExceptionFilter } from "./filters"
+import { BlockchainExceptionFilter, GameplayExceptionFilter } from "./filters"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 
 @Module({
@@ -64,6 +64,10 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
             provide: APP_FILTER,
             useClass: GrpcServerExceptionFilter
         },
+        {
+            provide: APP_FILTER,
+            useClass: GameplayExceptionFilter
+        }
     ]
 })
 export class AppModule {}

@@ -1,2 +1,2 @@
 export * from "./inventory.service"
-export * from "./inventory.dto"
+export * from "./inventory.types"

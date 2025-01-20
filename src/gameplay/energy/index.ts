@@ -4,7 +4,7 @@ import {
     AddResult as AddEnergyAddResult,
     SubstractParams as SubstractEnergyParams,
     SubstractResult as SubstractEnergyResult,
-} from "./energy.dto"
+} from "./energy.types"
 
 export { AddEnergyParams, AddEnergyAddResult
     , SubstractEnergyParams, SubstractEnergyResult

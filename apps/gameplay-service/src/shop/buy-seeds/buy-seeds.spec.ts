@@ -1,92 +1,105 @@
 // npx jest apps/gameplay-service/src/shop/buy-seeds/buy-seeds.spec.ts
 
-import {
-    CropEntity,
-    CropId,
-    InventoryEntity,
-    UserEntity
-} from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing/infra"
-import { DataSource, DeepPartial } from "typeorm"
-import { BuySeedsRequest } from "./buy-seeds.dto"
-import { BuySeedsModule } from "./buy-seeds.module"
+import { DataSource } from "typeorm"
 import { BuySeedsService } from "./buy-seeds.service"
+import { Test } from "@nestjs/testing"
+import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { CropEntity, CropId, getPostgreSqlToken, InventoryEntity, UserEntity } from "@src/databases"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { UserInsufficientGoldException } from "@src/gameplay"
 
 describe("BuySeedsService", () => {
     let dataSource: DataSource
     let service: BuySeedsService
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER
-    }
+    let connectionService: ConnectionService
+    let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [
-                BuySeedsModule
-            ]
-        })
-        dataSource = ds
-        service = module.get<BuySeedsService>(BuySeedsService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [BuySeedsService]
+        }).compile()
+
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        service = moduleRef.get(BuySeedsService)
+        connectionService = moduleRef.get(ConnectionService)
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
     it("Should successfully buy seeds and update user and inventory", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const { price } = await dataSource.manager.findOne(CropEntity, {
+            where: { id: CropId.Carrot },
+            select: ["price"]
+        })
+        const quantity = 2
 
-        const userBeforeBuyingSeed = await queryRunner.manager.save(UserEntity, mockUser)
+        const user = await gameplayMockUserService.generate({
+            golds: price * quantity + 100
+        })
 
-        await queryRunner.startTransaction()
+        const golds = user.golds
 
-        try {
-            const crop = await queryRunner.manager.findOne(CropEntity, {
-                where: { id: CropId.Carrot }
-            })
+        await service.buySeeds({
+            userId: user.id,
+            cropId: CropId.Carrot,
+            quantity
+        })
 
-            const buySeedRequest: BuySeedsRequest = {
-                cropId: crop.id,
-                userId: userBeforeBuyingSeed.id,
-                quantity: 1
+        const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["golds"]
+        })
+
+        expect(golds - goldsAfter).toBe(price * quantity)
+
+        const inventory = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                userId: user.id,
+                inventoryType: {
+                    cropId: CropId.Carrot
+                }
+            },
+            relations: {
+                inventoryType: true
             }
-            // Buy seeds
-            await service.buySeeds(buySeedRequest)
+        })
 
-            // Verify user golds
-            const userAfterBuyingSeed = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: userBeforeBuyingSeed.id }
-            })
-            expect(userAfterBuyingSeed.golds).toBe(
-                mockUser.golds - crop.price * buySeedRequest.quantity
-            )
-
-            // Verify inventory
-            const inventory = await queryRunner.manager.findOne(InventoryEntity, {
-                where: { userId: userBeforeBuyingSeed.id, inventoryType: { cropId: crop.id } },
-                relations: { inventoryType: true }
-            })
-            expect(inventory.quantity).toBe(buySeedRequest.quantity)
-
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        expect(inventory.quantity).toBe(quantity)
     })
 
-    afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+    it("Should throw GrpcNotFoundException when crop is not found", async () => {
+        const user = await gameplayMockUserService.generate()
+        const invalidCropId = "abc" as CropId // Invalid crop ID
 
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.remove(UserEntity, mockUser)
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await expect(
+            service.buySeeds({
+                userId: user.id,
+                cropId: invalidCropId,
+                quantity: 2
+            })
+        ).rejects.toThrow(GrpcNotFoundException)
+    })
+
+    it("Should throw UserInsufficientGoldException when user has insufficient gold", async () => {
+        const { price } = await dataSource.manager.findOne(CropEntity, {
+            where: { id: CropId.Carrot },
+            select: ["price"]
+        })
+
+        const quantity = 2
+        const user = await gameplayMockUserService.generate({ golds: price * quantity - 100 })
+
+        await expect(
+            service.buySeeds({
+                userId: user.id,
+                cropId: CropId.Carrot,
+                quantity
+            })
+        ).rejects.toThrow(UserInsufficientGoldException)
+    })
+    
+    afterAll(async () => {
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

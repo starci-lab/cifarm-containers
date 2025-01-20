@@ -1,8 +1,9 @@
 import { Module } from "@nestjs/common"
 import { PlacedItemsModule } from "./placed-items"
-import { MainModule } from "./main"
+import { AuthGateway } from "./auth"
+import { VisitModule } from "./visit"
 
 @Module({
-    imports: [MainModule, PlacedItemsModule]
+    imports: [AuthGateway, PlacedItemsModule, VisitModule]
 })
 export class GameplayModule {}

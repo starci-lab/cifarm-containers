@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import { ComputeParams, ComputeResult } from "./thief.dto"
+import { ComputeParams, ComputeResult } from "./thief.types"
 
 @Injectable()
 export class ThiefService {

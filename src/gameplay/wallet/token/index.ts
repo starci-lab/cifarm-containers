@@ -4,6 +4,6 @@ import {
     AddResult as AddTokenResult,
     SubtractParams as SubtractTokenParams,
     SubtractResult as SubtractTokenResult
-} from "./token.dto"
+} from "./token.types"
 
 export { AddTokenParams, AddTokenResult, SubtractTokenParams, SubtractTokenResult }
