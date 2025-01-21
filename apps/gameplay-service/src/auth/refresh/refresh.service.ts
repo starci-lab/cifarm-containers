@@ -4,7 +4,7 @@ import { JwtService } from "@src/jwt"
 import { DataSource } from "typeorm"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
 import { GrpcInternalException, GrpcUnauthenticatedException } from "nestjs-grpc-exceptions"
-import { createUtcDayjs } from "@src/common"
+import { DateUtcService } from "@src/date"
 
 @Injectable()
 export class RefreshService {
@@ -13,7 +13,8 @@ export class RefreshService {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly dateUtcService: DateUtcService
     ) {}
 
     public async refresh({
@@ -35,7 +36,7 @@ export class RefreshService {
 
         const { expiredAt, userId } = session
         //if current time is after the expired time, throw error that refresh token is expired
-        if (createUtcDayjs().isAfter(expiredAt))
+        if (this.dateUtcService.getDayjs().isAfter(expiredAt))
             throw new GrpcUnauthenticatedException("Refresh token is expired")
 
         const {

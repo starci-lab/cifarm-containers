@@ -1,75 +1,55 @@
-import { UserEntity } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing/infra"
-import { DataSource, DeepPartial } from "typeorm"
-import { UpdateTutorialRequest } from "./update-tutorial.dto"
-import { UpdateTutorialModule } from "./update-tutorial.module"
+// npx jest apps/gameplay-service/src/profile/update-tutorial/update-tutorial.spec.ts
+
+import { Test } from "@nestjs/testing"
+import { DataSource } from "typeorm"
 import { UpdateTutorialService } from "./update-tutorial.service"
+import { UpdateTutorialRequest } from "./update-tutorial.dto"
+import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { UserEntity, getPostgreSqlToken } from "@src/databases"
 
 describe("UpdateTutorialService", () => {
-    let dataSource: DataSource
     let service: UpdateTutorialService
-
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER
-    }
+    let dataSource: DataSource
+    let gameplayMockUserService: GameplayMockUserService
+    let connectionService: ConnectionService
 
     beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [UpdateTutorialModule]
-        })
-        dataSource = ds
-        service = module.get<UpdateTutorialService>(UpdateTutorialService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [UpdateTutorialService]
+        }).compile()
+
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        service = moduleRef.get(UpdateTutorialService)
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
+        connectionService = moduleRef.get(ConnectionService)
     })
 
-    it("Should successfully update tutorial for a user", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+    it("should successfully update tutorial for existing user", async () => {
+        const tutorialIndex = 2
+        const stepIndex = 5
+        const user = await gameplayMockUserService.generate() // Generate a user for testing
 
-        // Insert user into the database
-        const user = await queryRunner.manager.save(UserEntity, mockUser)
-
-        await queryRunner.startTransaction()
-
-        try {
-            const request: UpdateTutorialRequest = {
-                userId: user.id,
-                tutorialIndex: 2,
-                stepIndex: 5
-            }
-
-            // Perform update tutorial
-            await service.updateTutorial(request)
-
-            // Verify the user tutorial state
-            const updatedUser = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: user.id }
-            })
-
-            expect(updatedUser.tutorialIndex).toBe(request.tutorialIndex)
-            expect(updatedUser.stepIndex).toBe(request.stepIndex)
-
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
+        const request: UpdateTutorialRequest = {
+            userId: user.id,
+            tutorialIndex,
+            stepIndex
         }
+
+        // Act: Call updateTutorial
+        await service.updateTutorial(request)
+
+        const updatedUser = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["tutorialIndex", "stepIndex"]
+        })
+
+        expect(updatedUser.tutorialIndex).toBe(tutorialIndex)
+        expect(updatedUser.stepIndex).toBe(stepIndex)
     })
 
     afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.delete(UserEntity, mockUser)
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

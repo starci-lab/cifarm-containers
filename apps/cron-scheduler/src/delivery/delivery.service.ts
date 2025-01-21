@@ -13,7 +13,7 @@ import {
     OnEventLeaderElected,
     OnEventLeaderLost
 } from "@src/kubernetes"
-import { createUtcDayjs } from "@src/common"
+import { DateUtcService } from "@src/date"
 
 @Injectable()
 export class DeliveryService {
@@ -37,7 +37,8 @@ export class DeliveryService {
         @InjectCache()
         private readonly cacheManager: Cache,
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly dateUtcService: DateUtcService
     ) {}
 
     @Cron("*/1 * * * * *")
@@ -57,7 +58,7 @@ export class DeliveryService {
         if (!this.isLeader) {
             return
         }
-        const utcNow = createUtcDayjs()
+        const utcNow = this.dateUtcService.getDayjs()
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

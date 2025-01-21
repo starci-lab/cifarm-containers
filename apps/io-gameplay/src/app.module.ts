@@ -10,6 +10,7 @@ import { PostgreSQLModule } from "@src/databases"
 import { ScheduleModule } from "@nestjs/schedule"
 import { GameplayModule } from "./gameplay"
 import { EventEmitterModule } from "@nestjs/event-emitter"
+import { DateModule } from "@src/date"
 
 @Module({
     imports: [
@@ -25,7 +26,11 @@ import { EventEmitterModule } from "@nestjs/event-emitter"
             producerOnlyMode: true,
             isGlobal: true
         }),
+        DateModule.register({
+            isGlobal: true
+        }),
         JwtModule.register({
+            useGlobalImports: true,
             isGlobal: true
         }),
         PostgreSQLModule.forRoot({
@@ -35,14 +40,12 @@ import { EventEmitterModule } from "@nestjs/event-emitter"
         EventEmitterModule.forRoot(),
         ScheduleModule.forRoot(),
         IoModule.register({
+            useGlobalImports: true,
             adapter: envConfig().containers[Container.IoGameplay].adapter,
-            isGlobal: true,
-            useGlobalImports: true
+            isGlobal: true
         }),
         GameplayModule,
         DefaultModule
-    ],
-    controllers: [],
-    providers: []
+    ]
 })
 export class AppModule {}

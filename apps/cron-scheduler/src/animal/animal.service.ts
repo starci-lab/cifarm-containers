@@ -16,8 +16,8 @@ import { BulkJobOptions, Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
 import { AnimalJobData } from "./animal.dto"
-import { createUtcDayjs } from "@src/common"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
+import { DateUtcService } from "@src/date"
 
 @Injectable()
 export class AnimalService {
@@ -25,7 +25,8 @@ export class AnimalService {
     constructor(
         @InjectQueue(BullQueueName.Animal) private readonly animalQueue: Queue,
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly dateUtcService: DateUtcService,
     ) {}
 
     // Flag to determine if the current instance is the leader
@@ -47,7 +48,7 @@ export class AnimalService {
             return
         }
 
-        const utcNow = createUtcDayjs()
+        const utcNow = this.dateUtcService.getDayjs()
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

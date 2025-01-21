@@ -6,12 +6,17 @@ import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
 import { AppV1Module } from "./v1"
 import { AppV2Module } from "./v2"
 import { GrpcModule, GrpcName } from "@src/grpc"
-import { DeviceInfoMiddleware } from "@src/device/device-info"
+import { DeviceInfoMiddleware } from "@src/device"
+import { DateModule } from "@src/date"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
+        DateModule.register({
+            isGlobal: true
+        }),
         JwtModule.register({
+            useGlobalImports: true,
             isGlobal: true
         }),
         GrpcModule.register({

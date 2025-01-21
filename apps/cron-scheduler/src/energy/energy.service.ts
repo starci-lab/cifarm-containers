@@ -17,7 +17,7 @@ import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { EnergyJobData } from "./energy.dto"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
-import { createUtcDayjs } from "@src/common"
+import { DateUtcService } from "@src/date"
 
 @Injectable()
 export class EnergyService {
@@ -26,7 +26,8 @@ export class EnergyService {
     constructor(
         @InjectQueue(bullData[BullQueueName.Energy].name) private readonly EnergyQueue: Queue,
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly dateUtcService: DateUtcService
     ) {}
 
     // Flag to determine if the current instance is the leader
@@ -47,7 +48,7 @@ export class EnergyService {
             if (!this.isLeader) {
                 return
             }
-            const utcNow = createUtcDayjs()
+            const utcNow = this.dateUtcService.getDayjs()
             // Create a query runner
             const queryRunner = this.dataSource.createQueryRunner()
             await queryRunner.connect()

@@ -1,10 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DailyRewardEntity, InjectPostgreSQL, UserEntity } from "@src/databases"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
-import dayjs from "dayjs"
 import { DataSource, DeepPartial } from "typeorm"
 import { ClaimDailyRewardRequest, ClaimDailyRewardResponse } from "./claim-daily-reward.dto"
-import { GrpcInternalException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
+import { GrpcInternalException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException } from "@src/common"
+import { DateUtcService } from "@src/date"
 
 @Injectable()
 export class ClaimDailyRewardService {
@@ -14,12 +15,11 @@ export class ClaimDailyRewardService {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly tokenBalanceService: TokenBalanceService
+        private readonly tokenBalanceService: TokenBalanceService,
+        private readonly dateUtcService: DateUtcService,
     ) {}
 
     async claimDailyReward(request: ClaimDailyRewardRequest): Promise<ClaimDailyRewardResponse> {
-        this.logger.debug(`Starting claim daily reward for user ${request.userId}`)
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
@@ -30,8 +30,10 @@ export class ClaimDailyRewardService {
             })
 
             // check if spin last time is same as today
-            if (user.spinLastTime && dayjs(user.spinLastTime).isSame()) {
-                throw new GrpcPermissionDeniedException("Spin already claimed today")
+            const now = this.dateUtcService.getDayjs()
+
+            if (user.dailyRewardLastClaimTime && now.isSame(user.dailyRewardLastClaimTime, "day")) {
+                throw new GrpcFailedPreconditionException("Spin already claimed today")
             }
 
             const dailyRewards = await queryRunner.manager.find(DailyRewardEntity, {
@@ -45,8 +47,6 @@ export class ClaimDailyRewardService {
                 throw new GrpcInternalException("Daily rewards not equal to 5")
             }
 
-            // Update user's daily reward
-            const now = dayjs()
             const userChanges: DeepPartial<UserEntity> = {
                 dailyRewardLastClaimTime: now.toDate(),
                 dailyRewardStreak: user.dailyRewardStreak + 1
@@ -85,15 +85,12 @@ export class ClaimDailyRewardService {
                 })
 
                 await queryRunner.commitTransaction()
-
-                this.logger.log(`Successfully claimed daily reward for user ${request.userId}`)
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
-
             return {}
         } finally {
             await queryRunner.release()

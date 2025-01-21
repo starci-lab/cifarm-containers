@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker"
 import { Injectable } from "@nestjs/common"
 import { InjectPostgreSQL, UserEntity } from "@src/databases"
+import { DateUtcService } from "@src/date"
 import { Network, SupportedChainKey } from "@src/env"
 import { DataSource, DeepPartial, In } from "typeorm"
 import { v4 } from "uuid"
@@ -10,7 +11,8 @@ export class GameplayMockUserService {
     private users: Array<UserEntity>
     constructor(
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly dateUtcService: DateUtcService
     ) {
         this.users = []
     }
@@ -21,7 +23,16 @@ export class GameplayMockUserService {
         })
     }
 
-    public async generate({ golds = 500, tokens = 100, level = 1, energy = 50, experiences = 0 }: GenerateParams = {}): Promise<UserEntity> {
+    public async generate({
+        golds = 500,
+        tokens = 100,
+        level = 1,
+        energy = 50,
+        experiences = 0,
+        spinLastTime = this.dateUtcService.getDayjs().subtract(2, "day").toDate(),
+        dailyRewardLastClaimTime = this.dateUtcService.getDayjs().subtract(2, "day").toDate(),
+        dailyRewardStreak = 0
+    }: GenerateParams = {}): Promise<UserEntity> {
         const userPartial: DeepPartial<UserEntity> = {
             username: faker.internet.username(),
             chainKey: faker.helpers.arrayElement(Object.values(SupportedChainKey)),
@@ -34,11 +45,11 @@ export class GameplayMockUserService {
             level,
             tutorialIndex: faker.number.int({ min: 0, max: 10 }),
             stepIndex: faker.number.int({ min: 0, max: 10 }),
-            dailyRewardStreak: faker.number.int({ min: 0, max: 7 }),
+            dailyRewardStreak,
             dailyRewardNumberOfClaim: faker.number.int({ min: 0, max: 30 }),
             spinCount: faker.number.int({ min: 0, max: 100 }),
-            dailyRewardLastClaimTime: faker.date.recent(),
-            spinLastTime: faker.date.recent(),
+            dailyRewardLastClaimTime,
+            spinLastTime,
             sessions: [
                 {
                     refreshToken: v4(),
@@ -52,10 +63,4 @@ export class GameplayMockUserService {
     }
 }
 
-export interface GenerateParams {
-    golds?: number
-    tokens?: number
-    level?: number
-    energy?: number
-    experiences?: number
-}
+export type GenerateParams = DeepPartial<UserEntity>

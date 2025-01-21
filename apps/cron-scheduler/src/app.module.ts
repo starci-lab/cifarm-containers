@@ -11,6 +11,7 @@ import { CropModule } from "./crop"
 import { DeliveryModule } from "./delivery"
 import { CacheModule } from "@src/cache"
 import { KubernetesModule } from "@src/kubernetes"
+import { DateModule } from "@src/date"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -18,6 +19,9 @@ import { KubernetesModule } from "@src/kubernetes"
         BullModule.forRoot(),
         PostgreSQLModule.forRoot(),
         EventEmitterModule.forRoot(),
+        DateModule.register({
+            isGlobal: true
+        }),
         CacheModule.register({
             isGlobal: true
         }),
@@ -31,6 +35,7 @@ import { KubernetesModule } from "@src/kubernetes"
                 useMinikubeForDevelopment: true,
             }
         }),
+
         CropModule,
         AnimalModule,
         DeliveryModule,

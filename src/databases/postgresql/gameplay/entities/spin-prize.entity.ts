@@ -39,11 +39,11 @@ export class SpinPrizeEntity extends UuidAbstractEntity {
 
     @Field(() => Int, { nullable: true })
     @Column({ name: "golds", type: "int", nullable: true })
-        golds: number
+        golds?: number
     
     @Field(() => Float, { nullable: true })
     @Column({ name: "tokens", type: "float", nullable: true })
-        tokens: number
+        tokens?: number
 
     @Field(() => Int, { nullable: true })
     @Column({ name: "quantity", type: "int", nullable: true })

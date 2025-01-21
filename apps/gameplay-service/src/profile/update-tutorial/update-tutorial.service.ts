@@ -15,8 +15,6 @@ export class UpdateTutorialService {
     }
 
     async updateTutorial(request: UpdateTutorialRequest): Promise<UpdateTutorialResponse> {
-        this.logger.debug(`Starting claim daily reward for user ${request.userId}`)
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
@@ -36,8 +34,6 @@ export class UpdateTutorialService {
                 })
 
                 await queryRunner.commitTransaction()
-
-                this.logger.log(`Update tutorial for user ${request.userId} successfully`)
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)

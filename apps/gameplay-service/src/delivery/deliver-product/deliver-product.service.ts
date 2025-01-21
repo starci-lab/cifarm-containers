@@ -15,10 +15,6 @@ export class DeliverProductService {
     ) {}
 
     async deliverProduct(request: DeliverProductRequest): Promise<DeliverProductResponse> {
-        this.logger.debug(
-            `Starting product delivery for user ${request.userId}, inventory id: ${request.inventoryId}, quantity: ${request.quantity}`
-        )
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 

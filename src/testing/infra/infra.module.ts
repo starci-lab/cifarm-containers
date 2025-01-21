@@ -11,6 +11,7 @@ import { BlockchainModule } from "@src/blockchain"
 import { JwtModule } from "@src/jwt"
 import { GameplayModule } from "@src/gameplay"
 import { KafkaGroupId, KafkaModule } from "@src/brokers"
+import { DateModule } from "@src/date"
 
 @Module({})
 export class TestingInfraModule extends ConfigurableModuleClass {
@@ -48,8 +49,11 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                     isGlobal: true,
                     groupId: KafkaGroupId.PlacedItems,
                     producerOnlyMode: true
+                }),
+                DateModule.register({
+                    isGlobal: true
                 })
-            )
+            )                                                                                                                                                                                                                       
 
             const services = [ GameplayMockUserService, ConnectionService ]
             providers.push(...services)

@@ -19,6 +19,7 @@ import { JwtModule } from "@src/jwt"
 import { APP_FILTER } from "@nestjs/core"
 import { BlockchainExceptionFilter, GameplayExceptionFilter } from "./filters"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
+import { DateModule } from "@src/date"
 
 @Module({
     imports: [
@@ -41,7 +42,11 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
         BlockchainModule.register({
             isGlobal: true
         }),
+        DateModule.register({
+            isGlobal: true
+        }),
         JwtModule.register({
+            useGlobalImports: true,
             isGlobal: true
         }),
         AuthModule,

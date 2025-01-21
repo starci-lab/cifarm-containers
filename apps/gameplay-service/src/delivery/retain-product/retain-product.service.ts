@@ -17,10 +17,6 @@ export class RetainProductService {
     }
 
     async retainProduct(request: RetainProductRequest): Promise<RetainProductResponse> {
-        this.logger.debug(
-            `Starting retain product for user ${request.userId}, delivering product id: ${request.deliveringProductId}`
-        )
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
@@ -43,7 +39,7 @@ export class RetainProductService {
             const existingInventories = await queryRunner.manager.find(InventoryEntity, {
                 where: {
                     userId: request.userId,
-                    inventoryType: inventoryType
+                    inventoryTypeId: inventoryType.id
                 },
                 relations: {
                     inventoryType: true
@@ -58,7 +54,7 @@ export class RetainProductService {
                     quantity: deliveringProduct.quantity
                 }
             })
-
+            
             // Start transaction
             await queryRunner.startTransaction()
 

@@ -4,13 +4,16 @@ import { envConfig } from "@src/env"
 import { AuthCredentials, UserLike } from "./jwt.types"
 import { v4 } from "uuid"
 import ms, { StringValue } from "ms"
-import { createUtcDayjs } from "@src/common"
+import { DateUtcService } from "@src/date"
 
 @Injectable()
 export class JwtService {
     private readonly logger = new Logger(JwtService.name)
 
-    constructor(private readonly jwtService: NestJwtService) {}
+    constructor(
+        private readonly jwtService: NestJwtService,
+        private readonly dateUtcService: DateUtcService
+    ) {}
 
     public async generateAuthCredentials(payload: UserLike): Promise<AuthCredentials> {
         const [accessToken, refreshToken] = await Promise.all([
@@ -53,7 +56,7 @@ export class JwtService {
         try {
             const expiresIn = envConfig().secrets.jwt.refreshTokenExpiration
             const expiresInMs = ms(expiresIn as StringValue)
-            return createUtcDayjs().add(expiresInMs, "millisecond").toDate()
+            return this.dateUtcService.getDayjs().add(expiresInMs, "millisecond").toDate()
         } catch (ex) {
             this.logger.error("Failed to get expiration time from token", ex.message)
             return null

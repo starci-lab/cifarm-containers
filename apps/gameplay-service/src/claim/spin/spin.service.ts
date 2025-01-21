@@ -15,8 +15,9 @@ import {
 import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
 import { SpinRequest, SpinResponse } from "./spin.dto"
-import { GrpcInternalException, GrpcPermissionDeniedException } from "nestjs-grpc-exceptions"
-import { createUtcDayjs } from "@src/common"
+import { GrpcInternalException } from "nestjs-grpc-exceptions"
+import { DateUtcService } from "@src/date"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class SpinService {
@@ -27,13 +28,11 @@ export class SpinService {
         private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
-        private readonly inventoryService: InventoryService
-    ) {
-    }
+        private readonly inventoryService: InventoryService,
+        private readonly dateUtcService: DateUtcService
+    ) {}
 
     async spin(request: SpinRequest): Promise<SpinResponse> {
-        this.logger.debug(`Spin called, user: ${request.userId}`)
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
@@ -44,9 +43,9 @@ export class SpinService {
             })
 
             // check if during 24-hour period user has already spun
-            const now = createUtcDayjs()
+            const now = this.dateUtcService.getDayjs()
             if (user.spinLastTime && now.diff(user.spinLastTime, "day") < 1) {
-                throw new GrpcPermissionDeniedException("Spin is blocked for 24 hours")
+                throw new GrpcFailedPreconditionException("Spin is blocked for 24 hours")
             }
 
             // Spin the wheel
@@ -79,8 +78,7 @@ export class SpinService {
             const rewardableSlots = spinSlots.filter(
                 (slot) => slot.spinPrize.appearanceChance === chance
             )
-            const randomIndex = Math.floor(Math.random() * rewardableSlots.length)
-            const selectedSlot = rewardableSlots[randomIndex]
+            const selectedSlot = this.getRandomSlot(rewardableSlots)
 
             // Update user's spin last time
             const userChanges: DeepPartial<UserEntity> = {
@@ -219,16 +217,15 @@ export class SpinService {
                 break
             }
             }
-            this.logger.log(
-                `Successfully spun the wheel for user ${request.userId}, selected slot id: ${selectedSlot.id}`
-            )
             return { spinSlotId: selectedSlot.id }
-        } catch (error) {
-            this.logger.error("Spin failed", error)
-            throw error
-        }
-        finally {
+        } finally {
             await queryRunner.release()
         }
+    }
+
+    //detach random slot function to mock it with jest.spyOn
+    public getRandomSlot(rewardableSlots: Array<SpinSlotEntity>): DeepPartial<SpinSlotEntity> {
+        const randomIndex = Math.floor(Math.random() * rewardableSlots.length)
+        return rewardableSlots[randomIndex]
     }
 }

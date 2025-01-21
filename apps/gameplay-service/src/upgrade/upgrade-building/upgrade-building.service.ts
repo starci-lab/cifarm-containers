@@ -14,44 +14,36 @@ export class UpgradeBuildingService {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly goldBalanceService: GoldBalanceService
-    ) {
-    }
+    ) {}
 
     async upgradeBuilding(request: UpgradeBuildingRequest): Promise<UpgradeBuildingResponse> {
-        this.logger.debug(
-            `Starting upgrade for placedItem ${request.placedItemBuildingId} by user ${request.userId}`
-        )
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
         try {
             // Fetch placed item
-            const placedItem = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemBuilding = await queryRunner.manager.findOne(PlacedItemEntity, {
                 where: { id: request.placedItemBuildingId, userId: request.userId },
                 relations: {
-                    buildingInfo: {
+                    buildingInfo: true,
+                    placedItemType: {
                         building: {
-                            upgrades: true,
+                            upgrades: true
                         }
                     }
-                },
+                }
             })
 
-            if (!placedItem) {
+            if (!placedItemBuilding || !placedItemBuilding.buildingInfo) {
                 throw new GrpcNotFoundException("Placed item not found")
             }
 
-            const buildingInfo = placedItem.buildingInfo
-
-            if (!buildingInfo) {
-                throw new GrpcFailedPreconditionException("Building info not found")
-            }
-
-            const currentUpgradeLevel = buildingInfo.currentUpgrade
+            const currentUpgradeLevel = placedItemBuilding.buildingInfo.currentUpgrade
 
             const maxUpgradeLevel = Math.max(
-                ...buildingInfo.building.upgrades.map((upgrade) => upgrade.upgradeLevel)
+                ...placedItemBuilding.placedItemType.building.upgrades.map(
+                    (upgrade) => upgrade.upgradeLevel
+                )
             )
 
             if (currentUpgradeLevel === maxUpgradeLevel) {
@@ -59,7 +51,7 @@ export class UpgradeBuildingService {
             }
 
             // Fetch the next upgrade level
-            const nextUpgrade = buildingInfo.building.upgrades.find(
+            const nextUpgrade = placedItemBuilding.placedItemType.building.upgrades.find(
                 (upgrade) => upgrade.upgradeLevel === currentUpgradeLevel + 1
             )
 
@@ -68,7 +60,7 @@ export class UpgradeBuildingService {
             }
 
             const user = await queryRunner.manager.findOne(UserEntity, {
-                where: { id: request.userId },
+                where: { id: request.userId }
             })
 
             if (!user) {
@@ -78,11 +70,11 @@ export class UpgradeBuildingService {
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({
                 current: user.golds,
-                required: nextUpgrade.upgradePrice,
+                required: nextUpgrade.upgradePrice
             })
 
             // Update building upgrade level
-            buildingInfo.currentUpgrade = currentUpgradeLevel + 1
+            placedItemBuilding.buildingInfo.currentUpgrade = currentUpgradeLevel + 1
 
             // Start transaction
             await queryRunner.startTransaction()
@@ -90,13 +82,13 @@ export class UpgradeBuildingService {
                 // Deduct gold
                 const goldsChanged = this.goldBalanceService.subtract({
                     entity: user,
-                    amount: nextUpgrade.upgradePrice,
+                    amount: nextUpgrade.upgradePrice
                 })
                 await queryRunner.manager.update(UserEntity, user.id, {
-                    ...goldsChanged,
+                    ...goldsChanged
                 })
-                
-                await queryRunner.manager.save(PlacedItemEntity, placedItem)
+
+                await queryRunner.manager.save(PlacedItemEntity, placedItemBuilding)
 
                 await queryRunner.commitTransaction()
             } catch (error) {

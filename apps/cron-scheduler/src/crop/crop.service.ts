@@ -13,15 +13,11 @@ import {
     TempId
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import dayjs from "dayjs"
-import utc from "dayjs/plugin/utc"
 import { DataSource, Not } from "typeorm"
 import { v4 } from "uuid"
 import { CropJobData } from "./crop.dto"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
-import { createUtcDayjs } from "@src/common"
-
-dayjs.extend(utc)
+import { DateUtcService } from "@src/date"
 
 @Injectable()
 export class CropService {
@@ -29,7 +25,8 @@ export class CropService {
     constructor(
         @InjectQueue(BullQueueName.Crop) private readonly cropQueue: Queue,
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly dateUtcService: DateUtcService,
     ) {
     }
 
@@ -52,7 +49,7 @@ export class CropService {
         if (!this.isLeader) {
             return
         }
-        const utcNow = createUtcDayjs()
+        const utcNow = this.dateUtcService.getDayjs()
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

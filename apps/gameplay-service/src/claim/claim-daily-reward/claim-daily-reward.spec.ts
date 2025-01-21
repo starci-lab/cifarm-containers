@@ -1,44 +1,92 @@
-import { createTestModule, GameplayMockUserService } from "@src/testing/infra"
-import { DataSource } from "typeorm"
-import { ClaimDailyRewardRequest } from "./claim-daily-reward.dto"
-import { ClaimDailyRewardModule } from "./claim-daily-reward.module"
+// npx jest apps/gameplay-service/src/claim/claim-daily-reward/claim-daily-reward.spec.ts
+
+import { Test } from "@nestjs/testing"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
+import { DataSource } from "typeorm"
+import { DailyRewardEntity, DailyRewardId, getPostgreSqlToken, UserEntity } from "@src/databases"
+import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GrpcFailedPreconditionException } from "@src/common"
+import { DateUtcService } from "@src/date"
 
 describe("ClaimDailyRewardService", () => {
-    let dataSource: DataSource
     let service: ClaimDailyRewardService
-    let mockUserService: GameplayMockUserService
+    let dataSource: DataSource
+    let gameplayMockUserService: GameplayMockUserService
+    let connectionService: ConnectionService
+    let dateUtcService: DateUtcService
 
     beforeAll(async () => {
-        const { module } = await createTestModule({
-            imports: [ClaimDailyRewardModule]
-        })
-        dataSource = module.get<DataSource>(DataSource)
-        service = module.get<ClaimDailyRewardService>(ClaimDailyRewardService)
-        mockUserService = module.get<GameplayMockUserService>(GameplayMockUserService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [ClaimDailyRewardService],
+        }).compile()
+
+        service = moduleRef.get(ClaimDailyRewardService)
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
+        connectionService = moduleRef.get(ConnectionService)
+        dateUtcService = moduleRef.get(DateUtcService)
     })
 
-    it("the daily reward is claimed", async () => {
-        const user = await mockUserService.generate()
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-        await queryRunner.startTransaction()
+    it("should successfully claim daily reward for gold case", async () => {
+        const user = await gameplayMockUserService.generate({
+            dailyRewardLastClaimTime: dateUtcService.getDayjs().subtract(2, "day").toDate(),
+            dailyRewardStreak: 1,
+        })
 
-        try {
-            const request: ClaimDailyRewardRequest = {
+        const dailyReward = await dataSource.manager.findOne(DailyRewardEntity, {
+            where: { id: DailyRewardId.Day2 }
+        })
+        
+        await service.claimDailyReward({
+            userId: user.id
+        })
+
+        const userAfter = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id }
+        })
+
+        expect(userAfter.golds).toEqual(dailyReward.golds + user.golds)
+        expect(userAfter.dailyRewardStreak).toEqual(user.dailyRewardStreak + 1)
+    })
+
+    it("should successfully claim daily reward for last day", async () => {
+        const user = await gameplayMockUserService.generate({
+            dailyRewardLastClaimTime: dateUtcService.getDayjs().subtract(2, "day").toDate(),
+            dailyRewardStreak: 4,
+        })
+
+        const dailyReward = await dataSource.manager.findOne(DailyRewardEntity, {
+            where: { id: DailyRewardId.Day5 },
+        })
+        
+        await service.claimDailyReward({
+            userId: user.id
+        })
+
+        const userAfter = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id }
+        })
+
+        expect(userAfter.tokens).toEqual(dailyReward.tokens + user.tokens)
+        expect(userAfter.golds).toEqual(dailyReward.golds + user.golds)
+        expect(userAfter.dailyRewardStreak).toEqual(user.dailyRewardStreak + 1)
+    })
+
+    it("should throw GrpcFailedPreconditionException if user already claimed today", async () => {
+        const user = await gameplayMockUserService.generate({
+            dailyRewardLastClaimTime: dateUtcService.getDayjs().toDate(),
+        })
+
+        await expect(
+            service.claimDailyReward({
                 userId: user.id
-            }
-
-            await service.claimDailyReward(request).then(() => {
-                expect(true).toBe(true)
             })
-        } finally {
-            await queryRunner.rollbackTransaction()
-            await queryRunner.release()
-        }
+        ).rejects.toThrow(GrpcFailedPreconditionException)
     })
 
     afterAll(async () => {
-        await mockUserService.clear()
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

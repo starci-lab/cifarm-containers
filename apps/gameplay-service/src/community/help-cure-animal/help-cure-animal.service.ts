@@ -55,8 +55,9 @@ export class HelpCureAnimalService {
                 }
             })
 
-            if (!placedItemAnimal || !placedItemAnimal.animalInfo)
+            if (!placedItemAnimal || !placedItemAnimal.animalInfo) {
                 throw new GrpcNotFoundException("Animal not found")
+            }
 
             if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
                 throw new GrpcFailedPreconditionException("Animal is not sick")
