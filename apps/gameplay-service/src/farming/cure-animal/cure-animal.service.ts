@@ -45,9 +45,10 @@ export class CureAnimalService {
                 }
             })
 
-            if (!placedItemAnimal || !placedItemAnimal.animalInfo)
+            if (!placedItemAnimal || !placedItemAnimal.animalInfo) {
                 throw new GrpcNotFoundException("Animal not found")
-
+            }
+            
             const { animalInfo } = placedItemAnimal
             if (animalInfo.currentState !== AnimalCurrentState.Sick)
                 throw new GrpcFailedPreconditionException("Animal is not sick")

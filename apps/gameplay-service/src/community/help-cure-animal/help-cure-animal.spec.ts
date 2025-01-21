@@ -1,8 +1,8 @@
-// npx jest apps/gameplay-service/src/farming/cure-animal/cure-animal.spec.ts
+// npx jest apps/gameplay-service/src/community/help-cure-animal/help-cure-animal.spec.ts
 
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
-import { CureAnimalService } from "./cure-animal.service"
+import { HelpCureAnimalService } from "./help-cure-animal.service"
 import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     AnimalInfoEntity,
@@ -14,15 +14,16 @@ import {
     Activities,
     getPostgreSqlToken,
     PlacedItemTypeId,
+    AnimalId
 } from "@src/databases"
 import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
 import { v4 } from "uuid"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
 
-describe("CureAnimalService", () => {
+describe("HelpCureAnimalService", () => {
     let dataSource: DataSource
-    let service: CureAnimalService
+    let service: HelpCureAnimalService
     let connectionService: ConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
@@ -30,27 +31,28 @@ describe("CureAnimalService", () => {
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [CureAnimalService]
+            providers: [HelpCureAnimalService]
         }).compile()
 
         dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(CureAnimalService)
+        service = moduleRef.get(HelpCureAnimalService)
         connectionService = moduleRef.get(ConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         levelService = moduleRef.get(LevelService)
     })
 
-    it("should successfully cure the sick animal and update user stats", async () => {
+    it("should successfully help cure the sick animal and update user stats", async () => {
         const { value } = await dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
         })
         const {
-            cureAnimal: { energyConsume, experiencesGain }
+            useFertilizer: { energyConsume, experiencesGain }
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
+        const neighborUser = await gameplayMockUserService.generate()
     
         // create placed animal in sick state
         const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
@@ -60,13 +62,14 @@ describe("CureAnimalService", () => {
             x: 0,
             y: 0,
             placedItemTypeId: PlacedItemTypeId.Chicken,
-            userId: user.id
+            userId: neighborUser.id
         })
 
         // Call the service method to cure the animal
-        await service.cureAnimal({
+        await service.helpCureAnimal({
             userId: user.id,
-            placedItemAnimalId: placedItemAnimal.id
+            placedItemAnimalId: placedItemAnimal.id,
+            neighborUserId: neighborUser.id
         })
 
         const userAfter = await dataSource.manager.findOne(UserEntity, {
@@ -92,18 +95,21 @@ describe("CureAnimalService", () => {
             where: { id: SystemId.Activities }
         })
         const {
-            cureAnimal: { energyConsume }
+            useFertilizer: { energyConsume }
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
+        const neighborUser = await gameplayMockUserService.generate()
+
         const invalidPlacedItemAnimalId = v4()
 
         await expect(
-            service.cureAnimal({
+            service.helpCureAnimal({
                 userId: user.id,
-                placedItemAnimalId: invalidPlacedItemAnimalId
+                placedItemAnimalId: invalidPlacedItemAnimalId,
+                neighborUserId: neighborUser.id
             })
         ).rejects.toThrow(GrpcNotFoundException)
     })
@@ -119,6 +125,7 @@ describe("CureAnimalService", () => {
         const user = await gameplayMockUserService.generate({
             energy: energyConsume - 1
         })
+        const neighborUser = await gameplayMockUserService.generate()
     
         const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
             animalInfo: {
@@ -127,31 +134,33 @@ describe("CureAnimalService", () => {
             x: 0,
             y: 0,
             placedItemTypeId: PlacedItemTypeId.Chicken,
-            userId: user.id
+            userId: neighborUser.id
         })
     
         await expect(
-            service.cureAnimal({
+            service.helpCureAnimal({
                 userId: user.id,
-                placedItemAnimalId: placedItemAnimal.id
+                placedItemAnimalId: placedItemAnimal.id,
+                neighborUserId: neighborUser.id
             })
         ).rejects.toThrow(EnergyNotEnoughException)
     })
 
-    it("should throw GrpcNotFoundException when animal belongs to a different user", async () => {
+    it("should throw GrpcNotFoundException when animal belongs to yourself", async () => {
         const { value } = await dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
         })
         const {
-            cureAnimal: { energyConsume }
+            useFertilizer: { energyConsume }
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
+
         const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
             animalInfo: {
-                animalId: v4(),
+                animalId: AnimalId.Chicken,
                 currentState: AnimalCurrentState.Sick
             },
             x: 0,
@@ -160,11 +169,12 @@ describe("CureAnimalService", () => {
         })
 
         await expect(
-            service.cureAnimal({
-                userId: v4(), // different user ID
-                placedItemAnimalId: placedItemAnimal.id
+            service.helpCureAnimal({
+                userId: user.id,
+                placedItemAnimalId: placedItemAnimal.id,
+                neighborUserId: user.id
             })
-        ).rejects.toThrow(GrpcNotFoundException)
+        ).rejects.toThrow(GrpcInvalidArgumentException)
     })
 
     it("should throw GrpcFailedPreconditionException when animal is not sick", async () => {
@@ -172,12 +182,13 @@ describe("CureAnimalService", () => {
             where: { id: SystemId.Activities }
         })
         const {
-            cureAnimal: { energyConsume }
+            useFertilizer: { energyConsume }
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
+        const neighborUser = await gameplayMockUserService.generate()
 
         const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
             animalInfo: {
@@ -185,14 +196,15 @@ describe("CureAnimalService", () => {
             },
             x: 0,
             y: 0,
-            userId: user.id,
+            userId: neighborUser.id,
             placedItemTypeId: PlacedItemTypeId.Chicken
         })
 
         await expect(
-            service.cureAnimal({
+            service.helpCureAnimal({
                 userId: user.id,
-                placedItemAnimalId: placedItemAnimal.id
+                placedItemAnimalId: placedItemAnimal.id,
+                neighborUserId: neighborUser.id
             })
         ).rejects.toThrow(GrpcFailedPreconditionException)
     })

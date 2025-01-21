@@ -4,7 +4,6 @@ import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
-    AnimalCurrentState,
     PlacedItemEntity,
     InventoryEntity,
     UserEntity,
@@ -111,9 +110,9 @@ describe("TheifCropService", () => {
         expect(inventory.quantity).toBeGreaterThanOrEqual(thiefQuantity)
 
         const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: { id: placedItemTile.animalInfoId }
+            where: { id: placedItemTile.seedGrowthInfoId }
         })
-
+        
         expect(updatedSeedGrowthInfo.harvestQuantityRemaining).toBe(crop.maxHarvestQuantity - thiefQuantity)
     })
 
@@ -198,9 +197,10 @@ describe("TheifCropService", () => {
         })
 
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
-            animalInfo: {
-                currentState: AnimalCurrentState.Yield,
-                harvestQuantityRemaining: crop.maxHarvestQuantity
+            seedGrowthInfo: {
+                currentState: CropCurrentState.FullyMatured,
+                harvestQuantityRemaining: crop.maxHarvestQuantity,
+                cropId
             },
             x: 0,
             y: 0,

@@ -12,15 +12,19 @@ export class UsersFollowingUsersEntity extends UuidAbstractEntity {
 
     @Field(() => String, { nullable: false })
     @Column({ name: "followee_id", type: "uuid" })
-        followeeId: string
+        followeeUserId: string
 
     @Field(() => UserEntity, { nullable: false })
-    @ManyToOne(() => UserEntity, (user) => user.followingUsers)
+    @ManyToOne(() => UserEntity, (user) => user.followingUsers, {
+        onDelete: "CASCADE"
+    })
     @JoinColumn({ name: "follower_id" })
         follower: UserEntity
 
     @Field(() => UserEntity, { nullable: false })
-    @ManyToOne(() => UserEntity, (user) => user.followedByUsers)
+    @ManyToOne(() => UserEntity, (user) => user.followedByUsers, {
+        onDelete: "CASCADE"
+    })
     @JoinColumn({ name: "followee_id" })
         followee: UserEntity
 }

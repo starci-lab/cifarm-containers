@@ -15,7 +15,7 @@ import {
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcInternalException, GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
@@ -32,7 +32,9 @@ export class HelpCureAnimalService {
     ) {}
 
     async helpCureAnimal(request: HelpCureAnimalRequest): Promise<HelpCureAnimalResponse> {
-        this.logger.debug(`Help cure animal for user ${request.neighborUserId}`)
+        if (request.userId === request.neighborUserId) {
+            throw new GrpcInvalidArgumentException("Cannot help cure yourself")
+        }
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
@@ -53,9 +55,8 @@ export class HelpCureAnimalService {
                 }
             })
 
-            if (!(placedItemAnimal && placedItemAnimal.animalInfo)) {
+            if (!placedItemAnimal || !placedItemAnimal.animalInfo)
                 throw new GrpcNotFoundException("Animal not found")
-            }
 
             if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
                 throw new GrpcFailedPreconditionException("Animal is not sick")

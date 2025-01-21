@@ -4,5 +4,5 @@ package gameplay_service;
 
 message UnfollowRequest {
     string userId = 1;
-    string unfollowedUserId = 2;
+    string followeeUserId = 2;
 }

@@ -15,7 +15,7 @@ import {
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HelpUseHerbicideRequest, HelpUseHerbicideResponse } from "./help-use-herbicide.dto"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcInternalException, GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
@@ -32,7 +32,9 @@ export class HelpUseHerbicideService {
     ) {}
 
     async helpUseHerbicide(request: HelpUseHerbicideRequest): Promise<HelpUseHerbicideResponse> {
-        this.logger.debug(`Help use herbicide for user ${request.neighborUserId}`)
+        if (request.userId === request.neighborUserId) {
+            throw new GrpcInvalidArgumentException("Cannot help use herbicide yourself")
+        }
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()

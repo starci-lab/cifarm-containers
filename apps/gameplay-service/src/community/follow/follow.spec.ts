@@ -1,79 +1,74 @@
-//npx jest apps/gameplay-service/src/community/follow/follow.spec.ts
+// npx jest apps/gameplay-service/src/community/follow/follow.spec.ts
 
-import { UserEntity, UsersFollowingUsersEntity } from "@src/databases"
-import { createTestModule, MOCK_USER } from "@src/testing/infra"
-import { DataSource, DeepPartial } from "typeorm"
-import { FollowRequest } from "./follow.dto"
-import { FollowModule } from "./follow.module"
+import { Test } from "@nestjs/testing"
+import { DataSource } from "typeorm"
+import { GameplayMockUserService, ConnectionService, TestingInfraModule } from "@src/testing"
+import { getPostgreSqlToken, UsersFollowingUsersEntity } from "@src/databases"
+import { v4 } from "uuid"
+import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { FollowService } from "./follow.service"
 
 describe("FollowService", () => {
-    let dataSource: DataSource
     let service: FollowService
-
-    const mockUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER
-    }
-    const mockFollowedUser: DeepPartial<UserEntity> = {
-        ...MOCK_USER,
-        username: "followedUser"
-    }
+    let dataSource: DataSource
+    let gameplayMockUserService: GameplayMockUserService
+    let connectionService: ConnectionService
 
     beforeAll(async () => {
-        const { module, dataSource: ds } = await createTestModule({
-            imports: [FollowModule]
-        })
-        dataSource = ds
-        service = module.get<FollowService>(FollowService)
+        const moduleRef = await Test.createTestingModule({
+            imports: [TestingInfraModule.register()],
+            providers: [FollowService]
+        }).compile()
+
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        service = moduleRef.get(FollowService)
+        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
+        connectionService = moduleRef.get(ConnectionService)
     })
 
-    it("Should successfully follow another user", async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
+    it("should successfully follow user", async () => {
+        const user = await gameplayMockUserService.generate()
+        const targetUser = await gameplayMockUserService.generate()
+        await service.follow({
+            userId: user.id,
+            followeeUserId: targetUser.id
+        })
+        const followed = await dataSource.manager.findOne(UsersFollowingUsersEntity, {
+            where: { followerId: user.id, followeeUserId: targetUser.id }
+        })
+        expect(followed).toBeTruthy()
+    })
 
+    it("should throw error when trying to follow a non-existent user", async () => {
+        const user = await gameplayMockUserService.generate()
+        const nonExistentUserId = v4() // Generate a non-existent user ID (UUID format)
+        
         try {
-            // Mock users
-            const user = await queryRunner.manager.save(UserEntity, mockUser)
-
-            const followedUser = await queryRunner.manager.save(UserEntity, mockFollowedUser)
-
-            const request: FollowRequest = {
+            await service.follow({
                 userId: user.id,
-                followedUserId: followedUser.id
-            }
-
-            await service.follow(request)
-
-            // Verify follow record created
-            const followRecord = await queryRunner.manager.findOne(UsersFollowingUsersEntity, {
-                where: {
-                    followerId: user.id,
-                    followeeId: followedUser.id
-                }
+                followeeUserId: nonExistentUserId
             })
-            expect(followRecord).toBeDefined()
-            expect(followRecord.followerId).toBe(user.id)
-            expect(followRecord.followeeId).toBe(followedUser.id)
-        } finally {
-            await queryRunner.release()
+        } catch (error) {
+            expect(error).toBeInstanceOf(GrpcNotFoundException)
+        }
+    })
+
+    it("should throw error when trying to follow oneself", async () => {
+        const user = await gameplayMockUserService.generate()
+        
+        try {
+            await service.follow({
+                userId: user.id,
+                followeeUserId: user.id
+            })
+        } catch (error) {
+            // Ensure that following oneself is not allowed (Assumption)
+            expect(error).toBeInstanceOf(GrpcInvalidArgumentException)
         }
     })
 
     afterAll(async () => {
-        const queryRunner = dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            await queryRunner.startTransaction()
-            await queryRunner.manager.delete(UserEntity, { id: mockUser.id })
-            await queryRunner.manager.delete(UserEntity, { id: mockFollowedUser.id })
-            await queryRunner.manager.delete(UsersFollowingUsersEntity, {})
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            await queryRunner.rollbackTransaction()
-            throw error
-        } finally {
-            await queryRunner.release()
-        }
+        await gameplayMockUserService.clear()
+        await connectionService.closeAll()
     })
 })

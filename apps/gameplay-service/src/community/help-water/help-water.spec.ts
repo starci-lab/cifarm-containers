@@ -1,8 +1,8 @@
-// npx jest apps/gameplay-service/src/farming/use-herbicide/use-herbicide.spec.ts
+// npx jest apps/gameplay-service/src/community/help-water/help-water.spec.ts
 
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
-import { UseHerbicideService } from "./use-herbicide.service"
+import { HelpWaterService } from "./help-water.service"
 import {
     SystemEntity,
     UserEntity,
@@ -14,15 +14,16 @@ import {
     getPostgreSqlToken,
     CropId,
     PlacedItemTypeId,
+    CropEntity,
 } from "@src/databases"
 import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { v4 } from "uuid"
 import { GrpcFailedPreconditionException } from "@src/common"
 import { GameplayMockUserService, ConnectionService, TestingInfraModule } from "@src/testing"
 
-describe("UseHerbicideService", () => {
-    let service: UseHerbicideService
+describe("HelpWaterService", () => {
+    let service: HelpWaterService
     let dataSource: DataSource
     let levelService: LevelService
     let gameplayMockUserService: GameplayMockUserService
@@ -31,35 +32,36 @@ describe("UseHerbicideService", () => {
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [UseHerbicideService],
+            providers: [HelpWaterService],
         }).compile()
 
         dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(UseHerbicideService)
+        service = moduleRef.get(HelpWaterService)
         levelService = moduleRef.get(LevelService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         connectionService = moduleRef.get(ConnectionService)
     })
 
-    it("should successfully use herbicide and update tile state, energy, and experience", async () => {
+    it("should successfully help water and update tile state, energy, and experience", async () => {
         const { value } = await dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities },
         })
         const {
-            usePesticide: { energyConsume, experiencesGain },
+            helpWater: { energyConsume, experiencesGain },
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1,
         })
+        const neighborUser = await gameplayMockUserService.generate()
 
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
             x: 0,
             y: 0,
-            userId: user.id,
+            userId: neighborUser.id,
             placedItemTypeId: PlacedItemTypeId.BasicTile1,
             seedGrowthInfo: {
-                currentState: CropCurrentState.IsWeedy,
+                currentState: CropCurrentState.NeedWater,
                 currentStageTimeElapsed: 0,
                 cropId: CropId.Carrot,
                 harvestQuantityRemaining: 10,
@@ -67,9 +69,10 @@ describe("UseHerbicideService", () => {
         })
 
         // Call the service to use herbicide
-        await service.useHerbicide({
+        await service.helpWater({
             userId: user.id,
             placedItemTileId: placedItemTile.id,
+            neighborUserId: neighborUser.id,
         })
 
         // Check if energy and experience were updated correctly
@@ -94,7 +97,7 @@ describe("UseHerbicideService", () => {
             where: { id: SystemId.Activities },
         })
         const {
-            usePesticide: { energyConsume },
+            helpWater: { energyConsume },
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
@@ -104,9 +107,10 @@ describe("UseHerbicideService", () => {
         const invalidPlacedItemTileId = v4()
 
         await expect(
-            service.useHerbicide({
+            service.helpWater({
                 userId: user.id,
                 placedItemTileId: invalidPlacedItemTileId,
+                neighborUserId: v4()
             }),
         ).rejects.toThrow(GrpcNotFoundException)
     })
@@ -116,44 +120,47 @@ describe("UseHerbicideService", () => {
             where: { id: SystemId.Activities },
         })
         const {
-            usePesticide: { energyConsume },
+            helpWater: { energyConsume },
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1,
         })
+        const neighborUser = await gameplayMockUserService.generate()
 
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
             x: 0,
             y: 0,
-            userId: user.id,
+            userId: neighborUser.id,
             placedItemTypeId: PlacedItemTypeId.BasicTile1,
         })
 
         await expect(
-            service.useHerbicide({
+            service.helpWater({
                 userId: user.id,
                 placedItemTileId: placedItemTile.id,
+                neighborUserId: neighborUser.id,
             }),
         ).rejects.toThrow(GrpcFailedPreconditionException)
     })
 
-    it("should throw GrpcFailedPreconditionException when tile is not weedy", async () => {
+    it("should throw GrpcFailedPreconditionException when tile not need water", async () => {
         const { value } = await dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities },
         })
         const {
-            usePesticide: { energyConsume },
+            helpWater: { energyConsume },
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1,
         })
+        const neighborUser = await gameplayMockUserService.generate()
 
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
             x: 0,
             y: 0,
-            userId: user.id,
+            userId: neighborUser.id,
             seedGrowthInfo: {
                 currentState: CropCurrentState.Normal, // Not weedy
                 currentStageTimeElapsed: 0,
@@ -164,9 +171,10 @@ describe("UseHerbicideService", () => {
         })
 
         await expect(
-            service.useHerbicide({
+            service.helpWater({
                 userId: user.id,
                 placedItemTileId: placedItemTile.id,
+                neighborUserId: neighborUser.id,
             }),
         ).rejects.toThrow(GrpcFailedPreconditionException)
     })
@@ -176,19 +184,21 @@ describe("UseHerbicideService", () => {
             where: { id: SystemId.Activities },
         })
         const {
-            usePesticide: { energyConsume },
+            helpWater: { energyConsume },
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume - 1,
         })
 
+        const neighborUser = await gameplayMockUserService.generate()
+
         const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
             x: 0,
             y: 0,
-            userId: user.id,
+            userId: neighborUser.id,
             seedGrowthInfo: {
-                currentState: CropCurrentState.IsWeedy,
+                currentState: CropCurrentState.NeedWater,
                 currentStageTimeElapsed: 0,
                 cropId: CropId.Carrot,
                 harvestQuantityRemaining: 10,
@@ -197,11 +207,50 @@ describe("UseHerbicideService", () => {
         })
 
         await expect(
-            service.useHerbicide({
+            service.helpWater({
                 userId: user.id,
                 placedItemTileId: placedItemTile.id,
+                neighborUserId: neighborUser.id,
             }),
         ).rejects.toThrow(EnergyNotEnoughException)
+    })
+
+    it("should throw GrpcNotFoundException when the crop belongs to yourself", async () => {
+        const cropId = CropId.Carrot
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            thiefCrop: { energyConsume }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        const crop = await dataSource.manager.findOne(CropEntity, {
+            where: { id: cropId }
+        })
+
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            seedGrowthInfo: {
+                currentState: CropCurrentState.NeedWater,
+                harvestQuantityRemaining: crop.maxHarvestQuantity,
+                cropId
+            },
+            x: 0,
+            y: 0,
+            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            userId: user.id
+        })
+
+        await expect(
+            service.helpWater({
+                userId: user.id,
+                neighborUserId: user.id,
+                placedItemTileId: placedItemTile.id
+            })
+        ).rejects.toThrow(GrpcInvalidArgumentException)
     })
 
     afterAll(async () => {

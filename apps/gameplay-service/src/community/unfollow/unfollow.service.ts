@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { UnfollowRequest, UnfollowResponse } from "./unfollow.dto"
 import { InjectPostgreSQL, UsersFollowingUsersEntity } from "@src/databases"
 import { DataSource } from "typeorm"
-import { GrpcInternalException } from "nestjs-grpc-exceptions"
+import { GrpcInternalException, GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 
 @Injectable()
 export class UnfollowService {
@@ -14,18 +14,29 @@ export class UnfollowService {
     ) {}
 
     async unfollow(request: UnfollowRequest): Promise<UnfollowResponse> {
-        this.logger.debug(`Unfollow user ${request.unfollowedUserId} for user ${request.userId}`)
-
+        if (request.userId === request.followeeUserId) {
+            throw new GrpcInvalidArgumentException("Cannot unfollow yourself")
+        }
+        
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
+        const followed = await queryRunner.manager.findOne(UsersFollowingUsersEntity, {
+            where: {
+                followerId: request.userId,
+                followeeUserId: request.followeeUserId
+            }
+        })
+        if (!followed) {
+            throw new GrpcNotFoundException("User is not followed")
+        }
         try {
             await queryRunner.startTransaction()
             try {
                 await queryRunner.manager.delete(UsersFollowingUsersEntity, {
-                    followerId: request.userId,
-                    followeeId: request.unfollowedUserId
+                    id: followed.id
                 })
+                await queryRunner.commitTransaction()
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)

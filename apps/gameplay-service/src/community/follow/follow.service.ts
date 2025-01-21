@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InjectPostgreSQL, UserEntity, UsersFollowingUsersEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { FollowRequest } from "./follow.dto"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
@@ -17,32 +17,49 @@ export class FollowService {
     }
 
     async follow(request: FollowRequest) {
-        this.logger.debug(`Follow user ${request.followedUserId} for user ${request.userId}`)
-
-        if (
-            request.userId.localeCompare(request.followedUserId, undefined, {
-                sensitivity: "base"
-            }) === 0
-        ) {
-            throw new GrpcFailedPreconditionException("Cannot follow self")
+        if (request.userId === request.followeeUserId) {
+            throw new GrpcInvalidArgumentException("Cannot follow self")
         }
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
 
-        try {
-            const userExists = await queryRunner.manager.exists(UserEntity, {
-                where: { id: request.followedUserId }
+        try {  
+            const followeeUserExists = await queryRunner.manager.exists(UserEntity, {
+                where: {
+                    id: request.followeeUserId
+                }
             })
-            if (!userExists) {
-                throw new GrpcNotFoundException("User not found")
+            if (!followeeUserExists) {
+                throw new GrpcNotFoundException("Followee user not found")
             }
-            await queryRunner.manager.save(UsersFollowingUsersEntity, {
-                followerId: request.userId,
-                followeeId: request.followedUserId
+
+            const followed = await queryRunner.manager.findOne(UsersFollowingUsersEntity, {
+                where: {
+                    followerId: request.userId,
+                    followeeUserId: request.followeeUserId
+                }
             })
-        } finally {
-            await queryRunner.release()
+            if (followed) {
+                throw new GrpcFailedPreconditionException("Already followed")
+            }
+            await queryRunner.startTransaction()
+            try {
+                await queryRunner.manager.save(UsersFollowingUsersEntity, {
+                    followerId: request.userId,
+                    followeeUserId: request.followeeUserId
+                })
+                await queryRunner.commitTransaction()
+            } catch (error) {
+                const errorMessage = `Transaction failed, reason: ${error.message}`
+                this.logger.error(errorMessage)
+                await queryRunner.rollbackTransaction()
+                throw new GrpcNotFoundException(errorMessage)
+            }
+            return {} 
         }
+        finally {
+            await queryRunner.release()
+        } 
     }
 }

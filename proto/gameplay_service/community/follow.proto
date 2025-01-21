@@ -4,5 +4,5 @@ package gameplay_service;
 
 message FollowRequest {
     string userId = 1;
-    string followedUserId = 2;
+    string followeeUserId = 2;
 }

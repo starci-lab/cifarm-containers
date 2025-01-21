@@ -101,7 +101,7 @@ export class UserEntity extends UuidAbstractEntity {
         deliveringProducts?: Array<DeliveringProductEntity>
 
     @Field(() => [UserEntity])
-    @OneToMany(() => UsersFollowingUsersEntity, (userFollowing) => userFollowing.followeeId, {
+    @OneToMany(() => UsersFollowingUsersEntity, (userFollowing) => userFollowing.followeeUserId, {
         cascade: true,
         onDelete: "CASCADE"
     })
