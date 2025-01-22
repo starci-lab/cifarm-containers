@@ -7,7 +7,7 @@ import { InjectKafka } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
-export class ConnectionService {
+export class GameplayConnectionService {
     constructor(
             @InjectPostgreSQL()
             private readonly dataSource: DataSource,

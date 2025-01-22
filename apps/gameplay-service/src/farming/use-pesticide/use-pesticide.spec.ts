@@ -19,14 +19,14 @@ import { EnergyNotEnoughException, EnergyService, LevelService } from "@src/game
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { v4 } from "uuid"
 import { GrpcFailedPreconditionException } from "@src/common"
-import { GameplayMockUserService, ConnectionService, TestingInfraModule } from "@src/testing"
+import { GameplayMockUserService, GameplayConnectionService, TestingInfraModule } from "@src/testing"
 
 describe("UsePesticideService", () => {
     let service: UsePesticideService
     let dataSource: DataSource
     let levelService: LevelService
     let gameplayMockUserService: GameplayMockUserService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -38,7 +38,7 @@ describe("UsePesticideService", () => {
         service = moduleRef.get(UsePesticideService)
         levelService = moduleRef.get(LevelService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
     it("should successfully use pesticide and update tile state, energy, and experience", async () => {
@@ -206,6 +206,6 @@ describe("UsePesticideService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

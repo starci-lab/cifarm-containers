@@ -3,7 +3,7 @@
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { BuyAnimalService } from "./buy-animal.service"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     AnimalEntity,
     AnimalId,
@@ -22,7 +22,7 @@ import { v4 } from "uuid"
 describe("BuyAnimalService", () => {
     let dataSource: DataSource
     let service: BuyAnimalService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
@@ -33,7 +33,7 @@ describe("BuyAnimalService", () => {
 
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(BuyAnimalService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
@@ -213,6 +213,6 @@ describe("BuyAnimalService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

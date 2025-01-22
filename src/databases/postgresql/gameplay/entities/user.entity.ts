@@ -1,5 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Network, SupportedChainKey } from "@src/env"
+import { Network, ChainKey } from "@src/env"
 import { Column, Entity, OneToMany } from "typeorm"
 import { UuidAbstractEntity } from "./abstract"
 import { InventoryEntity } from "./inventory.entity"
@@ -17,7 +17,7 @@ export class UserEntity extends UuidAbstractEntity {
 
     @Field(() => String)
     @Column({ name: "chainKey", type: "varchar", length: 50 })
-        chainKey: SupportedChainKey
+        chainKey: ChainKey
 
     @Field(() => String)
     @Column({ name: "network", type: "varchar", length: 50 })

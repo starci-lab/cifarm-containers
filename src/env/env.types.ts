@@ -25,7 +25,7 @@ export enum Network {
     Mainnet = "mainnet"
 }
 
-export enum SupportedChainKey {
+export enum ChainKey {
     Sui = "sui",
     Aptos = "aptos",
     Avalanche = "avalanche",
@@ -37,7 +37,7 @@ export enum SupportedChainKey {
 }
 
 export interface ChainCredentialsConfig {
-    [SupportedChainKey.Near]: {
+    [ChainKey.Near]: {
         tokenMinter: Record<Network, NearPair>
         tokenBurner: Record<Network, NearPair>
         nftMinter: Record<Network, NearPair>

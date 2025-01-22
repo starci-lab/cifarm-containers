@@ -1,4 +1,4 @@
-import { SupportedChainKey, Network } from "@src/env"
+import { ChainKey, Network } from "@src/env"
 import {
     ChainKeyNotFoundException,
 } from "./exceptions"
@@ -27,7 +27,7 @@ const DEFAULT_FERTILE_TILE_NFT_TITLE_PREFIX = "Fertile Tile #"
 export type BlockchainConfig = Record<string, ChainInfo>
 
 export const blockchainConfig: BlockchainConfig = {
-    [SupportedChainKey.Avalanche]: {
+    [ChainKey.Avalanche]: {
         decimals: 18,
         nftCollections: {
             [NftCollectionKey.FertileTile]: {
@@ -45,7 +45,7 @@ export const blockchainConfig: BlockchainConfig = {
             }
         }
     },
-    [SupportedChainKey.Solana]: {
+    [ChainKey.Solana]: {
         decimals: 9,
         nftCollections: {
             [NftCollectionKey.FertileTile]: {
@@ -62,7 +62,7 @@ export const blockchainConfig: BlockchainConfig = {
             }
         }
     },
-    [SupportedChainKey.Aptos]: {
+    [ChainKey.Aptos]: {
         decimals: 18,
         nftCollections: {
             [NftCollectionKey.FertileTile]: {
@@ -80,7 +80,7 @@ export const blockchainConfig: BlockchainConfig = {
             }
         }
     },
-    [SupportedChainKey.Algorand]: {
+    [ChainKey.Algorand]: {
         decimals: 6,
         nftCollections: {
             [NftCollectionKey.FertileTile]: {
@@ -97,7 +97,7 @@ export const blockchainConfig: BlockchainConfig = {
             }
         }
     },
-    [SupportedChainKey.Polkadot]: {
+    [ChainKey.Polkadot]: {
         decimals: 10,
         nftCollections: {
             [NftCollectionKey.FertileTile]: {
@@ -114,7 +114,7 @@ export const blockchainConfig: BlockchainConfig = {
             }
         }
     },
-    [SupportedChainKey.Near]: {
+    [ChainKey.Near]: {
         decimals: 24,
         nftCollections: {
             [NftCollectionKey.FertileTile]: {
@@ -133,7 +133,7 @@ export const blockchainConfig: BlockchainConfig = {
     }
 }
 
-export const defaultChainKey = Object.keys(blockchainConfig)[0] as SupportedChainKey
+export const defaultChainKey = Object.keys(blockchainConfig)[0] as ChainKey
 export const defaultNftCollectionKey = Object.keys(
     blockchainConfig[defaultChainKey].nftCollections
 )[0]
@@ -150,17 +150,17 @@ export enum Platform {
 
 export const chainKeyToPlatform = (chainKey: string): Platform => {
     switch (chainKey) {
-    case SupportedChainKey.Avalanche:
+    case ChainKey.Avalanche:
         return Platform.Evm
-    case SupportedChainKey.Solana:
+    case ChainKey.Solana:
         return Platform.Solana
-    case SupportedChainKey.Aptos:
+    case ChainKey.Aptos:
         return Platform.Aptos
-    case SupportedChainKey.Algorand:
+    case ChainKey.Algorand:
         return Platform.Algorand
-    case SupportedChainKey.Polkadot:
+    case ChainKey.Polkadot:
         return Platform.Polkadot
-    case SupportedChainKey.Near:
+    case ChainKey.Near:
         return Platform.Near
     default:
         throw new ChainKeyNotFoundException(chainKey)

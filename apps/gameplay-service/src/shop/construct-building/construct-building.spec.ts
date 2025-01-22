@@ -3,7 +3,7 @@
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { ConstructBuildingService } from "./construct-building.service"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     BuildingEntity,
     BuildingId,
@@ -17,7 +17,7 @@ import { UserInsufficientGoldException } from "@src/gameplay"
 describe("ConstructBuildingService", () => {
     let dataSource: DataSource
     let service: ConstructBuildingService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
@@ -28,7 +28,7 @@ describe("ConstructBuildingService", () => {
 
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(ConstructBuildingService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
@@ -96,6 +96,6 @@ describe("ConstructBuildingService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

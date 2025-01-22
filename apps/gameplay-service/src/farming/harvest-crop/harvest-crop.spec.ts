@@ -4,7 +4,7 @@ import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { HarvestCropService } from "./harvest-crop.service"
 import {
-    ConnectionService,
+    GameplayConnectionService,
     GameplayMockUserService,
     TestingInfraModule
 } from "@src/testing"
@@ -29,7 +29,7 @@ import { GrpcFailedPreconditionException } from "@src/common"
 describe("HarvestCropService", () => {
     let dataSource: DataSource
     let service: HarvestCropService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
 
@@ -41,7 +41,7 @@ describe("HarvestCropService", () => {
 
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(HarvestCropService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         levelService = moduleRef.get(LevelService)
     })
@@ -262,6 +262,6 @@ describe("HarvestCropService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

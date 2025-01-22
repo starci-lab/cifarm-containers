@@ -3,7 +3,7 @@
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { Test } from "@nestjs/testing"
-import { Network, SupportedChainKey } from "@src/blockchain"
+import { Network, ChainKey } from "@src/blockchain"
 import { sleep } from "@src/common"
 import { CropCurrentState, CropEntity, CropId, EnergyRegen, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, SystemEntity, SystemId, TileId, UserEntity } from "@src/databases"
 import { EnvModule } from "@src/env"
@@ -36,7 +36,7 @@ describe("Regenerate energy flow", () => {
         // Sign in and retrieve accessToken
         const authAxios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
         const { data } = await authAxios.post("/generate-signature", {
-            chainKey: SupportedChainKey.Aptos,
+            chainKey: ChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,
         })

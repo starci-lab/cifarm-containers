@@ -12,15 +12,10 @@ import {
     SessionEntity
 } from "@src/databases"
 import {
-    AlgorandAuthService,
-    AptosAuthService,
+    IBlockchainAuthService,
     chainKeyToPlatform,
     defaultChainKey,
-    EvmAuthService,
-    NearAuthService,
-    Platform,
-    PolkadotAuthService,
-    SolanaAuthService
+    getBlockchainAuthServiceToken,
 } from "@src/blockchain"
 
 import { EnergyService } from "@src/gameplay"
@@ -29,7 +24,8 @@ import { Network } from "@src/env"
 import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
-import { GrpcInternalException } from "nestjs-grpc-exceptions"
+import { GrpcInternalException, GrpcInvalidArgumentException } from "nestjs-grpc-exceptions"
+import { ModuleRef } from "@nestjs/core"
 
 @Injectable()
 export class VerifySignatureService {
@@ -40,12 +36,7 @@ export class VerifySignatureService {
         private readonly dataSource: DataSource,
         @InjectCache()
         private readonly cacheManager: Cache,
-        private readonly evmAuthService: EvmAuthService,
-        private readonly solanaAuthService: SolanaAuthService,
-        private readonly aptosAuthService: AptosAuthService,
-        private readonly algorandAuthService: AlgorandAuthService,
-        private readonly polkadotAuthService: PolkadotAuthService,
-        private readonly nearAuthService: NearAuthService,
+        private readonly moduleRef: ModuleRef,
         private readonly jwtService: JwtService,
         private readonly energyService: EnergyService
     ) {}
@@ -66,80 +57,29 @@ export class VerifySignatureService {
         if (!valid) {
             throw new GrpcCacheNotFound(message)
         }
-        let result = false
+
         chainKey = chainKey || defaultChainKey
         network = network || Network.Testnet
         const platform = chainKeyToPlatform(chainKey)
 
-        let _accountAddress = publicKey
-        switch (platform) {
-        case Platform.Evm: {
-            result = this.evmAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey
-            })
-            break
-        }
-        case Platform.Solana: {
-            result = this.solanaAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey
-            })
-            break
-        }
-        case Platform.Aptos: {
-            if (!accountAddress) throw new Error("Account address is required")
-            result = this.aptosAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey
-            })
-            _accountAddress = accountAddress
-            break
-        }
-        case Platform.Algorand: {
-            result = this.algorandAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey
-            })
-            break
-        }
-        case Platform.Polkadot: {
-            if (!accountAddress) throw new Error("Account address is required")
-            result = this.polkadotAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey
-            })
-            _accountAddress = accountAddress
-            break
-        }
-        case Platform.Near: {
-            if (!accountAddress) throw new Error("Account address is required")
-            result = this.nearAuthService.verifyMessage({
-                message,
-                signature,
-                publicKey
-            })
-            _accountAddress = accountAddress
-            break
-        }
-        default:
-            this.logger.error(`Unknown platform: ${platform}`)
-            break
-        }
+        const authService = this.moduleRef.get<IBlockchainAuthService>(
+            getBlockchainAuthServiceToken(platform), { strict: false }
+        )
 
-        if (!result) throw new GrpcInternalException("Signature is invalid")
+        const verified = authService.verifyMessage({
+            message,
+            publicKey,
+            signature
+        })
+
+        if (!verified) throw new GrpcInvalidArgumentException("Signature is invalid")
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
             let user = await queryRunner.manager.findOne(UserEntity, {
                 where: {
-                    accountAddress: _accountAddress,
+                    accountAddress,
                     chainKey,
                     network
                 }
@@ -167,8 +107,8 @@ export class VerifySignatureService {
                         })
                     )
                     user = await queryRunner.manager.save(UserEntity, {
-                        username: `${chainKey}-${_accountAddress.substring(0, 5)}`,
-                        accountAddress: _accountAddress,
+                        username: `${chainKey}-${accountAddress.substring(0, 5)}`,
+                        accountAddress,
                         chainKey,
                         network,
                         energy,

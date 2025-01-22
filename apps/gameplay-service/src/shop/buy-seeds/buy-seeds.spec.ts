@@ -3,7 +3,7 @@
 import { DataSource } from "typeorm"
 import { BuySeedsService } from "./buy-seeds.service"
 import { Test } from "@nestjs/testing"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { CropEntity, CropId, getPostgreSqlToken, InventoryEntity, InventoryTypeId, UserEntity } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UserInsufficientGoldException } from "@src/gameplay"
@@ -11,7 +11,7 @@ import { UserInsufficientGoldException } from "@src/gameplay"
 describe("BuySeedsService", () => {
     let dataSource: DataSource
     let service: BuySeedsService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
@@ -22,7 +22,7 @@ describe("BuySeedsService", () => {
 
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(BuySeedsService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
@@ -98,6 +98,6 @@ describe("BuySeedsService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

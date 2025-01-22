@@ -3,7 +3,7 @@
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { MoveService } from "./move.service"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { PlacedItemEntity, PlacedItemTypeId, getPostgreSqlToken } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { v4 } from "uuid"
@@ -12,7 +12,7 @@ describe("MoveService", () => {
     let service: MoveService
     let dataSource: DataSource
     let gameplayMockUserService: GameplayMockUserService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -23,7 +23,7 @@ describe("MoveService", () => {
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(MoveService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
     it("should successfully move placed item to a new position", async () => {
@@ -63,6 +63,6 @@ describe("MoveService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

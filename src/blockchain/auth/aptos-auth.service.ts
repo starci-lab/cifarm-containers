@@ -7,9 +7,10 @@ import {
 } from "@aptos-labs/ts-sdk"
 import { Injectable, Logger } from "@nestjs/common"
 import { fakeConfig } from "../blockchain.config"
+import { IBlockchainAuthService, SignMessageParams } from "./auth.types"
 
 @Injectable()
-export class AptosAuthService {
+export class AptosAuthService implements IBlockchainAuthService {
     private readonly logger = new Logger(AptosAuthService.name)
     constructor() {}
 
@@ -27,21 +28,22 @@ export class AptosAuthService {
         } 
     }
 
-    public signMessage(message: string, privateKey: string) {
+    public signMessage({ message, privateKey }: SignMessageParams) {
         const ed25519PrivateKey = Account.fromPrivateKey({
             privateKey: new Ed25519PrivateKey(privateKey)
         })
         return ed25519PrivateKey.sign(message).toString()
     }
 
-    public toAddress(publicKey: string) {
-        return new Ed25519PublicKey(publicKey).authKey().toString()
-    }
-
-    public getFakeKeyPair(accountNumber: number) {
-        return Account.fromDerivationPath({
+    public getKeyPair(accountNumber: number) {
+        const { accountAddress, privateKey, publicKey } = Account.fromDerivationPath({
             mnemonic: fakeConfig.mnemonic,
             path: `m/44'/637'/${accountNumber}'/0'/0'`,
         })
+        return {
+            publicKey: publicKey.toString(),
+            privateKey: privateKey.toString(),
+            accountAddress: accountAddress.toString()
+        }
     }
 }

@@ -4,7 +4,7 @@ import { IGameplayService } from "@apps/gameplay-service"
 import { CACHE_MANAGER } from "@nestjs/cache-manager"
 import { ClientGrpc } from "@nestjs/microservices"
 import { Test } from "@nestjs/testing"
-import { Network, SupportedChainKey } from "@src/blockchain"
+import { Network, ChainKey } from "@src/blockchain"
 import { sleep } from "@src/common"
 import { CacheKey, CacheRedisModule, CropCurrentState, CropEntity, CropId, DeliveringProductEntity, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
 import { EnvModule } from "@src/env"
@@ -40,7 +40,7 @@ describe("Deliver product flow", () => {
         const axios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
 
         const { data } = await axios.post("/generate-signature", {
-            chainKey: SupportedChainKey.Aptos,
+            chainKey: ChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,
         })

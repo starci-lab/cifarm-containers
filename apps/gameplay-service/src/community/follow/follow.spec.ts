@@ -2,7 +2,7 @@
 
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
-import { GameplayMockUserService, ConnectionService, TestingInfraModule } from "@src/testing"
+import { GameplayMockUserService, GameplayConnectionService, TestingInfraModule } from "@src/testing"
 import { getPostgreSqlToken, UsersFollowingUsersEntity } from "@src/databases"
 import { v4 } from "uuid"
 import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -12,7 +12,7 @@ describe("FollowService", () => {
     let service: FollowService
     let dataSource: DataSource
     let gameplayMockUserService: GameplayMockUserService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -23,7 +23,7 @@ describe("FollowService", () => {
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(FollowService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
     it("should successfully follow user", async () => {
@@ -69,6 +69,6 @@ describe("FollowService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

@@ -4,7 +4,7 @@ import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { UpgradeBuildingService } from "./upgrade-building.service"
 import { UpgradeBuildingRequest } from "./upgrade-building.dto"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     BuildingId,
     PlacedItemEntity,
@@ -21,7 +21,7 @@ describe("UpgradeBuildingService", () => {
     let service: UpgradeBuildingService
     let dataSource: DataSource
     let gameplayMockUserService: GameplayMockUserService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -32,7 +32,7 @@ describe("UpgradeBuildingService", () => {
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(UpgradeBuildingService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
     it("should successfully upgrade building", async () => {
@@ -138,6 +138,6 @@ describe("UpgradeBuildingService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

@@ -3,7 +3,7 @@
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { BuyTileService } from "./buy-tile.service"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     TileEntity,
     TileId,
@@ -19,7 +19,7 @@ import { GrpcFailedPreconditionException } from "@src/common"
 describe("BuyTileService", () => {
     let dataSource: DataSource
     let service: BuyTileService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
@@ -30,7 +30,7 @@ describe("BuyTileService", () => {
 
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(BuyTileService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
@@ -123,6 +123,6 @@ describe("BuyTileService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

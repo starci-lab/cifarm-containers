@@ -26,7 +26,7 @@ import { sleep } from "@src/common"
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { EnvModule } from "@src/env"
-import { Network, SupportedChainKey } from "@src/blockchain"
+import { Network, ChainKey } from "@src/blockchain"
 import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
 
 describe("Raise animal flow", () => {
@@ -61,7 +61,7 @@ describe("Raise animal flow", () => {
         const axios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
 
         const { data } = await axios.post("/generate-signature", {
-            chainKey: SupportedChainKey.Aptos,
+            chainKey: ChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,
         })

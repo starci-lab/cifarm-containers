@@ -5,7 +5,6 @@ import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { VersioningType } from "@nestjs/common"
 import { DocumentBuilder, SwaggerModule, SwaggerCustomOptions } from "@nestjs/swagger"
 import { GameplayModule as GameplayV1Module } from "./v1"
-import { GrpcToHttpInterceptor } from "nestjs-grpc-exceptions"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
@@ -13,8 +12,6 @@ const bootstrap = async () => {
         origin: envConfig().cors.origin,
         credentials: true,
     })
-    app.useGlobalInterceptors(new GrpcToHttpInterceptor())
-
     const options = new DocumentBuilder()
         .setTitle("CiFarm API")
         .setDescription("The CiFarm API description")
@@ -26,6 +23,8 @@ const bootstrap = async () => {
 
     app.enableVersioning({
         type: VersioningType.URI,
+        prefix: "api/v",
+        defaultVersion: "1",
     })
 
     // Custom Swagger UI options

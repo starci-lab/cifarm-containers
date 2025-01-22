@@ -20,14 +20,14 @@ import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
 import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { v4 } from "uuid"
 import { GrpcFailedPreconditionException } from "@src/common"
-import { GameplayMockUserService, ConnectionService, TestingInfraModule } from "@src/testing"
+import { GameplayMockUserService, GameplayConnectionService, TestingInfraModule } from "@src/testing"
 
 describe("HelpUseHerbicideService", () => {
     let service: HelpUseHerbicideService
     let dataSource: DataSource
     let levelService: LevelService
     let gameplayMockUserService: GameplayMockUserService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -39,7 +39,7 @@ describe("HelpUseHerbicideService", () => {
         service = moduleRef.get(HelpUseHerbicideService)
         levelService = moduleRef.get(LevelService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
     it("should successfully help use herbicide and update tile state, energy, and experience", async () => {
@@ -255,6 +255,6 @@ describe("HelpUseHerbicideService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

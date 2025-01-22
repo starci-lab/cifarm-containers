@@ -3,7 +3,7 @@
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { UnfollowService } from "./unfollow.service"
-import { GameplayMockUserService, ConnectionService, TestingInfraModule } from "@src/testing"
+import { GameplayMockUserService, GameplayConnectionService, TestingInfraModule } from "@src/testing"
 import { getPostgreSqlToken, UsersFollowingUsersEntity } from "@src/databases"
 import { v4 } from "uuid"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -12,7 +12,7 @@ describe("UnfollowService", () => {
     let service: UnfollowService
     let dataSource: DataSource
     let gameplayMockUserService: GameplayMockUserService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -23,7 +23,7 @@ describe("UnfollowService", () => {
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(UnfollowService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
     it("should successfully unfollow user", async () => {
@@ -56,6 +56,6 @@ describe("UnfollowService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

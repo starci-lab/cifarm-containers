@@ -3,11 +3,12 @@ import { Injectable, Logger } from "@nestjs/common"
 import { sign } from "tweetnacl"
 import { mnemonicToSeedSync } from "bip39"
 import { Keypair } from "@solana/web3.js"
-import { decode } from "bs58"
+import { decode, encode } from "bs58"
 import { fakeConfig } from "../blockchain.config"
+import { IBlockchainAuthService, SignMessageParams } from "./auth.types"
 
 @Injectable()
-export class SolanaAuthService {
+export class SolanaAuthService implements IBlockchainAuthService {
     private readonly logger = new Logger(SolanaAuthService.name)
     constructor() {}
  
@@ -30,7 +31,7 @@ export class SolanaAuthService {
         }
     }
 
-    public signMessage(message: string, privateKey: string) {
+    public signMessage({ message, privateKey }: SignMessageParams) {
         return Buffer.from(
             sign.detached(
                 Buffer.from(message, "base64"),
@@ -39,11 +40,16 @@ export class SolanaAuthService {
         ).toString("base64")
     }
 
-    public getFakeKeyPair(accountNumber: number) {
+    public getKeyPair(accountNumber: number) {
         const seed = mnemonicToSeedSync(
             fakeConfig.mnemonic,
             accountNumber.toString(),
         )
-        return Keypair.fromSeed(seed.subarray(0, 32))
+        const { publicKey, secretKey } = Keypair.fromSeed(seed.subarray(0, 32))
+        return {
+            publicKey: publicKey.toBase58(),
+            privateKey: encode(secretKey),
+            accountAddress: publicKey.toBase58(),
+        }
     }
 }

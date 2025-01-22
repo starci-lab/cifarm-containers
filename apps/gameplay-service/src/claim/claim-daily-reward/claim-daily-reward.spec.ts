@@ -4,7 +4,7 @@ import { Test } from "@nestjs/testing"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
 import { DataSource } from "typeorm"
 import { DailyRewardEntity, DailyRewardId, getPostgreSqlToken, UserEntity } from "@src/databases"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { GrpcFailedPreconditionException } from "@src/common"
 import { DateUtcService } from "@src/date"
 
@@ -12,7 +12,7 @@ describe("ClaimDailyRewardService", () => {
     let service: ClaimDailyRewardService
     let dataSource: DataSource
     let gameplayMockUserService: GameplayMockUserService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
     let dateUtcService: DateUtcService
 
     beforeAll(async () => {
@@ -24,7 +24,7 @@ describe("ClaimDailyRewardService", () => {
         service = moduleRef.get(ClaimDailyRewardService)
         dataSource = moduleRef.get(getPostgreSqlToken())
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         dateUtcService = moduleRef.get(DateUtcService)
     })
 
@@ -87,6 +87,6 @@ describe("ClaimDailyRewardService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

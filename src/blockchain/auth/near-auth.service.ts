@@ -4,9 +4,10 @@ import { nearKeyPair } from "../rpcs"
 import { parseSeedPhrase } from "near-seed-phrase"
 import { utils } from "near-api-js"
 import { fakeConfig } from "../blockchain.config"
+import { IBlockchainAuthService, SignMessageParams } from "./auth.types"
 
 @Injectable()
-export class NearAuthService {
+export class NearAuthService implements IBlockchainAuthService {
     private readonly logger = new Logger(NearAuthService.name)
     constructor() {}
 
@@ -21,15 +22,20 @@ export class NearAuthService {
         } 
     }
 
-    public signMessage(message: string, privateKey: string) {
+    public signMessage({ message, privateKey }: SignMessageParams) {
         const keyPair = nearKeyPair(privateKey)
         return Buffer.from(keyPair.sign(Buffer.from(message, "base64")).signature).toString("base64")
     }
 
-    public getFakeKeyPair(accountNumber: number) {
-        return parseSeedPhrase(
+    public getKeyPair(accountNumber: number) {
+        const { publicKey, secretKey } = parseSeedPhrase(
             fakeConfig.mnemonic,
             `m/44'/397'/0'/${accountNumber}'`
         )
+        return {
+            publicKey,
+            privateKey: secretKey,
+            accountAddress: publicKey,
+        }
     }
 }

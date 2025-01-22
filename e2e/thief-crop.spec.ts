@@ -2,14 +2,14 @@
 
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
-import { ApiVersion, AxiosType, getAxiosToken } from "@src/axios"
+import { ApiVersion, AxiosType, getAxiosToken } from "@src/testing/infra/e2e/axios"
 import { sleep } from "@src/common"
 import {
     CropId,
     UserEntity
 } from "@src/databases"
 import { CropCurrentState, CropEntity, getPostgreSqlToken, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, ProductType, SeedGrowthInfoEntity, TileId } from "@src/databases/postgresql"
-import { Network, SupportedChainKey } from "@src/env"
+import { Network, ChainKey } from "@src/env"
 import { grpcData, GrpcModule, GrpcName } from "@src/grpc"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { createTestModule, MOCK_DATABASE_OPTIONS, TestingModule } from "@src/testing/infra"
@@ -58,7 +58,7 @@ describe("Thief crop flow", () => {
         }))
 
         const { data } = await axiosWithNoAuthInstance.post("/generate-signature", {
-            chainKey: SupportedChainKey.Avalanche,
+            chainKey: ChainKey.Avalanche,
             accountNumber: 1,
             network: Network.Testnet,
         })
@@ -69,7 +69,7 @@ describe("Thief crop flow", () => {
         user = await jwtService.decodeToken(accessToken)
 
         const { data: thiefData } = await axiosWithNoAuthInstance.post("/generate-signature", {
-            chainKey: SupportedChainKey.Avalanche,
+            chainKey: ChainKey.Avalanche,
             accountNumber: 2,
             network: Network.Testnet,
         })

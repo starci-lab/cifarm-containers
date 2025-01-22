@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker"
 import { Injectable } from "@nestjs/common"
 import { InjectPostgreSQL, UserEntity } from "@src/databases"
 import { DateUtcService } from "@src/date"
-import { Network, SupportedChainKey } from "@src/env"
+import { Network, ChainKey } from "@src/env"
 import { DataSource, DeepPartial, In } from "typeorm"
 import { v4 } from "uuid"
 
@@ -35,7 +35,7 @@ export class GameplayMockUserService {
     }: GenerateParams = {}): Promise<UserEntity> {
         const userPartial: DeepPartial<UserEntity> = {
             username: faker.internet.username(),
-            chainKey: faker.helpers.arrayElement(Object.values(SupportedChainKey)),
+            chainKey: faker.helpers.arrayElement(Object.values(ChainKey)),
             network: faker.helpers.arrayElement(Object.values(Network)),
             accountAddress: faker.finance.ethereumAddress(),
             golds,

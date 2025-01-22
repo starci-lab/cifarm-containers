@@ -1,7 +1,7 @@
 import {
     Container,
     NodeEnv,
-    SupportedChainKey,
+    ChainKey,
     Network,
     RedisType,
     PostgreSQLDatabase,
@@ -238,7 +238,7 @@ export const envConfig = () => ({
         }
     },
     chainCredentials: {
-        [SupportedChainKey.Near]: {
+        [ChainKey.Near]: {
             tokenMinter: {
                 [Network.Testnet]: {
                     privateKey: process.env.NEAR_TOKEN_MINTER_PRIVATE_KEY_TESTNET,

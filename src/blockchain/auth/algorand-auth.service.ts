@@ -8,9 +8,10 @@ import {
 import { Injectable, Logger } from "@nestjs/common"
 import { mnemonicToSeedSync } from "bip39"
 import { fakeConfig } from "../blockchain.config"
+import { IBlockchainAuthService, SignMessageParams } from "./auth.types"
 
 @Injectable()
-export class AlgorandAuthService {
+export class AlgorandAuthService implements IBlockchainAuthService {
     private readonly logger = new Logger(AlgorandAuthService.name)
     constructor() {}
 
@@ -23,16 +24,21 @@ export class AlgorandAuthService {
         } 
     }
 
-    public signMessage(message: string, privateKey: string) {
+    public signMessage({ message, privateKey }: SignMessageParams) {
         return Buffer.from(signBytes(Buffer.from(message, "base64"), Buffer.from(privateKey, "base64"))).toString("base64")
     }
 
-    public getFakeKeyPair(accountNumber: number) {
+    public getKeyPair(accountNumber: number) {
         const seed = mnemonicToSeedSync(
             fakeConfig.mnemonic,
             accountNumber.toString(),
         )
         const algorandMnemonic = mnemonicFromSeed(seed.subarray(0, 32))
-        return mnemonicToSecretKey(algorandMnemonic)
+        const { addr, sk } = mnemonicToSecretKey(algorandMnemonic)
+        return {
+            publicKey: addr.toString(),
+            privateKey: Buffer.from(sk).toString("base64"),
+            accountAddress: addr.toString()
+        }
     }
 }

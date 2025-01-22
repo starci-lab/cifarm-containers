@@ -4,14 +4,14 @@ import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { UpdateTutorialService } from "./update-tutorial.service"
 import { UpdateTutorialRequest } from "./update-tutorial.dto"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { UserEntity, getPostgreSqlToken } from "@src/databases"
 
 describe("UpdateTutorialService", () => {
     let service: UpdateTutorialService
     let dataSource: DataSource
     let gameplayMockUserService: GameplayMockUserService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -22,7 +22,7 @@ describe("UpdateTutorialService", () => {
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(UpdateTutorialService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
     it("should successfully update tutorial for existing user", async () => {
@@ -50,6 +50,6 @@ describe("UpdateTutorialService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

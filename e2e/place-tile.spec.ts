@@ -1,7 +1,7 @@
 // npx jest --config ./e2e/jest.json ./e2e/place-tile.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { Network, SupportedChainKey } from "@src/blockchain"
+import { Network, ChainKey } from "@src/blockchain"
 import {
     GameplayPostgreSQLModule,
     InventoryEntity,
@@ -35,7 +35,7 @@ describe("Placement flow", () => {
         const axios = createAxios(AxiosConfigType.NoAuth, { version: "v1" })
 
         const { data } = await axios.post("/generate-signature", {
-            chainKey: SupportedChainKey.Aptos,
+            chainKey: ChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,
         })

@@ -1,6 +1,6 @@
 import { ApiHideProperty, ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty, IsOptional, IsString } from "class-validator"
-import { Network, SupportedChainKey } from "@src/env"
+import { Network, ChainKey } from "@src/env"
 import { SignedMessage } from "@src/blockchain"
 import { DeviceInfo, RequestWithDeviceInfo } from "@src/device"
 
@@ -21,8 +21,8 @@ export class VerifySignatureRequest implements SignedMessage, RequestWithDeviceI
         signature: string
 
     @IsOptional()
-    @ApiProperty({ example: SupportedChainKey.Solana })
-        chainKey?: SupportedChainKey
+    @ApiProperty({ example: ChainKey.Solana })
+        chainKey?: ChainKey
 
     @IsOptional()
     @ApiProperty({ example: "testnet" })

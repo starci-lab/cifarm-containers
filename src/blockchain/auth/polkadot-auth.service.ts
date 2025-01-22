@@ -9,8 +9,10 @@ import {
 } from "@polkadot/util-crypto"
 import { hexToU8a, u8aToHex } from "@polkadot/util"
 import { fakeConfig } from "../blockchain.config"
+import { IBlockchainAuthService, SignMessageParams } from "./auth.types"
+
 @Injectable()
-export class PolkadotAuthService {
+export class PolkadotAuthService implements IBlockchainAuthService {
     private readonly logger = new Logger(PolkadotAuthService.name)
     constructor() {}
 
@@ -31,7 +33,7 @@ export class PolkadotAuthService {
         }
     }
 
-    public signMessage(message: string, privateKey: string, publicKey: string) {
+    public signMessage({ message, privateKey, publicKey }: SignMessageParams) {
         return Buffer.from(
             sr25519Sign(Buffer.from(message, "base64"), {
                 secretKey: hexToU8a(privateKey),
@@ -40,20 +42,16 @@ export class PolkadotAuthService {
         ).toString("base64")
     }
 
-    public getFakeKeyPair(accountNumber: number) {
+    public getKeyPair(accountNumber: number) {
         const seed = mnemonicToMiniSecret(
             fakeConfig.mnemonic,
             accountNumber.toString(),
         )
         const { publicKey, secretKey } = sr25519PairFromSeed(seed)
         return {
-            address: encodeAddress(publicKey),
+            accountAddress: encodeAddress(publicKey),
             privateKey: u8aToHex(secretKey),
             publicKey: u8aToHex(publicKey),
         }
-    }
-
-    public toAddress(publicKey: string) {
-        return encodeAddress(hexToU8a(publicKey))
     }
 }

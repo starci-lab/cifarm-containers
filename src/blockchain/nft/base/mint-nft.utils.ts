@@ -1,5 +1,5 @@
 import { computeRaw, TransactionResult } from "@src/common"
-import { envConfig, Network, SupportedChainKey } from "@src/env"
+import { envConfig, Network, ChainKey } from "@src/env"
 import { blockchainConfig, chainKeyToPlatform, Platform } from "../../blockchain.config"
 import { nearClient, nearKeyPair, nearKeyStore } from "../../rpcs"
 import { NearNftMetadata } from "../common"
@@ -17,7 +17,7 @@ export interface MintNftParams {
     //network
     network: Network
     //chainKey
-    chainKey: SupportedChainKey
+    chainKey: ChainKey
     //title, otherwise default
     title?: string
     //description, otherwise empty
@@ -44,7 +44,7 @@ export const _mintNearNft = async ({
 }: MintNftParams): Promise<MintNftResult> => {
     //near configuration
     const { privateKey, accountId } =
-        envConfig().chainCredentials[SupportedChainKey.Near].nftMinter[network]
+        envConfig().chainCredentials[ChainKey.Near].nftMinter[network]
 
     const keyPair = nearKeyPair(privateKey)
     const storageKey = nearKeyStore({ accountId, network, keyPair })

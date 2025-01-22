@@ -2,7 +2,7 @@
 
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     AnimalInfoEntity,
     AnimalCurrentState,
@@ -28,7 +28,7 @@ import { ThiefAnimalProductService } from "./thief-animal-product.service"
 describe("ThiefAnimalProductService", () => {
     let dataSource: DataSource
     let service: ThiefAnimalProductService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
 
@@ -40,7 +40,7 @@ describe("ThiefAnimalProductService", () => {
 
         dataSource = moduleRef.get(getPostgreSqlToken())
         service = moduleRef.get(ThiefAnimalProductService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         levelService = moduleRef.get(LevelService)
     })
@@ -252,6 +252,6 @@ describe("ThiefAnimalProductService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

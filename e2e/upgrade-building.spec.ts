@@ -10,7 +10,7 @@ import { EnvModule } from "@src/env"
 import { JwtModule, JwtService, UserLike } from "@src/jwt"
 import { DataSource } from "typeorm"
 import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
-import { Network, SupportedChainKey } from "@src/blockchain"
+import { Network, ChainKey } from "@src/blockchain"
 
 // Test for upgrading building
 
@@ -36,7 +36,7 @@ describe("Upgrade Building flow", () => {
         const axios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
 
         const { data } = await axios.post("/generate-signature", {
-            chainKey: SupportedChainKey.Aptos,
+            chainKey: ChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,
         })

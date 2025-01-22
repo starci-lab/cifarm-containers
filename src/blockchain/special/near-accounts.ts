@@ -1,7 +1,7 @@
 import {
     envConfig,
     Network,
-    SupportedChainKey,
+    ChainKey,
 } from "@src/env"
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { Account } from "near-api-js"
@@ -19,7 +19,7 @@ export class NearAccountsService implements OnModuleInit {
     constructor() {}
 
     private async createClient(network: Network): Promise<Account> {
-        const { privateKey, accountId } = envConfig().chainCredentials[SupportedChainKey.Near].creator[network]
+        const { privateKey, accountId } = envConfig().chainCredentials[ChainKey.Near].creator[network]
         const keyPair = nearKeyPair(privateKey)
         const keyStore = nearKeyStore({
             network,

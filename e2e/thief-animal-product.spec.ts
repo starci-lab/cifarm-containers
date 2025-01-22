@@ -3,7 +3,7 @@
 import { IGameplayService } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { Test } from "@nestjs/testing"
-import { Network, SupportedChainKey } from "@src/blockchain"
+import { Network, ChainKey } from "@src/blockchain"
 import { sleep } from "@src/common"
 import {
     AnimalCurrentState,
@@ -60,7 +60,7 @@ describe("Thief Animal Product flow", () => {
         // Sign in as main user
         const authAxios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
         const { data } = await authAxios.post("/generate-signature", {
-            chainKey: SupportedChainKey.Avalanche,
+            chainKey: ChainKey.Avalanche,
             accountNumber: 1,
             network: Network.Testnet,
         })
@@ -71,7 +71,7 @@ describe("Thief Animal Product flow", () => {
 
         // Sign in as thief
         const { data: thiefData } = await authAxios.post("/generate-signature", {
-            chainKey: SupportedChainKey.Avalanche,
+            chainKey: ChainKey.Avalanche,
             accountNumber: 2,
             network: Network.Testnet,
         })

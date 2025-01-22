@@ -2,20 +2,22 @@ import { DynamicModule, Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./infra.module-definition"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { TestContext } from "./infra.types"
-import { PostgreSQLMemoryModule, PostgreSQLModule } from "@src/databases"
+import { PostgreSQLModule } from "@src/databases"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
-import { ConnectionService, GameplayMockUserService } from "./gameplay"
+import { GameplayConnectionService, GameplayMockUserService } from "./gameplay"
 import { CacheModule, CacheType } from "@src/cache"
-import { AxiosModule } from "@src/axios"
 import { BlockchainModule } from "@src/blockchain"
 import { JwtModule } from "@src/jwt"
 import { GameplayModule } from "@src/gameplay"
 import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { DateModule } from "@src/date"
+import { E2EAxiosModule, E2EConnectionService } from "./e2e"
 
 @Module({})
 export class TestingInfraModule extends ConfigurableModuleClass {
-    public static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
+    public static register(
+        options: typeof OPTIONS_TYPE = { context: TestContext.Gameplay }
+    ): DynamicModule {
         const context = options.context ?? TestContext.Gameplay
         const dynamicModule = super.register(options)
 
@@ -53,28 +55,32 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                 DateModule.register({
                     isGlobal: true
                 })
-            )                                                                                                                                                                                                                       
-
-            const services = [ GameplayMockUserService, ConnectionService ]
+            )
+            const services = [GameplayMockUserService, GameplayConnectionService]
             providers.push(...services)
             exports.push(...services)
             break
         }
         case TestContext.E2E: {
             imports.push(
-                PostgreSQLMemoryModule.register({
-                    context: PostgreSQLContext.Main,
-                    database: PostgreSQLDatabase.Gameplay
-                }),
+                E2EAxiosModule.register(),
                 CacheModule.register({
+                    isGlobal: true,
+                    cacheType: CacheType.Memory
+                }),
+                JwtModule.register({
                     isGlobal: true
                 }),
-                AxiosModule.register({})
+                BlockchainModule.register({
+                    isGlobal: true
+                })
             )
+            const services = [E2EConnectionService]
+            providers.push(...services)
+            exports.push(...services)
             break
         }
         }
-
         return {
             ...dynamicModule,
             imports,

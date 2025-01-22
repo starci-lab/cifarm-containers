@@ -212,7 +212,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: FollowRequest
     ): Promise<FollowResponse> {
-        this.logger.debug(`Processing user ${user?.id} follow user ${request?.followedUserId}`)
         return await lastValueFrom(
             this.gameplayService.follow({
                 ...request,
@@ -352,7 +351,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: UnfollowRequest
     ): Promise<UnfollowResponse> {
-        this.logger.debug(`Processing user ${user?.id} unfollow user ${request?.unfollowedUserId}`)
         return await lastValueFrom(
             this.gameplayService.unfollow({
                 ...request,

@@ -1,7 +1,7 @@
 //npx jest --config ./e2e/jest.json ./e2e/claim-daily.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { Network, SupportedChainKey } from "@src/blockchain"
+import { Network, ChainKey } from "@src/blockchain"
 import {
     GameplayPostgreSQLModule,
     SpinPrizeType,
@@ -37,7 +37,7 @@ describe("Claim Daily Reward and Spin flow", () => {
         const axios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
 
         const { data } = await axios.post("/generate-signature", {
-            chainKey: SupportedChainKey.Aptos,
+            chainKey: ChainKey.Aptos,
             accountNumber: 2,
             network: Network.Mainnet,
         })

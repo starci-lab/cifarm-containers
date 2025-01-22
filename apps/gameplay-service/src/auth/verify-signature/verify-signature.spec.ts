@@ -1,6 +1,6 @@
 // npx jest apps/gameplay-service/src/auth/verify-signature/verify-signature.spec.ts
 
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { Test } from "@nestjs/testing"
 import { isJWT, isUUID } from "class-validator"
 import { getPostgreSqlToken, PlacedItemType, UserEntity } from "@src/databases"
@@ -8,18 +8,17 @@ import { DataSource } from "typeorm"
 import { VerifySignatureService } from "./verify-signature.service"
 import { RequestMessageService } from "../request-message"
 import { GenerateSignatureService } from "../generate-signature"
-import { SolanaAuthService } from "@src/blockchain"
-import { encode } from "bs58"
-import { Network, SupportedChainKey } from "@src/env"
+import { getBlockchainAuthServiceToken, IBlockchainAuthService, Platform } from "@src/blockchain"
+import { Network, ChainKey } from "@src/env"
 
 describe("VerifySignatureService", () => {
     let service: VerifySignatureService
     let requestMessageService: RequestMessageService
     let generateSignatureService: GenerateSignatureService
-    let solanaAuthService: SolanaAuthService
+    let blockchainAuthService: IBlockchainAuthService
     let gameplayMockUserService: GameplayMockUserService
     let dataSource: DataSource
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -34,8 +33,8 @@ describe("VerifySignatureService", () => {
 
         requestMessageService = moduleRef.get<RequestMessageService>(RequestMessageService)
         generateSignatureService = moduleRef.get(GenerateSignatureService)
-        solanaAuthService = moduleRef.get(SolanaAuthService)
-        connectionService = moduleRef.get(ConnectionService)
+        blockchainAuthService = moduleRef.get(getBlockchainAuthServiceToken(Platform.Solana))
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
     const verifyAndValidateUserTokens = async ({
@@ -93,16 +92,18 @@ describe("VerifySignatureService", () => {
     
     it("should use actual flow", async () => {
         const { message } = await requestMessageService.requestMessage()
-        const { publicKey: _publicKey, secretKey: _secretKey } = solanaAuthService.getFakeKeyPair(0)
-
-        const publicKey = _publicKey.toBase58()
-        const signature = solanaAuthService.signMessage(message, encode(_secretKey))
+        const { publicKey, privateKey } = blockchainAuthService.getKeyPair(0)
+        const signature = blockchainAuthService.signMessage({
+            message,
+            privateKey,
+            publicKey
+        })
 
         await verifyAndValidateUserTokens({
             message,
             publicKey,
             signature,
-            chainKey: SupportedChainKey.Solana,
+            chainKey: ChainKey.Solana,
             network: Network.Testnet,
             accountAddress: publicKey
         })
@@ -112,7 +113,7 @@ describe("VerifySignatureService", () => {
         const { message, publicKey, signature, accountAddress, chainKey, network } =
             await generateSignatureService.generateSignature({
                 accountNumber: 0,
-                chainKey: SupportedChainKey.Solana,
+                chainKey: ChainKey.Solana,
                 network: Network.Testnet
             })
 
@@ -128,7 +129,7 @@ describe("VerifySignatureService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })
 
@@ -136,7 +137,7 @@ interface VerifyAndValidateUserTokensParams {
     message: string
     publicKey: string
     signature: string
-    chainKey: SupportedChainKey
+    chainKey: ChainKey
     network: Network
     accountAddress: string
 }

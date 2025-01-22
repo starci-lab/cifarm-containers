@@ -5,7 +5,7 @@ import { SpinService } from "./spin.service"
 import { DataSource } from "typeorm"
 import { AppearanceChance, CropId, getPostgreSqlToken, InventoryEntity, InventoryType, SpinPrizeType, SupplyId, UserEntity } from "@src/databases"
 import { DateUtcService } from "@src/date"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { GrpcFailedPreconditionException } from "@src/common"
 import { v4 } from "uuid"
 
@@ -14,7 +14,7 @@ describe("SpinService", () => {
     let dataSource: DataSource
     let dateUtcService: DateUtcService
     let gameplayMockUserService: GameplayMockUserService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
     
     beforeAll(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -30,7 +30,7 @@ describe("SpinService", () => {
         dataSource = module.get(getPostgreSqlToken())
         dateUtcService = module.get(DateUtcService)
         gameplayMockUserService = module.get(GameplayMockUserService)
-        connectionService = module.get(ConnectionService)
+        gameplayConnectionService = module.get(GameplayConnectionService)
     })
 
     it("should grant gold reward when spinning", async () => {
@@ -179,6 +179,6 @@ describe("SpinService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })

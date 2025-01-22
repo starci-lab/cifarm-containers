@@ -1,11 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsNotEmpty, IsOptional } from "class-validator"
-import { Network, SupportedChainKey } from "@src/env"
+import { Network, ChainKey } from "@src/env"
 
 export class GenerateSignatureRequest {
     @IsOptional()
-    @ApiProperty({ example: SupportedChainKey.Avalanche })
-        chainKey?: SupportedChainKey
+    @ApiProperty({ example: ChainKey.Avalanche })
+        chainKey?: ChainKey
     @IsOptional()
     @ApiProperty({ example: 0 })
         accountNumber?: number
@@ -17,8 +17,8 @@ export class GenerateSignatureRequest {
 
 export class GenerateSignatureResponse {
     @IsOptional()
-    @ApiProperty({ example: SupportedChainKey.Avalanche })
-        chainKey: SupportedChainKey
+    @ApiProperty({ example: ChainKey.Avalanche })
+        chainKey: ChainKey
 
     @IsNotEmpty()
     @ApiProperty({ example: "hello world" })

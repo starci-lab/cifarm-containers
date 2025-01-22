@@ -3,7 +3,7 @@
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { UseFertilizerService } from "./use-fertilizer.service"
-import { ConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     SeedGrowthInfoEntity,
     SystemEntity,
@@ -29,7 +29,7 @@ describe("UseFertilizerService", () => {
     let dataSource: DataSource
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
-    let connectionService: ConnectionService
+    let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
@@ -41,7 +41,7 @@ describe("UseFertilizerService", () => {
         service = moduleRef.get(UseFertilizerService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         levelService = moduleRef.get(LevelService)
-        connectionService = moduleRef.get(ConnectionService)
+        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
     })
 
     it("should successfully use fertilizer on a tile and update user energy, experience, and tile state", async () => {
@@ -298,6 +298,6 @@ describe("UseFertilizerService", () => {
 
     afterAll(async () => {
         await gameplayMockUserService.clear()
-        await connectionService.closeAll()
+        await gameplayConnectionService.closeAll()
     })
 })
