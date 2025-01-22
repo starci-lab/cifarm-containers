@@ -14,6 +14,8 @@ import { DataSource } from "typeorm"
 import { WaterRequest, WaterResponse } from "./water.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class WaterService {
@@ -23,7 +25,9 @@ export class WaterService {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {
     }
 
@@ -100,6 +104,12 @@ export class WaterService {
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }  
+
+            // Publish event
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: user.id
+            })
+                        
             return {}
         } finally {
             await queryRunner.release()

@@ -15,6 +15,8 @@ import { DataSource } from "typeorm"
 import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class CureAnimalService {
@@ -24,7 +26,9 @@ export class CureAnimalService {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async cureAnimal(request: CureAnimalRequest): Promise<CureAnimalResponse> {
@@ -48,9 +52,8 @@ export class CureAnimalService {
             if (!placedItemAnimal || !placedItemAnimal.animalInfo) {
                 throw new GrpcNotFoundException("Animal not found")
             }
-            
-            const { animalInfo } = placedItemAnimal
-            if (animalInfo.currentState !== AnimalCurrentState.Sick)
+
+            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick)
                 throw new GrpcFailedPreconditionException("Animal is not sick")
 
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
@@ -78,7 +81,7 @@ export class CureAnimalService {
             await queryRunner.startTransaction()
             try {
                 // Update animal state
-                await queryRunner.manager.update(AnimalInfoEntity, animalInfo.id, {
+                await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
                     currentState: AnimalCurrentState.Normal
                 })
 
@@ -94,13 +97,19 @@ export class CureAnimalService {
                 })
 
                 await queryRunner.commitTransaction()
-                return {}
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
+
+            // Publish event
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: user.id
+            })
+
+            return {}
         } finally {
             await queryRunner.release()
         }

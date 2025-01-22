@@ -3,32 +3,35 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./axios.module-definition"
-import { createE2EAxiosFactoryProvider } from "./axios.providers"
-import { AxiosType } from "./axios.types"
 import { CacheModule, CacheType } from "@src/cache"
+import { E2EAxiosService } from "./axios.service"
+import { E2ERAuthenticationService } from "./authentication.service"
+import { PostgreSQLModule } from "@src/databases"
+import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 
 @Module({})
 export class E2EAxiosModule extends ConfigurableModuleClass {
-    static register(options: typeof OPTIONS_TYPE = { }): DynamicModule {
+    static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const dynamicModule = super.register(options)
 
         const imports: Array<NestImport> = []
-        const providers: Array<NestProvider> = []
-        const exports: Array<NestExport> = []
+        const services = [E2EAxiosService, E2ERAuthenticationService]
+        const providers: Array<NestProvider> = [...services]
+        const exports: Array<NestExport> = [...services]
 
         if (!options.useGlobalImports) {
-            imports.push(CacheModule.register({
-                cacheType: CacheType.Memory,
-            }))
+            imports.push(
+                CacheModule.register({
+                    cacheType: CacheType.Memory
+                }),
+                PostgreSQLModule.forRoot({
+                    context: PostgreSQLContext.Main,
+                    database: PostgreSQLDatabase.Gameplay,
+                    cacheEnabled: false,
+                })
+            )
         }
 
-        const axiosNoAuthProvider = createE2EAxiosFactoryProvider(AxiosType.NoAuth)
-        const axiosAuthProvider = createE2EAxiosFactoryProvider(AxiosType.Auth)
-        const axiosProviders = [axiosNoAuthProvider, axiosAuthProvider]
-
-        providers.push(...axiosProviders)
-        exports.push(...axiosProviders)
-        
         return {
             ...dynamicModule,
             imports,

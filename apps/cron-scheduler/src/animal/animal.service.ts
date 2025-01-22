@@ -9,8 +9,8 @@ import {
     CollectionEntity,
     InjectPostgreSQL,
     SpeedUpData,
-    TempEntity,
-    TempId
+    KeyValueStoreEntity,
+    KeyValueStoreId
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
@@ -66,13 +66,15 @@ export class AnimalService {
                 }
             })
             //get the last scheduled time
-            const { value } = await queryRunner.manager.findOne(TempEntity, {
+            const animalGrowthLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
                 where: {
-                    id: TempId.AnimalGrowthLastSchedule
+                    id: KeyValueStoreId.AnimalGrowthLastSchedule
                 }
             })
-            const { date } = value as AnimalGrowthLastSchedule
-
+            let date: Date
+            if (animalGrowthLastSchedule) {
+                date = (animalGrowthLastSchedule.value as AnimalGrowthLastSchedule).date
+            }
             //date is 1 second ago
 
             // this.logger.debug(`Found ${count} animals that need to be grown`)
@@ -117,8 +119,8 @@ export class AnimalService {
                 await queryRunner.manager.delete(CollectionEntity, {
                     collection: Collection.AnimalSpeedUp
                 })
-                await queryRunner.manager.save(TempEntity, {
-                    id: TempId.AnimalGrowthLastSchedule,
+                await queryRunner.manager.save(KeyValueStoreEntity, {
+                    id: KeyValueStoreId.AnimalGrowthLastSchedule,
                     value: {
                         date: utcNow.toDate()
                     }

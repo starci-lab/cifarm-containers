@@ -37,9 +37,9 @@ import { DateModule } from "@src/date"
         }),
 
         CropModule,
-        AnimalModule,
-        DeliveryModule,
-        EnergyModule
+        //AnimalModule,
+        //DeliveryModule,
+        //EnergyModule
     ]
 })
 export class AppModule {}

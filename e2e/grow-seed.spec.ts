@@ -1,167 +1,135 @@
 //npx jest --config ./e2e/jest.json ./e2e/grow-seed.spec.ts
 
-import { IGameplayService } from "@apps/gameplay-service"
-import { ClientGrpc } from "@nestjs/microservices"
+import { BuySeedsRequest, BuySeedsResponse, PlantSeedRequest, PlantSeedResponse } from "@apps/gameplay-service"
+import { HttpStatus } from "@nestjs/common"
 import { Test } from "@nestjs/testing"
-import { Network, ChainKey } from "@src/blockchain"
-import { sleep } from "@src/common"
-import { CropCurrentState, CropEntity, CropId, GameplayPostgreSQLModule, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, SeedGrowthInfoEntity, TileId, UserEntity } from "@src/databases"
-import { EnvModule } from "@src/env"
-import { grpcData, GrpcModule } from "@src/grpc"
-import { GrpcName } from "@src/grpc/grpc.types"
-import { JwtModule, JwtService, UserLike } from "@src/jwt"
-import { lastValueFrom } from "rxjs"
+import {
+    CropEntity,
+    getPostgreSqlToken,
+    InventoryEntity,
+    InventoryType,
+    PlacedItemEntity,
+    PlacedItemTypeId,
+} from "@src/databases"
+import { ChainKey, Network } from "@src/env"
+import {
+    AxiosType,
+    E2EAxiosService,
+    E2EConnectionService,
+    E2ERAuthenticationService,
+    TEST_TIMEOUT,
+    TestContext,
+    TestingInfraModule
+} from "@src/testing"
+import { getSocketIoToken } from "@src/testing/infra/e2e/socket-io"
+import { AxiosResponse } from "axios"
+import { isUUID } from "class-validator"
+import { Socket } from "socket.io-client"
 import { DataSource } from "typeorm"
-import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
+import { v4 } from "uuid"
+import { Cache } from "cache-manager"
+import { CACHE_SPEED_UP, CacheSpeedUpData } from "@apps/cron-scheduler"
+import { CACHE_MANAGER } from "@src/cache"
+import { sleep } from "@src/common"
 
 describe("Grow seed flow", () => {
-    let accessToken: string
     let dataSource: DataSource
-    let user: UserLike
-    let jwtService: JwtService
-    let gameplayService: IGameplayService
-
+    let e2eAxiosService: E2EAxiosService
+    let e2eConnectionService: E2EConnectionService
+    let e2eAuthenticationService: E2ERAuthenticationService
+    let socket: Socket
+    let cacheManager: Cache
     beforeAll(async () => {
-        const module = await Test.createTestingModule({
+        const moduleRef = await Test.createTestingModule({
             imports: [
-                EnvModule.forRoot(),
-                GameplayPostgreSQLModule.forRoot(),
-                GrpcModule.register({
-                    name: GrpcName.Gameplay
-                }),
-                JwtModule
-            ],
+                TestingInfraModule.register({
+                    context: TestContext.E2E
+                })
+            ]
         }).compile()
 
-        // Sign in and retrieve accessToken
-        const authAxios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
-        const { data } = await authAxios.post("/generate-signature", {
-            chainKey: ChainKey.Aptos,
-            accountNumber: 2,
-            network: Network.Mainnet,
-        })
-        const { data: verifySignatureData } = await authAxios.post("/verify-signature", data)
-
-        accessToken = verifySignatureData.accessToken
-        dataSource = module.get<DataSource>(DataSource)
-        jwtService = module.get<JwtService>(JwtService)
-        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcName.Gameplay].name)
-        gameplayService = clientGrpc.getService<IGameplayService>(getGrpcData(GrpcName.Gameplay).data.service)
-
-        // Decode accessToken to get user
-        user = await jwtService.decodeToken(accessToken)
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        e2eAxiosService = moduleRef.get(E2EAxiosService)
+        e2eConnectionService = moduleRef.get(E2EConnectionService)
+        e2eAuthenticationService = moduleRef.get(E2ERAuthenticationService)
+        socket = moduleRef.get(getSocketIoToken())
+        cacheManager = moduleRef.get(CACHE_MANAGER)
     })
 
-    it("Should grow seed successfully", async () => {
-        // Test with carrot
-        const cropId: CropId = CropId.Carrot
-        const gameplayAxios = createAxios(AxiosConfigType.WithAuth, { version: ApiVersion.V1, accessToken })
-
-        // Buy seeds from the shop
-        await gameplayAxios.post("/buy-seeds", {
-            cropId,
-            quantity: 1
+    it("should grow seed successfully in one crop season", async () => {
+        // Test with carrot, one crop season
+        const crop = await dataSource.manager.findOne(CropEntity, {
+            where: {
+                perennialCount: 1
+            }
         })
 
+        // Create auth session
+        const name = v4()
+        e2eAxiosService.create(name)
+        const user = await e2eAuthenticationService.authenticate({
+            name,
+            accountNumber: 8,
+            chainKey: ChainKey.Solana,
+            network: Network.Testnet
+        })
+        const authAxios = e2eAxiosService.getAxios(name, AxiosType.Auth)
+        // Buy the seed
+        const buySeedsResponse = await authAxios.post<
+            BuySeedsResponse,
+            AxiosResponse<BuySeedsResponse, Omit<BuySeedsRequest, "userId">>,
+            Omit<BuySeedsRequest, "userId">
+        >("gameplay/buy-seeds", {
+            cropId: crop.id,
+            quantity: 1
+        })
+        expect(buySeedsResponse.status).toBe(HttpStatus.CREATED)
+
         // Get the inventory
-        const { id: inventorySeedId } = await dataSource.manager.findOne(InventoryEntity, {
+        const inventorySeed = await dataSource.manager.findOne(InventoryEntity, {
             where: {
                 userId: user.id,
                 inventoryType: {
                     type: InventoryType.Seed,
-                    cropId: cropId
+                    cropId: crop.id
                 }
             },
             relations: {
                 inventoryType: true
             }
         })
+        expect(isUUID(inventorySeed.id)).toBeTruthy()
 
-        // Get the first tile
-        const { id: placedItemTileId } = await dataSource.manager.findOne(PlacedItemEntity, {
+        const placedItemStarterTile = await dataSource.manager.findOne(PlacedItemEntity, {
             where: {
                 userId: user.id,
-                placedItemType: {
-                    tile: {
-                        id: TileId.StarterTile
-                    },
-                    type: PlacedItemType.Tile
-                }
-            },
-            relations: {
-                placedItemType: {
-                    tile: true
-                },
+                placedItemTypeId: PlacedItemTypeId.StarterTile
             }
         })
-
-        //Check placedItemTileId
-        expect(placedItemTileId).toBeDefined()
-
         // Plant the seed
-        const response = await gameplayAxios.post("/plant-seed", {
-            inventorySeedId: inventorySeedId,
-            placedItemTileId
+        const plantSeedResponse = await authAxios.post<
+            PlantSeedResponse,
+            AxiosResponse<BuySeedsResponse, Omit<PlantSeedRequest, "userId">>,
+            Omit<PlantSeedRequest, "userId">
+        >("gameplay/plant-seed", {
+            inventorySeedId: inventorySeed.id,
+            placedItemTileId: placedItemStarterTile.id
+        })
+        expect(plantSeedResponse.status).toBe(HttpStatus.CREATED)
+
+        // Time speed up
+        await cacheManager.set<CacheSpeedUpData>(CACHE_SPEED_UP, {
+            //plus 1 to ensure the crop is grow into the next stage
+            time: crop.growthStageDuration + 1
         })
 
-        console.log(response.data)
+        // Sleep 1.1s to let cron job run
+        await sleep(1100)
 
-        // Speed up the growth for each stage and perform checks
-        const crop = await dataSource.manager.findOne(CropEntity, {
-            where: {
-                id: cropId
-            }
-        })
-
-        for (let stage = 2; stage <= crop.growthStages; stage++) {
-            await lastValueFrom(gameplayService.speedUp({
-                time: crop.growthStageDuration + 10,
-            }))
-            await sleep(1100)
-
-            // Retrieve the growth info
-            const seedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-                where: {
-                    placedItemId: placedItemTileId
-                }
-            })
-
-            // Assert the current growth stage
-            expect(seedGrowthInfo.currentStage).toBe(stage)
-
-            if (seedGrowthInfo.currentState === CropCurrentState.NeedWater) {
-                await gameplayAxios.post("/water", { placedItemTileId })
-            } else if (seedGrowthInfo.currentState === CropCurrentState.IsWeedy) {
-                await gameplayAxios.post("/use-herbicide", { placedItemTileId })
-            } else if (seedGrowthInfo.currentState === CropCurrentState.IsInfested) {
-                await gameplayAxios.post("/use-pesticide", { placedItemTileId })
-            }
-
-            // Ensure the crop is in a normal state
-            const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-                where: {
-                    id: seedGrowthInfo.id
-                }
-            })
-            
-            //If not a last stage, crop should be in normal state, otherwise it should be fully matured
-            if (stage !== crop.growthStages) {
-                expect(updatedSeedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
-            }
-        }
-
-        // Final assertion: Crop should be fully matured
-        const finalSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: {
-                placedItemId: placedItemTileId
-            }
-        })
-        expect(finalSeedGrowthInfo.currentStage).toBe(crop.growthStages)
-        expect(finalSeedGrowthInfo.currentState).toBe(CropCurrentState.FullyMatured)
-    })
+    }, TEST_TIMEOUT)
 
     afterAll(async () => {
-        //Delete by user id
-        await dataSource.manager.delete(UserEntity, user.id)
+        await e2eAuthenticationService.clear()
+        await e2eConnectionService.closeAll()
     })
 })

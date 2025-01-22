@@ -19,7 +19,7 @@ import { SpinPrizeEntity } from "./spin-prize.entity"
 import { SpinSlotEntity } from "./spin-slot.entity"
 import { SupplyEntity } from "./supply.entity"
 import { SystemEntity } from "./system.entity"
-import { TempEntity } from "./temp.entity"
+import { KeyValueStoreEntity } from "./key-value-store.entity"
 import { TileEntity } from "./tile.entity"
 import { ToolEntity } from "./tool.entity"
 import { UpgradeEntity } from "./upgrade.entity"
@@ -48,7 +48,7 @@ export * from "./tool.entity"
 export * from "./upgrade.entity"
 export * from "./user.entity"
 export * from "./session.entity"
-export * from "./temp.entity"
+export * from "./key-value-store.entity"
 export * from "./users-following-users.entity"
 export * from "./collection.entity"
 
@@ -81,5 +81,5 @@ export const gameplayPostgreSqlEntities = () : Array<typeof AbstractEntity> => (
     UsersFollowingUsersEntity,
     CollectionEntity,
     SessionEntity,
-    TempEntity
+    KeyValueStoreEntity
 ])

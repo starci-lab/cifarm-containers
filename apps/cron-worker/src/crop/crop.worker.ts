@@ -12,10 +12,8 @@ import {
 } from "@src/databases"
 import { CropsWorkerProcessTransactionFailedException } from "@src/exceptions"
 import { Job } from "bullmq"
-import dayjs from "dayjs"
-import utc from "dayjs/plugin/utc"
 import { DataSource, LessThanOrEqual, Not } from "typeorm"
-dayjs.extend(utc)
+import { DateUtcService } from "@src/date"
 
 @Processor(bullData[BullQueueName.Crop].name)
 export class CropWorker extends WorkerHost {
@@ -23,7 +21,8 @@ export class CropWorker extends WorkerHost {
 
     constructor(
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly dateUtcService: DateUtcService
     ) {
         super()
     }
@@ -39,7 +38,7 @@ export class CropWorker extends WorkerHost {
                 where: {
                     currentState:
                         Not(CropCurrentState.NeedWater) && Not(CropCurrentState.FullyMatured),
-                    createdAt: LessThanOrEqual(dayjs(utcTime).toDate())
+                    createdAt: LessThanOrEqual(this.dateUtcService.getDayjs(utcTime).toDate())
                 },
                 relations: {
                     crop: true

@@ -8,8 +8,8 @@ import {
     EnergyGrowthLastSchedule,
     InjectPostgreSQL,
     SpeedUpData,
-    TempEntity,
-    TempId,
+    KeyValueStoreEntity,
+    KeyValueStoreId,
     UserEntity
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
@@ -62,14 +62,16 @@ export class EnergyService {
                 })
 
                 //get the last scheduled time
-                const { value } = await queryRunner.manager.findOne(TempEntity, {
+                const energyRegenerationLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
                     where: {
-                        id: TempId.EnergyRegenerationLastSchedule
+                        id: KeyValueStoreId.EnergyRegenerationLastSchedule
                     }
                 })
-                const { date } = value as EnergyGrowthLastSchedule
+                let date: Date 
+                if (energyRegenerationLastSchedule) {
+                    date = (energyRegenerationLastSchedule.value as EnergyGrowthLastSchedule).date
+                }
 
-                // this.logger.debug(`Check ${count} user's energy`)
                 if (count === 0) {
                     this.logger.verbose("No user's energy to check")
                     return
@@ -114,8 +116,8 @@ export class EnergyService {
                         collection: Collection.EnergySpeedUp
                     })
 
-                    await queryRunner.manager.save(TempEntity, {
-                        id: TempId.EnergyRegenerationLastSchedule,
+                    await queryRunner.manager.save(KeyValueStoreEntity, {
+                        id: KeyValueStoreId.EnergyRegenerationLastSchedule,
                         value: {
                             date: utcNow.toDate()
                         }

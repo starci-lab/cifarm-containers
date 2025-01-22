@@ -12,6 +12,7 @@ import { GameplayModule } from "@src/gameplay"
 import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { DateModule } from "@src/date"
 import { E2EAxiosModule, E2EConnectionService } from "./e2e"
+import { E2ESocketIoModule } from "./e2e/socket-io"
 
 @Module({})
 export class TestingInfraModule extends ConfigurableModuleClass {
@@ -63,17 +64,29 @@ export class TestingInfraModule extends ConfigurableModuleClass {
         }
         case TestContext.E2E: {
             imports.push(
-                E2EAxiosModule.register(),
                 CacheModule.register({
-                    isGlobal: true,
-                    cacheType: CacheType.Memory
+                    cacheType: CacheType.Memory,
+                    isGlobal: true
+                }),
+                KafkaModule.register({
+                    groupId: KafkaGroupId.PlacedItems,
+                    producerOnlyMode: true
+                }),
+                PostgreSQLModule.forRoot({
+                    context: PostgreSQLContext.Main,
+                    database: PostgreSQLDatabase.Gameplay,
+                    cacheEnabled: false,
                 }),
                 JwtModule.register({
                     isGlobal: true
                 }),
                 BlockchainModule.register({
                     isGlobal: true
-                })
+                }),
+                E2EAxiosModule.register({
+                    useGlobalImports: true
+                }),
+                E2ESocketIoModule.register(),
             )
             const services = [E2EConnectionService]
             providers.push(...services)

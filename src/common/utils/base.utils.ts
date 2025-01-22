@@ -17,9 +17,13 @@ export const getLoopbackAddress = (port: number = 80) => {
     return `0.0.0.0:${port}`
 }
 
-export const getHttpUrl = ({ host = "localhost", port, path }: GetHttpUrlParams) => {
-    const prefix = "http://"
-
+export const getHttpUrl = ({
+    host = "localhost",
+    port,
+    path,
+    useSsl = false
+}: GetHttpUrlParams) => {
+    const prefix = useSsl ? "https://" : "http://"
     // Ensure path starts without a leading slash if it's provided
     const formattedPath = path?.startsWith("/") ? path.slice(1) : path
 
@@ -31,6 +35,7 @@ export const getHttpUrl = ({ host = "localhost", port, path }: GetHttpUrlParams)
 }
 
 export interface GetHttpUrlParams {
+    useSsl?: boolean
     host?: string
     port?: number
     path?: string
@@ -57,4 +62,17 @@ export const retryIfError = async <T>(
         }
     }
     throw error
+}
+
+export const getWsUrl = ({ host = "localhost", port, useSsl }: GetWsUrlParams) => {
+    const prefix = useSsl ? "wss://" : "ws://"
+    // Building the URL
+    const hostPort = port ? `${host}:${port}` : host
+    return `${prefix}${hostPort}`
+}
+
+export interface GetWsUrlParams {
+    host?: string
+    port?: number
+    useSsl?: boolean
 }

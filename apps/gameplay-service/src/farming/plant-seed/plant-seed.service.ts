@@ -17,6 +17,8 @@ import { DataSource } from "typeorm"
 import { PlantSeedRequest, PlantSeedResponse } from "./plant-seed.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class PlantSeedService {
@@ -27,7 +29,9 @@ export class PlantSeedService {
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async plantSeed(request: PlantSeedRequest): Promise<PlantSeedResponse> {
@@ -135,6 +139,12 @@ export class PlantSeedService {
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
+
+            // Publish event
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: user.id
+            })
+            
             return {}
         } finally {
             await queryRunner.release()

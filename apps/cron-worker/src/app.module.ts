@@ -7,6 +7,8 @@ import { CropModule } from "./crop"
 import { DeliveryModule } from "./delivery"
 import { EnergyModule } from "./energy"
 import { PostgreSQLModule } from "@src/databases"
+import { GameplayModule } from "@src/gameplay"
+import { DateModule } from "@src/date"
 
 @Module({
     imports: [
@@ -16,6 +18,12 @@ import { PostgreSQLModule } from "@src/databases"
         PostgreSQLModule.forRoot({
             context: PostgreSQLContext.Main,
             database: PostgreSQLDatabase.Gameplay
+        }),
+        DateModule.register({
+            isGlobal: true
+        }),
+        GameplayModule.register({
+            isGlobal: true
         }),
         CropModule,
         AnimalModule,

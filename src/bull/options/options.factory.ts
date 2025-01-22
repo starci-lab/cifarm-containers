@@ -13,7 +13,7 @@ export class QueueOptionsFactory {
 
     public createQueueOptions(): QueueOptions {
         return {
-            connection : this.ioRedisClientOrCluster
+            connection: this.ioRedisClientOrCluster,
         }
     }
 }

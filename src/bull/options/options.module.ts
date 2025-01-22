@@ -7,7 +7,10 @@ import { IoRedisModule } from "@src/native"
 @Module({
     imports: [
         IoRedisModule.register({
-            type: RedisType.Job
+            type: RedisType.Job,
+            additionalOptions: {
+                maxRetriesPerRequest: null
+            }
         })
     ],
     providers: [QueueOptionsFactory],

@@ -14,3 +14,8 @@ export interface RefreshToken {
 }
 
 export type JwtOptions = BaseOptions
+
+export enum AuthCredentialType {
+    AccessToken = "accessToken",
+    RefreshToken = "refreshToken"
+}

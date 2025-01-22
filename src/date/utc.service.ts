@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import dayjs, { Dayjs } from "dayjs"
+import dayjs, { Dayjs, ConfigType } from "dayjs"
 import utc from "dayjs/plugin/utc"
 dayjs.extend(utc)
 
@@ -7,7 +7,7 @@ dayjs.extend(utc)
 @Injectable()
 export class DateUtcService {
     // get utc date
-    public getDayjs(date?: Date): Dayjs {
+    public getDayjs(date?: ConfigType): Dayjs {
         return dayjs(date).utc()
     }
 }

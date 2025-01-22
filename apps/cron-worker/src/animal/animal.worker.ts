@@ -3,12 +3,9 @@ import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
 import { AnimalCurrentState, AnimalInfoEntity, AnimalRandomness, InjectPostgreSQL, SystemEntity, SystemId } from "@src/databases"
-import { AnimalsWorkerProcessTransactionFailedException } from "@src/exceptions"
+import { DateUtcService } from "@src/date"
 import { Job } from "bullmq"
-import dayjs from "dayjs"
-import utc from "dayjs/plugin/utc"
 import { DataSource, LessThanOrEqual, Not } from "typeorm"
-dayjs.extend(utc)
 
 @Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost  {
@@ -16,7 +13,8 @@ export class AnimalWorker extends WorkerHost  {
     
     constructor(
         @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        private readonly dataSource: DataSource,
+        private readonly dateUtcService: DateUtcService
     ) {
         super()
     }
@@ -32,10 +30,14 @@ export class AnimalWorker extends WorkerHost  {
             let animalInfos = await queryRunner.manager.find(AnimalInfoEntity, {
                 where: {
                     currentState: Not(AnimalCurrentState.Hungry) && Not(AnimalCurrentState.Yield),
-                    createdAt: LessThanOrEqual(dayjs(utcTime).toDate())
+                    createdAt: LessThanOrEqual(this.dateUtcService.getDayjs(utcTime).toDate())
                 },
                 relations: {
-                    animal: true
+                    placedItem: {
+                        placedItemType: {
+                            animal: true
+                        }
+                    }
                 },
                 skip,
                 take,
@@ -55,26 +57,26 @@ export class AnimalWorker extends WorkerHost  {
                 if(animalInfo.isAdult){
                     // If animal is adult, add time to the animal yield
                     animalInfo.currentYieldTime += time
-                    if(animalInfo.currentYieldTime >= animalInfo.animal.yieldTime){
+                    if(animalInfo.currentYieldTime >= animalInfo.placedItem.placedItemType.animal.yieldTime){
                         animalInfo.currentYieldTime = 0
                     
                         if(animalInfo.currentState === AnimalCurrentState.Sick){
                             animalInfo.alreadySick = true
                             animalInfo.currentState = AnimalCurrentState.Yield
                             animalInfo.harvestQuantityRemaining =
-                                (animalInfo.animal.minHarvestQuantity +
-                                    animalInfo.animal.maxHarvestQuantity) /
+                                (animalInfo.placedItem.placedItemType.animal.minHarvestQuantity +
+                                    animalInfo.placedItem.placedItemType.animal.maxHarvestQuantity) /
                                 2
 
                         }else{
                             animalInfo.currentState = AnimalCurrentState.Yield
-                            animalInfo.harvestQuantityRemaining = animalInfo.animal.maxHarvestQuantity
+                            animalInfo.harvestQuantityRemaining = animalInfo.placedItem.placedItemType.animal.maxHarvestQuantity
                         }
 
                         
                     }else{
                         if (
-                            animalInfo.currentYieldTime == animalInfo.animal.yieldTime * 0.5 &&
+                            animalInfo.currentYieldTime == animalInfo.placedItem.placedItemType.animal.yieldTime * 0.5 &&
                             Math.random() < sickChance
                         ) {
                             animalInfo.currentState = AnimalCurrentState.Sick
@@ -82,14 +84,14 @@ export class AnimalWorker extends WorkerHost  {
                     }
                 }else{
                     // If animal is not adult, add time to the animal growth
-                    if(animalInfo.currentGrowthTime < animalInfo.animal.growthTime){
+                    if(animalInfo.currentGrowthTime < animalInfo.placedItem.placedItemType.animal.growthTime){
                         // Add time to the animal growth
                         animalInfo.currentGrowthTime += time
                         // Add time to the animal hungry time
                         animalInfo.currentHungryTime += time
 
                         //Check if the animal is hungry
-                        if(animalInfo.currentHungryTime >= animalInfo.animal.hungerTime){
+                        if(animalInfo.currentHungryTime >= animalInfo.placedItem.placedItemType.animal.hungerTime){
                             animalInfo.currentState = AnimalCurrentState.Hungry
                         }
                     }else{
@@ -108,7 +110,7 @@ export class AnimalWorker extends WorkerHost  {
             } catch (error) {
                 this.logger.error(`Transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new AnimalsWorkerProcessTransactionFailedException(error)
+                throw error
             }
         } catch (error) {
             this.logger.error(`Error processing animal job: ${error}`)

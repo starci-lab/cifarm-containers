@@ -18,6 +18,8 @@ import { DataSource } from "typeorm"
 import { UseFertilizerRequest, UseFertilizerResponse } from "./use-fertilizer.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class UseFertilizerService {
@@ -27,7 +29,9 @@ export class UseFertilizerService {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async useFertilizer(request: UseFertilizerRequest): Promise<UseFertilizerResponse> {
@@ -123,13 +127,17 @@ export class UseFertilizerService {
                 )
 
                 await queryRunner.commitTransaction()
-
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
+            // Publish event
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: user.id
+            })
+
             return {}
         } finally {
             await queryRunner.release()

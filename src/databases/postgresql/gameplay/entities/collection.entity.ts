@@ -6,7 +6,6 @@ import JSON from "graphql-type-json"
 @ObjectType()
 @Entity("collections")
 export class CollectionEntity extends UuidAbstractEntity {
-    
     @Column({ name: "collection", type: "varchar" })
     @Field(() => String)
         collection: string

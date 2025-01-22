@@ -19,6 +19,8 @@ import { DataSource } from "typeorm"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class HarvestCropService {
@@ -29,7 +31,9 @@ export class HarvestCropService {
         private readonly dataSource: DataSource,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {
@@ -156,6 +160,12 @@ export class HarvestCropService {
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
+
+            // Publish event to Kafka
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: user.id
+            })
+                        
             return {}
         } finally {
             await queryRunner.release()

@@ -96,7 +96,7 @@ export enum SystemId {
     EnergyRegen = "energyRegen",
 }
 
-export enum TempId {
+export enum KeyValueStoreId {
     CropGrowthLastSchedule = "cropGrowthLastSchedule",
     AnimalGrowthLastSchedule = "animalGrowthLastSchedule",
     EnergyRegenerationLastSchedule = "energyRegenerationLastSchedule"

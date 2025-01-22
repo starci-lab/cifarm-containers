@@ -2,15 +2,12 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
-    Collection,
-    CollectionEntity,
     CropCurrentState,
     CropGrowthLastSchedule,
     InjectPostgreSQL,
     SeedGrowthInfoEntity,
-    SpeedUpData,
-    TempEntity,
-    TempId
+    KeyValueStoreEntity,
+    KeyValueStoreId
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
 import { DataSource, Not } from "typeorm"
@@ -18,6 +15,9 @@ import { v4 } from "uuid"
 import { CropJobData } from "./crop.dto"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
+import { InjectCache } from "@src/cache"
+import { Cache } from "cache-manager"
+import { CACHE_SPEED_UP, CacheSpeedUpData } from "./crop.dev"
 
 @Injectable()
 export class CropService {
@@ -26,6 +26,8 @@ export class CropService {
         @InjectQueue(BullQueueName.Crop) private readonly cropQueue: Queue,
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
+        @InjectCache()
+        private readonly cacheManager: Cache,
         private readonly dateUtcService: DateUtcService,
     ) {
     }
@@ -42,7 +44,6 @@ export class CropService {
     handleLeaderLost() {
         this.isLeader = false
     }
-
 
     @Cron("*/1 * * * * *")
     async handle() {
@@ -64,19 +65,17 @@ export class CropService {
                         Not(CropCurrentState.FullyMatured) && Not(CropCurrentState.NeedWater)
                 }
             })
-            const speedUps = await queryRunner.manager.find(CollectionEntity, {
-                where: {
-                    collection: Collection.CropSpeedUp
-                }
-            })
-            
+ 
             //get the last scheduled time, get from db not cache
-            const { value } = await queryRunner.manager.findOne(TempEntity, {
+            const cropGrowthLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
                 where: {
-                    id: TempId.CropGrowthLastSchedule
+                    id: KeyValueStoreId.CropGrowthLastSchedule
                 }
             })
-            const { date } = value as CropGrowthLastSchedule
+            let date: Date
+            if (cropGrowthLastSchedule) {
+                date = (cropGrowthLastSchedule.value as CropGrowthLastSchedule).date
+            }
 
             // this.logger.debug(`Found ${count} crops that need to be grown`)
             if (count === 0) {
@@ -89,13 +88,11 @@ export class CropService {
             const batchCount = Math.ceil(count / batchSize)
 
             let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
-            if (speedUps.length) {
-                for (const { data } of speedUps) {
-                    const { time: additionalTime } = data as SpeedUpData
-                    time += Number(additionalTime)
-                }
+            const speedUp = await this.cacheManager.get<CacheSpeedUpData>(CACHE_SPEED_UP)
+            if (speedUp) {
+                time += speedUp.time
+                await this.cacheManager.del(CACHE_SPEED_UP)
             }
-
             // Create batches
             const batches: Array<{
                 name: string
@@ -116,11 +113,8 @@ export class CropService {
 
             await queryRunner.startTransaction()
             try {
-                await queryRunner.manager.delete(CollectionEntity, {
-                    collection: Collection.CropSpeedUp
-                })
-                await queryRunner.manager.save(TempEntity, {
-                    id: TempId.CropGrowthLastSchedule,
+                await queryRunner.manager.save(KeyValueStoreEntity, {
+                    id: KeyValueStoreId.CropGrowthLastSchedule,
                     value: {
                         date: utcNow.toDate()
                     }

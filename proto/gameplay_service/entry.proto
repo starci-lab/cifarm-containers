@@ -7,7 +7,6 @@ import "./delivery/entry.proto";
 import "./claim/entry.proto";
 import "./auth/entry.proto";
 import "./community/entry.proto";
-import "./dev/entry.proto";
 import "./placement/entry.proto";
 import "./upgrade/entry.proto";
 
@@ -55,10 +54,6 @@ service GameplayService {
     rpc ThiefCrop(ThiefCropRequest) returns (ThiefCropResponse);
     rpc ThiefAnimalProduct(ThiefAnimalProductRequest) returns (ThiefAnimalProductResponse);
     rpc Return(ReturnRequest) returns (google.protobuf.Empty);
-
-    // Dev methods
-    rpc SpeedUp(SpeedUpRequest) returns (google.protobuf.Empty);
-    rpc DeliverInstantly(google.protobuf.Empty) returns (google.protobuf.Empty);
 
     // Placement methods
     rpc Move(MoveRequest) returns (google.protobuf.Empty);

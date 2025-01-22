@@ -483,7 +483,7 @@ export class GameplayController implements OnModuleInit {
 
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: PlantSeedResponse
     })
@@ -585,7 +585,7 @@ export class GameplayController implements OnModuleInit {
     
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: BuySeedsResponse
     })
@@ -594,8 +594,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: BuySeedsRequest
     ): Promise<BuySeedsResponse> {
-        this.logger.debug(`Processing buy seeds for user ${user?.id}`)
-
         return await lastValueFrom(
             this.gameplayService.buySeeds({
                 ...request,

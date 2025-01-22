@@ -2,31 +2,17 @@
 
 import { BaseOptions } from "@src/common"
 import { ApiVersion } from "../../infra.types"
+import { AxiosInstance } from "axios"
 
 export interface E2EAxiosOptions extends BaseOptions {
     // url for axios instance
     version?: ApiVersion
-    // type, to specify how to get the jwt token
-    type?: JwtOptionsType
-    // acess token, either file path or cache key
-    accessToken?: string
     // refresh token options
-    refresh?: {
-        enabled: boolean
-        //refresh token url
-        endpoint?: string
-        //refresh token, either file path or cache key
-        token?: string
-    }
+    refreshEndpoint?: string
     // retries for axios instance
     retries?: number
     // retryDelay for axios instance
     retryDelay?: number
-}
-
-export enum JwtOptionsType {
-    File = "file",
-    Cache = "cache"
 }
 
 export enum AxiosType {
@@ -34,4 +20,11 @@ export enum AxiosType {
     NoAuth = "no-auth",
     // axios instance with authentication jwt
     Auth = "auth",
+}
+
+export interface AxiosData {
+    // authenticated axios instance
+    authAxios: AxiosInstance
+    // no authenticated axios instance
+    noAuthAxios: AxiosInstance
 }

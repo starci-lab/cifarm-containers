@@ -18,7 +18,7 @@ import {
     SystemEntity,
     InventoryTypeEntity,
     SpinSlotEntity,
-    TempEntity
+    KeyValueStoreEntity
 } from "@src/databases"
 
 @Injectable()
@@ -53,7 +53,7 @@ export class SeedersService {
             await queryRunner.startTransaction()
             if (this.database === PostgreSQLDatabase.Gameplay) {
                 //delete this sequently
-                await queryRunner.manager.delete(TempEntity, {})
+                await queryRunner.manager.delete(KeyValueStoreEntity, {})
                 await queryRunner.manager.delete(AnimalEntity, {})
                 await queryRunner.manager.delete(SpinPrizeEntity, {})
                 await queryRunner.manager.delete(CropEntity, {})

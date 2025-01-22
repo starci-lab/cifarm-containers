@@ -22,6 +22,8 @@ import {
 } from "./collect-animal-product.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class CollectAnimalProductService {
@@ -33,6 +35,8 @@ export class CollectAnimalProductService {
         private readonly inventoryService: InventoryService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async collectAnimalProduct(
@@ -56,7 +60,7 @@ export class CollectAnimalProductService {
                 }
             })
 
-            if (!placedItemAnimal) {
+            if (!placedItemAnimal || !placedItemAnimal.animalInfo) {
                 throw new GrpcNotFoundException("Animal not found")
             }
 
@@ -149,6 +153,11 @@ export class CollectAnimalProductService {
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
+
+            // Publish event
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: request.userId
+            })
             return {}
         } finally {
             await queryRunner.release()

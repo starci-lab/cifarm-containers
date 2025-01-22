@@ -6,7 +6,6 @@ import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { UpgradeModule } from "./upgrade"
 import { ClaimModule } from "./claim"
 import { CommunityModule } from "./community"
-import { DevModule } from "./dev"
 import { FarmingModule } from "./farming"
 import { PlacementModule } from "./placement"
 import { ProfileModule } from "./profile"
@@ -53,7 +52,6 @@ import { DateModule } from "@src/date"
         ClaimModule,
         CommunityModule,
         DeliveryModule,
-        DevModule,
         FarmingModule,
         PlacementModule,
         ProfileModule,
