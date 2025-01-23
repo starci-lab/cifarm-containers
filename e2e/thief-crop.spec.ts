@@ -1,151 +1,442 @@
 //npx jest --config ./e2e/jest.json ./e2e/thief-crop.spec.ts
 
-import { IGameplayService } from "@apps/gameplay-service"
-import { ClientGrpc } from "@nestjs/microservices"
-import { ApiVersion, AxiosType, getAxiosToken } from "@src/testing/infra/e2e/axios"
-import { sleep } from "@src/common"
 import {
-    CropId,
-    UserEntity
+    BuySeedsRequest,
+    BuySeedsResponse,
+    HelpUseHerbicideRequest,
+    HelpUseHerbicideResponse,
+    HelpUsePesticideRequest,
+    HelpUsePesticideResponse,
+    HelpWaterRequest,
+    HelpWaterResponse,
+    PlantSeedRequest,
+    PlantSeedResponse,
+    ThiefCropRequest,
+    ThiefCropResponse,
+} from "@apps/gameplay-service"
+import { HttpStatus } from "@nestjs/common"
+import { Test } from "@nestjs/testing"
+import {
+    CropCurrentState,
+    CropEntity,
+    getPostgreSqlToken,
+    InventoryEntity,
+    InventoryType,
+    PlacedItemEntity,
+    PlacedItemTypeId
 } from "@src/databases"
-import { CropCurrentState, CropEntity, getPostgreSqlToken, InventoryEntity, InventoryType, PlacedItemEntity, PlacedItemType, ProductType, SeedGrowthInfoEntity, TileId } from "@src/databases/postgresql"
-import { Network, ChainKey } from "@src/env"
-import { grpcData, GrpcModule, GrpcName } from "@src/grpc"
-import { JwtModule, JwtService, UserLike } from "@src/jwt"
-import { createTestModule, MOCK_DATABASE_OPTIONS, TestingModule } from "@src/testing/infra"
-import { AxiosInstance } from "axios"
-import { lastValueFrom } from "rxjs"
+import { ChainKey, Network } from "@src/env"
+import {
+    E2EAxiosService,
+    E2EConnectionService,
+    E2ERAuthenticationService,
+    TEST_TIMEOUT,
+    TestContext,
+    TestingInfraModule,
+    E2EGameplaySocketIoService
+} from "@src/testing"
+import { AxiosResponse } from "axios"
+import { isUUID } from "class-validator"
 import { DataSource } from "typeorm"
+import { v4 } from "uuid"
+import { Cache } from "cache-manager"
+import { CROP_CACHE_SPEED_UP, CropCacheSpeedUpData } from "@apps/cron-scheduler"
+import { CACHE_MANAGER } from "@src/cache"
+import { sleep } from "@src/common"
+import { PlacedItemsSyncedMessage, PLACED_ITEMS_SYNCED_EVENT } from "@apps/io-gameplay"
 
 describe("Thief crop flow", () => {
-    let user: UserLike
-    let accessToken: string
-
-    let thiefUser: UserLike
-    let thiefAccessToken: string
-
     let dataSource: DataSource
-    let jwtService: JwtService
-    let gameplayService: IGameplayService
-    
-    let axiosWithAuthInstance: AxiosInstance
-    let axiosWithNoAuthInstance: AxiosInstance
-
+    let e2eAxiosService: E2EAxiosService
+    let e2eConnectionService: E2EConnectionService
+    let e2eAuthenticationService: E2ERAuthenticationService
+    let e2eGameplaySocketIoService: E2EGameplaySocketIoService
+    let cacheManager: Cache
     beforeAll(async () => {
-        const { module } = await createTestModule({
+        const moduleRef = await Test.createTestingModule({
             imports: [
-                TestingModule.register({
-                    imports: [
-                        GrpcModule.register({
-                            name: GrpcName.Gameplay,
-                        }),
-                        JwtModule
-                    ]
+                TestingInfraModule.register({
+                    context: TestContext.E2E
                 })
-            ],
-        })
+            ]
+        }).compile()
 
-        dataSource = module.get<DataSource>(getPostgreSqlToken(MOCK_DATABASE_OPTIONS))
-
-        jwtService = module.get<JwtService>(JwtService)
-        const clientGrpc = module.get<ClientGrpc>(grpcData[GrpcName.Gameplay].name)
-        gameplayService = clientGrpc.getService<IGameplayService>(getGrpcData(GrpcName.Gameplay).data.service)
-        axiosWithAuthInstance = module.get<AxiosInstance>(getAxiosToken({
-            type: AxiosType.AxiosWithAuth
-        }))
-        axiosWithNoAuthInstance = module.get<AxiosInstance>(getAxiosToken({
-            type: AxiosType.AxiosWithNoAuth
-        }))
-
-        const { data } = await axiosWithNoAuthInstance.post("/generate-signature", {
-            chainKey: ChainKey.Avalanche,
-            accountNumber: 1,
-            network: Network.Testnet,
-        })
-
-        const { data: verifySignatureData } = await axiosWithNoAuthInstance.post("/verify-signature", data)
-
-        accessToken = verifySignatureData.accessToken
-        user = await jwtService.decodeToken(accessToken)
-
-        const { data: thiefData } = await axiosWithNoAuthInstance.post("/generate-signature", {
-            chainKey: ChainKey.Avalanche,
-            accountNumber: 2,
-            network: Network.Testnet,
-        })
-
-        const { data: thiefVerifySignatureData } = await axiosWithNoAuthInstance.post("/verify-signature", thiefData)
-
-        thiefAccessToken = thiefVerifySignatureData.accessToken
-        thiefUser = await jwtService.decodeToken(thiefAccessToken)
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        e2eAxiosService = moduleRef.get(E2EAxiosService)
+        e2eConnectionService = moduleRef.get(E2EConnectionService)
+        e2eAuthenticationService = moduleRef.get(E2ERAuthenticationService)
+        e2eGameplaySocketIoService = moduleRef.get(E2EGameplaySocketIoService)
+        cacheManager = moduleRef.get(CACHE_MANAGER)
     })
 
-    it("Should thief crop successfully", async () => {
-        const cropId: CropId = CropId.Carrot
+    it("should thief successfully",
+        async () => {
+            const messageRecorder: Record<string, Array<unknown>> = {}
 
-        // Buy seeds and plant the crop
-        await axiosWithAuthInstance.post("/buy-seeds", { cropId, quantity: 1 })
+            // Create auth session
+            const name = v4()
+            const { authAxios } = e2eAxiosService.create(name)
+            const user = await e2eAuthenticationService.authenticate({
+                name,
+                accountNumber: 8,
+                chainKey: ChainKey.Solana,
+                network: Network.Testnet
+            })
+            const { createSocket } = await e2eGameplaySocketIoService.create(name)
+            const gameplayNsSocketId = v4()
+            const socket = createSocket(gameplayNsSocketId, ["/gameplay"])
+            socket.on("connect", () => {
+                console.log(`User ${user.id} connected to gameplay namespace`)
+            })
+            socket.on(PLACED_ITEMS_SYNCED_EVENT, (data: PlacedItemsSyncedMessage) => {
+                if (!messageRecorder[PLACED_ITEMS_SYNCED_EVENT]) {
+                    messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+                }
+                messageRecorder[PLACED_ITEMS_SYNCED_EVENT].push(data)
+            })
+            socket.connect()
+            // At the start, we try to sleep 0.5s to ensure no message is transmitted via a visitor
+            await sleep(500)
+            expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT]).toBeUndefined()
 
-        const { id: inventorySeedId } = await dataSource.manager.findOne(InventoryEntity, {
-            where: { userId: user.id, inventoryType: { type: InventoryType.Seed, cropId } },
-            relations: { inventoryType: true },
-        })
+            // Create vistor auth session
+            const visitorName = v4()
+            const { authAxios: visitorAuthAxios } = e2eAxiosService.create(visitorName)
+            const visitorUser = await e2eAuthenticationService.authenticate({
+                name: visitorName,
+                accountNumber: 9,
+                chainKey: ChainKey.Solana,
+                network: Network.Testnet
+            })
+            const { createSocket: createVisitorSocket } =
+                await e2eGameplaySocketIoService.create(visitorName)
+            const visitorGameplayNsSocketId = v4()
+            const visitorSocket = createVisitorSocket(visitorGameplayNsSocketId, ["/gameplay"])
+            visitorSocket.on("connect", () => {
+                console.log(`User ${visitorUser.id} connected to gameplay namespace`)
+                visitorSocket.emit("visit", {
+                    userId: user.id
+                })
+            })
+            visitorSocket.on(PLACED_ITEMS_SYNCED_EVENT, (data: PlacedItemsSyncedMessage) => {
+                if (!messageRecorder[PLACED_ITEMS_SYNCED_EVENT]) {
+                    messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+                }
+                messageRecorder[PLACED_ITEMS_SYNCED_EVENT].push(data)
+            })
+            visitorSocket.connect()
+            // At the start, we try to sleep 0.5s to ensure 1 message is transmitted via a visitor
+            await sleep(500)
+            expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(1)
+            expect(
+                (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+            ).toBe(user.id)
+            messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
 
-        const { id: placedItemTileId } = await dataSource.manager.findOne(PlacedItemEntity, {
-            where: { userId: user.id, placedItemType: { tile: { id: TileId.StarterTile }, type: PlacedItemType.Tile } },
-            relations: { placedItemType: { tile: true } },
-        })
-
-        await axiosWithAuthInstance.post("/plant-seed", { inventorySeedId, placedItemTileId })
-
-        const crop = await dataSource.manager.findOne(CropEntity, { where: { id: cropId } })
-
-        // Speed up growth to harvestable stage
-        for (let stage = 2; stage <= crop.growthStages; stage++) {
-            await lastValueFrom(gameplayService.speedUp({ time: crop.growthStageDuration }))
-            await sleep(2000)
-
-            const seedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-                where: { placedItemId: placedItemTileId },
+            // Test with carrot, one crop season
+            const crop = await dataSource.manager.findOne(CropEntity, {
+                where: {
+                    perennialCount: 1
+                }
             })
 
-            if (seedGrowthInfo.currentState === CropCurrentState.NeedWater) {
-                await axiosWithAuthInstance.post("/water", { placedItemTileId })
-            } else if (seedGrowthInfo.currentState === CropCurrentState.IsWeedy) {
-                await axiosWithAuthInstance.post("/use-herbicide", { placedItemTileId })
-            } else if (seedGrowthInfo.currentState === CropCurrentState.IsInfested) {
-                await axiosWithAuthInstance.post("/use-pesticide", { placedItemTileId })
-            }
-        }
+            // Buy the seed
+            const buySeedsResponse = await authAxios.post<
+                BuySeedsResponse,
+                AxiosResponse<BuySeedsResponse, Omit<BuySeedsRequest, "userId">>,
+                Omit<BuySeedsRequest, "userId">
+            >("gameplay/buy-seeds", {
+                cropId: crop.id,
+                quantity: 1
+            })
+            expect(buySeedsResponse.status).toBe(HttpStatus.CREATED)
 
-        // Crop should be fully matured
-        const fullyMaturedInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: { placedItemId: placedItemTileId },
-        })
-        expect(fullyMaturedInfo.currentState).toBe(CropCurrentState.FullyMatured)
-
-        // Thief steals the crop
-        const thiefAxios = createAxios(AxiosConfigType.WithAuth, { version: ApiVersion.V1, accessToken: thiefAccessToken })
-        const { data: thiefCropResponseData } = await thiefAxios.post("/thief-crop", {
-            placedItemTileId,
-            neighborUserId: user.id,
-        })
-
-        // Check thief's inventory
-        const thiefInventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: thiefUser.id,
-                inventoryType: {
-                    type: InventoryType.Product,
-                    product: { type: ProductType.Crop, cropId },
+            // Get the inventory
+            const inventorySeed = await dataSource.manager.findOne(InventoryEntity, {
+                where: {
+                    userId: user.id,
+                    inventoryType: {
+                        type: InventoryType.Seed,
+                        cropId: crop.id
+                    }
                 },
-            },
-        })
-        expect(thiefInventory.quantity).toBe(thiefCropResponseData.quantity)
-    })
+                relations: {
+                    inventoryType: true
+                }
+            })
+            expect(isUUID(inventorySeed.id)).toBeTruthy()
+
+            const placedItemStarterTile = await dataSource.manager.findOne(PlacedItemEntity, {
+                where: {
+                    userId: user.id,
+                    placedItemTypeId: PlacedItemTypeId.StarterTile
+                }
+            })
+            // Plant the seed
+            const plantSeedResponse = await authAxios.post<
+                PlantSeedResponse,
+                AxiosResponse<BuySeedsResponse, Omit<PlantSeedRequest, "userId">>,
+                Omit<PlantSeedRequest, "userId">
+            >("gameplay/plant-seed", {
+                inventorySeedId: inventorySeed.id,
+                placedItemTileId: placedItemStarterTile.id
+            })
+            expect(plantSeedResponse.status).toBe(HttpStatus.CREATED)
+
+            //sleep 0.5s to ensure message are transmitted via Kafka, now we have 2 listeners
+            await sleep(500)
+            // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+            expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+            expect(
+                (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+            ).toBe(user.id)
+            expect(
+                (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage).userId
+            ).toBe(user.id)
+            messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+
+            // Time speed up
+            await cacheManager.set<CropCacheSpeedUpData>(CROP_CACHE_SPEED_UP, {
+                //plus 1 to ensure the crop is grow into the next stage
+                time: crop.growthStageDuration
+            })
+            // Sleep 1.1s to let cron job run
+            await sleep(1100)
+
+            const placedItemStarterTileAfterFirstGrow = await dataSource.manager.findOne(
+                PlacedItemEntity,
+                {
+                    where: {
+                        id: placedItemStarterTile.id
+                    },
+                    relations: {
+                        seedGrowthInfo: true
+                    }
+                }
+            )
+            expect(placedItemStarterTileAfterFirstGrow.seedGrowthInfo.currentStage).toBe(1)
+
+            // check whether the crop is need watered
+            if (
+                placedItemStarterTileAfterFirstGrow.seedGrowthInfo.currentState ===
+                CropCurrentState.NeedWater
+            ) {
+                // Water the crop
+                const helpWaterResponse = await visitorAuthAxios.post<
+                    HelpWaterResponse,
+                    AxiosResponse<HelpWaterResponse, Omit<HelpWaterRequest, "userId">>,
+                    Omit<HelpWaterRequest, "userId">
+                >("gameplay/help-water", {
+                    placedItemTileId: placedItemStarterTile.id,
+                    neighborUserId: user.id
+                })
+                expect(helpWaterResponse.status).toBe(HttpStatus.OK)
+
+                //sleep 0.5s to ensure message are transmitted via Kafka, now we have 2 listeners
+                await sleep(500)
+                // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+                expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+                expect(
+                    (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage)
+                        .userId
+                ).toBe(user.id)
+                expect(
+                    (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage)
+                        .userId
+                ).toBe(user.id)
+                messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+            }
+
+            // Time speed up
+            await cacheManager.set<CropCacheSpeedUpData>(CROP_CACHE_SPEED_UP, {
+                //plus 1 to ensure the crop is grow into the next stage
+                time: crop.growthStageDuration
+            })
+            // Sleep 1.1s to let cron job run
+            await sleep(1100)
+
+            const placedItemStarterTileAfterSecondGrow = await dataSource.manager.findOne(
+                PlacedItemEntity,
+                {
+                    where: {
+                        id: placedItemStarterTile.id
+                    },
+                    relations: {
+                        seedGrowthInfo: true
+                    }
+                }
+            )
+            expect(placedItemStarterTileAfterSecondGrow.seedGrowthInfo.currentStage).toBe(2)
+
+            // check whether the crop is need watered
+            if (
+                placedItemStarterTileAfterSecondGrow.seedGrowthInfo.currentState ===
+                CropCurrentState.NeedWater
+            ) {
+                // Water the crop
+                const helpWaterResponse = await visitorAuthAxios.post<
+                    HelpWaterResponse,
+                    AxiosResponse<HelpWaterResponse, Omit<HelpWaterRequest, "userId">>,
+                    Omit<HelpWaterRequest, "userId">
+                >("gameplay/help-water", {
+                    placedItemTileId: placedItemStarterTile.id,
+                    neighborUserId: user.id
+                })
+                expect(helpWaterResponse.status).toBe(HttpStatus.OK)
+
+                //sleep 0.5s to ensure message are transmitted via Kafka, now we have 2 listeners
+                await sleep(500)
+                // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+                expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+                expect(
+                    (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage)
+                        .userId
+                ).toBe(user.id)
+                expect(
+                    (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage)
+                        .userId
+                ).toBe(user.id)
+                messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+            }
+
+            // Time speed up
+            await cacheManager.set<CropCacheSpeedUpData>(CROP_CACHE_SPEED_UP, {
+                //plus 1 to ensure the crop is grow into the next stage
+                time: crop.growthStageDuration
+            })
+            // Sleep 1.1s to let cron job run
+            await sleep(1100)
+
+            const placedItemStarterTileAfterThirdGrow = await dataSource.manager.findOne(
+                PlacedItemEntity,
+                {
+                    where: {
+                        id: placedItemStarterTile.id
+                    },
+                    relations: {
+                        seedGrowthInfo: true
+                    }
+                }
+            )
+            expect(placedItemStarterTileAfterThirdGrow.seedGrowthInfo.currentStage).toBe(3)
+
+            // check whether the crop is weedy or infested
+            if (
+                placedItemStarterTileAfterThirdGrow.seedGrowthInfo.currentState ===
+                CropCurrentState.IsWeedy
+            ) {
+                // use herbicide on the crop
+                const helpUseHerbicideResponse = await visitorAuthAxios.post<
+                    HelpUseHerbicideResponse,
+                    AxiosResponse<
+                        HelpUseHerbicideResponse,
+                        Omit<HelpUseHerbicideRequest, "userId">
+                    >,
+                    Omit<HelpUseHerbicideRequest, "userId">
+                >("gameplay/help-use-herbicide", {
+                    placedItemTileId: placedItemStarterTile.id,
+                    neighborUserId: user.id
+                })
+                expect(helpUseHerbicideResponse.status).toBe(HttpStatus.OK)
+
+                //sleep 0.5s to ensure message are transmitted via Kafka, now we have 2 listeners
+                await sleep(500)
+                // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+                expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+                expect(
+                    (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage)
+                        .userId
+                ).toBe(user.id)
+                expect(
+                    (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage)
+                        .userId
+                ).toBe(user.id)
+                messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+            }
+
+            if (
+                placedItemStarterTileAfterThirdGrow.seedGrowthInfo.currentState ===
+                CropCurrentState.IsInfested
+            ) {
+                // use pesticide on the crop
+                const helpUsePestisideResponse = await visitorAuthAxios.post<
+                    HelpUsePesticideResponse,
+                    AxiosResponse<HelpUsePesticideResponse, Omit<HelpUsePesticideRequest, "userId">>,
+                    Omit<HelpUsePesticideRequest, "userId">
+                >("gameplay/help-use-pesticide", {
+                    placedItemTileId: placedItemStarterTile.id,
+                    neighborUserId: user.id
+                })
+                expect(helpUsePestisideResponse.status).toBe(HttpStatus.OK)
+
+                //sleep 0.5s to ensure message are transmitted via Kafka, now we have 2 listeners
+                await sleep(500)
+                // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+                expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+                expect(
+                    (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage)
+                        .userId
+                ).toBe(user.id)
+                expect(
+                    (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage)
+                        .userId
+                ).toBe(user.id)
+                messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+            }
+
+            // Time speed up
+            await cacheManager.set<CropCacheSpeedUpData>(CROP_CACHE_SPEED_UP, {
+                //plus 1 to ensure the crop is grow into the next stage
+                time: crop.growthStageDuration
+            })
+            // Sleep 1.1s to let cron job run
+            await sleep(1100)
+
+            const placedItemStarterTileFullyHarvest = await dataSource.manager.findOne(
+                PlacedItemEntity,
+                {
+                    where: {
+                        id: placedItemStarterTile.id
+                    },
+                    relations: {
+                        seedGrowthInfo: true
+                    }
+                }
+            )
+
+            expect(placedItemStarterTileFullyHarvest.seedGrowthInfo.currentStage).toBe(4)
+            expect(placedItemStarterTileFullyHarvest.seedGrowthInfo.currentState).toBe(
+                CropCurrentState.FullyMatured
+            )
+
+            // harvest the crop
+            const thiefCropResponse = await visitorAuthAxios.post<
+                ThiefCropResponse,
+                AxiosResponse<ThiefCropResponse, Omit<ThiefCropRequest, "userId">>,
+                Omit<ThiefCropRequest, "userId">
+            >("gameplay/thief-crop", {
+                placedItemTileId: placedItemStarterTile.id,
+                neighborUserId: user.id
+            })
+            expect(thiefCropResponse.status).toBe(HttpStatus.CREATED)
+
+            //sleep 0.5s to ensure message are transmitted via Kafka, now we have 2 listeners
+            await sleep(500)
+            // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+            expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+            expect(
+                (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+            ).toBe(user.id)
+            expect(
+                (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage).userId
+            ).toBe(user.id)
+            messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+        },
+        TEST_TIMEOUT
+    )
 
     afterAll(async () => {
-        await dataSource.manager.delete(UserEntity, user.id)
-        await dataSource.manager.delete(UserEntity, thiefUser.id)
+        await e2eAuthenticationService.clear()
+        await e2eConnectionService.closeAll()
     })
 })

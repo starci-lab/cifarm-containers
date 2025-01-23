@@ -25,7 +25,6 @@ export class BuildingSeeder implements Seeder {
                 upgrades: [
                     {
                         id: UpgradeId.CoopUpgrade1,
-                        upgradePrice: 0,
                         capacity: 3,
                         upgradeLevel: 0
                     },
@@ -56,7 +55,6 @@ export class BuildingSeeder implements Seeder {
                 upgrades: [
                     {
                         id: UpgradeId.PastureUpgrade1,
-                        upgradePrice: 0,
                         capacity: 3,
                         upgradeLevel: 0
                     },
@@ -92,5 +90,4 @@ export class BuildingSeeder implements Seeder {
         )
         this.logger.verbose("Buildings seeded successfully.")
     }
-
 }

@@ -3,10 +3,9 @@ import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
 import { DeliveringProductEntity, InjectPostgreSQL, UserEntity } from "@src/databases"
-import { DeliverysWorkerProcessTransactionFailedException } from "@src/exceptions"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
 import { Job } from "bullmq"
-import { DataSource } from "typeorm"
+import { DataSource, In } from "typeorm"
 
 @Processor(bullData[BullQueueName.Delivery].name)
 export class DeliveryWorker extends WorkerHost {
@@ -28,11 +27,6 @@ export class DeliveryWorker extends WorkerHost {
 
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
-
-        const userUpdatePromises = []
-        const deliveringProductsRemovePromises = []
-
-        this.logger.debug(`Processed delivery job: ${job.id}`)
         try {
             const rawUserIds = await queryRunner.manager
                 .createQueryBuilder(DeliveringProductEntity, "delivering_products")
@@ -50,68 +44,57 @@ export class DeliveryWorker extends WorkerHost {
                 return
             }
 
-            userIds.forEach(async (userId) => {
+            const users = await queryRunner.manager.find(UserEntity, {
+                where: { id: In(userIds) }
+            })
+
+            users.forEach(async (user) => {
                 // Fetch delivering products for the user
                 const deliveringProducts = await queryRunner.manager.find(DeliveringProductEntity, {
-                    where: { userId },
+                    where: { userId: user.id },
                     relations: {
                         product: true
                     }
                 })
 
-                if (!deliveringProducts.length) {
-                    this.logger.debug(`No delivering products found for user ${userId}`)
-                    return
-                }
-
-                // Fetch user details
-                const user = await queryRunner.manager.findOne(UserEntity, {
-                    where: { id: userId }
-                })
-
-                if (!user) {
-                    this.logger.warn(`User with ID ${userId} not found.`)
-                    return
-                }
-
-                // Example logic: calculate total cost
+                // Logic: calculate total amount of tokens to deliver
+                const totalGoldAmount = deliveringProducts.reduce((sum, deliveringProducts) => {
+                    return sum + deliveringProducts.product.goldAmount * deliveringProducts.quantity
+                }, 0)
+                
                 const totalTokenAmount = deliveringProducts.reduce((sum, deliveringProducts) => {
                     return (
                         sum + deliveringProducts.product.tokenAmount * deliveringProducts.quantity
                     )
                 }, 0)
 
-                // Update user balance via token balance service
-                const tokensChanged = this.tokenBalanceService.add({
+                // Update user balance
+                const goldChanged = this.goldBalanceService.add({
+                    entity: user,
+                    amount: totalGoldAmount
+                })
+                const tokenChanged = this.tokenBalanceService.add({
                     entity: user,
                     amount: totalTokenAmount
                 })
 
-                userUpdatePromises.push(
-                    queryRunner.manager.update(UserEntity, user.id, {
-                        ...tokensChanged
-                    })
-                )
 
-                deliveringProductsRemovePromises.push(
-                    queryRunner.manager.delete(DeliveringProductEntity, { userId })
-                )
-
-                this.logger.debug(
-                    `Processed user ${userId} with ${deliveringProducts.length} delivering products.`
-                )
+                // Update user's balance
+                return {
+                    ...user,
+                    ...goldChanged,
+                    ...tokenChanged
+                }
             })
 
             await queryRunner.startTransaction()
             try {
-                await Promise.all(userUpdatePromises)
-                await Promise.all(deliveringProductsRemovePromises)
-
+                await queryRunner.manager.save(users)
                 await queryRunner.commitTransaction()
             } catch (error) {
                 this.logger.error(`Transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new DeliverysWorkerProcessTransactionFailedException(error)
+                throw error
             }
         } finally {
             await queryRunner.release()

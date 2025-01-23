@@ -10,7 +10,6 @@ import {
     SystemEntity,
     SystemId
 } from "@src/databases"
-import { CropsWorkerProcessTransactionFailedException } from "@src/exceptions"
 import { Job } from "bullmq"
 import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import { DateUtcService } from "@src/date"

@@ -12,6 +12,9 @@ import { DataSource, DeepPartial } from "typeorm"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { InjectKafka } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
+import { KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class BuyTileService {
@@ -20,7 +23,9 @@ export class BuyTileService {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly goldBalanceService: GoldBalanceService
+        private readonly goldBalanceService: GoldBalanceService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async buyTile(request: BuyTileRequest): Promise<BuyTileResponse> {
@@ -98,6 +103,12 @@ export class BuyTileService {
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
+
+            // Publish event
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: user.id
+            })
+            
             return {}
         } finally {
             await queryRunner.release()

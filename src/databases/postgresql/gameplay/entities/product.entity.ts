@@ -1,5 +1,5 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, RelationId } from "typeorm"
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, RelationId } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
@@ -11,8 +11,8 @@ import { DeliveringProductEntity } from "./delivering-product.entity"
 @Entity("products")
 export class ProductEntity extends StringAbstractEntity {
     @Field(() => Boolean)
-    @Column({ name: "is_premium", type: "boolean" })
-        isPremium: boolean
+    @Column({ name: "is_quality", type: "boolean" })
+        isQuality: boolean
 
     @Field(() => Int)
     @Column({ name: "gold_amount", type: "int" })
@@ -30,7 +30,7 @@ export class ProductEntity extends StringAbstractEntity {
     @Column({ name: "crop_id", nullable: true })
         cropId: string
 
-    @OneToOne(() => CropEntity, { onDelete: "CASCADE", cascade: true })
+    @ManyToOne(() => CropEntity, { onDelete: "CASCADE", cascade: true })
     @JoinColumn({
         name: "crop_id",
         referencedColumnName: "id"
@@ -41,7 +41,7 @@ export class ProductEntity extends StringAbstractEntity {
     @Column({ name: "animal_id", nullable: true })
         animalId: string
 
-    @OneToOne(() => AnimalEntity, { onDelete: "CASCADE", cascade: true })
+    @ManyToOne(() => AnimalEntity, { onDelete: "CASCADE", cascade: true })
     @JoinColumn({
         name: "animal_id",
         referencedColumnName: "id"

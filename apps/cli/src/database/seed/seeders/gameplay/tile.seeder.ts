@@ -14,15 +14,9 @@ export class TileSeeder implements Seeder {
                 price: 0,
                 maxOwnership: 6,
                 isNFT: false,
+                qualityProductChanceStack: 0,
+                qualityProductChanceLimit: 0,
                 availableInShop: true,
-                inventoryType: {
-                    id: TileId.StarterTile,
-                    asTool: false,
-                    deliverable: false,
-                    maxStack: 16,
-                    placeable: true,
-                    type: InventoryType.Tile
-                },
                 placedItemType: {
                     id: PlacedItemTypeId.StarterTile,
                     type: PlacedItemType.Tile
@@ -33,15 +27,9 @@ export class TileSeeder implements Seeder {
                 price: 1000,
                 maxOwnership: 10,
                 isNFT: false,
+                qualityProductChanceStack: 0,
+                qualityProductChanceLimit: 0,
                 availableInShop: true,
-                inventoryType: {
-                    id: TileId.BasicTile1,
-                    asTool: false,
-                    deliverable: false,
-                    maxStack: 16,
-                    placeable: true,
-                    type: InventoryType.Tile
-                },
                 placedItemType: {
                     id: PlacedItemTypeId.BasicTile1,
                     type: PlacedItemType.Tile
@@ -53,6 +41,8 @@ export class TileSeeder implements Seeder {
                 maxOwnership: 30,
                 isNFT: false,
                 availableInShop: true,
+                qualityProductChanceStack: 0.001,
+                qualityProductChanceLimit: 0.1,
                 inventoryType: {
                     id: TileId.BasicTile2,
                     asTool: false,
@@ -71,15 +61,9 @@ export class TileSeeder implements Seeder {
                 price: 10000,
                 maxOwnership: 9999,
                 isNFT: false,
+                qualityProductChanceStack: 0.002,
+                qualityProductChanceLimit: 0.2,
                 availableInShop: true,
-                inventoryType: {
-                    id: TileId.BasicTile3,
-                    asTool: false,
-                    deliverable: false,
-                    maxStack: 16,
-                    placeable: true,
-                    type: InventoryType.Tile
-                },
                 placedItemType: {
                     id: PlacedItemTypeId.BasicTile3,
                     type: PlacedItemType.Tile
@@ -87,15 +71,15 @@ export class TileSeeder implements Seeder {
             },
             {
                 id: TileId.FertileTile,
-                price: 0,
-                maxOwnership: 0,
                 isNFT: true,
+                qualityProductChanceStack: 0.025,
+                qualityProductChanceLimit: 0.5,
                 availableInShop: false,
                 inventoryType: {
                     id: TileId.FertileTile,
                     asTool: false,
                     deliverable: false,
-                    maxStack: 16,
+                    maxStack: 1,
                     placeable: true,
                     type: InventoryType.Tile
                 },

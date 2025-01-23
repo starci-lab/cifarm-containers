@@ -26,6 +26,8 @@ export class AnimalSeeder implements Seeder {
                 isNFT: false,
                 growthTime: 60 * 60 * 24 * 3,
                 availableInShop: true,
+                qualityProductChanceStack: 0.001,
+                qualityProductChanceLimit: 0.1,
                 hungerTime: 60 * 60 * 12,
                 minHarvestQuantity: 14,
                 maxHarvestQuantity: 20,
@@ -33,21 +35,43 @@ export class AnimalSeeder implements Seeder {
                 premiumHarvestExperiences: 96,
                 price: 1000,
                 type: AnimalType.Poultry,
-                product: {
-                    id: ProductId.Egg,
-                    isPremium: false,
-                    goldAmount: 8,
-                    tokenAmount: 0.04,
-                    type: ProductType.Animal,
-                    animalId: AnimalId.Chicken,
-                    inventoryType: {
-                        id: InventoryTypeId.Egg,
-                        asTool: false,
-                        deliverable: true,
-                        placeable: true,
-                        type: InventoryType.Product
+                products: [
+                    {
+                        id: ProductId.Egg,
+                        isQuality: false,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Animal,
+                        animalId: AnimalId.Chicken,
+                        inventoryType: {
+                            id: InventoryTypeId.Egg,
+                            asTool: false,
+                            deliverable: true,
+                            placeable: true,
+                            type: InventoryType.Product
+                        }
+                    },
+                    {
+                        id: ProductId.EggQuality,
+                        isQuality: true,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Animal,
+                        animalId: AnimalId.Chicken,
+                        inventoryType: {
+                            id: InventoryTypeId.EggQuality,
+                            asTool: false,
+                            deliverable: false,
+                            maxStack: 1,
+                            placeable: true,
+                            type: InventoryType.Animal
+                        },
+                        placedItemType: {
+                            id: PlacedItemTypeId.Chicken,
+                            type: PlacedItemType.Animal
+                        }
                     }
-                },
+                ],
                 inventoryType: {
                     id: InventoryTypeId.Chicken,
                     asTool: false,
@@ -68,6 +92,8 @@ export class AnimalSeeder implements Seeder {
                 isNFT: false,
                 growthTime: 60 * 60 * 24 * 7,
                 availableInShop: true,
+                qualityProductChanceStack: 0.001,
+                qualityProductChanceLimit: 0.1,
                 hungerTime: 60 * 60 * 12,
                 minHarvestQuantity: 14,
                 maxHarvestQuantity: 20,
@@ -75,21 +101,43 @@ export class AnimalSeeder implements Seeder {
                 premiumHarvestExperiences: 96,
                 price: 2500,
                 type: AnimalType.Livestock,
-                product: {
-                    id: ProductId.Milk,
-                    isPremium: false,
-                    goldAmount: 8,
-                    tokenAmount: 0.04,
-                    type: ProductType.Animal,
-                    animalId: AnimalId.Cow,
-                    inventoryType: {
-                        id: InventoryTypeId.Milk,
-                        asTool: false,
-                        deliverable: true,
-                        placeable: true,
-                        type: InventoryType.Product
+                products: [
+                    {
+                        id: ProductId.Milk,
+                        isQuality: false,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Animal,
+                        animalId: AnimalId.Cow,
+                        inventoryType: {
+                            id: InventoryTypeId.Milk,
+                            asTool: false,
+                            deliverable: true,
+                            placeable: true,
+                            type: InventoryType.Product
+                        }
+                    },
+                    {
+                        id: ProductId.MilkQuality,
+                        isQuality: true,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Animal,
+                        animalId: AnimalId.Cow,
+                        inventoryType: {
+                            id: InventoryTypeId.MilkQuality,
+                            asTool: false,
+                            deliverable: false,
+                            maxStack: 1,
+                            placeable: true,
+                            type: InventoryType.Animal
+                        },
+                        placedItemType: {
+                            id: PlacedItemTypeId.Cow,
+                            type: PlacedItemType.Animal
+                        }
                     }
-                },
+                ],
                 inventoryType: {
                     id: InventoryTypeId.Cow,
                     asTool: false,

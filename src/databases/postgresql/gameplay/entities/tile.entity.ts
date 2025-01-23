@@ -19,6 +19,14 @@ export class TileEntity extends StringAbstractEntity {
     @Column({ name: "is_nft", type: "boolean" })
         isNFT: boolean
 
+    @Field(() => Float)
+    @Column({ name: "quality_product_chance_stack", type: "float" })
+        qualityProductChanceStack: number
+    
+    @Field(() => Float)
+    @Column({ name: "quality_product_chance_limit", type: "float" })
+        qualityProductChanceLimit: number
+
     @Field(() => Boolean)
     @Column({ name: "available_in_shop", type: "boolean" })
         availableInShop: boolean

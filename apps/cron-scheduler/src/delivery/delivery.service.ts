@@ -1,9 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
-import { CacheKey, InjectCache } from "@src/cache"
+import { InjectCache } from "@src/cache"
 import { DeliveringProductEntity, InjectPostgreSQL } from "@src/databases"
-import { isProduction } from "@src/env"
 import { BulkJobOptions, Queue } from "bullmq"
 import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
@@ -41,17 +40,6 @@ export class DeliveryService {
         private readonly dateUtcService: DateUtcService
     ) {}
 
-    @Cron("*/1 * * * * *")
-    public async triggerDeliveryProducts() {
-        if (!isProduction()) {
-            const hasValue = await this.cacheManager.get<boolean>(CacheKey.DeliverInstantly)
-            if (hasValue) {
-                await this.cacheManager.del(CacheKey.DeliverInstantly)
-                await this.handleDeliveryProducts()
-            }
-        }
-    }
-
     @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     // @Cron("*/1 * * * * *")
     public async handleDeliveryProducts() {
@@ -70,7 +58,6 @@ export class DeliveryService {
                 .getRawOne()
 
             if (!count) {
-                this.logger.verbose("No users to process.")
                 return
             }
 

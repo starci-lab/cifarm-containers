@@ -47,7 +47,7 @@ export class AnimalInfoEntity extends UuidAbstractEntity {
 
     @Field(() => Boolean)
     @Column({ type: "boolean", default: false })
-        alreadySick: boolean
+        immunized: boolean
 
     @Field(() => String)
     @Column({ name: "placed_item_id", type: "uuid" })

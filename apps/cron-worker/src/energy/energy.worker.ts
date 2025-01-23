@@ -9,13 +9,9 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import { EnergysWorkerProcessTransactionFailedException } from "@src/exceptions"
-import { EnergyService } from "@src/gameplay"
+import { DateUtcService } from "@src/date"
 import { Job } from "bullmq"
-import dayjs from "dayjs"
-import utc from "dayjs/plugin/utc"
-import { DataSource } from "typeorm"
-dayjs.extend(utc)
+import { DataSource, LessThanOrEqual } from "typeorm"
 
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
@@ -24,7 +20,7 @@ export class EnergyWorker extends WorkerHost {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly energySerice: EnergyService
+        private readonly dateUtcService: DateUtcService
     ) {
         super()
     }
@@ -32,16 +28,16 @@ export class EnergyWorker extends WorkerHost {
     public override async process(job: Job<EnergyJobData>): Promise<void> {
         const { time, skip, take, utcTime } = job.data
 
-        this.logger.verbose(
-            `[EnergyWorker] ${job.id}, time: ${time}, skip: ${skip}, take: ${take} utcTime: ${utcTime}`
-        )
-
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
             let users = await queryRunner.manager.find(UserEntity, {
                 skip,
                 take,
+                where: {
+                    energyFull: false,
+                    createdAt: LessThanOrEqual(this.dateUtcService.getDayjs(utcTime).toDate())
+                },
                 order: {
                     createdAt: "ASC"
                 }
@@ -55,14 +51,12 @@ export class EnergyWorker extends WorkerHost {
             const { time: energyRegenTime } = system.value as EnergyRegen // In Miniliseconds
 
             users = users.map((user) => {
-                // Check if user's energy is full
-                if (user.energy >= this.energySerice.getMaxEnergy(user.level)) return user
-
                 // Add time to the user's energy
                 user.energyRegenTime += time
                 if (user.energyRegenTime >= energyRegenTime) {
                     user.energy += 1
-                    user.energyRegenTime -= energyRegenTime
+                    // Reset the timer
+                    user.energyRegenTime = 0
                 }
                 return user
             })
@@ -74,7 +68,7 @@ export class EnergyWorker extends WorkerHost {
             } catch (error) {
                 this.logger.error(`Transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new EnergysWorkerProcessTransactionFailedException(error)
+                throw error
             }
         } finally {
             await queryRunner.release()

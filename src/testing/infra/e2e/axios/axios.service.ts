@@ -1,4 +1,4 @@
-import { HttpStatus, Inject, Injectable } from "@nestjs/common"
+import { HttpStatus, Inject, Injectable, Logger } from "@nestjs/common"
 import axios, { AxiosError, AxiosInstance } from "axios"
 import { MODULE_OPTIONS_TOKEN } from "./axios.module-definition"
 import { AxiosData, E2EAxiosOptions } from "./axios.types"
@@ -11,6 +11,7 @@ import axiosRetry from "axios-retry"
 
 @Injectable()
 export class E2EAxiosService {
+    private readonly logger = new Logger(E2EAxiosService.name)
     public readonly axiosMap: Record<string, AxiosData>
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
@@ -94,6 +95,7 @@ export class E2EAxiosService {
                     }
 
                     // If it's not a 401 or another retryable error, reject the promise
+                    this.logger.error(error)
                     return Promise.reject(error)
                 }
             )

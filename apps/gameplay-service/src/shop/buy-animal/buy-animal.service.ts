@@ -12,6 +12,8 @@ import { DataSource, DeepPartial } from "typeorm"
 import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class BuyAnimalService {
@@ -20,7 +22,9 @@ export class BuyAnimalService {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly goldBalanceService: GoldBalanceService
+        private readonly goldBalanceService: GoldBalanceService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async buyAnimal(request: BuyAnimalRequest): Promise<BuyAnimalResponse> {
@@ -141,6 +145,12 @@ export class BuyAnimalService {
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
+
+            // Publish event
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: user.id
+            })
+            
             return {}
         } finally {
             await queryRunner.release()

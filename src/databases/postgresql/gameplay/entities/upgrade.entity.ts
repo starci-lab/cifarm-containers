@@ -6,9 +6,9 @@ import { BuildingEntity } from "./building.entity"
 @ObjectType()
 @Entity("upgrades")
 export class UpgradeEntity extends StringAbstractEntity {
-    @Field(() => Int)
-    @Column({ name: "upgrade_price", type: "int" })
-        upgradePrice: number
+    @Field(() => Int, { nullable: true })
+    @Column({ name: "upgrade_price", type: "int", nullable: true })
+        upgradePrice?: number
 
     @Field(() => Int)
     @Column({ name: "capacity", type: "int" })

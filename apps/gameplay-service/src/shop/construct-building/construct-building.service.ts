@@ -5,6 +5,8 @@ import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
 import { GrpcNotFoundException, GrpcInternalException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class ConstructBuildingService {
@@ -13,7 +15,9 @@ export class ConstructBuildingService {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,      
-        private readonly goldBalanceService: GoldBalanceService
+        private readonly goldBalanceService: GoldBalanceService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {
     }
 
@@ -82,6 +86,12 @@ export class ConstructBuildingService {
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
+
+            // Publish event
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: user.id
+            })
+
             return {}
         } finally {
             await queryRunner.release()

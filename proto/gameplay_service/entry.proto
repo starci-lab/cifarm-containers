@@ -49,6 +49,7 @@ service GameplayService {
     rpc Follow(FollowRequest) returns (google.protobuf.Empty);
     rpc Unfollow(UnfollowRequest) returns (google.protobuf.Empty);
     rpc HelpUsePesticide(HelpUsePesticideRequest) returns (google.protobuf.Empty);
+    rpc HelpUseHerbicide(HelpUseHerbicideRequest) returns (google.protobuf.Empty);
     rpc HelpWater(HelpWaterRequest) returns (google.protobuf.Empty);
     rpc HelpCureAnimal(HelpCureAnimalRequest) returns (google.protobuf.Empty);
     rpc ThiefCrop(ThiefCropRequest) returns (ThiefCropResponse);

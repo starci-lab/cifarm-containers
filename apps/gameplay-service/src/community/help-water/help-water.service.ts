@@ -118,13 +118,19 @@ export class HelpWaterService {
                 this.clientKafka.emit(KafkaPattern.PlacedItems, {
                     neighborUserId: request.neighborUserId
                 })
-                return {}
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
                 await queryRunner.rollbackTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
+
+            // kafka
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: request.neighborUserId
+            })
+            
+            return {}
         } finally {
             await queryRunner.release()
         }

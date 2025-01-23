@@ -7,18 +7,22 @@ import {
     CollectionEntity,
     EnergyGrowthLastSchedule,
     InjectPostgreSQL,
-    SpeedUpData,
     KeyValueStoreEntity,
     KeyValueStoreId,
     UserEntity
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import { DataSource } from "typeorm"
+import { DataSource, LessThanOrEqual } from "typeorm"
 import { v4 } from "uuid"
 import { EnergyJobData } from "./energy.dto"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
+import { InjectCache } from "@src/cache"
+import { Cache } from "cache-manager"
+import { ENERGY_CACHE_SPEED_UP, EnergyCacheSpeedUpData } from "./energy.e2e"
+import { e2eEnabled } from "@src/env"
 
+// use different name to avoid conflict with the EnergyService exported from the gameplay module
 @Injectable()
 export class EnergyService {
     private readonly logger = new Logger(EnergyService.name)
@@ -27,7 +31,9 @@ export class EnergyService {
         @InjectQueue(bullData[BullQueueName.Energy].name) private readonly EnergyQueue: Queue,
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly dateUtcService: DateUtcService
+        private readonly dateUtcService: DateUtcService,
+        @InjectCache()
+        private readonly cacheManager: Cache
     ) {}
 
     // Flag to determine if the current instance is the leader
@@ -44,7 +50,7 @@ export class EnergyService {
     }
 
     @Cron("*/1 * * * * *")
-        async handle() {
+        async process() {
             if (!this.isLeader) {
                 return
             }
@@ -54,13 +60,13 @@ export class EnergyService {
             await queryRunner.connect()
             let count: number
             try {
-                count = await queryRunner.manager.count(UserEntity)
-                const speedUps = await queryRunner.manager.find(CollectionEntity, {
+                count = await queryRunner.manager.count(UserEntity, {
                     where: {
-                        collection: Collection.EnergySpeedUp
+                        energyFull: false,
+                        createdAt: LessThanOrEqual(utcNow.toDate())
                     }
                 })
-
+            
                 //get the last scheduled time
                 const energyRegenerationLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
                     where: {
@@ -82,10 +88,13 @@ export class EnergyService {
                 const batchCount = Math.ceil(count / batchSize)
 
                 let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
-                if (speedUps.length) {
-                    for (const { data } of speedUps) {
-                        const { time: additionalTime } = data as SpeedUpData
-                        time += Number(additionalTime)
+                
+                //e2e code block for e2e purpose-only
+                if (e2eEnabled()) {
+                    const speedUp = await this.cacheManager.get<EnergyCacheSpeedUpData>(ENERGY_CACHE_SPEED_UP)
+                    if (speedUp) {
+                        time += speedUp.time
+                        await this.cacheManager.del(ENERGY_CACHE_SPEED_UP)
                     }
                 }
 

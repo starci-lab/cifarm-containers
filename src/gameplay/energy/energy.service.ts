@@ -10,8 +10,10 @@ export class EnergyService {
     public add(request: AddParams): AddResult {
         const { energy, entity } = request
         const maxEnergy = this.getMaxEnergy(entity.level)
+        const energyFull = entity.energy + energy >= maxEnergy
         return {
-            energy: Math.min(maxEnergy, entity.energy + energy)
+            energy: Math.min(maxEnergy, entity.energy + energy),
+            energyFull
         }
     }
 
@@ -19,7 +21,8 @@ export class EnergyService {
         const { energy, entity } = request
         this.checkSufficient({ current: entity.energy, required: energy })
         return {
-            energy: entity.energy - energy
+            energy: entity.energy - energy,
+            energyFull: false
         }
     }
 

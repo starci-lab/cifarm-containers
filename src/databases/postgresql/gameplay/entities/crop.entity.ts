@@ -57,16 +57,16 @@ export class CropEntity extends StringAbstractEntity {
         maxStack: number
 
     @Field(() => ID)
-    @RelationId((crop: CropEntity) => crop.product)
-        productId?: string
+    @RelationId((crop: CropEntity) => crop.products)
+        productIds?: string
 
-    @Field(() => ProductEntity, { nullable: true })
-    @OneToOne(() => ProductEntity, (product) => product.crop, {
+    @Field(() => [ProductEntity], { nullable: true })
+    @OneToMany(() => ProductEntity, (product) => product.crop, {
         nullable: true,
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        product?: ProductEntity
+        products?: Array<ProductEntity>
     
     @Field(() => ID)
     @RelationId((crop: CropEntity) => crop.inventoryType)

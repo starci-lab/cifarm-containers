@@ -3,6 +3,7 @@ syntax = "proto3";
 package gameplay_service;
 
 import "./help_use_pesticide.proto";
+import "./help_use_herbicide.proto";
 import "./help_water.proto";
 import "./help_cure_animal.proto";
 import "./follow.proto";

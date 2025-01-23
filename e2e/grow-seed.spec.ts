@@ -40,7 +40,7 @@ import { isUUID } from "class-validator"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { Cache } from "cache-manager"
-import { CACHE_SPEED_UP, CacheSpeedUpData } from "@apps/cron-scheduler"
+import { CROP_CACHE_SPEED_UP, CropCacheSpeedUpData } from "@apps/cron-scheduler"
 import { CACHE_MANAGER } from "@src/cache"
 import { sleep } from "@src/common"
 import { PlacedItemsSyncedMessage, PLACED_ITEMS_SYNCED_EVENT } from "@apps/io-gameplay"
@@ -73,13 +73,6 @@ describe("Grow seed flow", () => {
         "should grow seed successfully in one crop season",
         async () => {
             const messageRecorder: Record<string, Array<unknown>> = {}
-
-            // Test with carrot, one crop season
-            const crop = await dataSource.manager.findOne(CropEntity, {
-                where: {
-                    perennialCount: 1
-                }
-            })
 
             // Create auth session
             const name = v4()
@@ -140,6 +133,14 @@ describe("Grow seed flow", () => {
             expect((messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId).toBe(user.id)
             messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
 
+            
+            // Test with carrot, one crop season
+            const crop = await dataSource.manager.findOne(CropEntity, {
+                where: {
+                    perennialCount: 1
+                }
+            })
+
             // Buy the seed
             const buySeedsResponse = await authAxios.post<
                 BuySeedsResponse,
@@ -192,7 +193,7 @@ describe("Grow seed flow", () => {
             messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
 
             // Time speed up
-            await cacheManager.set<CacheSpeedUpData>(CACHE_SPEED_UP, {
+            await cacheManager.set<CropCacheSpeedUpData>(CROP_CACHE_SPEED_UP, {
                 //plus 1 to ensure the crop is grow into the next stage
                 time: crop.growthStageDuration
             })
@@ -237,7 +238,7 @@ describe("Grow seed flow", () => {
             }
 
             // Time speed up
-            await cacheManager.set<CacheSpeedUpData>(CACHE_SPEED_UP, {
+            await cacheManager.set<CropCacheSpeedUpData>(CROP_CACHE_SPEED_UP, {
                 //plus 1 to ensure the crop is grow into the next stage
                 time: crop.growthStageDuration
             })
@@ -282,7 +283,7 @@ describe("Grow seed flow", () => {
             }
 
             // Time speed up
-            await cacheManager.set<CacheSpeedUpData>(CACHE_SPEED_UP, {
+            await cacheManager.set<CropCacheSpeedUpData>(CROP_CACHE_SPEED_UP, {
                 //plus 1 to ensure the crop is grow into the next stage
                 time: crop.growthStageDuration
             })
@@ -350,7 +351,7 @@ describe("Grow seed flow", () => {
             }
 
             // Time speed up
-            await cacheManager.set<CacheSpeedUpData>(CACHE_SPEED_UP, {
+            await cacheManager.set<CropCacheSpeedUpData>(CROP_CACHE_SPEED_UP, {
                 //plus 1 to ensure the crop is grow into the next stage
                 time: crop.growthStageDuration
             })

@@ -79,7 +79,6 @@ export class PlacedItemsGateway implements OnGatewayInit {
     public async syncPlacedItems({ userId }: SyncPlacedItemsParams) {
         // get all sockets in the room, accross cluster
         const sockets = await this.namespace.in(userId).fetchSockets()
-        console.log(sockets.length)
         // emit placed items to all clients
         const promises: Array<Promise<void>> = []
         for (const client of sockets) {

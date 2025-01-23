@@ -17,7 +17,7 @@ import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
-import { CACHE_SPEED_UP, CacheSpeedUpData } from "./crop.e2e"
+import { CROP_CACHE_SPEED_UP, CropCacheSpeedUpData } from "./crop.e2e"
 import { e2eEnabled } from "@src/env"
 
 @Injectable()
@@ -47,7 +47,7 @@ export class CropService {
     }
 
     @Cron("*/1 * * * * *")
-    async handle() {
+    async process() {
         if (!this.isLeader) {
             return
         }
@@ -64,7 +64,7 @@ export class CropService {
                     //Not fully matured and need water
                     currentState:
                         Not(CropCurrentState.FullyMatured) && Not(CropCurrentState.NeedWater),
-                    createdAt: LessThanOrEqual(this.dateUtcService.getDayjs(utcNow).toDate())
+                    createdAt: LessThanOrEqual(utcNow.toDate())
                 }
             })
  
@@ -89,10 +89,10 @@ export class CropService {
                 
                 //e2e code block for e2e purpose-only
                 if (e2eEnabled()) {
-                    const speedUp = await this.cacheManager.get<CacheSpeedUpData>(CACHE_SPEED_UP)
+                    const speedUp = await this.cacheManager.get<CropCacheSpeedUpData>(CROP_CACHE_SPEED_UP)
                     if (speedUp) {
                         time += speedUp.time
-                        await this.cacheManager.del(CACHE_SPEED_UP)
+                        await this.cacheManager.del(CROP_CACHE_SPEED_UP)
                     }
                 }
 

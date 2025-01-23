@@ -1,5 +1,12 @@
 import { Logger } from "@nestjs/common"
-import { CropEntity, CropId, InventoryType, InventoryTypeId, ProductId, ProductType } from "@src/databases"
+import {
+    CropEntity,
+    CropId,
+    InventoryType,
+    InventoryTypeId,
+    ProductId,
+    ProductType
+} from "@src/databases"
 import { DataSource } from "typeorm"
 import { Seeder } from "typeorm-extension"
 import { BuildingSeeder } from "./building.seeder"
@@ -9,6 +16,7 @@ export class CropSeeder implements Seeder {
     track = true
     public async run(dataSource: DataSource): Promise<void> {
         this.logger.debug("Seeding crops...")
+
         await dataSource.manager.save(CropEntity, [
             {
                 id: CropId.Carrot,
@@ -22,27 +30,43 @@ export class CropSeeder implements Seeder {
                 premium: false,
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
-                availableInShop: true,   
-                product: {
-                    id: ProductId.Carrot,
-                    isPremium: false,
-                    goldAmount: 4,
-                    tokenAmount: 0.02,
-                    type: ProductType.Crop,
-                    cropId: CropId.Carrot,
-                    inventoryType: {
-                        id: InventoryTypeId.Carrot,
-                        asTool: false,
-                        deliverable: true,
-                        placeable: false,
-                        type: InventoryType.Product
+                availableInShop: true,
+                products: [
+                    {
+                        id: ProductId.Carrot,
+                        isQuality: false,
+                        goldAmount: 4,
+                        tokenAmount: 0,
+                        type: ProductType.Crop,
+                        cropId: CropId.Carrot,
+                        inventoryType: {
+                            id: InventoryTypeId.Carrot,
+                            asTool: false,
+                            deliverable: true,
+                            placeable: false,
+                            type: InventoryType.Product
+                        }
+                    },
+                    {
+                        id: ProductId.CarrotQuality,
+                        isQuality: true,
+                        goldAmount: 4,
+                        tokenAmount: 0,
+                        type: ProductType.Crop,
+                        cropId: CropId.Carrot,
+                        inventoryType: {
+                            id: InventoryTypeId.CarrotQuality,
+                            asTool: false,
+                            deliverable: false,
+                            placeable: false,
+                            type: InventoryType.Seed
+                        }
                     }
-                },
+                ],
                 inventoryType: {
                     id: InventoryTypeId.CarrotSeed,
                     asTool: false,
                     deliverable: false,
-                    
                     placeable: false,
                     type: InventoryType.Seed
                 }
@@ -59,22 +83,39 @@ export class CropSeeder implements Seeder {
                 premium: false,
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
-                availableInShop: true,       
-                product: {
-                    id: ProductId.Potato,
-                    isPremium: false,
-                    goldAmount: 8,
-                    tokenAmount: 0.04,
-                    type: ProductType.Crop,
-                    cropId: CropId.Potato,
-                    inventoryType: {
-                        id: InventoryTypeId.Potato,
-                        asTool: false,
-                        deliverable: true,
-                        placeable: false,
-                        type: InventoryType.Product
+                availableInShop: true,
+                products: [
+                    {
+                        id: ProductId.Potato,
+                        isQuality: false,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.Potato,
+                        inventoryType: {
+                            id: InventoryTypeId.Potato,
+                            asTool: false,
+                            deliverable: true,
+                            placeable: false,
+                            type: InventoryType.Product
+                        }
+                    },
+                    {
+                        id: ProductId.PotatoQuality,
+                        isQuality: true,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.Potato,
+                        inventoryType: {
+                            id: InventoryTypeId.PotatoQuality,
+                            asTool: false,
+                            deliverable: false,
+                            placeable: false,
+                            type: InventoryType.Seed
+                        }
                     }
-                },
+                ],
                 inventoryType: {
                     id: InventoryTypeId.PotatoSeed,
                     asTool: false,
@@ -96,25 +137,42 @@ export class CropSeeder implements Seeder {
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                product: {
-                    id: ProductId.Cucumber,
-                    isPremium: false,
-                    goldAmount: 8,
-                    tokenAmount: 0.04,
-                    type: ProductType.Crop,
-                    cropId: CropId.Cucumber,
-                    inventoryType: {
-                        id: InventoryTypeId.Cucumber,
-                        asTool: false,
-                        deliverable: true,
-                        placeable: false,
-                        type: InventoryType.Product
+                products: [
+                    {
+                        id: ProductId.Cucumber,
+                        isQuality: false,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.Cucumber,
+                        inventoryType: {
+                            id: InventoryTypeId.Cucumber,
+                            asTool: false,
+                            deliverable: true,
+                            placeable: false,
+                            type: InventoryType.Product
+                        }
+                    },
+                    {
+                        id: ProductId.CucumberQuality,
+                        isQuality: true,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.Cucumber,
+                        inventoryType: {
+                            id: InventoryTypeId.CucumberQuality,
+                            asTool: false,
+                            deliverable: false,
+                            placeable: false,
+                            type: InventoryType.Seed
+                        }
                     }
-                },
+                ],
                 inventoryType: {
                     id: InventoryTypeId.CucumberSeed,
                     asTool: false,
-                    deliverable: false,  
+                    deliverable: false,
                     placeable: false,
                     type: InventoryType.Seed
                 }
@@ -132,21 +190,38 @@ export class CropSeeder implements Seeder {
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                product: {
-                    id: ProductId.Pineapple,
-                    isPremium: false,
-                    goldAmount: 8,
-                    tokenAmount: 0.04,
-                    type: ProductType.Crop,
-                    cropId: CropId.Pineapple,
-                    inventoryType: {
-                        id: InventoryTypeId.Pineapple,
-                        asTool: false,
-                        deliverable: true,       
-                        placeable: false,
-                        type: InventoryType.Product
+                products: [
+                    {
+                        id: ProductId.Pineapple,
+                        isQuality: false,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.Pineapple,
+                        inventoryType: {
+                            id: InventoryTypeId.Pineapple,
+                            asTool: false,
+                            deliverable: true,
+                            placeable: false,
+                            type: InventoryType.Product
+                        }
+                    },
+                    {
+                        id: ProductId.PineappleQuality,
+                        isQuality: true,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.Pineapple,
+                        inventoryType: {
+                            id: InventoryTypeId.PineappleQuality,
+                            asTool: false,
+                            deliverable: false,
+                            placeable: false,
+                            type: InventoryType.Seed
+                        }
                     }
-                },
+                ],
                 inventoryType: {
                     id: InventoryTypeId.PineappleSeed,
                     asTool: false,
@@ -168,21 +243,38 @@ export class CropSeeder implements Seeder {
                 perennialCount: 1,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                product: {
-                    id: ProductId.Watermelon,
-                    isPremium: false,
-                    goldAmount: 8,
-                    tokenAmount: 0.04,
-                    type: ProductType.Crop,
-                    cropId: CropId.Watermelon,
-                    inventoryType: {
-                        id: InventoryTypeId.Watermelon,
-                        asTool: false,
-                        deliverable: true,
-                        placeable: false,
-                        type: InventoryType.Product
+                products: [
+                    {
+                        id: ProductId.Watermelon,
+                        isQuality: false,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.Watermelon,
+                        inventoryType: {
+                            id: InventoryTypeId.Watermelon,
+                            asTool: false,
+                            deliverable: true,
+                            placeable: false,
+                            type: InventoryType.Product
+                        }
+                    },
+                    {
+                        id: ProductId.WatermelonQuality,
+                        isQuality: true,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.Watermelon,
+                        inventoryType: {
+                            id: InventoryTypeId.WatermelonQuality,
+                            asTool: false,
+                            deliverable: false,
+                            placeable: false,
+                            type: InventoryType.Seed
+                        }
                     }
-                },
+                ],
                 inventoryType: {
                     id: InventoryTypeId.WatermelonSeed,
                     asTool: false,
@@ -204,21 +296,38 @@ export class CropSeeder implements Seeder {
                 perennialCount: 3,
                 nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
-                product: {
-                    id: ProductId.BellPepper,
-                    isPremium: false,
-                    goldAmount: 8,
-                    tokenAmount: 0.04,
-                    type: ProductType.Crop,
-                    cropId: CropId.BellPepper,
-                    inventoryType: {
-                        id: InventoryTypeId.BellPepper,
-                        asTool: false,
-                        deliverable: true,
-                        placeable: false,
-                        type: InventoryType.Product
+                products: [
+                    {
+                        id: ProductId.BellPepper,
+                        isQuality: false,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.BellPepper,
+                        inventoryType: {
+                            id: InventoryTypeId.BellPepper,
+                            asTool: false,
+                            deliverable: true,
+                            placeable: false,
+                            type: InventoryType.Product
+                        }
+                    },
+                    {
+                        id: ProductId.BellPepperQuality,
+                        isQuality: true,
+                        goldAmount: 8,
+                        tokenAmount: 0.04,
+                        type: ProductType.Crop,
+                        cropId: CropId.BellPepper,
+                        inventoryType: {
+                            id: InventoryTypeId.BellPepperQuality,
+                            asTool: false,
+                            deliverable: false,
+                            placeable: false,
+                            type: InventoryType.Seed
+                        }
                     }
-                },
+                ],
                 inventoryType: {
                     id: InventoryTypeId.BellPepperSeed,
                     asTool: false,
@@ -227,7 +336,8 @@ export class CropSeeder implements Seeder {
                     type: InventoryType.Seed
                 }
             }
-        ]) 
+        ])
+
         this.logger.verbose("Crops seeded successfully.")
     }
 }

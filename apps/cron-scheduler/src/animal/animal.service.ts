@@ -8,16 +8,19 @@ import {
     Collection,
     CollectionEntity,
     InjectPostgreSQL,
-    SpeedUpData,
     KeyValueStoreEntity,
     KeyValueStoreId
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import { DataSource, Not } from "typeorm"
+import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import { v4 } from "uuid"
 import { AnimalJobData } from "./animal.dto"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
+import { InjectCache } from "@src/cache"
+import { Cache } from "cache-manager"
+import { e2eEnabled } from "@src/env"
+import { ANIMAL_CACHE_SPEED_UP, AnimalCacheSpeedUpData } from "./animal.e2e"
 
 @Injectable()
 export class AnimalService {
@@ -27,6 +30,8 @@ export class AnimalService {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly dateUtcService: DateUtcService,
+        @InjectCache()
+        private readonly cacheManager: Cache
     ) {}
 
     // Flag to determine if the current instance is the leader
@@ -43,7 +48,7 @@ export class AnimalService {
     }
 
     @Cron("*/1 * * * * *")
-    async handle() {
+    async process() {
         if (!this.isLeader) {
             return
         }
@@ -56,15 +61,11 @@ export class AnimalService {
         try {
             count = await queryRunner.manager.count(AnimalInfoEntity, {
                 where: {
-                    currentState: Not(AnimalCurrentState.Hungry) && Not(AnimalCurrentState.Yield)
+                    currentState: Not(AnimalCurrentState.Hungry) && Not(AnimalCurrentState.Yield),
+                    createdAt: LessThanOrEqual(utcNow.toDate())
                 }
             })
 
-            const speedUps = await queryRunner.manager.find(CollectionEntity, {
-                where: {
-                    collection: Collection.AnimalSpeedUp
-                }
-            })
             //get the last scheduled time
             const animalGrowthLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
                 where: {
@@ -88,10 +89,12 @@ export class AnimalService {
             const batchCount = Math.ceil(count / batchSize)
 
             let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
-            if (speedUps.length) {
-                for (const { data } of speedUps) {
-                    const { time: additionalTime } = data as SpeedUpData
-                    time += Number(additionalTime)
+            //e2e code block for e2e purpose-only
+            if (e2eEnabled()) {
+                const speedUp = await this.cacheManager.get<AnimalCacheSpeedUpData>(ANIMAL_CACHE_SPEED_UP)
+                if (speedUp) {
+                    time += speedUp.time
+                    await this.cacheManager.del(ANIMAL_CACHE_SPEED_UP)
                 }
             }
 

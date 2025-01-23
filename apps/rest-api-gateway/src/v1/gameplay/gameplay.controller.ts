@@ -251,7 +251,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: HelpUseHerbicideRequest
     ): Promise<HelpUseHerbicideResponse> {
-        this.logger.debug(`Processing user ${user?.id} help use herbicide of user ${request?.neighborUserId}`)
         return await lastValueFrom(
             this.gameplayService.helpUseHerbicide({
                 ...request,
@@ -266,12 +265,11 @@ export class GameplayController implements OnModuleInit {
     @ApiResponse({
         type: HelpUsePesticideResponse
     })
-    @Post("/help-use-pesiticide")
+    @Post("/help-use-pesticide")
     public async helpUsePesticide(
         @User() user: UserLike,
         @Body() request: HelpUsePesticideRequest
     ): Promise<HelpUsePesticideResponse> {
-        this.logger.debug(`Processing user ${user?.id} help use pesticide of user ${request?.neighborUserId}`)
         return await lastValueFrom(
             this.gameplayService.helpUsePesticide({
                 ...request,
@@ -302,7 +300,7 @@ export class GameplayController implements OnModuleInit {
 
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: ThiefAnimalProductResponse
     })
@@ -311,7 +309,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: ThiefAnimalProductRequest
     ): Promise<ThiefAnimalProductResponse> {
-        this.logger.debug(`Processing user ${user?.id} thief animal product of user ${request?.neighborUserId}`)
         return await lastValueFrom(
             this.gameplayService.thiefAnimalProduct({
                 ...request,
@@ -322,7 +319,7 @@ export class GameplayController implements OnModuleInit {
 
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: ThiefCropResponse
     })
@@ -331,7 +328,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: ThiefCropRequest
     ): Promise<ThiefCropResponse> {
-        this.logger.debug(`Processing user ${user?.id} thief crop of user ${request?.neighborUserId}`)
         return await lastValueFrom(
             this.gameplayService.thiefCrop({
                 ...request,
@@ -403,7 +399,7 @@ export class GameplayController implements OnModuleInit {
     //Farming
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: CollectAnimalProductResponse
     })
@@ -412,7 +408,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: CollectAnimalProductRequest
     ): Promise<CollectAnimalProductResponse> {
-        this.logger.debug(`Processing collect animal product for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.collectAnimalProduct({
                 ...request,
@@ -604,7 +599,7 @@ export class GameplayController implements OnModuleInit {
 
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: BuyAnimalResponse
     })
@@ -613,8 +608,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: BuyAnimalRequest
     ): Promise<BuyAnimalResponse> {
-        this.logger.debug(`Processing buyAnimal for user ${user?.id}`)
-
         return await lastValueFrom(
             this.gameplayService.buyAnimal({
                 ...request,
@@ -625,7 +618,7 @@ export class GameplayController implements OnModuleInit {
 
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: BuySuppliesResponse
     })
@@ -665,7 +658,7 @@ export class GameplayController implements OnModuleInit {
 
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: ConstructBuildingResponse
     })

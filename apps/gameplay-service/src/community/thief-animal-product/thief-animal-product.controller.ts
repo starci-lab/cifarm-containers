@@ -12,7 +12,6 @@ export class ThiefAnimalProductController {
 
     @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "ThiefAnimalProduct")
     public async thiefAnimalProduct(request: ThiefAnimalProductRequest) {
-        this.logger.debug("ThiefAnimalProduct request called: " + JSON.stringify(request))
-        return this.thiefAnimalProductService.theifAnimalProduct(request)
+        return this.thiefAnimalProductService.thiefAnimalProduct(request)
     }
 }

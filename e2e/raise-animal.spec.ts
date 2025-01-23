@@ -1,251 +1,406 @@
 // npx jest --config ./e2e/jest.json ./e2e/raise-animal.spec.ts
 
-import { Test } from "@nestjs/testing"
 import {
-    grpcData,
-    GrpcModule,
-    GrpcName,
-} from "@src/grpc"
+    BuyAnimalRequest,
+    BuyAnimalResponse,
+    BuySuppliesRequest,
+    BuySuppliesResponse,
+    CollectAnimalProductRequest,
+    CollectAnimalProductResponse,
+    ConstructBuildingRequest,
+    ConstructBuildingResponse,
+    CureAnimalRequest,
+    CureAnimalResponse,
+    FeedAnimalRequest,
+    FeedAnimalResponse
+} from "@apps/gameplay-service"
+import { PLACED_ITEMS_SYNCED_EVENT, PlacedItemsSyncedMessage } from "@apps/io-gameplay"
+import { Test } from "@nestjs/testing"
+import { CACHE_MANAGER } from "@src/cache"
+import { sleep } from "@src/common"
 import {
     AnimalCurrentState,
     AnimalEntity,
-    AnimalInfoEntity,
+    AnimalId,
+    BuildingEntity,
     BuildingId,
-    GameplayPostgreSQLModule,
-    InventoryEntity,
+    getPostgreSqlToken,
     PlacedItemEntity,
-    PlacedItemTypeId,
-    ProductType,
+    PlacedItemType,
+    SupplyEntity,
     SupplyId,
-    UserEntity,
+    UserEntity
 } from "@src/databases"
-import { JwtModule, JwtService, UserLike } from "@src/jwt"
+import { ChainKey, Network } from "@src/env"
+import {
+    E2EAxiosService,
+    E2EConnectionService,
+    E2ERAuthenticationService,
+    E2EGameplaySocketIoService,
+    TestingInfraModule,
+    TestContext
+} from "@src/testing"
+import { AxiosResponse } from "axios"
 import { DataSource } from "typeorm"
-import { lastValueFrom } from "rxjs"
-import { sleep } from "@src/common"
-import { IGameplayService } from "@apps/gameplay-service"
-import { ClientGrpc } from "@nestjs/microservices"
-import { EnvModule } from "@src/env"
-import { Network, ChainKey } from "@src/blockchain"
-import { ApiVersion, AxiosConfigType, createAxios } from "./e2e.utils"
+import { v4 } from "uuid"
+import { Cache } from "cache-manager"
+import { ANIMAL_CACHE_SPEED_UP } from "@apps/cron-scheduler"
+import { HttpStatus } from "@nestjs/common"
 
 describe("Raise animal flow", () => {
-    let accessToken: string
     let dataSource: DataSource
-    let user: UserLike
-    let jwtService: JwtService
-    let gameplayService: IGameplayService
+    let e2eAxiosService: E2EAxiosService
+    let e2eConnectionService: E2EConnectionService
+    let e2eAuthenticationService: E2ERAuthenticationService
+    let e2eGameplaySocketIoService: E2EGameplaySocketIoService
+    let cacheManager: Cache
 
     beforeAll(async () => {
-        const module = await Test.createTestingModule({
+        const moduleRef = await Test.createTestingModule({
             imports: [
-                EnvModule.forRoot(),
-                GameplayPostgreSQLModule.forRoot(),
-                GrpcModule.register({
-                    name: GrpcName.Gameplay,
-                }),
-                JwtModule,
-            ],
+                TestingInfraModule.register({
+                    context: TestContext.E2E
+                })
+            ]
         }).compile()
 
-        dataSource = module.get<DataSource>(DataSource)
-        jwtService = module.get<JwtService>(JwtService)
-        const clientGrpc = module.get<ClientGrpc>(
-            grpcData[GrpcName.Gameplay].name
-        )
-        gameplayService = clientGrpc.getService<IGameplayService>(
-            getGrpcData(GrpcName.Gameplay).data.service
-        )
-
-        // Sign in and retrieve accessToken
-        const axios = createAxios(AxiosConfigType.NoAuth, { version: ApiVersion.V1 })
-
-        const { data } = await axios.post("/generate-signature", {
-            chainKey: ChainKey.Aptos,
-            accountNumber: 2,
-            network: Network.Mainnet,
-        })
-        const { data: verifySignatureData } = await axios.post(
-            "/verify-signature",
-            data
-        )
-
-        accessToken = verifySignatureData.accessToken
-        user = await jwtService.decodeToken(accessToken)
+        dataSource = moduleRef.get(getPostgreSqlToken())
+        e2eAxiosService = moduleRef.get(E2EAxiosService)
+        e2eConnectionService = moduleRef.get(E2EConnectionService)
+        e2eAuthenticationService = moduleRef.get(E2ERAuthenticationService)
+        e2eGameplaySocketIoService = moduleRef.get(E2EGameplaySocketIoService)
+        cacheManager = moduleRef.get(CACHE_MANAGER)
     })
 
     it("Should raise animal successfully", async () => {
-        // Test with an animal (e.g., cow)
-        const animalId = "chicken"
+        const messageRecorder: Record<string, Array<unknown>> = {}
 
-        const axios = createAxios(AxiosConfigType.WithAuth, {
-            version: ApiVersion.V1,
-            accessToken,
+        // Create auth session
+        const name = v4()
+        const { authAxios } = e2eAxiosService.create(name)
+        const user = await e2eAuthenticationService.authenticate({
+            name,
+            accountNumber: 8,
+            chainKey: ChainKey.Solana,
+            network: Network.Testnet
+        })
+        const { createSocket } = await e2eGameplaySocketIoService.create(name)
+        const gameplayNsSocketId = v4()
+        const socket = createSocket(gameplayNsSocketId, ["/gameplay"])
+        socket.on("connect", () => {
+            console.log(`User ${user.id} connected to gameplay namespace`)
+        })
+        socket.on(PLACED_ITEMS_SYNCED_EVENT, (data: PlacedItemsSyncedMessage) => {
+            if (!messageRecorder[PLACED_ITEMS_SYNCED_EVENT]) {
+                messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+            }
+            messageRecorder[PLACED_ITEMS_SYNCED_EVENT].push(data)
+        })
+        socket.connect()
+        // At the start, we try to sleep 0.5s to ensure no message is transmitted via a visitor
+        await sleep(500)
+        expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT]).toBeUndefined()
+
+        // Create vistor auth session
+        const visitorName = v4()
+        e2eAxiosService.create(visitorName)
+        const visitorUser = await e2eAuthenticationService.authenticate({
+            name: visitorName,
+            accountNumber: 9,
+            chainKey: ChainKey.Solana,
+            network: Network.Testnet
+        })
+        const { createSocket: createVisitorSocket } =
+            await e2eGameplaySocketIoService.create(visitorName)
+        const visitorGameplayNsSocketId = v4()
+        const visitorSocket = createVisitorSocket(visitorGameplayNsSocketId, ["/gameplay"])
+        visitorSocket.on("connect", () => {
+            console.log(`User ${visitorUser.id} connected to gameplay namespace`)
+            visitorSocket.emit("visit", {
+                userId: user.id
+            })
+        })
+        visitorSocket.on(PLACED_ITEMS_SYNCED_EVENT, (data: PlacedItemsSyncedMessage) => {
+            if (!messageRecorder[PLACED_ITEMS_SYNCED_EVENT]) {
+                messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+            }
+            messageRecorder[PLACED_ITEMS_SYNCED_EVENT].push(data)
+        })
+        visitorSocket.connect()
+        // At the start, we try to sleep 0.5s to ensure 1 message is transmitted via a visitor
+        await sleep(500)
+        expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(1)
+        expect(
+            (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+        ).toBe(user.id)
+        messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+
+        // Get the building
+        const building = await dataSource.manager.findOne(BuildingEntity, {
+            where: {
+                id: BuildingId.Coop
+            }
+        })
+        // Get the animal
+        const animal = await dataSource.manager.findOne(AnimalEntity, {
+            where: {
+                id: AnimalId.Chicken
+            }
+        })
+        // Get the animal feed
+        const supplyAnimalFeed = await dataSource.manager.findOne(SupplyEntity, {
+            where: {
+                id: SupplyId.AnimalFeed
+            }
         })
 
-
-        // Increase user money
-        await dataSource.manager.update(
-            UserEntity,
-            { id: user.id },
-            { golds: 30000 }
-        )
-
-        // Buy animal food
-        await axios.post("/buy-supplies", {
-            supplyId: SupplyId.AnimalFeed,
-            quantity: 5
+        //add more gold to user
+        await dataSource.manager.update(UserEntity, user.id, {
+            golds: building.price + animal.price + 100 * supplyAnimalFeed.price + 10
         })
 
         // Construct a building
-        await axios.post("/construct-building", {
+        const constructBuilding = await authAxios.post<
+            ConstructBuildingResponse,
+            AxiosResponse<ConstructBuildingResponse, Omit<ConstructBuildingRequest, "userId">>,
+            Omit<ConstructBuildingRequest, "userId">
+        >("gameplay/construct-building", {
             buildingId: BuildingId.Coop,
             position: {
-                x: 1,
-                y: 1
+                x: 0,
+                y: 0
             }
         })
+        expect(constructBuilding.status).toBe(HttpStatus.CREATED)
+        //sleep 0.5s to ensure message are transmitted via Kafka, now we have 2 listeners
+        await sleep(500)
+        // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+        expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+        expect(
+            (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+        ).toBe(user.id)
+        expect(
+            (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage).userId
+        ).toBe(user.id)
+        messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
 
-        //Find placedItemBuilding
-        const placedItemBuilding = await dataSource.manager.findOne(PlacedItemEntity, {
+        // coop is constructed, now place an animal
+        const placedItemBuildingCoop = await dataSource.manager.findOne(PlacedItemEntity, {
             where: {
                 userId: user.id,
-                placedItemTypeId: PlacedItemTypeId.Coop,
-                x: 1,
-                y: 1,
+                placedItemTypeId: BuildingId.Coop
             }
         })
-        // Check if the building is constructed
-        expect(placedItemBuilding).toBeDefined()
 
-        // Buy an animal from the shop
-        await axios.post("/buy-animal", {
-            animalId,
-            placedItemBuildingId: placedItemBuilding.id,
+        // Purchase from shop
+        const buyAnimalResponse = await authAxios.post<
+            BuyAnimalResponse,
+            AxiosResponse<BuyAnimalResponse, Omit<BuyAnimalRequest, "userId">>,
+            Omit<BuyAnimalRequest, "userId">
+        >("gameplay/buy-animal", {
+            animalId: animal.id,
+            placedItemBuildingId: placedItemBuildingCoop.id,
             position: {
-                x: 0,
-                y: 0,
+                x: 3,
+                y: 3
             }
         })
+        expect(buyAnimalResponse.status).toBe(HttpStatus.CREATED)
+        // At the start, we try to sleep 0.5s to ensure 1 message is transmitted via a visitor
+        //sleep 0.5s to ensure message are transmitted via Kafka, now we have 2 listeners
+        await sleep(500)
+        // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+        expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+        expect(
+            (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+        ).toBe(user.id)
+        expect(
+            (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage).userId
+        ).toBe(user.id)
+        messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
 
-        // Get the animal info
-        let animalInfo = await dataSource.manager.findOne(
-            AnimalInfoEntity,
-            {
+        const { id: placedItemAnimalId } = await dataSource.manager.findOne(PlacedItemEntity, {
+            where: {
+                userId: user.id,
+                placedItemType: {
+                    animalId: animal.id,
+                    type: PlacedItemType.Animal
+                }
+            },
+            select: ["id"]
+        })
+
+        //use while loop to feed the animal until it grows up
+        for (;;) {
+            //e2e speed up the animal hunger time
+            await cacheManager.set(ANIMAL_CACHE_SPEED_UP, {
+                time: animal.hungerTime
+            })
+            //sleep 1.1s to wait for the animal to be hungry
+            await sleep(1100)
+
+            const placedItemAnimal = await dataSource.manager.findOne(PlacedItemEntity, {
                 where: {
-                    animal: {
-                        id: animalId,
-                    },
+                    id: placedItemAnimalId
                 },
                 relations: {
-                    animal: true,
-                },
-            }
-        )
-
-        // Retrieve the animal data
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: {
-                id: animalId,
-            },
-        })
-
-        // Buy 
-
-        //while stage is not mature
-        while (!animalInfo.isAdult) {
-            // Speed up and feed until the animal is an adult
-            await lastValueFrom(gameplayService.speedUp({ time: animal.hungerTime + 10 }))
-            await sleep(1100)
-
-            // check if the animal is hungry
-            animalInfo = await dataSource.manager.findOne(
-                AnimalInfoEntity,
-                {
-                    where: {
-                        id: animalInfo.id,
-                    },
+                    animalInfo: true
                 }
-            )
-
-            expect(animalInfo.currentState).toBe(AnimalCurrentState.Hungry)
-
-            // Feed the animal            
-            await axios.post("/feed-animal", { 
-                placedItemAnimalId: animalInfo.placedItemId
             })
 
-            animalInfo = await dataSource.manager.findOne(
-                AnimalInfoEntity,
-                {
-                    where: {
-                        id: animalInfo.id,
-                    },
-                }
-            )
+            // if animal is adult, break the loop
+            if (placedItemAnimal.animalInfo.isAdult) {
+                break
+            }
 
-            expect(animalInfo.currentState).toBe(AnimalCurrentState.Normal)
+            //buy supply animal feed
+            const buySuppliesResponse = await authAxios.post<
+                BuySuppliesResponse,
+                AxiosResponse<BuySuppliesResponse, Omit<BuySuppliesRequest, "userId">>,
+                Omit<BuySuppliesRequest, "userId">
+            >("gameplay/buy-supplies", {
+                supplyId: SupplyId.AnimalFeed,
+                quantity: 1
+            })
+            expect(buySuppliesResponse.status).toBe(HttpStatus.CREATED)
+
+            //feed the animal
+            const feedAnimalResponse = await authAxios.post<
+                FeedAnimalResponse,
+                AxiosResponse<FeedAnimalResponse, Omit<FeedAnimalRequest, "userId">>,
+                Omit<FeedAnimalRequest, "userId">
+            >("gameplay/feed-animal", {
+                placedItemAnimalId
+            })
+
+            expect(feedAnimalResponse.status).toBe(HttpStatus.OK)
+            // At the start, we try to sleep 0.5s to ensure 1 message is transmitted via a visitor
+            //sleep 0.5s to ensure message are transmitted via Kafka, now we have 2 listeners
+            await sleep(500)
+            // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+            expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+            expect(
+                (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+            ).toBe(user.id)
+            expect(
+                (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage).userId
+            ).toBe(user.id)
+            messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
         }
 
-
-        // Speed up growth and yield process
-        while(animalInfo.currentState != AnimalCurrentState.Yield){
-            await lastValueFrom(gameplayService.speedUp({ time: animal.yieldTime  }))
-            await sleep(1100)
-
-            animalInfo = await dataSource.manager.findOne(
-                AnimalInfoEntity,
-                {
-                    where: {
-                        id: animalInfo.id,
-                    },
-                }
-            )
-
-            // Check if the animal is in a yield state(if sick, cure it)
-            if(animalInfo.currentState === AnimalCurrentState.Sick){
-                await axios.post("/cure-animal", { 
-                    placedItemAnimalId: animalInfo.placedItemId
-                })
-            }
-        }
-
-        // Handle yield process
-        await axios.post("/collect-animal-product", { 
-            placedItemAnimalId: animalInfo.placedItemId
-        })
-
-        // Ensure the animal returns to a normal state
-        animalInfo = await dataSource.manager.findOne(
-            AnimalInfoEntity,
-            {
-                where: {
-                    id: animalInfo.id,
-                },
-            }
-        )
-        expect(animalInfo.currentState).toBe(
-            AnimalCurrentState.Normal
-        )
-
-        //Check inventory
-        const inventoryItem = await dataSource.manager.findOne(InventoryEntity, {
+        const placedItemAnimalAdult = await dataSource.manager.findOne(PlacedItemEntity, {
             where: {
-                userId: user.id,
-                inventoryType: {
-                    product: {
-                        type: ProductType.Animal,
-                        animalId: animalId,
-                    },
-                }
+                id: placedItemAnimalId
             },
+            relations: {
+                animalInfo: true
+            }
         })
-        expect(inventoryItem).toBeDefined()
-        expect(inventoryItem.quantity).toBeGreaterThan(0)
+        //expect the animal to be adult
+        expect(placedItemAnimalAdult.animalInfo.isAdult).toBe(true)
+        //buy supply animal feed again
+        //buy supply animal feed
+        const buySuppliesResponse = await authAxios.post<
+            BuySuppliesResponse,
+            AxiosResponse<BuySuppliesResponse, Omit<BuySuppliesRequest, "userId">>,
+            Omit<BuySuppliesRequest, "userId">
+        >("gameplay/buy-supplies", {
+            supplyId: SupplyId.AnimalFeed,
+            quantity: 1
+        })
+        expect(buySuppliesResponse.status).toBe(HttpStatus.CREATED)
+        //feed the animal again
+        const feedAnimalResponse = await authAxios.post<
+            FeedAnimalResponse,
+            AxiosResponse<FeedAnimalResponse, Omit<FeedAnimalRequest, "userId">>,
+            Omit<FeedAnimalRequest, "userId">
+        >("gameplay/feed-animal", {
+            placedItemAnimalId
+        })
+        expect(feedAnimalResponse.status).toBe(HttpStatus.OK)
+        await sleep(500)
+        // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+        expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+        expect(
+            (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+        ).toBe(user.id)
+        expect(
+            (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage).userId
+        ).toBe(user.id)
+        messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+
+        //fast-forward half of the yield time
+        await cacheManager.set(ANIMAL_CACHE_SPEED_UP, {
+            time: Math.ceil(animal.yieldTime / 2)
+        })
+        //sleep 1.1s to wait for the animal to grow, either check it will sick or not
+        await sleep(1100)
+
+        const placedItemAnimalWillSick = await dataSource.manager.findOne(PlacedItemEntity, {
+            where: {
+                id: placedItemAnimalId
+            },
+            relations: {
+                animalInfo: true
+            }
+        })
+        // expect the animal to be immunized
+        expect(placedItemAnimalWillSick.animalInfo.immunized).toBe(true)
+        // handle case the animal is sick
+        if (placedItemAnimalWillSick.animalInfo.currentState === AnimalCurrentState.Sick) {
+            //cure the animal
+            const cureAnimalResponse = await authAxios.post<
+                CureAnimalResponse,
+                AxiosResponse<CureAnimalResponse, Omit<CureAnimalRequest, "userId">>,
+                Omit<CureAnimalRequest, "userId">
+            >("gameplay/cure-animal", {
+                placedItemAnimalId
+            })
+            expect(cureAnimalResponse.status).toBe(HttpStatus.OK)
+            await sleep(500)
+            // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+            expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+            expect(
+                (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+            ).toBe(user.id)
+            expect(
+                (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage).userId
+            ).toBe(user.id)
+            messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
+        }
+        //fast-forward the rest of the yield time
+        await cacheManager.set(ANIMAL_CACHE_SPEED_UP, {
+            time: Math.ceil(animal.yieldTime / 2)
+        })
+        //sleep 1.1s to wait for the animal to yield
+        await sleep(1100)
+        //collect animal product
+        const collectAnimalProductResponse = await authAxios.post<
+            CollectAnimalProductResponse,
+            AxiosResponse<
+                CollectAnimalProductResponse,
+                Omit<CollectAnimalProductRequest, "userId">
+            >,
+            Omit<CollectAnimalProductRequest, "userId">
+        >("gameplay/collect-animal-product", {
+            placedItemAnimalId
+        })
+        expect(collectAnimalProductResponse.status).toBe(HttpStatus.CREATED)
+
+        await sleep(500)
+        // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder
+        expect(messageRecorder[PLACED_ITEMS_SYNCED_EVENT].length).toBe(2)
+        expect(
+            (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][0] as PlacedItemsSyncedMessage).userId
+        ).toBe(user.id)
+        expect(
+            (messageRecorder[PLACED_ITEMS_SYNCED_EVENT][1] as PlacedItemsSyncedMessage).userId
+        ).toBe(user.id)
+        messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
     })
 
     afterAll(async () => {
-        // Remove user after the test
-        await dataSource.manager.delete(UserEntity, user.id)
+        await e2eAuthenticationService.clear()
+        await e2eConnectionService.closeAll()
     })
 })

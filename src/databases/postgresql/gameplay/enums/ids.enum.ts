@@ -78,13 +78,21 @@ export enum ToolId {
 // Product Enum
 export enum ProductId {
     Egg = "egg",
+    EggQuality = "eggQuality",
     Milk = "milk",
+    MilkQuality = "milkQuality",
     Carrot = "carrot",
+    CarrotQuality = "carrotQuality",
     Potato = "potato",
+    PotatoQuality = "potatoQuality",
     Pineapple = "pineapple",
+    PineappleQuality = "pineappleQuality",
     Watermelon = "watermelon",
+    WatermelonQuality = "watermelonQuality",
     Cucumber = "cucumber",
-    BellPepper = "bellPepper"
+    CucumberQuality = "cucumberQuality",
+    BellPepper = "bellPepper",
+    BellPepperQuality = "bellPepperQuality"
 }
 
 export enum SystemId {
@@ -112,13 +120,21 @@ export enum InventoryTypeId {
     BasicFertilizer = "basicFertilizer",
     AnimalFeed = "animalFeed",
     Egg = "egg",
+    EggQuality = "eggQuality",
     Milk = "milk",
+    MilkQuality = "milkQuality",
     Carrot = "carrot",
+    CarrotQuality = "carrotQuality",
     Potato = "potato",
+    PotatoQuality = "potatoQuality",
     Pineapple = "pineapple",
+    PineappleQuality = "pineappleQuality",
     Watermelon = "watermelon",
+    WatermelonQuality = "watermelonQuality",
     Cucumber = "cucumber",
+    CucumberQuality = "cucumberQuality",
     BellPepper = "bellPepper",
+    BellPepperQuality = "bellPepperQuality",
     Chicken = "chicken",
     Cow = "cow",
 }

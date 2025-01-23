@@ -1,5 +1,5 @@
-import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, OneToOne, RelationId } from "typeorm"
+import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
+import { Column, Entity, OneToMany, OneToOne, RelationId } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalType } from "../enums"
 import { InventoryTypeEntity } from "./inventory-type.entity"
@@ -37,6 +37,14 @@ export class AnimalEntity extends StringAbstractEntity {
     @Column({ name: "hunger_time", type: "int" })
         hungerTime: number
 
+    @Field(() => Float)
+    @Column({ name: "quality_product_chance_stack", type: "float" })
+        qualityProductChanceStack: number
+
+    @Field(() => Float)
+    @Column({ name: "quality_product_chance_limit", type: "float" })
+        qualityProductChanceLimit: number
+
     @Field(() => Int)
     @Column({ name: "min_harvest_quantity", type: "int" })
         minHarvestQuantity: number
@@ -57,17 +65,17 @@ export class AnimalEntity extends StringAbstractEntity {
     @Column({ name: "type", type: "enum", enum: AnimalType })
         type: AnimalType
 
-    @Field(() => ID)
-    @RelationId((animal: AnimalEntity) => animal.product)
-        productId: string
+    @Field(() => [ID])
+    @RelationId((animal: AnimalEntity) => animal.products)
+        productIds: Array<string>
 
-    @Field(() => ProductEntity)
-    @OneToOne(() => ProductEntity, (product) => product.animal, {
+    @Field(() => [ProductEntity])
+    @OneToMany(() => ProductEntity, (product) => product.animal, {
         nullable: true,
         onDelete: "CASCADE",
         cascade: ["insert"]
     })
-        product: ProductEntity
+        products: Array<ProductEntity>
 
     @Field(() => ID)
     @RelationId((animal: AnimalEntity) => animal.inventoryType)

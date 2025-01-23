@@ -72,12 +72,6 @@ import {
     SpinRequest,
     SpinResponse
 } from "./claim"
-import {
-    DeliverInstantlyRequest,
-    DeliverInstantlyResponse,
-    SpeedUpRequest,
-    SpeedUpResponse
-} from "./dev"
 import { MoveRequest, MoveResponse, PlaceTileRequest, PlaceTileResponse, RecoverTileRequest, RecoverTileResponse } from "./placement"
 import { UpdateTutorialRequest, UpdateTutorialResponse } from "./profile"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
@@ -108,10 +102,6 @@ export interface IGameplayService {
     // Delivery
     deliverProduct(request: DeliverProductRequest): Observable<DeliverProductResponse>
     retainProduct(request: RetainProductRequest): Observable<RetainProductResponse>
-
-    // Dev
-    speedUp(request: SpeedUpRequest): Observable<SpeedUpResponse>
-    deliverInstantly(request: DeliverInstantlyRequest): Observable<DeliverInstantlyResponse>
 
     // Farming
     collectAnimalProduct(
