@@ -23,3 +23,7 @@ export const loadEnv = async (): Promise<void> => {
     const app = await NestFactory.createApplicationContext(ConfigOnlyModule)
     await app.close()
 }
+
+export const e2eEnabled = (): boolean => {
+    return envConfig().e2eEnabled
+}

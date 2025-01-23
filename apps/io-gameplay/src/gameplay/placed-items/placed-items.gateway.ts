@@ -17,6 +17,7 @@ import { PLACED_ITEMS_SYNCED_EVENT, SYNC_PLACED_ITEMS_EVENT } from "./placed-ite
 import { OnEvent } from "@nestjs/event-emitter"
 import { AuthGateway } from "../auth"
 import { VISITED_EMITTER2_EVENT, VisitedEmitter2Payload } from "../visit"
+import { e2eEnabled } from "@src/env"
 
 @WebSocketGateway({
     cors: {
@@ -30,7 +31,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
 
     constructor(
         private readonly authGateway: AuthGateway,
-        private readonly placedItemsService: PlacedItemsService
+        private readonly placedItemsService: PlacedItemsService,
     ) {}
 
     @WebSocketServer()
@@ -44,7 +45,11 @@ export class PlacedItemsGateway implements OnGatewayInit {
 
     //sync state every second
     @Cron("*/1 * * * * *")
-    public async processSyncPlacedItemsEverySecond() {
+    public async processSyncPlacedItemsPerSecond() {
+        // for e2e testing, skip this, as it will be handled by the test
+        if (e2eEnabled()) {
+            return
+        }
         //get all socket ids in this node
         const sockets = this.authGateway.getSockets()
 
@@ -59,7 +64,8 @@ export class PlacedItemsGateway implements OnGatewayInit {
                             userId: observing.userId
                         })
                         const data: PlacedItemsSyncedMessage = {
-                            placedItems
+                            placedItems,
+                            userId: observing.userId
                         }
                         socket.emit(PLACED_ITEMS_SYNCED_EVENT, data)
                     })()
@@ -73,6 +79,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
     public async syncPlacedItems({ userId }: SyncPlacedItemsParams) {
         // get all sockets in the room, accross cluster
         const sockets = await this.namespace.in(userId).fetchSockets()
+        console.log(sockets.length)
         // emit placed items to all clients
         const promises: Array<Promise<void>> = []
         for (const client of sockets) {
@@ -82,7 +89,8 @@ export class PlacedItemsGateway implements OnGatewayInit {
                         userId
                     })
                     const data: PlacedItemsSyncedMessage = {
-                        placedItems
+                        placedItems,
+                        userId
                     }
                     client.emit(PLACED_ITEMS_SYNCED_EVENT, data)
                 })()
@@ -105,7 +113,8 @@ export class PlacedItemsGateway implements OnGatewayInit {
             userId: observing.userId
         })
         const data: PlacedItemsSyncedMessage = {
-            placedItems
+            placedItems,
+            userId: observing.userId
         }
         return {
             event: PLACED_ITEMS_SYNCED_EVENT,
@@ -119,7 +128,8 @@ export class PlacedItemsGateway implements OnGatewayInit {
             userId: payload.userId
         })
         const data: PlacedItemsSyncedMessage = {
-            placedItems
+            placedItems,
+            userId: payload.userId
         }
         this.namespace.to(payload.socketId).emit(PLACED_ITEMS_SYNCED_EVENT, data)
     }

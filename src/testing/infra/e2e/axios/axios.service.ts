@@ -1,7 +1,7 @@
 import { HttpStatus, Inject, Injectable } from "@nestjs/common"
 import axios, { AxiosError, AxiosInstance } from "axios"
 import { MODULE_OPTIONS_TOKEN } from "./axios.module-definition"
-import { AxiosData, AxiosType, E2EAxiosOptions } from "./axios.types"
+import { AxiosData, E2EAxiosOptions } from "./axios.types"
 import { InjectCache } from "@src/cache"
 import { ApiVersion } from "../../infra.types"
 import { restApiUrlMap } from "./axios.constants"
@@ -11,8 +11,7 @@ import axiosRetry from "axios-retry"
 
 @Injectable()
 export class E2EAxiosService {
-    private readonly axiosMap: Record<string, AxiosData>
-
+    public readonly axiosMap: Record<string, AxiosData>
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: E2EAxiosOptions,
@@ -22,17 +21,15 @@ export class E2EAxiosService {
         this.axiosMap = {}
     }
 
-    public getAxios(name: string, type: AxiosType = AxiosType.NoAuth): AxiosInstance {
-        switch (type) {
-        case AxiosType.NoAuth:
-            return this.axiosMap[name].noAuthAxios
-        case AxiosType.Auth:
-            return this.axiosMap[name].authAxios
-        }
-    }
-
     public getCacheKey({ name, type = AuthCredentialType.AccessToken }: GetCacheKeyParams): string {
         return `${name}${type}`
+    }
+
+    async getToken({
+        name,
+        type = AuthCredentialType.AccessToken
+    }: GetTokenParams): Promise<string> {
+        return this.cacheManager.get(this.getCacheKey({ name, type }))
     }
 
     private createAxiosInstance({
@@ -49,7 +46,7 @@ export class E2EAxiosService {
             axiosInstance.interceptors.request.use(
                 async (config) => {
                     // Add the access token to the Authorization header if it exists
-                    const accessToken = await this.cacheManager.get(this.getCacheKey({ name }))
+                    const accessToken = await this.getToken({ name })
                     if (accessToken) {
                         config.headers["Authorization"] = `Bearer ${accessToken}`
                     }
@@ -65,9 +62,7 @@ export class E2EAxiosService {
                 async (error: AxiosError) => {
                     if (error.response?.status === HttpStatus.UNAUTHORIZED) {
                         // Attempt to refresh the token on 401 Unauthorized
-                        const refreshToken = await this.cacheManager.get(
-                            this.getCacheKey({ name, type: AuthCredentialType.RefreshToken })
-                        )
+                        const refreshToken = await this.getToken({ name, type: AuthCredentialType.RefreshToken })
                         if (refreshToken) {
                             try {
                                 const endpoint = this.options.refreshEndpoint || "refresh"
@@ -113,9 +108,9 @@ export class E2EAxiosService {
         return axiosInstance
     }
 
-    public create(name: string): void {
+    public create(name: string): AxiosData {
         const version = this.options.version || ApiVersion.V1
-        this.axiosMap[name] = {
+        const data: AxiosData = {
             noAuthAxios: this.createAxiosInstance({
                 name,
                 version
@@ -126,6 +121,8 @@ export class E2EAxiosService {
                 withAuth: true
             }) // Auth: Create axios instance with auth
         }
+        this.axiosMap[name] = data
+        return data
     }
 }
 
@@ -133,6 +130,8 @@ export interface GetCacheKeyParams {
     name: string
     type?: AuthCredentialType
 }
+
+export type GetTokenParams = GetCacheKeyParams
 
 export interface CreateAxiosInstanceParams {
     name: string

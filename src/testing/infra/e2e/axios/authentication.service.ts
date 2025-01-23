@@ -6,7 +6,6 @@ import {
 import { Injectable } from "@nestjs/common"
 import { InjectCache } from "@src/cache"
 import { ChainKey, Network } from "@src/env"
-import { AxiosType } from "./axios.types"
 import { AxiosResponse } from "axios"
 import { Cache } from "cache-manager"
 import { AuthCredentialType, JwtService, UserLike } from "@src/jwt"
@@ -16,13 +15,13 @@ import { InjectPostgreSQL, UserEntity } from "@src/databases"
 
 @Injectable()
 export class E2ERAuthenticationService {
-    private userMap: Record<string, UserLike>
+    public readonly userMap: Record<string, UserLike>
     constructor(
         @InjectCache()
         private readonly cacheManager: Cache,
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly axiosService: E2EAxiosService,
+        private readonly e2eAxiosService: E2EAxiosService,
         private readonly jwtService: JwtService
     ) {
         this.userMap = {}
@@ -34,7 +33,7 @@ export class E2ERAuthenticationService {
         chainKey = ChainKey.Solana,
         network = Network.Testnet
     }: AuthenticateParams): Promise<UserLike> {
-        const noAuthAxios = this.axiosService.getAxios(name, AxiosType.NoAuth)
+        const noAuthAxios = this.e2eAxiosService.axiosMap[name].noAuthAxios
         const generateSignatureResponse = await noAuthAxios.post<
             GenerateSignatureResponse,
             AxiosResponse<GenerateSignatureResponse, GenerateSignatureRequest>,
@@ -50,10 +49,10 @@ export class E2ERAuthenticationService {
             GenerateSignatureRequest
         >("gameplay/verify-signature", generateSignatureResponse.data)
         //store access, refresh token in cache
-        await this.cacheManager.set(this.axiosService.getCacheKey({
+        await this.cacheManager.set(this.e2eAxiosService.getCacheKey({
             name
         }), verifySignatureResponse.data.accessToken, 0)
-        await this.cacheManager.set(this.axiosService.getCacheKey({
+        await this.cacheManager.set(this.e2eAxiosService.getCacheKey({
             name,
             type: AuthCredentialType.RefreshToken
         }), verifySignatureResponse.data.refreshToken, 0)
@@ -71,10 +70,10 @@ export class E2ERAuthenticationService {
             })
         })())
         promises.push(...Object.keys(this.userMap).map(async (name) => {
-            await this.cacheManager.del(this.axiosService.getCacheKey({
+            await this.cacheManager.del(this.e2eAxiosService.getCacheKey({
                 name
             }))
-            await this.cacheManager.del(this.axiosService.getCacheKey({
+            await this.cacheManager.del(this.e2eAxiosService.getCacheKey({
                 name,
                 type: AuthCredentialType.RefreshToken
             }))

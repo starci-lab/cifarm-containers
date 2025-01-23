@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
 import { VisitGateway } from "./visit.gateway"
-import { AuthModule } from "@src/blockchain"
+import { AuthModule } from "../auth"
 
 @Module({
     imports: [AuthModule],

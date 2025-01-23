@@ -3,6 +3,8 @@ import { PlacedItemEntity } from "@src/databases"
 export interface PlacedItemsSyncedMessage {
     //placed items
     placedItems: Array<PlacedItemEntity>
+    //current user id, beneficial for debugging
+    userId: string
 }
 
 export interface SyncPlacedItemsPayload {

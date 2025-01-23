@@ -10,14 +10,15 @@ import {
     KeyValueStoreId
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import { DataSource, Not } from "typeorm"
+import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import { v4 } from "uuid"
 import { CropJobData } from "./crop.dto"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
-import { CACHE_SPEED_UP, CacheSpeedUpData } from "./crop.dev"
+import { CACHE_SPEED_UP, CacheSpeedUpData } from "./crop.e2e"
+import { e2eEnabled } from "@src/env"
 
 @Injectable()
 export class CropService {
@@ -62,7 +63,8 @@ export class CropService {
                 where: {
                     //Not fully matured and need water
                     currentState:
-                        Not(CropCurrentState.FullyMatured) && Not(CropCurrentState.NeedWater)
+                        Not(CropCurrentState.FullyMatured) && Not(CropCurrentState.NeedWater),
+                    createdAt: LessThanOrEqual(this.dateUtcService.getDayjs(utcNow).toDate())
                 }
             })
  
@@ -78,23 +80,24 @@ export class CropService {
             }
 
             // this.logger.debug(`Found ${count} crops that need to be grown`)
-            if (count === 0) {
-                // this.logger.verbose("No crops to grow")
-                return
-            }
-
+            if (count !== 0) {
             //split into 10000 per batch
-            const batchSize = bullData[BullQueueName.Crop].batchSize
-            const batchCount = Math.ceil(count / batchSize)
+                const batchSize = bullData[BullQueueName.Crop].batchSize
+                const batchCount = Math.ceil(count / batchSize)
 
-            let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
-            const speedUp = await this.cacheManager.get<CacheSpeedUpData>(CACHE_SPEED_UP)
-            if (speedUp) {
-                time += speedUp.time
-                await this.cacheManager.del(CACHE_SPEED_UP)
-            }
-            // Create batches
-            const batches: Array<{
+                let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
+                
+                //e2e code block for e2e purpose-only
+                if (e2eEnabled()) {
+                    const speedUp = await this.cacheManager.get<CacheSpeedUpData>(CACHE_SPEED_UP)
+                    if (speedUp) {
+                        time += speedUp.time
+                        await this.cacheManager.del(CACHE_SPEED_UP)
+                    }
+                }
+
+                // Create batches
+                const batches: Array<{
                 name: string
                 data: CropJobData,
                 opts?: BulkJobOptions
@@ -108,8 +111,9 @@ export class CropService {
                 },
                 opts: bullData[BullQueueName.Crop].opts
             }))
-            const jobs = await this.cropQueue.addBulk(batches)
-            this.logger.verbose(`Added ${jobs.at(0).name} jobs to the crop queue. Time: ${time}`)
+                const jobs = await this.cropQueue.addBulk(batches)
+                this.logger.verbose(`Added ${jobs.at(0).name} jobs to the crop queue. Time: ${time}`)
+            }
 
             await queryRunner.startTransaction()
             try {

@@ -8,6 +8,3 @@ export const urlMap = (): Record<IoService, string> => ({
         port: envConfig().containers[Container.IoGameplay].port
     })
 })
-
-export const getSocketIoToken = (service: IoService = IoService.IoGameplay): string =>
-    `SOCKET_IO_${service}`

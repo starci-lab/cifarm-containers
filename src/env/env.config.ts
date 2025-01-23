@@ -320,5 +320,7 @@ export const envConfig = () => ({
         username: process.env.SOCKET_IO_ADMIN_USERNAME,
         password: process.env.SOCKET_IO_ADMIN_PASSWORD
     },
-    productionUrl: process.env.PRODUCTION_URL
+    productionUrl: process.env.PRODUCTION_URL,
+    // e2e debugging
+    e2eEnabled: process.env.E2E_ENABLED === "true",
 })

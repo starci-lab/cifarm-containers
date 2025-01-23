@@ -11,7 +11,6 @@ import { Namespace, Socket } from "socket.io"
 import { SocketCoreService } from "@src/io"
 import { NAMESPACE } from "../gameplay.constants"
 import { ObservingData } from "./auth.types"
-import { EventEmitter2 } from "@nestjs/event-emitter"
 
 @WebSocketGateway({
     cors: {
@@ -25,8 +24,7 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     private readonly logger = new Logger(AuthGateway.name)
 
     constructor(
-        private readonly socketCoreService: SocketCoreService,
-        private eventEmitter: EventEmitter2
+        private readonly socketCoreService: SocketCoreService
     ) {}
 
     @WebSocketServer()
@@ -48,6 +46,7 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         const observing: ObservingData = {
             userId: user.id
         }
+        await socket.join(user.id)
         socket.data.observing = observing
     }
 

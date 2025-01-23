@@ -10,17 +10,13 @@ import { CropEntity } from "./crop.entity"
 @Entity("seed_growth_info")
 export class SeedGrowthInfoEntity extends UuidAbstractEntity {
     @Field(() => Int)
-    @Column({ type: "int4", name: "current_stage", default: 1 })
+    @Column({ type: "int4", name: "current_stage", default: 0 })
         currentStage: number
 
     @Field(() => Float)
     @Column({ type: "float", name: "current_stage_time_elapsed", default: 0 })
         currentStageTimeElapsed: number
-
-    @Field(() => Float)
-    @Column({ type: "float", name: "total_time_elapsed", default: 0 })
-        totalTimeElapsed: number
-
+        
     @Field(() => Int)
     @Column({ name: "current_perennial_count", type: "int4", default: 0 })
         currentPerennialCount: number

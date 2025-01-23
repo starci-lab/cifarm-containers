@@ -49,7 +49,6 @@ export class CropWorker extends WorkerHost {
                     createdAt: "ASC"
                 }
             })
-
             const system = await queryRunner.manager.findOne(SystemEntity, {
                 where: {
                     id: SystemId.CropRandomness
@@ -59,13 +58,12 @@ export class CropWorker extends WorkerHost {
             seedGrowthInfos = seedGrowthInfos.map((seedGrowthInfo) => {
                 // Add time to the seed growth
                 seedGrowthInfo.currentStageTimeElapsed += time
-                seedGrowthInfo.totalTimeElapsed += time
 
                 //while the current stage time elapsed is greater than the growth stage duration
                 while (
                     seedGrowthInfo.currentStageTimeElapsed >=
                         seedGrowthInfo.crop.growthStageDuration &&
-                    seedGrowthInfo.currentStage <= seedGrowthInfo.crop.growthStages
+                    seedGrowthInfo.currentStage <= seedGrowthInfo.crop.growthStages - 1
                 ) {
                     seedGrowthInfo.currentStageTimeElapsed -=
                         seedGrowthInfo.crop.growthStageDuration
@@ -73,12 +71,12 @@ export class CropWorker extends WorkerHost {
                     //reset fertilizer after
                     seedGrowthInfo.isFertilized = false
 
-                    if (seedGrowthInfo.currentStage <= seedGrowthInfo.crop.growthStages - 2) {
+                    if (seedGrowthInfo.currentStage <= seedGrowthInfo.crop.growthStages - 3) {
                         if (Math.random() < needWater) {
                             seedGrowthInfo.currentState = CropCurrentState.NeedWater
                         }
                     }
-                    if (seedGrowthInfo.currentStage === seedGrowthInfo.crop.growthStages - 1) {
+                    if (seedGrowthInfo.currentStage === seedGrowthInfo.crop.growthStages - 2) {
                         if (Math.random() < isWeedyOrInfested) {
                             if (Math.random() < 0.5) {
                                 seedGrowthInfo.currentState = CropCurrentState.IsWeedy
@@ -89,7 +87,7 @@ export class CropWorker extends WorkerHost {
                     }
                 }
 
-                if (seedGrowthInfo.currentStage === seedGrowthInfo.crop.growthStages) {
+                if (seedGrowthInfo.currentStage === seedGrowthInfo.crop.growthStages - 1) {
                     if (
                         seedGrowthInfo.currentState === CropCurrentState.IsInfested ||
                         seedGrowthInfo.currentState === CropCurrentState.IsWeedy
@@ -111,7 +109,7 @@ export class CropWorker extends WorkerHost {
             } catch (error) {
                 this.logger.error(`Transaction failed: ${error}`)
                 await queryRunner.rollbackTransaction()
-                throw new CropsWorkerProcessTransactionFailedException(error)
+                throw error
             }
         } finally {
             await queryRunner.release()

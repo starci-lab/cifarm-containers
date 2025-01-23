@@ -5,8 +5,7 @@ import { InjectCache } from "@src/cache"
 import { InjectPostgreSQL } from "@src/databases"
 import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
-import { InjectSocketIo, IoService } from "./socket-io"
-import { Socket } from "socket.io-client"
+import { E2EGameplaySocketIoService } from "./socket-io"
 
 @Injectable()
 export class E2EConnectionService {
@@ -18,8 +17,7 @@ export class E2EConnectionService {
         private readonly clientKafka: ClientKafka,
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        @InjectSocketIo(IoService.IoGameplay)
-        private readonly socket: Socket
+        private readonly e2eGameplaySocketIoService: E2EGameplaySocketIoService
     ) {}
 
     public async closeAll(): Promise<void> {
@@ -36,7 +34,7 @@ export class E2EConnectionService {
             }
         })())
         promises.push((async () => {
-            this.socket.disconnect()
+            this.e2eGameplaySocketIoService.clear()
         })())
         await Promise.all(promises)
     }

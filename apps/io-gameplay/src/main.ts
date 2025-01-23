@@ -4,10 +4,11 @@ import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { AppModule } from "./app.module"
 import { createPrimaryServer, IO_ADAPTER_FACTORY, IoAdapterFactory } from "@src/io"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { KafkaOptionsFactory, KafkaGroupId } from "@src/brokers"
+import { KafkaGroupId, kafkaOptions } from "@src/brokers"
 import cluster from "cluster"
 import { INestApplication, Logger } from "@nestjs/common"
-import { AdminUIModule } from "./admin-ui.module"
+import { join } from "path"
+import { ServeStaticModule } from "@nestjs/serve-static"
 
 const addAdapter = async (app: INestApplication) => {
     const factory = app.get<IoAdapterFactory>(IO_ADAPTER_FACTORY)
@@ -17,11 +18,10 @@ const addAdapter = async (app: INestApplication) => {
 }
 
 const addMicroservices = async (app: INestApplication) => {
-    const options = app.get(KafkaOptionsFactory)
     app.connectMicroservice<MicroserviceOptions>({
         transport: Transport.KAFKA,
         options: {
-            client: options.createKafkaConfig(),
+            client: kafkaOptions(),
             consumer: {
                 groupId: KafkaGroupId.PlacedItems
             }
@@ -48,7 +48,7 @@ const bootstrapWorker = async () => {
     logger.verbose(`Worker ${process.pid} started`)
 
     const app = await NestFactory.create(AppModule)
-    //await addMicroservices(app)
+    await addMicroservices(app)
     await addAdapter(app)
     await app.listen(envConfig().containers[Container.IoGameplay].cluster.workerPort)
 }
@@ -80,7 +80,9 @@ const bootstrapHealthCheck = async () => {
 }
 
 const bootstrapAdminUI = async () => {
-    const app = await NestFactory.create(AdminUIModule)
+    const app = await NestFactory.create(ServeStaticModule.forRoot({
+        rootPath: join(process.cwd(), "node_modules", "@socket.io", "admin-ui", "ui", "dist")
+    }))
     await app.listen(envConfig().containers[Container.IoGameplay].adminUiPort)
 }
 

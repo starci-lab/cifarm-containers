@@ -22,13 +22,14 @@ export class TestingInfraModule extends ConfigurableModuleClass {
         const context = options.context ?? TestContext.Gameplay
         const dynamicModule = super.register(options)
 
-        const imports: Array<NestImport> = [EnvModule.forRoot()]
+        const imports: Array<NestImport> = []
         const providers: Array<NestProvider> = []
         const exports: Array<NestExport> = []
 
         switch (context) {
         case TestContext.Gameplay: {
             imports.push(
+                EnvModule.forRoot(),
                 PostgreSQLModule.forRoot({
                     context: PostgreSQLContext.Main,
                     database: PostgreSQLDatabase.Gameplay,
@@ -64,8 +65,8 @@ export class TestingInfraModule extends ConfigurableModuleClass {
         }
         case TestContext.E2E: {
             imports.push(
+                EnvModule.forRoot(),
                 CacheModule.register({
-                    cacheType: CacheType.Memory,
                     isGlobal: true
                 }),
                 KafkaModule.register({
@@ -84,9 +85,12 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                     isGlobal: true
                 }),
                 E2EAxiosModule.register({
-                    useGlobalImports: true
+                    useGlobalImports: true,
+                    isGlobal: true
                 }),
-                E2ESocketIoModule.register(),
+                E2ESocketIoModule.register({
+                    isGlobal: true
+                }),
             )
             const services = [E2EConnectionService]
             providers.push(...services)
