@@ -7,17 +7,17 @@ import { PlacedItemTypeEntity } from "./placed-item-type.entity"
 @ObjectType()
 @Entity("tiles")
 export class TileEntity extends StringAbstractEntity {
-    @Field(() => Float)
-    @Column({ name: "price", type: "float" })
-        price: number
+    @Field(() => Float, { nullable: true })
+    @Column({ name: "price", type: "float", nullable: true })
+        price?: number
 
-    @Field(() => Int)
-    @Column({ name: "max_ownership", type: "int" })
-        maxOwnership: number
+    @Field(() => Int, { nullable: true })
+    @Column({ name: "max_ownership", type: "int", nullable: true })
+        maxOwnership?: number
 
     @Field(() => Boolean)
     @Column({ name: "is_nft", type: "boolean" })
-        isNFT: boolean
+        isNft: boolean
 
     @Field(() => Float)
     @Column({ name: "quality_product_chance_stack", type: "float" })
