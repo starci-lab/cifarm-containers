@@ -53,8 +53,8 @@ export class E2EAxiosService {
                     }
                     return config
                 },
-                (error) => {
-                    return Promise.reject(error)
+                async (error) => {
+                    throw error
                 }
             )
 
@@ -65,38 +65,34 @@ export class E2EAxiosService {
                         // Attempt to refresh the token on 401 Unauthorized
                         const refreshToken = await this.getToken({ name, type: AuthCredentialType.RefreshToken })
                         if (refreshToken) {
-                            try {
-                                const endpoint = this.options.refreshEndpoint || "refresh"
-                                const refreshResponse = await axiosInstance.post(endpoint, {
-                                    refreshToken
-                                })
+                            const endpoint = this.options.refreshEndpoint || "refresh"
+                            const refreshResponse = await axiosInstance.post(endpoint, {
+                                refreshToken
+                            })
 
-                                // Update the JWT tokens in the cache
-                                await this.cacheManager.set(
-                                    this.getCacheKey({ name }),
-                                    refreshResponse.data.accessToken,
-                                    0
-                                )
-                                await this.cacheManager.set(
-                                    this.getCacheKey({
-                                        name,
-                                        type: AuthCredentialType.RefreshToken
-                                    }),
-                                    refreshResponse.data.refreshToken,
-                                    0
-                                )
+                            // Update the JWT tokens in the cache
+                            await this.cacheManager.set(
+                                this.getCacheKey({ name }),
+                                refreshResponse.data.accessToken,
+                                0
+                            )
+                            await this.cacheManager.set(
+                                this.getCacheKey({
+                                    name,
+                                    type: AuthCredentialType.RefreshToken
+                                }),
+                                refreshResponse.data.refreshToken,
+                                0
+                            )
 
-                                // Retry the original request with the new access token
-                                return axiosInstance(error.config)
-                            } catch (refreshError) {
-                                return Promise.reject(refreshError)
-                            }
+                            // Retry the original request with the new access token
+                            return axiosInstance(error.config)
                         }
                     }
 
                     // If it's not a 401 or another retryable error, reject the promise
                     this.logger.error(error)
-                    return Promise.reject(error)
+                    throw error
                 }
             )
         }

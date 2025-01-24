@@ -15,7 +15,7 @@ import { DateUtcService } from "@src/date"
 import { ProductService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { isEmpty } from "lodash"
-import { DataSource, LessThanOrEqual, Not } from "typeorm"
+import { DataSource, DeepPartial, LessThanOrEqual, Not } from "typeorm"
 
 @Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost {
@@ -66,8 +66,9 @@ export class AnimalWorker extends WorkerHost {
                 const promise = async () => {
                     const animalInfoChanges = () => {
                         const animalInfoBeforeChanges = { ...animalInfo }
-
-                        if (animalInfo.isAdult) {
+                        
+                        // adultChanges is a function that returns the changes in animalInfo if animal is adult
+                        const adultChanges = (): DeepPartial<AnimalInfoEntity> => {
                             // If animal is adult, add time to the animal yield
                             animalInfo.currentYieldTime += time
                             // if animal grow to half of the yield time, it may get sick and immunized
@@ -107,43 +108,52 @@ export class AnimalWorker extends WorkerHost {
                             return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
                         }
 
-                        // Add time to the animal growth and hunger
-                        animalInfo.currentGrowthTime += time
-                        animalInfo.currentHungryTime += time
+                        // growthChanges is a function that returns the changes in animalInfo if animal is not adult
+                        const growthChanges = (): DeepPartial<AnimalInfoEntity> => {
+                            // Add time to the animal growth and hunger
+                            animalInfo.currentGrowthTime += time
+                            animalInfo.currentHungryTime += time
 
-                        // check if animal is enough to be adult
-                        if (
-                            animalInfo.currentGrowthTime >=
+                            // check if animal is enough to be adult
+                            if (
+                                animalInfo.currentGrowthTime >=
                             animalInfo.placedItem.placedItemType.animal.growthTime
-                        ) {
-                            animalInfo.isAdult = true
-                            animalInfo.currentState = AnimalCurrentState.Hungry
-                            return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
-                        }
+                            ) {
+                                animalInfo.isAdult = true
+                                animalInfo.currentState = AnimalCurrentState.Hungry
+                                return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
+                            }
 
-                        // check if animal is hungry
-                        if (
-                            animalInfo.currentHungryTime >=
+                            // check if animal is hungry
+                            if (
+                                animalInfo.currentHungryTime >=
                             animalInfo.placedItem.placedItemType.animal.hungerTime
-                        ) {
-                            animalInfo.currentHungryTime = 0
-                            animalInfo.currentState = AnimalCurrentState.Hungry
+                            ) {
+                                animalInfo.currentHungryTime = 0
+                                animalInfo.currentState = AnimalCurrentState.Hungry
+                                return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
+                            }
+
+                            const chance = this.productService.computeTileQualityChance({
+                                entity: animalInfo.placedItem.tileInfo,
+                                qualityProductChanceLimit:
+                                animalInfo.placedItem.placedItemType.tile.qualityProductChanceLimit,
+                                qualityProductChanceStack:
+                                animalInfo.placedItem.placedItemType.tile.qualityProductChanceStack
+                            })
+
+                            if (Math.random() < chance) {
+                                animalInfo.isQuality = true
+                            }
+
                             return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
                         }
 
-                        const chance = this.productService.computeTileQualityChance({
-                            entity: animalInfo.placedItem.tileInfo,
-                            qualityProductChanceLimit:
-                                animalInfo.placedItem.placedItemType.tile.qualityProductChanceLimit,
-                            qualityProductChanceStack:
-                                animalInfo.placedItem.placedItemType.tile.qualityProductChanceStack
-                        })
-
-                        if (Math.random() < chance) {
-                            animalInfo.isQuality = true
-                        }
-
-                        return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
+                        // If animal is adult, call adultChanges, else call growthChanges
+                        if (animalInfo.isAdult) {
+                            return adultChanges()
+                        } 
+                        return growthChanges()   
                     }
 
                     const changes = animalInfoChanges()

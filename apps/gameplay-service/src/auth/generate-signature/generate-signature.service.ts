@@ -1,9 +1,14 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { GenerateSignatureRequest, GenerateSignatureResponse } from "./generate-signature.dto"
-import { chainKeyToPlatform, defaultChainKey, defaultNetwork } from "@src/blockchain"
+import {
+    chainKeyToPlatform,
+    defaultChainKey,
+    defaultNetwork,
+    IBlockchainAuthService,
+    getBlockchainAuthServiceToken
+} from "@src/blockchain"
 import { RequestMessageService } from "../request-message"
 import { ModuleRef } from "@nestjs/core"
-import { IBlockchainAuthService, getBlockchainAuthServiceToken } from "@src/blockchain"
 
 @Injectable()
 export class GenerateSignatureService {
@@ -27,7 +32,8 @@ export class GenerateSignatureService {
         const platform = chainKeyToPlatform(chainKey)
 
         const authService = this.moduleRef.get<IBlockchainAuthService>(
-            getBlockchainAuthServiceToken(platform), { strict: false }
+            getBlockchainAuthServiceToken(platform),
+            { strict: false }
         )
 
         const { publicKey, privateKey, accountAddress } = authService.getKeyPair(accountNumber)
