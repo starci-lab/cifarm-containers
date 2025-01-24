@@ -1,10 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
-import { InjectCache } from "@src/cache"
 import { DeliveringProductEntity, InjectPostgreSQL } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import { Cache } from "cache-manager"
 import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { DeliveryJobData } from "./delivery.dto"
@@ -33,19 +31,20 @@ export class DeliveryService {
 
     constructor(
         @InjectQueue(BullQueueName.Delivery) private readonly deliveryQueue: Queue,
-        @InjectCache()
-        private readonly cacheManager: Cache,
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly dateUtcService: DateUtcService
     ) {}
 
     @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
-    // @Cron("*/1 * * * * *")
-    public async handleDeliveryProducts() {
+    public async process() {
         if (!this.isLeader) {
             return
         }
+        await this.deliver()
+    }
+
+    public async deliver() {
         const utcNow = this.dateUtcService.getDayjs()
         // Create a query runner
         const queryRunner = this.dataSource.createQueryRunner()

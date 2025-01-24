@@ -10,7 +10,7 @@ export class DeliveryController {
     constructor(private readonly deliveryService: DeliveryService) {}
 
     @EventPattern(KafkaPattern.Delivery)
-    async delivery() {
-        this.deliveryService.handleDeliveryProducts()
+    async deliver() {
+        this.deliveryService.deliver()
     }
 }
