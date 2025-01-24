@@ -16,7 +16,7 @@ import {
     E2EAxiosService
 } from "@src/testing"
 import { AxiosResponse } from "axios"
-import { isJWT, IsJWT, isUUID, IsUUID } from "class-validator"
+import { isJWT, isUUID } from "class-validator"
 import { v4 } from "uuid"
 
 describe("Authentication Flow", () => {
@@ -61,9 +61,9 @@ describe("Authentication Flow", () => {
         // Assert: Check that the response status is 200
         expect(verifySignatureResponse.status).toBe(HttpStatus.OK)
         // Assert: Check that the response data contains the access token
-        expect(IsJWT(verifySignatureResponse.data.accessToken)).toBeTruthy()
+        expect(isJWT(verifySignatureResponse.data.accessToken)).toBeTruthy()
         // Assert: Check that the response data contains the refresh token
-        expect(IsUUID(verifySignatureResponse.data.refreshToken)).toBeTruthy()
+        expect(isUUID(verifySignatureResponse.data.refreshToken)).toBeTruthy()
     })
 
     it("should authenticate Solana user successfully with signature generation for new account", async () => {
@@ -89,9 +89,9 @@ describe("Authentication Flow", () => {
         // Assert: Check that the response status is 200
         expect(verifySignatureResponse.status).toBe(HttpStatus.OK)
         // Assert: Check that the response data contains the access token
-        expect(IsJWT(verifySignatureResponse.data.accessToken)).toBeTruthy()
+        expect(isJWT(verifySignatureResponse.data.accessToken)).toBeTruthy()
         // Assert: Check that the response data contains the refresh token
-        expect(IsUUID(verifySignatureResponse.data.refreshToken)).toBeTruthy()
+        expect(isUUID(verifySignatureResponse.data.refreshToken)).toBeTruthy()
     })
 
     it("sould refresh token retrieved access token", async () => {
