@@ -8,25 +8,17 @@ import { Observable, throwError } from "rxjs"
 export class GameplayExceptionFilter implements ExceptionFilter<GameplayException> {
     catch(exception: GameplayException): Observable<unknown> {
         switch (exception.errorCode) {
-        case GameplayErrorCode.GoldCannotBeZeroOrNegative: {
+        case GameplayErrorCode.GoldCannotBeZeroOrNegative:
+        case GameplayErrorCode.TokenCannotBeZeroOrNegative:  
+        case GameplayErrorCode.ExperienceCannotBeZeroOrNegative:  
+        {
             return throwError(() => new GrpcInvalidArgumentException(exception.message).getError())
         }
-        case GameplayErrorCode.TokenCannotBeZeroOrNegative: {
-            return throwError(() => new GrpcInvalidArgumentException(exception.message).getError())
-        }
-        case GameplayErrorCode.UserInsufficientGold: {
-            return throwError(() => new GrpcFailedPreconditionException(exception.message).getError())
-        }
-        case GameplayErrorCode.UserInsufficientToken: {
-            return throwError(() => new GrpcFailedPreconditionException(exception.message).getError())
-        }
-        case GameplayErrorCode.ExperienceCannotBeZeroOrNegative: {
-            return throwError(() => new GrpcInvalidArgumentException(exception.message).getError())
-        }
-        case GameplayErrorCode.InventoryQuantityNotSufficient: {
-            return throwError(() => new GrpcFailedPreconditionException(exception.message).getError())
-        }
-        case GameplayErrorCode.EnergyNotEnough: {
+        case GameplayErrorCode.UserInsufficientGold:
+        case GameplayErrorCode.UserInsufficientToken:
+        case GameplayErrorCode.InventoryQuantityNotSufficient:
+        case GameplayErrorCode.EnergyNotEnough: 
+        {
             return throwError(() => new GrpcFailedPreconditionException(exception.message).getError())
         }
         }

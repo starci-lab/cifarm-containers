@@ -34,7 +34,7 @@ export class UpgradeBuildingService {
                 }
             })
 
-            if (!placedItemBuilding || !placedItemBuilding.buildingInfo) {
+            if (!placedItemBuilding) {
                 throw new GrpcNotFoundException("Placed item not found")
             }
 
@@ -59,13 +59,10 @@ export class UpgradeBuildingService {
                 throw new GrpcFailedPreconditionException("Next upgrade not found")
             }
 
+            // get user
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
             })
-
-            if (!user) {
-                throw new GrpcNotFoundException("User not found")
-            }
 
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({

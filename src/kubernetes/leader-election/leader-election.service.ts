@@ -20,10 +20,10 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     private readonly renewInterval: number
     private leaseRenewalTimeout: NodeJS.Timeout | null = null
     private readonly durationInSeconds: number
-    private coordintationV1Api: CoordinationV1Api
+    private readonly coordintationV1Api: CoordinationV1Api
     private isLeader: boolean
-    private watch: Watch
-    private awaitLeadership: boolean
+    private readonly watch: Watch
+    private readonly awaitLeadership: boolean
     private readonly useMinikubeForDevelopment: boolean
 
     constructor(

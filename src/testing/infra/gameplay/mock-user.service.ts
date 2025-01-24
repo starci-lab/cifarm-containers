@@ -8,7 +8,7 @@ import { v4 } from "uuid"
 
 @Injectable()
 export class GameplayMockUserService {
-    private users: Array<UserEntity>
+    private readonly users: Array<UserEntity>
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,

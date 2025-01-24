@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common"
-import { Socket } from "socket.io-client"
+import { Socket, Manager } from "socket.io-client"
 import { urlMap } from "./socket-io.utils"
 import { IoService } from "./socket-io.types"
 import { E2EAxiosService } from "../axios"
-import { Manager } from "socket.io-client"
+
 @Injectable()
 export class E2EGameplaySocketIoService {
     public readonly managerWrapperMap: Record<string, ManagerWrapper>

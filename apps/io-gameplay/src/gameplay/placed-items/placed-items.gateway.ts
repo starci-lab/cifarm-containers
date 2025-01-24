@@ -57,20 +57,26 @@ export class PlacedItemsGateway implements OnGatewayInit {
         const promises: Array<Promise<void>> = []
         for (const socket of sockets) {
             const observing = this.authGateway.getObservingData(socket)
-            if (observing && observing.userId) {
-                promises.push(
-                    (async () => {
-                        const placedItems = await this.placedItemsService.getPlacedItems({
-                            userId: observing.userId
-                        })
-                        const data: PlacedItemsSyncedMessage = {
-                            placedItems,
-                            userId: observing.userId
-                        }
-                        socket.emit(PLACED_ITEMS_SYNCED_EVENT, data)
-                    })()
-                )
+            // if observing is not found, skip
+            if (!observing) {
+                continue
             }
+            // if observing user id is not found, skip
+            if (!observing.userId) {
+                continue
+            }
+            promises.push(
+                (async () => {
+                    const placedItems = await this.placedItemsService.getPlacedItems({
+                        userId: observing.userId
+                    })
+                    const data: PlacedItemsSyncedMessage = {
+                        placedItems,
+                        userId: observing.userId
+                    }
+                    socket.emit(PLACED_ITEMS_SYNCED_EVENT, data)
+                })()
+            )
         }
         await Promise.all(promises)
     }
@@ -105,7 +111,10 @@ export class PlacedItemsGateway implements OnGatewayInit {
     ): Promise<WsResponse<PlacedItemsSyncedMessage>> {
         //emit placed items to all clients
         const observing = this.authGateway.getObservingData(client)
-        if (!observing || !observing.userId) {
+        if (!observing) {
+            throw new WsException("Observing data not found")
+        }
+        if (!observing.userId) {
             throw new WsException("Observing user id not found")
         }
         const placedItems = await this.placedItemsService.getPlacedItems({

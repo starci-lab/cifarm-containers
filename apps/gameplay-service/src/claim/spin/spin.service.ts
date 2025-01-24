@@ -64,15 +64,9 @@ export class SpinService {
             const { value } = await queryRunner.manager.findOne(SystemEntity, {
                 where: { id: SystemId.SpinInfo }
             })
-            const random = Math.random()
-
-            let chance: AppearanceChance = AppearanceChance.Common
-            const { appearanceChanceSlots } = value as SpinInfo
-            for (const [key, value] of Object.entries(appearanceChanceSlots)) {
-                if (random >= value.thresholdMin && random < value.thresholdMax)
-                    chance = key as AppearanceChance
-                break
-            }
+            
+            //get the appearance chance
+            const chance = this.getAppearanceChance(value as SpinInfo)
 
             //we get the appearance chance, so that we randomly select a slot with that chance
             const rewardableSlots = spinSlots.filter(
@@ -227,5 +221,16 @@ export class SpinService {
     public getRandomSlot(rewardableSlots: Array<SpinSlotEntity>): DeepPartial<SpinSlotEntity> {
         const randomIndex = Math.floor(Math.random() * rewardableSlots.length)
         return rewardableSlots[randomIndex]
+    }
+
+    //get appearance chance function to mock it with jest.spyOn
+    public getAppearanceChance(spinInfo: SpinInfo): AppearanceChance {
+        const random = Math.random()
+        for (const [key, value] of Object.entries(spinInfo.appearanceChanceSlots)) {
+            if (random >= value.thresholdMin && random < value.thresholdMax) {
+                return key as AppearanceChance
+            }
+        }
+        return AppearanceChance.Common // Default fallback
     }
 }

@@ -7,10 +7,9 @@ import { Observable, throwError } from "rxjs"
 export class BlockchainExceptionFilter implements ExceptionFilter<BlockchainException> {
     catch(exception: BlockchainException): Observable<unknown> {
         switch (exception.errorCode) {
-        case BlockchainErrorCode.ChainKeyNotFound: {
-            return throwError(() => new GrpcInvalidArgumentException(exception.message).getError())
-        }
-        case BlockchainErrorCode.PlatformNotFound: {
+        case BlockchainErrorCode.ChainKeyNotFound:
+        case BlockchainErrorCode.PlatformNotFound: 
+        {
             return throwError(() => new GrpcInvalidArgumentException(exception.message).getError())
         }
         }
