@@ -5,7 +5,7 @@ import { InventoryService } from "./inventory"
 import { LevelService } from "./level"
 import { ThiefService } from "./thief"
 import { GoldBalanceService, TokenBalanceService } from "./wallet"
-import { ProductionService } from "./production"
+import { ProductService } from "./product"
 
 @Module({
     providers: [
@@ -15,7 +15,7 @@ import { ProductionService } from "./production"
         GoldBalanceService,
         TokenBalanceService,
         InventoryService,
-        ProductionService
+        ProductService
     ],
     exports: [
         LevelService,
@@ -24,7 +24,7 @@ import { ProductionService } from "./production"
         GoldBalanceService,
         TokenBalanceService,
         InventoryService,
-        ProductionService
+        ProductService
     ]
 })
 export class GameplayModule extends ConfigurableModuleClass {

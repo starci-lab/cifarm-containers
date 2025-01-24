@@ -6,11 +6,11 @@ import {
     UpdateAnimalInfoAfterCollectResult,
     UpdateTileInfoAfterHarvestParams,
     UpdateTileInfoAfterHarvestResult
-} from "./production.types"
+} from "./product.types"
 
 //booster service is to compute the quality,.. of tile, animal after several time of harvest
 @Injectable()
-export class ProductionService {
+export class ProductService {
     constructor() {}
 
     //compute the quality of animal after several time of harvest
