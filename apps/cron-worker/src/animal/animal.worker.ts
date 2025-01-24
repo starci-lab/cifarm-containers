@@ -67,8 +67,8 @@ export class AnimalWorker extends WorkerHost {
                     const animalInfoChanges = () => {
                         const animalInfoBeforeChanges = { ...animalInfo }
                         
-                        // adultChanges is a function that returns the changes in animalInfo if animal is adult
-                        const adultChanges = (): DeepPartial<AnimalInfoEntity> => {
+                        // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
+                        const adultAnimalInfoChanges = (): DeepPartial<AnimalInfoEntity> => {
                             // If animal is adult, add time to the animal yield
                             animalInfo.currentYieldTime += time
                             // if animal grow to half of the yield time, it may get sick and immunized
@@ -108,8 +108,8 @@ export class AnimalWorker extends WorkerHost {
                             return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
                         }
 
-                        // growthChanges is a function that returns the changes in animalInfo if animal is not adult
-                        const growthChanges = (): DeepPartial<AnimalInfoEntity> => {
+                        // growthAnimalInfoChanges is a function that returns the changes in animalInfo if animal is not adult
+                        const growthAnimalInfoChanges = (): DeepPartial<AnimalInfoEntity> => {
                             // Add time to the animal growth and hunger
                             animalInfo.currentGrowthTime += time
                             animalInfo.currentHungryTime += time
@@ -149,11 +149,11 @@ export class AnimalWorker extends WorkerHost {
                             return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
                         }
 
-                        // If animal is adult, call adultChanges, else call growthChanges
+                        // If animal is adult, call adultAnimalInfoChanges, else call growthAnimalInfoChanges
                         if (animalInfo.isAdult) {
-                            return adultChanges()
+                            return adultAnimalInfoChanges()
                         } 
-                        return growthChanges()   
+                        return growthAnimalInfoChanges()   
                     }
 
                     const changes = animalInfoChanges()
