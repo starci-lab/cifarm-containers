@@ -11,6 +11,6 @@ export class DeliveryController {
 
     @EventPattern(KafkaPattern.Delivery)
     async deliver() {
-        this.deliveryService.deliver()
+        await this.deliveryService.deliver()
     }
 }
