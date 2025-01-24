@@ -224,7 +224,7 @@ export class LeaderElectionService implements OnApplicationBootstrap {
             if (this.isLeaseHeldByUs(lease)) {
                 this.becomeLeader()
             } else {
-                this.logger.debug("Lease not held by us, mean that other instance is the leader")
+                this.logger.debug("Try to become leader failed. Trying again...")
             }
         } catch (error) {
             this.logger.error(`Error while trying to become leader: ${error.message}`)

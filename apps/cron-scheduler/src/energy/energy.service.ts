@@ -79,7 +79,7 @@ export class EnergyService {
                 }
 
                 if (count === 0) {
-                    this.logger.verbose("No user's energy to check")
+                    //no user needs energy regeneration
                     return
                 }
 

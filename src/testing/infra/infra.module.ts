@@ -70,8 +70,9 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                     isGlobal: true
                 }),
                 KafkaModule.register({
-                    groupId: KafkaGroupId.PlacedItems,
-                    producerOnlyMode: true
+                    groupId: KafkaGroupId.Delivery,
+                    producerOnlyMode: true,
+                    isGlobal: true,
                 }),
                 PostgreSQLModule.forRoot({
                     context: PostgreSQLContext.Main,

@@ -11,6 +11,7 @@ import {
     InventoryTypeEntity,
     PlacedItemEntity,
     PlacedItemType,
+    ProductType,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
@@ -119,11 +120,13 @@ export class ThiefCropService {
                 where: {
                     type: InventoryType.Product,
                     product: {
-                        cropId: placedItemTile.seedGrowthInfo.crop.id
+                        cropId: placedItemTile.seedGrowthInfo.crop.id,
+                        type: ProductType.Crop,
+                        isQuality: placedItemTile.seedGrowthInfo.isQuality
                     }
                 },
                 relations: {
-                    product: true
+                    product: true,
                 }
             })
 
@@ -133,7 +136,6 @@ export class ThiefCropService {
                     inventoryTypeId: inventoryType.id
                 }
             })
-            console.log(existingInventories)
 
             const updatedInventories = this.inventoryService.add({
                 entities: existingInventories,

@@ -17,10 +17,19 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
+import {
+    EnergyService,
+    InventoryService,
+    LevelService,
+    ThiefService
+} from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
-import { GrpcInternalException, GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import {
+    GrpcInternalException,
+    GrpcInvalidArgumentException,
+    GrpcNotFoundException
+} from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
@@ -119,7 +128,8 @@ export class ThiefAnimalProductService {
                     type: InventoryType.Product,
                     product: {
                         type: ProductType.Animal,
-                        animalId: placedItemAnimal.placedItemType.animalId
+                        animalId: placedItemAnimal.placedItemType.animalId,
+                        isQuality: placedItemAnimal.animalInfo.isQuality
                     }
                 }
             })

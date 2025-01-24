@@ -15,10 +15,6 @@ export class DeliveringProductEntity extends UuidAbstractEntity {
     @Column({ name: "index", type: "int" })
         index: number
 
-    @Field(() => Boolean)
-    @Column({ name: "premium", type: "boolean", default: false })
-        premium: boolean
-
     // foreign keys
     @Field(() => String, { nullable: true })
     @Index()

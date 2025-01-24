@@ -76,3 +76,29 @@ export interface GetWsUrlParams {
     port?: number
     useSsl?: boolean
 }
+
+export const getDifferenceAndValues = <TObject extends object>(obj1: TObject, obj2: TObject): TObject => {
+    const diff = {} as TObject
+    // Loop through keys in the second object
+    for (const key in obj2) {
+        // Check if the key exists in both objects
+        if (Object.prototype.hasOwnProperty.call(obj1, key)) {
+            if (typeof obj2[key] === "object" && obj2[key] !== null && typeof obj1[key] === "object" && obj1[key] !== null) {
+                // If both values are objects, recurse to compare their properties
+                const nestedDiff = getDifferenceAndValues(obj1[key], obj2[key])
+                if (Object.keys(nestedDiff).length > 0) {
+                    // Only add to diff if there are differences in the nested object
+                    diff[key] = nestedDiff
+                }
+            } else if (obj1[key] !== obj2[key]) {
+                // If the values are different, store the value from obj2
+                diff[key] = obj2[key]
+            }
+        } else {
+            // If the key doesn't exist in obj1, it's a new key in obj2
+            diff[key] = obj2[key]
+        }
+    }
+
+    return diff
+}

@@ -11,9 +11,11 @@ import {
     SystemId
 } from "@src/databases"
 import { Job } from "bullmq"
-import { DataSource, LessThanOrEqual, Not } from "typeorm"
+import { DataSource, DeepPartial, LessThanOrEqual, Not } from "typeorm"
 import { DateUtcService } from "@src/date"
 import { ProductService } from "@src/gameplay"
+import { getDifferenceAndValues } from "@src/common"
+import { isEmpty } from "lodash"
 
 @Processor(bullData[BullQueueName.Crop].name)
 export class CropWorker extends WorkerHost {
@@ -35,7 +37,7 @@ export class CropWorker extends WorkerHost {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            let seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
+            const seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
                 where: {
                     currentState:
                         Not(CropCurrentState.NeedWater) && Not(CropCurrentState.FullyMatured),
@@ -48,7 +50,7 @@ export class CropWorker extends WorkerHost {
                             tile: true
                         },
                         tileInfo: true
-                    },
+                    }
                 },
                 skip,
                 take,
@@ -62,75 +64,105 @@ export class CropWorker extends WorkerHost {
                 }
             })
             const { needWater, isWeedyOrInfested } = system.value as CropRandomness
-            seedGrowthInfos = seedGrowthInfos.map((seedGrowthInfo) => {
-                // Add time to the seed growth
-                seedGrowthInfo.currentStageTimeElapsed += time
 
-                // if the seed growth is not in need of water, stop
-                if (seedGrowthInfo.currentState === CropCurrentState.NeedWater) {
-                    return seedGrowthInfo
-                }
+            const promises: Array<Promise<void>> = []
 
-                if (seedGrowthInfo.currentStageTimeElapsed >= seedGrowthInfo.crop.growthStageDuration) {
-                    seedGrowthInfo.currentStage += 1
-                    //reset fertilizer after
-                    seedGrowthInfo.isFertilized = false
-
-                    // if the current stage is less than max stage - 3, check if need water
-                    if (seedGrowthInfo.currentStage <= seedGrowthInfo.crop.growthStages - 3) {
-                        if (Math.random() < needWater) {
-                            seedGrowthInfo.currentState = CropCurrentState.NeedWater
+            for (const seedGrowthInfo of seedGrowthInfos) {
+                const promise = async () => {
+                    // Add time to the seed growth
+                    const seedGrowthInfoChanges = (): DeepPartial<SeedGrowthInfoEntity> => {
+                        const seedGrowthInfoBeforeChanges = { ...seedGrowthInfo }
+                        // add time to the seed growth
+                        seedGrowthInfo.currentStageTimeElapsed += time
+                        if (
+                            seedGrowthInfo.currentStageTimeElapsed <
+                            seedGrowthInfo.crop.growthStageDuration
+                        ) {
+                            return getDifferenceAndValues(seedGrowthInfoBeforeChanges, seedGrowthInfo)
                         }
-                        return seedGrowthInfo
-                    }
+                        // deduct the time elapsed from the current stage time elapsed
+                        seedGrowthInfo.currentStageTimeElapsed -= seedGrowthInfo.crop.growthStageDuration
+                        // increment the current stage
+                        seedGrowthInfo.currentStage += 1
+                        //reset fertilizer after
+                        seedGrowthInfo.isFertilized = false
 
-                    // if the current stage is max stage - 2, check if weedy or infested
-                    if (seedGrowthInfo.currentStage === seedGrowthInfo.crop.growthStages - 2) {
-                        if (Math.random() < isWeedyOrInfested) {
-                            if (Math.random() < 0.5) {
-                                seedGrowthInfo.currentState = CropCurrentState.IsWeedy
-                            } else {
-                                seedGrowthInfo.currentState = CropCurrentState.IsInfested
+                        // if the current stage is less than max stage - 3, check if need water
+                        if (
+                            seedGrowthInfo.currentStage <=
+                                seedGrowthInfo.crop.growthStages - 3
+                        ) {
+                            if (Math.random() < needWater) {
+                                seedGrowthInfo.currentState = CropCurrentState.NeedWater
                             }
+                            return getDifferenceAndValues(seedGrowthInfoBeforeChanges, seedGrowthInfo)
                         }
-                        return seedGrowthInfo
+
+                        // if the current stage is max stage - 2, check if weedy or infested
+                        if (
+                            seedGrowthInfo.currentStage ===
+                                seedGrowthInfo.crop.growthStages - 2
+                        ) {
+                            if (Math.random() < isWeedyOrInfested) {
+                                if (Math.random() < 0.5) {
+                                    seedGrowthInfo.currentState = CropCurrentState.IsWeedy
+                                } else {
+                                    seedGrowthInfo.currentState = CropCurrentState.IsInfested
+                                }
+                            }
+                            return getDifferenceAndValues(seedGrowthInfoBeforeChanges, seedGrowthInfo)
+                        }
+
+                        // else, the crop is fully matured
+                        if (
+                            seedGrowthInfo.currentState === CropCurrentState.IsInfested ||
+                                seedGrowthInfo.currentState === CropCurrentState.IsWeedy
+                        ) {
+                            seedGrowthInfo.harvestQuantityRemaining =
+                                    (seedGrowthInfo.crop.minHarvestQuantity +
+                                        seedGrowthInfo.crop.maxHarvestQuantity) /
+                                    2
+                        } else {
+                            seedGrowthInfo.harvestQuantityRemaining =
+                                    seedGrowthInfo.crop.maxHarvestQuantity
+                        }
+                        const chance = this.productService.computeTileQualityChance({
+                            entity: seedGrowthInfo.placedItem.tileInfo,
+                            qualityProductChanceLimit:
+                                    seedGrowthInfo.placedItem.placedItemType.tile
+                                        .qualityProductChanceLimit,
+                            qualityProductChanceStack:
+                                    seedGrowthInfo.placedItem.placedItemType.tile
+                                        .qualityProductChanceStack
+                        })
+                        if (Math.random() < chance) {
+                            seedGrowthInfo.isQuality = true
+                        }
+                        seedGrowthInfo.currentState = CropCurrentState.FullyMatured
+                        return getDifferenceAndValues(seedGrowthInfoBeforeChanges, seedGrowthInfo)
                     }
 
-                    // else, the crop is fully matured
-                    if (
-                        seedGrowthInfo.currentState === CropCurrentState.IsInfested ||
-                            seedGrowthInfo.currentState === CropCurrentState.IsWeedy
-                    ) {
-                        seedGrowthInfo.harvestQuantityRemaining =
-                                (seedGrowthInfo.crop.minHarvestQuantity +
-                                    seedGrowthInfo.crop.maxHarvestQuantity) /
-                                2
-                    } else {
-                        seedGrowthInfo.harvestQuantityRemaining =
-                                seedGrowthInfo.crop.maxHarvestQuantity
+                    const changes = seedGrowthInfoChanges()
+                    if (isEmpty(changes)) {
+                        return
                     }
-                    const chance = this.productService.computeTileQualityChance({
-                        entity: seedGrowthInfo.placedItem.tileInfo,
-                        qualityProductChanceLimit: seedGrowthInfo.placedItem.placedItemType.tile.qualityProductChanceLimit,
-                        qualityProductChanceStack: seedGrowthInfo.placedItem.placedItemType.tile.qualityProductChanceStack
-                    })
-                    if (Math.random() < chance) {
-                        seedGrowthInfo.isQuality = true
+                    await queryRunner.startTransaction()
+                    try {
+                        await queryRunner.manager.update(
+                            SeedGrowthInfoEntity,
+                            seedGrowthInfo.id,
+                            changes
+                        )
+                        await queryRunner.commitTransaction()
+                    } catch (error) {
+                        this.logger.error(`Transaction failed: ${error}`)
+                        await queryRunner.rollbackTransaction()
+                        throw error
                     }
-                    seedGrowthInfo.currentState = CropCurrentState.FullyMatured
-                    return seedGrowthInfo
                 }
-            })
-
-            await queryRunner.startTransaction()
-            try {
-                await queryRunner.manager.save(SeedGrowthInfoEntity, seedGrowthInfos)
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                this.logger.error(`Transaction failed: ${error}`)
-                await queryRunner.rollbackTransaction()
-                throw error
+                promises.push(promise())
             }
+            await Promise.all(promises)
         } finally {
             await queryRunner.release()
         }

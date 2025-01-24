@@ -42,7 +42,7 @@ describe("Authentication Flow", () => {
         const name = v4()
         const { noAuthAxios } = e2eAxiosService.create(name)
         const requestMessageResponse =
-            await noAuthAxios.post<RequestMessageResponse>("request-message")
+            await noAuthAxios.post<RequestMessageResponse>("gameplay/request-message")
         // Assert: Check that the response status is 200
         expect(requestMessageResponse.status).toBe(HttpStatus.OK)
         const { privateKey, publicKey } = solanaAuthService.getKeyPair(1)
@@ -50,7 +50,7 @@ describe("Authentication Flow", () => {
             message: requestMessageResponse.data.message,
             privateKey
         })
-        const verifySignatureResponse = await noAuthAxios.post("verify-signature", {
+        const verifySignatureResponse = await noAuthAxios.post("gameplay/verify-signature", {
             message: requestMessageResponse.data.message,
             publicKey,
             signature,
@@ -74,7 +74,7 @@ describe("Authentication Flow", () => {
             GenerateSignatureResponse,
             AxiosResponse<GenerateSignatureResponse, GenerateSignatureRequest>,
             GenerateSignatureRequest
-        >("generate-signature", {
+        >("gameplay/generate-signature", {
             accountNumber: 3,
             chainKey,
             network: Network.Testnet
@@ -83,7 +83,7 @@ describe("Authentication Flow", () => {
         // Assert: Check that the response status is 200
         expect(generateSignatureResponse.status).toBe(HttpStatus.OK)
         const verifySignatureResponse = await noAuthAxios.post(
-            "verify-signature",
+            "gameplay/verify-signature",
             generateSignatureResponse.data
         )
         // Assert: Check that the response status is 200

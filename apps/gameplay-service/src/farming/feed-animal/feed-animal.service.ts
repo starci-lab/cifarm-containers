@@ -120,8 +120,7 @@ export class FeedAnimalService {
 
                 // Update animal state
                 await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
-                    currentState: AnimalCurrentState.Normal,
-                    currentHungryTime: 0
+                    currentState: AnimalCurrentState.Normal
                 })
 
                 await queryRunner.commitTransaction()

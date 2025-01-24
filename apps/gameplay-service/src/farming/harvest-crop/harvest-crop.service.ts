@@ -126,7 +126,6 @@ export class HarvestCropService {
                 data: {
                     inventoryType: inventoryType,
                     quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining,
-                    
                 }
             })
 

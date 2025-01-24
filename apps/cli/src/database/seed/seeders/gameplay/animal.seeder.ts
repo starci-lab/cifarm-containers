@@ -61,7 +61,7 @@ export class AnimalSeeder implements Seeder {
                         inventoryType: {
                             id: InventoryTypeId.EggQuality,
                             asTool: false,
-                            deliverable: false,
+                            deliverable: true,
                             placeable: true,
                             type: InventoryType.Product
                         },
@@ -126,7 +126,7 @@ export class AnimalSeeder implements Seeder {
                         inventoryType: {
                             id: InventoryTypeId.MilkQuality,
                             asTool: false,
-                            deliverable: false,
+                            deliverable: true,
                             placeable: true,
                             type: InventoryType.Product
                         },

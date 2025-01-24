@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DeliveringProductEntity, InjectPostgreSQL, InventoryEntity } from "@src/databases"
-import { DataSource, DeepPartial } from "typeorm"
+import { DataSource } from "typeorm"
 import { DeliverProductRequest, DeliverProductResponse } from "./deliver-product.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
@@ -36,9 +36,19 @@ export class DeliverProductService {
             }
 
             // Check if inventory type is deliverable
-            const inventoryType = inventory.inventoryType
-            if (!inventoryType.deliverable) {
+            if (!inventory.inventoryType.deliverable) {
                 throw new GrpcFailedPreconditionException("Inventory type is not deliverable")
+            }
+
+            // Check if index is valid
+            const indexExists = await queryRunner.manager.exists(DeliveringProductEntity, {
+                where: {
+                    userId: request.userId,
+                    index: request.index
+                }
+            })
+            if (indexExists) {
+                throw new GrpcFailedPreconditionException("Index already in use")
             }
 
             // Start transaction
@@ -53,17 +63,13 @@ export class DeliverProductService {
                     await queryRunner.manager.save(InventoryEntity, inventory)
                 }
 
-                // Prepare delivering product entity
-                const deliveringProduct: DeepPartial<DeliveringProductEntity> = {
+                // Save delivering product in database
+                await queryRunner.manager.save(DeliveringProductEntity, {
                     userId: request.userId,
                     quantity: request.quantity,
-                    premium: inventory.premium,
                     index: request.index,
                     productId: inventory.inventoryType.productId
-                }
-
-                // Save delivering product in database
-                await queryRunner.manager.save(DeliveringProductEntity, deliveringProduct)
+                })
 
                 await queryRunner.commitTransaction()
             } catch (error) {

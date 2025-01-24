@@ -46,7 +46,7 @@ describe("TheifCropService", () => {
         levelService = moduleRef.get(LevelService)
     })
 
-    it("should successfully thief crop and update inventory", async () => {
+    it("should successfully thief crop and update inventory (no quality)", async () => {
         const cropId = CropId.Carrot
         const { value } = await dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
@@ -69,7 +69,8 @@ describe("TheifCropService", () => {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
                 harvestQuantityRemaining: crop.maxHarvestQuantity,
-                cropId
+                cropId,
+                isQuality: false
             },
             x: 0,
             y: 0,
@@ -104,10 +105,93 @@ describe("TheifCropService", () => {
                         cropId
                     }
                 }
+            },
+            relations: {
+                inventoryType: {
+                    product: true
+                }
             }
         })
 
         expect(inventory.quantity).toBeGreaterThanOrEqual(thiefQuantity)
+        expect(inventory.inventoryType.product.isQuality).toBe(false)
+
+        const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
+            where: { id: placedItemTile.seedGrowthInfoId }
+        })
+        
+        expect(updatedSeedGrowthInfo.harvestQuantityRemaining).toBe(crop.maxHarvestQuantity - thiefQuantity)
+    })
+
+    it("should successfully thief crop and update inventory (quality)", async () => {
+        const cropId = CropId.Carrot
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            thiefCrop: { energyConsume, experiencesGain }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        const neighborUser = await gameplayMockUserService.generate()
+
+        const crop = await dataSource.manager.findOne(CropEntity, {
+            where: { id: cropId }
+        })
+
+        // create
+        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+            seedGrowthInfo: {
+                currentState: CropCurrentState.FullyMatured,
+                harvestQuantityRemaining: crop.maxHarvestQuantity,
+                cropId,
+                isQuality: true
+            },
+            x: 0,
+            y: 0,
+            placedItemTypeId: PlacedItemTypeId.BasicTile3,
+            userId: neighborUser.id
+        })
+
+        const { quantity: thiefQuantity } = await service.thiefCrop({
+            userId: user.id,
+            placedItemTileId: placedItemTile.id,
+            neighborUserId: neighborUser.id
+        })
+
+        const userAfter = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["energy", "level", "experiences"]
+        })
+
+        expect(user.energy - userAfter.energy).toBe(energyConsume)
+        expect(
+            levelService.computeTotalExperienceForLevel(userAfter) -
+                levelService.computeTotalExperienceForLevel(user)
+        ).toBe(experiencesGain)
+
+        const inventory = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                userId: user.id,
+                inventoryType: {
+                    type: InventoryType.Product,
+                    product: {
+                        type: ProductType.Crop,
+                        cropId,
+                    }
+                }
+            },
+            relations: {
+                inventoryType: {
+                    product: true
+                }
+            }
+        })
+
+        expect(inventory.quantity).toBeGreaterThanOrEqual(thiefQuantity)
+        expect(inventory.inventoryType.product.isQuality).toBe(true)
 
         const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
             where: { id: placedItemTile.seedGrowthInfoId }

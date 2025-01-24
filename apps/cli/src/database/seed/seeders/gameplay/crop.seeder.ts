@@ -57,7 +57,7 @@ export class CropSeeder implements Seeder {
                         inventoryType: {
                             id: InventoryTypeId.CarrotQuality,
                             asTool: false,
-                            deliverable: false,
+                            deliverable: true,
                             placeable: false,
                             type: InventoryType.Product
                         }
@@ -110,7 +110,7 @@ export class CropSeeder implements Seeder {
                         inventoryType: {
                             id: InventoryTypeId.PotatoQuality,
                             asTool: false,
-                            deliverable: false,
+                            deliverable: true,
                             placeable: false,
                             type: InventoryType.Product
                         }
@@ -163,7 +163,7 @@ export class CropSeeder implements Seeder {
                         inventoryType: {
                             id: InventoryTypeId.CucumberQuality,
                             asTool: false,
-                            deliverable: false,
+                            deliverable: true,
                             placeable: false,
                             type: InventoryType.Product
                         }
@@ -216,7 +216,7 @@ export class CropSeeder implements Seeder {
                         inventoryType: {
                             id: InventoryTypeId.PineappleQuality,
                             asTool: false,
-                            deliverable: false,
+                            deliverable: true,
                             placeable: false,
                             type: InventoryType.Product
                         }
@@ -269,7 +269,7 @@ export class CropSeeder implements Seeder {
                         inventoryType: {
                             id: InventoryTypeId.WatermelonQuality,
                             asTool: false,
-                            deliverable: false,
+                            deliverable: true,
                             placeable: false,
                             type: InventoryType.Product
                         }
@@ -322,7 +322,7 @@ export class CropSeeder implements Seeder {
                         inventoryType: {
                             id: InventoryTypeId.BellPepperQuality,
                             asTool: false,
-                            deliverable: false,
+                            deliverable: true,
                             placeable: false,
                             type: InventoryType.Product
                         }

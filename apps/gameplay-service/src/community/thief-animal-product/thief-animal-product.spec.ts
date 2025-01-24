@@ -45,7 +45,7 @@ describe("ThiefAnimalProductService", () => {
         levelService = moduleRef.get(LevelService)
     })
 
-    it("should successfully thief animal product and update inventory", async () => {
+    it("should successfully thief animal product and update inventory (no quality)", async () => {
         const animalId = AnimalId.Chicken
         const { value } = await dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
@@ -68,7 +68,8 @@ describe("ThiefAnimalProductService", () => {
             animalInfo: {
                 animalId,
                 currentState: AnimalCurrentState.Yield,
-                harvestQuantityRemaining: animal.maxHarvestQuantity
+                harvestQuantityRemaining: animal.maxHarvestQuantity,
+                isQuality: false
             },
             x: 0,
             y: 0,
@@ -103,10 +104,93 @@ describe("ThiefAnimalProductService", () => {
                         animalId
                     }
                 }
+            },
+            relations: {
+                inventoryType: {
+                    product: true
+                }
             }
         })
 
         expect(inventory.quantity).toBeGreaterThanOrEqual(thiefQuantity)
+        expect(inventory.inventoryType.product.isQuality).toBe(false)
+
+        const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
+            where: { id: placedItemAnimal.animalInfoId }
+        })
+
+        expect(updatedAnimalInfo.harvestQuantityRemaining).toBe(animal.maxHarvestQuantity - thiefQuantity)
+    })
+
+    it("should successfully thief animal product and update inventory (quality)", async () => {
+        const animalId = AnimalId.Chicken
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            thiefAnimalProduct: { energyConsume, experiencesGain }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        const neighborUser = await gameplayMockUserService.generate()
+
+        const animal = await dataSource.manager.findOne(AnimalEntity, {
+            where: { id: animalId }
+        })
+
+        // create
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                animalId,
+                currentState: AnimalCurrentState.Yield,
+                harvestQuantityRemaining: animal.maxHarvestQuantity,
+                isQuality: true
+            },
+            x: 0,
+            y: 0,
+            placedItemTypeId: PlacedItemTypeId.Chicken,
+            userId: neighborUser.id
+        })
+
+        const { quantity: thiefQuantity } = await service.thiefAnimalProduct({
+            userId: user.id,
+            placedItemAnimalId: placedItemAnimal.id,
+            neighborUserId: neighborUser.id
+        })
+
+        const userAfter = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["energy", "level", "experiences"]
+        })
+
+        expect(user.energy - userAfter.energy).toBe(energyConsume)
+        expect(
+            levelService.computeTotalExperienceForLevel(userAfter) -
+                levelService.computeTotalExperienceForLevel(user)
+        ).toBe(experiencesGain)
+
+        const inventory = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                userId: user.id,
+                inventoryType: {
+                    type: InventoryType.Product,
+                    product: {
+                        type: ProductType.Animal,
+                        animalId
+                    }
+                }
+            },
+            relations: {
+                inventoryType: {
+                    product: true
+                }
+            }
+        })
+
+        expect(inventory.quantity).toBeGreaterThanOrEqual(thiefQuantity)
+        expect(inventory.inventoryType.product.isQuality).toBe(true)
 
         const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
             where: { id: placedItemAnimal.animalInfoId }

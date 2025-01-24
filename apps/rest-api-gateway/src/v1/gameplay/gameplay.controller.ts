@@ -358,7 +358,7 @@ export class GameplayController implements OnModuleInit {
     // Delivery
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: DeliverProductResponse
     })
@@ -378,7 +378,7 @@ export class GameplayController implements OnModuleInit {
 
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: RetainProductResponse
     })

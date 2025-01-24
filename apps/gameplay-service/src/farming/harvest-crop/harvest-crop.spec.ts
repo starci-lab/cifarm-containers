@@ -99,6 +99,7 @@ describe("HarvestCropService", () => {
         // Assert inventory quantity increased by harvested amount
         const inventory = await dataSource.manager.findOne(InventoryEntity, {
             where: {
+                userId: user.id,
                 inventoryType: {
                     product: {
                         cropId
@@ -180,6 +181,7 @@ describe("HarvestCropService", () => {
         // Assert inventory quantity increased by harvested amount
         const inventory = await dataSource.manager.findOne(InventoryEntity, {
             where: {
+                userId: user.id,
                 inventoryType: {
                     product: {
                         cropId

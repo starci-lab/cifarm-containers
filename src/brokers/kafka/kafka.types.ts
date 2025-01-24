@@ -5,8 +5,10 @@ export interface KafkaOptions {
 
 export enum KafkaGroupId {
     PlacedItems = "placed-items",
+    Delivery = "delivery",
 }
 
 export enum KafkaPattern {
     PlacedItems = "placed.items",
+    Delivery = "delivery",
 }

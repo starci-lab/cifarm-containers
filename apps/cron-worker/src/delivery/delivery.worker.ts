@@ -40,7 +40,6 @@ export class DeliveryWorker extends WorkerHost {
             const userIds = rawUserIds.map((raw) => raw.userId)
 
             if (!userIds.length) {
-                this.logger.verbose("No users to process.")
                 return
             }
 
@@ -48,54 +47,55 @@ export class DeliveryWorker extends WorkerHost {
                 where: { id: In(userIds) }
             })
 
-            users.forEach(async (user) => {
-                // Fetch delivering products for the user
-                const deliveringProducts = await queryRunner.manager.find(DeliveringProductEntity, {
-                    where: { userId: user.id },
-                    relations: {
-                        product: true
+            const promises: Array<Promise<void>> = []
+            // use for-each to add async function to promises array
+            users.forEach((user) => {
+                const promise = async () => {
+                    const deliveringProducts = await queryRunner.manager.find(DeliveringProductEntity, {
+                        where: { userId: user.id },
+                        relations: {
+                            product: true
+                        }
+                    })
+                    // Calculate total amount of gold and token
+                    const totalGoldAmount = deliveringProducts.reduce((sum, deliveringProduct) => {
+                        return sum + deliveringProduct.product.goldAmount * deliveringProduct.quantity
+                    }, 0)
+
+                    const totalTokenAmount = deliveringProducts.reduce((sum, deliveringProduct) => {
+                        return sum + deliveringProduct.product.tokenAmount * deliveringProduct.quantity
+                    }, 0)
+
+                    // Update user balance
+                    const goldChanged = this.goldBalanceService.add({
+                        entity: user,
+                        amount: totalGoldAmount
+                    })
+                    const tokenChanged = this.tokenBalanceService.add({
+                        entity: user,
+                        amount: totalTokenAmount
+                    })
+
+                    // Update user's balance
+                    await queryRunner.startTransaction()
+                    try {
+                        await queryRunner.manager.update(UserEntity, user.id, {
+                            ...goldChanged,
+                            ...tokenChanged
+                        })
+                        await queryRunner.manager.delete(DeliveringProductEntity, {
+                            userId: user.id
+                        })
+                        await queryRunner.commitTransaction()
+                    } catch (error) {
+                        this.logger.error(`Transaction failed: ${error}`)
+                        await queryRunner.rollbackTransaction()
+                        throw error
                     }
-                })
-
-                // Logic: calculate total amount of tokens to deliver
-                const totalGoldAmount = deliveringProducts.reduce((sum, deliveringProducts) => {
-                    return sum + deliveringProducts.product.goldAmount * deliveringProducts.quantity
-                }, 0)
-                
-                const totalTokenAmount = deliveringProducts.reduce((sum, deliveringProducts) => {
-                    return (
-                        sum + deliveringProducts.product.tokenAmount * deliveringProducts.quantity
-                    )
-                }, 0)
-
-                // Update user balance
-                const goldChanged = this.goldBalanceService.add({
-                    entity: user,
-                    amount: totalGoldAmount
-                })
-                const tokenChanged = this.tokenBalanceService.add({
-                    entity: user,
-                    amount: totalTokenAmount
-                })
-
-
-                // Update user's balance
-                return {
-                    ...user,
-                    ...goldChanged,
-                    ...tokenChanged
                 }
+                promises.push(promise())
             })
-
-            await queryRunner.startTransaction()
-            try {
-                await queryRunner.manager.save(users)
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                this.logger.error(`Transaction failed: ${error}`)
-                await queryRunner.rollbackTransaction()
-                throw error
-            }
+            await Promise.all(promises)
         } finally {
             await queryRunner.release()
         }
