@@ -62,9 +62,8 @@ export class AnimalSeeder implements Seeder {
                             id: InventoryTypeId.EggQuality,
                             asTool: false,
                             deliverable: false,
-                            maxStack: 1,
                             placeable: true,
-                            type: InventoryType.Animal
+                            type: InventoryType.Product
                         },
                         placedItemType: {
                             id: PlacedItemTypeId.Chicken,
@@ -128,9 +127,8 @@ export class AnimalSeeder implements Seeder {
                             id: InventoryTypeId.MilkQuality,
                             asTool: false,
                             deliverable: false,
-                            maxStack: 1,
                             placeable: true,
-                            type: InventoryType.Animal
+                            type: InventoryType.Product
                         },
                         placedItemType: {
                             id: PlacedItemTypeId.Cow,

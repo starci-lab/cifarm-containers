@@ -55,7 +55,7 @@ export class HelpCureAnimalService {
                 }
             })
 
-            if (!placedItemAnimal || !placedItemAnimal.animalInfo) {
+            if (!placedItemAnimal) {
                 throw new GrpcNotFoundException("Animal not found")
             }
 

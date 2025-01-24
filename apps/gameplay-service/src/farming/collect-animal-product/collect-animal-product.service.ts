@@ -14,7 +14,7 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { BoosterService, EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import {
     CollectAnimalProductRequest,
@@ -36,7 +36,8 @@ export class CollectAnimalProductService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         @InjectKafka()
-        private readonly clientKafka: ClientKafka
+        private readonly clientKafka: ClientKafka,
+        private readonly boosterService: BoosterService
     ) {}
 
     async collectAnimalProduct(
@@ -60,7 +61,7 @@ export class CollectAnimalProductService {
                 }
             })
 
-            if (!placedItemAnimal || !placedItemAnimal.animalInfo) {
+            if (!placedItemAnimal) {
                 throw new GrpcNotFoundException("Animal not found")
             }
 
@@ -68,12 +69,13 @@ export class CollectAnimalProductService {
                 throw new GrpcFailedPreconditionException("Animal is not ready to collect product")
             }
 
-            //Get inventory type
+            //Get product
             const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
                 where: {
                     product: {
                         type: ProductType.Animal,
-                        animalId: placedItemAnimal.placedItemType.animalId
+                        animalId: placedItemAnimal.placedItemType.animalId,
+                        isQuality: placedItemAnimal.animalInfo.isQuality
                     },
                     type: InventoryType.Product
                 }
@@ -110,12 +112,12 @@ export class CollectAnimalProductService {
             const {
                 cureAnimal: { energyConsume, experiencesGain }
             } = value as Activities
-            
+
             this.energyService.checkSufficient({
                 current: user.energy,
                 required: energyConsume
             })
-            
+
             // Subtract energy
             const energyChanges = this.energyService.substract({
                 entity: user,
@@ -127,6 +129,12 @@ export class CollectAnimalProductService {
                 entity: user,
                 experiences: experiencesGain
             })
+
+            // update animal info after collect
+            const animalInfoAfterCollectChanges = this.boosterService.updateAnimalInfoAfterCollect({
+                entity: placedItemAnimal.animalInfo
+            })
+
             queryRunner.startTransaction()
 
             try {
@@ -136,7 +144,8 @@ export class CollectAnimalProductService {
                 // Save updated placed item
                 await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
                     currentState: AnimalCurrentState.Normal,
-                    harvestQuantityRemaining: 0
+                    harvestQuantityRemaining: 0,
+                    ...animalInfoAfterCollectChanges
                 })
 
                 // Update user energy and experience

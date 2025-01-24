@@ -16,10 +16,6 @@ export class InventoryEntity extends UuidAbstractEntity {
         tokenId?: string
 
     @Field(() => Boolean, { defaultValue: false })
-    @Column({ name: "premium", type: "boolean", default: false })
-        premium: boolean
-
-    @Field(() => Boolean, { defaultValue: false })
     @Column({ name: "is_placed", type: "boolean", default: false })
         isPlaced: boolean
 

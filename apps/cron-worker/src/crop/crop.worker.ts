@@ -13,6 +13,7 @@ import {
 import { Job } from "bullmq"
 import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import { DateUtcService } from "@src/date"
+import { BoosterService } from "@src/gameplay"
 
 @Processor(bullData[BullQueueName.Crop].name)
 export class CropWorker extends WorkerHost {
@@ -21,7 +22,8 @@ export class CropWorker extends WorkerHost {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly dateUtcService: DateUtcService
+        private readonly dateUtcService: DateUtcService,
+        private readonly boosterService: BoosterService
     ) {
         super()
     }
@@ -40,7 +42,13 @@ export class CropWorker extends WorkerHost {
                     createdAt: LessThanOrEqual(this.dateUtcService.getDayjs(utcTime).toDate())
                 },
                 relations: {
-                    crop: true
+                    crop: true,
+                    placedItem: {
+                        placedItemType: {
+                            tile: true
+                        },
+                        tileInfo: true
+                    },
                 },
                 skip,
                 take,
@@ -58,23 +66,25 @@ export class CropWorker extends WorkerHost {
                 // Add time to the seed growth
                 seedGrowthInfo.currentStageTimeElapsed += time
 
-                //while the current stage time elapsed is greater than the growth stage duration
-                while (
-                    seedGrowthInfo.currentStageTimeElapsed >=
-                        seedGrowthInfo.crop.growthStageDuration &&
-                    seedGrowthInfo.currentStage <= seedGrowthInfo.crop.growthStages - 1
-                ) {
-                    seedGrowthInfo.currentStageTimeElapsed -=
-                        seedGrowthInfo.crop.growthStageDuration
+                // if the seed growth is not in need of water, stop
+                if (seedGrowthInfo.currentState === CropCurrentState.NeedWater) {
+                    return seedGrowthInfo
+                }
+
+                if (seedGrowthInfo.currentStageTimeElapsed >= seedGrowthInfo.crop.growthStageDuration) {
                     seedGrowthInfo.currentStage += 1
                     //reset fertilizer after
                     seedGrowthInfo.isFertilized = false
 
+                    // if the current stage is less than max stage - 3, check if need water
                     if (seedGrowthInfo.currentStage <= seedGrowthInfo.crop.growthStages - 3) {
                         if (Math.random() < needWater) {
                             seedGrowthInfo.currentState = CropCurrentState.NeedWater
                         }
+                        return seedGrowthInfo
                     }
+
+                    // if the current stage is max stage - 2, check if weedy or infested
                     if (seedGrowthInfo.currentStage === seedGrowthInfo.crop.growthStages - 2) {
                         if (Math.random() < isWeedyOrInfested) {
                             if (Math.random() < 0.5) {
@@ -83,22 +93,33 @@ export class CropWorker extends WorkerHost {
                                 seedGrowthInfo.currentState = CropCurrentState.IsInfested
                             }
                         }
+                        return seedGrowthInfo
                     }
-                }
 
-                if (seedGrowthInfo.currentStage === seedGrowthInfo.crop.growthStages - 1) {
+                    // else, the crop is fully matured
                     if (
                         seedGrowthInfo.currentState === CropCurrentState.IsInfested ||
-                        seedGrowthInfo.currentState === CropCurrentState.IsWeedy
+                            seedGrowthInfo.currentState === CropCurrentState.IsWeedy
                     ) {
                         seedGrowthInfo.harvestQuantityRemaining =
-                            (seedGrowthInfo.crop.minHarvestQuantity +
-                                seedGrowthInfo.crop.maxHarvestQuantity) /
-                            2
+                                (seedGrowthInfo.crop.minHarvestQuantity +
+                                    seedGrowthInfo.crop.maxHarvestQuantity) /
+                                2
+                    } else {
+                        seedGrowthInfo.harvestQuantityRemaining =
+                                seedGrowthInfo.crop.maxHarvestQuantity
+                    }
+                    const chance = this.boosterService.computeTileQualityChance({
+                        entity: seedGrowthInfo.placedItem.tileInfo,
+                        qualityProductChanceLimit: seedGrowthInfo.placedItem.placedItemType.tile.qualityProductChanceLimit,
+                        qualityProductChanceStack: seedGrowthInfo.placedItem.placedItemType.tile.qualityProductChanceStack
+                    })
+                    if (Math.random() < chance) {
+                        seedGrowthInfo.isQuality = true
                     }
                     seedGrowthInfo.currentState = CropCurrentState.FullyMatured
+                    return seedGrowthInfo
                 }
-                return seedGrowthInfo
             })
 
             await queryRunner.startTransaction()

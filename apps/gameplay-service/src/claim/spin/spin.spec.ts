@@ -177,6 +177,10 @@ describe("SpinService", () => {
         expect(responseSpinSlotId).toBe(spinSlotId)  
     })
 
+    afterEach(async () => {
+        jest.clearAllMocks()
+    })
+    
     afterAll(async () => {
         await gameplayMockUserService.clear()
         await gameplayConnectionService.closeAll()

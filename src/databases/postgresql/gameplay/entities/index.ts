@@ -25,6 +25,7 @@ import { ToolEntity } from "./tool.entity"
 import { UpgradeEntity } from "./upgrade.entity"
 import { UserEntity } from "./user.entity"
 import { UsersFollowingUsersEntity } from "./users-following-users.entity"
+import { TileInfoEntity } from "./tile-info.entity"
 
 export * from "./animal-info.entity"
 export * from "./animal.entity"
@@ -51,6 +52,7 @@ export * from "./session.entity"
 export * from "./key-value-store.entity"
 export * from "./users-following-users.entity"
 export * from "./collection.entity"
+export * from "./tile-info.entity"
 
 export const gameplayPostgreSqlEntities = () : Array<typeof AbstractEntity> => ([
     InventoryEntity,
@@ -81,5 +83,6 @@ export const gameplayPostgreSqlEntities = () : Array<typeof AbstractEntity> => (
     UsersFollowingUsersEntity,
     CollectionEntity,
     SessionEntity,
-    KeyValueStoreEntity
+    KeyValueStoreEntity,
+    TileInfoEntity
 ])

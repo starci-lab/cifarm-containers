@@ -4,7 +4,7 @@ import { StringAbstractEntity } from "./abstract"
 import JSON from "graphql-type-json"
 
 @ObjectType()
-@Entity("key-value-store")
+@Entity("key_value_store")
 export class KeyValueStoreEntity extends StringAbstractEntity {
     @Column({ name: "value", type: "jsonb" })
     @Field(() => JSON)

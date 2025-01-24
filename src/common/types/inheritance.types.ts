@@ -15,28 +15,27 @@ export class NeighborAndUserIdRequest extends UserIdRequest {
         neighborUserId: string
 }
 
-export class UserIdParams {
-    @IsUUID("4")
-        userId: string
+export interface UserIdParams {
+     userId: string
 }
 
-export class UserIdWithSocketParams extends UserIdParams {
+export interface UserIdWithSocketParams extends UserIdParams {
     socket: Socket
 }
 
-export class EntityParams<TEntity> {
+export interface EntityParams<TEntity> {
     entity: DeepPartial<TEntity>
 }
 
-export class EntityWithUserIdParams<TEntity> extends UserIdRequest {
+export interface EntityWithUserIdParams<TEntity> extends UserIdParams {
     entity: DeepPartial<TEntity>
 }
 
-export class ArrayEntityParams<TEntity> {
+export interface ArrayEntityParams<TEntity> {
     entities: Array<DeepPartial<TEntity>>
 }
 
-export class ArrayEntityWithUserIdParams<TEntity> extends UserIdRequest {
+export interface ArrayEntityWithUserIdParams<TEntity> extends UserIdParams {
     entities: Array<DeepPartial<TEntity>>
     data: DeepPartial<TEntity>
 }

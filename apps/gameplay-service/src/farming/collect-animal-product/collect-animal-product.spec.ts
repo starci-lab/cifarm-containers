@@ -44,7 +44,7 @@ describe("CollectAnimalProductService", () => {
         levelService = moduleRef.get(LevelService)
     })
 
-    it("should successfully collect animal product and update inventory", async () => {
+    it("should successfully collect animal product and update inventory (not quality)", async () => {
         const { value } = await dataSource.manager.findOne(SystemEntity, {
             where: { id: SystemId.Activities }
         })
@@ -62,7 +62,8 @@ describe("CollectAnimalProductService", () => {
             animalInfo: {
                 animalId,
                 currentState: AnimalCurrentState.Yield,
-                harvestQuantityRemaining: quantity
+                harvestQuantityRemaining: quantity,
+                isQuality: false
             },
             x: 0,
             y: 0,
@@ -96,16 +97,95 @@ describe("CollectAnimalProductService", () => {
                         animalId
                     }
                 }
+            },
+            relations: {
+                inventoryType: {
+                    product: true
+                }
             }
         })
 
         expect(inventory.quantity).toBe(quantity)
+        expect(inventory.inventoryType.product.isQuality).toBe(false)
 
         const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
             where: { id: placedItemAnimal.animalInfoId }
         })
 
         expect(updatedAnimalInfo.currentState).toBe(AnimalCurrentState.Normal)
+        expect(updatedAnimalInfo.yieldCount).toBe(placedItemAnimal.animalInfo.yieldCount + 1)
+    })
+
+    it("should successfully collect animal product and update inventory (quality)", async () => {
+        const { value } = await dataSource.manager.findOne(SystemEntity, {
+            where: { id: SystemId.Activities }
+        })
+        const {
+            collectAnimalProduct: { energyConsume, experiencesGain }
+        } = value as Activities
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        const quantity = 10
+        const animalId = AnimalId.Chicken
+        // create
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+            animalInfo: {
+                animalId,
+                currentState: AnimalCurrentState.Yield,
+                harvestQuantityRemaining: quantity,
+                isQuality: true
+            },
+            x: 0,
+            y: 0,
+            placedItemTypeId: PlacedItemTypeId.Chicken,
+            userId: user.id
+        })
+
+        await service.collectAnimalProduct({
+            userId: user.id,
+            placedItemAnimalId: placedItemAnimal.id
+        })
+
+        const userAfter = await dataSource.manager.findOne(UserEntity, {
+            where: { id: user.id },
+            select: ["energy", "level", "experiences"]
+        })
+
+        expect(user.energy - userAfter.energy).toBe(energyConsume)
+        expect(
+            levelService.computeTotalExperienceForLevel(userAfter) -
+                levelService.computeTotalExperienceForLevel(user)
+        ).toBe(experiencesGain)
+
+        const inventory = await dataSource.manager.findOne(InventoryEntity, {
+            where: {
+                userId: user.id,
+                inventoryType: {
+                    type: InventoryType.Product,
+                    product: {
+                        type: ProductType.Animal,
+                        animalId
+                    }
+                }
+            },
+            relations: {
+                inventoryType: {
+                    product: true
+                }
+            }
+        })
+
+        expect(inventory.quantity).toBe(quantity)
+        expect(inventory.inventoryType.product.isQuality).toBe(true)
+
+        const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
+            where: { id: placedItemAnimal.animalInfoId }
+        })
+
+        expect(updatedAnimalInfo.currentState).toBe(AnimalCurrentState.Normal)
+        expect(updatedAnimalInfo.yieldCount).toBe(placedItemAnimal.animalInfo.yieldCount + 1)
     })
 
     it("should throw GrpcNotFoundException when the animal is not found by its ID", async () => {

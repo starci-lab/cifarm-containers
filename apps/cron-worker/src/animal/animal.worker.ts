@@ -11,6 +11,7 @@ import {
     SystemId
 } from "@src/databases"
 import { DateUtcService } from "@src/date"
+import { BoosterService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { DataSource, LessThanOrEqual, Not } from "typeorm"
 
@@ -21,7 +22,8 @@ export class AnimalWorker extends WorkerHost {
     constructor(
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
-        private readonly dateUtcService: DateUtcService
+        private readonly dateUtcService: DateUtcService,
+        private readonly boosterService: BoosterService
     ) {
         super()
     }
@@ -57,15 +59,7 @@ export class AnimalWorker extends WorkerHost {
             })
             const { sickChance } = system.value as AnimalRandomness
             animalInfos = animalInfos.map((animalInfo) => {
-                // if animal is hungry, stop
-                if (animalInfo.currentState === AnimalCurrentState.Hungry) {
-                    return animalInfo
-                }
-                if (animalInfo.isAdult) {    
-                    // if animal is yield, stop
-                    if (animalInfo.currentState === AnimalCurrentState.Yield) {
-                        return animalInfo
-                    }    
+                if (animalInfo.isAdult) {      
                     // If animal is adult, add time to the animal yield
                     animalInfo.currentYieldTime += time
                     // if animal grow to half of the yield time, it may get sick and immunized
@@ -120,6 +114,16 @@ export class AnimalWorker extends WorkerHost {
                 ) {
                     animalInfo.currentState = AnimalCurrentState.Hungry
                     return animalInfo
+                }
+
+                const chance = this.boosterService.computeTileQualityChance({
+                    entity: animalInfo.placedItem.tileInfo,
+                    qualityProductChanceLimit: animalInfo.placedItem.placedItemType.tile.qualityProductChanceLimit,
+                    qualityProductChanceStack: animalInfo.placedItem.placedItemType.tile.qualityProductChanceStack
+                })
+
+                if (Math.random() < chance) {
+                    animalInfo.isQuality = true
                 }
                 
                 return animalInfo

@@ -8,13 +8,14 @@ import {
     InventoryTypeEntity,
     PlacedItemEntity,
     PlacedItemType,
-    ProductEntity,
+    ProductType,
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
+    TileInfoEntity,
     UserEntity
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { BoosterService, EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -32,6 +33,7 @@ export class HarvestCropService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService,
+        private readonly boosterService: BoosterService,
         @InjectKafka()
         private readonly clientKafka: ClientKafka
     ) {}
@@ -51,7 +53,11 @@ export class HarvestCropService {
                 relations: {
                     seedGrowthInfo: {
                         crop: true
-                    }
+                    },
+                    placedItemType: {
+                        tile: true
+                    },
+                    tileInfo: true
                 }
             })
 
@@ -89,17 +95,20 @@ export class HarvestCropService {
                 experiences: experiencesGain
             })
 
-            //get corresponding inventory type
-            const product = await queryRunner.manager.findOne(ProductEntity, {
-                where: {
-                    cropId: placedItemTile.seedGrowthInfo.cropId
-                }
+            // compute quality chance
+            const tileInfoAfterHarvestChanges = this.boosterService.updateTileInfoAfterHarvest({
+                entity: placedItemTile.tileInfo
             })
 
+            // get corresponding inventory type
             const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
                 where: {
                     type: InventoryType.Product,
-                    productId: product.id
+                    product: {
+                        type: ProductType.Crop,
+                        cropId: placedItemTile.seedGrowthInfo.cropId,
+                        isQuality: placedItemTile.seedGrowthInfo.isQuality
+                    }
                 }
             })
 
@@ -116,12 +125,12 @@ export class HarvestCropService {
                 userId: request.userId,
                 data: {
                     inventoryType: inventoryType,
-                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining
+                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining,
+                    
                 }
             })
 
             await queryRunner.startTransaction()
-
             try {
                 // update user
                 await queryRunner.manager.update(UserEntity, user.id, {
@@ -153,6 +162,16 @@ export class HarvestCropService {
                         }
                     )
                 }
+
+                // update tile info
+                await queryRunner.manager.update(
+                    TileInfoEntity,
+                    placedItemTile.tileInfoId,
+                    {
+                        ...tileInfoAfterHarvestChanges
+                    }
+                )
+
                 await queryRunner.commitTransaction()
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`

@@ -59,7 +59,7 @@ export class CropSeeder implements Seeder {
                             asTool: false,
                             deliverable: false,
                             placeable: false,
-                            type: InventoryType.Seed
+                            type: InventoryType.Product
                         }
                     }
                 ],
@@ -112,7 +112,7 @@ export class CropSeeder implements Seeder {
                             asTool: false,
                             deliverable: false,
                             placeable: false,
-                            type: InventoryType.Seed
+                            type: InventoryType.Product
                         }
                     }
                 ],
@@ -165,7 +165,7 @@ export class CropSeeder implements Seeder {
                             asTool: false,
                             deliverable: false,
                             placeable: false,
-                            type: InventoryType.Seed
+                            type: InventoryType.Product
                         }
                     }
                 ],
@@ -218,7 +218,7 @@ export class CropSeeder implements Seeder {
                             asTool: false,
                             deliverable: false,
                             placeable: false,
-                            type: InventoryType.Seed
+                            type: InventoryType.Product
                         }
                     }
                 ],
@@ -271,7 +271,7 @@ export class CropSeeder implements Seeder {
                             asTool: false,
                             deliverable: false,
                             placeable: false,
-                            type: InventoryType.Seed
+                            type: InventoryType.Product
                         }
                     }
                 ],
@@ -324,7 +324,7 @@ export class CropSeeder implements Seeder {
                             asTool: false,
                             deliverable: false,
                             placeable: false,
-                            type: InventoryType.Seed
+                            type: InventoryType.Product
                         }
                     }
                 ],

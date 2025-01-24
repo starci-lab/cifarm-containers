@@ -6,6 +6,7 @@ import { BuildingInfoEntity } from "./building-info.entity"
 import { PlacedItemTypeEntity } from "./placed-item-type.entity"
 import { SeedGrowthInfoEntity } from "./seed-grow-info.entity"
 import { UserEntity } from "./user.entity"
+import { TileInfoEntity } from "./tile-info.entity"
 
 @ObjectType()
 @Entity("placed_items")
@@ -42,6 +43,18 @@ export class PlacedItemEntity extends UuidAbstractEntity {
         onDelete: "CASCADE"
     })
         seedGrowthInfo?: SeedGrowthInfoEntity
+
+    @Field(() => ID, { nullable: true })
+    @RelationId((placedItem: PlacedItemEntity) => placedItem.tileInfo)
+        tileInfoId?: string
+
+    @Field(() => TileInfoEntity, { nullable: true })
+    @OneToOne(() => TileInfoEntity, (tileInfo) => tileInfo.placedItem, {
+        nullable: true,
+        cascade: true,
+        onDelete: "CASCADE"
+    })
+        tileInfo?: TileInfoEntity
 
     @Field(() => ID, { nullable: true })
     @RelationId((placedItem: PlacedItemEntity) => placedItem.animalInfo)

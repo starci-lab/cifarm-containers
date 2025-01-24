@@ -8,7 +8,7 @@ import {
     UserEntity
 } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
-import { DataSource, DeepPartial } from "typeorm"
+import { DataSource } from "typeorm"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
@@ -73,14 +73,6 @@ export class BuyTileService {
                 throw new GrpcFailedPreconditionException("Tile max ownership reached")
             }
 
-            // Prepare placed item entity
-            const placedItem: DeepPartial<PlacedItemEntity> = {
-                userId: request.userId,
-                x: request.position.x,
-                y: request.position.y,
-                placedItemTypeId: placedItemType.id
-            }
-
             // Subtract gold
             const goldsChanged = this.goldBalanceService.subtract({
                 entity: user,
@@ -94,7 +86,13 @@ export class BuyTileService {
                 })
 
                 // Save the placed item in the database
-                await queryRunner.manager.save(PlacedItemEntity, placedItem)
+                await queryRunner.manager.save(PlacedItemEntity, {
+                    userId: request.userId,
+                    x: request.position.x,
+                    y: request.position.y,
+                    placedItemTypeId: placedItemType.id,
+                    tileInfo: {}
+                })
 
                 await queryRunner.commitTransaction()
             } catch (error) {

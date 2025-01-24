@@ -21,7 +21,7 @@ export class AnimalInfoEntity extends UuidAbstractEntity {
         currentYieldTime: number
 
     @Field(() => Boolean)
-    @Column({ type: "boolean", default: false })
+    @Column({ name: "is_adult", type: "boolean", default: false })
         isAdult: boolean
 
     // @Field(() => String)
@@ -32,6 +32,14 @@ export class AnimalInfoEntity extends UuidAbstractEntity {
     // @ManyToOne(() => AnimalEntity, { nullable: true, onDelete: "CASCADE" })
     // @JoinColumn({ name: "animal_id", referencedColumnName: "id" })
     //     animal: AnimalEntity
+
+    @Field(() => Boolean)
+    @Column({ name: "is_quality", type: "boolean", default: false })
+        isQuality: boolean
+
+    @Field(() => Int)
+    @Column({ name: "yield_count", type: "int", default: 0 })
+        yieldCount: number
 
     @Field(() => String)
     @Column({ type: "enum", enum: AnimalCurrentState, default: AnimalCurrentState.Normal })

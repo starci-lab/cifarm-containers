@@ -53,7 +53,7 @@ export class FeedAnimalService {
                 }
             })
 
-            if (!placedItemAnimal || !placedItemAnimal.animalInfo)
+            if (!placedItemAnimal)
                 throw new GrpcNotFoundException("Animal not found")
 
             if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry)

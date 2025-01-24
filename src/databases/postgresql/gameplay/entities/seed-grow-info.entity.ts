@@ -1,5 +1,14 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
-import { Column, Entity, Index, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToOne } from "typeorm"
+import {
+    Column,
+    Entity,
+    Index,
+    JoinColumn,
+    JoinTable,
+    ManyToMany,
+    ManyToOne,
+    OneToOne
+} from "typeorm"
 import { PlacedItemEntity } from "./placed-item.entity"
 import { UuidAbstractEntity } from "./abstract"
 import { UserEntity } from "./user.entity"
@@ -16,7 +25,7 @@ export class SeedGrowthInfoEntity extends UuidAbstractEntity {
     @Field(() => Float)
     @Column({ type: "float", name: "current_stage_time_elapsed", default: 0 })
         currentStageTimeElapsed: number
-        
+
     @Field(() => Int)
     @Column({ name: "current_perennial_count", type: "int4", default: 0 })
         currentPerennialCount: number
@@ -24,6 +33,14 @@ export class SeedGrowthInfoEntity extends UuidAbstractEntity {
     @Field(() => Int)
     @Column({ type: "int", name: "harvest_quantity_remaining" })
         harvestQuantityRemaining: number
+
+    @Field(() => Int)
+    @Column({ name: "harvest_count", type: "int", default: 0 })
+        harvestCount: number
+
+    @Field(() => Boolean)
+    @Column({ name: "is_quality", type: "boolean", default: false })
+        isQuality: boolean
 
     @Field(() => String)
     @Column({ name: "crop_id", length: 36 })
@@ -39,7 +56,7 @@ export class SeedGrowthInfoEntity extends UuidAbstractEntity {
     @Column({ type: "enum", enum: CropCurrentState, default: CropCurrentState.Normal })
         currentState: CropCurrentState
 
-    @ManyToMany(() => UserEntity) 
+    @ManyToMany(() => UserEntity)
     @JoinTable()
         thiefedBy: Array<UserEntity>
 
