@@ -13,7 +13,7 @@ import {
 import { Job } from "bullmq"
 import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import { DateUtcService } from "@src/date"
-import { BoosterService } from "@src/gameplay"
+import { ProductionService } from "@src/gameplay"
 
 @Processor(bullData[BullQueueName.Crop].name)
 export class CropWorker extends WorkerHost {
@@ -23,7 +23,7 @@ export class CropWorker extends WorkerHost {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly dateUtcService: DateUtcService,
-        private readonly boosterService: BoosterService
+        private readonly productionService: ProductionService
     ) {
         super()
     }
@@ -109,7 +109,7 @@ export class CropWorker extends WorkerHost {
                         seedGrowthInfo.harvestQuantityRemaining =
                                 seedGrowthInfo.crop.maxHarvestQuantity
                     }
-                    const chance = this.boosterService.computeTileQualityChance({
+                    const chance = this.productionService.computeTileQualityChance({
                         entity: seedGrowthInfo.placedItem.tileInfo,
                         qualityProductChanceLimit: seedGrowthInfo.placedItem.placedItemType.tile.qualityProductChanceLimit,
                         qualityProductChanceStack: seedGrowthInfo.placedItem.placedItemType.tile.qualityProductChanceStack

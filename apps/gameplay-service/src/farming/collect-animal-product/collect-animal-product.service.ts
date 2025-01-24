@@ -14,7 +14,7 @@ import {
     SystemId,
     UserEntity
 } from "@src/databases"
-import { BoosterService, EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { ProductionService, EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import {
     CollectAnimalProductRequest,
@@ -37,7 +37,7 @@ export class CollectAnimalProductService {
         private readonly levelService: LevelService,
         @InjectKafka()
         private readonly clientKafka: ClientKafka,
-        private readonly boosterService: BoosterService
+        private readonly productionService: ProductionService
     ) {}
 
     async collectAnimalProduct(
@@ -131,7 +131,7 @@ export class CollectAnimalProductService {
             })
 
             // update animal info after collect
-            const animalInfoAfterCollectChanges = this.boosterService.updateAnimalInfoAfterCollect({
+            const animalInfoAfterCollectChanges = this.productionService.updateAnimalInfoAfterCollect({
                 entity: placedItemAnimal.animalInfo
             })
 

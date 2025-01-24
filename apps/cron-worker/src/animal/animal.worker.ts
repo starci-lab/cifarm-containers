@@ -11,7 +11,7 @@ import {
     SystemId
 } from "@src/databases"
 import { DateUtcService } from "@src/date"
-import { BoosterService } from "@src/gameplay"
+import { ProductionService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { DataSource, LessThanOrEqual, Not } from "typeorm"
 
@@ -23,7 +23,7 @@ export class AnimalWorker extends WorkerHost {
         @InjectPostgreSQL()
         private readonly dataSource: DataSource,
         private readonly dateUtcService: DateUtcService,
-        private readonly boosterService: BoosterService
+        private readonly productionService: ProductionService
     ) {
         super()
     }
@@ -116,7 +116,7 @@ export class AnimalWorker extends WorkerHost {
                     return animalInfo
                 }
 
-                const chance = this.boosterService.computeTileQualityChance({
+                const chance = this.productionService.computeTileQualityChance({
                     entity: animalInfo.placedItem.tileInfo,
                     qualityProductChanceLimit: animalInfo.placedItem.placedItemType.tile.qualityProductChanceLimit,
                     qualityProductChanceStack: animalInfo.placedItem.placedItemType.tile.qualityProductChanceStack

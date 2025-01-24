@@ -15,7 +15,7 @@ import {
     TileInfoEntity,
     UserEntity
 } from "@src/databases"
-import { BoosterService, EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { ProductionService, EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -33,7 +33,7 @@ export class HarvestCropService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService,
-        private readonly boosterService: BoosterService,
+        private readonly productionService: ProductionService,
         @InjectKafka()
         private readonly clientKafka: ClientKafka
     ) {}
@@ -96,7 +96,7 @@ export class HarvestCropService {
             })
 
             // compute quality chance
-            const tileInfoAfterHarvestChanges = this.boosterService.updateTileInfoAfterHarvest({
+            const tileInfoAfterHarvestChanges = this.productionService.updateTileInfoAfterHarvest({
                 entity: placedItemTile.tileInfo
             })
 
