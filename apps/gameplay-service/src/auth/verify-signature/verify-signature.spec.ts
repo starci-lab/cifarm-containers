@@ -73,7 +73,7 @@ describe("VerifySignatureService", () => {
                 }
             }
         })
-    
+
         expect(user).toBeTruthy()
     
         // Check if user has the correct number of items

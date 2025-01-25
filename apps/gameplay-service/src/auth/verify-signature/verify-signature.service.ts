@@ -98,6 +98,7 @@ export class VerifySignatureService {
                     //home & tiles
                     const home: DeepPartial<PlacedItemEntity> = {
                         placedItemTypeId: PlacedItemTypeId.Home,
+                        buildingInfo: {},
                         ...positions.home,
                     }
                     const tiles: Array<DeepPartial<PlacedItemEntity>> = positions.tiles.map(
