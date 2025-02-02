@@ -6,6 +6,7 @@ import { retryIfError } from "@src/common"
 
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
+    app.enableCors()
     //peform a retry if the app fails to listen
     await retryIfError(async () =>
         app.listen(envConfig().containers[Container.GraphQLGateway].port)

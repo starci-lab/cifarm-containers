@@ -17,6 +17,12 @@ export class PlacedItemsService {
             return await queryRunner.manager.find(PlacedItemEntity, {
                 where: {
                     userId
+                },
+                relations: {
+                    animalInfo: true,
+                    seedGrowthInfo: true,
+                    tileInfo: true,
+                    buildingInfo: true
                 }
             })
         } finally {

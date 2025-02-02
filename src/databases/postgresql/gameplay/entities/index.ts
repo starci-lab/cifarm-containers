@@ -7,7 +7,6 @@ import { CollectionEntity } from "./collection.entity"
 import { CropEntity } from "./crop.entity"
 import { DailyRewardEntity } from "./daily-reward.entity"
 import { DeliveringProductEntity } from "./delivering-product.entity"
-import { HealthcheckEntity } from "./healthcheck.entity"
 import { InventoryTypeEntity } from "./inventory-type.entity"
 import { InventoryEntity } from "./inventory.entity"
 import { PlacedItemTypeEntity } from "./placed-item-type.entity"
@@ -79,7 +78,6 @@ export const gameplayPostgreSqlEntities = () : Array<typeof AbstractEntity> => (
     SpinSlotEntity,
     AnimalInfoEntity,
     BuildingInfoEntity,
-    HealthcheckEntity,
     UsersFollowingUsersEntity,
     CollectionEntity,
     SessionEntity,

@@ -52,10 +52,6 @@ export class CropEntity extends StringAbstractEntity {
     @Column({ name: "available_in_shop", type: "boolean" })
         availableInShop: boolean
 
-    @Field(() => Int)
-    @Column({ name: "maxStack", type: "int", default: 16 })
-        maxStack: number
-
     @Field(() => ID)
     @RelationId((crop: CropEntity) => crop.products)
         productIds?: string
