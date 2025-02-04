@@ -47,32 +47,32 @@ export class BuildingSeeder implements Seeder {
                 }
             },
             {
-                id: BuildingId.Pasture,
+                id: BuildingId.Barn,
                 availableInShop: true,
                 type: AnimalType.Livestock,
                 maxUpgrade: 2,
                 price: 3000,
                 upgrades: [
                     {
-                        id: UpgradeId.PastureUpgrade1,
+                        id: UpgradeId.BarnUpgrade1,
                         capacity: 3,
                         upgradeLevel: 0
                     },
                     {
-                        id: UpgradeId.PastureUpgrade2,
+                        id: UpgradeId.BarnUpgrade2,
                         upgradePrice: 1000,
                         capacity: 5,
                         upgradeLevel: 1
                     },
                     {
-                        id: UpgradeId.PastureUpgrade3,
+                        id: UpgradeId.BarnUpgrade3,
                         upgradePrice: 2000,
                         capacity: 10,
                         upgradeLevel: 2
                     }
                 ],
                 placedItemType: {
-                    id: PlacedItemTypeId.Pasture,
+                    id: PlacedItemTypeId.Barn,
                     type: PlacedItemType.Building
                 }
             },

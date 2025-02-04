@@ -9,7 +9,7 @@ export enum AnimalId {
 // Building Enum
 export enum BuildingId {
     Coop = "coop",
-    Pasture = "pasture",
+    Barn = "barn",
     Home = "home"
 }
 
@@ -18,9 +18,9 @@ export enum UpgradeId {
     CoopUpgrade1 = "coopUpgrade1",
     CoopUpgrade2 = "coopUpgrade2",
     CoopUpgrade3 = "coopUpgrade3",
-    PastureUpgrade1 = "pastureUpgrade1",
-    PastureUpgrade2 = "pastureUpgrade2",
-    PastureUpgrade3 = "pastureUpgrade3"
+    BarnUpgrade1 = "barnUpgrade1",
+    BarnUpgrade2 = "barnUpgrade2",
+    BarnUpgrade3 = "barnUpgrade3"
 }
 
 // Crop Enum
@@ -145,7 +145,7 @@ export enum PlacedItemTypeId {
     Pig = "pig",
     Sheep = "sheep",
     Coop = "coop",
-    Pasture = "pasture",
+    Barn = "barn",
     Home = "home",
     StarterTile = "starterTile",
     BasicTile1 = "basicTile1",

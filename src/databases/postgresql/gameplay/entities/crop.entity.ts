@@ -52,7 +52,7 @@ export class CropEntity extends StringAbstractEntity {
     @Column({ name: "available_in_shop", type: "boolean" })
         availableInShop: boolean
 
-    @Field(() => ID)
+    @Field(() => [ID])
     @RelationId((crop: CropEntity) => crop.products)
         productIds?: string
 
@@ -76,7 +76,7 @@ export class CropEntity extends StringAbstractEntity {
     })
         inventoryType?: InventoryTypeEntity
 
-    @Field(() => [String])
+    @Field(() => [ID])
     @RelationId((crop: CropEntity) => crop.spinPrizes)
         spinPrizeIds: Array<string>
 
