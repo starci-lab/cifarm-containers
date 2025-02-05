@@ -63,7 +63,7 @@ export class UserEntity extends UuidAbstractEntity {
     // tutorial ended
     @Field(() => Boolean)
     @Column({ name: "tutorial_ended", type: "boolean", default: false })
-        tutorialEnded: number
+        tutorialEnded: boolean
 
     @Field(() => Int)
     @Column({ name: "daily_reward_streak", type: "int", default: 0 })

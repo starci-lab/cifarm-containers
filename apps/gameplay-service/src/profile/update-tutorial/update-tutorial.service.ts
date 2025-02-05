@@ -32,10 +32,14 @@ export class UpdateTutorialService {
         await queryRunner.connect()
 
         try {
-            // Get latest user
+            // Get user
             const user = await queryRunner.manager.findOne(UserEntity, {
                 where: { id: request.userId }
             })
+            // throw if tutorial ended
+            if (user.tutorialEnded) {
+                throw new GrpcFailedPreconditionException("Tutorial has ended")
+            }
 
             // get the system info, with cache
             const { value } = await this.cacheQueryRunnerService.findOne(
@@ -51,27 +55,30 @@ export class UpdateTutorialService {
 
             const state = steps.find((step) => step.step === user.tutorialStep).state
 
+            // check if last step is reached
+            const lastStep = state === TutorialState.SayBye
+
             switch (state) {
             case TutorialState.WaterCropAtStage1: {
-                await this.waterCropAtStage1({ queryRunner, user, state })
+                await this.waterCropAtStage1({ queryRunner, user, state, lastStep })
                 break
             }
             case TutorialState.WaterCropAtStage2: {
-                await this.waterCropAtStage2({ queryRunner, user, state })
+                await this.waterCropAtStage2({ queryRunner, user, state, lastStep })
                 break
             }
             case TutorialState.ToStage3: {
-                await this.toStage3({ queryRunner, user, state })
+                await this.toStage3({ queryRunner, user, state, lastStep })
                 break
             }
             case TutorialState.HarvestCrop: {
-                await this.harvestCrop({ queryRunner, user, state })
+                await this.harvestCrop({ queryRunner, user, state, lastStep })
                 break
             }
             default: {
                 await queryRunner.startTransaction()
                 try {
-                    await this.moveToNextTutorialStep(queryRunner, user.id)
+                    await this.moveToNextTutorialStep(queryRunner, user.id, lastStep)
                     await queryRunner.commitTransaction()
                 } catch (error) {
                     const errorMessage = `Transaction failed, reason: ${error.message}`
@@ -92,7 +99,8 @@ export class UpdateTutorialService {
     private async waterCropAtStage1({
         queryRunner,
         state,
-        user
+        user,
+        lastStep
     }: WaterCropAtStage1Params): Promise<void> {
         if (state != TutorialState.WaterCropAtStage1) {
             throw new GrpcFailedPreconditionException(
@@ -129,7 +137,7 @@ export class UpdateTutorialService {
                             : CropCurrentState.Normal
                 })
             }
-            await this.moveToNextTutorialStep(queryRunner, user.id)
+            await this.moveToNextTutorialStep(queryRunner, user.id, lastStep)
             await queryRunner.commitTransaction()
         } catch (error) {
             const errorMessage = `Transaction failed, reason: ${error.message}`
@@ -140,12 +148,24 @@ export class UpdateTutorialService {
     }
 
     // increment tutorial step
-    private async moveToNextTutorialStep(queryRunner: QueryRunner, userId: string): Promise<void> {
+    private async moveToNextTutorialStep(
+        queryRunner: QueryRunner,
+        userId: string,
+        lastStep: boolean
+    ): Promise<void> {
         await queryRunner.manager.increment(UserEntity, { id: userId }, "tutorialStep", 1)
+        if (lastStep) {
+            await queryRunner.manager.update(UserEntity, { id: userId }, { tutorialEnded: true })
+        }
     }
 
     // water crop at stage 2
-    private async waterCropAtStage2({ queryRunner, state, user }: WaterCropAtStage2Params) {
+    private async waterCropAtStage2({
+        queryRunner,
+        state,
+        user,
+        lastStep
+    }: WaterCropAtStage2Params) {
         if (state != TutorialState.WaterCropAtStage2) {
             throw new GrpcFailedPreconditionException(
                 "You are not in the right state to water crop at stage 2"
@@ -191,7 +211,7 @@ export class UpdateTutorialService {
                             : CropCurrentState.Normal
                 })
             }
-            await this.moveToNextTutorialStep(queryRunner, user.id)
+            await this.moveToNextTutorialStep(queryRunner, user.id, lastStep)
             await queryRunner.commitTransaction()
         } catch (error) {
             const errorMessage = `Transaction failed, reason: ${error.message}`
@@ -202,7 +222,7 @@ export class UpdateTutorialService {
     }
 
     // to stage 3
-    private async toStage3({ queryRunner, state, user }: ToStage3Params) {
+    private async toStage3({ queryRunner, state, user, lastStep }: ToStage3Params) {
         if (state != TutorialState.ToStage3) {
             throw new GrpcFailedPreconditionException(
                 "You are not in the right state to water crop at stage 3"
@@ -247,7 +267,7 @@ export class UpdateTutorialService {
                             : CropCurrentState.IsWeedy
                 })
             }
-            await this.moveToNextTutorialStep(queryRunner, user.id)
+            await this.moveToNextTutorialStep(queryRunner, user.id, lastStep)
             await queryRunner.commitTransaction()
         } catch (error) {
             const errorMessage = `Transaction failed, reason: ${error.message}`
@@ -258,7 +278,7 @@ export class UpdateTutorialService {
     }
 
     // harvest crop
-    private async harvestCrop({ queryRunner, state, user }: HarvestCropParams) {
+    private async harvestCrop({ queryRunner, state, user, lastStep }: HarvestCropParams) {
         if (state != TutorialState.UsePesticide) {
             throw new GrpcFailedPreconditionException(
                 "You are not in the right state to water crop at harvest"
@@ -271,8 +291,8 @@ export class UpdateTutorialService {
                 placedItem: {
                     userId: user.id
                 },
-                cropId: defaultCropId,
-            },
+                cropId: defaultCropId
+            }
         })
         if (seedGrowthInfos.length !== 2) {
             throw new GrpcFailedPreconditionException(
@@ -294,10 +314,10 @@ export class UpdateTutorialService {
                 await queryRunner.manager.update(SeedGrowthInfoEntity, seedGrowthInfo.id, {
                     currentStage: crop.growthStages - 1,
                     harvestQuantityRemaining: crop.maxHarvestQuantity,
-                    currentState: CropCurrentState.FullyMatured,
+                    currentState: CropCurrentState.FullyMatured
                 })
             }
-            await this.moveToNextTutorialStep(queryRunner, user.id)
+            await this.moveToNextTutorialStep(queryRunner, user.id, lastStep)
             await queryRunner.commitTransaction()
         } catch (error) {
             const errorMessage = `Transaction failed, reason: ${error.message}`
@@ -312,6 +332,8 @@ export interface WaterCropAtStage1Params {
     queryRunner: QueryRunner
     user: UserEntity
     state: TutorialState
+    // last step is reached
+    lastStep: boolean
 }
 
 export type WaterCropAtStage2Params = WaterCropAtStage1Params

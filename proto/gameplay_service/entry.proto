@@ -9,6 +9,7 @@ import "./auth/entry.proto";
 import "./community/entry.proto";
 import "./placement/entry.proto";
 import "./upgrade/entry.proto";
+import "./profile/entry.proto";
 
 package gameplay_service;
 
@@ -63,4 +64,7 @@ service GameplayService {
 
     // Upgrade methods
     rpc UpgradeBuilding(UpgradeBuildingRequest) returns (google.protobuf.Empty);
+
+    // Update tutorial
+    rpc UpdateTutorial(UpdateTutorialRequest) returns (google.protobuf.Empty);
 }
