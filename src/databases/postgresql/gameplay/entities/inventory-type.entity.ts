@@ -3,7 +3,7 @@ import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import { AnimalEntity } from "./animal.entity"
 import { CropEntity } from "./crop.entity"
-import { InventoryType } from "../enums"
+import { AvailableInType, InventoryType } from "../enums"
 import { InventoryEntity } from "./inventory.entity"
 import { ProductEntity } from "./product.entity"
 import { SupplyEntity } from "./supply.entity"
@@ -27,6 +27,11 @@ export class InventoryTypeEntity extends StringAbstractEntity {
     @Field(() => Boolean, { defaultValue: false })
     @Column({ name: "as_tool", type: "boolean", default: false })
         asTool: boolean
+
+    // if as tool, this will check if the tool can be in your home, neighbor, or both
+    @Field(() => String, { nullable: true })
+    @Column({ name: "available_in_type", type: "enum", enum: AvailableInType, nullable: true })
+        availableInType?: AvailableInType
 
     @Field(() => Number)
     @Column({ name: "max_stack", type: "int", default: 64 })

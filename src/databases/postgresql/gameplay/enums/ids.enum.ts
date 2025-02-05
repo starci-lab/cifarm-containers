@@ -69,7 +69,7 @@ export enum TileId {
 // Tool Enum
 export enum ToolId {
     Scythe = "scythe",
-    Steal = "steal",
+    ThiefHand = "thiefHand",
     WaterCan = "watercan",
     Herbicide = "herbicide",
     Pesticide = "pesticide"

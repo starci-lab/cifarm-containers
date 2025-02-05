@@ -10,7 +10,7 @@ export class ToolSeeder implements Seeder {
         this.logger.debug("Seeding tools...")
         await dataSource.manager.save(ToolEntity, [
             { id: ToolId.Scythe, availableIn: AvailableInType.Home, index: 0 },
-            { id: ToolId.Steal, availableIn: AvailableInType.Neighbor, index: 1 },
+            { id: ToolId.ThiefHand, availableIn: AvailableInType.Neighbor, index: 1 },
             { id: ToolId.WaterCan, availableIn: AvailableInType.Both, index: 2 },
             { id: ToolId.Herbicide, availableIn: AvailableInType.Both, index: 3 },
             { id: ToolId.Pesticide, availableIn: AvailableInType.Both, index: 4 }
