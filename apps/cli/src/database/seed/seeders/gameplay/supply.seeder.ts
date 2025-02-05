@@ -18,7 +18,7 @@ export class SupplySeeder implements Seeder {
                 inventoryType: {
                     id: InventoryTypeId.BasicFertilizer,
                     asTool: true,
-                    availableInType: AvailableInType.Home,
+                    availableIn: AvailableInType.Home,
                     deliverable: false,
                     maxStack: 16,
                     placeable: false,
@@ -33,7 +33,7 @@ export class SupplySeeder implements Seeder {
                 inventoryType: {
                     id: InventoryTypeId.AnimalFeed,
                     asTool: true,
-                    availableInType: AvailableInType.Home,
+                    availableIn: AvailableInType.Home,
                     deliverable: false,
                     maxStack: 16,
                     placeable: false,

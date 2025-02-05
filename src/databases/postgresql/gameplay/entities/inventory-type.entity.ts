@@ -30,8 +30,8 @@ export class InventoryTypeEntity extends StringAbstractEntity {
 
     // if as tool, this will check if the tool can be in your home, neighbor, or both
     @Field(() => String, { nullable: true })
-    @Column({ name: "available_in_type", type: "enum", enum: AvailableInType, nullable: true })
-        availableInType?: AvailableInType
+    @Column({ name: "available_in", type: "enum", enum: AvailableInType, nullable: true })
+        availableIn?: AvailableInType
 
     @Field(() => Number)
     @Column({ name: "max_stack", type: "int", default: 64 })
