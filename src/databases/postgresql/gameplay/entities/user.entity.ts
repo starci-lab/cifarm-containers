@@ -55,13 +55,15 @@ export class UserEntity extends UuidAbstractEntity {
     @Column({ name: "level", type: "int", default: 1 })
         level: number
 
+    // tutorial step
     @Field(() => Int)
-    @Column({ name: "tutorial_index", type: "int", default: 0 })
-        tutorialIndex: number
+    @Column({ name: "tutorial_step", type: "int", default: 0 })
+        tutorialStep: number
 
-    @Field(() => Int)
-    @Column({ name: "step_index", type: "int", default: 0 })
-        stepIndex: number
+    // tutorial ended
+    @Field(() => Boolean)
+    @Column({ name: "tutorial_ended", type: "boolean", default: false })
+        tutorialEnded: number
 
     @Field(() => Int)
     @Column({ name: "daily_reward_streak", type: "int", default: 0 })

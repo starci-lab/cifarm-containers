@@ -102,6 +102,7 @@ export enum SystemId {
     Starter = "starter",
     SpinInfo = "spinInfo",
     EnergyRegen = "energyRegen",
+    TutorialInfo = "tutorialInfo"
 }
 
 export enum KeyValueStoreId {

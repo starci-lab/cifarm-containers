@@ -2,7 +2,7 @@ import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Column, Entity } from "typeorm"
 import { StringAbstractEntity } from "./abstract"
 import JSON from "graphql-type-json"
-import { AppearanceChance } from "../enums"
+import { AppearanceChance, TutorialState } from "../enums"
 import { Position } from "@src/gameplay"
 
 @ObjectType()
@@ -19,6 +19,20 @@ export class ActivityInfo {
         experiencesGain: number
     @Field(() => Int)
         energyConsume: number
+}
+
+@ObjectType()
+export class TutorialStep {
+    @Field(() => Int)
+        step: number
+    @Field(() => String)
+        state: TutorialState
+}
+
+@ObjectType()
+export class TutorialInfo {
+    @Field(() => [TutorialStep])
+        steps: Array<TutorialStep>
 }
 
 @ObjectType()

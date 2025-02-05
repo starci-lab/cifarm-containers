@@ -8,7 +8,9 @@ import {
     SpinInfo,
     Starter,
     SystemEntity,
-    SystemId
+    SystemId,
+    TutorialInfo,
+    TutorialState
 } from "@src/databases"
 import { DataSource, DeepPartial } from "typeorm"
 import { Seeder } from "typeorm-extension"
@@ -151,6 +153,14 @@ export class SystemSeeder implements Seeder {
             time: 60 * 5
         }
 
+        // we create tutorial step object with all states and set them to 
+        const tutorialInfo: TutorialInfo = {
+            steps: Object.values(TutorialState).map((state, index) => ({
+                state,
+                step: index,
+            }))
+        }     
+
         const data: Array<DeepPartial<SystemEntity>> = [
             {
                 id: SystemId.Activities,
@@ -175,8 +185,13 @@ export class SystemSeeder implements Seeder {
             {
                 id: SystemId.EnergyRegen,
                 value: energyRegen
+            },
+            {
+                id: SystemId.TutorialInfo,
+                value: tutorialInfo
             }
         ]
+    
         await dataSource.manager.save(SystemEntity, data)
         this.logger.verbose("System seeded successfully.")
     }
