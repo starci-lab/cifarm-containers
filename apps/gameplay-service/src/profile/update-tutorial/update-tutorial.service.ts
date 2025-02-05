@@ -9,13 +9,13 @@ import {
     SystemId,
     TutorialInfo,
     TutorialState,
-    UserEntity
+    UserEntity,
+    defaultCropId
 } from "@src/databases"
 import { DataSource, QueryRunner } from "typeorm"
 import { GrpcInternalException } from "nestjs-grpc-exceptions"
 import { UpdateTutorialRequest, UpdateTutorialResponse } from "./update-tutorial.dto"
 import { GrpcFailedPreconditionException } from "@src/common"
-import { defaultCropId } from "@src/gameplay"
 
 @Injectable()
 export class UpdateTutorialService {

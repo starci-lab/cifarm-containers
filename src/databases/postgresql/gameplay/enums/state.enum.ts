@@ -25,9 +25,9 @@ export enum TutorialState {
     // plant a seed
     PlantSeed = "plantSeed",
     // water the crop in stage 1
-    WaterCropAtStage1 = "waterCropInStage1",
+    WaterCropAtStage1 = "waterCropAtStage1",
     // water the crop in stage 2
-    WaterCropAtStage2 = "waterCropInStage2",
+    WaterCropAtStage2 = "waterCropAtStage2",
     // to stage 3
     ToStage3 = "toStage3",
     // use pesticide

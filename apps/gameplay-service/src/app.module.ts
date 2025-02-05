@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { CacheModule } from "@src/cache"
-import { PostgreSQLModule } from "@src/databases"
+import { CacheQueryModule, PostgreSQLModule } from "@src/databases"
 import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { UpgradeModule } from "./upgrade"
 import { ClaimModule } from "./claim"
@@ -46,6 +46,9 @@ import { DateModule } from "@src/date"
         }),
         JwtModule.register({
             useGlobalImports: true,
+            isGlobal: true
+        }),
+        CacheQueryModule.register({
             isGlobal: true
         }),
         AuthModule,
