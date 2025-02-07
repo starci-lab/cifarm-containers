@@ -82,5 +82,5 @@ export const gameplayPostgreSqlEntities = () : Array<typeof AbstractEntity> => (
     CollectionEntity,
     SessionEntity,
     KeyValueStoreEntity,
-    TileInfoEntity
+    TileInfoEntity,
 ])

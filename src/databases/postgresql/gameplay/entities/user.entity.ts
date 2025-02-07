@@ -7,6 +7,8 @@ import { PlacedItemEntity } from "./placed-item.entity"
 import { DeliveringProductEntity } from "./delivering-product.entity"
 import { UsersFollowingUsersEntity } from "./users-following-users.entity"
 import { SessionEntity } from "./session.entity"
+import { } from "@src/gameplay"
+import { defaultTutorialStep, TutorialStep } from "../enums"
 
 @ObjectType()
 @Entity("users")
@@ -57,13 +59,8 @@ export class UserEntity extends UuidAbstractEntity {
 
     // tutorial step
     @Field(() => Int)
-    @Column({ name: "tutorial_step", type: "int", default: 0 })
-        tutorialStep: number
-
-    // tutorial ended
-    @Field(() => Boolean)
-    @Column({ name: "tutorial_ended", type: "boolean", default: false })
-        tutorialEnded: boolean
+    @Column({ name: "tutorial_step", type: "int", default: defaultTutorialStep })
+        tutorialStep: TutorialStep
 
     @Field(() => Int)
     @Column({ name: "daily_reward_streak", type: "int", default: 0 })

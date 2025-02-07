@@ -6,6 +6,7 @@ export enum GameplayErrorCode {
     InventoryQuantityNotSufficient,
     ExperienceCannotBeZeroOrNegative,
     EnergyNotEnough,
+    PhaseNotFound,
 }
 
 export class GameplayException extends Error {

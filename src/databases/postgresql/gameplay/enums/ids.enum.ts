@@ -101,8 +101,7 @@ export enum SystemId {
     AnimalRandomness = "animalRandomness",
     Starter = "starter",
     SpinInfo = "spinInfo",
-    EnergyRegen = "energyRegen",
-    TutorialInfo = "tutorialInfo"
+    EnergyRegen = "energyRegen"
 }
 
 export enum KeyValueStoreId {
@@ -154,4 +153,3 @@ export enum PlacedItemTypeId {
     BasicTile3 = "basicTile3",
     FertileTile = "fertileTile"
 }
-
