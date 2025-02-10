@@ -8,7 +8,7 @@ import { Position } from "@src/gameplay"
 export class BuyAnimalRequest extends UserIdRequest {
     @IsString()
     @ApiProperty({ example: AnimalId.Chicken, description: "The ID of the animal" })
-        animalId: string
+        animalId: AnimalId
 
     @IsString()
     @ApiProperty({ example: "", description: "The ID of the building" })

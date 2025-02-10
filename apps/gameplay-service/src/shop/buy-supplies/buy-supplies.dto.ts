@@ -2,6 +2,7 @@
 
 import { ApiProperty } from "@nestjs/swagger"
 import { UserIdRequest } from "@src/common"
+import { SupplyId } from "@src/databases"
 import { IsInt, IsString, Min } from "class-validator"
 
 export class BuySuppliesRequest extends UserIdRequest {
@@ -10,7 +11,7 @@ export class BuySuppliesRequest extends UserIdRequest {
         description: "The id of the supply to purchase"
     })
     @IsString()
-        supplyId: string
+        supplyId: SupplyId
 
     @ApiProperty({ example: 10, description: "The quantity of supplies to purchase" })
     @IsInt()

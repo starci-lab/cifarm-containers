@@ -22,6 +22,11 @@ export class InventoryEntity extends UuidAbstractEntity {
     @Field(() => String, { nullable: true })
     @Column({ name: "user_id", nullable: true })
         userId: string
+    
+    // special field for toolbar
+    @Field(() => Boolean, { nullable: true })
+    @Column({ name: "in_toolbar", type: "boolean", default: false })
+        inToolbar: boolean
 
     @Field(() => UserEntity, { nullable: true })
     @ManyToOne(() => UserEntity, (user) => user.inventories, { onDelete: "CASCADE", eager: true })

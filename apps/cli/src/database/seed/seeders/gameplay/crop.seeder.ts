@@ -65,7 +65,7 @@ export class CropSeeder implements Seeder {
                 ],
                 inventoryType: {
                     id: InventoryTypeId.CarrotSeed,
-                    asTool: false,
+                    asTool: true,
                     deliverable: false,
                     placeable: false,
                     type: InventoryType.Seed
@@ -118,7 +118,7 @@ export class CropSeeder implements Seeder {
                 ],
                 inventoryType: {
                     id: InventoryTypeId.PotatoSeed,
-                    asTool: false,
+                    asTool: true,
                     deliverable: false,
                     placeable: false,
                     type: InventoryType.Seed
@@ -171,7 +171,7 @@ export class CropSeeder implements Seeder {
                 ],
                 inventoryType: {
                     id: InventoryTypeId.CucumberSeed,
-                    asTool: false,
+                    asTool: true,
                     deliverable: false,
                     placeable: false,
                     type: InventoryType.Seed
@@ -224,7 +224,7 @@ export class CropSeeder implements Seeder {
                 ],
                 inventoryType: {
                     id: InventoryTypeId.PineappleSeed,
-                    asTool: false,
+                    asTool: true,
                     deliverable: false,
                     placeable: false,
                     type: InventoryType.Seed
@@ -277,7 +277,7 @@ export class CropSeeder implements Seeder {
                 ],
                 inventoryType: {
                     id: InventoryTypeId.WatermelonSeed,
-                    asTool: false,
+                    asTool: true,
                     deliverable: false,
                     placeable: false,
                     type: InventoryType.Seed
@@ -330,7 +330,7 @@ export class CropSeeder implements Seeder {
                 ],
                 inventoryType: {
                     id: InventoryTypeId.BellPepperSeed,
-                    asTool: false,
+                    asTool: true,
                     deliverable: false,
                     placeable: false,
                     type: InventoryType.Seed

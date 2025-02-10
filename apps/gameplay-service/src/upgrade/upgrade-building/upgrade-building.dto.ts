@@ -6,7 +6,6 @@ export class UpgradeBuildingRequest extends UserIdRequest {
     @IsString()
     @ApiProperty({ example: "placed-item-building-id" })
         placedItemBuildingId: string
-
 }
 
 export class UpgradeBuildingResponse {

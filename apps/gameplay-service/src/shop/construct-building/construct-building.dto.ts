@@ -8,7 +8,7 @@ import { Position } from "@src/gameplay"
 export class ConstructBuildingRequest extends UserIdRequest {
     @IsString()
     @ApiProperty({ example: BuildingId.Barn })
-        buildingId: string
+        buildingId: BuildingId
 
     @ValidateNested()
     @Type(() => Position)

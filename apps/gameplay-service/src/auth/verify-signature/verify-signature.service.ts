@@ -9,13 +9,18 @@ import {
     SystemEntity,
     SystemId,
     UserEntity,
-    SessionEntity
+    SessionEntity,
+    InventoryEntity,
+    defaultCropId,
+    InventoryType,
+    InventoryTypeEntity,
+    CacheQueryRunnerService
 } from "@src/databases"
 import {
     IBlockchainAuthService,
     chainKeyToPlatform,
     defaultChainKey,
-    getBlockchainAuthServiceToken,
+    getBlockchainAuthServiceToken
 } from "@src/blockchain"
 
 import { EnergyService } from "@src/gameplay"
@@ -24,7 +29,11 @@ import { Network } from "@src/env"
 import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { DataSource, DeepPartial } from "typeorm"
-import { GrpcInternalException, GrpcInvalidArgumentException } from "nestjs-grpc-exceptions"
+import {
+    GrpcInternalException,
+    GrpcInvalidArgumentException,
+    GrpcNotFoundException
+} from "nestjs-grpc-exceptions"
 import { ModuleRef } from "@nestjs/core"
 
 @Injectable()
@@ -38,7 +47,8 @@ export class VerifySignatureService {
         private readonly cacheManager: Cache,
         private readonly moduleRef: ModuleRef,
         private readonly jwtService: JwtService,
-        private readonly energyService: EnergyService
+        private readonly energyService: EnergyService,
+        private readonly cacheQueryRunnerService: CacheQueryRunnerService
     ) {}
 
     public async verifySignature({
@@ -63,7 +73,8 @@ export class VerifySignatureService {
         const platform = chainKeyToPlatform(chainKey)
 
         const authService = this.moduleRef.get<IBlockchainAuthService>(
-            getBlockchainAuthServiceToken(platform), { strict: false }
+            getBlockchainAuthServiceToken(platform),
+            { strict: false }
         )
 
         const verified = authService.verifyMessage({
@@ -77,6 +88,20 @@ export class VerifySignatureService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
+            const inventoryType = await this.cacheQueryRunnerService.findOne(
+                queryRunner,
+                InventoryTypeEntity,
+                {
+                    where: {
+                        type: InventoryType.Seed,
+                        cropId: defaultCropId
+                    }
+                }
+            )
+            if (!inventoryType) {
+                throw new GrpcNotFoundException("Default crop not found")
+            }
+
             let user = await queryRunner.manager.findOne(UserEntity, {
                 where: {
                     accountAddress,
@@ -99,7 +124,7 @@ export class VerifySignatureService {
                     const home: DeepPartial<PlacedItemEntity> = {
                         placedItemTypeId: PlacedItemTypeId.Home,
                         buildingInfo: {},
-                        ...positions.home,
+                        ...positions.home
                     }
                     const tiles: Array<DeepPartial<PlacedItemEntity>> = positions.tiles.map(
                         (tile) => ({
@@ -116,6 +141,12 @@ export class VerifySignatureService {
                         energy,
                         golds,
                         placedItems: [home, ...tiles]
+                    })
+                    //bring user 5 default seeds
+                    await queryRunner.manager.save(InventoryEntity, {
+                        userId: user.id,
+                        inventoryTypeId: inventoryType.id,
+                        quantity: 5
                     })
 
                     await queryRunner.commitTransaction()

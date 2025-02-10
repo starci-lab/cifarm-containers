@@ -8,7 +8,7 @@ import { IsInt, IsString, Min } from "class-validator"
 export class BuySeedsRequest extends UserIdRequest {
     @ApiProperty({ example: CropId.Carrot, description: "The id of the seed to purchase" })
     @IsString()
-        cropId: string
+        cropId: CropId
 
     @ApiProperty({ example: 10, description: "The quantity of seeds to purchase" })
     @IsInt()
