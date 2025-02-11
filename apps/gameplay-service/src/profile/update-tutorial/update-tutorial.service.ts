@@ -103,7 +103,7 @@ export class UpdateTutorialService {
         nextStep,
         user,
     }: StartWaterCropAtStage1Params): Promise<void> {
-        if (nextStep != TutorialStep.StartWaterCropAtStage2) {
+        if (nextStep != TutorialStep.StartWaterCropAtStage1) {
             throw new GrpcFailedPreconditionException(
                 "You are not in the right state to water crop at stage 1"
             )
