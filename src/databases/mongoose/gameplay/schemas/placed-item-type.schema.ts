@@ -14,22 +14,13 @@ export type PlacedItemTypeDocument = HydratedDocument<PlacedItemTypeSchema>
     id: false
 })
 export class PlacedItemTypeSchema extends KeyAbstractSchema {
-    
     @Field(() => String)
     @Prop({ type: String, enum: PlacedItemType, required: true })
         type: PlacedItemType
 
     @Field(() => String, { nullable: true })
     @Prop({ type: String, required: false })
-        tileKey?: string
-
-    @Field(() => String, { nullable: true })
-    @Prop({ type: String, required: false })
-        buildingKey?: string
-
-    @Field(() => String, { nullable: true })
-    @Prop({ type: String, required: false })
-        animalKey?: string
+        refKey?: string
 }
 
 // Generate Mongoose Schema
