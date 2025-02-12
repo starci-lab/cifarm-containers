@@ -19,11 +19,11 @@ export class PlacedItemSchema extends KeyAbstractSchema {
     @Prop({ type: Number, required: true })
         y: number
 
-    @Field(() => ID, { nullable: true })
+    @Field(() => String, { nullable: true })
     @Prop({ type: String, required: false })
         userId?: string
 
-    @Field(() => ID, { nullable: true })
+    @Field(() => String, { nullable: true })
     @Prop({ type: String, required: false })
         inventoryId?: string
 
@@ -43,7 +43,7 @@ export class PlacedItemSchema extends KeyAbstractSchema {
     @Prop({ type: Object, required: false })
         buildingInfo?: BuildingInfo
 
-    @Field(() => ID, { nullable: true })
+    @Field(() => String, { nullable: true })
     @Prop({ type: String, required: false })
         placedItemTypeId?: string
 }
@@ -87,9 +87,9 @@ export class SeedGrowthInfo {
     @Prop({ type: Boolean, default: false })
         isQuality: boolean
 
-    @Field(() => ID)
+    @Field(() => String)
     @Prop({ type: String, required: true })
-        cropId: string
+        cropKey: string
 
     @Field(() => String)
     @Prop({ type: String, enum: CropCurrentState, default: CropCurrentState.Normal })
@@ -105,6 +105,10 @@ export class BuildingInfo {
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         currentUpgrade: number
+
+    @Field(() => String)
+    @Prop({ type: String, required: true })
+        placedItemId: string
 }
 
 @ObjectType()
