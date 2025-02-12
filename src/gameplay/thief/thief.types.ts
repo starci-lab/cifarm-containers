@@ -1,6 +1,5 @@
 export interface ComputeParams {
     thief2: number
-
     thief3: number
 }
 

@@ -5,7 +5,7 @@ import {
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
@@ -42,7 +42,7 @@ export class BuySeedsService {
 
             const totalCost = crop.price * request.quantity
 
-            const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+            const user: UserSchema = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -84,7 +84,7 @@ export class BuySeedsService {
                     amount: totalCost
                 })
 
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...goldsChanged
                 })
 

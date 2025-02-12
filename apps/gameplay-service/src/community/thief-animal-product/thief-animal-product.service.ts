@@ -15,7 +15,7 @@ import {
     ProductType,
     SystemEntity,
     SystemId,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import {
     EnergyService,
@@ -97,7 +97,7 @@ export class ThiefAnimalProductService {
             } = activitiesValue as Activities
 
             //get user
-            const user = await queryRunner.manager.findOne(UserEntity, {
+            const user = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -164,7 +164,7 @@ export class ThiefAnimalProductService {
             await queryRunner.startTransaction()
             try {
                 // update user
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...energyChanges,
                     ...experiencesChanges
                 })

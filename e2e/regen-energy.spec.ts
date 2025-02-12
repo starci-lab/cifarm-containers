@@ -6,7 +6,7 @@ import {
     getPostgreSqlToken,
     SystemEntity,
     SystemId,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import {
@@ -58,7 +58,7 @@ describe("Regen energy", () => {
                 chainKey: ChainKey.Solana,
                 network: Network.Testnet
             })
-            dataSource.manager.update(UserEntity, user.id, {
+            dataSource.manager.update(UserSchema, user.id, {
                 energyFull: false,
                 energy: 0
             })
@@ -74,7 +74,7 @@ describe("Regen energy", () => {
                     time: energyRegenTime
                 })
                 await sleep(1100)
-                const userAfter = await dataSource.manager.findOne(UserEntity, {
+                const userAfter = await dataSource.manager.findOne(UserSchema, {
                     where: {
                         id: user.id
                     }

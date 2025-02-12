@@ -9,7 +9,7 @@ import {
     SystemEntity,
     SupplyEntity,
     SupplyId,
-    UserEntity,
+    UserSchema,
     InventoryEntity,
     SystemId,
     Activities,
@@ -92,7 +92,7 @@ describe("UseFertilizerService", () => {
         })
 
         // Check if energy and experience were updated correctly
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["energy", "level", "experiences"]
         })

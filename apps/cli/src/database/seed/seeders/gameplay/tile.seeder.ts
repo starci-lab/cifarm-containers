@@ -22,14 +22,14 @@ export class TileSeeder implements Seeder {
 
         const data: Array<Partial<TileSchema>> = [
             {
-                key: TileKey.StarterTile,
+                key: TileKey.DefaultInfoTile,
                 price: 0,
                 maxOwnership: 6,
                 isNft: false,
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
                 availableInShop: true,
-                placedItemTypeKey: PlacedItemTypeKey.StarterTile
+                placedItemTypeKey: PlacedItemTypeKey.DefaultInfoTile
             },
             {
                 key: TileKey.BasicTile1,

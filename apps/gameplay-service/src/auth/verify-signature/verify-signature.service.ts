@@ -2,17 +2,16 @@ import { Injectable, Logger } from "@nestjs/common"
 import { GrpcCacheNotFound } from "@src/exceptions"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 import {
-    InjectPostgreSQL,
-    PlacedItemEntity,
-    PlacedItemTypeId,
-    Starter,
-    SystemEntity,
-    SystemId,
-    UserEntity,
-    SessionEntity,
+    DefaultInfo,
+    UserSchema,
     InventoryType,
-    InventoryTypeEntity,
-    CacheQueryRunnerService
+    InjectMongoose,
+    SystemKey,
+    SystemSchema,
+    SystemRecord,
+    InventoryTypeSchema,
+    PlacedItemSchema,
+    PlacedItemTypeKey,
 } from "@src/databases"
 import {
     IBlockchainAuthService,
@@ -26,27 +25,27 @@ import { InjectCache } from "@src/cache"
 import { Network } from "@src/env"
 import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
-import { DataSource, DeepPartial } from "typeorm"
+import { DeepPartial } from "typeorm"
 import {
     GrpcInternalException,
     GrpcInvalidArgumentException,
     GrpcNotFoundException
 } from "nestjs-grpc-exceptions"
 import { ModuleRef } from "@nestjs/core"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class VerifySignatureService {
     private readonly logger = new Logger(VerifySignatureService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly moduleRef: ModuleRef,
         private readonly jwtService: JwtService,
         private readonly energyService: EnergyService,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
     ) {}
 
     public async verifySignature({
@@ -56,11 +55,7 @@ export class VerifySignatureService {
         chainKey,
         network,
         accountAddress,
-        deviceInfo
     }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
-        //use destructuring to get device, os, browser from deviceInfo, even if deviceInfo is null
-        const { device, os, browser, ipV4 } = { ...deviceInfo }
-
         const valid = await this.cacheManager.get(message)
         if (!valid) {
             throw new GrpcCacheNotFound(message)
@@ -82,49 +77,38 @@ export class VerifySignatureService {
         })
 
         if (!verified) throw new GrpcInvalidArgumentException("Signature is invalid")
-
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-        try {
-            let user = await queryRunner.manager.findOne(UserEntity, {
-                where: {
-                    accountAddress,
-                    chainKey,
-                    network
-                }
+            const user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
+                accountAddress,
+                chainKey,
+                network
             })
-            //if user not found, create user
+
             if (!user) {
-                // get starter info
-                const { value } = await queryRunner.manager.findOne(SystemEntity, {
-                    where: { id: SystemId.Starter }
+                // get default info
+                const { value: { defaultCropKey, defaultSeedQuantity, golds, positions } } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DefaultInfo>>({
+                    key: SystemKey.DefaultInfo
                 })
-                const { golds, positions, defaultCropId, defaultSeedQuantity } = value as Starter
+
+                const mongoSession = await this.connection.startSession()  
                 const energy = this.energyService.getMaxEnergy()
 
-                const inventoryType = await this.cacheQueryRunnerService.findOne(
-                    queryRunner,
-                    InventoryTypeEntity,
-                    {
-                        where: {
-                            type: InventoryType.Seed,
-                            cropId: defaultCropId
-                        }
-                    }
-                )
+                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
+                    refKey: defaultCropKey,
+                    type: InventoryType.Seed
+                })
                 if (!inventoryType) {
-                    throw new GrpcNotFoundException("Default crop not found")
+                    throw new GrpcNotFoundException("Inventory seed type not found")
                 }        
 
                 //home & tiles
-                const home: DeepPartial<PlacedItemEntity> = {
-                    placedItemTypeId: PlacedItemTypeId.Home,
+                const home: DeepPartial<PlacedItemSchema> = {
+                    placedItemTypeKey: PlacedItemTypeKey.Home,
                     buildingInfo: {},
                     ...positions.home
                 }
                 const tiles: Array<DeepPartial<PlacedItemEntity>> = positions.tiles.map(
                     (tile) => ({
-                        placedItemTypeId: PlacedItemTypeId.StarterTile,
+                        placedItemTypeId: PlacedItemTypeId.DefaultInfoTile,
                         tileInfo: {},
                         ...tile
                     })
@@ -132,7 +116,7 @@ export class VerifySignatureService {
                 try {
                     await queryRunner.startTransaction()
 
-                    user = await queryRunner.manager.save(UserEntity, {
+                    user = await queryRunner.manager.save(UserSchema, {
                         username: `${chainKey}-${accountAddress.substring(0, 5)}`,
                         accountAddress,
                         chainKey,

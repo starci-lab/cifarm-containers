@@ -10,49 +10,58 @@ export class InventoryService {
 
     constructor() {}
 
-    public add(params: AddParams): AddResult {
-        const resultInventories: Array<DeepPartial<InventorySchema>> = params.entities
+    public add({ inventories, inventoryType, quantity }: AddParams): AddResult {
+        const updatedInventories: Array<DeepPartial<InventorySchema>> = []
+        const createdInventories: Array<DeepPartial<InventorySchema>> = []
 
-        let remainingQuantity = params.data.quantity
+        // sort the quantity in ascending order
+        const sortedInventories = inventories.sort((prev, next) => next.quantity - prev.quantity)
 
-        const inventoryType = params.data.inventoryType
-
-        this.logger.debug(`Found ${resultInventories.length} inventories`)
-
-        for (const inventory of resultInventories) {
-            if (remainingQuantity <= 0) break
-
+        // loop through the inventories and add the quantity to the inventory
+        for (const inventory of sortedInventories) {
             const spaceInCurrentStack = inventoryType.maxStack - inventory.quantity
             if (spaceInCurrentStack > 0) {
-                const quantityToAdd = Math.min(spaceInCurrentStack, remainingQuantity)
+                const quantityToAdd = Math.min(spaceInCurrentStack, quantity)
                 inventory.quantity += quantityToAdd
-                remainingQuantity -= quantityToAdd
+                quantity -= quantityToAdd   
             }
+            updatedInventories.push(inventory)    
         }
 
-        this.logger.debug(`Remaining quantity: ${remainingQuantity}`)
-
-        while (remainingQuantity > 0) {
-            const newQuantity = Math.min(inventoryType.maxStack, remainingQuantity)
-            resultInventories.push({
-                inventoryTypeKey: inventoryType.key,
-                quantity: newQuantity,
-                userId: params.data.userId
-            })
-            remainingQuantity -= newQuantity
+        // if quantity is still remaining, create a new inventory, and add the quantity to it
+        while (quantity > 0) {
+            const quantityToAdd = Math.min(inventoryType.maxStack, quantity)
+            createdInventories.push({ quantity: quantityToAdd, inventoryTypeKey: inventoryType.key })
+            quantity -= quantityToAdd
         }
 
-        return resultInventories
+        return { updatedInventories, createdInventories }
     }
 
-    public remove(params: RemoveParams) : RemoveResult {
-        const { entity, quantity } = params
+    public remove({ inventories, quantity }: RemoveParams) : RemoveResult {
+        const updatedInventories: Array<DeepPartial<InventorySchema>> = []
+        const removedInventories: Array<DeepPartial<InventorySchema>> = []
 
-        this.logger.debug(`Removing ${quantity} from inventory ${entity.id}`)
+        // sort the inventories in ascending order
+        const sortedInventories = inventories.sort((prev, next) => prev.quantity - next.quantity)
 
-        if (entity.quantity < quantity)
-            throw new InventoryQuantityNotSufficientException(entity.id, params.quantity)
+        // loop through the inventories and remove the quantity from the inventory
+        for (const inventory of sortedInventories) {
+            const quantityToRemove = Math.min(inventory.quantity, quantity)
+            inventory.quantity -= quantityToRemove
+            quantity -= quantityToRemove
+            if (inventory.quantity > 0) {
+                updatedInventories.push(inventory)
+                break
+            } else {
+                removedInventories.push(inventory)
+            }  
+        }
 
-        return { quantity: entity.quantity - quantity }
+        // if quantity is still remaining, throw an exception
+        if (quantity > 0) {
+            throw new InventoryQuantityNotSufficientException(quantity)
+        }
+        return { updatedInventories, removedInventories }
     }
 }

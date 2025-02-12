@@ -6,6 +6,9 @@ import {
     SubstractResult as SubstractEnergyResult,
 } from "./energy.types"
 
-export { AddEnergyParams, AddEnergyAddResult
-    , SubstractEnergyParams, SubstractEnergyResult
+export { 
+    AddEnergyParams, 
+    AddEnergyAddResult, 
+    SubstractEnergyParams, 
+    SubstractEnergyResult
 }

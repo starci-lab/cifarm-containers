@@ -10,7 +10,7 @@ import {
     EnergyRegen,
     InjectMongoose,
     SpinInfo,
-    Starter,
+    DefaultInfo,
     SystemKey,
     SystemSchema,
 } from "@src/databases"
@@ -102,7 +102,7 @@ export class SystemSeeder implements Seeder {
             thief2: 0.8,
             thief3: 0.95
         }
-        const starter: Starter = {
+        const defaultInfo: DefaultInfo = {
             golds: 1000,
             positions: {
                 home: {
@@ -137,7 +137,8 @@ export class SystemSeeder implements Seeder {
                 ]
             },
             defaultCropKey: CropKey.Carrot,
-            defaultSeedQuantity: 10
+            defaultSeedQuantity: 10,
+            inventoryCapacity: 150
         }
         const spinInfo: SpinInfo = {
             appearanceChanceSlots: {
@@ -214,8 +215,8 @@ export class SystemSeeder implements Seeder {
                 value: animalRandomness
             },
             {
-                key: SystemKey.Starter,
-                value: starter
+                key: SystemKey.DefaultInfo,
+                value: defaultInfo
             },
             {
                 key: SystemKey.SpinInfo,

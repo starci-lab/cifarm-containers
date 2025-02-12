@@ -10,7 +10,7 @@ import {
     getPostgreSqlToken,
     PlacedItemEntity,
     PlacedItemTypeEntity,
-    UserEntity,
+    UserSchema,
     PlacedItemType
 } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -53,7 +53,7 @@ describe("BuyTileService", () => {
             position: { x: 0, y: 0 }
         })
 
-        const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
+        const { golds: goldsAfter } = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["golds"]
         })

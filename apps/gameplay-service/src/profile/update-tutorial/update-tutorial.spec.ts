@@ -5,7 +5,7 @@
 // import { UpdateTutorialService } from "./update-tutorial.service"
 // import { UpdateTutorialRequest } from "./update-tutorial.dto"
 // import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-// import { UserEntity, getPostgreSqlToken } from "@src/databases"
+// import { UserSchema, getPostgreSqlToken } from "@src/databases"
 
 // describe("UpdateTutorialService", () => {
 //     let service: UpdateTutorialService
@@ -39,7 +39,7 @@
 //         // Act: Call updateTutorial
 //         await service.updateTutorial(request)
 
-//         const updatedUser = await dataSource.manager.findOne(UserEntity, {
+//         const updatedUser = await dataSource.manager.findOne(UserSchema, {
 //             where: { id: user.id },
 //             select: ["tutorialIndex", "stepIndex"]
 //         })

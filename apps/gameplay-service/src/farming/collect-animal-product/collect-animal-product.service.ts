@@ -12,7 +12,7 @@ import {
     ProductType,
     SystemEntity,
     SystemId,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { ProductService, EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
@@ -102,7 +102,7 @@ export class CollectAnimalProductService {
                 }
             })
 
-            const user = await queryRunner.manager.findOne(UserEntity, {
+            const user = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -149,7 +149,7 @@ export class CollectAnimalProductService {
                 })
 
                 // Update user energy and experience
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...energyChanges,
                     ...experiencesChanges
                 })

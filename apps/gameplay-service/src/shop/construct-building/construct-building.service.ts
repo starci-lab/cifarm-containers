@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, InjectPostgreSQL, PlacedItemEntity, PlacedItemTypeEntity, UserEntity } from "@src/databases"
+import { BuildingEntity, InjectPostgreSQL, PlacedItemEntity, PlacedItemTypeEntity, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
@@ -47,7 +47,7 @@ export class ConstructBuildingService {
             // Calculate total cost
             const totalCost = building.price
 
-            const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+            const user: UserSchema = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -72,7 +72,7 @@ export class ConstructBuildingService {
             // Start transaction
             await queryRunner.startTransaction()
             try {
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...goldsChanged
                 })
 

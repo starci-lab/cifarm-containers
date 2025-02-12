@@ -2,7 +2,7 @@ import { EnergyJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { EnergyRegen, InjectPostgreSQL, SystemEntity, SystemId, UserEntity } from "@src/databases"
+import { EnergyRegen, InjectPostgreSQL, SystemEntity, SystemId, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { Job } from "bullmq"
 import { DataSource, LessThanOrEqual } from "typeorm"
@@ -26,7 +26,7 @@ export class EnergyWorker extends WorkerHost {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const users = await queryRunner.manager.find(UserEntity, {
+            const users = await queryRunner.manager.find(UserSchema, {
                 skip,
                 take,
                 where: {
@@ -65,7 +65,7 @@ export class EnergyWorker extends WorkerHost {
                     }
                     await queryRunner.startTransaction()
                     try {
-                        await queryRunner.manager.update(UserEntity, user.id, changes)
+                        await queryRunner.manager.update(UserSchema, user.id, changes)
                         await queryRunner.commitTransaction()
                     } catch (error) {
                         this.logger.error(`Transaction failed: ${error}`)

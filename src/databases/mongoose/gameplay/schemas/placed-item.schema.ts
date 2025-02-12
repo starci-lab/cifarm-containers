@@ -8,37 +8,6 @@ import { Position } from "@src/gameplay"
 // Mongoose document type
 export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>;
 
-@ObjectType()
-@Schema({ timestamps: true, collection: "placed-items" })
-export class PlacedItemSchema extends AbstractSchema {
-    @Field(() => Position)
-    @Prop({ type: Object, required: true, default: { x: 0, y: 0 } })
-        position: Position
-
-    @Field(() => String, { nullable: true })
-    @Prop({ type: String, required: false })
-        inventoryId?: string
-
-    @Field(() => String)
-    @Prop({ type: String, required: true, enum: PlacedItemTypeKey })
-        placedItemTypeKey: PlacedItemTypeKey
-    
-    @Field(() => SeedGrowthInfo, { nullable: true })
-    @Prop({ type: Object, required: false })
-        seedGrowthInfo?: SeedGrowthInfo
-
-    @Field(() => TileInfo, { nullable: true })
-    @Prop({ type: Object, required: false })
-        tileInfo?: TileInfo
-
-    @Field(() => AnimalInfo, { nullable: true })
-    @Prop({ type: Object, required: false })
-        animalInfo?: AnimalInfo
-
-    @Field(() => BuildingInfo, { nullable: true })
-    @Prop({ type: Object, required: false })
-        buildingInfo?: BuildingInfo
-}
 
 @ObjectType()
 export class TileInfo {
@@ -140,6 +109,38 @@ export class AnimalInfo {
     @Field(() => Boolean)
     @Prop({ type: Boolean, default: false })
         immunized: boolean
+}
+
+@ObjectType()
+@Schema({ timestamps: true, collection: "placed-items" })
+export class PlacedItemSchema extends AbstractSchema {
+    @Field(() => Position)
+    @Prop({ type: Object, required: true, default: { x: 0, y: 0 } })
+        position: Position
+
+    @Field(() => String, { nullable: true })
+    @Prop({ type: String, required: false })
+        inventoryId?: string
+
+    @Field(() => String)
+    @Prop({ type: String, required: true, enum: PlacedItemTypeKey })
+        placedItemTypeKey: PlacedItemTypeKey
+    
+    @Field(() => SeedGrowthInfo, { nullable: true })
+    @Prop({ type: Object, required: false })
+        seedGrowthInfo?: SeedGrowthInfo
+
+    @Field(() => TileInfo, { nullable: true })
+    @Prop({ type: Object, required: false })
+        tileInfo?: TileInfo
+
+    @Field(() => AnimalInfo, { nullable: true })
+    @Prop({ type: Object, required: false })
+        animalInfo?: AnimalInfo
+
+    @Field(() => BuildingInfo, { nullable: true })
+    @Prop({ type: Object, required: false })
+        buildingInfo?: BuildingInfo
 }
 
 // Generate Mongoose Schema

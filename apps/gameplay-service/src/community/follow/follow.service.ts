@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, UserEntity, UsersFollowingUsersEntity } from "@src/databases"
+import { InjectPostgreSQL, UserSchema, UsersFollowingUsersEntity } from "@src/databases"
 import { DataSource } from "typeorm"
 import { FollowRequest } from "./follow.dto"
 import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -25,7 +25,7 @@ export class FollowService {
         await queryRunner.connect()
 
         try {  
-            const followeeUserExists = await queryRunner.manager.exists(UserEntity, {
+            const followeeUserExists = await queryRunner.manager.exists(UserSchema, {
                 where: {
                     id: request.followeeUserId
                 }

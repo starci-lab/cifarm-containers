@@ -10,7 +10,7 @@ import {
     getPostgreSqlToken,
     InventoryEntity,
     InventoryTypeEntity,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UserInsufficientGoldException } from "@src/gameplay"
@@ -53,7 +53,7 @@ describe("BuySuppliesService", () => {
             quantity: 2
         })
 
-        const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
+        const { golds: goldsAfter } = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["golds"]
         })

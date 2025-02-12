@@ -5,7 +5,7 @@ import { DataSource } from "typeorm"
 import { HelpWaterService } from "./help-water.service"
 import {
     SystemEntity,
-    UserEntity,
+    UserSchema,
     PlacedItemEntity,
     SeedGrowthInfoEntity,
     CropCurrentState,
@@ -76,7 +76,7 @@ describe("HelpWaterService", () => {
         })
 
         // Check if energy and experience were updated correctly
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["energy", "level", "experiences"],
         })

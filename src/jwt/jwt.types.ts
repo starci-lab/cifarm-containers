@@ -1,7 +1,7 @@
 import { BaseOptions } from "@src/common"
-import { UserEntity } from "@src/databases"
+import { UserSchema } from "@src/databases"
 
-export type UserLike = Partial<UserEntity> & { id: string, refresh?: boolean };
+export type UserLike = Partial<UserSchema> & { id: string, refresh?: boolean };
 
 export interface AuthCredentials {
     accessToken: string

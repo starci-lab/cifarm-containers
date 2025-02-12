@@ -12,7 +12,7 @@ import {
     PlacedItemEntity,
     PlacedItemTypeId,
     UpgradeEntity,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UserInsufficientGoldException } from "@src/gameplay"
@@ -64,7 +64,7 @@ describe("BuyAnimalService", () => {
             position: { x, y }
         })
 
-        const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
+        const { golds: goldsAfter } = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["golds"]
         })

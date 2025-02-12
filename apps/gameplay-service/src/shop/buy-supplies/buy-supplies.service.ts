@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, InventoryEntity, InventoryTypeEntity, SupplyEntity, UserEntity } from "@src/databases"
+import { InjectPostgreSQL, InventoryEntity, InventoryTypeEntity, SupplyEntity, UserSchema } from "@src/databases"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
@@ -36,7 +36,7 @@ export class BuySuppliesService {
 
             const totalCost = supply.price * request.quantity
 
-            const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+            const user: UserSchema = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -81,7 +81,7 @@ export class BuySuppliesService {
                     amount: totalCost
                 })
 
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...goldsChanged
                 })
 

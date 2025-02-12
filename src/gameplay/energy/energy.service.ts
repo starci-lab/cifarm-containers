@@ -7,23 +7,18 @@ import { EnergyNotEnoughException } from "../exceptions"
 export class EnergyService {
     constructor() {}
 
-    public add(request: AddParams): AddResult {
-        const { energy, entity } = request
-        const maxEnergy = this.getMaxEnergy(entity.level)
-        const energyFull = entity.energy + energy >= maxEnergy
+    public add({ user, quantity }: AddParams): AddResult {
+        const maxEnergy = this.getMaxEnergy(user.level)
+        const energyFull = user.energy + quantity >= maxEnergy
         return {
-            energy: Math.min(maxEnergy, entity.energy + energy),
+            energy: energyFull ? maxEnergy : user.energy + quantity,
             energyFull
         }
     }
 
     public substract(request: SubstractParams): SubstractResult {
-        const { energy, entity } = request
-        this.checkSufficient({ current: entity.energy, required: energy })
-        return {
-            energy: entity.energy - energy,
-            energyFull: false
-        }
+        this.checkSufficient({ current: request.user.energy, required: request.quantity })
+        return { energy: request.user.energy - request.quantity }
     }
 
     public getMaxEnergy(level: number = 1): number {

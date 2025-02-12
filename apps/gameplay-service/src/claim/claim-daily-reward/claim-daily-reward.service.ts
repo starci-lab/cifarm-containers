@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DailyRewardEntity, InjectPostgreSQL, UserEntity } from "@src/databases"
+import { DailyRewardEntity, InjectPostgreSQL, UserSchema } from "@src/databases"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
 import { ClaimDailyRewardRequest, ClaimDailyRewardResponse } from "./claim-daily-reward.dto"
@@ -25,7 +25,7 @@ export class ClaimDailyRewardService {
 
         try {
             // Get latest claim time
-            const user = await queryRunner.manager.findOne(UserEntity, {
+            const user = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -47,12 +47,12 @@ export class ClaimDailyRewardService {
                 throw new GrpcInternalException("Daily rewards not equal to 5")
             }
 
-            const userChanges: DeepPartial<UserEntity> = {
+            const userChanges: DeepPartial<UserSchema> = {
                 dailyRewardLastClaimTime: now.toDate(),
                 dailyRewardStreak: user.dailyRewardStreak + 1
             }
 
-            let balanceChanges: DeepPartial<UserEntity> = {}
+            let balanceChanges: DeepPartial<UserSchema> = {}
 
             // Check streak
             if (user.dailyRewardStreak >= 4) {
@@ -79,7 +79,7 @@ export class ClaimDailyRewardService {
             await queryRunner.startTransaction()
             try {
                 // Save user
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...userChanges,
                     ...balanceChanges
                 })

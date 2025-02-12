@@ -1,6 +1,7 @@
 import { faker } from "@faker-js/faker"
 import { Injectable } from "@nestjs/common"
-import { InjectMongoose, SessionSchema, UserSchema } from "@src/databases"
+import { DeepPartial } from "@src/common"
+import { InjectMongoose, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { Network, ChainKey } from "@src/env"
 import { Connection } from "mongoose"
@@ -34,7 +35,7 @@ export class GameplayMockUserService {
         dailyRewardLastClaimTime = this.dateUtcService.getDayjs().subtract(2, "day").toDate(),
         dailyRewardStreak = 0
     }: GenerateParams = {}): Promise<UserSchema> {
-        const userPartial: Partial<UserSchema> = {
+        const userPartial: DeepPartial<UserSchema> = {
             username: faker.internet.userName(),
             chainKey: faker.helpers.arrayElement(Object.values(ChainKey)),
             network: faker.helpers.arrayElement(Object.values(Network)),
@@ -50,13 +51,14 @@ export class GameplayMockUserService {
             spinCount: faker.number.int({ min: 0, max: 100 }),
             dailyRewardLastClaimTime,
             spinLastTime,
+            sessions: [
+                {
+                    refreshToken: v4(),
+                    expiredAt: this.dateUtcService.getDayjs().add(1, "day").toDate()
+                }
+            ]
         }
         const user = await this.connection.model<UserSchema>(UserSchema.name).create(userPartial)
-        await this.connection.model<SessionSchema>(SessionSchema.name).create({
-            userId: user.id,
-            refreshToken: v4(),
-            expiredAt: this.dateUtcService.getDayjs().add(1, "day").toDate()
-        })
         this.users.push(user)
         return user
     }

@@ -3,7 +3,7 @@
 import { Test, TestingModule } from "@nestjs/testing"
 import { SpinService } from "./spin.service"
 import { DataSource } from "typeorm"
-import { AppearanceChance, CropId, getPostgreSqlToken, InventoryEntity, InventoryType, SpinPrizeType, SupplyId, UserEntity } from "@src/databases"
+import { AppearanceChance, CropId, getPostgreSqlToken, InventoryEntity, InventoryType, SpinPrizeType, SupplyId, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { GrpcFailedPreconditionException } from "@src/common"
@@ -55,7 +55,7 @@ describe("SpinService", () => {
             userId: user.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id }
         })
 
@@ -94,7 +94,7 @@ describe("SpinService", () => {
             userId: user.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id }
         })
 

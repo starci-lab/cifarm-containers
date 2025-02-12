@@ -15,31 +15,29 @@ export class ProductService {
 
     //compute the quality of animal after several time of harvest
     public computeAnimalQualityChance({
-        entity,
+        animalInfo: { yieldCount },
         qualityProductChanceLimit,
         qualityProductChanceStack
     }: ComputeAnimalQualityChanceParams): number {
-        let { yieldCount } = entity
         yieldCount += 1
         return Math.min(qualityProductChanceLimit, qualityProductChanceStack * yieldCount)
     }
 
     //compute the quality of tile after several time of harvest
     public computeTileQualityChance({
-        entity,
+        tileInfo: { harvestCount },
         qualityProductChanceLimit,
         qualityProductChanceStack
     }: ComputeTileQualityChanceParams): number {
-        let { harvestCount } = entity
         harvestCount += 1
         return Math.min(qualityProductChanceLimit, qualityProductChanceStack * harvestCount)
     }
 
     //update the tile information after harvest
     public updateTileInfoAfterHarvest({
-        entity
+        tileInfo
     }: UpdateTileInfoAfterHarvestParams): UpdateTileInfoAfterHarvestResult {
-        const harvestCount = entity.harvestCount + 1
+        const harvestCount = tileInfo.harvestCount + 1
         return {
             harvestCount
         }
@@ -47,9 +45,9 @@ export class ProductService {
 
     //update the animal information after collect
     public updateAnimalInfoAfterCollect({
-        entity
+        animalInfo
     }: UpdateAnimalInfoAfterCollectParams): UpdateAnimalInfoAfterCollectResult {
-        const yieldCount = entity.yieldCount + 1
+        const yieldCount = animalInfo.yieldCount + 1
         return {
             yieldCount
         }

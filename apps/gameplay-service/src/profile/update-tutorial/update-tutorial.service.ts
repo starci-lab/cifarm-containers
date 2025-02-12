@@ -6,7 +6,7 @@ import {
     InjectPostgreSQL,
     SeedGrowthInfoEntity,
     TutorialStep,
-    UserEntity,
+    UserSchema,
     defaultCropId
 } from "@src/databases"
 import { DataSource, QueryRunner } from "typeorm"
@@ -32,7 +32,7 @@ export class UpdateTutorialService {
 
         try {
             // Get user
-            const user = await queryRunner.manager.findOne(UserEntity, {
+            const user = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -92,7 +92,7 @@ export class UpdateTutorialService {
             nextStep
         }: MoveToNextTutorialStepParams
     ): Promise<void> {
-        await queryRunner.manager.update(UserEntity, user.id, {
+        await queryRunner.manager.update(UserSchema, user.id, {
             tutorialStep: nextStep
         })
     }
@@ -334,7 +334,7 @@ export class UpdateTutorialService {
 
 export interface MoveToNextTutorialStepParams {
     queryRunner: QueryRunner
-    user: UserEntity
+    user: UserSchema
     nextStep: TutorialStep
 }
 export type StartWaterCropAtStage1Params = MoveToNextTutorialStepParams

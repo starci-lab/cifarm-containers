@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, UserEntity } from "@src/databases"
+import { InjectPostgreSQL, UserSchema } from "@src/databases"
 import { DataSource } from "typeorm"
 
 @Injectable()
@@ -12,11 +12,11 @@ export class UsersService {
     ) {}
 
     //get single user, by id
-    async getUser(id: string): Promise<UserEntity | null> {
+    async getUser(id: string): Promise<UserSchema | null> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return queryRunner.manager.findOne(UserEntity, {
+            return queryRunner.manager.findOne(UserSchema, {
                 where: {
                     id
                 }

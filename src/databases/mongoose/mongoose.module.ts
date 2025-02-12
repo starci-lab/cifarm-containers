@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./mongoose.module-definition"
 import { envConfig, MongoDbDatabase } from "@src/env"
-import { getMongooseConnectionName } from "./utils"
+import { getMongooseConnectionName, getMongooseToken } from "./utils"
 import { MongooseModule as NestMongooseModule } from "@nestjs/mongoose"
 import { InventorySchema, InventorySchemaClass } from "./gameplay/schemas/inventory.schema"
 import {
@@ -29,10 +29,12 @@ import {
     UserSchema,
     PlacedItemTypeSchema,
     PlacedItemTypeSchemaClass,
-    SessionSchema,
-    SessionSchemaClass,
+    // SessionSchema,
+    // SessionSchemaClass,
     PlacedItemSchema,
-    PlacedItemSchemaClass
+    PlacedItemSchemaClass,
+    SessionSchema,
+    SessionSchemaClass
 } from "./gameplay"
 
 @Module({})
@@ -63,67 +65,81 @@ export class MongooseModule extends ConfigurableModuleClass {
         return {
             module: MongooseModule,
             imports: [
-                NestMongooseModule.forFeature(
+                NestMongooseModule.forFeatureAsync(
                     [
                         {
                             name: AnimalSchema.name,
-                            schema: AnimalSchemaClass
+                            useFactory: () => AnimalSchemaClass
                         },
                         {
                             name: BuildingSchema.name,
-                            schema: BuildingSchemaClass
+                            useFactory: () => BuildingSchemaClass
                         },
                         {
                             name: CropSchema.name,
-                            schema: CropSchemaClass
+                            useFactory: () => CropSchemaClass
                         },
                         {
                             name: SystemSchema.name,
-                            schema: SystemSchemaClass
+                            useFactory: () => SystemSchemaClass
                         },
                         {
                             name: InventoryTypeSchema.name,
-                            schema: InventoryTypeSchemaClass
+                            useFactory: () => InventoryTypeSchemaClass
                         },
                         {
                             name: SpinPrizeSchema.name,
-                            schema: SpinPrizeSchemaClass
+                            useFactory: () => SpinPrizeSchemaClass
                         },
                         {
                             name: SpinSlotSchema.name,
-                            schema: SpinSlotSchemaClass
+                            useFactory: () => SpinSlotSchemaClass
                         },
                         {
                             name: SupplySchema.name,
-                            schema: SupplySchemaClass
-                        },
-                        {
-                            name: UserSchema.name,
-                            schema: UserSchemaClass
-                        },
-                        {
-                            name: InventorySchema.name,
-                            schema: InventorySchemaClass
-                        },
-                        {
-                            name: ToolSchema.name,
-                            schema: ToolSchemaClass
-                        },
-                        {
-                            name: TileSchema.name,
-                            schema: TileSchemaClass
-                        },
-                        {
-                            name: PlacedItemTypeSchema.name,
-                            schema: PlacedItemTypeSchemaClass
+                            useFactory: () => SupplySchemaClass
                         },
                         {
                             name: SessionSchema.name,
-                            schema: SessionSchemaClass
+                            useFactory: () => SessionSchemaClass
+                        },
+                        {
+                            name: UserSchema.name,
+                            inject: [getMongooseToken(options)],
+                            useFactory: (
+                                // connection: Connection
+                            ) => {
+                                // UserSchemaClass.pre("deleteMany", async function (next) {
+                                //     // delete all related data in session collection
+                                //     const { $in } = this.getFilter()._id
+                                //     const ids = $in
+                                //     await connection.model<SessionSchema>(SessionSchema.name).deleteMany({
+                                //         user: { $in: ids }
+                                //     })
+                                //     next()
+                                // })
+                                return UserSchemaClass
+                            }
+                        },
+                        {
+                            name: InventorySchema.name,
+                            useFactory: () => InventorySchemaClass
+                        },
+                        {
+                            name: ToolSchema.name,
+                            useFactory: () => ToolSchemaClass
+                        },
+                        {
+                            name: TileSchema.name,
+                            useFactory: () => TileSchemaClass
+                        },
+                        {
+                            name: PlacedItemTypeSchema.name,
+                            useFactory: () => PlacedItemTypeSchemaClass
                         },
                         {
                             name: PlacedItemSchema.name,
-                            schema: PlacedItemSchemaClass
+                            useFactory: () => PlacedItemSchemaClass
                         }
                     ],
                     connectionName

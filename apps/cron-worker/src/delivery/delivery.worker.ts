@@ -2,7 +2,7 @@ import { DeliveryJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { DeliveringProductEntity, InjectPostgreSQL, UserEntity } from "@src/databases"
+import { DeliveringProductEntity, InjectPostgreSQL, UserSchema } from "@src/databases"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { DataSource, In } from "typeorm"
@@ -43,7 +43,7 @@ export class DeliveryWorker extends WorkerHost {
                 return
             }
 
-            const users = await queryRunner.manager.find(UserEntity, {
+            const users = await queryRunner.manager.find(UserSchema, {
                 where: { id: In(userIds) }
             })
 
@@ -79,7 +79,7 @@ export class DeliveryWorker extends WorkerHost {
                     // Update user's balance
                     await queryRunner.startTransaction()
                     try {
-                        await queryRunner.manager.update(UserEntity, user.id, {
+                        await queryRunner.manager.update(UserSchema, user.id, {
                             ...goldChanged,
                             ...tokenChanged
                         })

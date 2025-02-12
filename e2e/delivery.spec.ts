@@ -8,7 +8,7 @@ import {
     InventoryTypeId,
     ProductEntity,
     ProductId,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import {
@@ -68,13 +68,13 @@ describe("Delivery flow", () => {
                 network: Network.Testnet
             })
             //get actual user
-            const user = await dataSource.manager.findOne(UserEntity, {
+            const user = await dataSource.manager.findOne(UserSchema, {
                 where: {
                     id: userLike.id
                 }
             })
 
-            dataSource.manager.update(UserEntity, user.id, {
+            dataSource.manager.update(UserSchema, user.id, {
                 energyFull: false,
                 energy: 0
             })
@@ -188,7 +188,7 @@ describe("Delivery flow", () => {
             await sleep(2000)
 
             // check that user has increased balance
-            const updatedUser = await dataSource.manager.findOne(UserEntity, {
+            const updatedUser = await dataSource.manager.findOne(UserSchema, {
                 where: { id: user.id },
                 relations: {
                     deliveringProducts: true

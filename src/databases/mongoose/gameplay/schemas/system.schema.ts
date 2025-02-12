@@ -21,6 +21,12 @@ export class SystemSchema extends KeyAbstractSchema {
         value: object
 }
 
+// interface for type checking
+export interface SystemRecord<Value> {
+    key: string
+    value: Value
+}
+
 @ObjectType()
 export class ActivityInfo {
     @Field(() => Int)
@@ -94,7 +100,7 @@ export class Positions {
 }
 
 @ObjectType()
-export class Starter {
+export class DefaultInfo {
     @Field(() => Int)
         golds: number
     @Field(() => Positions)
@@ -103,6 +109,8 @@ export class Starter {
         defaultCropKey: CropKey
     @Field(() => Int)
         defaultSeedQuantity: number
+    @Field(() => Int)
+        inventoryCapacity: number
 }
 
  

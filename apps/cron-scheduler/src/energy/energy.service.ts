@@ -9,7 +9,7 @@ import {
     InjectPostgreSQL,
     KeyValueStoreEntity,
     KeyValueStoreId,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
 import { DataSource, LessThanOrEqual } from "typeorm"
@@ -60,7 +60,7 @@ export class EnergyService {
             await queryRunner.connect()
             let count: number
             try {
-                count = await queryRunner.manager.count(UserEntity, {
+                count = await queryRunner.manager.count(UserSchema, {
                     where: {
                         energyFull: false,
                         createdAt: LessThanOrEqual(utcNow.toDate())

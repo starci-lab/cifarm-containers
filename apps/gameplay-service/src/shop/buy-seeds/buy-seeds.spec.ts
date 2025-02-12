@@ -4,7 +4,7 @@ import { DataSource } from "typeorm"
 import { BuySeedsService } from "./buy-seeds.service"
 import { Test } from "@nestjs/testing"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import { CropEntity, CropId, getPostgreSqlToken, InventoryEntity, InventoryTypeId, UserEntity } from "@src/databases"
+import { CropEntity, CropId, getPostgreSqlToken, InventoryEntity, InventoryTypeId, UserSchema } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UserInsufficientGoldException } from "@src/gameplay"
 
@@ -45,7 +45,7 @@ describe("BuySeedsService", () => {
             quantity
         })
 
-        const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
+        const { golds: goldsAfter } = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["golds"]
         })

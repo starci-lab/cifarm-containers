@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, PlacedItemEntity, UserEntity } from "@src/databases"
+import { InjectPostgreSQL, PlacedItemEntity, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"
@@ -60,7 +60,7 @@ export class UpgradeBuildingService {
             }
 
             // get user
-            const user = await queryRunner.manager.findOne(UserEntity, {
+            const user = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -81,7 +81,7 @@ export class UpgradeBuildingService {
                     entity: user,
                     amount: nextUpgrade.upgradePrice
                 })
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...goldsChanged
                 })
 

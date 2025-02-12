@@ -2,10 +2,10 @@ import { Injectable, Logger } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
 import { InjectKafka } from "@src/brokers"
 import { InjectCache } from "@src/cache"
-import { InjectPostgreSQL } from "@src/databases"
 import { Cache } from "cache-manager"
-import { DataSource } from "typeorm"
 import { E2EGameplaySocketIoService } from "./socket-io"
+import { InjectConnection } from "@nestjs/mongoose"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class E2EConnectionService {
@@ -15,8 +15,8 @@ export class E2EConnectionService {
         private readonly cacheManager: Cache,
         @InjectKafka()
         private readonly clientKafka: ClientKafka,
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectConnection()
+        private readonly connection: Connection,
         private readonly e2eGameplaySocketIoService: E2EGameplaySocketIoService
     ) {}
 
@@ -29,9 +29,7 @@ export class E2EConnectionService {
             await this.clientKafka.close()
         })())
         promises.push((async () => {
-            if (this.dataSource.isInitialized) {
-                await this.dataSource.destroy()
-            }
+            await this.connection.close()
         })())
         promises.push((async () => {
             this.e2eGameplaySocketIoService.clear()

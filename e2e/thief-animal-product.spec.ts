@@ -29,7 +29,7 @@ import {
     PlacedItemType,
     SupplyEntity,
     SupplyId,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import {
@@ -155,7 +155,7 @@ describe("Thief animal product flow", () => {
         })
 
         //add more gold to user
-        await dataSource.manager.update(UserEntity, user.id, {
+        await dataSource.manager.update(UserSchema, user.id, {
             golds: building.price + animal.price + 100 * supplyAnimalFeed.price + 10
         })
 

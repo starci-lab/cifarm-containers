@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from "@nestjs/common"
-import { InjectPostgreSQL, TelegramUserEntity } from "@src/databases"
+import { InjectPostgreSQL, TelegramUserSchema } from "@src/databases"
 import { envConfig, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
 import { readFileSync } from "fs"
 import { join } from "path"
@@ -66,11 +66,11 @@ export class CiFarmService implements OnModuleInit {
 
     private async saveUserInfo(telegramId: string, username: string): Promise<void> {
         try {
-            const existingUser = await this.dataSource.manager.findOne(TelegramUserEntity, { 
+            const existingUser = await this.dataSource.manager.findOne(TelegramUserSchema, { 
                 where: { telegramId }
             })
             if (!existingUser) {
-                await this.dataSource.manager.save(TelegramUserEntity, { telegramId, username })
+                await this.dataSource.manager.save(TelegramUserSchema, { telegramId, username })
             }
         } catch (error) {
             console.error("Error saving user info:", error)
@@ -79,7 +79,7 @@ export class CiFarmService implements OnModuleInit {
 
     private async getTotalFarmers(): Promise<number> {
         try {
-            const totalFarmers = await this.dataSource.manager.count(TelegramUserEntity)
+            const totalFarmers = await this.dataSource.manager.count(TelegramUserSchema)
             return totalFarmers
         } catch (error) {
             console.error("Error fetching total farmers count:", error)

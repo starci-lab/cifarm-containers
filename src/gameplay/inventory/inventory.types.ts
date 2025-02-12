@@ -1,12 +1,28 @@
-import { InventorySchema } from "@src/databases"
-import { ArrayEntityWithUserIdParams, EntityParams } from "@src/common"
-import { DeepPartial } from "@src/common"
+import { InventorySchema, InventoryTypeSchema } from "@src/databases"
+import { DeepPartial } from "typeorm"
 
-export type AddParams = ArrayEntityWithUserIdParams<InventorySchema>
-
-export type AddResult = Array<DeepPartial<InventorySchema>>
-
-export interface RemoveParams extends EntityParams<InventorySchema> {
+export interface AddParams {
+    // inventories with the same type key
+    inventories: Array<DeepPartial<InventorySchema>>
+    // inventory type
+    inventoryType: DeepPartial<InventoryTypeSchema>
+    // quantity to add
     quantity: number
 }
-export type RemoveResult = DeepPartial<InventorySchema>
+
+export interface AddResult {
+    updatedInventories: Array<DeepPartial<InventorySchema>>
+    createdInventories: Array<DeepPartial<InventorySchema>>
+}
+
+export interface RemoveParams {
+    // inventories with the same type key
+    inventories: Array<DeepPartial<InventorySchema>>
+    // quantity to remove
+    quantity: number
+}
+
+export interface RemoveResult {
+    updatedInventories: Array<DeepPartial<InventorySchema>>
+    removedInventories: Array<DeepPartial<InventorySchema>>
+}

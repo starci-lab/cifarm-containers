@@ -167,10 +167,10 @@ describe("Grow seed flow", () => {
             })
             expect(isUUID(inventorySeed.id)).toBeTruthy()
 
-            const placedItemStarterTile = await dataSource.manager.findOne(PlacedItemEntity, {
+            const placedItemDefaultInfoTile = await dataSource.manager.findOne(PlacedItemEntity, {
                 where: {
                     userId: user.id,
-                    placedItemTypeId: PlacedItemTypeId.StarterTile
+                    placedItemTypeId: PlacedItemTypeId.DefaultInfoTile
                 }
             })
             // Plant the seed
@@ -180,7 +180,7 @@ describe("Grow seed flow", () => {
                 Omit<PlantSeedRequest, "userId">
             >("gameplay/plant-seed", {
                 inventorySeedId: inventorySeed.id,
-                placedItemTileId: placedItemStarterTile.id
+                placedItemTileId: placedItemDefaultInfoTile.id
             })
             expect(plantSeedResponse.status).toBe(HttpStatus.CREATED)
 
@@ -200,22 +200,22 @@ describe("Grow seed flow", () => {
             // Sleep 1.1s to let cron job run
             await sleep(1100)
 
-            const placedItemStarterTileAfterFirstGrow = await dataSource.manager.findOne(
+            const placedItemDefaultInfoTileAfterFirstGrow = await dataSource.manager.findOne(
                 PlacedItemEntity,
                 {
                     where: {
-                        id: placedItemStarterTile.id
+                        id: placedItemDefaultInfoTile.id
                     },
                     relations: {
                         seedGrowthInfo: true
                     }
                 }
             )
-            expect(placedItemStarterTileAfterFirstGrow.seedGrowthInfo.currentStage).toBe(1)
+            expect(placedItemDefaultInfoTileAfterFirstGrow.seedGrowthInfo.currentStage).toBe(1)
 
             // check whether the crop is need watered
             if (
-                placedItemStarterTileAfterFirstGrow.seedGrowthInfo.currentState ===
+                placedItemDefaultInfoTileAfterFirstGrow.seedGrowthInfo.currentState ===
                 CropCurrentState.NeedWater
             ) {
                 // Water the crop
@@ -224,7 +224,7 @@ describe("Grow seed flow", () => {
                     AxiosResponse<WaterResponse, Omit<WaterRequest, "userId">>,
                     Omit<WaterRequest, "userId">
                 >("gameplay/water", {
-                    placedItemTileId: placedItemStarterTile.id
+                    placedItemTileId: placedItemDefaultInfoTile.id
                 })
                 expect(waterResponse.status).toBe(HttpStatus.OK)
 
@@ -245,22 +245,22 @@ describe("Grow seed flow", () => {
             // Sleep 1.1s to let cron job run
             await sleep(1100)
 
-            const placedItemStarterTileAfterSecondGrow = await dataSource.manager.findOne(
+            const placedItemDefaultInfoTileAfterSecondGrow = await dataSource.manager.findOne(
                 PlacedItemEntity,
                 {
                     where: {
-                        id: placedItemStarterTile.id
+                        id: placedItemDefaultInfoTile.id
                     },
                     relations: {
                         seedGrowthInfo: true
                     }
                 }
             )
-            expect(placedItemStarterTileAfterSecondGrow.seedGrowthInfo.currentStage).toBe(2)
+            expect(placedItemDefaultInfoTileAfterSecondGrow.seedGrowthInfo.currentStage).toBe(2)
 
             // check whether the crop is need watered
             if (
-                placedItemStarterTileAfterSecondGrow.seedGrowthInfo.currentState ===
+                placedItemDefaultInfoTileAfterSecondGrow.seedGrowthInfo.currentState ===
                 CropCurrentState.NeedWater
             ) {
                 // Water the crop
@@ -269,7 +269,7 @@ describe("Grow seed flow", () => {
                     AxiosResponse<WaterResponse, Omit<WaterRequest, "userId">>,
                     Omit<WaterRequest, "userId">
                 >("gameplay/water", {
-                    placedItemTileId: placedItemStarterTile.id
+                    placedItemTileId: placedItemDefaultInfoTile.id
                 })
                 expect(waterResponse.status).toBe(HttpStatus.OK)
 
@@ -290,22 +290,22 @@ describe("Grow seed flow", () => {
             // Sleep 1.1s to let cron job run
             await sleep(1100)
 
-            const placedItemStarterTileAfterThirdGrow = await dataSource.manager.findOne(
+            const placedItemDefaultInfoTileAfterThirdGrow = await dataSource.manager.findOne(
                 PlacedItemEntity,
                 {
                     where: {
-                        id: placedItemStarterTile.id
+                        id: placedItemDefaultInfoTile.id
                     },
                     relations: {
                         seedGrowthInfo: true
                     }
                 }
             )
-            expect(placedItemStarterTileAfterThirdGrow.seedGrowthInfo.currentStage).toBe(3)
+            expect(placedItemDefaultInfoTileAfterThirdGrow.seedGrowthInfo.currentStage).toBe(3)
 
             // check whether the crop is weedy or infested
             if (
-                placedItemStarterTileAfterThirdGrow.seedGrowthInfo.currentState ===
+                placedItemDefaultInfoTileAfterThirdGrow.seedGrowthInfo.currentState ===
                 CropCurrentState.IsWeedy
             ) {
                 // use herbicide on the crop
@@ -314,7 +314,7 @@ describe("Grow seed flow", () => {
                     AxiosResponse<UseHerbicideResponse, Omit<UseHerbicideRequest, "userId">>,
                     Omit<UseHerbicideRequest, "userId">
                 >("gameplay/use-herbicide", {
-                    placedItemTileId: placedItemStarterTile.id
+                    placedItemTileId: placedItemDefaultInfoTile.id
                 })
                 expect(useHerbicideResponse.status).toBe(HttpStatus.OK)
 
@@ -328,7 +328,7 @@ describe("Grow seed flow", () => {
             }
 
             if (
-                placedItemStarterTileAfterThirdGrow.seedGrowthInfo.currentState ===
+                placedItemDefaultInfoTileAfterThirdGrow.seedGrowthInfo.currentState ===
                 CropCurrentState.IsInfested
             ) {
                 // use pesticide on the crop
@@ -337,7 +337,7 @@ describe("Grow seed flow", () => {
                     AxiosResponse<UsePesticideResponse, Omit<UsePesticideRequest, "userId">>,
                     Omit<UsePesticideRequest, "userId">
                 >("gameplay/use-pesticide", {
-                    placedItemTileId: placedItemStarterTile.id
+                    placedItemTileId: placedItemDefaultInfoTile.id
                 })
                 expect(usePestisideResponse.status).toBe(HttpStatus.OK)
 
@@ -358,11 +358,11 @@ describe("Grow seed flow", () => {
             // Sleep 1.1s to let cron job run
             await sleep(1100)
 
-            const placedItemStarterTileFullyHarvest = await dataSource.manager.findOne(
+            const placedItemDefaultInfoTileFullyHarvest = await dataSource.manager.findOne(
                 PlacedItemEntity,
                 {
                     where: {
-                        id: placedItemStarterTile.id
+                        id: placedItemDefaultInfoTile.id
                     },
                     relations: {
                         seedGrowthInfo: true
@@ -370,8 +370,8 @@ describe("Grow seed flow", () => {
                 }
             )
 
-            expect(placedItemStarterTileFullyHarvest.seedGrowthInfo.currentStage).toBe(4)
-            expect(placedItemStarterTileFullyHarvest.seedGrowthInfo.currentState).toBe(
+            expect(placedItemDefaultInfoTileFullyHarvest.seedGrowthInfo.currentStage).toBe(4)
+            expect(placedItemDefaultInfoTileFullyHarvest.seedGrowthInfo.currentState).toBe(
                 CropCurrentState.FullyMatured
             )
 
@@ -381,7 +381,7 @@ describe("Grow seed flow", () => {
                 AxiosResponse<HarvestCropResponse, Omit<HarvestCropRequest, "userId">>,
                 Omit<HarvestCropRequest, "userId">
             >("gameplay/harvest-crop", {
-                placedItemTileId: placedItemStarterTile.id
+                placedItemTileId: placedItemDefaultInfoTile.id
             })
             expect(harvestCropResponse.status).toBe(HttpStatus.OK)
 

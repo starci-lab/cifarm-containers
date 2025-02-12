@@ -10,8 +10,8 @@ import { AxiosResponse } from "axios"
 import { Cache } from "cache-manager"
 import { AuthCredentialType, JwtService, UserLike } from "@src/jwt"
 import { E2EAxiosService } from "./axios.service"
-import { DataSource, In } from "typeorm"
-import { InjectPostgreSQL, UserEntity } from "@src/databases"
+import { InjectMongoose, UserSchema } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class E2ERAuthenticationService {
@@ -19,8 +19,8 @@ export class E2ERAuthenticationService {
     constructor(
         @InjectCache()
         private readonly cacheManager: Cache,
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly e2eAxiosService: E2EAxiosService,
         private readonly jwtService: JwtService
     ) {
@@ -65,8 +65,10 @@ export class E2ERAuthenticationService {
     async clear(): Promise<void> {
         const promises: Array<Promise<void>> = []
         promises.push((async () => {
-            await this.dataSource.manager.delete(UserEntity, {
-                id: In(Object.values(this.userMap).map((user) => user.id))
+            await this.connection.model(UserSchema.name).deleteMany({
+                _id: {
+                    $in: Object.values(this.userMap).map((user) => user.id)
+                }
             })
         })())
         promises.push(...Object.keys(this.userMap).map(async (name) => {

@@ -27,19 +27,19 @@ export class LevelService {
     }
 
     public addExperiences(params: AddExperiencesParams): AddExperiencesResult {
-        const { entity, experiences } = params
+        const { user, experiences } = params
 
         //ensure the experiences is a positive value
         if (experiences <= 0) throw new ExperienceCannotBeZeroOrNegativeException(experiences)
 
-        const quota = this.computeExperiencesQuota(entity.level)
+        const quota = this.computeExperiencesQuota(user.level)
 
-        let current = entity.experiences + experiences
+        let current = user.experiences + experiences
         let level: number = undefined
 
         if (current >= quota) {
-            level = entity.level + 1
-            current = entity.experiences - quota
+            level = user.level + 1
+            current = user.experiences - quota
         }
         return {
             level,

@@ -11,26 +11,26 @@ export class TokenBalanceService {
         if (current < required) throw new UserInsufficientTokenException(current, required)
     }
 
-    public add(request: AddParams): AddResult {
-        if (request.amount < 0)
-            throw new TokenCannotBeZeroOrNegativeException(request.amount)
+    public add({ amount, user }: AddParams): AddResult {
+        if (amount < 0)
+            throw new TokenCannotBeZeroOrNegativeException(amount)
 
         return {
-            tokens: request.amount + request.entity.tokens
+            tokens: amount + user.tokens
         }
     }
 
-    public subtract(request: SubtractParams): SubtractResult {
-        if (request.amount < 0)
-            throw new TokenCannotBeZeroOrNegativeException(request.amount)
+    public subtract({ amount, user }: SubtractParams): SubtractResult {
+        if (amount < 0)
+            throw new TokenCannotBeZeroOrNegativeException(amount)
 
         this.checkSufficient({
-            current: request.entity.tokens,
-            required: request.amount
+            current: user.tokens,
+            required: amount
         })
 
         return {
-            tokens: request.entity.tokens - request.amount
+            tokens: user.tokens - amount
         }
     }
 }

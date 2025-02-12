@@ -1,14 +1,14 @@
 import { UserSchema } from "@src/databases"
-import { EntityParams } from "@src/common"
-import { DeepPartial } from "typeorm"
+import { DeepPartial } from "@src/common"
 
-export interface AddParams extends EntityParams<UserSchema> {
-    energy: number
+export interface AddParams {
+    user: DeepPartial<UserSchema>
+    quantity: number
 }
 export type AddResult = DeepPartial<UserSchema>
 
-export interface SubstractParams extends EntityParams<UserSchema> {
-    energy: number
+export interface SubstractParams {
+    user: DeepPartial<UserSchema>
+    quantity: number
 }
-
 export type SubstractResult = DeepPartial<UserSchema>

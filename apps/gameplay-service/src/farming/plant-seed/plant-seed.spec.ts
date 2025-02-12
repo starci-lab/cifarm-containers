@@ -13,7 +13,7 @@ import {
     CropEntity,
     PlacedItemEntity,
     InventoryEntity,
-    UserEntity,
+    UserSchema,
     SystemEntity,
     SystemId,
     Activities,
@@ -86,7 +86,7 @@ describe("PlantSeedService", () => {
             placedItemTileId: placedItemTile.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["energy", "level", "experiences"]
         })

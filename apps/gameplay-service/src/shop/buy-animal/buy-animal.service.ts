@@ -5,7 +5,7 @@ import {
     PlacedItemEntity,
     PlacedItemType,
     PlacedItemTypeEntity,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
@@ -100,7 +100,7 @@ export class BuyAnimalService {
 
             if (!placedItemType) throw new GrpcFailedPreconditionException("Animal type not found")
 
-            const user: UserEntity = await queryRunner.manager.findOne(UserEntity, {
+            const user: UserSchema = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -129,7 +129,7 @@ export class BuyAnimalService {
             // Start transaction
             await queryRunner.startTransaction()
             try {
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...goldsChanged
                 })
 

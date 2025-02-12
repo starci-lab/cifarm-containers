@@ -8,7 +8,7 @@ import {
     EnergyRegen,
     InjectPostgreSQL,
     SpinInfo,
-    Starter,
+    DefaultInfo,
     SystemEntity,
     SystemId
 } from "@src/databases"
@@ -79,7 +79,7 @@ export class SystemsService {
         }
     }
 
-    async getStarter(): Promise<Starter> {
+    async getDefaultInfo(): Promise<DefaultInfo> {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
@@ -88,11 +88,11 @@ export class SystemsService {
                 SystemEntity,
                 {
                     where: {
-                        id: SystemId.Starter
+                        id: SystemId.DefaultInfo
                     }
                 }
             )
-            return starter as Starter
+            return starter as DefaultInfo
         } finally {
             await queryRunner.release()
         }

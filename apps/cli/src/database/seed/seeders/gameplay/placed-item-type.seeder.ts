@@ -25,7 +25,7 @@ export class PlacedItemTypeSeeder implements Seeder {
 
         const data: Array<Partial<PlacedItemTypeSchema>> = [
             // Tiles
-            { key: PlacedItemTypeKey.StarterTile, type: PlacedItemType.Tile, refKey: TileKey.StarterTile },
+            { key: PlacedItemTypeKey.DefaultInfoTile, type: PlacedItemType.Tile, refKey: TileKey.DefaultInfoTile },
             { key: PlacedItemTypeKey.BasicTile1, type: PlacedItemType.Tile, refKey: TileKey.BasicTile1 },
             { key: PlacedItemTypeKey.BasicTile2, type: PlacedItemType.Tile, refKey: TileKey.BasicTile2 },
             { key: PlacedItemTypeKey.BasicTile3, type: PlacedItemType.Tile, refKey: TileKey.BasicTile3 },

@@ -1,7 +1,7 @@
 import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query } from "@nestjs/graphql"
 import { UsersService } from "./users.service"
-import { UserEntity } from "@src/databases"
+import { UserSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 
@@ -12,10 +12,10 @@ export class UsersResolver {
     constructor(private readonly usersService: UsersService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Query(() => UserEntity, {
+    @Query(() => UserSchema, {
         name: "user"
     })
-    async getUser(@GraphQLUser() user: UserLike): Promise<UserEntity> {
+    async getUser(@GraphQLUser() user: UserLike): Promise<UserSchema> {
         return await this.usersService.getUser(user.id)
     } 
 }

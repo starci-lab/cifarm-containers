@@ -10,7 +10,7 @@ import {
     SeedGrowthInfoEntity,
     SystemEntity,
     SystemId,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { DataSource } from "typeorm"
@@ -75,7 +75,7 @@ export class HelpUseHerbicideService {
             } = value as Activities
 
             //get user
-            const user = await queryRunner.manager.findOne(UserEntity, {
+            const user = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -98,7 +98,7 @@ export class HelpUseHerbicideService {
             await queryRunner.startTransaction()
             try {
                 // update user
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...energyChanges,
                     ...experiencesChanges
                 })

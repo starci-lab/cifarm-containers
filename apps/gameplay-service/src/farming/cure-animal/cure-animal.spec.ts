@@ -8,7 +8,7 @@ import {
     AnimalInfoEntity,
     AnimalCurrentState,
     PlacedItemEntity,
-    UserEntity,
+    UserSchema,
     SystemEntity,
     SystemId,
     Activities,
@@ -69,7 +69,7 @@ describe("CureAnimalService", () => {
             placedItemAnimalId: placedItemAnimal.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["energy", "level", "experiences"]
         })

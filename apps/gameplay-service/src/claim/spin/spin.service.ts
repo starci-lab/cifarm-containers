@@ -10,7 +10,7 @@ import {
     SpinSlotEntity,
     SystemEntity,
     SystemId,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
@@ -38,7 +38,7 @@ export class SpinService {
 
         try {
             // Get latest spin
-            const user = await queryRunner.manager.findOne(UserEntity, {
+            const user = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -75,12 +75,12 @@ export class SpinService {
             const selectedSlot = this.getRandomSlot(rewardableSlots)
 
             // Update user's spin last time
-            const userChanges: DeepPartial<UserEntity> = {
+            const userChanges: DeepPartial<UserSchema> = {
                 spinLastTime: now.toDate(),
                 spinCount: user.spinCount + 1
             }
 
-            let balanceChanges: DeepPartial<UserEntity> = {}
+            let balanceChanges: DeepPartial<UserSchema> = {}
             // Check type, if golds
             switch (selectedSlot.spinPrize.type) {
             case SpinPrizeType.Gold: {
@@ -91,7 +91,7 @@ export class SpinService {
                 })
                 await queryRunner.startTransaction()
                 try {
-                    await queryRunner.manager.update(UserEntity, user.id, {
+                    await queryRunner.manager.update(UserSchema, user.id, {
                         ...userChanges,
                         ...balanceChanges
                     })
@@ -134,7 +134,7 @@ export class SpinService {
                 await queryRunner.startTransaction()
                 try {
                     // Save user and inventory
-                    await queryRunner.manager.update(UserEntity, user.id, {
+                    await queryRunner.manager.update(UserSchema, user.id, {
                         ...userChanges,
                         ...balanceChanges
                     })
@@ -176,7 +176,7 @@ export class SpinService {
                 })
                 await queryRunner.startTransaction()
                 try {
-                    await queryRunner.manager.update(UserEntity, user.id, {
+                    await queryRunner.manager.update(UserSchema, user.id, {
                         ...userChanges,
                         ...balanceChanges
                     })
@@ -197,7 +197,7 @@ export class SpinService {
                 })
                 await queryRunner.startTransaction()
                 try {
-                    await queryRunner.manager.update(UserEntity, user.id, {
+                    await queryRunner.manager.update(UserSchema, user.id, {
                         ...userChanges,
                         ...balanceChanges
                     })

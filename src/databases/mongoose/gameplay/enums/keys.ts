@@ -60,7 +60,7 @@ export enum SupplyKey {
 
 // Tile Enum
 export enum TileKey {
-    StarterTile = "starterTile",
+    DefaultInfoTile = "starterTile",
     BasicTile1 = "basicTile1",
     BasicTile2 = "basicTile2",
     BasicTile3 = "basicTile3",
@@ -101,7 +101,7 @@ export enum SystemKey {
     Activities = "activities",
     CropRandomness = "cropRandomness",
     AnimalRandomness = "animalRandomness",
-    Starter = "starter",
+    DefaultInfo = "starter",
     SpinInfo = "spinInfo",
     EnergyRegen = "energyRegen",
     DailyRewardInfo = "dailyRewardInfo",
@@ -148,7 +148,7 @@ export enum PlacedItemTypeKey {
     Coop = "coop",
     Barn = "barn",
     Home = "home",
-    StarterTile = "starterTile",
+    DefaultInfoTile = "starterTile",
     BasicTile1 = "basicTile1",
     BasicTile2 = "basicTile2",
     BasicTile3 = "basicTile3",

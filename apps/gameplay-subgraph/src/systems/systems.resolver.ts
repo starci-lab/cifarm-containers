@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query } from "@nestjs/graphql"
 import { SystemsService } from "./systems.service"
-import { Activities, AnimalRandomness, CropRandomness, EnergyRegen, SpinInfo, Starter } from "@src/databases"
+import { Activities, AnimalRandomness, CropRandomness, EnergyRegen, SpinInfo, DefaultInfo } from "@src/databases"
 
 @Resolver()
 export class SystemsResolver {
@@ -30,11 +30,11 @@ export class SystemsResolver {
         return this.systemsService.getAnimalRandomness()
     }
 
-    @Query(() => Starter, {
+    @Query(() => DefaultInfo, {
         name: "starter"
     })
-    async getStarter(): Promise<Starter> {
-        return this.systemsService.getStarter()
+    async getDefaultInfo(): Promise<DefaultInfo> {
+        return this.systemsService.getDefaultInfo()
     }
 
     @Query(() => SpinInfo, {

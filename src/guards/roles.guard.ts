@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common"
 import { Reflector } from "@nestjs/core"
-// import { UserEntity } from "@src/database"
+// import { UserSchema } from "@src/database"
 // import { Roles } from "@src/decorators"
 // import { NotHavePermissionException } from "@src/exceptions"
 
@@ -15,10 +15,10 @@ export class RolesGuard implements CanActivate {
         //     return true
         // }
         // const request = context.switchToHttp().getRequest()
-        // const user = request.user as UserEntity
+        // const user = request.user as UserSchema
         
         // // if user is admin, return true
-        // if (user.roles.includes(UserEntity.Admin)) return true
+        // if (user.roles.includes(UserSchema.Admin)) return true
 
         // const hasPermission = user.roles.some((role) => roles.includes(role))
         // if (!hasPermission) {

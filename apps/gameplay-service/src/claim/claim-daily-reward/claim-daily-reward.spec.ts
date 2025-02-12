@@ -3,7 +3,7 @@
 import { Test } from "@nestjs/testing"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
 import { DataSource } from "typeorm"
-import { DailyRewardEntity, DailyRewardId, getPostgreSqlToken, UserEntity } from "@src/databases"
+import { DailyRewardEntity, DailyRewardId, getPostgreSqlToken, UserSchema } from "@src/databases"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { GrpcFailedPreconditionException } from "@src/common"
 import { DateUtcService } from "@src/date"
@@ -42,7 +42,7 @@ describe("ClaimDailyRewardService", () => {
             userId: user.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id }
         })
 
@@ -64,7 +64,7 @@ describe("ClaimDailyRewardService", () => {
             userId: user.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id }
         })
 

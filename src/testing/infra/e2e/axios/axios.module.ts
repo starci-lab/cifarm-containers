@@ -6,8 +6,7 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./axios.module-definition
 import { CacheModule, CacheType } from "@src/cache"
 import { E2EAxiosService } from "./axios.service"
 import { E2ERAuthenticationService } from "./authentication.service"
-import { PostgreSQLModule } from "@src/databases"
-import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
+import { MongooseModule } from "@src/databases"
 
 @Module({})
 export class E2EAxiosModule extends ConfigurableModuleClass {
@@ -24,11 +23,7 @@ export class E2EAxiosModule extends ConfigurableModuleClass {
                 CacheModule.register({
                     cacheType: CacheType.Memory
                 }),
-                PostgreSQLModule.forRoot({
-                    context: PostgreSQLContext.Main,
-                    database: PostgreSQLDatabase.Gameplay,
-                    cacheEnabled: false,
-                })
+                MongooseModule.forRoot()
             )
         }
 

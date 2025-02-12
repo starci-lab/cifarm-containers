@@ -12,7 +12,7 @@ import {
     SeedGrowthInfoEntity,
     CropCurrentState,
     PlacedItemEntity,
-    UserEntity,
+    UserSchema,
     InventoryEntity,
     SystemEntity,
     SystemId,
@@ -74,7 +74,7 @@ describe("HarvestCropService", () => {
             tileInfo: {},
             x: 0,
             y: 0,
-            placedItemTypeId: PlacedItemTypeId.StarterTile,
+            placedItemTypeId: PlacedItemTypeId.DefaultInfoTile,
             userId: user.id
         })
 
@@ -84,7 +84,7 @@ describe("HarvestCropService", () => {
             placedItemTileId: placedItemTile.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["energy", "level", "experiences"]
         })
@@ -156,7 +156,7 @@ describe("HarvestCropService", () => {
             tileInfo: {},
             x: 0,
             y: 0,
-            placedItemTypeId: PlacedItemTypeId.StarterTile,
+            placedItemTypeId: PlacedItemTypeId.DefaultInfoTile,
             userId: user.id
         })
 
@@ -166,7 +166,7 @@ describe("HarvestCropService", () => {
             placedItemTileId: placedItemTile.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserEntity, {
+        const userAfter = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["energy", "level", "experiences"]
         })
@@ -254,7 +254,7 @@ describe("HarvestCropService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.StarterTile
+            placedItemTypeId: PlacedItemTypeId.DefaultInfoTile
         })
 
         await expect(
@@ -282,7 +282,7 @@ describe("HarvestCropService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.StarterTile
+            placedItemTypeId: PlacedItemTypeId.DefaultInfoTile
         })
 
         await expect(
@@ -314,7 +314,7 @@ describe("HarvestCropService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.StarterTile
+            placedItemTypeId: PlacedItemTypeId.DefaultInfoTile
         })
 
         await expect(
@@ -346,7 +346,7 @@ describe("HarvestCropService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.StarterTile
+            placedItemTypeId: PlacedItemTypeId.DefaultInfoTile
         })
         
         await expect(

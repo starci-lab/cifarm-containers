@@ -11,19 +11,19 @@ export class GoldBalanceService {
         if (current < required) throw new UserInsufficientGoldException(current, required)
     }
 
-    public add(params: AddParams): AddResult {
-        if (params.amount < 0) throw new GoldCannotBeZeroOrNegativeException(params.amount)
+    public add({ amount, user }: AddParams): AddResult {
+        if (amount < 0) throw new GoldCannotBeZeroOrNegativeException(amount)
 
         return {
-            golds: params.amount + params.entity.golds
+            golds: amount + user.golds
         }
     }
 
-    public subtract(params: SubtractParams): SubtractResult {
-        if (params.amount < 0) throw new GoldCannotBeZeroOrNegativeException(params.amount)
+    public subtract({ amount, user }: SubtractParams): SubtractResult {
+        if (amount < 0) throw new GoldCannotBeZeroOrNegativeException(amount)
 
         return {
-            golds: params.entity.golds - params.amount
+            golds: user.golds - amount
         }
     }
 }

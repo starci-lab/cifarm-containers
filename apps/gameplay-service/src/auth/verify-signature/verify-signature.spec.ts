@@ -3,7 +3,7 @@
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { Test } from "@nestjs/testing"
 import { isJWT, isUUID } from "class-validator"
-import { getPostgreSqlToken, PlacedItemType, UserEntity } from "@src/databases"
+import { getPostgreSqlToken, PlacedItemType, UserSchema } from "@src/databases"
 import { DataSource } from "typeorm"
 import { VerifySignatureService } from "./verify-signature.service"
 import { RequestMessageService } from "../request-message"
@@ -65,7 +65,7 @@ describe("VerifySignatureService", () => {
         expect(isUUID(refreshToken)).toBe(true)
     
         // Check user existence and validate items
-        const user = await dataSource.manager.findOne(UserEntity, {
+        const user = await dataSource.manager.findOne(UserSchema, {
             where: { accountAddress: publicKey },
             relations: {
                 placedItems: {

@@ -8,7 +8,7 @@ import {
     BuildingEntity,
     BuildingId,
     PlacedItemEntity,
-    UserEntity,
+    UserSchema,
     getPostgreSqlToken
 } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -49,7 +49,7 @@ describe("ConstructBuildingService", () => {
             position: { x, y }
         })
 
-        const { golds: goldsAfter } = await dataSource.manager.findOne(UserEntity, {
+        const { golds: goldsAfter } = await dataSource.manager.findOne(UserSchema, {
             where: { id: user.id },
             select: ["golds"]
         })

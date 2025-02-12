@@ -1,8 +1,8 @@
 import { UserSchema } from "@src/databases"
-import { EntityParams } from "@src/common"
 import { DeepPartial } from "typeorm"
 
-export interface AddExperiencesParams extends EntityParams<UserSchema> {
+export interface AddExperiencesParams {
+    user: DeepPartial<UserSchema>
     experiences: number
 }
 

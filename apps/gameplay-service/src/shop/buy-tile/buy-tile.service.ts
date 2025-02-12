@@ -5,7 +5,7 @@ import {
     PlacedItemType,
     PlacedItemTypeEntity,
     TileEntity,
-    UserEntity
+    UserSchema
 } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource } from "typeorm"
@@ -50,7 +50,7 @@ export class BuyTileService {
             })
 
             // get users
-            const user = await queryRunner.manager.findOne(UserEntity, {
+            const user = await queryRunner.manager.findOne(UserSchema, {
                 where: { id: request.userId }
             })
 
@@ -81,7 +81,7 @@ export class BuyTileService {
             // Start transaction
             await queryRunner.startTransaction()
             try {
-                await queryRunner.manager.update(UserEntity, user.id, {
+                await queryRunner.manager.update(UserSchema, user.id, {
                     ...goldsChanged
                 })
 

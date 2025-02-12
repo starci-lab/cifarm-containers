@@ -9,7 +9,7 @@ message PlacedItemEntity {
     int32 y = 3;
     
     string user_id = 4; // userId mapped to the string field
-    UserEntity user = 5; // Nested message UserEntity
+    UserSchema user = 5; // Nested message UserSchema
     
     string item_key = 6; // Optional, nullable itemKey
     string inventory_key = 7; // Optional, nullable inventoryKey
@@ -24,9 +24,9 @@ message PlacedItemEntity {
 }
   
 // You need to define your other related entities/messages
-message UserEntity {
+message UserSchema {
     string id = 1;
-    string name = 2; // Add any other fields related to UserEntity
+    string name = 2; // Add any other fields related to UserSchema
 }
 
 message SeedGrowthInfo {

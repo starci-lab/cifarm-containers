@@ -1,9 +1,9 @@
 import { GameplayErrorCode, GameplayException } from "./base"
 
 export class InventoryQuantityNotSufficientException extends GameplayException {
-    constructor(id: string, quantity: number) {
+    constructor(quantity: number) {
         super(
-            `Inventory quantity not sufficient. ID: ${id}, Quantity: ${quantity}`,
+            `Inventory quantity not sufficient. Quantity: ${quantity}`,
             GameplayErrorCode.InventoryQuantityNotSufficient
         )
     }
