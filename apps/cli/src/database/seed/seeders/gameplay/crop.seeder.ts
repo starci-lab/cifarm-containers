@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     CropKey,
     CropSchema,
@@ -7,6 +7,7 @@ import {
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
 
+@Injectable()
 export class CropSeeder implements Seeder {
     private readonly logger = new Logger(CropSeeder.name)
 
@@ -109,12 +110,8 @@ export class CropSeeder implements Seeder {
                 availableInShop: true,
             },
         ]
-        
-        try {
-            await this.connection.model<CropSchema>(CropSchema.name).insertMany(data)
-        } catch (error) {
-            this.logger.error(error)
-        }
+
+        await this.connection.model<CropSchema>(CropSchema.name).insertMany(data)
     }
     
     async drop(): Promise<void> {

@@ -103,7 +103,8 @@ export enum SystemKey {
     AnimalRandomness = "animalRandomness",
     Starter = "starter",
     SpinInfo = "spinInfo",
-    EnergyRegen = "energyRegen"
+    EnergyRegen = "energyRegen",
+    DailyRewardInfo = "dailyRewardInfo",
 }
 
 export enum KeyValueStoreKey {
@@ -137,8 +138,6 @@ export enum InventoryTypeKey {
     CucumberQuality = "cucumberQuality",
     BellPepper = "bellPepper",
     BellPepperQuality = "bellPepperQuality",
-    Chicken = "chicken",
-    Cow = "cow",
 }
 
 export enum PlacedItemTypeKey {

@@ -4,10 +4,11 @@ import {
     BuildingSchema,
     InjectMongoose,
 } from "@src/databases"
-import { Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
 import { Connection } from "mongoose"
 
+@Injectable()
 export class BuildingSeeder implements Seeder {
     private readonly logger = new Logger(BuildingSeeder.name)
 

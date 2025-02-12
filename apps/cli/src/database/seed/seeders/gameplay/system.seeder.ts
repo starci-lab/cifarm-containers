@@ -1,23 +1,37 @@
-import { Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
     AnimalRandomness,
     AppearanceChance,
-    CropId,
+    CropKey,
     CropRandomness,
+    DailyRewardInfo,
+    DailyRewardKey,
     EnergyRegen,
+    InjectMongoose,
     SpinInfo,
     Starter,
-    SystemEntity,
-    SystemId,
+    SystemKey,
+    SystemSchema,
 } from "@src/databases"
-import { DataSource, DeepPartial } from "typeorm"
-import { Seeder } from "typeorm-extension"
+import { Connection } from "mongoose"
+import { Seeder } from "nestjs-seeder"
 
+@Injectable()
 export class SystemSeeder implements Seeder {
     private readonly logger = new Logger(SystemSeeder.name)
-    track = true
-    public async run(dataSource: DataSource): Promise<void> {
+
+    constructor(
+        @InjectMongoose()
+        private readonly connection: Connection
+    ) {}
+
+    public async drop(): Promise<void> {
+        this.logger.debug("Dropping system...")
+        await this.connection.model<SystemSchema>(SystemSchema.name).deleteMany({})
+    }
+    
+    public async seed(): Promise<void> {
         this.logger.debug("Seeding system...")
         const activities: Activities = {
             cureAnimal: {
@@ -122,7 +136,7 @@ export class SystemSeeder implements Seeder {
                     }
                 ]
             },
-            defaultCropId: CropId.Carrot,
+            defaultCropKey: CropKey.Carrot,
             defaultSeedQuantity: 10
         }
         const spinInfo: SpinInfo = {
@@ -153,35 +167,69 @@ export class SystemSeeder implements Seeder {
             // 5 minutes
             time: 60 * 5
         }
+        const dailyRewardInfo: DailyRewardInfo = {
+            [DailyRewardKey.Day1]: {
+                golds: 100,
+                tokens: 0,
+                day: 1,
+                lastDay: false
+            },
+            [DailyRewardKey.Day2]: {
+                golds: 200,
+                tokens: 0,
+                day: 2,
+                lastDay: false
+            },
+            [DailyRewardKey.Day3]: {
+                golds: 300,
+                tokens: 0,
+                day: 3,
+                lastDay: false
+            },
+            [DailyRewardKey.Day4]: {
+                golds: 600,
+                tokens: 0,
+                day: 4,
+                lastDay: false
+            },
+            [DailyRewardKey.Day5]: {
+                day: 5,
+                lastDay: true,
+                golds: 1000,
+                tokens: 1
+            },
+        }
 
-        const data: Array<DeepPartial<SystemEntity>> = [
+        const data: Array<Partial<SystemSchema>> = [
             {
-                id: SystemId.Activities,
+                key: SystemKey.Activities,
                 value: activities
             },
             {
-                id: SystemId.CropRandomness,
+                key: SystemKey.CropRandomness,
                 value: cropRandomness
             },
             {
-                id: SystemId.AnimalRandomness,
+                key: SystemKey.AnimalRandomness,
                 value: animalRandomness
             },
             {
-                id: SystemId.Starter,
+                key: SystemKey.Starter,
                 value: starter
             },
             {
-                id: SystemId.SpinInfo,
+                key: SystemKey.SpinInfo,
                 value: spinInfo
             },
             {
-                id: SystemId.EnergyRegen,
+                key: SystemKey.EnergyRegen,
                 value: energyRegen
+            },
+            {
+                key: SystemKey.DailyRewardInfo,
+                value: dailyRewardInfo
             }
         ]
-    
-        await dataSource.manager.save(SystemEntity, data)
-        this.logger.verbose("System seeded successfully.")
+        await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)
     }
 }

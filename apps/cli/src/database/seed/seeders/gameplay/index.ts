@@ -1,3 +1,5 @@
 export * from "./animal.seeder"
 export * from "./building.seeder"
 export * from "./crop.seeder"
+export * from "./system.seeder"
+export * from "./inventory-type.seeder"
