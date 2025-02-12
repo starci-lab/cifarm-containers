@@ -9,10 +9,10 @@ import { Position } from "@src/gameplay"
 export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>;
 
 @ObjectType()
-@Schema({ timestamps: true, collection: "placed_items" })
+@Schema({ timestamps: true, collection: "placed-items" })
 export class PlacedItemSchema extends AbstractSchema {
     @Field(() => Position)
-    @Prop({ type: Position, required: true, default: { x: 0, y: 0 } })
+    @Prop({ type: Object, required: true, default: { x: 0, y: 0 } })
         position: Position
 
     @Field(() => String, { nullable: true })

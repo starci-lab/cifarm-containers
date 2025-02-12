@@ -3,8 +3,8 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./mongoose.module-definit
 import { envConfig, MongoDbDatabase } from "@src/env"
 import { getMongooseConnectionName } from "./utils"
 import { MongooseModule as NestMongooseModule } from "@nestjs/mongoose"
-import { AnimalSchema, AnimalSchemaClass, BuildingSchema, BuildingSchemaClass, CropSchema, CropSchemaClass, InventoryTypeSchema, InventoryTypeSchemaClass, SpinPrizeSchema, SpinPrizeSchemaClass, SpinSlotSchema, SpinSlotSchemaClass, SupplySchema, SupplySchemaClass, SystemSchema, SystemSchemaClass, UserSchema } from "./gameplay"
 import { InventorySchema } from "./gameplay/schemas/inventory.schema"
+import { AnimalSchema, AnimalSchemaClass, BuildingSchema, BuildingSchemaClass, CropSchema, CropSchemaClass, InventoryTypeSchema, InventoryTypeSchemaClass, SpinPrizeSchema, SpinPrizeSchemaClass, SpinSlotSchema, SpinSlotSchemaClass, SupplySchema, SupplySchemaClass, SystemSchema, SystemSchemaClass, ToolSchema, ToolSchemaClass, UserSchema } from "./gameplay"
 
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
@@ -68,13 +68,17 @@ export class MongooseModule extends ConfigurableModuleClass {
                             name: SupplySchema.name,
                             schema: SupplySchemaClass
                         },
+                        // {
+                        //     name: UserSchema.name,
+                        //     schema: UserSchema
+                        // },
+                        // {
+                        //     name: InventorySchema.name,
+                        //     schema: InventorySchema
+                        // },
                         {
-                            name: UserSchema.name,
-                            schema: UserSchema
-                        },
-                        {
-                            name: InventorySchema.name,
-                            schema: InventorySchema
+                            name: ToolSchema.name,
+                            schema: ToolSchemaClass
                         }
                     ],
                     connectionName
