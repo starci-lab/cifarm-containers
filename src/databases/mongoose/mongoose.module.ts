@@ -26,7 +26,9 @@ import {
     TileSchemaClass,
     ToolSchema,
     ToolSchemaClass,
-    UserSchema
+    UserSchema,
+    PlacedItemTypeSchema,
+    PlacedItemTypeSchemaClass
 } from "./gameplay"
 
 @Module({})
@@ -106,6 +108,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: TileSchema.name,
                             schema: TileSchemaClass
+                        },
+                        {
+                            name: PlacedItemTypeSchema.name,
+                            schema: PlacedItemTypeSchemaClass
                         }
                     ],
                     connectionName

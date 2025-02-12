@@ -1,20 +1,21 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
-import { MODULE_OPTIONS_TOKEN } from "./seeders.module-definition"
-import { SeederOptions } from "./types"
-import { seeder } from "nestjs-seeder"
 import { MongooseModule } from "@src/databases"
+import { seeder } from "nestjs-seeder"
 import {
     AnimalSeeder,
     BuildingSeeder,
     CropSeeder,
     InventoryTypeSeeder,
+    PlacedItemTypeSeeder,
     SpinPrizeSeeder,
     SpinSlotSeeder,
-    ToolSeeder,
-    TileSeeder,
     SupplySeeder,
     SystemSeeder,
+    TileSeeder,
+    ToolSeeder,
 } from "./gameplay"
+import { MODULE_OPTIONS_TOKEN } from "./seeders.module-definition"
+import { SeederOptions } from "./types"
 
 @Injectable()
 export class SeedersService {
@@ -36,7 +37,8 @@ export class SeedersService {
             SpinSlotSeeder,
             ToolSeeder,
             TileSeeder,
-            SupplySeeder
+            SupplySeeder,
+            PlacedItemTypeSeeder
         ])
     }
 }
