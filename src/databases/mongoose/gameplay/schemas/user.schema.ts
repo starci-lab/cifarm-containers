@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
-import { KeyAbstractSchema } from "./abstract"
+import { AbstractSchema, KeyAbstractSchema } from "./abstract"
 import { ChainKey, Network } from "@src/env"
 import { TutorialStep } from "../enums"
 
@@ -12,7 +12,7 @@ export type UserDocument = HydratedDocument<UserSchema>
     timestamps: true,
     collection: "users"
 })
-export class UserSchema extends KeyAbstractSchema {
+export class UserSchema extends AbstractSchema {
     @Field(() => String)
     @Prop({ type: String, required: true, unique: true, length: 100 })
         username: string
