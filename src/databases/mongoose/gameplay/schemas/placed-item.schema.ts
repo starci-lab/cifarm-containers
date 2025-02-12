@@ -5,13 +5,10 @@ import { KeyAbstractSchema } from "./abstract"
 import { AnimalCurrentState, CropCurrentState } from "../enums"
 
 // Mongoose document type
-export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>
+export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>;
 
 @ObjectType()
-@Schema({
-    timestamps: true,
-    collection: "placed_items"
-})
+@Schema({ timestamps: true, collection: "placed_items" })
 export class PlacedItemSchema extends KeyAbstractSchema {
     
     @Field(() => Int)
@@ -30,29 +27,21 @@ export class PlacedItemSchema extends KeyAbstractSchema {
     @Prop({ type: String, required: false })
         inventoryId?: string
 
-    @Field(() => ID, { nullable: true })
-    @Prop({ type: String, required: false })
-        seedGrowthInfoId?: string
+    @Field(() => SeedGrowthInfo, { nullable: true })
+    @Prop({ type: Object, required: false })
+        seedGrowthInfo?: SeedGrowthInfo
 
-    @Field(() => ID, { nullable: true })
-    @Prop({ type: String, required: false })
-        tileInfoId?: string
+    @Field(() => TileInfo, { nullable: true })
+    @Prop({ type: Object, required: false })
+        tileInfo?: TileInfo
 
-    @Field(() => ID, { nullable: true })
-    @Prop({ type: String, required: false })
-        animalInfoId?: string
+    @Field(() => AnimalInfo, { nullable: true })
+    @Prop({ type: Object, required: false })
+        animalInfo?: AnimalInfo
 
-    @Field(() => ID, { nullable: true })
-    @Prop({ type: String, required: false })
-        buildingInfoId?: string
-
-    @Field(() => [ID], { nullable: true })
-    @Prop({ type: [String], required: false })
-        placedItemIds?: string[]
-
-    @Field(() => ID, { nullable: true })
-    @Prop({ type: String, required: false })
-        parentId?: string
+    @Field(() => BuildingInfo, { nullable: true })
+    @Prop({ type: Object, required: false })
+        buildingInfo?: BuildingInfo
 
     @Field(() => ID, { nullable: true })
     @Prop({ type: String, required: false })
@@ -60,7 +49,7 @@ export class PlacedItemSchema extends KeyAbstractSchema {
 }
 
 @ObjectType()
-export class TileInfoSchema {
+export class TileInfo {
     
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
@@ -72,7 +61,7 @@ export class TileInfoSchema {
 }
 
 @ObjectType()
-export class SeedGrowthInfoSchema {
+export class SeedGrowthInfo {
     
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
@@ -109,26 +98,17 @@ export class SeedGrowthInfoSchema {
     @Field(() => Boolean)
     @Prop({ type: Boolean, default: false })
         isFertilized: boolean
-
-    @Field(() => ID)
-    @Prop({ type: String, required: true })
-        placedItemId: string
 }
 
 @ObjectType()
-export class BuildingInfoSchema extends KeyAbstractSchema {
-    
+export class BuildingInfo {
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         currentUpgrade: number
-
-    @Field(() => ID)
-    @Prop({ type: String, required: true })
-        placedItemId: string
 }
 
 @ObjectType()
-export class AnimalInfoSchema extends KeyAbstractSchema {
+export class AnimalInfo {
     @Field(() => Float)
     @Prop({ type: Number, default: 0 })
         currentGrowthTime: number
@@ -164,10 +144,6 @@ export class AnimalInfoSchema extends KeyAbstractSchema {
     @Field(() => Boolean)
     @Prop({ type: Boolean, default: false })
         immunized: boolean
-
-    @Field(() => ID)
-    @Prop({ type: String, required: true })
-        placedItemId: string
 }
 
 // Generate Mongoose Schema
