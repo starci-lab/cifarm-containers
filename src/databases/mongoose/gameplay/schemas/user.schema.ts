@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
-import { AbstractSchema, KeyAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 import { ChainKey, Network } from "@src/env"
 import { TutorialStep } from "../enums"
 

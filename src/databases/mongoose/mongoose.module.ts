@@ -3,8 +3,31 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./mongoose.module-definit
 import { envConfig, MongoDbDatabase } from "@src/env"
 import { getMongooseConnectionName } from "./utils"
 import { MongooseModule as NestMongooseModule } from "@nestjs/mongoose"
-import { InventorySchema } from "./gameplay/schemas/inventory.schema"
-import { AnimalSchema, AnimalSchemaClass, BuildingSchema, BuildingSchemaClass, CropSchema, CropSchemaClass, InventoryTypeSchema, InventoryTypeSchemaClass, SpinPrizeSchema, SpinPrizeSchemaClass, SpinSlotSchema, SpinSlotSchemaClass, SupplySchema, SupplySchemaClass, SystemSchema, SystemSchemaClass, ToolSchema, ToolSchemaClass, UserSchema, UserSchemaClass } from "./gameplay"
+import { InventorySchema, InventorySchemaClass } from "./gameplay/schemas/inventory.schema"
+import {
+    AnimalSchema,
+    AnimalSchemaClass,
+    BuildingSchema,
+    BuildingSchemaClass,
+    UserSchemaClass,
+    CropSchema,
+    CropSchemaClass,
+    InventoryTypeSchema,
+    InventoryTypeSchemaClass,
+    SpinPrizeSchema,
+    SpinPrizeSchemaClass,
+    SpinSlotSchema,
+    SpinSlotSchemaClass,
+    SupplySchema,
+    SupplySchemaClass,
+    SystemSchema,
+    SystemSchemaClass,
+    TileSchema,
+    TileSchemaClass,
+    ToolSchema,
+    ToolSchemaClass,
+    UserSchema
+} from "./gameplay"
 
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
@@ -74,11 +97,15 @@ export class MongooseModule extends ConfigurableModuleClass {
                         },
                         {
                             name: InventorySchema.name,
-                            schema: InventorySchema
+                            schema: InventorySchemaClass
                         },
                         {
                             name: ToolSchema.name,
                             schema: ToolSchemaClass
+                        },
+                        {
+                            name: TileSchema.name,
+                            schema: TileSchemaClass
                         }
                     ],
                     connectionName
