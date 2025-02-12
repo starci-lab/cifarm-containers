@@ -1,94 +1,81 @@
-import { Logger } from "@nestjs/common"
-import { InventoryType, PlacedItemType, PlacedItemTypeId, TileEntity, TileId } from "@src/databases"
-import { DataSource } from "typeorm"
-import { Seeder } from "typeorm-extension"
+import { Injectable, Logger } from "@nestjs/common"
+import {
+    InjectMongoose,
+    PlacedItemTypeKey,
+    TileKey,
+    TileSchema
+} from "@src/databases"
+import { Connection } from "mongoose"
+import { Seeder } from "nestjs-seeder"
 
+@Injectable()
 export class TileSeeder implements Seeder {
     private readonly logger = new Logger(TileSeeder.name)
-    track = true
-    public async run(dataSource: DataSource): Promise<void> {
+
+    constructor(
+        @InjectMongoose()
+        private readonly connection: Connection
+    ) {}
+
+    public async seed(): Promise<void> {
         this.logger.debug("Seeding tiles...")
-        await dataSource.manager.save(TileEntity, [
+
+        const data: Array<Partial<TileSchema>> = [
             {
-                id: TileId.StarterTile,
+                key: TileKey.StarterTile,
                 price: 0,
                 maxOwnership: 6,
                 isNft: false,
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
                 availableInShop: true,
-                placedItemType: {
-                    id: PlacedItemTypeId.StarterTile,
-                    type: PlacedItemType.Tile
-                }
+                placedItemTypeKey: PlacedItemTypeKey.StarterTile
             },
             {
-                id: TileId.BasicTile1,
+                key: TileKey.BasicTile1,
                 price: 1000,
                 maxOwnership: 10,
                 isNft: false,
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
                 availableInShop: true,
-                placedItemType: {
-                    id: PlacedItemTypeId.BasicTile1,
-                    type: PlacedItemType.Tile
-                }
+                placedItemTypeKey: PlacedItemTypeKey.BasicTile1
             },
             {
-                id: TileId.BasicTile2,
+                key: TileKey.BasicTile2,
                 price: 2500,
                 maxOwnership: 30,
                 isNft: false,
                 availableInShop: true,
                 qualityProductChanceStack: 0.001,
                 qualityProductChanceLimit: 0.1,
-                inventoryType: {
-                    id: TileId.BasicTile2,
-                    asTool: false,
-                    deliverable: false,
-                    maxStack: 16,
-                    placeable: true,
-                    type: InventoryType.Tile
-                },
-                placedItemType: {
-                    id: PlacedItemTypeId.BasicTile2,
-                    type: PlacedItemType.Tile
-                }
+                placedItemTypeKey: PlacedItemTypeKey.BasicTile1
             },
             {
-                id: TileId.BasicTile3,
+                key: TileKey.BasicTile3,
                 price: 10000,
                 maxOwnership: 9999,
                 isNft: false,
                 qualityProductChanceStack: 0.002,
                 qualityProductChanceLimit: 0.2,
                 availableInShop: true,
-                placedItemType: {
-                    id: PlacedItemTypeId.BasicTile3,
-                    type: PlacedItemType.Tile
-                }
+                placedItemTypeKey: PlacedItemTypeKey.BasicTile3
             },
             {
-                id: TileId.FertileTile,
+                key: TileKey.FertileTile,
                 isNft: true,
                 qualityProductChanceStack: 0.025,
                 qualityProductChanceLimit: 0.5,
                 availableInShop: false,
-                inventoryType: {
-                    id: TileId.FertileTile,
-                    asTool: false,
-                    deliverable: false,
-                    maxStack: 1,
-                    placeable: true,
-                    type: InventoryType.Tile
-                },
-                placedItemType: {
-                    id: PlacedItemTypeId.FertileTile,
-                    type: PlacedItemType.Tile
-                }
+                placedItemTypeKey: PlacedItemTypeKey.FertileTile
             }
-        ])
-        this.logger.verbose("Tiles seeded successfully.")
+        ]
+
+        await this.connection.model<TileSchema>(TileSchema.name).insertMany(data)
+    }
+
+    async drop(): Promise<void> {
+        this.logger.verbose("Dropping tiles...")
+        await this.connection.model<TileSchema>(TileSchema.name).deleteMany({})
     }
 }

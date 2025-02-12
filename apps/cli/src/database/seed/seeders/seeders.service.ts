@@ -10,9 +10,10 @@ import {
     InventoryTypeSeeder,
     SpinPrizeSeeder,
     SpinSlotSeeder,
-    SystemSeeder
+    SystemSeeder,
+    ToolSeeder,
+    TileSeeder
 } from "./gameplay"
-import { ToolSeeder } from "./gameplay/tool.seeder"
 
 @Injectable()
 export class SeedersService {
@@ -32,7 +33,8 @@ export class SeedersService {
             InventoryTypeSeeder,
             SpinPrizeSeeder,
             SpinSlotSeeder,
-            ToolSeeder
+            ToolSeeder,
+            TileSeeder
         ])
     }
 }
