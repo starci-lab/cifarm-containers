@@ -3,7 +3,7 @@ import { MODULE_OPTIONS_TOKEN } from "./seeders.module-definition"
 import { SeederOptions } from "./types"
 import { seeder } from "nestjs-seeder"
 import { MongooseModule } from "@src/databases"
-import { AnimalSeeder, BuildingSeeder } from "./gameplay"
+import { AnimalSeeder, BuildingSeeder, CropSeeder } from "./gameplay"
 
 @Injectable()
 export class SeedersService {
@@ -17,6 +17,6 @@ export class SeedersService {
             imports: [
                 MongooseModule.forRoot(this.options),
             ],
-        }).run([AnimalSeeder, BuildingSeeder])
+        }).run([CropSeeder])
     }
 }

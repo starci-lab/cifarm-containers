@@ -10,7 +10,8 @@ export type BuildingDocument = HydratedDocument<BuildingSchema>;
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: "buildings"
+    collection: "buildings",
+    _id: false
 })
 export class BuildingSchema extends KeyAbstractSchema {
   @Field(() => Boolean)

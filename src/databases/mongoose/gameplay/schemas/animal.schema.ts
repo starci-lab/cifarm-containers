@@ -9,7 +9,8 @@ export type AnimalDocument = HydratedDocument<AnimalSchema>;
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: "animals"
+    collection: "animals",
+    _id: false
 })
 export class AnimalSchema extends KeyAbstractSchema {
     @Field(() => Int)

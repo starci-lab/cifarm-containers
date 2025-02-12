@@ -3,7 +3,7 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./mongoose.module-definit
 import { envConfig, MongoDbDatabase } from "@src/env"
 import { getMongooseConnectionName } from "./utils"
 import { MongooseModule as NestMongooseModule } from "@nestjs/mongoose"
-import { AnimalSchema, AnimalSchemaClass, BuildingSchema, BuildingSchemaClass } from "./gameplay"
+import { AnimalSchema, AnimalSchemaClass, BuildingSchema, BuildingSchemaClass, CropSchema, CropSchemaClass } from "./gameplay"
 
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
@@ -13,14 +13,15 @@ export class MongooseModule extends ConfigurableModuleClass {
         options.database = options.database || MongoDbDatabase.Gameplay
         const connectionName = getMongooseConnectionName(options)
 
-        const { dbName, host, password, port, username } = envConfig().databases.mongo[MongoDbDatabase.Gameplay]
+        const { dbName, host, password, port, username } =
+            envConfig().databases.mongo[MongoDbDatabase.Gameplay]
         const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}`
 
         return {
             ...dynamicModule,
             imports: [
                 NestMongooseModule.forRoot(url, {
-                    connectionName,
+                    connectionName
                 }),
                 this.forFeature(options)
             ]
@@ -31,14 +32,25 @@ export class MongooseModule extends ConfigurableModuleClass {
         const connectionName = getMongooseConnectionName(options)
         return {
             module: MongooseModule,
-            imports: [NestMongooseModule.forFeature([{
-                name: AnimalSchema.name,
-                schema: AnimalSchemaClass
-            }, {
-                name: BuildingSchema.name,
-                schema: BuildingSchemaClass
-            }
-            ], connectionName)]
+            imports: [
+                NestMongooseModule.forFeature(
+                    [
+                        {
+                            name: AnimalSchema.name,
+                            schema: AnimalSchemaClass
+                        },
+                        {
+                            name: BuildingSchema.name,
+                            schema: BuildingSchemaClass
+                        },
+                        {
+                            name: CropSchema.name,
+                            schema: CropSchemaClass
+                        }
+                    ],
+                    connectionName
+                )
+            ]
         }
     }
 }
