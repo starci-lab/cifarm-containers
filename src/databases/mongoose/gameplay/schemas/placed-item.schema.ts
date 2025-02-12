@@ -2,7 +2,7 @@ import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
-import { AnimalCurrentState, CropCurrentState } from "../enums"
+import { AnimalCurrentState, CropCurrentState, PlacedItemTypeKey } from "../enums"
 import { Position } from "@src/gameplay"
 
 // Mongoose document type
@@ -19,6 +19,10 @@ export class PlacedItemSchema extends AbstractSchema {
     @Prop({ type: String, required: false })
         inventoryId?: string
 
+    @Field(() => String)
+    @Prop({ type: String, required: true, enum: PlacedItemTypeKey })
+        placedItemTypeKey: PlacedItemTypeKey
+    
     @Field(() => SeedGrowthInfo, { nullable: true })
     @Prop({ type: Object, required: false })
         seedGrowthInfo?: SeedGrowthInfo
@@ -34,10 +38,6 @@ export class PlacedItemSchema extends AbstractSchema {
     @Field(() => BuildingInfo, { nullable: true })
     @Prop({ type: Object, required: false })
         buildingInfo?: BuildingInfo
-
-    @Field(() => String, { nullable: true })
-    @Prop({ type: String, required: false })
-        placedItemTypeId?: string
 }
 
 @ObjectType()

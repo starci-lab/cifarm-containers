@@ -1,40 +1,32 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, SessionEntity } from "@src/databases"
 import { JwtService } from "@src/jwt"
-import { DataSource } from "typeorm"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
 import { GrpcInternalException, GrpcUnauthenticatedException } from "nestjs-grpc-exceptions"
 import { DateUtcService } from "@src/date"
+import { InjectMongoose, SessionSchema } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class RefreshService {
     private readonly logger = new Logger(RefreshService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly jwtService: JwtService,
         private readonly dateUtcService: DateUtcService
     ) {}
 
     public async refresh({
         refreshToken,
-        deviceInfo
     }: RefreshRequest): Promise<RefreshResponse> {
-        //use destructuring to get device, os, browser from deviceInfo, even if deviceInfo is null
-        const { device, os, browser, ipV4 } = { ...deviceInfo }
-
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-        //Get session
-        const session = await queryRunner.manager.findOne(SessionEntity, {
-            where: {
-                refreshToken: refreshToken
-            }
+        //Get user
+        const session = await this.connection.model<SessionSchema>(SessionSchema.name).findOne({
+            refreshToken
         })
         if (!session) throw new GrpcUnauthenticatedException("Session not found")
 
-        const { expiredAt, userId } = session
+        const { expiredAt, user } = session
         //if current time is after the expired time, throw error that refresh token is expired
         if (this.dateUtcService.getDayjs().isAfter(expiredAt))
             throw new GrpcUnauthenticatedException("Refresh token is expired")
@@ -43,33 +35,27 @@ export class RefreshService {
             accessToken,
             refreshToken: { token: newRefreshToken, expiredAt: newExpiredAt }
         } = await this.jwtService.generateAuthCredentials({
-            id: userId
+            id: user.id
         })
-
-        await queryRunner.startTransaction()
+        const mongoSession = await this.connection.startSession()     
+        mongoSession.startTransaction()
         try {
-            await queryRunner.manager.save(SessionEntity, {
-                expiredAt: newExpiredAt,
-                refreshToken: newRefreshToken,
-                userId,
-                browser,
-                os,
-                device,
-                ipV4
-            })
-            await queryRunner.commitTransaction()
-
-            return {
-                accessToken,
-                refreshToken: newRefreshToken
-            }
+            //update the expired time of the current session
+            await this.connection.model<SessionSchema>(SessionSchema.name).updateOne(
+                { refreshToken },
+                { expiredAt: newExpiredAt }
+            )
+            mongoSession.commitTransaction()
         } catch (error) {
-            const errorMessage = `Transaction failed, reason: ${error.message}`
-            this.logger.error(errorMessage)
-            await queryRunner.rollbackTransaction()
-            throw new GrpcInternalException(errorMessage)
+            this.logger.error(error)
+            mongoSession.abortTransaction()
+            throw new GrpcInternalException("Failed to update session")
         } finally {
-            await queryRunner.release()
+            mongoSession.endSession()
+        }
+        return {
+            accessToken,
+            refreshToken: newRefreshToken
         }
     } 
 }

@@ -2,8 +2,7 @@ import { DynamicModule, Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./infra.module-definition"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { TestContext } from "./infra.types"
-import { PostgreSQLModule } from "@src/databases"
-import { EnvModule, PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
+import { EnvModule } from "@src/env"
 import { GameplayConnectionService, GameplayMockUserService } from "./gameplay"
 import { CacheModule, CacheType } from "@src/cache"
 import { BlockchainModule } from "@src/blockchain"
@@ -13,6 +12,7 @@ import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { DateModule } from "@src/date"
 import { E2EAxiosModule, E2EConnectionService } from "./e2e"
 import { E2ESocketIoModule } from "./e2e/socket-io"
+import { MongooseModule } from "@src/databases"
 
 @Module({})
 export class TestingInfraModule extends ConfigurableModuleClass {
@@ -30,12 +30,7 @@ export class TestingInfraModule extends ConfigurableModuleClass {
         case TestContext.Gameplay: {
             imports.push(
                 EnvModule.forRoot(),
-                PostgreSQLModule.forRoot({
-                    context: PostgreSQLContext.Main,
-                    database: PostgreSQLDatabase.Gameplay,
-                    cacheEnabled: false,
-                    overrideContext: PostgreSQLContext.Mock
-                }),
+                MongooseModule.forRoot(),
                 CacheModule.register({
                     isGlobal: true,
                     cacheType: CacheType.Memory
@@ -74,11 +69,7 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                     producerOnlyMode: true,
                     isGlobal: true,
                 }),
-                PostgreSQLModule.forRoot({
-                    context: PostgreSQLContext.Main,
-                    database: PostgreSQLDatabase.Gameplay,
-                    cacheEnabled: false,
-                }),
+                MongooseModule.forRoot(),
                 JwtModule.register({
                     isGlobal: true
                 }),

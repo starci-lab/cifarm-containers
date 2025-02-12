@@ -1,16 +1,16 @@
 import { Injectable } from "@nestjs/common"
 import { InjectCache } from "@src/cache"
-import { InjectPostgreSQL } from "@src/databases"
-import { DataSource } from "typeorm"
 import { Cache } from "cache-manager"
 import { InjectKafka } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"
+import { InjectMongoose } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class GameplayConnectionService {
     constructor(
-            @InjectPostgreSQL()
-            private readonly dataSource: DataSource,
+            @InjectMongoose()
+            private readonly connection: Connection,
             @InjectCache()
             private readonly cacheManager: Cache,
             @InjectKafka()
@@ -19,9 +19,7 @@ export class GameplayConnectionService {
     public async closeAll(): Promise<void> {
         const promises: Array<Promise<void>> = []
         promises.push((async () => {
-            if (this.dataSource.isInitialized) {
-                await this.dataSource.destroy()
-            }
+            await this.connection.close()
         })())
         promises.push((async () => {
             await this.cacheManager.disconnect()

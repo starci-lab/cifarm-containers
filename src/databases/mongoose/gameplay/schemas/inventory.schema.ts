@@ -3,7 +3,7 @@ import { HydratedDocument } from "mongoose"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 
-export type InventoryTypeDocument = HydratedDocument<InventorySchema>
+export type InventoryDocument = HydratedDocument<InventorySchema>
 
 @ObjectType()
 @Schema({

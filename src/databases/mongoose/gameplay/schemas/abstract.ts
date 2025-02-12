@@ -1,11 +1,12 @@
 
 import { Field, ObjectType } from "@nestjs/graphql"
 import { Prop } from "@nestjs/mongoose"
+import { Document } from "mongoose"
 
 @ObjectType({
     isAbstract: true
 })
-export abstract class AbstractSchema {
+export abstract class AbstractSchema extends Document {
     @Field(() => Date)
     @Prop({ type: Date })
         createdAt: Date

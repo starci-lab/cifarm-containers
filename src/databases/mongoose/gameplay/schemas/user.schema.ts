@@ -7,10 +7,12 @@ import { TutorialStep } from "../enums"
 
 export type UserDocument = HydratedDocument<UserSchema>
 
+export const USER_COLLECTION = "users"
+
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: "users"
+    collection: USER_COLLECTION
 })
 export class UserSchema extends AbstractSchema {
     @Field(() => String)
@@ -95,10 +97,6 @@ export class UserSchema extends AbstractSchema {
     @Field(() => [String])
     @Prop({ type: Array<string>, default: [] })
         followingUserIds: Array<string>
-
-    @Field(() => [String])
-    @Prop({ type: Array<string>, default: [] })
-        refreshTokens: Array<string>
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

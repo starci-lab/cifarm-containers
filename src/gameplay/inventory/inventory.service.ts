@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InventoryEntity } from "@src/databases"
+import { InventorySchema } from "@src/databases"
 import { DeepPartial } from "typeorm"
 import { AddParams, AddResult, RemoveParams, RemoveResult } from "./inventory.types"
 import { InventoryQuantityNotSufficientException } from "../exceptions"
@@ -11,7 +11,7 @@ export class InventoryService {
     constructor() {}
 
     public add(params: AddParams): AddResult {
-        const resultInventories: Array<DeepPartial<InventoryEntity>> = params.entities
+        const resultInventories: Array<DeepPartial<InventorySchema>> = params.entities
 
         let remainingQuantity = params.data.quantity
 
@@ -35,13 +35,9 @@ export class InventoryService {
         while (remainingQuantity > 0) {
             const newQuantity = Math.min(inventoryType.maxStack, remainingQuantity)
             resultInventories.push({
-                inventoryType: {
-                    id: inventoryType.id
-                },
+                inventoryTypeKey: inventoryType.key,
                 quantity: newQuantity,
-                user: {
-                    id: params.userId
-                }
+                userId: params.data.userId
             })
             remainingQuantity -= newQuantity
         }

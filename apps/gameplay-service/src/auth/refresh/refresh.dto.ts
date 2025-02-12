@@ -1,11 +1,7 @@
-import { ApiHideProperty, ApiProperty } from "@nestjs/swagger"
-import { DeviceInfo, RequestWithDeviceInfo } from "@src/device/device-info/device-info.types"
-import { IsString } from "class-validator"
+import { ApiProperty } from "@nestjs/swagger"
+import { IsString, IsUUID } from "class-validator"
 
-export class RefreshRequest implements RequestWithDeviceInfo {
-    @ApiHideProperty()
-        deviceInfo: DeviceInfo
-    
+export class RefreshRequest {
     @IsString()
     @ApiProperty({
         example: "dQp9skJW9T3RxPBXNvx7mPR-XHRPL6sFzjVkj_8gnto", // Example JWT refresh token
@@ -23,10 +19,9 @@ export class RefreshResponse {
     })
         accessToken: string
 
-    @IsString()
+    @IsUUID()
     @ApiProperty({
-        example: "dQp9skJW9T3RxPBXNvx7mPR-XHRPL6sFzjVkj_8gnto", // Example JWT refresh token
-        description: "Refresh token to get a new access token"
+        description: "Refresh token to get a new access token",
     })
         refreshToken: string
 }

@@ -28,7 +28,11 @@ import {
     ToolSchemaClass,
     UserSchema,
     PlacedItemTypeSchema,
-    PlacedItemTypeSchemaClass
+    PlacedItemTypeSchemaClass,
+    SessionSchema,
+    SessionSchemaClass,
+    PlacedItemSchema,
+    PlacedItemSchemaClass
 } from "./gameplay"
 
 @Module({})
@@ -112,6 +116,14 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: PlacedItemTypeSchema.name,
                             schema: PlacedItemTypeSchemaClass
+                        },
+                        {
+                            name: SessionSchema.name,
+                            schema: SessionSchemaClass
+                        },
+                        {
+                            name: PlacedItemSchema.name,
+                            schema: PlacedItemSchemaClass
                         }
                     ],
                     connectionName
