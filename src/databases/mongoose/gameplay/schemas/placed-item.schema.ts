@@ -1,27 +1,19 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
-import { KeyAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 import { AnimalCurrentState, CropCurrentState } from "../enums"
+import { Position } from "@src/gameplay"
 
 // Mongoose document type
 export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>;
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "placed_items" })
-export class PlacedItemSchema extends KeyAbstractSchema {
-    
-    @Field(() => Int)
-    @Prop({ type: Number, required: true })
-        x: number
-
-    @Field(() => Int)
-    @Prop({ type: Number, required: true })
-        y: number
-
-    @Field(() => String, { nullable: true })
-    @Prop({ type: String, required: false })
-        userId?: string
+export class PlacedItemSchema extends AbstractSchema {
+    @Field(() => Position)
+    @Prop({ type: Position, required: true, default: { x: 0, y: 0 } })
+        position: Position
 
     @Field(() => String, { nullable: true })
     @Prop({ type: String, required: false })

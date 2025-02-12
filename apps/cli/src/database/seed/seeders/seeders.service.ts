@@ -10,6 +10,7 @@ import {
     InventoryTypeSeeder,
     SpinPrizeSeeder,
     SpinSlotSeeder,
+    SupplySeeder,
     SystemSeeder
 } from "./gameplay"
 
@@ -30,7 +31,8 @@ export class SeedersService {
             SystemSeeder,
             InventoryTypeSeeder,
             SpinPrizeSeeder,
-            SpinSlotSeeder
+            SpinSlotSeeder,
+            SupplySeeder
         ])
     }
 }

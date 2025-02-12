@@ -3,7 +3,8 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./mongoose.module-definit
 import { envConfig, MongoDbDatabase } from "@src/env"
 import { getMongooseConnectionName } from "./utils"
 import { MongooseModule as NestMongooseModule } from "@nestjs/mongoose"
-import { AnimalSchema, AnimalSchemaClass, BuildingSchema, BuildingSchemaClass, CropSchema, CropSchemaClass, InventoryTypeSchema, InventoryTypeSchemaClass, SpinPrizeSchema, SpinPrizeSchemaClass, SpinSlotSchema, SpinSlotSchemaClass, SystemSchema, SystemSchemaClass } from "./gameplay"
+import { AnimalSchema, AnimalSchemaClass, BuildingSchema, BuildingSchemaClass, CropSchema, CropSchemaClass, InventoryTypeSchema, InventoryTypeSchemaClass, SpinPrizeSchema, SpinPrizeSchemaClass, SpinSlotSchema, SpinSlotSchemaClass, SupplySchema, SupplySchemaClass, SystemSchema, SystemSchemaClass, UserSchema } from "./gameplay"
+import { InventorySchema } from "./gameplay/schemas/inventory.schema"
 
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
@@ -62,6 +63,18 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: SpinSlotSchema.name,
                             schema: SpinSlotSchemaClass
+                        },
+                        {
+                            name: SupplySchema.name,
+                            schema: SupplySchemaClass
+                        },
+                        {
+                            name: UserSchema.name,
+                            schema: UserSchema
+                        },
+                        {
+                            name: InventorySchema.name,
+                            schema: InventorySchema
                         }
                     ],
                     connectionName
