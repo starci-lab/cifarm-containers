@@ -62,11 +62,22 @@ export enum PostgreSQLDatabase {
 
 export enum MongoDatabase {
     Adapter = "adapter",
+    Gameplay = "gameplay"
 }
 
 export enum PostgreSQLContext {
     Main = "main",
     Mock = "mock"
+}
+
+export enum MongoDbContext {
+    Main = "main",
+    Mock = "mock"
+}
+
+export enum MongoDbDatabase {
+    Gameplay = "gameplay",
+    Telegram = "telegram"
 }
 
 export enum Brokers {

@@ -173,7 +173,7 @@ export class UpdateTutorialService {
                 cropId: defaultCropId
             }
         })
-        if (seedGrowthInfos.length !== 2) {
+        if (seedGrowthInfos.length < 2) {
             throw new GrpcFailedPreconditionException(
                 "You need to plant 2 default crop to enter this step"
             )
@@ -183,7 +183,7 @@ export class UpdateTutorialService {
         const someNeedWater = seedGrowthInfos.some(
             (seedGrowthInfo) => seedGrowthInfo.currentState === CropCurrentState.NeedWater
         )
-        if (!someNeedWater) {
+        if (someNeedWater) {
             throw new GrpcFailedPreconditionException(
                 "You need to water all the crops in stage 1 to enter this step"
             )
@@ -234,7 +234,7 @@ export class UpdateTutorialService {
                 cropId: defaultCropId
             }
         })
-        if (seedGrowthInfos.length !== 2) {
+        if (seedGrowthInfos.length < 2) {
             throw new GrpcFailedPreconditionException(
                 "You need to plant 2 default crop to enter this step"
             )
@@ -243,7 +243,7 @@ export class UpdateTutorialService {
         const someNeedWater = seedGrowthInfos.some(
             (seedGrowthInfo) => seedGrowthInfo.currentState === CropCurrentState.NeedWater
         )
-        if (!someNeedWater) {
+        if (someNeedWater) {
             throw new GrpcFailedPreconditionException(
                 "You need to water all the crops in stage 2 to enter this step"
             )

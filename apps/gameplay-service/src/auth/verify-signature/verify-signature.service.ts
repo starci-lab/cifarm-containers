@@ -10,8 +10,6 @@ import {
     SystemId,
     UserEntity,
     SessionEntity,
-    InventoryEntity,
-    defaultCropId,
     InventoryType,
     InventoryTypeEntity,
     CacheQueryRunnerService
@@ -88,20 +86,6 @@ export class VerifySignatureService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const inventoryType = await this.cacheQueryRunnerService.findOne(
-                queryRunner,
-                InventoryTypeEntity,
-                {
-                    where: {
-                        type: InventoryType.Seed,
-                        cropId: defaultCropId
-                    }
-                }
-            )
-            if (!inventoryType) {
-                throw new GrpcNotFoundException("Default crop not found")
-            }
-
             let user = await queryRunner.manager.findOne(UserEntity, {
                 where: {
                     accountAddress,
@@ -111,28 +95,43 @@ export class VerifySignatureService {
             })
             //if user not found, create user
             if (!user) {
-                await queryRunner.startTransaction()
-                try {
-                    // get starter info
-                    const { value } = await queryRunner.manager.findOne(SystemEntity, {
-                        where: { id: SystemId.Starter }
-                    })
-                    const { golds, positions } = value as Starter
-                    const energy = this.energyService.getMaxEnergy()
+                // get starter info
+                const { value } = await queryRunner.manager.findOne(SystemEntity, {
+                    where: { id: SystemId.Starter }
+                })
+                const { golds, positions, defaultCropId, defaultSeedQuantity } = value as Starter
+                const energy = this.energyService.getMaxEnergy()
 
-                    //home & tiles
-                    const home: DeepPartial<PlacedItemEntity> = {
-                        placedItemTypeId: PlacedItemTypeId.Home,
-                        buildingInfo: {},
-                        ...positions.home
+                const inventoryType = await this.cacheQueryRunnerService.findOne(
+                    queryRunner,
+                    InventoryTypeEntity,
+                    {
+                        where: {
+                            type: InventoryType.Seed,
+                            cropId: defaultCropId
+                        }
                     }
-                    const tiles: Array<DeepPartial<PlacedItemEntity>> = positions.tiles.map(
-                        (tile) => ({
-                            placedItemTypeId: PlacedItemTypeId.StarterTile,
-                            tileInfo: {},
-                            ...tile
-                        })
-                    )
+                )
+                if (!inventoryType) {
+                    throw new GrpcNotFoundException("Default crop not found")
+                }        
+
+                //home & tiles
+                const home: DeepPartial<PlacedItemEntity> = {
+                    placedItemTypeId: PlacedItemTypeId.Home,
+                    buildingInfo: {},
+                    ...positions.home
+                }
+                const tiles: Array<DeepPartial<PlacedItemEntity>> = positions.tiles.map(
+                    (tile) => ({
+                        placedItemTypeId: PlacedItemTypeId.StarterTile,
+                        tileInfo: {},
+                        ...tile
+                    })
+                )
+                try {
+                    await queryRunner.startTransaction()
+
                     user = await queryRunner.manager.save(UserEntity, {
                         username: `${chainKey}-${accountAddress.substring(0, 5)}`,
                         accountAddress,
@@ -140,13 +139,11 @@ export class VerifySignatureService {
                         network,
                         energy,
                         golds,
-                        placedItems: [home, ...tiles]
-                    })
-                    //bring user 5 default seeds
-                    await queryRunner.manager.save(InventoryEntity, {
-                        userId: user.id,
-                        inventoryTypeId: inventoryType.id,
-                        quantity: 5
+                        placedItems: [home, ...tiles],
+                        inventories: [{
+                            inventoryTypeId: inventoryType.id,
+                            quantity: defaultSeedQuantity,
+                        }]
                     })
 
                     await queryRunner.commitTransaction()

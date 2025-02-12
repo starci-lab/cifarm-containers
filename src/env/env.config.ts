@@ -8,7 +8,7 @@ import {
     PostgreSQLContext,
     Brokers,
     MongoDatabase,
-    IoAdapterType
+    IoAdapterType,
 } from "./env.types"
 import {
     DEFAULT_CACHE_TIMEOUT_MS,
@@ -170,6 +170,13 @@ export const envConfig = () => ({
                 username: process.env.ADAPTER_MONGODB_USERNAME,
                 password: process.env.ADAPTER_MONGODB_PASSWORD,
                 dbName: process.env.ADAPTER_MONGODB_DBNAME
+            },
+            [MongoDatabase.Gameplay]: {
+                host: process.env.GAMEPLAY_MONGODB_HOST ?? LOCALHOST,
+                port: process.env.GAMEPLAY_MONGODB_PORT ? Number.parseInt(process.env.GAMEPLAY_MONGODB_PORT) : DEFAULT_PORT,
+                username: process.env.GAMEPLAY_MONGODB_USERNAME,
+                password: process.env.GAMEPLAY_MONGODB_PASSWORD,
+                dbName: process.env.GAMEPLAY_MONGODB_DBNAME
             },
         },
         redis: {

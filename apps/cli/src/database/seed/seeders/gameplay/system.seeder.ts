@@ -3,6 +3,7 @@ import {
     Activities,
     AnimalRandomness,
     AppearanceChance,
+    CropId,
     CropRandomness,
     EnergyRegen,
     SpinInfo,
@@ -120,7 +121,9 @@ export class SystemSeeder implements Seeder {
                         y: 1
                     }
                 ]
-            }
+            },
+            defaultCropId: CropId.Carrot,
+            defaultSeedQuantity: 10
         }
         const spinInfo: SpinInfo = {
             appearanceChanceSlots: {

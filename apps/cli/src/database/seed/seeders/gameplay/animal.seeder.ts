@@ -1,29 +1,31 @@
-import {
-    AnimalEntity,
-    AnimalId,
-    AnimalType,
-    InventoryType,
-    InventoryTypeId,
-    PlacedItemType,
-    PlacedItemTypeId,
-    ProductId,
-    ProductType
-} from "@src/databases"
-import { Logger } from "@nestjs/common"
-import { DataSource } from "typeorm"
-import { Seeder } from "typeorm-extension"
 
+import {
+    AnimalType,
+    AnimalSchema,
+    AnimalKey,
+    InjectMongoose
+} from "@src/databases"
+import { Injectable, Logger } from "@nestjs/common"
+import { Seeder } from "nestjs-seeder"
+import { Connection } from "mongoose"
+
+@Injectable()
 export class AnimalSeeder implements Seeder {
     private readonly logger = new Logger(AnimalSeeder.name)
-    track = true
-    public async run(dataSource: DataSource): Promise<void> {
+
+    constructor(
+        @InjectMongoose()
+        private readonly connection: Connection
+    ) {}
+
+    public async seed(): Promise<void> {
         this.logger.debug("Seeding animals...")
-        await dataSource.manager.save(AnimalEntity, [
+        const data: Array<Partial<AnimalSchema>> = [
             {
-                id: AnimalId.Chicken,
+                key: AnimalKey.Chicken,
                 yieldTime: 60 * 60 * 24,
                 offspringPrice: 1000,
-                isNFT: false,
+                isNft: false,
                 growthTime: 60 * 60 * 24 * 3,
                 availableInShop: true,
                 qualityProductChanceStack: 0.001,
@@ -35,60 +37,13 @@ export class AnimalSeeder implements Seeder {
                 premiumHarvestExperiences: 96,
                 price: 1000,
                 type: AnimalType.Poultry,
-                products: [
-                    {
-                        id: ProductId.Egg,
-                        isQuality: false,
-                        goldAmount: 8,
-                        tokenAmount: 0.04,
-                        type: ProductType.Animal,
-                        animalId: AnimalId.Chicken,
-                        inventoryType: {
-                            id: InventoryTypeId.Egg,
-                            asTool: false,
-                            deliverable: true,
-                            placeable: true,
-                            type: InventoryType.Product
-                        }
-                    },
-                    {
-                        id: ProductId.EggQuality,
-                        isQuality: true,
-                        goldAmount: 8,
-                        tokenAmount: 0.04,
-                        type: ProductType.Animal,
-                        animalId: AnimalId.Chicken,
-                        inventoryType: {
-                            id: InventoryTypeId.EggQuality,
-                            asTool: false,
-                            deliverable: true,
-                            placeable: true,
-                            type: InventoryType.Product
-                        },
-                        placedItemType: {
-                            id: PlacedItemTypeId.Chicken,
-                            type: PlacedItemType.Animal
-                        }
-                    }
-                ],
-                inventoryType: {
-                    id: InventoryTypeId.Chicken,
-                    asTool: false,
-                    deliverable: false,
-                    maxStack: 1,
-                    placeable: true,
-                    type: InventoryType.Animal
-                },
-                placedItemType: {
-                    id: PlacedItemTypeId.Chicken,
-                    type: PlacedItemType.Animal
-                }
+                unlockLevel: 5,
             },
             {
-                id: AnimalId.Cow,
+                key: AnimalKey.Cow,
                 yieldTime: 60 * 60 * 24 * 2,
                 offspringPrice: 2500,
-                isNFT: false,
+                isNft: false,
                 growthTime: 60 * 60 * 24 * 7,
                 availableInShop: true,
                 qualityProductChanceStack: 0.001,
@@ -100,56 +55,15 @@ export class AnimalSeeder implements Seeder {
                 premiumHarvestExperiences: 96,
                 price: 2500,
                 type: AnimalType.Livestock,
-                products: [
-                    {
-                        id: ProductId.Milk,
-                        isQuality: false,
-                        goldAmount: 8,
-                        tokenAmount: 0.04,
-                        type: ProductType.Animal,
-                        animalId: AnimalId.Cow,
-                        inventoryType: {
-                            id: InventoryTypeId.Milk,
-                            asTool: false,
-                            deliverable: true,
-                            placeable: true,
-                            type: InventoryType.Product
-                        }
-                    },
-                    {
-                        id: ProductId.MilkQuality,
-                        isQuality: true,
-                        goldAmount: 8,
-                        tokenAmount: 0.04,
-                        type: ProductType.Animal,
-                        animalId: AnimalId.Cow,
-                        inventoryType: {
-                            id: InventoryTypeId.MilkQuality,
-                            asTool: false,
-                            deliverable: true,
-                            placeable: true,
-                            type: InventoryType.Product
-                        },
-                        placedItemType: {
-                            id: PlacedItemTypeId.Cow,
-                            type: PlacedItemType.Animal
-                        }
-                    }
-                ],
-                inventoryType: {
-                    id: InventoryTypeId.Cow,
-                    asTool: false,
-                    deliverable: false,
-                    maxStack: 1,
-                    placeable: true,
-                    type: InventoryType.Animal
-                },
-                placedItemType: {
-                    id: PlacedItemTypeId.Cow,
-                    type: PlacedItemType.Animal
-                }
+                unlockLevel: 10,
             }
-        ])
-        this.logger.verbose("Animals seeded successfully.")
+        ]
+
+        await this.connection.model<AnimalSchema>(AnimalSchema.name).insertMany(data)
+    }
+        
+    async drop(): Promise<void> {
+        this.logger.verbose("Dropping animals...")
+        await this.connection.model<AnimalSchema>(AnimalSchema.name).deleteMany({})
     }
 }

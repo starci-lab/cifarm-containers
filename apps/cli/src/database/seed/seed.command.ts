@@ -1,33 +1,13 @@
 import { CommandRunner, SubCommand, Option } from "nest-commander"
 import { SeedersService } from "./seeders"
 import { DataSource } from "typeorm"
-import { PostgreSQLOptionsFactory, CacheQueryService } from "@src/databases"
-import { createDatabase } from "typeorm-extension"
-import { Inject, Logger } from "@nestjs/common"
-import {
-    MAIN_GAMEPLAY_POSTGRESQL,
-    MOCK_GAMEPLAY_POSTGRESQL,
-    MAIN_TELEGRAM_POSTGRESQL,
-    MOCK_TELEGRAM_POSTGRESQL
-} from "./seed.constants"
-import { PostgreSQLContext, PostgreSQLDatabase } from "@src/env"
+import { Logger } from "@nestjs/common"
 
 @SubCommand({ name: "seed", description: "Seed static data into the data source" })
 export class SeedCommand extends CommandRunner {
     private readonly logger = new Logger(SeedCommand.name)
-    private database: PostgreSQLDatabase
-    private context: PostgreSQLContext
 
     constructor(
-        @Inject(MAIN_GAMEPLAY_POSTGRESQL)
-        private readonly mainGameplayPostgreSQLOptionsFactory: PostgreSQLOptionsFactory,
-        @Inject(MOCK_GAMEPLAY_POSTGRESQL)
-        private readonly mockGameplayPostgreSQLOptionsFactory: PostgreSQLOptionsFactory,
-        @Inject(MAIN_TELEGRAM_POSTGRESQL)
-        private readonly mainTelegramPostgreSQLOptionsFactory: PostgreSQLOptionsFactory,
-        @Inject(MOCK_TELEGRAM_POSTGRESQL)
-        private readonly mockTelegramPostgreSQLOptionsFactory: PostgreSQLOptionsFactory,
-        private readonly cacheQueryService: CacheQueryService,
         private readonly seedersService: SeedersService
     ) {
         super()
@@ -37,67 +17,20 @@ export class SeedCommand extends CommandRunner {
         let dataSource: DataSource
         try {
             if (options?.database) {
-                const values = Object.values(PostgreSQLDatabase)
-                if (!values.includes(options.database as PostgreSQLDatabase)) {
-                    this.logger.error(`Invalid database: ${options.database}`)
-                    return
-                }
-                this.database = options.database as PostgreSQLDatabase
-            } else {
-                this.database = PostgreSQLDatabase.Gameplay
+                // temporatory left blank
             }
-
-            if (options?.mock) {
-                this.context = PostgreSQLContext.Mock
-            } else {
-                this.context = PostgreSQLContext.Main
-            }
-
-            const factoryMap: Record<
-                PostgreSQLDatabase,
-                Record<PostgreSQLContext, PostgreSQLOptionsFactory>
-            > = {
-                [PostgreSQLDatabase.Gameplay]: {
-                    [PostgreSQLContext.Main]: this.mainGameplayPostgreSQLOptionsFactory,
-                    [PostgreSQLContext.Mock]: this.mockGameplayPostgreSQLOptionsFactory
-                },
-                [PostgreSQLDatabase.Telegram]: {
-                    [PostgreSQLContext.Main]: this.mainTelegramPostgreSQLOptionsFactory,
-                    [PostgreSQLContext.Mock]: this.mockTelegramPostgreSQLOptionsFactory
-                }
-            }
-            const factory = factoryMap[this.database][this.context]
-
-            const dataSourceOptions = factory.createDataSourceOptions()
-            const clonedOptions = { ...dataSourceOptions }
 
             if (options?.create) {
-                await createDatabase({
-                    options: dataSourceOptions
-                })
+                // temporatory left blank
             }
 
-            //initialize the data source with the cloned options, to avoid changing the original options
-            dataSource = new DataSource(clonedOptions)
-
-            await dataSource.initialize()
-
             if (options?.force) {
-                //remove all cache keys
-                await this.cacheQueryService.clear()
-                this.logger.debug("Cache keys removed successfully.")
-
-                //clear seeders
-                this.logger.debug("Forcing to recreate the seed data...")
-                await this.seedersService.clearSeeders(dataSource)
-                this.logger.verbose("Seed data cleared successfully.")
+                // temporatory left blank
+                process.argv.push("--refresh")
             }
 
             //run seeders
-            await this.seedersService.runSeeders({
-                dataSource,
-                seedTracking: true
-            })
+            await this.seedersService.runSeeders()
 
             this.logger.log("Seeders ran successfully")
         } catch (error) {
@@ -107,8 +40,6 @@ export class SeedCommand extends CommandRunner {
             if (dataSource) {
                 await dataSource.destroy()
             }
-            //quit the redis client
-            await this.cacheQueryService.getNativeRedis().quit()
         }
     }
 

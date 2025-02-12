@@ -1,44 +1,25 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalEntity, InjectPostgreSQL, CacheQueryRunnerService } from "@src/databases"
-import { DataSource } from "typeorm"
+import { AnimalSchema, InjectMongoose } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class AnimalsService {
     private readonly logger = new Logger(AnimalsService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+        @InjectMongoose()
+        private readonly connection: Connection,
     ) {}
 
-    async getAnimals(): Promise<Array<AnimalEntity>> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
-        try {
-            return await this.cacheQueryRunnerService.find(
-                queryRunner,
-                AnimalEntity
-            )
-        } finally {
-            await queryRunner.release()
-        }
+    async getAnimals(): Promise<Array<AnimalSchema>> {
+        return await this.connection.model(AnimalSchema.name).find()
     }
 
     async getAnimal(id: string) {
-        this.logger.debug(`GetAnimals: id=${id}`)
+        return await this.connection.model(AnimalSchema.name).findById(id)  
+    }
 
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-        try {
-            return await this.cacheQueryRunnerService.findOne(queryRunner, AnimalEntity, {
-                where: {
-                    id
-                },
-            })
-        } finally {
-            await queryRunner.release()
-        }
+    async getAnimalByKey(key: string) {
+        return await this.connection.model(AnimalSchema.name).findOne({ key })
     }
 }
