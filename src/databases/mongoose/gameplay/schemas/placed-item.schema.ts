@@ -3,14 +3,14 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
 import { AnimalCurrentState, CropCurrentState, PlacedItemTypeKey } from "../enums"
-import { Position } from "@src/gameplay"
+import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-info"
 
 // Mongoose document type
-export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>;
-
+export type TileInfoDocument = HydratedDocument<TileInfo>;
 
 @ObjectType()
-export class TileInfo {
+@Schema({ timestamps: true })
+export class TileInfo extends AbstractSchema {
     
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
@@ -21,48 +21,13 @@ export class TileInfo {
         placedItemId: string
 }
 
-@ObjectType()
-export class SeedGrowthInfo {
-    
-    @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
-        currentStage: number
+export const TileInfoSchemaClass = SchemaFactory.createForClass(TileInfo)
 
-    @Field(() => Float)
-    @Prop({ type: Number, default: 0 })
-        currentStageTimeElapsed: number
-
-    @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
-        currentPerennialCount: number
-
-    @Field(() => Int)
-    @Prop({ type: Number })
-        harvestQuantityRemaining: number
-
-    @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
-        harvestCount: number
-
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        isQuality: boolean
-
-    @Field(() => String)
-    @Prop({ type: String, required: true })
-        cropKey: string
-
-    @Field(() => String)
-    @Prop({ type: String, enum: CropCurrentState, default: CropCurrentState.Normal })
-        currentState: CropCurrentState
-
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        isFertilized: boolean
-}
+export type BuildingInfoDocument = HydratedDocument<BuildingInfo>;
 
 @ObjectType()
-export class BuildingInfo {
+@Schema({ timestamps: true })
+export class BuildingInfo  extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         currentUpgrade: number
@@ -72,8 +37,13 @@ export class BuildingInfo {
         placedItemId: string
 }
 
+export const BuildingInfoSchemaClass = SchemaFactory.createForClass(BuildingInfo)
+
+export type AnimalInfoDocument = HydratedDocument<AnimalInfo>;
+
 @ObjectType()
-export class AnimalInfo {
+@Schema({ timestamps: true })
+export class AnimalInfo  extends AbstractSchema {
     @Field(() => Float)
     @Prop({ type: Number, default: 0 })
         currentGrowthTime: number
@@ -111,12 +81,20 @@ export class AnimalInfo {
         immunized: boolean
 }
 
+export const AnimalInfoSchemaClass = SchemaFactory.createForClass(AnimalInfo)
+
+export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>;
+
 @ObjectType()
 @Schema({ timestamps: true, collection: "placed-items" })
 export class PlacedItemSchema extends AbstractSchema {
-    @Field(() => Position)
-    @Prop({ type: Object, required: true, default: { x: 0, y: 0 } })
-        position: Position
+    @Field(() => Int)
+    @Prop({ type: Number, required: true })
+        x: number
+    
+    @Field(() => Int)
+    @Prop({ type: Number, required: true })
+        y: number
 
     @Field(() => String, { nullable: true })
     @Prop({ type: String, required: false })
@@ -126,20 +104,20 @@ export class PlacedItemSchema extends AbstractSchema {
     @Prop({ type: String, required: true, enum: PlacedItemTypeKey })
         placedItemTypeKey: PlacedItemTypeKey
     
-    @Field(() => SeedGrowthInfo, { nullable: true })
-    @Prop({ type: Object, required: false })
-        seedGrowthInfo?: SeedGrowthInfo
+    @Field(() => SeedGrowthInfoSchema, { nullable: true })
+    @Prop({ type: SeedGrowthInfoSchemaClass, required: false })
+        seedGrowthInfo?: SeedGrowthInfoSchema
 
     @Field(() => TileInfo, { nullable: true })
-    @Prop({ type: Object, required: false })
+    @Prop({ type: TileInfoSchemaClass, required: false })
         tileInfo?: TileInfo
 
     @Field(() => AnimalInfo, { nullable: true })
-    @Prop({ type: Object, required: false })
+    @Prop({ type: AnimalInfoSchemaClass, required: false })
         animalInfo?: AnimalInfo
 
     @Field(() => BuildingInfo, { nullable: true })
-    @Prop({ type: Object, required: false })
+    @Prop({ type: BuildingInfoSchemaClass, required: false })
         buildingInfo?: BuildingInfo
 }
 

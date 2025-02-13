@@ -25,18 +25,15 @@ export class RefreshService {
             refreshToken
         })
         if (!session) throw new GrpcUnauthenticatedException("Session not found")
-        const parent = session.$parent()
-        console.log(parent)
         const { expiredAt } = session
         //if current time is after the expired time, throw error that refresh token is expired
         if (this.dateUtcService.getDayjs().isAfter(expiredAt))
             throw new GrpcUnauthenticatedException("Refresh token is expired")
-
         const {
             accessToken,
             refreshToken: { token: newRefreshToken, expiredAt: newExpiredAt }
         } = await this.jwtService.generateAuthCredentials({
-            id: parent.id,
+            id: session.user.toString(),
         })
         const mongoSession = await this.connection.startSession()     
         mongoSession.startTransaction()

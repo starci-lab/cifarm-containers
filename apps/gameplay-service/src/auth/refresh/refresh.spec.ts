@@ -1,12 +1,11 @@
 // npx jest apps/gameplay-service/src/auth/refresh/refresh.spec.ts
-console.log("c")
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { Test } from "@nestjs/testing"
 import { isJWT, isUUID } from "class-validator"
 import { RefreshService } from "./refresh.service"
 import { getMongooseToken, SessionSchema } from "@src/databases"
 import { Connection } from "mongoose"
-console.log("t")
+
 describe("RefreshService", () => {
     let service: RefreshService
     let gameplayMockUserService: GameplayMockUserService
@@ -14,14 +13,12 @@ describe("RefreshService", () => {
     let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
-        console.log(new Date())
         const moduleRef = await Test.createTestingModule({
             imports: [
                 TestingInfraModule.register()
             ],
             providers: [RefreshService]
         }).compile()
-        console.log(new Date())
         service = moduleRef.get(RefreshService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         connection = moduleRef.get(getMongooseToken())
