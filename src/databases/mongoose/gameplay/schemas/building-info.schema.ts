@@ -16,6 +16,10 @@ export class BuildingInfoSchema extends AbstractSchema {
     @Field(() => String)
     @Prop({ type: String, required: true })
         placedItemId: string
+
+    @Field(() => String, { nullable: true })
+    @Prop({ type: String, required: false })
+        buildingKey?: string
 }
 
 export const BuildingInfoSchemaClass = SchemaFactory.createForClass(BuildingInfoSchema)

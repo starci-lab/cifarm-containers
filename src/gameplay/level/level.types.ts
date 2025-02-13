@@ -1,5 +1,5 @@
 import { UserSchema } from "@src/databases"
-import { DeepPartial } from "typeorm"
+import { DeepPartial } from "@src/common"
 
 export interface AddExperiencesParams {
     user: DeepPartial<UserSchema>

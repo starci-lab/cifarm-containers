@@ -1,25 +1,25 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { GrpcFailedPreconditionException } from "@src/common"
 import {
-    CropEntity,
-    InjectPostgreSQL,
-    InventoryEntity,
+    CropSchema,
+    InjectMongoose,
+    InventorySchema,
     InventoryType,
-    InventoryTypeEntity,
+    InventoryTypeSchema,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
-import { DataSource } from "typeorm"
-import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
+import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
 
 @Injectable()
 export class BuySeedsService {
     private readonly logger = new Logger(BuySeedsService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService
     ) {
@@ -29,78 +29,80 @@ export class BuySeedsService {
         this.logger.debug(
             `Calling buying seed for user ${request.userId}, id: ${request.cropId}, quantity: ${request.quantity}`
         )
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+
+        // Start session
+        const mongoSession = await this.connection.startSession()     
 
         try {
-            const crop = await queryRunner.manager.findOne(CropEntity, {
-                where: { id: request.cropId }
-            })
+            const crop = await this.connection.model<CropSchema>(CropSchema.name)
+                .findOne({
+                    id: request.cropId
+                })
 
             if (!crop) throw new GrpcNotFoundException("Crop not found")
             if (!crop.availableInShop) throw new GrpcFailedPreconditionException("Crop not available in shop")
 
             const totalCost = crop.price * request.quantity
 
-            const user: UserSchema = await queryRunner.manager.findOne(UserSchema, {
-                where: { id: request.userId }
-            })
+            const user: UserSchema = await this.connection.model<UserSchema>(UserSchema.name)
+                .findOne({
+                    id: request.userId
+                })
 
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
             //Get inventory type
-            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                where: { cropId: request.cropId, type: InventoryType.Seed }
-            })
+            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                .findOne({
+                    cropId: request.cropId,
+                    type: InventoryType.Seed
+                })
 
             // Get inventory same type
-            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
-                where: {
+            const existingInventories = await this.connection.model<InventorySchema>(InventorySchema.name)
+                .find({
                     userId: request.userId,
                     inventoryTypeId: inventoryType.id
-                },
-                relations: {
-                    inventoryType: true
-                }
-            })
+                })
+                .populate(InventoryTypeSchema.name)
+
 
             const updatedInventories = this.inventoryService.add({
-                entities: existingInventories,
-                userId: request.userId,
-                data: {
-                    inventoryType: inventoryType,
-                    quantity: request.quantity
-                }
+                inventories: existingInventories,
+                inventoryType: inventoryType,
+                quantity: request.quantity
             })
 
             // Start transaction
-            await queryRunner.startTransaction()
+            mongoSession.startTransaction()
 
             try {
                 // Subtract gold
                 const goldsChanged = this.goldBalanceService.subtract({
-                    entity: user,
+                    user: user,
                     amount: totalCost
                 })
 
-                await queryRunner.manager.update(UserSchema, user.id, {
-                    ...goldsChanged
-                })
+                //update
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { id: user.id },
+                    { ...goldsChanged }
+                )
 
                 //Save inventory
-                await queryRunner.manager.save(InventoryEntity, updatedInventories)
-                await queryRunner.commitTransaction()
+                await this.connection.model<InventorySchema>(InventorySchema.name).insertMany(updatedInventories.createdInventories)
+                mongoSession.commitTransaction()
 
                 return {}
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
-                await queryRunner.rollbackTransaction()
+                mongoSession.abortTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
         } finally {
-            await queryRunner.release()
+            mongoSession.endSession()
         }
     }
 }

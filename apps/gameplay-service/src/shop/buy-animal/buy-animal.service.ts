@@ -1,27 +1,20 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    AnimalEntity,
-    InjectPostgreSQL,
-    PlacedItemEntity,
-    PlacedItemType,
-    PlacedItemTypeEntity,
-    UserSchema
-} from "@src/databases"
-import { GoldBalanceService } from "@src/gameplay"
-import { DataSource, DeepPartial } from "typeorm"
-import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { GrpcFailedPreconditionException } from "@src/common"
+import { AnimalSchema, BuildingInfoSchema, BuildingSchema, InjectMongoose, PlacedItemSchema, PlacedItemType } from "@src/databases"
+import { GoldBalanceService } from "@src/gameplay"
+import { Connection } from "mongoose"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 
 @Injectable()
 export class BuyAnimalService {
     private readonly logger = new Logger(BuyAnimalService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         @InjectKafka()
         private readonly clientKafka: ClientKafka
@@ -32,12 +25,9 @@ export class BuyAnimalService {
             `Starting animal purchase for user ${request.userId}, animal id: ${request.animalId}`
         )
 
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
         try {
-            const animal = await queryRunner.manager.findOne(AnimalEntity, {
-                where: { id: request.animalId }
+            const animal = await this.connection.model<AnimalSchema>(AnimalSchema.name).findOne({
+                id: request.animalId
             })
 
             if (!animal) {
@@ -48,44 +38,53 @@ export class BuyAnimalService {
                 throw new GrpcFailedPreconditionException("Animal not available in shop")
             }
 
-            const placedItemBuilding = await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: {
-                    id: request.placedItemBuildingId
-                },
-                relations: {
-                    buildingInfo: true,
-                    placedItemType: {
-                        building: {
-                            upgrades: true
-                        }
-                    }
-                }
-            })
+            const placedItemBuilding = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findOne({
+                    id: request.placedItemBuildingId,
+
+                }).populate(BuildingInfoSchema.name)
+
+            // const placedItemBuilding = await queryRunner.manager.findOne(PlacedItemEntity, {
+            //     where: {
+            //         id: request.placedItemBuildingId
+            //     },
+            //     relations: {
+            //         buildingInfo: true,
+            //         placedItemType: {
+            //             building: {
+            //                 upgrades: true
+            //             }
+            //         }
+            //     }
+            // })
 
             if (!placedItemBuilding) throw new GrpcNotFoundException("Building not found")
 
-            if (!placedItemBuilding.placedItemType)
+            if (!placedItemBuilding.placedItemTypeKey)
                 throw new GrpcNotFoundException("Placed item type not found")
 
             //Check if placedItem is building
-            if (placedItemBuilding.placedItemType.type != PlacedItemType.Building)
+            if (placedItemBuilding.type != PlacedItemType.Building)
                 throw new GrpcFailedPreconditionException("Placed item is not a building")
 
+            //get building
+            const building = await this.connection.model<BuildingSchema>(BuildingSchema.name).findOne({
+                key: placedItemBuilding.placedItemTypeKey
+            })
+
             //Check if building is same animal type
-            if (placedItemBuilding.placedItemType.building.type != animal.type)
+            if (building.type != animal.type)
                 throw new GrpcFailedPreconditionException("Building is not for this animal")
 
             //Check if slot is occupied
             const maxCapacity =
-                placedItemBuilding.placedItemType.building.upgrades[
+                building.upgrades[
                     placedItemBuilding.buildingInfo.currentUpgrade
                 ].capacity
 
             //Check occupancy
-            const count = await queryRunner.manager.count(PlacedItemEntity, {
-                where: {
-                    parentId: placedItemBuilding.id
-                }
+            const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).countDocuments({
+                parentId: placedItemBuilding.id
             })
             if (count >= maxCapacity)
                 throw new GrpcFailedPreconditionException("Building is full")
