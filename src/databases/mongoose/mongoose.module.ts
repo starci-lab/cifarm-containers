@@ -36,7 +36,11 @@ import {
     SeedGrowthInfoSchemaClass,
     SeedGrowthInfoSchema,
     TileInfoSchema, 
-    TileInfoSchemaClass
+    TileInfoSchemaClass,
+    AnimalInfoSchema,
+    AnimalInfoSchemaClass,
+    BuildingInfoSchema,
+    BuildingInfoSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 
@@ -147,6 +151,14 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: TileInfoSchema.name,
                             useFactory: () => TileInfoSchemaClass
+                        },
+                        {
+                            name: AnimalInfoSchema.name,
+                            useFactory: () => AnimalInfoSchemaClass
+                        },
+                        {
+                            name: BuildingInfoSchema.name,
+                            useFactory: () => BuildingInfoSchemaClass
                         },
                         {
                             name: PlacedItemSchema.name,

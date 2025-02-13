@@ -1,24 +1,12 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
+import { PlacedItemTypeKey } from "../enums"
 import { AbstractSchema } from "./abstract"
-import { AnimalCurrentState, PlacedItemTypeKey } from "../enums"
+import { AnimalInfoSchema, AnimalInfoSchemaClass } from "./animal-info.schema"
+import { BuildingInfoSchema, BuildingInfoSchemaClass } from "./building-info.schema"
 import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-info.schema"
 import { TileInfoSchema, TileInfoSchemaClass } from "./tile-info.schema"
-
-@ObjectType()
-@Schema({ timestamps: true })
-export class BuildingInfo  extends AbstractSchema {
-    @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
-        currentUpgrade: number
-
-    @Field(() => String)
-    @Prop({ type: String, required: true })
-        placedItemId: string
-}
-
-export const BuildingInfoSchemaClass = SchemaFactory.createForClass(BuildingInfo)
 
 export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>;
 
@@ -49,13 +37,13 @@ export class PlacedItemSchema extends AbstractSchema {
     @Prop({ type: TileInfoSchemaClass, required: false })
         tileInfo?: TileInfoSchema
 
-    @Field(() => AnimalInfo, { nullable: true })
+    @Field(() => AnimalInfoSchema, { nullable: true })
     @Prop({ type: AnimalInfoSchemaClass, required: false })
-        animalInfo?: AnimalInfo
+        animalInfo?: AnimalInfoSchema
 
-    @Field(() => BuildingInfo, { nullable: true })
+    @Field(() => BuildingInfoSchema, { nullable: true })
     @Prop({ type: BuildingInfoSchemaClass, required: false })
-        buildingInfo?: BuildingInfo
+        buildingInfo?: BuildingInfoSchema
 }
 
 // Generate Mongoose Schema
