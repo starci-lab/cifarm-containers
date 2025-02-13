@@ -30,17 +30,13 @@ describe("BuySeedsService", () => {
         const crop = await connection.model<CropSchema>(CropSchema.name)
             .findById(createObjectId(CropId.Carrot))
         
-        console.log(crop, createObjectId(CropId.Carrot))
-        
         const quantity = 2
         const user = await gameplayMockUserService.generate({ golds: crop.price * quantity + 10 })
-        console.log(user)
         const initialGolds = user.golds
 
-        await service.buySeeds({ userId: user.id, cropId: crop.id, quantity })
+        await service.buySeeds({ userId: user.id, cropId: CropId.Carrot, quantity })
 
         const updatedUser = await connection.model<UserSchema>(UserSchema.name).findOne({ _id: user._id })
-        console.log(updatedUser, "9", initialGolds)
         expect(initialGolds - updatedUser.golds).toBe(crop.price * quantity)
 
         const inventory = await connection.model<InventorySchema>(InventorySchema.name).findOne({
@@ -56,7 +52,7 @@ describe("BuySeedsService", () => {
         
         const user = await gameplayMockUserService.generate({ golds: crop.price * 2 - 5 })
         await expect(
-            service.buySeeds({ userId: user.id, cropId: crop.id, quantity: 2 })
+            service.buySeeds({ userId: user.id, cropId: CropId.Carrot, quantity: 2 })
         ).rejects.toThrow(UserInsufficientGoldException)
     })
 
