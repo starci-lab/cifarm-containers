@@ -119,6 +119,9 @@ export class MongooseModule extends ConfigurableModuleClass {
                                     await connection.model<SessionSchema>(SessionSchema.name).deleteMany({
                                         user: { $in: ids }
                                     })
+                                    await connection.model<PlacedItemSchema>(PlacedItemSchema.name).deleteMany({
+                                        user: { $in: ids }
+                                    })
                                     next()
                                 })
                                 return UserSchemaClass

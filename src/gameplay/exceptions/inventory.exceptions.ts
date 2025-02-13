@@ -8,3 +8,12 @@ export class InventoryQuantityNotSufficientException extends GameplayException {
         )
     }
 }
+
+export class InventoryCapacityExceededException extends GameplayException {
+    constructor() {
+        super(
+            "Inventory capacity exceeded",
+            GameplayErrorCode.InventoryCapacityExceeded
+        )
+    }
+}

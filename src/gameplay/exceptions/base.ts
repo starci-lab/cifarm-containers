@@ -4,6 +4,7 @@ export enum GameplayErrorCode {
     GoldCannotBeZeroOrNegative,
     UserInsufficientGold,
     InventoryQuantityNotSufficient,
+    InventoryCapacityExceeded,
     ExperienceCannotBeZeroOrNegative,
     EnergyNotEnough,
     PhaseNotFound,

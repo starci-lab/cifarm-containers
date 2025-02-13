@@ -1,5 +1,6 @@
 import { InventorySchema, InventoryTypeSchema } from "@src/databases"
-import { DeepPartial } from "typeorm"
+import { DeepPartial } from "@src/common"
+import { Connection } from "mongoose"
 
 export interface AddParams {
     // inventories with the same type key
@@ -8,6 +9,10 @@ export interface AddParams {
     inventoryType: DeepPartial<InventoryTypeSchema>
     // quantity to add
     quantity: number
+    // count
+    count: number
+    // max capacity
+    capacity: number
 }
 
 export interface AddResult {
@@ -25,4 +30,15 @@ export interface RemoveParams {
 export interface RemoveResult {
     updatedInventories: Array<DeepPartial<InventorySchema>>
     removedInventories: Array<DeepPartial<InventorySchema>>
+}
+
+export interface GetParamsParams {
+    userId: string
+    connection: Connection,
+    inventoryType: InventoryTypeSchema,
+}
+
+export interface GetParamsResult {
+    inventories: Array<InventorySchema>
+    count: number
 }

@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InventorySchema } from "@src/databases"
-import { DeepPartial } from "typeorm"
-import { AddParams, AddResult, RemoveParams, RemoveResult } from "./inventory.types"
-import { InventoryQuantityNotSufficientException } from "../exceptions"
+import { DeepPartial } from "@src/common"
+import { AddParams, AddResult, GetParamsParams, GetParamsResult, RemoveParams, RemoveResult } from "./inventory.types"
+import { InventoryCapacityExceededException, InventoryQuantityNotSufficientException } from "../exceptions"
 
 @Injectable()
 export class InventoryService {
@@ -10,7 +10,7 @@ export class InventoryService {
 
     constructor() {}
 
-    public add({ inventories, inventoryType, quantity }: AddParams): AddResult {
+    public add({ inventories, inventoryType, quantity, capacity, count }: AddParams): AddResult {
         const updatedInventories: Array<DeepPartial<InventorySchema>> = []
         const createdInventories: Array<DeepPartial<InventorySchema>> = []
 
@@ -33,6 +33,10 @@ export class InventoryService {
             const quantityToAdd = Math.min(inventoryType.maxStack, quantity)
             createdInventories.push({ quantity: quantityToAdd, inventoryTypeKey: inventoryType.key })
             quantity -= quantityToAdd
+        }
+
+        if (count + createdInventories.length > capacity) {
+            throw new InventoryCapacityExceededException()
         }
 
         return { updatedInventories, createdInventories }
@@ -63,5 +67,16 @@ export class InventoryService {
             throw new InventoryQuantityNotSufficientException(quantity)
         }
         return { updatedInventories, removedInventories }
+    }
+
+    public async getParams({ connection, inventoryType, userId }: GetParamsParams): Promise<GetParamsResult> {
+        const count = await connection.model<InventorySchema>(InventorySchema.name).countDocuments({
+            user: userId,
+        })
+        const inventories = await connection.model<InventorySchema>(InventorySchema.name).find({
+            user: userId,
+            inventoryTypeKey: inventoryType.key,
+        })
+        return { count, inventories }
     }
 }
