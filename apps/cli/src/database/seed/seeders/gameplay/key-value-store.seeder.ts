@@ -31,7 +31,7 @@ export class KeyValueStoreSeeder implements Seeder {
                 }
             },
             {
-                id: KeyValueStoreId.EnergyRegenerationLastSchedule,
+                _id: createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule),
                 value: {
                     date: dayjs().utc().toDate()
                 }
