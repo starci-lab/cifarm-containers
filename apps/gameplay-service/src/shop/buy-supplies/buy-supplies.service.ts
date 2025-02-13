@@ -31,7 +31,7 @@ export class BuySuppliesService {
 
         try {
             const supply = await this.connection.model<SupplySchema>(SupplySchema.name)
-                .findById(request.supplyId)
+                .findById(createObjectId(request.supplyId))
                 .session(mongoSession)
 
             if (!supply) throw new GrpcNotFoundException("Supply not found")
@@ -49,9 +49,13 @@ export class BuySuppliesService {
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
+            const { value: { inventoryCapacity } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+
             // Get inventory type
             const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                .findOne({ supplyId: request.supplyId })
+                .findById(createObjectId(request.supplyId))
                 .session(mongoSession)
 
             if (!inventoryType) {
@@ -64,10 +68,6 @@ export class BuySuppliesService {
                 userId: user.id,
                 session: mongoSession
             })
-
-            const { value: { inventoryCapacity } } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
             try {
                 // Subtract gold

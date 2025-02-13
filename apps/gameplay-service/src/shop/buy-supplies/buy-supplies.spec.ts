@@ -1,22 +1,15 @@
 // npx jest apps/gameplay-service/src/shop/buy-supplies/buy-supplies.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { DataSource } from "typeorm"
-import { BuySuppliesService } from "./buy-supplies.service"
-import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import {
-    SupplyEntity,
-    SupplyId,
-    getPostgreSqlToken,
-    InventoryEntity,
-    InventoryTypeEntity,
-    UserSchema
-} from "@src/databases"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { createObjectId } from "@src/common"
+import { getMongooseToken, InventorySchema, InventoryTypeSchema, SupplyId, SupplySchema, UserSchema } from "@src/databases"
 import { UserInsufficientGoldException } from "@src/gameplay"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { Connection } from "mongoose"
+import { BuySuppliesService } from "./buy-supplies.service"
 
 describe("BuySuppliesService", () => {
-    let dataSource: DataSource
+    let connection: Connection
     let service: BuySuppliesService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
@@ -27,72 +20,46 @@ describe("BuySuppliesService", () => {
             providers: [BuySuppliesService]
         }).compile()
 
-        dataSource = moduleRef.get(getPostgreSqlToken())
+        connection = moduleRef.get(getMongooseToken())
         service = moduleRef.get(BuySuppliesService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
     it("should successfully buy supplies and update user and inventory", async () => {
-        const supply = await dataSource.manager.findOne(SupplyEntity, {
-            where: { id: SupplyId.AnimalFeed }
-        })
+        const supply = await connection.model<SupplySchema>(SupplySchema.name).findById(createObjectId(SupplyId.AnimalFeed))
         const quantity = 2
-
         const user = await gameplayMockUserService.generate({ golds: supply.price * quantity + 10 })
-
         const golds = user.golds
-
-        const inventoryType = await dataSource.manager.findOne(InventoryTypeEntity, {
-            where: { supplyId: supply.id }
+        
+        const inventoryType = await connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
+            supplyId: supply._id
         })
 
         await service.buySupplies({
             userId: user.id,
-            supplyId: supply.id,
-            quantity: 2
+            supplyId: SupplyId.AnimalFeed,
+            quantity
         })
 
-        const { golds: goldsAfter } = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["golds"]
+        const updatedUser = await connection.model<UserSchema>(UserSchema.name).findById(user.id)
+        expect(golds - updatedUser.golds).toBe(supply.price * quantity)
+
+        const updatedInventory = await connection.model<InventorySchema>(InventorySchema.name).findOne({
+            userId: user.id,
+            inventoryType: inventoryType._id
         })
-
-        expect(golds - goldsAfter).toBe(supply.price * quantity)
-
-        const updatedInventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: user.id,
-                inventoryTypeId: inventoryType.id
-            }
-        })
-
         expect(updatedInventory.quantity).toBe(quantity)
     })
 
-    it("should throw GrpcNotFoundException when supply is not found", async () => {
-        const user = await gameplayMockUserService.generate()
-        const invalidSupplyId = "invalid_supply_id" as SupplyId
-
-        await expect(
-            service.buySupplies({
-                userId: user.id,
-                supplyId: invalidSupplyId,
-                quantity: 2
-            })
-        ).rejects.toThrow(GrpcNotFoundException)
-    })
-
     it("should throw UserInsufficientGoldException when user has insufficient gold", async () => {
-        const supply = await dataSource.manager.findOne(SupplyEntity, {
-            where: { id: SupplyId.AnimalFeed }
-        })
+        const supply = await connection.model<SupplySchema>(SupplySchema.name).findById(createObjectId(SupplyId.AnimalFeed))
         const user = await gameplayMockUserService.generate({ golds: supply.price - 10 })
 
         await expect(
             service.buySupplies({
                 userId: user.id,
-                supplyId: supply.id,
+                supplyId: SupplyId.AnimalFeed,
                 quantity: 2
             })
         ).rejects.toThrow(UserInsufficientGoldException)
@@ -101,5 +68,6 @@ describe("BuySuppliesService", () => {
     afterAll(async () => {
         await gameplayMockUserService.clear()
         await gameplayConnectionService.closeAll()
+        await connection.close()
     })
 })

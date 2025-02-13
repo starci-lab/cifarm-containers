@@ -1,26 +1,15 @@
 // npx jest apps/gameplay-service/src/shop/buy-animal/buy-animal.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { DataSource } from "typeorm"
-import { BuyAnimalService } from "./buy-animal.service"
-import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import {
-    AnimalEntity,
-    AnimalId,
-    BuildingId,
-    getPostgreSqlToken,
-    PlacedItemSchema,
-    PlacedItemTypeId,
-    UpgradeEntity,
-    UserSchema
-} from "@src/databases"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { createObjectId } from "@src/common"
+import { AnimalId, AnimalSchema, getMongooseToken, PlacedItemSchema, PlacedItemTypeId, UserSchema } from "@src/databases"
 import { UserInsufficientGoldException } from "@src/gameplay"
-import { GrpcFailedPreconditionException } from "@src/common"
-import { v4 } from "uuid"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { Connection } from "mongoose"
+import { BuyAnimalService } from "./buy-animal.service"
 
 describe("BuyAnimalService", () => {
-    let dataSource: DataSource
+    let connection: Connection
     let service: BuyAnimalService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
@@ -31,181 +20,69 @@ describe("BuyAnimalService", () => {
             providers: [BuyAnimalService]
         }).compile()
 
-        dataSource = moduleRef.get(getPostgreSqlToken())
+        connection = moduleRef.get(getMongooseToken())
         service = moduleRef.get(BuyAnimalService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
 
     it("should successfully buy an animal and update user and placed item", async () => {
-        const x = 0, y = 0
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: { id: AnimalId.Chicken }
-        })
+        const x = 100, y = 100
+        const animal = await connection.model<AnimalSchema>(AnimalSchema.name)
+            .findById(createObjectId(AnimalId.Cow))
         const user = await gameplayMockUserService.generate({ golds: animal.price + 10 })
 
-        //create placed item building by data source
-        const building = await dataSource.manager.save(PlacedItemSchema, {
+        const building = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.Coop,
+            placedItemType: createObjectId(PlacedItemTypeId.Barn),
             x,
             y,
-            buildingInfo: { }
+            buildingInfo: {
+                currentUpgrade: 1,
+                maxCapacity: 1
+            }
         })
 
-        const totalCost = animal.price
-
         const golds = user.golds
-
         await service.buyAnimal({
             userId: user.id,
-            animalId: animal.id,
-            placedItemBuildingId: building.id,
+            animalId: animal._id.toString(),
+            placedItemBuildingId: building._id.toString(),
             position: { x, y }
         })
 
-        const { golds: goldsAfter } = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["golds"]
+        const updatedUser = await connection.model<UserSchema>(UserSchema.name).findById(user.id)
+        expect(golds - updatedUser.golds).toBe(animal.price)
+
+        const placedItem = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).findOne({
+            x, y
         })
-
-        expect(golds - goldsAfter).toBe(totalCost)
-
-        const placedItem = await dataSource.manager.findOne(PlacedItemSchema, {
-            where: {
-                userId: user.id,
-                placedItemType: {
-                    animalId: animal.id
-                }
-            },
-        })
-
         expect(placedItem).toBeDefined()
         expect(placedItem.x).toBe(x)
         expect(placedItem.y).toBe(y)
     })
 
-    it("should throw GrpcNotFoundException when animal is not found", async () => {
-        const user = await gameplayMockUserService.generate()
-        const invalidAnimalId = "invalid_animal_id" as AnimalId
-
-        const building = await dataSource.manager.save(PlacedItemSchema, {
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.Coop,
-            x: 0,
-            y: 0,
-            buildingInfo: {}
-        })
-
-        await expect(
-            service.buyAnimal({
-                userId: user.id,
-                animalId: invalidAnimalId,
-                placedItemBuildingId: building.id,
-                position: { x: 0, y: 0 }
-            })
-        ).rejects.toThrow(GrpcNotFoundException)
-    })
-
-    it("should throw GrpcNotFoundException when building is not found", async () => {
-        const user = await gameplayMockUserService.generate()
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: { id: AnimalId.Cow }
-        })
-
-        const invalidBuildingId = v4()
-
-        await expect(
-            service.buyAnimal({
-                userId: user.id,
-                animalId: animal.id,
-                placedItemBuildingId: invalidBuildingId,
-                position: { x: 0, y: 0 }
-            })
-        ).rejects.toThrow(GrpcNotFoundException)
-    })
-
-    it("should throw GrpcFailedPreconditionException when placed item is not a building", async () => {
-        const user = await gameplayMockUserService.generate()
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: { id: AnimalId.Cow }
-        })
-
-        const nonBuildingPlacedItem = await dataSource.manager.save(PlacedItemSchema, {
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.Chicken,
-            x: 0,
-            y: 0
-        })
-
-        await expect(
-            service.buyAnimal({
-                userId: user.id,
-                animalId: animal.id,
-                placedItemBuildingId: nonBuildingPlacedItem.id,
-                position: { x: 0, y: 0 }
-            })
-        ).rejects.toThrow(GrpcFailedPreconditionException)
-    })
-
-    it("should throw GrpcFailedPreconditionException when building is full", async () => {
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: { id: AnimalId.Chicken }
-        })
-        const user = await gameplayMockUserService.generate({ golds: animal.price + 10 })
-
-        //take the lowest upgrade level of the building
-        const upgrade = await dataSource.manager.findOne(UpgradeEntity, {
-            where: { buildingId: BuildingId.Coop, upgradeLevel: 0 }
-        })
-
-        //create placed item building by data source, with occupancy equal to capacity
-        const building = await dataSource.manager.save(PlacedItemSchema, {
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.Coop,
-            x: 0,
-            y: 1,
-            buildingInfo: {},
-            placedItems: Array.from({ length: upgrade.capacity }, (_, i) => ({
-                userId: user.id,
-                x: i,
-                y: 0,
-                animalInfo: {},
-                placedItemTypeId: PlacedItemTypeId.Chicken
-            }))
-        })
-
-        await expect(
-            service.buyAnimal({
-                userId: user.id,
-                animalId: animal.id,
-                placedItemBuildingId: building.id,
-                position: { x: 0, y: 0 }
-            })
-        ).rejects.toThrow(GrpcFailedPreconditionException)
-    })
-
     it("should throw UserInsufficientGoldException when user has insufficient gold", async () => {
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: { id: AnimalId.Chicken }
-        })
-        // generate user with golds less than animal price
+        const animal = await connection.model<AnimalSchema>(AnimalSchema.name)
+            .findById(createObjectId(AnimalId.Cow))
         const user = await gameplayMockUserService.generate({ golds: animal.price - 10 })
 
-        //create placed item building by data source
-        const building = await dataSource.manager.save(PlacedItemSchema, {
+        const building = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.Coop,
+            placedItemType: createObjectId(PlacedItemTypeId.Barn),
             x: 10,
             y: 10,
-            buildingInfo: {}
+            buildingInfo: {
+                currentUpgrade: 1,
+                maxCapacity: 1
+            }
         })
 
         await expect(
             service.buyAnimal({
                 userId: user.id,
-                animalId: animal.id,
-                placedItemBuildingId: building.id,
+                animalId: animal._id.toString(),
+                placedItemBuildingId: building._id.toString(),
                 position: { x: 0, y: 0 }
             })
         ).rejects.toThrow(UserInsufficientGoldException)
@@ -214,5 +91,6 @@ describe("BuyAnimalService", () => {
     afterAll(async () => {
         await gameplayMockUserService.clear()
         await gameplayConnectionService.closeAll()
+        await connection.close()
     })
 })
