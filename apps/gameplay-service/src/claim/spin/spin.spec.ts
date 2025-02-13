@@ -2,11 +2,10 @@
 
 import { Test, TestingModule } from "@nestjs/testing"
 import { SpinService } from "./spin.service"
-import { AppearanceChance, CropId,  getMongooseToken,  InventoryType, InventoryTypeSchema, SpinPrizeType, SupplyId, UserSchema } from "@src/databases"
+import { AppearanceChance, CropId,  getMongooseToken,  InventorySchema,  InventoryType, InventoryTypeSchema, SpinPrizeType, SupplyId, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { v4 } from "uuid"
 import { Connection } from "mongoose"
 
 describe("SpinService", () => {
@@ -34,7 +33,7 @@ describe("SpinService", () => {
     })
 
     it("should grant gold reward when spinning", async () => {
-        const spinSlotId = v4()
+        const spinSlotId = createObjectId("slot1")
         const golds = 100
 
         jest.spyOn(service, "getRandomSlot").mockReturnValueOnce({
@@ -43,7 +42,7 @@ describe("SpinService", () => {
                 type: SpinPrizeType.Gold,
                 quantity: golds,
                 appearanceChance: AppearanceChance.Common,
-                id: v4(),
+                id: createObjectId("prize1"),
             }  
         })
 
@@ -72,7 +71,7 @@ describe("SpinService", () => {
     })
 
     it("should grant token reward when spinning", async () => {
-        const spinSlotId = v4()
+        const spinSlotId = createObjectId("slot2")
         const tokens = 100
         jest.spyOn(service, "getRandomSlot").mockReturnValueOnce({
             id: spinSlotId,
@@ -80,7 +79,7 @@ describe("SpinService", () => {
                 type: SpinPrizeType.Token,
                 quantity: tokens,
                 appearanceChance: AppearanceChance.Common,
-                id: v4(),
+                id: createObjectId("prize2"),
             }  
         })
 
@@ -99,17 +98,17 @@ describe("SpinService", () => {
     })
 
     it("should grant supply reward when spinning", async () => {
-        const spinSlotId = v4()
+        const spinSlotId = createObjectId("slot3")
         const quantity = 10
 
         jest.spyOn(service, "getRandomSlot").mockReturnValueOnce({
             id: spinSlotId,
             spinPrize: {
                 type: SpinPrizeType.Supply,
-                supply: SupplyId.BasicFertilizer,
+                supply: createObjectId(SupplyId.BasicFertilizer),
                 appearanceChance: AppearanceChance.Common,
                 quantity,
-                id: v4(),
+                id: createObjectId("supply1"),
             }  
         })
 
@@ -123,11 +122,11 @@ describe("SpinService", () => {
 
         const inventoryType = await connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
             type: InventoryType.Supply,
-            supplyId: SupplyId.BasicFertilizer
+            supply: createObjectId(SupplyId.BasicFertilizer)
         })
 
-        const inventory = await connection.model(UserSchema.name).findOne({
-            userId: user.id,
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).findOne({
+            user: user.id,
             inventoryType: inventoryType.id
         })
 
@@ -136,7 +135,7 @@ describe("SpinService", () => {
     })
 
     it("should grant seed reward when spinning", async () => {
-        const spinSlotId = v4()
+        const spinSlotId = createObjectId("slot4")
         const quantity = 10
         const cropId = CropId.Carrot
 
@@ -144,10 +143,10 @@ describe("SpinService", () => {
             id: spinSlotId,
             spinPrize: {
                 type: SpinPrizeType.Seed,
-                crop: cropId,
+                crop: createObjectId(cropId),
                 appearanceChance: AppearanceChance.Common,
                 quantity,
-                id: createObjectId("test"),
+                id: createObjectId("seed1"),
             }  
         })
 
@@ -161,11 +160,11 @@ describe("SpinService", () => {
 
         const inventoryType = await connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
             type: InventoryType.Supply,
-            supplyId: SupplyId.BasicFertilizer
+            supply: createObjectId(SupplyId.BasicFertilizer)
         })
 
-        const inventory = await connection.model(UserSchema.name).findOne({
-            userId: user.id,
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).findOne({
+            user: user.id,
             inventoryType: inventoryType.id
         })
 
