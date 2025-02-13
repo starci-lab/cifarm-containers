@@ -1,11 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId } from "@src/common"
 import {
     AppearanceChance,
     InjectMongoose,
     SpinInfo,
     SpinPrizeSchema,
     SpinSlotSchema,
-    SystemKey,
+    SystemId,
     SystemSchema,
 } from "@src/databases"
 import { Connection } from "mongoose"
@@ -23,7 +24,7 @@ export class SpinSlotSeeder implements Seeder {
     public async seed(): Promise<void> {
         this.logger.debug("Seeding spin slots...")
         // get system data
-        const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne({ key: SystemKey.SpinInfo })
+        const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById(createObjectId(SystemId.SpinInfo))
         const { appearanceChanceSlots } = value as SpinInfo
 
         const commonPrizes = await this.connection.model<SpinPrizeSchema>(SpinPrizeSchema.name).find({

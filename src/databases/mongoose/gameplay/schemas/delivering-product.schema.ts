@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { KeyAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 import { Schema as MongooseSchema } from "mongoose"
 import { UserSchema } from "./user.schema"
 import { ProductKey } from "../enums"
@@ -10,7 +10,7 @@ import { ProductKey } from "../enums"
     timestamps: true,
     collection: "delivering-product"
 })
-export class DeliveringProductSchema extends KeyAbstractSchema {
+export class DeliveringProductSchema extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number, required: true })
         index: number

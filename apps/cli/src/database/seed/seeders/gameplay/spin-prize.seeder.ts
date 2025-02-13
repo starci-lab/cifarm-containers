@@ -1,11 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId } from "@src/common"
 import {
     AppearanceChance,
-    CropKey,
+    CropId,
     InjectMongoose,
     SpinPrizeSchema,
     SpinPrizeType,
-    SupplyKey,
+    SupplyId,
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
@@ -55,85 +56,85 @@ export class SpinPrizeSeeder implements Seeder {
             {
                 type: SpinPrizeType.Seed,
                 appearanceChance: AppearanceChance.Common,
-                refKey: CropKey.Carrot,
+                crop: createObjectId(CropId.Carrot),
                 quantity: 3
             },
             {
                 type: SpinPrizeType.Seed,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: CropKey.Pineapple,
+                crop: createObjectId(CropId.Pineapple),
                 quantity: 3
             },
             {
                 type: SpinPrizeType.Seed,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: CropKey.Cucumber,
+                crop: createObjectId(CropId.Cucumber),
                 quantity: 3
             },
             {
                 type: SpinPrizeType.Seed,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: CropKey.Potato,
+                crop: createObjectId(CropId.Potato),
                 quantity: 3
             },
             {
                 type: SpinPrizeType.Seed,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: CropKey.Watermelon,
+                crop: createObjectId(CropId.Watermelon),
                 quantity: 3
             },
             {
                 type: SpinPrizeType.Seed,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: CropKey.BellPepper,
+                crop: createObjectId(CropId.BellPepper),
                 quantity: 3
             },
             {
                 type: SpinPrizeType.Supply,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: SupplyKey.BasicFertilizer,
+                supply: createObjectId(SupplyId.BasicFertilizer),
                 quantity: 2
             },
             {
                 type: SpinPrizeType.Supply,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: SupplyKey.BasicFertilizer,
+                supply: createObjectId(SupplyId.BasicFertilizer),
                 quantity: 3
             },
             {
                 type: SpinPrizeType.Supply,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: SupplyKey.BasicFertilizer,
+                supply: createObjectId(SupplyId.BasicFertilizer),
                 quantity: 4
             },
             {
                 type: SpinPrizeType.Supply,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: SupplyKey.BasicFertilizer,
+                supply: createObjectId(SupplyId.BasicFertilizer),
                 quantity: 5
             },
             {
                 type: SpinPrizeType.Supply,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: SupplyKey.AnimalFeed,
+                supply: createObjectId(SupplyId.AnimalFeed),
                 quantity: 2
             },
             {
                 type: SpinPrizeType.Supply,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: SupplyKey.AnimalFeed,
+                supply: createObjectId(SupplyId.AnimalFeed),
                 quantity: 3
             },
             {
                 type: SpinPrizeType.Supply,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: SupplyKey.AnimalFeed,
+                supply: createObjectId(SupplyId.AnimalFeed),
                 quantity: 4
             },
             {
                 type: SpinPrizeType.Supply,
                 appearanceChance: AppearanceChance.Uncommon,
-                refKey: SupplyKey.AnimalFeed,
+                supply: createObjectId(SupplyId.AnimalFeed),
                 quantity: 5
             },
             {

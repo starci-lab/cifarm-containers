@@ -1,14 +1,14 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
-import { KeyAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 
 // Mongoose document type
 export type TileDocument = HydratedDocument<TileSchema>;
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "tiles", id: false })
-export class TileSchema extends KeyAbstractSchema {
+export class TileSchema extends AbstractSchema {
     
     @Field(() => Float, { nullable: true })
     @Prop({ type: Number, required: false })

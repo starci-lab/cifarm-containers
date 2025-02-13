@@ -1,12 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId } from "@src/common"
 import {
-    CropKey,
+    CropId,
     InjectMongoose,
     InventoryType,
-    InventoryTypeKey,
+    InventoryTypeId,
     InventoryTypeSchema,
     ProductKey,
-    SupplyKey,
+    SupplyId,
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
@@ -24,219 +25,219 @@ export class InventoryTypeSeeder implements Seeder {
         this.logger.debug("Seeding inventory types...")
         const data: Array<Partial<InventoryTypeSchema>> = [
             {
-                key: InventoryTypeKey.Egg,
+                _id: createObjectId(InventoryTypeId.Egg),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.Egg,
+                product: createObjectId(ProductKey.Egg),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.EggQuality,
+                _id: createObjectId(InventoryTypeId.EggQuality),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.EggQuality,
+                product: createObjectId(ProductKey.EggQuality),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.Milk,
+                _id: createObjectId(InventoryTypeId.Milk),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.Milk,
+                product: createObjectId(ProductKey.Milk),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.MilkQuality,
+                _id: createObjectId(InventoryTypeId.MilkQuality),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.MilkQuality,
+                product: createObjectId(ProductKey.MilkQuality),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.Carrot,
+                _id: createObjectId(InventoryTypeId.Carrot),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.Carrot,
+                product: createObjectId(ProductKey.Carrot),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.CarrotQuality,
+                _id: createObjectId(InventoryTypeId.CarrotQuality),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.CarrotQuality,
+                product: createObjectId(ProductKey.CarrotQuality),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.Potato,
+                _id: createObjectId(InventoryTypeId.Potato),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.Potato,
+                product: createObjectId(ProductKey.Potato),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.PotatoQuality,
+                _id: createObjectId(InventoryTypeId.PotatoQuality),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.PotatoQuality,
+                product: createObjectId(ProductKey.PotatoQuality),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.Pineapple,
+                _id: createObjectId(InventoryTypeId.Pineapple),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.Pineapple,
+                product: createObjectId(ProductKey.Pineapple),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.PineappleQuality,
+                _id: createObjectId(InventoryTypeId.PineappleQuality),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.PineappleQuality,
+                product: createObjectId(ProductKey.PineappleQuality),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.Watermelon,
+                _id: createObjectId(InventoryTypeId.Watermelon),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.Watermelon,
+                product: createObjectId(ProductKey.Watermelon),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.WatermelonQuality,
+                _id: createObjectId(InventoryTypeId.WatermelonQuality),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.WatermelonQuality,
+                product: createObjectId(ProductKey.WatermelonQuality),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.Cucumber,
+                _id: createObjectId(InventoryTypeId.Cucumber),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.Cucumber,
+                product: createObjectId(ProductKey.Cucumber),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.CucumberQuality,
+                _id: createObjectId(InventoryTypeId.CucumberQuality),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.CucumberQuality,
+                product: createObjectId(ProductKey.CucumberQuality),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.BellPepper,
+                _id: createObjectId(InventoryTypeId.BellPepper),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.BellPepper,
+                product: createObjectId(ProductKey.BellPepper),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.BellPepperQuality,
+                _id: createObjectId(InventoryTypeId.BellPepperQuality),
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                refKey: ProductKey.BellPepperQuality,
+                product: createObjectId(ProductKey.BellPepperQuality),
                 type: InventoryType.Product
             },
             {
-                key: InventoryTypeKey.CarrotSeed,  // Complete the entry here
+                _id: createObjectId(InventoryTypeId.CarrotSeed),
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
-                refKey: CropKey.Carrot,
+                crop: createObjectId(CropId.Carrot),
                 type: InventoryType.Seed
             },
             {
-                key: InventoryTypeKey.PotatoSeed,
+                _id: createObjectId(InventoryTypeId.PotatoSeed),
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
-                refKey: CropKey.Potato,
+                crop: createObjectId(CropId.Potato),
                 type: InventoryType.Seed
             },
             {
-                key: InventoryTypeKey.PineappleSeed,
+                _id: createObjectId(InventoryTypeId.PineappleSeed),
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
-                refKey: CropKey.Pineapple,
+                crop: createObjectId(CropId.Pineapple),
                 type: InventoryType.Seed
             },
             {
-                key: InventoryTypeKey.WatermelonSeed,
+                _id: createObjectId(InventoryTypeId.WatermelonSeed),
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
-                refKey: CropKey.Watermelon,
+                crop: createObjectId(CropId.Watermelon),
                 type: InventoryType.Seed
             },
             {
-                key: InventoryTypeKey.CucumberSeed,
+                _id: createObjectId(InventoryTypeId.CucumberSeed),
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
-                refKey: CropKey.Cucumber,
+                crop: createObjectId(CropId.Cucumber),
                 type: InventoryType.Seed
             },
             {
-                key: InventoryTypeKey.BellPepperSeed,
+                _id: createObjectId(InventoryTypeId.BellPepperSeed),
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
-                refKey: CropKey.BellPepper,
+                crop: createObjectId(CropId.BellPepper),
                 type: InventoryType.Seed
             },
             {
-                key: InventoryTypeKey.BasicFertilizer,
+                _id: createObjectId(InventoryTypeId.BasicFertilizer),
                 asTool: true,
                 deliverable: false,
-                maxStack: 50,
+                maxStack: 64,
                 placeable: false,
-                refKey: SupplyKey.BasicFertilizer,
+                supply: createObjectId(SupplyId.BasicFertilizer),
                 type: InventoryType.Supply
             },
             {
-                key: InventoryTypeKey.AnimalFeed,
+                _id: createObjectId(InventoryTypeId.AnimalFeed),
                 asTool: true,
                 deliverable: false,
-                maxStack: 50,
+                maxStack: 64,
                 placeable: false,
-                refKey: SupplyKey.AnimalFeed,
+                supply: createObjectId(SupplyId.AnimalFeed),
                 type: InventoryType.Supply
             }
         ]

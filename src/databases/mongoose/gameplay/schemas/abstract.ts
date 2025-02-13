@@ -19,12 +19,3 @@ export abstract class AbstractSchema extends Document {
     @Prop({ type: Date })
         updatedAt: Date
 }
-
-@ObjectType({
-    isAbstract: true
-})
-export abstract class KeyAbstractSchema extends AbstractSchema {
-    @Field(() => String)
-    @Prop({ type: String, required: true, unique: true })
-        key: string
-}

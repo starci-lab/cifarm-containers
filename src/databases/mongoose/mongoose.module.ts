@@ -47,7 +47,9 @@ import {
     ProductSchema,
     ProductSchemaClass,
     InventorySchema, 
-    InventorySchemaClass 
+    InventorySchemaClass, 
+    KeyValueStoreSchema,
+    KeyValueStoreSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { FolloweeSchema, FolloweeSchemaClass } from "./gameplay/schemas/followee.schema"
@@ -196,6 +198,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: ProductSchema.name,
                             useFactory: () => ProductSchemaClass
+                        },
+                        {
+                            name: KeyValueStoreSchema.name,
+                            useFactory: () => KeyValueStoreSchemaClass
                         }
                     ],
                     connectionName

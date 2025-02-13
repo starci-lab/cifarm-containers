@@ -6,7 +6,7 @@ import {
     UserSchema,
     InventoryType,
     InjectMongoose,
-    SystemKey,
+    SystemId,
     SystemSchema,
     SystemRecord,
     InventoryTypeSchema,
@@ -97,18 +97,18 @@ export class VerifySignatureService {
             if (!user) {
             // get default info
                 const {
-                    value: { defaultCropKey, defaultSeedQuantity, golds, positions, inventoryCapacity }
+                    value: { defaultCropId, defaultSeedQuantity, golds, positions, inventoryCapacity }
                 } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
                     .findOne<SystemRecord<DefaultInfo>>({
-                        key: SystemKey.DefaultInfo
+                        key: SystemId.DefaultInfo
                     })
 
                 // inventories params
                 const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findOne({
-                        refKey: defaultCropKey,
+                        refKey: defaultCropId,
                         type: InventoryType.Seed
                     })
                     .session(mongoSession)

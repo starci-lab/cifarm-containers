@@ -2,12 +2,13 @@
 import {
     InjectMongoose,
     SupplySchema,
-    SupplyKey,
+    SupplyId,
     SupplyType
 } from "@src/databases"
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
 import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class SupplySeeder implements Seeder {
@@ -22,14 +23,14 @@ export class SupplySeeder implements Seeder {
         this.logger.debug("Seeding supplies...")
         const data: Array<Partial<SupplySchema>> = [
             {
-                key: SupplyKey.BasicFertilizer,
+                _id: createObjectId(SupplyId.BasicFertilizer),
                 type: SupplyType.Fertilizer,
                 price: 50,
                 availableInShop: true,
                 fertilizerEffectTimeReduce: 60 * 30,
             },
             {
-                key: SupplyKey.AnimalFeed,
+                _id: createObjectId(SupplyId.AnimalFeed),
                 type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,

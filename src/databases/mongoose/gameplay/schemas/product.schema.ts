@@ -1,15 +1,18 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { ProductType } from "../enums"
-import { KeyAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
+import { Schema as MongooseSchema } from "mongoose"
+import { CropSchema } from "./crop.schema"
+import { AnimalSchema } from "./animal.schema"
 
 // Mongoose document type
 export type ProductDocument = HydratedDocument<ProductSchema>;
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "products" })
-export class ProductSchema extends KeyAbstractSchema {
+export class ProductSchema extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number, required: true })
         maxStack: number
@@ -30,9 +33,13 @@ export class ProductSchema extends KeyAbstractSchema {
     @Prop({ type: String, enum: ProductType, required: true })
         type: ProductType
 
-    @Field(() => String)
-    @Prop({ type: String, required: true })
-        refKey: string
+    @Field(() => ID, { nullable: true })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: CropSchema.name })
+        crop: CropSchema | string
+        
+    @Field(() => ID, { nullable: true })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: AnimalSchema.name })
+        animal: AnimalSchema | string
 }
 
 // Generate Mongoose Schema

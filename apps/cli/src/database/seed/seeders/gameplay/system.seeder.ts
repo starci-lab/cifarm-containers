@@ -1,9 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId } from "@src/common"
 import {
     Activities,
     AnimalRandomness,
     AppearanceChance,
-    CropKey,
+    CropId,
     CropRandomness,
     DailyRewardInfo,
     DailyRewardKey,
@@ -11,7 +12,7 @@ import {
     InjectMongoose,
     SpinInfo,
     DefaultInfo,
-    SystemKey,
+    SystemId,
     SystemSchema,
 } from "@src/databases"
 import { Connection } from "mongoose"
@@ -136,7 +137,7 @@ export class SystemSeeder implements Seeder {
                     }
                 ]
             },
-            defaultCropKey: CropKey.Carrot,
+            defaultCropId: CropId.Carrot,
             defaultSeedQuantity: 10,
             inventoryCapacity: 150
         }
@@ -203,31 +204,31 @@ export class SystemSeeder implements Seeder {
 
         const data: Array<Partial<SystemSchema>> = [
             {
-                key: SystemKey.Activities,
+                _id: createObjectId(SystemId.Activities),
                 value: activities
             },
             {
-                key: SystemKey.CropRandomness,
+                _id: createObjectId(SystemId.CropRandomness),
                 value: cropRandomness
             },
             {
-                key: SystemKey.AnimalRandomness,
+                _id: createObjectId(SystemId.AnimalRandomness),
                 value: animalRandomness
             },
             {
-                key: SystemKey.DefaultInfo,
+                _id: createObjectId(SystemId.DefaultInfo),
                 value: defaultInfo
             },
             {
-                key: SystemKey.SpinInfo,
+                _id: createObjectId(SystemId.SpinInfo),
                 value: spinInfo
             },
             {
-                key: SystemKey.EnergyRegen,
+                _id: createObjectId(SystemId.EnergyRegen),
                 value: energyRegen
             },
             {
-                key: SystemKey.DailyRewardInfo,
+                _id: createObjectId(SystemId.DailyRewardInfo),
                 value: dailyRewardInfo
             }
         ]

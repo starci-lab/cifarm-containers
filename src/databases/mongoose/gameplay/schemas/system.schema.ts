@@ -1,9 +1,9 @@
 
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import JSON from "graphql-type-json"
-import { AppearanceChance, CropKey, DailyRewardKey } from "../enums"
+import { AppearanceChance, CropId, DailyRewardKey } from "../enums"
 import { Position } from "@src/gameplay"
-import { KeyAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 
@@ -12,10 +12,9 @@ export type SystemDocument = HydratedDocument<SystemSchema>
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: "systems",
-    _id: false
+    collection: "systems"
 })
-export class SystemSchema extends KeyAbstractSchema {
+export class SystemSchema extends AbstractSchema {
     @Field(() => JSON)
     @Prop({ type: Object, required: true })
         value: object
@@ -106,7 +105,7 @@ export class DefaultInfo {
     @Field(() => Positions)
         positions: Positions
     @Field(() => String)
-        defaultCropKey: CropKey
+        defaultCropId: CropId
     @Field(() => Int)
         defaultSeedQuantity: number
     @Field(() => Int)
