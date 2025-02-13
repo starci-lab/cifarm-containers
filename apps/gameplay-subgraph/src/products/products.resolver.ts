@@ -1,5 +1,5 @@
 import { Logger } from "@nestjs/common"
-import { Args, Query, Resolver } from "@nestjs/graphql"
+import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { ProductId, ProductSchema } from "@src/databases"
 import { ProductService } from "./products.service"
 
@@ -19,7 +19,7 @@ export class ProductResolver {
     @Query(() => ProductSchema, {
         name: "product"
     })
-    async product(@Args("id") id: ProductId): Promise<ProductSchema> {
+    async product(@Args("id", { type: () => ID }) id: ProductId): Promise<ProductSchema> {
         return this.productsService.getProduct(id)
     }
 }

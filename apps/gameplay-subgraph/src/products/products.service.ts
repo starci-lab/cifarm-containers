@@ -13,10 +13,20 @@ export class ProductService {
     ) { }
 
     async getProduct(id: ProductId): Promise<ProductSchema> {
-        return this.connection.model<ProductSchema>(ProductSchema.name).findById(createObjectId(id))
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model<ProductSchema>(ProductSchema.name).findById(createObjectId(id))
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 
     async getProducts(): Promise<Array<ProductSchema>> {
-        return this.connection.model<ProductSchema>(ProductSchema.name).find()
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model<ProductSchema>(ProductSchema.name).find()
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }
