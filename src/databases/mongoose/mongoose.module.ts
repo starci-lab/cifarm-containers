@@ -49,6 +49,7 @@ import {
     ProductSchemaClass,
 } from "./gameplay"
 import { Connection } from "mongoose"
+import { FolloweeSchema, FolloweeSchemaClass } from "./gameplay/schemas/followee.schema"
 
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
@@ -115,6 +116,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: SupplySchema.name,
                             useFactory: () => SupplySchemaClass
+                        },
+                        {
+                            name: FolloweeSchema.name,
+                            useFactory: () => FolloweeSchemaClass
                         },
                         {
                             name: UserSchema.name,
