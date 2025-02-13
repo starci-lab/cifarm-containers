@@ -31,7 +31,7 @@ export class SystemsResolver {
     }
 
     @Query(() => DefaultInfo, {
-        name: "starter"
+        name: "defaultInfo"
     })
     async defaultInfo(): Promise<DefaultInfo> {
         return this.systemsService.getDefaultInfo()

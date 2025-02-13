@@ -1,9 +1,14 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     AppearanceChance,
+    DefaultInfo,
     InjectMongoose,
+    InventorySchema,
     InventoryType,
+    InventoryTypeSchema,
+    SPIN_PRIZE,
     SpinInfo,
+    SpinPrizeSchema,
     SpinPrizeType,
     SpinSlotSchema,
     SystemId,
@@ -15,7 +20,7 @@ import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/
 import { SpinRequest, SpinResponse } from "./spin.dto"
 import { GrpcInternalException } from "nestjs-grpc-exceptions"
 import { DateUtcService } from "@src/date"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { DeepPartial, GrpcFailedPreconditionException } from "@src/common"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -35,6 +40,8 @@ export class SpinService {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
         try {
+            // Get the default info 
+            const { value: { inventoryCapacity } } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<DefaultInfo>>(SystemId.DefaultInfo).session(mongoSession)
             // Get latest spin
             const user = await this.connection.model<UserSchema>(UserSchema.name).findById(request.userId).session(mongoSession)
 
@@ -45,9 +52,7 @@ export class SpinService {
             }
 
             // Spin the wheel
-            const spinPrizes = await this.connection.model<SpinSlotSchema>(SpinSlotSchema.name).find().session(mongoSession)
-            const spinSlots = await this.connection.model<SpinSlotSchema>(SpinSlotSchema.name).find().session(mongoSession)
-
+            const spinSlots = await this.connection.model<SpinSlotSchema>(SpinSlotSchema.name).find().populate(SPIN_PRIZE).session(mongoSession)
             //check if slot not equal to 8
             if (spinSlots.length !== 8) {
                 throw new GrpcInternalException("Spin slots must be equal to 8")
@@ -58,10 +63,9 @@ export class SpinService {
             
             //get the appearance chance
             const chance = this.getAppearanceChance(value)
-
             //we get the appearance chance, so that we randomly select a slot with that chance
             const rewardableSlots = spinSlots.filter(
-                (slot) => slot.spinPrize.appearanceChance === chance
+                (slot) => (slot.spinPrize as SpinPrizeSchema).appearanceChance === chance
             )
             const selectedSlot = this.getRandomSlot(rewardableSlots)
 
@@ -73,143 +77,115 @@ export class SpinService {
 
             let balanceChanges: DeepPartial<UserSchema> = {}
             // Check type, if golds
-            switch (selectedSlot.spinPrize.type) {
+            const spinPrize = (selectedSlot.spinPrize as SpinPrizeSchema)
+            switch (spinPrize.type) {
             case SpinPrizeType.Gold: {
                 //we than process the reward
                 balanceChanges = this.goldBalanceService.add({
-                    entity: user,
-                    amount: selectedSlot.spinPrize.golds
+                    user,
+                    amount: spinPrize.quantity
                 })
-                await queryRunner.startTransaction()
-                try {
-                    await queryRunner.manager.update(UserSchema, user.id, {
-                        ...userChanges,
-                        ...balanceChanges
-                    })
-                    await queryRunner.commitTransaction()
-                } catch (error) {
-                    const errorMessage = `Transaction failed, reason: ${error.message}`
-                    this.logger.error(errorMessage)
-                    await queryRunner.rollbackTransaction()
-                    throw new GrpcInternalException(errorMessage)
-                }
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
+                    ...userChanges,
+                    ...balanceChanges
+                }).session(mongoSession)
                 break
             }
             case SpinPrizeType.Seed: {
-                // Get inventory type
-                const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                    where: {
-                        cropId: selectedSlot.spinPrize.cropId,
-                        type: InventoryType.Seed
-                    }
-                })
+                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
+                    cropId: spinPrize.crop,
+                    type: InventoryType.Seed
+                }).session(mongoSession)
                 // Get inventory same type
-                const inventories = await queryRunner.manager.find(InventoryEntity, {
-                    where: {
-                        userId: request.userId,
-                        inventoryTypeId: inventoryType.id
-                    },
-                    relations: {
-                        inventoryType: true
-                    }
-                })
-                const updatedInventories = this.inventoryService.add({
-                    entities: inventories,
+                const { count, inventories } = await this.inventoryService.getParams({
                     userId: request.userId,
-                    data: {
-                        inventoryType: inventoryType,
-                        quantity: selectedSlot.spinPrize.quantity
-                    }
+                    inventoryType,
+                    session: mongoSession,
+                    connection: this.connection
                 })
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventories,
+                    userId: request.userId,
+                    capacity: inventoryCapacity,
+                    inventoryType,
+                    quantity: spinPrize.quantity,
+                    count
+                })
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
+                    ...userChanges,
+                    ...balanceChanges,
+                }).session(mongoSession)
 
-                await queryRunner.startTransaction()
-                try {
-                    // Save user and inventory
-                    await queryRunner.manager.update(UserSchema, user.id, {
-                        ...userChanges,
-                        ...balanceChanges
-                    })
-                    await queryRunner.manager.save(InventoryEntity, updatedInventories)
-                    await queryRunner.commitTransaction()
-                } catch (error) {
-                    const errorMessage = `Transaction failed, reason: ${error.message}`
-                    this.logger.error(errorMessage)
-                    await queryRunner.rollbackTransaction()
-                    throw new GrpcInternalException(errorMessage)
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
+                for (const inventory of updatedInventories) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({ _id: inventory._id }, inventory).session(mongoSession)
                 }
+                
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
+                    ...userChanges,
+                    ...balanceChanges
+                }).session(mongoSession)
+
                 break
             }
             case SpinPrizeType.Supply: {
-                // Get inventory type
-                const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                    where: {
-                        cropId: selectedSlot.spinPrize.cropId,
-                        type: InventoryType.Supply
-                    }
-                })
+                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
+                    cropId: spinPrize.crop,
+                    type: InventoryType.Supply
+                }).session(mongoSession)
                 // Get inventory same type
-                const inventories = await queryRunner.manager.find(InventoryEntity, {
-                    where: {
-                        userId: request.userId,
-                        inventoryTypeId: inventoryType.id
-                    },
-                    relations: {
-                        inventoryType: true
-                    }
-                })
-                const updatedInventories = this.inventoryService.add({
-                    entities: inventories,
+                // 
+                const { count, inventories } = await this.inventoryService.getParams({
                     userId: request.userId,
-                    data: {
-                        inventoryType: inventoryType,
-                        quantity: selectedSlot.spinPrize.quantity
-                    }
+                    inventoryType,
+                    session: mongoSession,
+                    connection: this.connection
                 })
-                await queryRunner.startTransaction()
-                try {
-                    await queryRunner.manager.update(UserSchema, user.id, {
-                        ...userChanges,
-                        ...balanceChanges
-                    })
-                    await queryRunner.manager.save(InventoryEntity, updatedInventories)
-                    await queryRunner.commitTransaction()
-                } catch (error) {
-                    const errorMessage = `Transaction failed, reason: ${error.message}`
-                    this.logger.error(errorMessage)
-                    await queryRunner.rollbackTransaction()
-                    throw new GrpcInternalException(errorMessage)
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventories,
+                    userId: request.userId,
+                    capacity: inventoryCapacity,
+                    inventoryType,
+                    quantity: spinPrize.quantity,
+                    count
+                })
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
+                for (const inventory of updatedInventories) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({ _id: inventory._id }, inventory).session(mongoSession)
                 }
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
+                    ...userChanges,
+                    ...balanceChanges,
+                }).session(mongoSession)
                 break
             }
             case SpinPrizeType.Token: {
                 balanceChanges = this.tokenBalanceService.add({
-                    entity: user,
-                    amount: selectedSlot.spinPrize.tokens
+                    user,
+                    amount: spinPrize.quantity
                 })
-                await queryRunner.startTransaction()
-                try {
-                    await queryRunner.manager.update(UserSchema, user.id, {
-                        ...userChanges,
-                        ...balanceChanges
-                    })
-                    await queryRunner.commitTransaction()
-                } catch (error) {
-                    const errorMessage = `Transaction failed, reason: ${error.message}`
-                    this.logger.error(errorMessage)
-                    await queryRunner.rollbackTransaction()
-                    throw new GrpcInternalException(errorMessage)
-                }
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
+                    ...userChanges,
+                    ...balanceChanges
+                }).session(mongoSession)
                 break
             }
             }
+
+            await mongoSession.commitTransaction()
             return { spinSlotId: selectedSlot.id }
-        } finally {
-            await queryRunner.release()
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
+        }
+        finally {
+            await mongoSession.endSession()
         }
     }
 
     //detach random slot function to mock it with jest.spyOn
-    public getRandomSlot(rewardableSlots: Array<SpinSlotEntity>): DeepPartial<SpinSlotEntity> {
+    public getRandomSlot(rewardableSlots: Array<SpinSlotSchema>): DeepPartial<SpinSlotSchema> {
         const randomIndex = Math.floor(Math.random() * rewardableSlots.length)
         return rewardableSlots[randomIndex]
     }
