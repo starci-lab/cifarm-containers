@@ -17,6 +17,7 @@ export class KeyValueStoreSeeder implements Seeder {
     ) {}
 
     public async seed(): Promise<void> {
+        this.logger.debug("Seeding key value store...")
         const data: Array<DeepPartial<KeyValueStoreSchema>> = [
             {
                 _id: createObjectId(KeyValueStoreId.CropGrowthLastSchedule),
