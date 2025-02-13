@@ -2,10 +2,14 @@ import { Injectable, Logger } from "@nestjs/common"
 import { GrpcFailedPreconditionException } from "@src/common"
 import {
     CropSchema,
+    DefaultInfo,
     InjectMongoose,
     InventorySchema,
     InventoryType,
     InventoryTypeSchema,
+    SystemKey,
+    SystemRecord,
+    SystemSchema,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
@@ -31,12 +35,13 @@ export class BuySeedsService {
         )
 
         // Start session
-        const mongoSession = await this.connection.startSession()     
-
+        const mongoSession = await this.connection.startSession()  
+        
         try {
+            
             const crop = await this.connection.model<CropSchema>(CropSchema.name)
                 .findOne({
-                    id: request.cropId
+                    key: request.cropId
                 })
 
             if (!crop) throw new GrpcNotFoundException("Crop not found")
@@ -46,34 +51,31 @@ export class BuySeedsService {
 
             const user: UserSchema = await this.connection.model<UserSchema>(UserSchema.name)
                 .findOne({
-                    id: request.userId
+                    _id: request.userId
                 })
 
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
             //Get inventory type
-            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                .findOne({
-                    cropId: request.cropId,
-                    type: InventoryType.Seed
-                })
+            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
+                refKey: request.cropId,
+                type: InventoryType.Seed
+            })
+            if (!inventoryType) {
+                throw new GrpcNotFoundException("Inventory seed type not found")
+            }  
 
-            // Get inventory same type
-            const existingInventories = await this.connection.model<InventorySchema>(InventorySchema.name)
-                .find({
-                    userId: request.userId,
-                    inventoryTypeId: inventoryType.id
-                })
-                .populate(InventoryTypeSchema.name)
-
-
-            const updatedInventories = this.inventoryService.add({
-                inventories: existingInventories,
-                inventoryType: inventoryType,
-                quantity: request.quantity
+            const { count, inventories } = await this.inventoryService.getParams({
+                connection: this.connection,
+                inventoryType,
+                userId: user.id
             })
 
+            const { value: { inventoryCapacity } } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DefaultInfo>>({
+                key: SystemKey.DefaultInfo
+            })
+            
             // Start transaction
             mongoSession.startTransaction()
 
@@ -86,12 +88,29 @@ export class BuySeedsService {
 
                 //update
                 await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { id: user.id },
+                    { _id: user.id },
                     { ...goldsChanged }
                 )
 
+                console.log("User updated", goldsChanged)
+
                 //Save inventory
-                await this.connection.model<InventorySchema>(InventorySchema.name).insertMany(updatedInventories.createdInventories)
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventoryType,
+                    inventories,
+                    count,
+                    capacity: inventoryCapacity,
+                    quantity: request.quantity,
+                    userId: user.id
+                })
+
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                for (const inventory of updatedInventories) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
+                        _id: inventory._id
+                    }, inventory)
+                }
+
                 mongoSession.commitTransaction()
 
                 return {}

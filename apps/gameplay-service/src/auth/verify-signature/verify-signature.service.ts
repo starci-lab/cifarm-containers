@@ -107,14 +107,20 @@ export class VerifySignatureService {
   
                 const energy = this.energyService.getMaxEnergy()
 
-                user = await this.connection.model<UserSchema>(UserSchema.name).create({
+                await this.connection.model<UserSchema>(UserSchema.name).create([{
                     username: `${chainKey}-${accountAddress.substring(0, 5)}`,
                     accountAddress,
                     chainKey,
                     network,
                     energy,
                     golds,
-                }, { session: mongoSession })[0]
+                }], { session: mongoSession })
+                
+                user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
+                    accountAddress,
+                    chainKey,
+                    network
+                }).session(mongoSession)
 
                 const { count, inventories } = await this.inventoryService.getParams({
                     connection: this.connection,
@@ -123,12 +129,12 @@ export class VerifySignatureService {
                     session: mongoSession
                 })
 
-                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
+                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create([{
                     placedItemTypeKey: PlacedItemTypeKey.Home,
                     buildingInfo: {},
                     user: user.id,
                     ...positions.home,
-                }, { session: mongoSession })
+                }], { session: mongoSession })
 
                 const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map(
                     (tile) => ({
@@ -138,7 +144,8 @@ export class VerifySignatureService {
                         ...tile
                     })
                 )
-                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(tilePartials, { session: mongoSession })
+            
+                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(tilePartials, { session: mongoSession, ordered: true })
 
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
@@ -168,7 +175,7 @@ export class VerifySignatureService {
                     expiredAt,
                     user: user.id
                 })
-                mongoSession.commitTransaction()
+                await mongoSession.commitTransaction()
 
                 return {
                     accessToken,
@@ -177,7 +184,7 @@ export class VerifySignatureService {
             }
         } catch (error) {
             this.logger.error(error)
-            mongoSession.abortTransaction()
+            await mongoSession.abortTransaction()
             throw new GrpcInternalException("Failed to update session")
         } finally {
             await mongoSession.endSession()

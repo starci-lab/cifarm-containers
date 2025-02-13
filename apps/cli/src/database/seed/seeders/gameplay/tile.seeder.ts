@@ -29,7 +29,7 @@ export class TileSeeder implements Seeder {
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
                 availableInShop: true,
-                placedItemTypeKey: PlacedItemTypeKey.DefaultInfoTile
+                placedItemTypeKey: PlacedItemTypeKey.StarterTile
             },
             {
                 key: TileKey.BasicTile1,

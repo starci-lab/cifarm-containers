@@ -1,6 +1,6 @@
 import { InventorySchema, InventoryTypeSchema } from "@src/databases"
 import { DeepPartial } from "@src/common"
-import { Connection } from "mongoose"
+import { ClientSession, Connection } from "mongoose"
 
 export interface AddParams {
     // inventories with the same type key
@@ -11,6 +11,8 @@ export interface AddParams {
     quantity: number
     // count
     count: number
+    // user id
+    userId: string
     // max capacity
     capacity: number
 }
@@ -35,6 +37,7 @@ export interface RemoveResult {
 export interface GetParamsParams {
     userId: string
     connection: Connection,
+    session: ClientSession,
     inventoryType: InventoryTypeSchema,
 }
 

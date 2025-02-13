@@ -13,10 +13,6 @@ export class BuildingInfoSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0 })
         currentUpgrade: number
 
-    @Field(() => String)
-    @Prop({ type: String, required: true })
-        placedItemId: string
-
     @Field(() => String, { nullable: true })
     @Prop({ type: String, required: false })
         buildingKey?: string

@@ -1,12 +1,12 @@
 // npx jest apps/gameplay-service/src/shop/buy-seeds/buy-seeds.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { Connection } from "mongoose"
-import { BuySeedsService } from "./buy-seeds.service"
-import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import { getMongooseToken, CropSchema, UserSchema, InventorySchema, InventoryTypeSchema, InventoryType, CropKey } from "@src/databases"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { CropKey, CropSchema, getMongooseToken, InventorySchema, InventoryTypeKey, UserSchema } from "@src/databases"
 import { UserInsufficientGoldException } from "@src/gameplay"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { Connection } from "mongoose"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { BuySeedsService } from "./buy-seeds.service"
 
 describe("BuySeedsService", () => {
     let service: BuySeedsService
@@ -27,29 +27,22 @@ describe("BuySeedsService", () => {
     })
 
     it("Should successfully buy seeds and update user and inventory", async () => {
-        const crop = await connection.model(CropSchema.name).create({
-            id: CropKey.Carrot,
-            price: 10,
-            availableInShop: true,
-        })
+        const crop = await connection.model<CropSchema>(CropSchema.name).findOne({ key: CropKey.Carrot })
         
         const quantity = 2
         const user = await gameplayMockUserService.generate({ golds: crop.price * quantity + 10 })
+        console.log(user)
         const initialGolds = user.golds
 
-        const inventoryType = await connection.model(InventoryTypeSchema.name).create({
-            cropId: crop.id,
-            type: InventoryType.Seed,
-        })
+        await service.buySeeds({ userId: user.id, cropId: crop.key, quantity })
 
-        await service.buySeeds({ userId: user.id, cropId: crop.id, quantity })
-
-        const updatedUser = await connection.model(UserSchema.name).findOne({ id: user.id })
+        const updatedUser = await connection.model<UserSchema>(UserSchema.name).findOne({ _id: user._id })
+        console.log(updatedUser, "9", initialGolds)
         expect(initialGolds - updatedUser.golds).toBe(crop.price * quantity)
 
-        const inventory = await connection.model(InventorySchema.name).findOne({
-            userId: user.id,
-            inventoryTypeId: inventoryType.id,
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).findOne({
+            user: user._id,
+            inventoryTypeKey: InventoryTypeKey.CarrotSeed,
         })
         expect(inventory.quantity).toBe(quantity)
     })
@@ -62,15 +55,11 @@ describe("BuySeedsService", () => {
     })
 
     it("Should throw UserInsufficientGoldException when user has insufficient gold", async () => {
-        const crop = await connection.model(CropSchema.name).create({
-            id: CropKey.Carrot,
-            price: 10,
-            availableInShop: true,
-        })
+        const crop = await connection.model<CropSchema>(CropSchema.name).findOne({ key: CropKey.Carrot })
         
         const user = await gameplayMockUserService.generate({ golds: crop.price * 2 - 5 })
         await expect(
-            service.buySeeds({ userId: user.id, cropId: crop.id, quantity: 2 })
+            service.buySeeds({ userId: user.id, cropId: crop.key, quantity: 2 })
         ).rejects.toThrow(UserInsufficientGoldException)
     })
 
