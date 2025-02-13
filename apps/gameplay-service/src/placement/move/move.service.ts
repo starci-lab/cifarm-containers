@@ -1,44 +1,41 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, PlacedItemSchema } from "@src/databases"
-import { DataSource } from "typeorm"
+import { InjectMongoose, PlacedItemSchema } from "@src/databases"
 import { MoveRequest } from "./move.dto"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class MoveService {
     private readonly logger = new Logger(MoveService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        @InjectMongoose() 
+        private readonly connection: Connection
     ) {}
 
     async move(request: MoveRequest) {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
         try {
-            const placedItem = await queryRunner.manager.findOne(PlacedItemSchema, {
-                where: { id: request.placedItemId, userId: request.userId }
-            })
+            const placedItem = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findById(request.placedItemId)
+                .session(mongoSession)
 
             if (!placedItem) throw new GrpcNotFoundException("Placed item not found")
 
-            await queryRunner.startTransaction()
-            try {
-                await queryRunner.manager.update(PlacedItemSchema, request.placedItemId, {
-                    x: request.position.x,
-                    y: request.position.y
-                })
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                const errorMessage = `Transaction failed, reason: ${error.message}`
-                this.logger.error(errorMessage)
-                await queryRunner.rollbackTransaction()
-                throw new GrpcInternalException(errorMessage)
-            }
+            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne({
+                _id: request.placedItemId
+            }, {
+                x: request.position.x,
+                y: request.position.y
+            }).session(mongoSession)
+        } catch (error) {
+            this.logger.error(`Failed to move placed item, reason: ${error.message}`)
+            await mongoSession.abortTransaction()
+            throw new GrpcInternalException("Failed to move placed item")
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }
