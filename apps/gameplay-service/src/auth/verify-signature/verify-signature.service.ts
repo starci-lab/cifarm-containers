@@ -212,10 +212,10 @@ export class VerifySignatureService {
             }
         } catch (error) {
             this.logger.error(error)
-            mongoSession.abortTransaction()
+            await mongoSession.abortTransaction()
             throw new GrpcInternalException(error.message)
         } finally {
-            mongoSession.endSession()
+            await mongoSession.endSession()
         }
     }
 }
