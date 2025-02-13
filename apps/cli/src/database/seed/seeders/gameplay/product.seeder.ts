@@ -4,7 +4,7 @@ import {
     AnimalId,
     CropId,
     InjectMongoose,
-    ProductKey,
+    ProductId,
     ProductSchema,
     ProductType,
 } from "@src/databases"
@@ -23,7 +23,7 @@ export class ProductSeeder implements Seeder {
         this.logger.debug("Seeding products...")
         const data: Array<DeepPartial<ProductSchema>> = [
             {
-                _id: createObjectId(ProductKey.Egg),
+                _id: createObjectId(ProductId.Egg),
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -31,7 +31,7 @@ export class ProductSeeder implements Seeder {
                 animal: createObjectId(AnimalId.Chicken),
             },
             {
-                _id: createObjectId(ProductKey.EggQuality),
+                _id: createObjectId(ProductId.EggQuality),
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -40,7 +40,7 @@ export class ProductSeeder implements Seeder {
                 animal: createObjectId(AnimalId.Chicken),
             },
             {
-                _id: createObjectId(ProductKey.Milk),
+                _id: createObjectId(ProductId.Milk),
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -48,7 +48,7 @@ export class ProductSeeder implements Seeder {
                 animal: createObjectId(AnimalId.Cow),
             },
             {
-                _id: createObjectId(ProductKey.MilkQuality),
+                _id: createObjectId(ProductId.MilkQuality),
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -57,7 +57,7 @@ export class ProductSeeder implements Seeder {
                 animal: createObjectId(AnimalId.Cow),
             },
             {
-                _id: createObjectId(ProductKey.Carrot),
+                _id: createObjectId(ProductId.Carrot),
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -65,7 +65,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.Carrot),
             },
             {
-                _id: createObjectId(ProductKey.Potato),
+                _id: createObjectId(ProductId.Potato),
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -73,7 +73,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.Potato),
             },
             {
-                _id: createObjectId(ProductKey.Cucumber),
+                _id: createObjectId(ProductId.Cucumber),
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -81,7 +81,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.Cucumber),
             },
             {
-                _id: createObjectId(ProductKey.Pineapple),
+                _id: createObjectId(ProductId.Pineapple),
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -89,7 +89,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.Pineapple),
             },
             {
-                _id: createObjectId(ProductKey.CarrotQuality),
+                _id: createObjectId(ProductId.CarrotQuality),
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -98,7 +98,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.Carrot),
             },
             {
-                _id: createObjectId(ProductKey.PotatoQuality),
+                _id: createObjectId(ProductId.PotatoQuality),
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -107,7 +107,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.Potato),
             },
             {
-                _id: createObjectId(ProductKey.CucumberQuality),
+                _id: createObjectId(ProductId.CucumberQuality),
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -116,7 +116,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.Cucumber),
             },
             {
-                _id: createObjectId(ProductKey.PineappleQuality),
+                _id: createObjectId(ProductId.PineappleQuality),
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -125,7 +125,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.Pineapple),
             },
             {
-                _id: createObjectId(ProductKey.Watermelon),
+                _id: createObjectId(ProductId.Watermelon),
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -133,7 +133,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.Watermelon),
             },
             {
-                _id: createObjectId(ProductKey.BellPepper),
+                _id: createObjectId(ProductId.BellPepper),
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -142,7 +142,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.BellPepper),
             },
             {
-                _id: createObjectId(ProductKey.BellPepperQuality),
+                _id: createObjectId(ProductId.BellPepperQuality),
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -150,7 +150,7 @@ export class ProductSeeder implements Seeder {
                 crop: createObjectId(CropId.BellPepper),
             },
             {
-                _id: createObjectId(ProductKey.WatermelonQuality),
+                _id: createObjectId(ProductId.WatermelonQuality),
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,

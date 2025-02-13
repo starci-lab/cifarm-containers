@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, ToolSchema } from "@src/databases"
+import { createObjectId } from "@src/common"
+import { InjectMongoose, ToolId, ToolSchema } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -11,10 +12,10 @@ export class ToolsService {
         private readonly connection: Connection
     ) { }
 
-    async getTool(id: string): Promise<ToolSchema> {
+    async getTool(id: ToolId): Promise<ToolSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<ToolSchema>(ToolSchema.name).findById(id)
+            return await this.connection.model<ToolSchema>(ToolSchema.name).findById(createObjectId(id))
         } finally {
             await mongoSession.endSession()
         }

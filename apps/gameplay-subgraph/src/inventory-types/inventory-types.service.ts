@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, InventoryTypeSchema } from "@src/databases"
+import { createObjectId } from "@src/common"
+import { InjectMongoose, InventoryTypeId, InventoryTypeSchema } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -20,19 +21,10 @@ export class InventoryTypesService {
         }
     }
 
-    async getInventoryType(id: string): Promise<InventoryTypeSchema> {
+    async getInventoryType(id: InventoryTypeId): Promise<InventoryTypeSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(InventoryTypeSchema.name).findById(id).session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
-    }
-
-    async getInventoryTypeByKey(key: string): Promise<InventoryTypeSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model(InventoryTypeSchema.name).findOne({ key }).session(mongoSession)
+            return await this.connection.model(InventoryTypeSchema.name).findById(createObjectId(id)).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }

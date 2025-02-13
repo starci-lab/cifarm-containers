@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, TileSchema } from "@src/databases"
+import { createObjectId } from "@src/common"
+import { InjectMongoose, TileId, TileSchema } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -14,25 +15,19 @@ export class TilesService {
     async getTiles(): Promise<Array<TileSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(TileSchema.name).find()
+            return await this.connection.model(TileSchema.name).find().session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
     }
 
-    async getTile(id: string): Promise<TileSchema> {
+    async getTile(id: TileId): Promise<TileSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(TileSchema.name).findById(id)
-        } finally {
-            await mongoSession.endSession()
-        }
-    }
-
-    async getTileByKey(key: string): Promise<TileSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model(TileSchema.name).findOne({ key })
+            return await this.connection
+                .model(TileSchema.name)
+                .findById(createObjectId(id))
+                .session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }

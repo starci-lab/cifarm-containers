@@ -3,7 +3,7 @@
 import { GameplayConnectionService, TestingInfraModule } from "@src/testing"
 import { Test } from "@nestjs/testing"
 import { isJWT, isUUID } from "class-validator"
-import { getMongooseToken, InventorySchema, PlacedItemSchema, PlacedItemTypeKey, UserSchema } from "@src/databases"
+import { getMongooseToken, InventorySchema, PlacedItemSchema, PlacedItemTypeId, UserSchema } from "@src/databases"
 import { VerifySignatureService } from "./verify-signature.service"
 import { RequestMessageService } from "../request-message"
 import { GenerateSignatureService } from "../generate-signature"
@@ -64,13 +64,13 @@ describe("VerifySignatureService", () => {
         // fetch home and tiles
         const home = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).findOne({
             user: user.id,
-            placedItemTypeKey: PlacedItemTypeKey.Home
+            placedItemTypeKey: PlacedItemTypeId.Home
         })
         expect(home).toBeTruthy()
 
         const tiles = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
             user: user.id,
-            placedItemTypeKey: PlacedItemTypeKey.StarterTile
+            placedItemTypeKey: PlacedItemTypeId.StarterTile
         })
         expect(tiles.length).toBe(6)
 

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Connection } from "mongoose"
-import { InjectMongoose, ProductSchema } from "@src/databases"
+import { InjectMongoose, ProductId, ProductSchema } from "@src/databases"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class ProductService {
@@ -11,15 +12,21 @@ export class ProductService {
         private readonly connection: Connection
     ) { }
 
-    async getProduct(id: string): Promise<ProductSchema> {
-        return this.connection.model<ProductSchema>(ProductSchema.name).findById(id)
+    async getProduct(id: ProductId): Promise<ProductSchema> {
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model<ProductSchema>(ProductSchema.name).findById(createObjectId(id))
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 
     async getProducts(): Promise<Array<ProductSchema>> {
-        return this.connection.model<ProductSchema>(ProductSchema.name).find()
-    }
-
-    async getProductByKey(key: string): Promise<ProductSchema> {
-        return this.connection.model<ProductSchema>(ProductSchema.name).findOne({ key })
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model<ProductSchema>(ProductSchema.name).find()
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }

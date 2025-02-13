@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingSchema, InjectMongoose } from "@src/databases"
+import { createObjectId } from "@src/common"
+import { BuildingId, BuildingSchema, InjectMongoose } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -20,19 +21,10 @@ export class BuildingsService {
         }
     }
 
-    async getBuilding(id: string): Promise<BuildingSchema> {
+    async getBuilding(id: BuildingId): Promise<BuildingSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findById(id).session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
-    }
-
-    async getBuildingByKey(key: string): Promise<BuildingSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findOne({ key }).session(mongoSession)
+            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findById(createObjectId(id)).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }

@@ -6,7 +6,7 @@ import {
     InventoryType,
     InventoryTypeId,
     InventoryTypeSchema,
-    ProductKey,
+    ProductId,
     SupplyId,
 } from "@src/databases"
 import { Connection } from "mongoose"
@@ -30,7 +30,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.Egg),
+                product: createObjectId(ProductId.Egg),
                 type: InventoryType.Product
             },
             {
@@ -39,7 +39,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.EggQuality),
+                product: createObjectId(ProductId.EggQuality),
                 type: InventoryType.Product
             },
             {
@@ -48,7 +48,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.Milk),
+                product: createObjectId(ProductId.Milk),
                 type: InventoryType.Product
             },
             {
@@ -57,7 +57,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.MilkQuality),
+                product: createObjectId(ProductId.MilkQuality),
                 type: InventoryType.Product
             },
             {
@@ -66,7 +66,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.Carrot),
+                product: createObjectId(ProductId.Carrot),
                 type: InventoryType.Product
             },
             {
@@ -75,7 +75,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.CarrotQuality),
+                product: createObjectId(ProductId.CarrotQuality),
                 type: InventoryType.Product
             },
             {
@@ -84,7 +84,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.Potato),
+                product: createObjectId(ProductId.Potato),
                 type: InventoryType.Product
             },
             {
@@ -93,7 +93,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.PotatoQuality),
+                product: createObjectId(ProductId.PotatoQuality),
                 type: InventoryType.Product
             },
             {
@@ -102,7 +102,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.Pineapple),
+                product: createObjectId(ProductId.Pineapple),
                 type: InventoryType.Product
             },
             {
@@ -111,7 +111,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.PineappleQuality),
+                product: createObjectId(ProductId.PineappleQuality),
                 type: InventoryType.Product
             },
             {
@@ -120,7 +120,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.Watermelon),
+                product: createObjectId(ProductId.Watermelon),
                 type: InventoryType.Product
             },
             {
@@ -129,7 +129,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.WatermelonQuality),
+                product: createObjectId(ProductId.WatermelonQuality),
                 type: InventoryType.Product
             },
             {
@@ -138,7 +138,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.Cucumber),
+                product: createObjectId(ProductId.Cucumber),
                 type: InventoryType.Product
             },
             {
@@ -147,7 +147,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.CucumberQuality),
+                product: createObjectId(ProductId.CucumberQuality),
                 type: InventoryType.Product
             },
             {
@@ -156,7 +156,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.BellPepper),
+                product: createObjectId(ProductId.BellPepper),
                 type: InventoryType.Product
             },
             {
@@ -165,7 +165,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductKey.BellPepperQuality),
+                product: createObjectId(ProductId.BellPepperQuality),
                 type: InventoryType.Product
             },
             {

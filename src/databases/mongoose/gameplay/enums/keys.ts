@@ -68,7 +68,7 @@ export enum TileId {
 }
 
 // Tool Enum
-export enum ToolKey {
+export enum ToolId {
     Hand = "hand",
     Scythe = "scythe",
     ThiefHand = "thiefHand",
@@ -78,7 +78,7 @@ export enum ToolKey {
 }
 
 // Product Enum
-export enum ProductKey {
+export enum ProductId {
     Egg = "egg",
     EggQuality = "eggQuality",
     Milk = "milk",
@@ -140,7 +140,7 @@ export enum InventoryTypeId {
     BellPepperQuality = "bellPepperQuality",
 }
 
-export enum PlacedItemTypeKey {
+export enum PlacedItemTypeId {
     Chicken = "chicken",
     Cow = "cow",
     Pig = "pig",

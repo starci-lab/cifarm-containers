@@ -3,7 +3,7 @@ import {
     AnimalId,
     BuildingId,
     PlacedItemType,
-    PlacedItemTypeKey,
+    PlacedItemTypeId,
     PlacedItemTypeSchema,
     InjectMongoose
 } from "@src/databases"
@@ -27,56 +27,56 @@ export class PlacedItemTypeSeeder implements Seeder {
         const data: Array<Partial<PlacedItemTypeSchema>> = [
             // Tiles
             {
-                _id: createObjectId(PlacedItemTypeKey.StarterTile),
+                _id: createObjectId(PlacedItemTypeId.StarterTile),
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.StarterTile)
             },
             {
-                _id: createObjectId(PlacedItemTypeKey.BasicTile1),
+                _id: createObjectId(PlacedItemTypeId.BasicTile1),
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.BasicTile1)
             },
             {
-                _id: createObjectId(PlacedItemTypeKey.BasicTile2),
+                _id: createObjectId(PlacedItemTypeId.BasicTile2),
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.BasicTile2)
             },
             {
-                _id: createObjectId(PlacedItemTypeKey.BasicTile3),
+                _id: createObjectId(PlacedItemTypeId.BasicTile3),
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.BasicTile3)
             },
             {
-                _id: createObjectId(PlacedItemTypeKey.FertileTile),
+                _id: createObjectId(PlacedItemTypeId.FertileTile),
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.FertileTile)
             },
 
             // Animals
             {
-                _id: createObjectId(PlacedItemTypeKey.Chicken),
+                _id: createObjectId(PlacedItemTypeId.Chicken),
                 type: PlacedItemType.Animal,
                 animal: createObjectId(AnimalId.Chicken)
             },
             {
-                _id: createObjectId(PlacedItemTypeKey.Cow),
+                _id: createObjectId(PlacedItemTypeId.Cow),
                 type: PlacedItemType.Animal,
                 animal: createObjectId(AnimalId.Cow)
             },
 
             // Buildings
             {
-                _id: createObjectId(PlacedItemTypeKey.Home),
+                _id: createObjectId(PlacedItemTypeId.Home),
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Home)
             },
             {
-                _id: createObjectId(PlacedItemTypeKey.Barn),
+                _id: createObjectId(PlacedItemTypeId.Barn),
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Barn)
             },
             {
-                _id: createObjectId(PlacedItemTypeKey.Coop),
+                _id: createObjectId(PlacedItemTypeId.Coop),
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Coop)
             }

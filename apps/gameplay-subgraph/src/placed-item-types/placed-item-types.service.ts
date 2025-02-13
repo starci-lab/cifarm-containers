@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, PlacedItemTypeSchema } from "@src/databases"
+import { createObjectId } from "@src/common"
+import { InjectMongoose, PlacedItemTypeId, PlacedItemTypeSchema } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -14,25 +15,22 @@ export class PlacedItemTypesService {
     async getPlacedItemTypes(): Promise<Array<PlacedItemTypeSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find().session(mongoSession)
+            return await this.connection
+                .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                .find()
+                .session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
     }
 
-    async getPlacedItemType(id: string): Promise<PlacedItemTypeSchema> {
+    async getPlacedItemType(id: PlacedItemTypeId): Promise<PlacedItemTypeSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).findById(id).session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
-    }
-
-    async getPlacedItemTypeByKey(key: string): Promise<PlacedItemTypeSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).findOne({ key }).session(mongoSession)
+            return await this.connection
+                .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                .findById(createObjectId(id))
+                .session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }

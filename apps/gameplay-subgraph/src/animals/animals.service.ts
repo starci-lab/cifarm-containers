@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { AnimalSchema, InjectMongoose } from "@src/databases"
+import { createObjectId } from "@src/common"
+import { AnimalId, AnimalSchema, InjectMongoose } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -20,19 +21,10 @@ export class AnimalsService {
         }
     }
 
-    async getAnimal(id: string) {
+    async getAnimal(id: AnimalId) {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(AnimalSchema.name).findById(id).session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
-    }
-
-    async getAnimalByKey(key: string) {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model(AnimalSchema.name).findOne({ key }).session(mongoSession)
+            return await this.connection.model(AnimalSchema.name).findById(createObjectId(id)).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }

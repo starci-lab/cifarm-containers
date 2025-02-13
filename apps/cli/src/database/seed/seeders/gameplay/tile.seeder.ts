@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     InjectMongoose,
-    PlacedItemTypeKey,
+    PlacedItemTypeId,
     TileId,
     TileSchema
 } from "@src/databases"
@@ -30,7 +30,7 @@ export class TileSeeder implements Seeder {
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
                 availableInShop: true,
-                placedItemTypeKey: PlacedItemTypeKey.StarterTile
+                placedItemTypeKey: PlacedItemTypeId.StarterTile
             },
             {
                 _id: createObjectId(TileId.BasicTile1),
@@ -40,7 +40,7 @@ export class TileSeeder implements Seeder {
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
                 availableInShop: true,
-                placedItemTypeKey: PlacedItemTypeKey.BasicTile1
+                placedItemTypeKey: PlacedItemTypeId.BasicTile1
             },
             {
                 _id: createObjectId(TileId.BasicTile2),
@@ -50,7 +50,7 @@ export class TileSeeder implements Seeder {
                 availableInShop: true,
                 qualityProductChanceStack: 0.001,
                 qualityProductChanceLimit: 0.1,
-                placedItemTypeKey: PlacedItemTypeKey.BasicTile1
+                placedItemTypeKey: PlacedItemTypeId.BasicTile1
             },
             {
                 _id: createObjectId(TileId.BasicTile3),
@@ -60,7 +60,7 @@ export class TileSeeder implements Seeder {
                 qualityProductChanceStack: 0.002,
                 qualityProductChanceLimit: 0.2,
                 availableInShop: true,
-                placedItemTypeKey: PlacedItemTypeKey.BasicTile3
+                placedItemTypeKey: PlacedItemTypeId.BasicTile3
             },
             {
                 _id: createObjectId(TileId.FertileTile),
@@ -68,7 +68,7 @@ export class TileSeeder implements Seeder {
                 qualityProductChanceStack: 0.025,
                 qualityProductChanceLimit: 0.5,
                 availableInShop: false,
-                placedItemTypeKey: PlacedItemTypeKey.FertileTile
+                placedItemTypeKey: PlacedItemTypeId.FertileTile
             }
         ]
 
