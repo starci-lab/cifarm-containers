@@ -3,7 +3,7 @@ import utc from "dayjs/plugin/utc"
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
 import { InjectMongoose, KeyValueStoreId, KeyValueStoreSchema } from "@src/databases"
-import { DeepPartial } from "@src/common"
+import { createObjectId, DeepPartial } from "@src/common"
 import { Connection } from "mongoose"
 dayjs.extend(utc)
 
@@ -19,13 +19,13 @@ export class KeyValueStoreSeeder implements Seeder {
     public async seed(): Promise<void> {
         const data: Array<DeepPartial<KeyValueStoreSchema>> = [
             {
-                id: KeyValueStoreId.AnimalGrowthLastSchedule,
+                _id: createObjectId(KeyValueStoreId.CropGrowthLastSchedule),
                 value: {
                     date: dayjs().utc().toDate()
                 }
             },
             {
-                id: KeyValueStoreId.CropGrowthLastSchedule,
+                _id: createObjectId(KeyValueStoreId.EnergyRegenerationLastSchedule),
                 value: {
                     date: dayjs().utc().toDate()
                 }

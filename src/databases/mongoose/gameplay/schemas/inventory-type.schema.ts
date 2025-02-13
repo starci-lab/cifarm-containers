@@ -14,8 +14,7 @@ export type InventoryTypeDocument = HydratedDocument<InventoryTypeSchema>
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: "inventory-types",
-    _id: false
+    collection: "inventory-types"
 })
 export class InventoryTypeSchema extends AbstractSchema {
     @Field(() => String)
