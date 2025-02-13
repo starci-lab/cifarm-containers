@@ -1,38 +1,40 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CacheQueryRunnerService, CropEntity, InjectPostgreSQL } from "@src/databases"
-import { DataSource } from "typeorm"
+import { CropSchema, InjectMongoose } from "@src/databases"
+import { Connection } from "mongoose"  // Import Connection for MongoDB
 
 @Injectable()
 export class CropsService {
     private readonly logger = new Logger(CropsService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+        @InjectMongoose()
+        private readonly connection: Connection  // Replace DataSource with Connection
     ) {}
 
-    async getCrops(): Promise<Array<CropEntity>> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getCrops(): Promise<Array<CropSchema>> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.find(queryRunner, CropEntity)
+            return await this.connection.model<CropSchema>(CropSchema.name).find()
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
-    async getCrop(id: string): Promise<CropEntity> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getCrop(id: string): Promise<CropSchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.findOne(queryRunner, CropEntity, {
-                where: {
-                    id
-                }
-            })
+            return await this.connection.model<CropSchema>(CropSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
+        }
+    }
+
+    async getCropByKey(key: string): Promise<CropSchema> {
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model<CropSchema>(CropSchema.name).findOne({ key })
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

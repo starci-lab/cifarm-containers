@@ -1,17 +1,13 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { HydratedDocument } from "mongoose"
 import { AnimalType } from "../enums"
 import { KeyAbstractSchema } from "./abstract"
-
-// This creates the Animal document type for Mongoose
-export type BuildingDocument = HydratedDocument<BuildingSchema>;
+import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
 
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: "buildings",
-    _id: false
+    collection: "buildings"
 })
 export class BuildingSchema extends KeyAbstractSchema {
   @Field(() => Boolean)
@@ -31,31 +27,16 @@ export class BuildingSchema extends KeyAbstractSchema {
       price?: number
 
   @Field(() => Int)
-  @Prop({ type: Number })
+  @Prop({ type: Number, required: true })
       unlockLevel: number
     
   @Field(() => Boolean)
-  @Prop({ type: Boolean })
+  @Prop({ type: Boolean, required: true })
       upgradable: boolean
 
-  @Field(() => [Upgrade])
-  @Prop({ type: Array<Upgrade> })
-      upgrades?: Array<Upgrade>
-}
-
-@ObjectType()
-export class Upgrade {
-    @Field(() => Int, { nullable: true })
-    @Prop({ type: Number, required: false })
-        upgradePrice?: number
-    
-    @Field(() => Int)
-    @Prop({ type: Number })
-        capacity: number
-    
-    @Field(() => Int)
-    @Prop({ type: Number })
-        upgradeLevel: number
+  @Field(() => [UpgradeSchema])
+  @Prop({ type: [UpgradeSchemaClass] })
+      upgrades: Array<UpgradeSchema>
 }
 
 // Generate the Mongoose schema class

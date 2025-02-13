@@ -1,5 +1,5 @@
 
-import { Field, ObjectType } from "@nestjs/graphql"
+import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { Prop } from "@nestjs/mongoose"
 import { Document } from "mongoose"
 
@@ -7,6 +7,10 @@ import { Document } from "mongoose"
     isAbstract: true
 })
 export abstract class AbstractSchema extends Document {
+    // field to use graphql
+    @Field(() => ID)
+        _id: string
+
     @Field(() => Date)
     @Prop({ type: Date })
         createdAt: Date
@@ -16,6 +20,9 @@ export abstract class AbstractSchema extends Document {
         updatedAt: Date
 }
 
+@ObjectType({
+    isAbstract: true
+})
 export abstract class KeyAbstractSchema extends AbstractSchema {
     @Field(() => String)
     @Prop({ type: String, required: true, unique: true })

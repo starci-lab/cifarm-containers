@@ -10,6 +10,9 @@ export type ProductDocument = HydratedDocument<ProductSchema>;
 @ObjectType()
 @Schema({ timestamps: true, collection: "products" })
 export class ProductSchema extends KeyAbstractSchema {
+    @Field(() => Int)
+    @Prop({ type: Number, required: true })
+        maxStack: number
 
     @Field(() => Boolean)
     @Prop({ type: Boolean, required: true })
@@ -19,25 +22,17 @@ export class ProductSchema extends KeyAbstractSchema {
     @Prop({ type: Number, required: true })
         goldAmount: number
 
-    @Field(() => Float)
-    @Prop({ type: Number, required: true })
-        tokenAmount: number
+    @Field(() => Float, { nullable: true })
+    @Prop({ type: Number, required: false })
+        tokenAmount?: number
 
     @Field(() => String)
     @Prop({ type: String, enum: ProductType, required: true })
         type: ProductType
 
-    @Field(() => String, { nullable: true })
-    @Prop({ type: String, required: false })
-        cropKey?: string
-
-    @Field(() => String, { nullable: true })
-    @Prop({ type: String, required: false })
-        animalKey?: string
-
     @Field(() => String)
     @Prop({ type: String, required: true })
-        inventoryTypeId: string
+        refKey: string
 }
 
 // Generate Mongoose Schema

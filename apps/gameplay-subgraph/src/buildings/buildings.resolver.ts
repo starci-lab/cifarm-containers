@@ -1,7 +1,7 @@
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { Logger } from "@nestjs/common"
-import { BuildingEntity } from "@src/databases"
 import { BuildingsService } from "./buildings.service"
+import { BuildingSchema } from "@src/databases"
 
 @Resolver()
 export class BuildingsResolver {
@@ -9,15 +9,18 @@ export class BuildingsResolver {
 
     constructor(private readonly buildingsService: BuildingsService) {}
 
-    @Query(() => BuildingEntity, { name: "building" })
-    async getBuilding(
-        @Args("id", { type: () => ID }) id: string
-    ): Promise<BuildingEntity> {
-        return this.buildingsService.getBuildingById(id)
+    @Query(() => [BuildingSchema], { name: "buildings" })
+    async buildings(): Promise<Array<BuildingSchema>> {
+        return this.buildingsService.getBuildings()
     }
 
-    @Query(() => [BuildingEntity], { name: "buildings" })
-    async getBuildings(): Promise<Array<BuildingEntity>> {
-        return this.buildingsService.getBuildings()
+    @Query(() => BuildingSchema, { name: "building" })
+    async building(@Args("id", { type: () => ID }) id: string): Promise<BuildingSchema> {
+        return this.buildingsService.getBuilding(id)
+    }
+
+    @Query(() => BuildingSchema, { name: "buildingByKey" })
+    async buildingByKey(@Args("key") key: string): Promise<BuildingSchema> {
+        return this.buildingsService.getBuildingByKey(key)
     }
 }

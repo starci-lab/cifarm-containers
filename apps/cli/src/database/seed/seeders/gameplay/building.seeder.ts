@@ -7,6 +7,7 @@ import {
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
 import { Connection } from "mongoose"
+import { DeepPartial } from "@src/common"
 
 @Injectable()
 export class BuildingSeeder implements Seeder {
@@ -19,7 +20,7 @@ export class BuildingSeeder implements Seeder {
         
     public async seed(): Promise<void> {
         this.logger.debug("Seeding buildings...")
-        const data: Array<Partial<BuildingSchema>> = [
+        const data: Array<DeepPartial<BuildingSchema>> = [
             {
                 key: BuildingKey.Home,
                 availableInShop: false,
@@ -27,6 +28,7 @@ export class BuildingSeeder implements Seeder {
                 price: 0,
                 upgradable: false,
                 unlockLevel: 0, 
+                upgrades: []
             },
             {
                 key: BuildingKey.Coop,
@@ -34,6 +36,7 @@ export class BuildingSeeder implements Seeder {
                 type: AnimalType.Poultry,
                 maxUpgrade: 2,
                 price: 2000,
+                unlockLevel: 5,
                 upgradable: false,
                 upgrades: [
                     {
@@ -58,6 +61,7 @@ export class BuildingSeeder implements Seeder {
                 type: AnimalType.Livestock,
                 maxUpgrade: 2,
                 price: 2000,
+                unlockLevel: 5,
                 upgradable: false,
                 upgrades: [
                     {
@@ -78,7 +82,7 @@ export class BuildingSeeder implements Seeder {
                 ],
             },
         ]
-    
+        
         await this.connection.model<BuildingSchema>(BuildingSchema.name).insertMany(data)
     }
 

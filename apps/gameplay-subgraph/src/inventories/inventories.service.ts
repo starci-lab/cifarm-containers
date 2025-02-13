@@ -1,27 +1,24 @@
 import { GetInventoriesArgs, GetInventoriesResponse } from "./inventories.dto"
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, InventoryEntity } from "@src/databases"
+import { InjectMongoose, InventorySchema } from "@src/databases"
 import { UserLike } from "@src/jwt"
-import { DataSource } from "typeorm"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class InventoryService {
     private readonly logger = new Logger(InventoryService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        @InjectMongoose()
+        private readonly connection: Connection
     ) {}
 
-    async getInventory(id: string): Promise<InventoryEntity> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getInventory(id: string): Promise<InventorySchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await queryRunner.manager.findOne(InventoryEntity, {
-                where: { id }
-            })
+            return await this.connection.model<InventorySchema>(InventorySchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
@@ -29,20 +26,25 @@ export class InventoryService {
         { id }: UserLike,
         { limit = 10, offset = 0 }: GetInventoriesArgs
     ): Promise<GetInventoriesResponse> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const [data, count] = await queryRunner.manager.findAndCount(InventoryEntity, {
-                take: limit,
-                skip: offset,
-                where: { userId: id }
-            })
+            const data = await this.connection.model<InventorySchema>(InventorySchema.name)
+                .find({ user: id })
+                .sort({ createdAt: -1 })
+                .skip(offset)
+                .limit(limit)
+
+            const count = await this.connection.model<InventorySchema>(InventorySchema.name)
+                .countDocuments({
+                    user: id
+                })
+
             return {
                 data,
-                count 
+                count
             }
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { PlacedItemTypesService } from "./placed-item-types.service"
-import { PlacedItemTypeEntity } from "@src/databases"
+import { PlacedItemTypeSchema } from "@src/databases"
 
 @Resolver()
 export class PlacedItemTypesResolver {
@@ -9,18 +9,25 @@ export class PlacedItemTypesResolver {
 
     constructor(private readonly placedItemTypesService: PlacedItemTypesService) {}
 
-    @Query(() => [PlacedItemTypeEntity], {
+    @Query(() => [PlacedItemTypeSchema], {
         name: "placedItemTypes"
     })
-    async getPlacedItemTypes(): Promise<Array<PlacedItemTypeEntity>> {
+    async placedItemTypes(): Promise<Array<PlacedItemTypeSchema>> {
         return this.placedItemTypesService.getPlacedItemTypes()
     }
 
-    @Query(() => PlacedItemTypeEntity, {
+    @Query(() => PlacedItemTypeSchema, {
         name: "placedItemType",
         nullable: true
     })
-    async getPlacedItemType(@Args("id", { type: () => ID }) id: string): Promise<PlacedItemTypeEntity> {
+    async placedItemType(@Args("id", { type: () => ID }) id: string): Promise<PlacedItemTypeSchema> {
         return this.placedItemTypesService.getPlacedItemType(id)
+    }
+
+    @Query(() => PlacedItemTypeSchema, {
+        name: "placedItemTypeByKey",
+    })
+    async placedItemTypeByKey(@Args("key", { type: () => String }) key: string): Promise<PlacedItemTypeSchema> {
+        return this.placedItemTypesService.getPlacedItemTypeByKey(key)
     }
 }

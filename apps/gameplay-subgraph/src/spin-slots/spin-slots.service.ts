@@ -1,38 +1,31 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CacheQueryRunnerService, InjectPostgreSQL, SpinSlotEntity } from "@src/databases"
-import { DataSource } from "typeorm"
+import { InjectMongoose, SpinSlotSchema } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class SpinSlotsService {
     private readonly logger = new Logger(SpinSlotsService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+        @InjectMongoose()
+        private readonly connection: Connection,
     ) {}
 
-    async getSpinSlots(): Promise<Array<SpinSlotEntity>> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getSpinSlots(): Promise<Array<SpinSlotSchema>> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.find(queryRunner, SpinSlotEntity)
+            return await this.connection.model(SpinSlotSchema.name).find()
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
-    async getSpinSlot(id: string): Promise<SpinSlotEntity> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getSpinSlot(id: string): Promise<SpinSlotSchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.findOne(queryRunner, SpinSlotEntity, {
-                where: {
-                    id
-                }
-            })
+            return await this.connection.model(SpinSlotSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

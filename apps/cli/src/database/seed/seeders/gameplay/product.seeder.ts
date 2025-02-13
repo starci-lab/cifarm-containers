@@ -1,14 +1,18 @@
 import { Logger } from "@nestjs/common"
+import { DeepPartial } from "@src/common"
 import {
+    AnimalKey,
     CropKey,
-    CropSchema,
     InjectMongoose,
+    ProductKey,
+    ProductSchema,
+    ProductType,
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
 
-export class CropSeeder implements Seeder {
-    private readonly logger = new Logger(CropSeeder.name)
+export class ProductSeeder implements Seeder {
+    private readonly logger = new Logger(ProductSeeder.name)
 
     constructor(
         @InjectMongoose()
@@ -16,105 +20,151 @@ export class CropSeeder implements Seeder {
     ) {}
         
     public async seed(): Promise<void> {
-        this.logger.debug("Seeding crops...")
-        const data: Array<Partial<CropSchema>> = [
+        this.logger.debug("Seeding products...")
+        const data: Array<DeepPartial<ProductSchema>> = [
             {
-                key: CropKey.Carrot,
-                price: 50,
-                growthStageDuration: 3600,
-                growthStages: 5,
-                unlockLevel: 1,
-                basicHarvestExperiences: 12,
-                premiumHarvestExperiences: 60,
-                minHarvestQuantity: 14,
-                maxHarvestQuantity: 20,
-                premium: false,
-                perennialCount: 1,
-                nextGrowthStageAfterHarvest: 1,
-                availableInShop: true,
+                key: ProductKey.Egg,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 5,
+                type: ProductType.Animal,
+                refKey: AnimalKey.Chicken
             },
             {
-                key: CropKey.Potato,
-                price: 100,
-                growthStageDuration: 9000,
-                growthStages: 5,
-                unlockLevel: 3,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                premium: false,
-                perennialCount: 1,
-                nextGrowthStageAfterHarvest: 1,
-                availableInShop: true,
+                key: ProductKey.EggQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 5,
+                tokenAmount: 1,
+                type: ProductType.Animal,
+                refKey: AnimalKey.Chicken,
             },
             {
-                key: CropKey.Cucumber,
-                price: 100,
-                growthStageDuration: 9000,
-                growthStages: 5,
-                unlockLevel: 5,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                premium: false,
-                perennialCount: 1,
-                nextGrowthStageAfterHarvest: 1,
-                availableInShop: true
+                key: ProductKey.Milk,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 5,
+                type: ProductType.Animal,
+                refKey: AnimalKey.Cow,
             },
             {
-                key: CropKey.Pineapple,
-                price: 100,
-                growthStageDuration: 9000,
-                growthStages: 5,
-                unlockLevel: 6,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                premium: false,
-                perennialCount: 1,
-                nextGrowthStageAfterHarvest: 1,
-                availableInShop: true,
+                key: ProductKey.MilkQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 5,
+                tokenAmount: 1,
+                type: ProductType.Animal,
+                refKey: AnimalKey.Cow,
             },
             {
-                key: CropKey.Watermelon,
-                price: 100,
-                growthStageDuration: 9000,
-                growthStages: 5,
-                unlockLevel: 7,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                premium: false,
-                perennialCount: 1,
-                nextGrowthStageAfterHarvest: 1,
-                availableInShop: true,
+                key: ProductKey.Carrot,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 5,
+                type: ProductType.Crop,
+                refKey: CropKey.Carrot,
             },
             {
-                key: CropKey.BellPepper,
-                price: 100,
-                growthStageDuration: 9000,
-                growthStages: 5,
-                unlockLevel: 8,
-                basicHarvestExperiences: 21,
-                premiumHarvestExperiences: 110,
-                minHarvestQuantity: 16,
-                maxHarvestQuantity: 23,
-                premium: false,
-                perennialCount: 3,
-                nextGrowthStageAfterHarvest: 1,
-                availableInShop: true,
+                key: ProductKey.Potato,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 5,
+                type: ProductType.Crop,
+                refKey: CropKey.Potato,
             },
+            {
+                key: ProductKey.Cucumber,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 5,
+                type: ProductType.Crop,
+                refKey: CropKey.Cucumber,
+            },
+            {
+                key: ProductKey.Pineapple,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 5,
+                type: ProductType.Crop,
+                refKey: CropKey.Pineapple,
+            },
+            {
+                key: ProductKey.CarrotQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 5,
+                tokenAmount: 1,
+                type: ProductType.Crop,
+                refKey: CropKey.Carrot,
+            },
+            {
+                key: ProductKey.PotatoQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 5,
+                tokenAmount: 1,
+                type: ProductType.Crop,
+                refKey: CropKey.Potato,
+            },
+            {
+                key: ProductKey.CucumberQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 5,
+                tokenAmount: 1,
+                type: ProductType.Crop,
+                refKey: CropKey.Cucumber,
+            },
+            {
+                key: ProductKey.PineappleQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 5,
+                tokenAmount: 1,
+                type: ProductType.Crop,
+                refKey: CropKey.Pineapple,
+            },
+            {
+                key: ProductKey.Watermelon,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 5,
+                type: ProductType.Crop,
+                refKey: CropKey.Watermelon,
+            },
+            {
+                key: ProductKey.WatermelonQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 5,
+                tokenAmount: 1,
+                type: ProductType.Crop,
+                refKey: CropKey.Watermelon,
+            },
+            {
+                key: ProductKey.BellPepper,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 5,
+                type: ProductType.Crop,
+                refKey: CropKey.BellPepper,
+            },
+            {
+                key: ProductKey.BellPepperQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 5,
+                tokenAmount: 1,
+                type: ProductType.Crop,
+                refKey: CropKey.BellPepper,
+            }
         ]
         
-        await this.connection.model<CropSchema>(CropSchema.name).insertMany(data)
+        await this.connection.model<ProductSchema>(ProductSchema.name).insertMany(data)
     }
     
     async drop(): Promise<void> {
-        this.logger.verbose("Dropping crops...")
-        await this.connection.model<CropSchema>(CropSchema.name).deleteMany({})
+        this.logger.verbose("Dropping products...")
+        await this.connection.model<ProductSchema>(ProductSchema.name).deleteMany({})
     }
 }

@@ -15,7 +15,7 @@ export class UsersResolver {
     @Query(() => UserSchema, {
         name: "user"
     })
-    async getUser(@GraphQLUser() user: UserLike): Promise<UserSchema> {
+    async user(@GraphQLUser() user: UserLike): Promise<UserSchema> {
         return await this.usersService.getUser(user.id)
     } 
 }

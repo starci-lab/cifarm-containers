@@ -1,38 +1,40 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CacheQueryRunnerService, InjectPostgreSQL, InventoryTypeEntity } from "@src/databases"
-import { DataSource } from "typeorm"
+import { InjectMongoose, InventoryTypeSchema } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class InventoryTypesService {
     private readonly logger = new Logger(InventoryTypesService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+        @InjectMongoose()
+        private readonly connection: Connection
     ) {}
 
-    async getInventoryTypes(): Promise<Array<InventoryTypeEntity>> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getInventoryTypes(): Promise<Array<InventoryTypeSchema>> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.find(queryRunner, InventoryTypeEntity)
+            return await this.connection.model(InventoryTypeSchema.name).find()
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
-    async getInventoryType(id: string): Promise<InventoryTypeEntity> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getInventoryType(id: string): Promise<InventoryTypeSchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.findOne(queryRunner, InventoryTypeEntity, {
-                where: {
-                    id
-                }
-            })
+            return await this.connection.model(InventoryTypeSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
+        }
+    }
+
+    async getInventoryTypeByKey(key: string): Promise<InventoryTypeSchema> {
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model(InventoryTypeSchema.name).findOne({ key })
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

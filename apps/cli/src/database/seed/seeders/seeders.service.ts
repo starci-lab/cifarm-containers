@@ -13,6 +13,7 @@ import {
     SystemSeeder,
     TileSeeder,
     ToolSeeder,
+    ProductSeeder
 } from "./gameplay"
 import { MODULE_OPTIONS_TOKEN } from "./seeders.module-definition"
 import { SeederOptions } from "./types"
@@ -38,7 +39,8 @@ export class SeedersService {
             ToolSeeder,
             TileSeeder,
             SupplySeeder,
-            PlacedItemTypeSeeder
+            PlacedItemTypeSeeder,
+            ProductSeeder,
         ])
     }
 }

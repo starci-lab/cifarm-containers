@@ -1,35 +1,24 @@
 import { GetPlacedItemsArgs, GetPlacedItemsResponse } from "./placed-items.dto"
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, PlacedItemEntity } from "@src/databases"
+import { InjectMongoose, PlacedItemSchema } from "@src/databases"
 import { UserLike } from "@src/jwt"
-import { DataSource, FindOptionsRelations } from "typeorm"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class PlacedItemsService {
     private readonly logger = new Logger(PlacedItemsService.name)
 
-    private readonly relations: FindOptionsRelations<PlacedItemEntity> = {
-        animalInfo: true,
-        buildingInfo: true,
-        seedGrowthInfo: true
-    }
-
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        @InjectMongoose()
+        private readonly connection: Connection
     ) {}
 
-    async getPlacedItem(id: string): Promise<PlacedItemEntity> {
-        this.logger.debug(`GetPlacedItemById: id=${id}`)
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getPlacedItem(id: string): Promise<PlacedItemSchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await queryRunner.manager.findOne(PlacedItemEntity, {
-                where: { id },
-                relations: this.relations
-            })
+            return await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
@@ -37,23 +26,24 @@ export class PlacedItemsService {
         { id }: UserLike,
         { limit = 10, offset = 0 }: GetPlacedItemsArgs
     ): Promise<GetPlacedItemsResponse> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const [data, count] = await queryRunner.manager.findAndCount(PlacedItemEntity, {
-                take: limit,
-                skip: offset,
-                where: {
-                    userId: id
-                },
-                relations: this.relations
-            })
+            const data = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .find({ user: id })
+                .skip(offset)
+                .limit(limit)
+
+            const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .countDocuments({
+                    user: id
+                })
+
             return {
                 data,
                 count
             }
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

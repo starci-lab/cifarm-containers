@@ -1,13 +1,10 @@
 import { ObjectType, Field, Int, Float } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
 import { AnimalCurrentState } from "../enums"
 
-export type AnimalInfoDocument = HydratedDocument<AnimalInfoSchema>;
-
 @ObjectType()
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, autoCreate: false })
 export class AnimalInfoSchema extends AbstractSchema {
     @Field(() => Float)
     @Prop({ type: Number, default: 0 })

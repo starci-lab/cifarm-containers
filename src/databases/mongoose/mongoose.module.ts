@@ -40,7 +40,13 @@ import {
     AnimalInfoSchema,
     AnimalInfoSchemaClass,
     BuildingInfoSchema,
-    BuildingInfoSchemaClass
+    BuildingInfoSchemaClass,
+    UpgradeSchema,
+    UpgradeSchemaClass,
+    DeliveringProductSchema,
+    DeliveringProductSchemaClass,
+    ProductSchema,
+    ProductSchemaClass,
 } from "./gameplay"
 import { Connection } from "mongoose"
 
@@ -54,7 +60,7 @@ export class MongooseModule extends ConfigurableModuleClass {
 
         const { dbName, host, password, port, username } =
             envConfig().databases.mongo[MongoDbDatabase.Gameplay]
-        const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}`
+        const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=admin`
 
         return {
             ...dynamicModule,
@@ -77,6 +83,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: AnimalSchema.name,
                             useFactory: () => AnimalSchemaClass
+                        },
+                        {
+                            name: UpgradeSchema.name,
+                            useFactory: () => UpgradeSchemaClass
                         },
                         {
                             name: BuildingSchema.name,
@@ -125,6 +135,9 @@ export class MongooseModule extends ConfigurableModuleClass {
                                     await connection.model<InventorySchema>(InventorySchema.name).deleteMany({
                                         user: { $in: ids }
                                     })
+                                    await connection.model<DeliveringProductSchema>(DeliveringProductSchema.name).deleteMany({
+                                        user: { $in: ids }
+                                    })
                                     next()
                                 })
                                 return UserSchemaClass
@@ -169,6 +182,14 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: PlacedItemSchema.name,
                             useFactory: () => PlacedItemSchemaClass
+                        },
+                        {
+                            name: DeliveringProductSchema.name,
+                            useFactory: () => DeliveringProductSchemaClass
+                        },
+                        {
+                            name: ProductSchema.name,
+                            useFactory: () => ProductSchemaClass
                         }
                     ],
                     connectionName

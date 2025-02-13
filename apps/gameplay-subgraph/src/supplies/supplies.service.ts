@@ -1,38 +1,40 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CacheQueryRunnerService, InjectPostgreSQL, SupplyEntity } from "@src/databases"
-import { DataSource } from "typeorm"
+import { InjectMongoose, SupplySchema } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class SuppliesService {
     private readonly logger = new Logger(SuppliesService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+        @InjectMongoose()
+        private readonly connection: Connection
     ) {}
 
-    async getSupply(id: string): Promise<SupplyEntity | null> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getSupply(id: string): Promise<SupplySchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.findOne(queryRunner, SupplyEntity, {
-                where: {
-                    id
-                }
-            })
+            return await this.connection.model<SupplySchema>(SupplySchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
-    async getSupplies(): Promise<Array<SupplyEntity>> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getSupplies(): Promise<Array<SupplySchema>> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.find(queryRunner, SupplyEntity)
+            return await this.connection.model<SupplySchema>(SupplySchema.name).find()
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
+        }
+    }
+
+    async getSupplyByKey(key: string): Promise<SupplySchema> {
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model<SupplySchema>(SupplySchema.name).findOne({ key })
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }
