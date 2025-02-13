@@ -101,7 +101,7 @@ export enum SystemId {
     Activities = "activities",
     CropRandomness = "cropRandomness",
     AnimalRandomness = "animalRandomness",
-    DefaultInfo = "starter",
+    DefaultInfo = "defaultInfo",
     SpinInfo = "spinInfo",
     EnergyRegen = "energyRegen",
     DailyRewardInfo = "dailyRewardInfo",

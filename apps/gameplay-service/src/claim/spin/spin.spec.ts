@@ -2,16 +2,16 @@
 
 import { Test, TestingModule } from "@nestjs/testing"
 import { SpinService } from "./spin.service"
-import { DataSource } from "typeorm"
-import { AppearanceChance, CropId, getPostgreSqlToken, InventoryEntity, InventoryType, SpinPrizeType, SupplyId, UserSchema } from "@src/databases"
+import { AppearanceChance, CropId,  getMongooseToken,  InventoryType, InventoryTypeSchema, SpinPrizeType, SupplyId, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import { v4 } from "uuid"
+import { Connection } from "mongoose"
 
 describe("SpinService", () => {
     let service: SpinService
-    let dataSource: DataSource
+    let connection: Connection
     let dateUtcService: DateUtcService
     let gameplayMockUserService: GameplayMockUserService
     let gameplayConnectionService: GameplayConnectionService
@@ -27,7 +27,7 @@ describe("SpinService", () => {
         }).compile()
 
         service = module.get(SpinService)
-        dataSource = module.get(getPostgreSqlToken())
+        connection = module.get(getMongooseToken())
         dateUtcService = module.get(DateUtcService)
         gameplayMockUserService = module.get(GameplayMockUserService)
         gameplayConnectionService = module.get(GameplayConnectionService)
@@ -41,7 +41,7 @@ describe("SpinService", () => {
             id: spinSlotId,
             spinPrize: {
                 type: SpinPrizeType.Gold,
-                golds,
+                quantity: golds,
                 appearanceChance: AppearanceChance.Common,
                 id: v4(),
             }  
@@ -55,9 +55,7 @@ describe("SpinService", () => {
             userId: user.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id }
-        })
+        const userAfter = await connection.model(UserSchema.name).findById(user.id)
 
         expect(userAfter.golds - user.golds).toBe(golds)
         expect(responseSpinSlotId).toBe(spinSlotId)  
@@ -80,7 +78,7 @@ describe("SpinService", () => {
             id: spinSlotId,
             spinPrize: {
                 type: SpinPrizeType.Token,
-                tokens,
+                quantity: tokens,
                 appearanceChance: AppearanceChance.Common,
                 id: v4(),
             }  
@@ -94,9 +92,7 @@ describe("SpinService", () => {
             userId: user.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id }
-        })
+        const userAfter = await connection.model(UserSchema.name).findById(user.id)
 
         expect(userAfter.tokens - user.tokens).toBe(tokens)
         expect(responseSpinSlotId).toBe(spinSlotId)  
@@ -110,7 +106,7 @@ describe("SpinService", () => {
             id: spinSlotId,
             spinPrize: {
                 type: SpinPrizeType.Supply,
-                supplyId: SupplyId.BasicFertilizer,
+                supply: SupplyId.BasicFertilizer,
                 appearanceChance: AppearanceChance.Common,
                 quantity,
                 id: v4(),
@@ -125,14 +121,14 @@ describe("SpinService", () => {
             userId: user.id
         })
 
-        const inventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: user.id,
-                inventoryType: {
-                    type: InventoryType.Supply,
-                    supplyId: SupplyId.BasicFertilizer
-                }
-            }
+        const inventoryType = await connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
+            type: InventoryType.Supply,
+            supplyId: SupplyId.BasicFertilizer
+        })
+
+        const inventory = await connection.model(UserSchema.name).findOne({
+            userId: user.id,
+            inventoryType: inventoryType.id
         })
 
         expect(inventory.quantity).toBe(quantity)
@@ -148,10 +144,10 @@ describe("SpinService", () => {
             id: spinSlotId,
             spinPrize: {
                 type: SpinPrizeType.Seed,
-                cropId,
+                crop: cropId,
                 appearanceChance: AppearanceChance.Common,
                 quantity,
-                id: v4(),
+                id: createObjectId("test"),
             }  
         })
 
@@ -163,14 +159,14 @@ describe("SpinService", () => {
             userId: user.id
         })
 
-        const inventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: user.id,
-                inventoryType: {
-                    type: InventoryType.Seed,
-                    cropId
-                }
-            }
+        const inventoryType = await connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
+            type: InventoryType.Supply,
+            supplyId: SupplyId.BasicFertilizer
+        })
+
+        const inventory = await connection.model(UserSchema.name).findOne({
+            userId: user.id,
+            inventoryType: inventoryType.id
         })
 
         expect(inventory.quantity).toBe(quantity)
