@@ -1,35 +1,43 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, InjectPostgreSQL, PlacedItemSchema, PlacedItemTypeEntity, UserSchema } from "@src/databases"
-import { GoldBalanceService } from "@src/gameplay"
-import { DataSource, DeepPartial } from "typeorm"
-import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
-import { GrpcNotFoundException, GrpcInternalException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
+import {
+    BuildingSchema,
+    InjectMongoose,
+    PlacedItemSchema,
+    UserSchema
+} from "@src/databases"
+import { GoldBalanceService } from "@src/gameplay"
+import { Connection } from "mongoose"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
 
 @Injectable()
 export class ConstructBuildingService {
     private readonly logger = new Logger(ConstructBuildingService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,      
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         @InjectKafka()
         private readonly clientKafka: ClientKafka
-    ) {
-    }
+    ) {}
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        this.logger.debug(
+            `Constructing building for user ${request.userId}, id: ${request.buildingId}, position: (${request.position.x}, ${request.position.y})`
+        )
+
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
         try {
             // Fetch building information
-            const building = await queryRunner.manager.findOne(BuildingEntity, {
-                where: { id: request.buildingId }
-            })
+            const building = await this.connection.model<BuildingSchema>(BuildingSchema.name)
+                .findById(createObjectId(request.buildingId))
+                .session(mongoSession)
 
             if (!building) {
                 throw new GrpcNotFoundException("Building not found")
@@ -40,50 +48,48 @@ export class ConstructBuildingService {
             }
 
             // Fetch placed item type
-            const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
-                where: { id: request.buildingId }
-            })
+            const placedItemType = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findOne({ _id: request.buildingId })
+                .session(mongoSession)
 
             // Calculate total cost
             const totalCost = building.price
 
-            const user: UserSchema = await queryRunner.manager.findOne(UserSchema, {
-                where: { id: request.userId }
-            })
+            const user = await this.connection.model<UserSchema>(UserSchema.name)
+                .findById(request.userId)
+                .session(mongoSession)
 
-            //Check sufficient gold
+            if (!user) throw new GrpcNotFoundException("User not found")
+
+            // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
-            // Prepare placed item entity
-            const placedItem: DeepPartial<PlacedItemSchema> = {
-                userId: request.userId,
-                buildingInfo: {},
-                x: request.position.x,
-                y: request.position.y,
-                placedItemTypeId: placedItemType.id
-            }
-
-            // Subtract gold
-            const goldsChanged = this.goldBalanceService.subtract({
-                entity: user,
-                amount: totalCost
-            })
-
-            // Start transaction
-            await queryRunner.startTransaction()
             try {
-                await queryRunner.manager.update(UserSchema, user.id, {
-                    ...goldsChanged
+                // Subtract gold
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: totalCost
                 })
 
-                // Save the placed item in the database
-                await queryRunner.manager.save(PlacedItemSchema, placedItem)
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...goldsChanged }
+                )
 
-                await queryRunner.commitTransaction()
+                // Save the placed item in the database
+                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
+                    userId: request.userId,
+                    x: request.position.x,
+                    y: request.position.y,
+                    placedItemType: placedItemType.id,
+                    buildingInfo: {}
+                })
+
+                await mongoSession.commitTransaction()
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
-                await queryRunner.rollbackTransaction()
+                await mongoSession.abortTransaction()
                 throw new GrpcInternalException(errorMessage)
             }
 
@@ -94,7 +100,7 @@ export class ConstructBuildingService {
 
             return {}
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

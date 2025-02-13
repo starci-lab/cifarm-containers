@@ -14,7 +14,7 @@ import {
 } from "@src/databases"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuySeedsRequest, BuySeedsResponse } from "./buy-seeds.dto"
 
 @Injectable()
@@ -115,7 +115,7 @@ export class BuySeedsService {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
                 mongoSession.abortTransaction()
-                throw new GrpcInternalException(errorMessage)
+                throw error
             }
         } finally {
             mongoSession.endSession()
