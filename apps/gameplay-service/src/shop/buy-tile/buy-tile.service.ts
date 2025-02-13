@@ -1,105 +1,91 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
-    InjectPostgreSQL,
+    InjectMongoose,
     PlacedItemSchema,
-    PlacedItemType,
-    PlacedItemTypeEntity,
-    TileEntity,
+    TileSchema,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
-import { DataSource } from "typeorm"
+import { Connection } from "mongoose"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
-import { InjectKafka } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
-import { KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class BuyTileService {
     private readonly logger = new Logger(BuyTileService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         @InjectKafka()
         private readonly clientKafka: ClientKafka
     ) {}
 
     async buyTile(request: BuyTileRequest): Promise<BuyTileResponse> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        this.logger.debug(
+            `Buying tile for user ${request.userId}, id: ${request.tileId}, position: (${request.position.x}, ${request.position.y})`
+        )
+
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
         try {
-            const tile = await queryRunner.manager.findOne(TileEntity, {
-                where: { id: request.tileId }
-            })
+            const tile = await this.connection.model<TileSchema>(TileSchema.name)
+                .findById(createObjectId(request.tileId))
+                .session(mongoSession)
 
-            if (!tile) {
-                throw new GrpcNotFoundException("Tile not found")
-            }
-
-            if (!tile.availableInShop) {
+            if (!tile) throw new GrpcNotFoundException("Tile not found")
+            if (!tile.availableInShop)
                 throw new GrpcFailedPreconditionException("Tile not available in shop")
-            }
 
-            const placedItemType = await queryRunner.manager.findOne(PlacedItemTypeEntity, {
-                where: { type: PlacedItemType.Tile, tileId: request.tileId }
-            })
+            const user = await this.connection.model<UserSchema>(UserSchema.name)
+                .findById(request.userId)
+                .session(mongoSession)
 
-            // get users
-            const user = await queryRunner.manager.findOne(UserSchema, {
-                where: { id: request.userId }
-            })
+            if (!user) throw new GrpcNotFoundException("User not found")
 
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: tile.price })
 
-            // get tiles count
-            const count = await queryRunner.manager.count(PlacedItemSchema, {
-                where: {
-                    placedItemType: {
-                        tile: {
-                            id: request.tileId
-                        }
-                    }
-                }
-            })
+            // Get tile count
+            const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .countDocuments({ "placedItemType.tile": request.tileId, user: user.id })
+                .session(mongoSession)
 
-            // check tile count
             if (count >= tile.maxOwnership) {
                 throw new GrpcFailedPreconditionException("Tile max ownership reached")
             }
 
-            // Subtract gold
-            const goldsChanged = this.goldBalanceService.subtract({
-                entity: user,
-                amount: tile.price
-            })
-            // Start transaction
-            await queryRunner.startTransaction()
             try {
-                await queryRunner.manager.update(UserSchema, user.id, {
-                    ...goldsChanged
+                // Subtract gold
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: tile.price
                 })
 
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...goldsChanged }
+                )
+
                 // Save the placed item in the database
-                await queryRunner.manager.save(PlacedItemSchema, {
+                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
                     userId: request.userId,
                     x: request.position.x,
                     y: request.position.y,
-                    placedItemTypeId: placedItemType.id,
-                    tileInfo: {}
+                    placedItemType: createObjectId(request.tileId),
                 })
 
-                await queryRunner.commitTransaction()
+                await mongoSession.commitTransaction()
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
-                await queryRunner.rollbackTransaction()
-                throw new GrpcInternalException(errorMessage)
+                await mongoSession.abortTransaction()
+                throw error
             }
 
             // Publish event
@@ -109,7 +95,7 @@ export class BuyTileService {
             
             return {}
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

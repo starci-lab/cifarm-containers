@@ -1,102 +1,114 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, InventoryEntity, InventoryTypeEntity, SupplyEntity, UserSchema } from "@src/databases"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
+import {
+    DefaultInfo, InjectMongoose, InventorySchema,
+    InventoryTypeSchema,
+    SupplySchema, SystemId, SystemRecord, SystemSchema, UserSchema
+} from "@src/databases"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
-import { DataSource } from "typeorm"
+import { Connection } from "mongoose"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuySuppliesRequest, BuySuppliesResponse } from "./buy-supplies.dto"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class BuySuppliesService {
     private readonly logger = new Logger(BuySuppliesService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService
-    ) {
-    }
+    ) {}
 
     async buySupplies(request: BuySuppliesRequest): Promise<BuySuppliesResponse> {
         this.logger.debug(
             `Buying supply for user ${request.userId}, id: ${request.supplyId}, quantity: ${request.quantity}`
         )
 
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
         try {
-            const supply = await queryRunner.manager.findOne(SupplyEntity, {
-                where: { id: request.supplyId }
-            })
+            const supply = await this.connection.model<SupplySchema>(SupplySchema.name)
+                .findById(request.supplyId)
+                .session(mongoSession)
+
             if (!supply) throw new GrpcNotFoundException("Supply not found")
             if (!supply.availableInShop)
                 throw new GrpcFailedPreconditionException("Supply not available in shop")
 
             const totalCost = supply.price * request.quantity
 
-            const user: UserSchema = await queryRunner.manager.findOne(UserSchema, {
-                where: { id: request.userId }
-            })
+            const user = await this.connection.model<UserSchema>(UserSchema.name)
+                .findById(request.userId)
+                .session(mongoSession)
 
             if (!user) throw new GrpcNotFoundException("User not found")
 
-            //Check sufficient gold
+            // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
             // Get inventory type
-            const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-                where: { supplyId: request.supplyId }
+            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                .findOne({ supplyId: request.supplyId })
+                .session(mongoSession)
+
+            if (!inventoryType) {
+                throw new GrpcNotFoundException("Inventory type not found")
+            }
+
+            const { count, inventories } = await this.inventoryService.getParams({
+                connection: this.connection,
+                inventoryType,
+                userId: user.id,
+                session: mongoSession
             })
 
-            // Get inventory same type
-            const existingInventories = await queryRunner.manager.find(InventoryEntity, {
-                where: {
-                    userId: request.userId,
-                    inventoryType: {
-                        supplyId: request.supplyId
-                    }
-                },
-                relations: {
-                    inventoryType: true
-                }
-            })
-            const updatedInventories = this.inventoryService.add({
-                entities: existingInventories,
-                userId: request.userId,
-                data: {
-                    inventoryType: inventoryType,
-                    quantity: request.quantity
-                }
-            })
-
-            // Start transaction
-            await queryRunner.startTransaction()
+            const { value: { inventoryCapacity } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
             try {
                 // Subtract gold
                 const goldsChanged = this.goldBalanceService.subtract({
-                    entity: user,
+                    user: user,
                     amount: totalCost
                 })
 
-                await queryRunner.manager.update(UserSchema, user.id, {
-                    ...goldsChanged
-                })
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...goldsChanged }
+                )
 
                 // Save inventory
-                await queryRunner.manager.save(InventoryEntity, updatedInventories)
-                await queryRunner.commitTransaction()
-                return
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventoryType,
+                    inventories,
+                    count,
+                    quantity: request.quantity,
+                    userId: user.id,
+                    capacity: inventoryCapacity
+                })
+
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                for (const inventory of updatedInventories) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
+                        { _id: inventory._id },
+                        inventory
+                    )
+                }
+
+                await mongoSession.commitTransaction()
+                return {}
             } catch (error) {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
-                await queryRunner.rollbackTransaction()
-                throw new GrpcInternalException(errorMessage)
+                await mongoSession.abortTransaction()
+                throw error
             }
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

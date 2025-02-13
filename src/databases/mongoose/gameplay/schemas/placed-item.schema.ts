@@ -8,6 +8,7 @@ import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-i
 import { TileInfoSchema, TileInfoSchemaClass } from "./tile-info.schema"
 import { UserSchema } from "./user.schema"
 import { PlacedItemTypeSchema } from "./placed-item-type.schema"
+import { BUILDING_INFO } from "../constants"
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "placed-items" })
@@ -42,7 +43,7 @@ export class PlacedItemSchema extends AbstractSchema {
 
     @Field(() => BuildingInfoSchema, { nullable: true })
     @Prop({ type: BuildingInfoSchemaClass, required: false })
-        buildingInfo?: BuildingInfoSchema
+    [BUILDING_INFO]?: BuildingInfoSchema
 }
 
 // Generate Mongoose Schema
