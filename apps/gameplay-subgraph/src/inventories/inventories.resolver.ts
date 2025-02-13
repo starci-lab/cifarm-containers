@@ -1,6 +1,6 @@
 import { Logger, UseGuards } from "@nestjs/common"
 import { Args, ID, Query, Resolver } from "@nestjs/graphql"
-import { InventoryEntity } from "@src/databases"
+import { InventorySchema } from "@src/databases"
 import { GetInventoriesArgs, GetInventoriesResponse } from "./inventories.dto"
 import { InventoryService } from "./inventories.service"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
@@ -16,7 +16,7 @@ export class InventoryResolver {
     @Query(() => GetInventoriesResponse, {
         name: "inventories"
     })
-    async getInventories(
+    async inventories(
         @GraphQLUser() user: UserLike,
         @Args("args") args: GetInventoriesArgs
     ): Promise<GetInventoriesResponse> {
@@ -24,11 +24,11 @@ export class InventoryResolver {
     }
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Query(() => InventoryEntity, {
+    @Query(() => InventorySchema, {
         name: "inventory",
         nullable: true
     })
-    async getInventory(@Args("id", { type: () => ID }) id: string): Promise<InventoryEntity> {
+    async inventory(@Args("id", { type: () => ID }) id: string): Promise<InventorySchema> {
         return this.inventoriesService.getInventory(id)
     }
 }

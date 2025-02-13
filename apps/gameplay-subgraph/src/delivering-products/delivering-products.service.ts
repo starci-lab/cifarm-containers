@@ -1,28 +1,24 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DeliveringProductEntity, InjectPostgreSQL } from "@src/databases"
-import { DataSource } from "typeorm"
 import { GetDeliveringProductsArgs, GetDeliveringProductsResponse } from "./delivering-products.dto"
 import { UserLike } from "@src/jwt"
+import { DeliveringProductSchema, InjectMongoose } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class DeliveringProductsService {
     private readonly logger = new Logger(DeliveringProductsService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        @InjectMongoose()
+        private readonly connection: Connection
     ) { }
 
-    async getDeliveringProduct(id: string): Promise<DeliveringProductEntity | null> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getDeliveringProduct(id: string): Promise<DeliveringProductSchema | null> {
+        const mongoSession = await this.connection.startSession()
         try {
-            const deliveringProduct = await queryRunner.manager.findOne(DeliveringProductEntity, {
-                where: { id },
-            })
-            return deliveringProduct
+            return this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
@@ -30,20 +26,25 @@ export class DeliveringProductsService {
         { id }: UserLike,
         { limit = 10, offset = 0 }: GetDeliveringProductsArgs
     ): Promise<GetDeliveringProductsResponse> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const [data, count] = await queryRunner.manager.findAndCount(DeliveringProductEntity, {
-                where: { userId: id },
-                take: limit,
-                skip: offset,
-            })
+            const data = await this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name)
+                .find({ user: id })
+                .sort({ createdAt: -1 })
+                .skip(offset)
+                .limit(limit)
+
+            const count = await this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name)
+                .countDocuments({
+                    user: id
+                })
+
             return {
                 data,
                 count
             }
         } finally {
-            await queryRunner.release()
-        }
+            await mongoSession.endSession()
+        }  
     }
 }

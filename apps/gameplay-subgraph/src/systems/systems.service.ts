@@ -1,17 +1,18 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DataSource } from "typeorm"
 import {
     Activities,
     AnimalRandomness,
-    CacheQueryRunnerService,
     CropRandomness,
     EnergyRegen,
-    InjectPostgreSQL,
     SpinInfo,
     DefaultInfo,
-    SystemEntity,
-    SystemId
+    InjectMongoose,
+    SystemSchema,
+    SystemKey,
+    SystemRecord,
+    DailyRewardInfo,
 } from "@src/databases"
+import { Connection } from "mongoose"
 // import { ACTIVITIES_CACHE_NAME } from "./system.constants"
 // import { envConfig } from "@src/env"
 
@@ -20,119 +21,91 @@ export class SystemsService {
     private readonly logger = new Logger(SystemsService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+        @InjectMongoose()
+        private readonly connection: Connection,
     ) {}
 
     async getActivities(): Promise<Activities> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const { value: activities } = await this.cacheQueryRunnerService.findOne(
-                queryRunner,
-                SystemEntity,
-                {
-                    where: {
-                        id: SystemId.Activities
-                    }
-                }
-            )
-            return activities as Activities
+            const { value } =  await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<Activities>>({
+                key: SystemKey.Activities
+            })
+            return value
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
     async getCropRandomness(): Promise<CropRandomness> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const { value: cropRandomness } = await this.cacheQueryRunnerService.findOne(
-                queryRunner,
-                SystemEntity,
-                {
-                    where: {
-                        id: SystemId.CropRandomness
-                    }
-                }
-            )
-            return cropRandomness as CropRandomness
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<CropRandomness>>({
+                key: SystemKey.CropRandomness
+            })
+            return value
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
     async getAnimalRandomness(): Promise<AnimalRandomness> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const { value: animalRandomness } =
-                await this.cacheQueryRunnerService.findOne(queryRunner, SystemEntity, {
-                    where: {
-                        id: SystemId.AnimalRandomness
-                    }
-                })
-            return animalRandomness as AnimalRandomness
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<AnimalRandomness>>({
+                key: SystemKey.AnimalRandomness
+            })
+            return value
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
     async getDefaultInfo(): Promise<DefaultInfo> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const { value: starter } = await this.cacheQueryRunnerService.findOne(
-                queryRunner,
-                SystemEntity,
-                {
-                    where: {
-                        id: SystemId.DefaultInfo
-                    }
-                }
-            )
-            return starter as DefaultInfo
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DefaultInfo>>({
+                key: SystemKey.DefaultInfo
+            })
+            return value
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
     async getSpinInfo(): Promise<SpinInfo> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const { value: spinInfo } = await this.cacheQueryRunnerService.findOne(
-                queryRunner,
-                SystemEntity,
-                {
-                    where: {
-                        id: SystemId.SpinInfo
-                    }
-                }
-            )
-            return spinInfo as SpinInfo
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<SpinInfo>>({
+                key: SystemKey.SpinInfo
+            })
+            return value
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
     async getEnergyRegen(): Promise<EnergyRegen> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const { value: energyRegenTime } = await this.cacheQueryRunnerService.findOne(
-                queryRunner,
-                SystemEntity,
-                {
-                    where: {
-                        id: SystemId.EnergyRegen
-                    }
-                }
-            )
-            return energyRegenTime as EnergyRegen
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<EnergyRegen>>({
+                key: SystemKey.EnergyRegen
+            })
+            return value
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
+        }
+    }
+
+    async getDailyRewardInfo(): Promise<DailyRewardInfo> {
+        const mongoSession = await this.connection.startSession()
+        try {
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DailyRewardInfo>>({
+                key: SystemKey.DailyRewardInfo
+            })
+            return value
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

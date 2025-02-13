@@ -12,14 +12,29 @@ export class AnimalsService {
     ) {}
 
     async getAnimals(): Promise<Array<AnimalSchema>> {
-        return await this.connection.model(AnimalSchema.name).find()
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model(AnimalSchema.name).find()
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 
     async getAnimal(id: string) {
-        return await this.connection.model(AnimalSchema.name).findById(id)  
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model(AnimalSchema.name).findById(id)  
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 
     async getAnimalByKey(key: string) {
-        return await this.connection.model(AnimalSchema.name).findOne({ key })
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model(AnimalSchema.name).findOne({ key })
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }

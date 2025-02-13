@@ -1,38 +1,40 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CacheQueryRunnerService, InjectPostgreSQL, PlacedItemTypeEntity } from "@src/databases"
-import { DataSource } from "typeorm"
+import { InjectMongoose, PlacedItemTypeSchema } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class PlacedItemTypesService {
     private readonly logger = new Logger(PlacedItemTypesService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+        @InjectMongoose()
+        private readonly connection: Connection
     ) {}
 
-    async getPlacedItemTypes(): Promise<Array<PlacedItemTypeEntity>> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getPlacedItemTypes(): Promise<Array<PlacedItemTypeSchema>> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.find(queryRunner, PlacedItemTypeEntity)
+            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find()
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
-    async getPlacedItemType(id: string): Promise<PlacedItemTypeEntity> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getPlacedItemType(id: string): Promise<PlacedItemTypeSchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.findOne(queryRunner, PlacedItemTypeEntity, {
-                where: {
-                    id
-                }
-            })
+            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
+        }
+    }
+
+    async getPlacedItemTypeByKey(key: string): Promise<PlacedItemTypeSchema> {
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).findOne({ key })
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

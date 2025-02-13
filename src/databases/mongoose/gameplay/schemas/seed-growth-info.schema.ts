@@ -7,7 +7,7 @@ import { AbstractSchema } from "./abstract"
 export type SeedGrowthInfoDocument = HydratedDocument<SeedGrowthInfoSchema>;
 
 @ObjectType()
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, autoCreate: false  })
 export class SeedGrowthInfoSchema extends AbstractSchema {
     
     @Field(() => Int)

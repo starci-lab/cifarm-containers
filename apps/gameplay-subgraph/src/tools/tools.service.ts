@@ -1,38 +1,41 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CacheQueryRunnerService, InjectPostgreSQL, ToolEntity } from "@src/databases"
-import { DataSource } from "typeorm"
+import { InjectConnection } from "@nestjs/mongoose"
+import { ToolSchema } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class ToolsService {
     private readonly logger = new Logger(ToolsService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+       @InjectConnection()
+        private readonly connection: Connection
     ) { }
 
-    async getTool(id: string): Promise<ToolEntity | null> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getTool(id: string): Promise<ToolSchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.findOne(queryRunner, ToolEntity, {
-                where: {
-                    id
-                }
-            })
+            return await this.connection.model<ToolSchema>(ToolSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
-    async getTools(): Promise<Array<ToolEntity>> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getTools(): Promise<Array<ToolSchema>> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.find(queryRunner, ToolEntity)
+            return await this.connection.model<ToolSchema>(ToolSchema.name).find()
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
+        }
+    }
+
+    async getToolByKey(key: string): Promise<ToolSchema> {
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model<ToolSchema>(ToolSchema.name).findOne({ key })
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

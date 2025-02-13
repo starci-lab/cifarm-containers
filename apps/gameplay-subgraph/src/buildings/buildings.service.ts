@@ -1,54 +1,40 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, InjectPostgreSQL, CacheQueryRunnerService } from "@src/databases"
-import { DataSource, FindManyOptions, FindOptionsRelations } from "typeorm"
+import { BuildingSchema, InjectMongoose } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class BuildingsService {
     private readonly logger = new Logger(BuildingsService.name)
 
-    private readonly relations: FindOptionsRelations<BuildingEntity> = {
-        placedItemType: true,
-        upgrades: true
-    }
-
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+        @InjectMongoose()
+        private readonly connection: Connection
     ) {}
 
-    async getBuildings(): Promise<Array<BuildingEntity>> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getBuildings(): Promise<Array<BuildingSchema>> {
+        const mongoSession = await this.connection.startSession()
         try {
-            const options: FindManyOptions<BuildingEntity> = {
-                relations: this.relations
-            }
-
-            return await this.cacheQueryRunnerService.find(
-                queryRunner,
-                BuildingEntity,
-                options
-            )
+            return await this.connection.model<BuildingSchema>(BuildingSchema.name).find()
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
-    async getBuildingById(id: string): Promise<BuildingEntity> {
-        this.logger.debug(`GetBuildingById: id=${id}`)
-
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getBuilding(id: string): Promise<BuildingSchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.findOne(queryRunner, BuildingEntity, {
-                where: {
-                    id
-                },
-                relations: this.relations
-            })
+            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
+        }
+    }
+
+    async getBuildingByKey(key: string): Promise<BuildingSchema> {
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findOne({ key })
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

@@ -1,6 +1,6 @@
 import { Logger, UseGuards } from "@nestjs/common"
 import { Args, ID, Query, Resolver } from "@nestjs/graphql"
-import { DeliveringProductEntity } from "@src/databases"
+import { DeliveringProductSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { DeliveringProductsService } from "./delivering-products.service"
@@ -13,13 +13,13 @@ export class DeliveringProductsResolver {
     constructor(private readonly deliveringProductsService: DeliveringProductsService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Query(() => DeliveringProductEntity, {
+    @Query(() => DeliveringProductSchema, {
         name: "deliveringProduct",
         nullable: true
     })
-    async getDeliveringProductById(
+    async deliveringProductById(
         @Args("id", { type: () => ID }) id: string
-    ): Promise<DeliveringProductEntity> {
+    ): Promise<DeliveringProductSchema> {
         this.logger.debug(`getDeliveringProductById: id=${id}`)
         return this.deliveringProductsService.getDeliveringProduct(id)
     }
@@ -28,7 +28,7 @@ export class DeliveringProductsResolver {
     @Query(() => GetDeliveringProductsResponse, {
         name: "deliveringProducts"
     })
-    async getDeliveringProducts(
+    async deliveringProducts(
         @GraphQLUser() user: UserLike,
         @Args("args") args: GetDeliveringProductsArgs
     ): Promise<GetDeliveringProductsResponse> {

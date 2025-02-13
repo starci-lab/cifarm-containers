@@ -1,28 +1,23 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, UserSchema } from "@src/databases"
-import { DataSource } from "typeorm"
+import { InjectConnection } from "@nestjs/mongoose"
+import { UserSchema } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class UsersService {
     private readonly logger = new Logger(UsersService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        @InjectConnection()
+        private readonly connection: Connection
     ) {}
 
-    //get single user, by id
-    async getUser(id: string): Promise<UserSchema | null> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getUser(id: string): Promise<UserSchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return queryRunner.manager.findOne(UserSchema, {
-                where: {
-                    id
-                }
-            })
+            return await this.connection.model<UserSchema>(UserSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

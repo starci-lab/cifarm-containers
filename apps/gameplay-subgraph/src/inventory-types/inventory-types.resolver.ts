@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { InventoryTypesService } from "./inventory-types.service"
-import { InventoryTypeEntity } from "@src/databases"
+import { InventoryTypeSchema } from "@src/databases"
 
 @Resolver()
 export class InventoryTypesResolver {
@@ -9,18 +9,25 @@ export class InventoryTypesResolver {
 
     constructor(private readonly inventoryTypesService: InventoryTypesService) {}
 
-    @Query(() => [InventoryTypeEntity], {
+    @Query(() => [InventoryTypeSchema], {
         name: "inventoryTypes"
     })
-    async getInventoryTypes(): Promise<Array<InventoryTypeEntity>> {
+    async inventoryTypes(): Promise<Array<InventoryTypeSchema>> {
         return this.inventoryTypesService.getInventoryTypes()
     }
 
-    @Query(() => InventoryTypeEntity, {
+    @Query(() => InventoryTypeSchema, {
         name: "inventoryType",
         nullable: true
     })
-    async getInventoryType(@Args("id", { type: () => ID }) id: string): Promise<InventoryTypeEntity> {
+    async inventoryType(@Args("id", { type: () => ID }) id: string): Promise<InventoryTypeSchema> {
         return this.inventoryTypesService.getInventoryType(id)
+    }
+
+    @Query(() => InventoryTypeSchema, {
+        name: "inventoryTypeByKey",
+    })
+    async inventoryTypeByKey(@Args("key", { type: () => String }) key: string): Promise<InventoryTypeSchema> {
+        return this.inventoryTypesService.getInventoryTypeByKey(key)
     }
 }

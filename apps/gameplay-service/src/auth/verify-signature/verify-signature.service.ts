@@ -51,14 +51,16 @@ export class VerifySignatureService {
         private readonly inventoryService: InventoryService
     ) {}
 
-    public async verifySignature({
-        message,
-        publicKey,
-        signature,
-        chainKey,
-        network,
-        accountAddress,
-    }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
+    public async verifySignature(
+        {
+            message,
+            publicKey,
+            signature,
+            chainKey,
+            network,
+            accountAddress
+        }: VerifySignatureRequest
+    ): Promise<VerifySignatureResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
         try {
@@ -83,44 +85,56 @@ export class VerifySignatureService {
             })
 
             if (!verified) throw new GrpcInvalidArgumentException("Signature is invalid")
-            let user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
-                accountAddress,
-                chainKey,
-                network
-            }).session(mongoSession)
+            let user = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .findOne({
+                    accountAddress,
+                    chainKey,
+                    network
+                })
+                .session(mongoSession)
 
             if (!user) {
-                // get default info
-                const { value: { defaultCropKey, defaultSeedQuantity, golds, positions, inventoryCapacity } } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DefaultInfo>>({
-                    key: SystemKey.DefaultInfo
-                })
+            // get default info
+                const {
+                    value: { defaultCropKey, defaultSeedQuantity, golds, positions, inventoryCapacity }
+                } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findOne<SystemRecord<DefaultInfo>>({
+                        key: SystemKey.DefaultInfo
+                    })
 
                 // inventories params
-                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
-                    refKey: defaultCropKey,
-                    type: InventoryType.Seed
-                }).session(mongoSession)
+                const inventoryType = await this.connection
+                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                    .findOne({
+                        refKey: defaultCropKey,
+                        type: InventoryType.Seed
+                    })
+                    .session(mongoSession)
 
                 if (!inventoryType) {
                     throw new GrpcNotFoundException("Inventory seed type not found")
                 }
-  
+
                 const energy = this.energyService.getMaxEnergy()
 
-                await this.connection.model<UserSchema>(UserSchema.name).create([{
-                    username: `${chainKey}-${accountAddress.substring(0, 5)}`,
-                    accountAddress,
-                    chainKey,
-                    network,
-                    energy,
-                    golds,
-                }], { session: mongoSession })
-                
-                user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
-                    accountAddress,
-                    chainKey,
-                    network
-                }).session(mongoSession)
+                const [ userRaw ] = await this.connection.model<UserSchema>(UserSchema.name).create(
+                    [
+                        {
+                            username: `${chainKey}-${accountAddress.substring(0, 5)}`,
+                            accountAddress,
+                            chainKey,
+                            network,
+                            energy,
+                            golds
+                        }
+                    ],
+                    { session: mongoSession, ordered: true }
+                )
+
+                userRaw.id = userRaw._id.toString()
+                user = userRaw
 
                 const { count, inventories } = await this.inventoryService.getParams({
                     connection: this.connection,
@@ -129,12 +143,17 @@ export class VerifySignatureService {
                     session: mongoSession
                 })
 
-                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create([{
-                    placedItemTypeKey: PlacedItemTypeKey.Home,
-                    buildingInfo: {},
-                    user: user.id,
-                    ...positions.home,
-                }], { session: mongoSession })
+                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
+                    [
+                        {
+                            placedItemTypeKey: PlacedItemTypeKey.Home,
+                            buildingInfo: {},
+                            user: user.id,
+                            ...positions.home
+                        }
+                    ],
+                    { session: mongoSession, ordered: true }
+                )
 
                 const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map(
                     (tile) => ({
@@ -144,8 +163,10 @@ export class VerifySignatureService {
                         ...tile
                     })
                 )
-            
-                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(tilePartials, { session: mongoSession, ordered: true })
+
+                await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .create(tilePartials, { session: mongoSession, ordered: true })
 
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
@@ -156,36 +177,43 @@ export class VerifySignatureService {
                     userId: user.id
                 })
 
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .create(createdInventories, { session: mongoSession, ordered: true })
                 for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
-                        _id: inventory._id
-                    }, inventory, { session: mongoSession })
+                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
+                        {
+                            _id: inventory._id
+                        },
+                        inventory,
+                        { session: mongoSession }
+                    )
                 }
+            }
 
-                const {
-                    accessToken,
-                    refreshToken: { token: refreshToken, expiredAt }
-                } = await this.jwtService.generateAuthCredentials({
-                    id: user.id
-                })
+            const {
+                accessToken,
+                refreshToken: { token: refreshToken, expiredAt }
+            } = await this.jwtService.generateAuthCredentials({
+                id: user.id
+            })
 
-                await this.connection.model<SessionSchema>(SessionSchema.name).create({
-                    refreshToken,
-                    expiredAt,
-                    user: user.id
-                })
-                await mongoSession.commitTransaction()
+            await this.connection.model<SessionSchema>(SessionSchema.name).create({
+                refreshToken,
+                expiredAt,
+                user: user.id
+            })
 
-                return {
-                    accessToken,
-                    refreshToken
-                }
+            await mongoSession.commitTransaction()
+        
+            return {
+                accessToken,
+                refreshToken
             }
         } catch (error) {
             this.logger.error(error)
             await mongoSession.abortTransaction()
-            throw new GrpcInternalException("Failed to update session")
+            throw new GrpcInternalException(error.message)
         } finally {
             await mongoSession.endSession()
         }

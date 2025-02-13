@@ -8,7 +8,7 @@ import { KeyAbstractSchema } from "./abstract"
 export type ToolDocument = HydratedDocument<ToolSchema>;
 
 @ObjectType()
-@Schema({ timestamps: true, collection: "tools", id: false })
+@Schema({ timestamps: true, collection: "tools" })
 export class ToolSchema extends KeyAbstractSchema {
     
     @Field(() => String)

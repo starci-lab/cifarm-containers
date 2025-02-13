@@ -1,9 +1,6 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { HydratedDocument } from "mongoose"
 import { KeyAbstractSchema } from "./abstract"
-
-export type CropDocument = HydratedDocument<CropSchema>
 
 @ObjectType()
 @Schema({

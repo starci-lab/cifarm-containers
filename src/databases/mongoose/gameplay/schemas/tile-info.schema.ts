@@ -7,7 +7,7 @@ import { AbstractSchema } from "./abstract"
 export type TileInfoDocument = HydratedDocument<TileInfoSchema>;
 
 @ObjectType()
-@Schema({ timestamps: true })
+@Schema({ timestamps: true, autoCreate: false  })
 export class TileInfoSchema extends AbstractSchema {
     
     @Field(() => Int)

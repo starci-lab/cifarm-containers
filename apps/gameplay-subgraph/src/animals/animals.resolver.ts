@@ -12,14 +12,23 @@ export class AnimalsResolver {
     @Query(() => [AnimalSchema], {
         name: "animals"
     })
-    async getAnimals(): Promise<Array<AnimalSchema>> {
+    async animals(): Promise<Array<AnimalSchema>> {
         return await this.animalsService.getAnimals()
     } 
+
     @Query(() => AnimalSchema, {
         name: "animal",
         nullable: true
     })
-    async getAnimal(@Args("id", { type: () => ID }) id: string): Promise<AnimalSchema> {
+    async animal(@Args("id", { type: () => ID }) id: string): Promise<AnimalSchema> {
         return await this.animalsService.getAnimal(id)
+    }
+
+    @Query(() => AnimalSchema, {
+        name: "animalByKey",
+        nullable: true
+    })
+    async animalByKey(@Args("key", { type: () => String }) key: string): Promise<AnimalSchema> {
+        return await this.animalsService.getAnimalByKey(key)
     }
 }

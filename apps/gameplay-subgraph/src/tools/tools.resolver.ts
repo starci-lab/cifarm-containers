@@ -1,8 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { ToolsService } from "./tools.service"
-import { ToolEntity } from "@src/databases"
-import { CacheControl } from "@src/decorators"
+import { ToolSchema } from "@src/databases"
 
 @Resolver()
 export class ToolsResolver {
@@ -10,20 +9,25 @@ export class ToolsResolver {
 
     constructor(private readonly toolsService: ToolsService) {}
 
-    @CacheControl({ maxAge: 100 })
-    @Query(() => ToolEntity, {
+    @Query(() => ToolSchema, {
         name: "tool",
         nullable: true
     })
-    async getTool(@Args("id", { type: () => ID }) id: string): Promise<ToolEntity | null> {
+    async getTool(@Args("id", { type: () => ID }) id: string): Promise<ToolSchema> {
         return this.toolsService.getTool(id)
     }
 
-    @CacheControl({ maxAge: 100 })
-    @Query(() => [ToolEntity], {
+    @Query(() => [ToolSchema], {
         name: "tools"
     })
-    async getTools(): Promise<Array<ToolEntity>> {
+    async getTools(): Promise<Array<ToolSchema>> {
         return this.toolsService.getTools()
+    }
+
+    @Query(() => ToolSchema, {
+        name: "toolByKey"
+    })
+    async getToolByKey(@Args("key", { type: () => String }) key: string): Promise<ToolSchema> {
+        return this.toolsService.getToolByKey(key)
     }
 }

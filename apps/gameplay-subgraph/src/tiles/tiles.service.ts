@@ -1,38 +1,40 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DataSource } from "typeorm"
-import { CacheQueryRunnerService, InjectPostgreSQL, TileEntity } from "@src/databases"
+import { InjectMongoose, TileSchema } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class TilesService {
     private readonly logger = new Logger(TilesService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService
+        @InjectMongoose()
+        private readonly connection: Connection
     ) {}
 
-    async getTiles(): Promise<Array<TileEntity>> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getTiles(): Promise<Array<TileSchema>> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.find(queryRunner, TileEntity)
+            return await this.connection.model(TileSchema.name).find()
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
-    async getTile(id: string): Promise<TileEntity | null> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+    async getTile(id: string): Promise<TileSchema> {
+        const mongoSession = await this.connection.startSession()
         try {
-            return await this.cacheQueryRunnerService.findOne(queryRunner, TileEntity, {
-                where: {
-                    id
-                }
-            })
+            return await this.connection.model(TileSchema.name).findById(id)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
+        }
+    }
+
+    async getTileByKey(key: string): Promise<TileSchema> {
+        const mongoSession = await this.connection.startSession()
+        try {
+            return await this.connection.model(TileSchema.name).findOne({ key })
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

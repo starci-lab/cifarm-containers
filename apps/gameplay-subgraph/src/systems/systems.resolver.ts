@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query } from "@nestjs/graphql"
 import { SystemsService } from "./systems.service"
-import { Activities, AnimalRandomness, CropRandomness, EnergyRegen, SpinInfo, DefaultInfo } from "@src/databases"
+import { Activities, AnimalRandomness, CropRandomness, EnergyRegen, SpinInfo, DefaultInfo, DailyRewardInfo } from "@src/databases"
 
 @Resolver()
 export class SystemsResolver {
@@ -12,43 +12,50 @@ export class SystemsResolver {
     @Query(() => Activities, {
         name: "activities"
     })
-    async getActivities(): Promise<Activities> {
+    async activities(): Promise<Activities> {
         return this.systemsService.getActivities()
     }
 
     @Query(() => CropRandomness, {
         name: "cropRandomness"
     })
-    async getCropRandomness(): Promise<CropRandomness> {
+    async cropRandomness(): Promise<CropRandomness> {
         return this.systemsService.getCropRandomness()
     }
 
     @Query(() => AnimalRandomness, {
         name: "animalRandomness"
     })
-    async getAnimalRandomness(): Promise<AnimalRandomness> {
+    async animalRandomness(): Promise<AnimalRandomness> {
         return this.systemsService.getAnimalRandomness()
     }
 
     @Query(() => DefaultInfo, {
         name: "starter"
     })
-    async getDefaultInfo(): Promise<DefaultInfo> {
+    async defaultInfo(): Promise<DefaultInfo> {
         return this.systemsService.getDefaultInfo()
     }
 
     @Query(() => SpinInfo, {
         name: "spinInfo"
     })
-    async getSpinInfo(): Promise<SpinInfo> {
+    async spinInfo(): Promise<SpinInfo> {
         return this.systemsService.getSpinInfo()
     }
 
     @Query(() => EnergyRegen, {
         name: "energyRegen"
     })
-    async getEnergyRegen(): Promise<EnergyRegen> {
+    async energyRegen(): Promise<EnergyRegen> {
         return this.systemsService.getEnergyRegen()
+    }
+
+    @Query(() => DailyRewardInfo, {
+        name: "dailyRewardInfo"
+    })
+    async dailyRewardInfo(): Promise<DailyRewardInfo> {
+        return this.systemsService.getDailyRewardInfo()
     }
 }
 

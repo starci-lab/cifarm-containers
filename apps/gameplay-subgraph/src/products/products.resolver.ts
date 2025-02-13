@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common"
 import { Args, Query, Resolver } from "@nestjs/graphql"
-import { ProductEntity } from "@src/databases"
+import { ProductSchema } from "@src/databases"
 import { ProductService } from "./products.service"
 
 @Resolver()
@@ -9,18 +9,24 @@ export class ProductResolver {
 
     constructor(private readonly productsService: ProductService) {}
 
-    @Query(() => [ProductEntity], {
+    @Query(() => [ProductSchema], {
         name: "products"
     })
-    async getProducts(): Promise<Array<ProductEntity>> {
+    async products(): Promise<Array<ProductSchema>> {
         return this.productsService.getProducts()
     }
 
-    @Query(() => ProductEntity, {
-        name: "product",
-        nullable:true
+    @Query(() => ProductSchema, {
+        name: "product"
     })
-    async getProduct(@Args("id") id: string): Promise<ProductEntity | null> {
+    async product(@Args("id") id: string): Promise<ProductSchema> {
         return this.productsService.getProduct(id)
+    }   
+
+    @Query(() => ProductSchema, {
+        name: "productByKey"
+    })
+    async productByKey(@Args("key") key: string): Promise<ProductSchema> {
+        return this.productsService.getProductByKey(key)
     }
 }

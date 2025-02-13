@@ -1,7 +1,7 @@
 import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { PlacedItemsService } from "./placed-items.service"
-import { PlacedItemEntity } from "@src/databases"
+import { PlacedItemSchema } from "@src/databases"
 import { GetPlacedItemsArgs, GetPlacedItemsResponse } from "./placed-items.dto"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
@@ -13,11 +13,11 @@ export class PlacedItemsResolver {
     constructor(private readonly placeditemsService: PlacedItemsService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Query(() => PlacedItemEntity, {
+    @Query(() => PlacedItemSchema, {
         name: "placedItem",
         nullable: true
     })
-    async getPlacedItem(@Args("id", { type: () => ID }) id: string): Promise<PlacedItemEntity> {
+    async placedItem(@Args("id", { type: () => ID }) id: string): Promise<PlacedItemSchema> {
         return this.placeditemsService.getPlacedItem(id)
     }
 
@@ -25,7 +25,7 @@ export class PlacedItemsResolver {
     @Query(() => GetPlacedItemsResponse, {
         name: "placedItems"
     })
-    async getPlacedItems(
+    async placedItems(
         @GraphQLUser() user: UserLike,
         @Args("args") args: GetPlacedItemsArgs
     ): Promise<GetPlacedItemsResponse> {
