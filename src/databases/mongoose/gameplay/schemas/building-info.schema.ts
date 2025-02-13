@@ -12,10 +12,6 @@ export class BuildingInfoSchema extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         currentUpgrade: number
-
-    @Field(() => String)
-    @Prop({ type: String, required: true })
-        placedItemId: string
 }
 
 export const BuildingInfoSchemaClass = SchemaFactory.createForClass(BuildingInfoSchema)

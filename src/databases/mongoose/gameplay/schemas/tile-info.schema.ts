@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, ID } from "@nestjs/graphql"
+import { ObjectType, Field, Int } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
@@ -13,10 +13,6 @@ export class TileInfoSchema extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         harvestCount: number
-
-    @Field(() => ID)
-    @Prop({ type: String, required: true })
-        placedItemId: string
 }
 
 export const TileInfoSchemaClass = SchemaFactory.createForClass(TileInfoSchema)

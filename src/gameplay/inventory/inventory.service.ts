@@ -10,7 +10,7 @@ export class InventoryService {
 
     constructor() {}
 
-    public add({ inventories, inventoryType, quantity, capacity, count }: AddParams): AddResult {
+    public add({ inventories, inventoryType, quantity, capacity, count, userId }: AddParams): AddResult {
         const updatedInventories: Array<DeepPartial<InventorySchema>> = []
         const createdInventories: Array<DeepPartial<InventorySchema>> = []
 
@@ -31,7 +31,7 @@ export class InventoryService {
         // if quantity is still remaining, create a new inventory, and add the quantity to it
         while (quantity > 0) {
             const quantityToAdd = Math.min(inventoryType.maxStack, quantity)
-            createdInventories.push({ quantity: quantityToAdd, inventoryTypeKey: inventoryType.key })
+            createdInventories.push({ quantity: quantityToAdd, inventoryTypeKey: inventoryType.key, user: userId })
             quantity -= quantityToAdd
         }
 
@@ -69,14 +69,14 @@ export class InventoryService {
         return { updatedInventories, removedInventories }
     }
 
-    public async getParams({ connection, inventoryType, userId }: GetParamsParams): Promise<GetParamsResult> {
+    public async getParams({ connection, inventoryType, userId, session }: GetParamsParams): Promise<GetParamsResult> {
         const count = await connection.model<InventorySchema>(InventorySchema.name).countDocuments({
             user: userId,
         })
         const inventories = await connection.model<InventorySchema>(InventorySchema.name).find({
             user: userId,
             inventoryTypeKey: inventoryType.key,
-        })
+        }).session(session)
         return { count, inventories }
     }
 }

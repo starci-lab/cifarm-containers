@@ -18,10 +18,10 @@ export class InventorySchema extends AbstractSchema {
 
     @Field(() => ID)
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
-        user: UserSchema
+        user: UserSchema | string
     
     @Field(() => Boolean, { nullable: true })
-    @Prop({ type: Boolean, required: true })
+    @Prop({ type: Boolean, required: false })
         inToolbar?: boolean
 
     @Field(() => Int, { nullable: true })

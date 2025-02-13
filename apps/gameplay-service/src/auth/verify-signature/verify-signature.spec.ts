@@ -57,7 +57,7 @@ describe("VerifySignatureService", () => {
         expect(isUUID(refreshToken)).toBe(true)
     
         // Check user existence and validate items
-        const user = await connection.model<UserSchema>(UserSchema.name).findOne({ accountAddress })
+        const user = await connection.model<UserSchema>(UserSchema.name).findOne({ accountAddress, chainKey, network })
 
         expect(user).toBeTruthy()
         
@@ -106,11 +106,10 @@ describe("VerifySignatureService", () => {
     it("should use generated flow", async () => {
         const { message, publicKey, signature, accountAddress, chainKey, network } =
             await generateSignatureService.generateSignature({
-                accountNumber: 0,
+                accountNumber: 1,
                 chainKey: ChainKey.Solana,
                 network: Network.Testnet
             })
-
         await verifyAndValidateUserTokens({
             message,
             publicKey,
