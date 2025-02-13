@@ -46,12 +46,6 @@ export class ConstructBuildingService {
             if (!building.availableInShop) {
                 throw new GrpcFailedPreconditionException("Building not available in shop")
             }
-
-            // Fetch placed item type
-            const placedItemType = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-                .findOne({ _id: request.buildingId })
-                .session(mongoSession)
-
             // Calculate total cost
             const totalCost = building.price
 
@@ -81,7 +75,7 @@ export class ConstructBuildingService {
                     userId: request.userId,
                     x: request.position.x,
                     y: request.position.y,
-                    placedItemType: placedItemType.id,
+                    placedItemType: createObjectId(request.buildingId),
                     buildingInfo: {}
                 })
 
