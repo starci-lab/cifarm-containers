@@ -3,13 +3,13 @@
 import { ApiProperty } from "@nestjs/swagger"
 import {  UserIdRequest } from "@src/common"
 import { Position } from "@src/gameplay"
-import { IsString } from "class-validator"
+import { IsMongoId } from "class-validator"
 
 export class MoveRequest extends UserIdRequest {
-    @IsString()
+    @IsMongoId()
     @ApiProperty({
-        example: "00000000-0000-0000-0000-000",
-        description: "The id of the placed item to move"
+        description: "The ID of the placed item to move",
+        example: "5f3b7c9d4f9b8c001f3f7c8b"
     })
         placedItemId: string
 

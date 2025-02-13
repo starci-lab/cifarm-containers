@@ -1,107 +1,114 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    CacheQueryRunnerService,
     CropCurrentState,
-    CropEntity,
-    InjectPostgreSQL,
-    SeedGrowthInfoEntity,
+    CropSchema,
+    DefaultInfo,
+    InjectMongoose,
+    PlacedItemSchema,
+    SystemId,
+    SystemRecord,
+    SystemSchema,
     TutorialStep,
-    UserSchema,
-    defaultCropId
+    UserSchema
 } from "@src/databases"
-import { DataSource, QueryRunner } from "typeorm"
 import { GrpcInternalException } from "nestjs-grpc-exceptions"
 import { UpdateTutorialRequest, UpdateTutorialResponse } from "./update-tutorial.dto"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import { TutorialService } from "@src/gameplay"
+import { ClientSession, Connection } from "mongoose"
 
 @Injectable()
 export class UpdateTutorialService {
     private readonly logger = new Logger(UpdateTutorialService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
-        private readonly cacheQueryRunnerService: CacheQueryRunnerService,
-        private readonly tutorialService: TutorialService,
+        @InjectMongoose()
+        private readonly connection: Connection,
+        private readonly tutorialService: TutorialService
     ) {}
 
     async updateTutorial(request: UpdateTutorialRequest): Promise<UpdateTutorialResponse> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
         try {
-            // Get user
-            const user = await queryRunner.manager.findOne(UserSchema, {
-                where: { id: request.userId }
-            })
+            const { value: { defaultCropId } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .session(mongoSession)
 
+            const user = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .findById(request.userId)
+                .session(mongoSession)
             // check if last step is reached
             const lastStep = this.tutorialService.isLastStep(user.tutorialStep)
             if (lastStep) {
-                throw new GrpcFailedPreconditionException("You have reached the last step of the tutorial")
+                throw new GrpcFailedPreconditionException(
+                    "You have reached the last step of the tutorial"
+                )
             }
             const nextStep = user.tutorialStep + 1
 
             switch (nextStep) {
             case TutorialStep.StartWaterCropAtStage1: {
-                await this.startWaterCropAtStage1({ queryRunner, user, nextStep })
+                await this.startWaterCropAtStage1({ defaultCropId, mongoSession, user, nextStep })
                 break
             }
             case TutorialStep.StartWaterCropAtStage2: {
-                await this.startWaterCropAtStage2({ queryRunner, user, nextStep })
+                await this.startWaterCropAtStage2({ defaultCropId, mongoSession, user, nextStep })
                 break
             }
             case TutorialStep.StartToStage3: {
-                await this.startToStage3({ queryRunner, user, nextStep })
+                await this.startToStage3({ defaultCropId, mongoSession, user, nextStep })
                 break
             }
             case TutorialStep.StartHarvestCrop: {
-                await this.startHarvestCrop({ queryRunner, user, nextStep })
+                await this.startHarvestCrop({ defaultCropId, mongoSession, user, nextStep })
                 break
             }
             default: {
-                await queryRunner.startTransaction()
-                try {
-                    await this.moveToNextTutorialStep({
-                        queryRunner,
-                        user,
-                        nextStep
-                    })
-                    await queryRunner.commitTransaction()
-                } catch (error) {
-                    const errorMessage = `Transaction failed, reason: ${error.message}`
-                    this.logger.error(errorMessage)
-                    await queryRunner.rollbackTransaction()
-                    throw new GrpcInternalException(errorMessage)
-                }
+                await this.moveToNextTutorialStep({
+                    defaultCropId,
+                    mongoSession,
+                    user,
+                    nextStep
+                })
             }
             }
-
+            await mongoSession.commitTransaction()
             return {}
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw new GrpcInternalException(error.message)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 
     // increment tutorial step
-    private async moveToNextTutorialStep(
-        {
-            queryRunner,
-            user,
-            nextStep
-        }: MoveToNextTutorialStepParams
-    ): Promise<void> {
-        await queryRunner.manager.update(UserSchema, user.id, {
-            tutorialStep: nextStep
-        })
+    private async moveToNextTutorialStep({
+        mongoSession,
+        user,
+        nextStep
+    }: MoveToNextTutorialStepParams): Promise<void> {
+        await this.connection
+            .model<UserSchema>(UserSchema.name)
+            .updateOne(
+                { _id: user.id },
+                {
+                    tutorialStep: nextStep
+                }
+            )
+            .session(mongoSession)
     }
-    
+
     // water crop at stage 1
     private async startWaterCropAtStage1({
-        queryRunner,
+        mongoSession,
         nextStep,
-        user,
+        defaultCropId,
+        user
     }: StartWaterCropAtStage1Params): Promise<void> {
         if (nextStep != TutorialStep.StartWaterCropAtStage1) {
             throw new GrpcFailedPreconditionException(
@@ -109,79 +116,69 @@ export class UpdateTutorialService {
             )
         }
         // check your tiles if you have 1 default crop planted
-        const seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
-            where: {
-                currentStage: 0,
-                placedItem: {
-                    userId: user.id
-                },
-                cropId: defaultCropId
-            }
-        })
-        if (seedGrowthInfos.length !== 2) {
+        const placedItems = await this.connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .find({
+                userId: user.id,
+                "seedGrowthInfo.crop": createObjectId(defaultCropId)
+            })
+            .session(mongoSession)
+
+        if (placedItems.length !== 2) {
             throw new GrpcFailedPreconditionException(
                 "You need to plant 2 default crop to enter this step"
             )
         }
-
-        // process in transaction
-        await queryRunner.startTransaction()
-        try {
-            const needWatererSeedGrowthInfoId = seedGrowthInfos[0].id
-            // update the crops to stage 1, which one of them needs watered
-            for (const seedGrowthInfo of seedGrowthInfos) {
-                await queryRunner.manager.update(SeedGrowthInfoEntity, seedGrowthInfo.id, {
-                    currentStage: 1,
-                    currentState:
-                        needWatererSeedGrowthInfoId === seedGrowthInfo.id
-                            ? CropCurrentState.NeedWater
-                            : CropCurrentState.Normal
-                })
-            }
-            await this.moveToNextTutorialStep({
-                queryRunner,
-                user,
-                nextStep
-            })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            const errorMessage = `Transaction failed, reason: ${error.message}`
-            this.logger.error(errorMessage)
-            await queryRunner.rollbackTransaction()
-            throw new GrpcInternalException(errorMessage)
+        const needWateredSeedGrowthInfoId = placedItems[0].seedGrowthInfo
+        // update the crops to stage 1, which one of them needs watered
+        for (const placedItem of placedItems) {
+            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
+                { _id: placedItem.id },
+                {
+                    "seedGrowthInfo.currentStage": 1,
+                    "seedGrowthInfo.currentState": placedItem.seedGrowthInfo === needWateredSeedGrowthInfoId
+                        ? CropCurrentState.NeedWater
+                        : CropCurrentState.Normal
+                }
+            )
         }
+        await this.moveToNextTutorialStep({
+            mongoSession,
+            defaultCropId,
+            user,
+            nextStep
+        })
     }
 
     // water crop at stage 2
     private async startWaterCropAtStage2({
-        queryRunner,
+        mongoSession,
+        defaultCropId,
         nextStep,
-        user,
+        user
     }: StartWaterCropAtStage2Params) {
         if (nextStep != TutorialStep.StartWaterCropAtStage2) {
             throw new GrpcFailedPreconditionException(
                 "You are not in the right state to water crop at stage 2"
             )
         }
-        // check your tiles if you have 1 default crop planted
-        const seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
-            where: {
-                currentStage: 1,
-                placedItem: {
-                    userId: user.id
-                },
-                cropId: defaultCropId
-            }
+
+        const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
+            userId: user.id,
+            "seedGrowthInfo.crop": createObjectId(defaultCropId)
         })
-        if (seedGrowthInfos.length < 2) {
+        if (placedItems.length < 2) {
             throw new GrpcFailedPreconditionException(
                 "You need to plant 2 default crop to enter this step"
             )
         }
 
         // if some crops need watering, throw error
-        const someNeedWater = seedGrowthInfos.some(
-            (seedGrowthInfo) => seedGrowthInfo.currentState === CropCurrentState.NeedWater
+        // const someNeedWater = seedGrowthInfos.some(
+        //     (seedGrowthInfo) => seedGrowthInfo.currentState === CropCurrentState.NeedWater
+        // )
+        const someNeedWater = placedItems.some(
+            (placedItem) => placedItem.seedGrowthInfo.currentState === CropCurrentState.NeedWater
         )
         if (someNeedWater) {
             throw new GrpcFailedPreconditionException(
@@ -189,154 +186,118 @@ export class UpdateTutorialService {
             )
         }
 
-        // process in transaction
-        await queryRunner.startTransaction()
-        try {
-            const needWatererSeedGrowthInfoId = seedGrowthInfos[0].id
-            // update the crops to stage 2, which one of them needs watered
-            for (const seedGrowthInfo of seedGrowthInfos) {
-                await queryRunner.manager.update(SeedGrowthInfoEntity, seedGrowthInfo.id, {
-                    currentStage: 2,
-                    currentState:
-                        needWatererSeedGrowthInfoId === seedGrowthInfo.id
-                            ? CropCurrentState.NeedWater
-                            : CropCurrentState.Normal
-                })
-            }
-            await this.moveToNextTutorialStep({
-                nextStep,
-                queryRunner,
-                user
-            })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            const errorMessage = `Transaction failed, reason: ${error.message}`
-            this.logger.error(errorMessage)
-            await queryRunner.rollbackTransaction()
-            throw new GrpcInternalException(errorMessage)
+        for (const placedItem of placedItems) {
+            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
+                { _id: placedItem.id },
+                {
+                    "seedGrowthInfo.currentStage": 2,
+                    "seedGrowthInfo.currentState": CropCurrentState.Normal
+                }
+            )
         }
+        await this.moveToNextTutorialStep({
+            nextStep,
+            mongoSession,
+            defaultCropId,
+            user
+        })
     }
 
     // to stage 3
-    private async startToStage3({ queryRunner, nextStep, user }: StartToStage3Params) {
+    private async startToStage3({ mongoSession, defaultCropId, nextStep, user }: StartToStage3Params) {
         if (nextStep != TutorialStep.StartToStage3) {
             throw new GrpcFailedPreconditionException(
                 "You are not in the right state to water crop at stage 3"
             )
         }
-        // check your tiles if you have 1 default crop planted
-        const seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
-            where: {
-                currentStage: 2,
-                placedItem: {
-                    userId: user.id
-                },
-                cropId: defaultCropId
-            }
+        const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
+            userId: user.id,
+            "seedGrowthInfo.crop": createObjectId(defaultCropId)
         })
-        if (seedGrowthInfos.length < 2) {
+        if (placedItems.length < 2) {
             throw new GrpcFailedPreconditionException(
                 "You need to plant 2 default crop to enter this step"
             )
         }
         // if some crops need watering, throw error
-        const someNeedWater = seedGrowthInfos.some(
-            (seedGrowthInfo) => seedGrowthInfo.currentState === CropCurrentState.NeedWater
+        const someNeedWater = placedItems.some(
+            (placedItem) => placedItem.seedGrowthInfo.currentState === CropCurrentState.NeedWater
         )
         if (someNeedWater) {
             throw new GrpcFailedPreconditionException(
                 "You need to water all the crops in stage 2 to enter this step"
             )
         }
+        for (const placedItem of placedItems) {
+            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
+                { _id: placedItem.id },
+                {
+                    "seedGrowthInfo.currentStage": 3,
+                    "seedGrowthInfo.currentState": CropCurrentState.Normal
+                }
+            )
+        }
 
         // process in transaction
-        await queryRunner.startTransaction()
-        try {
-            const infestedSeedGrowthInfoId = seedGrowthInfos[0].id
-            // update the crops to stage 3, which one of them needs watered
-            for (const seedGrowthInfo of seedGrowthInfos) {
-                await queryRunner.manager.update(SeedGrowthInfoEntity, seedGrowthInfo.id, {
-                    currentStage: 3,
-                    currentState:
-                        infestedSeedGrowthInfoId === seedGrowthInfo.id
-                            ? CropCurrentState.IsInfested
-                            : CropCurrentState.IsWeedy
-                })
-            }
-            await this.moveToNextTutorialStep({
-                nextStep,
-                queryRunner,
-                user
-            })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            const errorMessage = `Transaction failed, reason: ${error.message}`
-            this.logger.error(errorMessage)
-            await queryRunner.rollbackTransaction()
-            throw new GrpcInternalException(errorMessage)
-        }
+        await this.moveToNextTutorialStep({
+            nextStep,
+            mongoSession,
+            defaultCropId,
+            user
+        })
     }
 
     // harvest crop
-    private async startHarvestCrop({ queryRunner, nextStep, user }: StartHarvestCropParams) {
+    private async startHarvestCrop({ mongoSession, defaultCropId, nextStep, user }: StartHarvestCropParams) {
         if (nextStep != TutorialStep.StartHarvestCrop) {
             throw new GrpcFailedPreconditionException(
                 "You are not in the right state to water crop at harvest"
             )
         }
-        // check your tiles if you have 1 default crop planted
-        const seedGrowthInfos = await queryRunner.manager.find(SeedGrowthInfoEntity, {
-            where: {
-                currentStage: 3,
-                placedItem: {
-                    userId: user.id
-                },
-                cropId: defaultCropId
-            }
+
+        const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
+            userId: user.id,
+            "seedGrowthInfo.crop": createObjectId(defaultCropId)
         })
-        if (seedGrowthInfos.length !== 2) {
+ 
+        if (placedItems.length < 2) {
             throw new GrpcFailedPreconditionException(
                 "You need to plant 2 default crop to enter this step"
             )
         }
 
-        const crop = await this.cacheQueryRunnerService.findOne(queryRunner, CropEntity, {
-            where: {
-                id: defaultCropId
-            }
-        })
+        const crop = await this.connection.model<CropSchema>(CropSchema.name).findById(
+            createObjectId(defaultCropId)
+        )
 
-        // process in transaction
-        await queryRunner.startTransaction()
-        try {
-            // update the crops to fully matured
-            for (const seedGrowthInfo of seedGrowthInfos) {
-                await queryRunner.manager.update(SeedGrowthInfoEntity, seedGrowthInfo.id, {
-                    currentStage: crop.growthStages - 1,
-                    harvestQuantityRemaining: crop.maxHarvestQuantity,
-                    currentState: CropCurrentState.FullyMatured
-                })
+        await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateMany(
+            {
+                userId: user.id,
+                "seedGrowthInfo.crop": createObjectId(defaultCropId)
+            },
+            {
+                "seedGrowthInfo.currentStage": crop.growthStages - 1,
+                "seedGrowthInfo.harvestQuantityRemaining": crop.maxHarvestQuantity,
+                "seedGrowthInfo.currentState": CropCurrentState.FullyMatured
             }
-            await this.moveToNextTutorialStep({
-                queryRunner,
-                user,
-                nextStep
-            })
-            await queryRunner.commitTransaction()
-        } catch (error) {
-            const errorMessage = `Transaction failed, reason: ${error.message}`
-            this.logger.error(errorMessage)
-            await queryRunner.rollbackTransaction()
-            throw new GrpcInternalException(errorMessage)
-        }
+        )
+
+        await this.moveToNextTutorialStep({
+            mongoSession,
+            defaultCropId,
+            user,
+            nextStep
+        })
     }
 }
 
 export interface MoveToNextTutorialStepParams {
-    queryRunner: QueryRunner
+    mongoSession: ClientSession
     user: UserSchema
     nextStep: TutorialStep
+    defaultCropId: string
 }
+
 export type StartWaterCropAtStage1Params = MoveToNextTutorialStepParams
 export type StartWaterCropAtStage2Params = StartWaterCropAtStage1Params
 export type StartWaterCropAtStage3Params = StartWaterCropAtStage1Params

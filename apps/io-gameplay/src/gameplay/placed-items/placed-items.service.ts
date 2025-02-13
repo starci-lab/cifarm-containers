@@ -1,32 +1,23 @@
 import { Injectable } from "@nestjs/common"
-import { InjectPostgreSQL, PlacedItemSchema } from "@src/databases"
-import { DataSource } from "typeorm"
+import { InjectMongoose, PlacedItemSchema } from "@src/databases"
 import { GetPlacedItemsParams } from "./placed-items.types"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class PlacedItemsService {
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource
+        @InjectMongoose()
+        private readonly connection: Connection
     ) {}
 
     public async getPlacedItems({ userId }: GetPlacedItemsParams) {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            return await queryRunner.manager.find(PlacedItemSchema, {
-                where: {
-                    userId
-                },
-                relations: {
-                    animalInfo: true,
-                    seedGrowthInfo: true,
-                    tileInfo: true,
-                    buildingInfo: true
-                }
-            })
+            return await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .find({ user: userId })
+                .session(mongoSession)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

@@ -1,16 +1,16 @@
 // npx jest apps/gameplay-service/src/placement/move/move.spec.ts
 
 import { Test } from "@nestjs/testing"
-import { DataSource } from "typeorm"
 import { MoveService } from "./move.service"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import { PlacedItemSchema, PlacedItemTypeId, getPostgreSqlToken } from "@src/databases"
+import { getMongooseToken, PlacedItemSchema, PlacedItemTypeId } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { v4 } from "uuid"
+import { Connection } from "mongoose"
 
 describe("MoveService", () => {
     let service: MoveService
-    let dataSource: DataSource
+    let connection: Connection
     let gameplayMockUserService: GameplayMockUserService
     let gameplayConnectionService: GameplayConnectionService
 
@@ -20,7 +20,7 @@ describe("MoveService", () => {
             providers: [MoveService]
         }).compile()
 
-        dataSource = moduleRef.get(getPostgreSqlToken())
+        connection = moduleRef.get(getMongooseToken())
         service = moduleRef.get(MoveService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
@@ -28,7 +28,8 @@ describe("MoveService", () => {
 
     it("should successfully move placed item to a new position", async () => {
         const user = await gameplayMockUserService.generate()
-        const placedItem = await dataSource.manager.save(PlacedItemSchema, {
+
+        const placedItem = await connection.model(PlacedItemSchema.name).create({
             userId: user.id,
             x: 1,
             y: 1,
@@ -42,10 +43,7 @@ describe("MoveService", () => {
             position: { x: 5, y: 5 }
         })
 
-        // Assert: Check that the placed item's position has been updated
-        const updatedPlacedItem = await dataSource.manager.findOne(PlacedItemSchema, {
-            where: { id: placedItem.id }
-        })
+        const updatedPlacedItem = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).findById(placedItem.id)
 
         expect(updatedPlacedItem.x).toBe(5)
         expect(updatedPlacedItem.y).toBe(5)

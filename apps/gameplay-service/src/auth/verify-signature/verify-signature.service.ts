@@ -181,7 +181,7 @@ export class VerifySignatureService {
                     .create(createdInventories, { session: mongoSession, ordered: true })
                 for (const inventory of updatedInventories) {
                     await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
-                        inventory.id,
+                        { _id: inventory._id },
                         inventory,
                         { session: mongoSession }
                     )

@@ -1,10 +1,10 @@
-import { ObjectType, Field, Int, Float } from "@nestjs/graphql"
+import { ObjectType, Field, Int, Float, ID } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { CropCurrentState } from "../enums"
 import { AbstractSchema } from "./abstract"
-
-export type SeedGrowthInfoDocument = HydratedDocument<SeedGrowthInfoSchema>;
+import { CropSchema } from "./crop.schema"
+import { Schema as MongooseSchema } from "mongoose"
 
 @ObjectType()
 @Schema({ timestamps: true, autoCreate: false  })
@@ -34,9 +34,9 @@ export class SeedGrowthInfoSchema extends AbstractSchema {
     @Prop({ type: Boolean, default: false })
         isQuality: boolean
 
-    @Field(() => String)
-    @Prop({ type: String, required: true })
-        cropKey: string
+    @Field(() => ID)
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: CropSchema.name })
+        crop: CropSchema | string
 
     @Field(() => String)
     @Prop({ type: String, enum: CropCurrentState, default: CropCurrentState.Normal })
