@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { InventoryTypesService } from "./inventory-types.service"
-import { InventoryTypeSchema } from "@src/databases"
+import { InventoryTypeId, InventoryTypeSchema } from "@src/databases"
 
 @Resolver()
 export class InventoryTypesResolver {
@@ -20,14 +20,7 @@ export class InventoryTypesResolver {
         name: "inventoryType",
         nullable: true
     })
-    async inventoryType(@Args("id", { type: () => ID }) id: string): Promise<InventoryTypeSchema> {
+    async inventoryType(@Args("id", { type: () => ID }) id: InventoryTypeId): Promise<InventoryTypeSchema> {
         return this.inventoryTypesService.getInventoryType(id)
-    }
-
-    @Query(() => InventoryTypeSchema, {
-        name: "inventoryTypeByKey",
-    })
-    async inventoryTypeByKey(@Args("key", { type: () => String }) key: string): Promise<InventoryTypeSchema> {
-        return this.inventoryTypesService.getInventoryTypeByKey(key)
     }
 }

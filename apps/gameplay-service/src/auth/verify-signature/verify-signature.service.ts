@@ -11,7 +11,7 @@ import {
     SystemRecord,
     InventoryTypeSchema,
     PlacedItemSchema,
-    PlacedItemTypeKey,
+    PlacedItemTypeId,
     InventorySchema,
     SessionSchema,
 } from "@src/databases"
@@ -144,7 +144,7 @@ export class VerifySignatureService {
                 await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
                     [
                         {
-                            placedItemTypeKey: PlacedItemTypeKey.Home,
+                            placedItemTypeKey: PlacedItemTypeId.Home,
                             buildingInfo: {},
                             user: user.id,
                             ...positions.home
@@ -155,7 +155,7 @@ export class VerifySignatureService {
 
                 const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map(
                     (tile) => ({
-                        placedItemTypeKey: PlacedItemTypeKey.StarterTile,
+                        placedItemTypeKey: PlacedItemTypeId.StarterTile,
                         user: user.id,
                         tileInfo: {},
                         ...tile
@@ -175,7 +175,7 @@ export class VerifySignatureService {
                     userId: user.id
                 })
                 console.log(createdInventories, updatedInventories)
-                
+
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .create(createdInventories, { session: mongoSession, ordered: true })

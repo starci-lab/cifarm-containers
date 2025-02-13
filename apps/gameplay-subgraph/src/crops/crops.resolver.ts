@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { CropsService } from "./crops.service"
-import { CropSchema } from "@src/databases"
+import { CropId, CropSchema } from "@src/databases"
 
 @Resolver()
 export class CropsResolver {
@@ -15,7 +15,7 @@ export class CropsResolver {
     }
     
     @Query(() => CropSchema, { name: "crop" })
-    async crop(@Args("id", { type: () => ID }) id: string): Promise<CropSchema> {
+    async crop(@Args("id", { type: () => ID }) id: CropId): Promise<CropSchema> {
         return this.cropsService.getCrop(id)
     }
     

@@ -13,8 +13,6 @@ import {
     DailyRewardInfo,
 } from "@src/databases"
 import { Connection } from "mongoose"
-// import { ACTIVITIES_CACHE_NAME } from "./system.constants"
-// import { envConfig } from "@src/env"
 
 @Injectable()
 export class SystemsService {

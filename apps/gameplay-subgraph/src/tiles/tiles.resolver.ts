@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { TilesService } from "./tiles.service"
-import { TileSchema } from "@src/databases"
+import { TileId, TileSchema } from "@src/databases"
 
 @Resolver()
 export class TilesResolver {
@@ -20,14 +20,7 @@ export class TilesResolver {
         name: "tile",
         nullable: true
     })
-    async tile(@Args("id", { type: () => ID }) id: string): Promise<TileSchema | null> {
+    async tile(@Args("id", { type: () => ID }) id: TileId): Promise<TileSchema | null> {
         return this.tilesService.getTile(id)
-    }
-
-    @Query(() => TileSchema, {
-        name: "tileByKey"
-    })
-    async tileByKey(@Args("key", { type: () => String }) key: string): Promise<TileSchema> {
-        return this.tilesService.getTileByKey(key)
     }
 }

@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { Schema as MongooseSchema } from "mongoose"
 import { UserSchema } from "./user.schema"
-import { ProductKey } from "../enums"
+import { ProductId } from "../enums"
 
 @ObjectType()
 @Schema({
@@ -24,8 +24,8 @@ export class DeliveringProductSchema extends AbstractSchema {
         user: UserSchema | string
 
     @Field(() => String)
-    @Prop({ type: String, enum: ProductKey, required: true })
-        deliveringProductTypeKey: ProductKey
+    @Prop({ type: String, enum: ProductId, required: true })
+        deliveringProductTypeKey: ProductId
 }
 
 export const DeliveringProductSchemaClass = SchemaFactory.createForClass(DeliveringProductSchema)

@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { PlacedItemTypesService } from "./placed-item-types.service"
-import { PlacedItemTypeSchema } from "@src/databases"
+import { PlacedItemTypeId, PlacedItemTypeSchema } from "@src/databases"
 
 @Resolver()
 export class PlacedItemTypesResolver {
@@ -20,14 +20,9 @@ export class PlacedItemTypesResolver {
         name: "placedItemType",
         nullable: true
     })
-    async placedItemType(@Args("id", { type: () => ID }) id: string): Promise<PlacedItemTypeSchema> {
+    async placedItemType(
+        @Args("id", { type: () => ID }) id: PlacedItemTypeId
+    ): Promise<PlacedItemTypeSchema> {
         return this.placedItemTypesService.getPlacedItemType(id)
-    }
-
-    @Query(() => PlacedItemTypeSchema, {
-        name: "placedItemTypeByKey",
-    })
-    async placedItemTypeByKey(@Args("key", { type: () => String }) key: string): Promise<PlacedItemTypeSchema> {
-        return this.placedItemTypesService.getPlacedItemTypeByKey(key)
     }
 }

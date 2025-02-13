@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { CropSchema, InjectMongoose } from "@src/databases"
+import { createObjectId } from "@src/common"
+import { CropId, CropSchema, InjectMongoose } from "@src/databases"
 import { Connection } from "mongoose"  // Import Connection for MongoDB
 
 @Injectable()
@@ -20,10 +21,10 @@ export class CropsService {
         }
     }
 
-    async getCrop(id: string): Promise<CropSchema> {
+    async getCrop(id: CropId): Promise<CropSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<CropSchema>(CropSchema.name).findById(id).session(mongoSession)
+            return await this.connection.model<CropSchema>(CropSchema.name).findById(createObjectId(id)).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
