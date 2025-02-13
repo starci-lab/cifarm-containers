@@ -32,7 +32,11 @@ import {
     PlacedItemSchema,
     PlacedItemSchemaClass,
     SessionSchema,
-    SessionSchemaClass
+    SessionSchemaClass,
+    SeedGrowthInfoSchemaClass,
+    SeedGrowthInfoSchema,
+    TileInfoSchema, 
+    TileInfoSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 
@@ -135,6 +139,14 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: PlacedItemTypeSchema.name,
                             useFactory: () => PlacedItemTypeSchemaClass
+                        },
+                        {
+                            name: SeedGrowthInfoSchema.name,
+                            useFactory: () => SeedGrowthInfoSchemaClass
+                        },
+                        {
+                            name: TileInfoSchema.name,
+                            useFactory: () => TileInfoSchemaClass
                         },
                         {
                             name: PlacedItemSchema.name,

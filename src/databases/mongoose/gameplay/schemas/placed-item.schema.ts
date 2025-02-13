@@ -3,7 +3,8 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
 import { AnimalCurrentState, PlacedItemTypeKey } from "../enums"
-import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-info"
+import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-info.schema"
+import { TileInfoSchema, TileInfoSchemaClass } from "./tile-info.schema"
 
 @ObjectType()
 @Schema({ timestamps: true })
@@ -44,9 +45,9 @@ export class PlacedItemSchema extends AbstractSchema {
     @Prop({ type: SeedGrowthInfoSchemaClass, required: false })
         seedGrowthInfo?: SeedGrowthInfoSchema
 
-    @Field(() => TileInfo, { nullable: true })
+    @Field(() => TileInfoSchema, { nullable: true })
     @Prop({ type: TileInfoSchemaClass, required: false })
-        tileInfo?: TileInfo
+        tileInfo?: TileInfoSchema
 
     @Field(() => AnimalInfo, { nullable: true })
     @Prop({ type: AnimalInfoSchemaClass, required: false })

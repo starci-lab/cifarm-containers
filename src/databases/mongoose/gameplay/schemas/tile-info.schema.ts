@@ -4,11 +4,11 @@ import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
 
 // Mongoose document type
-export type TileInfoDocument = HydratedDocument<TileInfo>;
+export type TileInfoDocument = HydratedDocument<TileInfoSchema>;
 
 @ObjectType()
 @Schema({ timestamps: true })
-export class TileInfo extends AbstractSchema {
+export class TileInfoSchema extends AbstractSchema {
     
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
@@ -19,4 +19,4 @@ export class TileInfo extends AbstractSchema {
         placedItemId: string
 }
 
-export const TileInfoSchemaClass = SchemaFactory.createForClass(TileInfo)
+export const TileInfoSchemaClass = SchemaFactory.createForClass(TileInfoSchema)
