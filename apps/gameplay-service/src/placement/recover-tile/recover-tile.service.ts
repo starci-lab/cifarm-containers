@@ -4,7 +4,7 @@ import {
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType
 } from "@src/databases"
 import { InventoryService } from "@src/gameplay"
@@ -29,7 +29,7 @@ export class RecoverTileService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const placedItem = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItem = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: { id: request.placedItemTileId },
                 relations: {
                     placedItemType: true
@@ -60,7 +60,7 @@ export class RecoverTileService {
 
             try {
                 // Delete the placed item
-                await queryRunner.manager.delete(PlacedItemEntity, {
+                await queryRunner.manager.delete(PlacedItemSchema, {
                     id: request.placedItemTileId,
                     userId: request.userId
                 })

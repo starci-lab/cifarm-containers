@@ -11,7 +11,7 @@ import {
 import {
     SeedGrowthInfoEntity,
     CropCurrentState,
-    PlacedItemEntity,
+    PlacedItemSchema,
     UserSchema,
     InventoryEntity,
     SystemEntity,
@@ -63,7 +63,7 @@ describe("HarvestCropService", () => {
 
         const quantity = 10
         // Create placed tile with a fully matured crop
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
                 currentPerennialCount: 0,
@@ -145,7 +145,7 @@ describe("HarvestCropService", () => {
 
         const quantity = 10
         // Create placed tile with a fully matured crop
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
                 currentPerennialCount: 0,
@@ -245,7 +245,7 @@ describe("HarvestCropService", () => {
             energy: energyConsume + 1
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
                 cropId: CropId.Carrot,
@@ -277,7 +277,7 @@ describe("HarvestCropService", () => {
             energy: energyConsume + 1
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: null, // Not planted
             x: 0,
             y: 0,
@@ -305,7 +305,7 @@ describe("HarvestCropService", () => {
             energy: energyConsume + 1
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.Normal, // Not fully matured
                 cropId: CropId.Carrot,
@@ -337,7 +337,7 @@ describe("HarvestCropService", () => {
             energy: energyConsume - 1
         })
         
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
                 cropId: CropId.Carrot,

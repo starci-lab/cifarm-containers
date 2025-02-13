@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { BuildingEntity, InjectPostgreSQL, PlacedItemEntity, PlacedItemTypeEntity, UserSchema } from "@src/databases"
+import { BuildingEntity, InjectPostgreSQL, PlacedItemSchema, PlacedItemTypeEntity, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource, DeepPartial } from "typeorm"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
@@ -55,7 +55,7 @@ export class ConstructBuildingService {
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
             // Prepare placed item entity
-            const placedItem: DeepPartial<PlacedItemEntity> = {
+            const placedItem: DeepPartial<PlacedItemSchema> = {
                 userId: request.userId,
                 buildingInfo: {},
                 x: request.position.x,
@@ -77,7 +77,7 @@ export class ConstructBuildingService {
                 })
 
                 // Save the placed item in the database
-                await queryRunner.manager.save(PlacedItemEntity, placedItem)
+                await queryRunner.manager.save(PlacedItemSchema, placedItem)
 
                 await queryRunner.commitTransaction()
             } catch (error) {

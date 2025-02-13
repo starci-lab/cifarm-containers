@@ -6,7 +6,7 @@ import {
     AnimalCurrentState,
     AnimalInfoEntity,
     InjectPostgreSQL,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     SystemEntity,
     SystemId,
@@ -41,7 +41,7 @@ export class HelpCureAnimalService {
 
         try {
             // get placed item
-            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: {
                     userId: request.neighborUserId,
                     id: request.placedItemAnimalId,

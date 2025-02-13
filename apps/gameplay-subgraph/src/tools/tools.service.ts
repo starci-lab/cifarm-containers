@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectConnection } from "@nestjs/mongoose"
-import { ToolSchema } from "@src/databases"
+import { InjectMongoose, ToolSchema } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -8,7 +7,7 @@ export class ToolsService {
     private readonly logger = new Logger(ToolsService.name)
 
     constructor(
-       @InjectConnection()
+       @InjectMongoose()
         private readonly connection: Connection
     ) { }
 

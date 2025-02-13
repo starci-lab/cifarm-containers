@@ -1,8 +1,8 @@
-import { PlacedItemEntity } from "@src/databases"
+import { PlacedItemSchema } from "@src/databases"
 
 export interface PlacedItemsSyncedMessage {
     //placed items
-    placedItems: Array<PlacedItemEntity>
+    placedItems: Array<PlacedItemSchema>
     //current user id, beneficial for debugging
     userId: string
 }

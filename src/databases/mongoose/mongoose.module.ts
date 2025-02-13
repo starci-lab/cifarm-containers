@@ -3,7 +3,6 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./mongoose.module-definit
 import { envConfig, MongoDbDatabase } from "@src/env"
 import { getMongooseConnectionName, getMongooseToken } from "./utils"
 import { MongooseModule as NestMongooseModule } from "@nestjs/mongoose"
-import { InventorySchema, InventorySchemaClass } from "./gameplay/schemas/inventory.schema"
 import {
     AnimalSchema,
     AnimalSchemaClass,
@@ -47,6 +46,8 @@ import {
     DeliveringProductSchemaClass,
     ProductSchema,
     ProductSchemaClass,
+    InventorySchema, 
+    InventorySchemaClass 
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { FolloweeSchema, FolloweeSchemaClass } from "./gameplay/schemas/followee.schema"
@@ -122,6 +123,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => FolloweeSchemaClass
                         },
                         {
+                            name: InventorySchema.name,
+                            useFactory: () => InventorySchemaClass
+                        },
+                        {
                             name: UserSchema.name,
                             inject: [getMongooseToken(options)],
                             useFactory: (
@@ -151,10 +156,6 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: SessionSchema.name,
                             useFactory: () => SessionSchemaClass
-                        },
-                        {
-                            name: InventorySchema.name,
-                            useFactory: () => InventorySchemaClass
                         },
                         {
                             name: ToolSchema.name,

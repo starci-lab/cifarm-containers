@@ -14,7 +14,7 @@ export class AnimalsService {
     async getAnimals(): Promise<Array<AnimalSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(AnimalSchema.name).find()
+            return await this.connection.model(AnimalSchema.name).find().session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -23,7 +23,7 @@ export class AnimalsService {
     async getAnimal(id: string) {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(AnimalSchema.name).findById(id)  
+            return await this.connection.model(AnimalSchema.name).findById(id).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -32,7 +32,7 @@ export class AnimalsService {
     async getAnimalByKey(key: string) {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(AnimalSchema.name).findOne({ key })
+            return await this.connection.model(AnimalSchema.name).findOne({ key }).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }

@@ -4,7 +4,7 @@ import {
     InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
-    PlacedItemEntity,
+    PlacedItemSchema,
     SeedGrowthInfoEntity,
     SupplyEntity,
     SupplyId,
@@ -38,7 +38,7 @@ export class UseFertilizerService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemTile = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: { id: request.placedItemTileId },
                 relations: {
                     seedGrowthInfo: true

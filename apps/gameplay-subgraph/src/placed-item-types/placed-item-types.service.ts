@@ -14,7 +14,7 @@ export class PlacedItemTypesService {
     async getPlacedItemTypes(): Promise<Array<PlacedItemTypeSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find()
+            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find().session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -23,7 +23,7 @@ export class PlacedItemTypesService {
     async getPlacedItemType(id: string): Promise<PlacedItemTypeSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).findById(id)
+            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).findById(id).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -32,7 +32,7 @@ export class PlacedItemTypesService {
     async getPlacedItemTypeByKey(key: string): Promise<PlacedItemTypeSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).findOne({ key })
+            return await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).findOne({ key }).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }

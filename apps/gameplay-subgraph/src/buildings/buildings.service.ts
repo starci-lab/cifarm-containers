@@ -14,7 +14,7 @@ export class BuildingsService {
     async getBuildings(): Promise<Array<BuildingSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<BuildingSchema>(BuildingSchema.name).find()
+            return await this.connection.model<BuildingSchema>(BuildingSchema.name).find().session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -23,7 +23,7 @@ export class BuildingsService {
     async getBuilding(id: string): Promise<BuildingSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findById(id)
+            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findById(id).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -32,7 +32,7 @@ export class BuildingsService {
     async getBuildingByKey(key: string): Promise<BuildingSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findOne({ key })
+            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findOne({ key }).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }

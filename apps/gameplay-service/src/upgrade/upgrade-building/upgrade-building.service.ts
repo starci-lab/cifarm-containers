@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectPostgreSQL, PlacedItemEntity, UserSchema } from "@src/databases"
+import { InjectPostgreSQL, PlacedItemSchema, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { DataSource } from "typeorm"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"
@@ -22,7 +22,7 @@ export class UpgradeBuildingService {
 
         try {
             // Fetch placed item
-            const placedItemBuilding = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemBuilding = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: { id: request.placedItemBuildingId, userId: request.userId },
                 relations: {
                     buildingInfo: true,
@@ -85,7 +85,7 @@ export class UpgradeBuildingService {
                     ...goldsChanged
                 })
 
-                await queryRunner.manager.save(PlacedItemEntity, placedItemBuilding)
+                await queryRunner.manager.save(PlacedItemSchema, placedItemBuilding)
 
                 await queryRunner.commitTransaction()
             } catch (error) {

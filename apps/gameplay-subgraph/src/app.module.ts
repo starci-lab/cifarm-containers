@@ -42,8 +42,6 @@ import { UsersModule } from "./users"
         BuildingsModule,
         CropsModule,
         ProductsModule,
-        InventoriesModule,
-        PlacedItemsModule,
         SuppliesModule,
         SystemsModule,
         TilesModule,
@@ -53,7 +51,9 @@ import { UsersModule } from "./users"
         SpinPrizesModule,
         SpinSlotsModule,
         InventoryTypesModule,
-        DeliveringProductsModule
+        DeliveringProductsModule,
+        InventoriesModule,
+        PlacedItemsModule,
     ]
 }) 
 export class AppModule {}

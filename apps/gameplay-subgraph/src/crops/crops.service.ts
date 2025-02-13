@@ -14,7 +14,7 @@ export class CropsService {
     async getCrops(): Promise<Array<CropSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<CropSchema>(CropSchema.name).find()
+            return await this.connection.model<CropSchema>(CropSchema.name).find().session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -23,7 +23,7 @@ export class CropsService {
     async getCrop(id: string): Promise<CropSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<CropSchema>(CropSchema.name).findById(id)
+            return await this.connection.model<CropSchema>(CropSchema.name).findById(id).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -32,7 +32,7 @@ export class CropsService {
     async getCropByKey(key: string): Promise<CropSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<CropSchema>(CropSchema.name).findOne({ key })
+            return await this.connection.model<CropSchema>(CropSchema.name).findOne({ key }).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }

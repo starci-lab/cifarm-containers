@@ -7,7 +7,7 @@ import { UpgradeBuildingRequest } from "./upgrade-building.dto"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     BuildingId,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemTypeId,
     UpgradeEntity,
     getPostgreSqlToken
@@ -47,7 +47,7 @@ describe("UpgradeBuildingService", () => {
             golds: upgrade.upgradePrice + 10
         })
 
-        const placedItemBuilding = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemBuilding = await dataSource.manager.save(PlacedItemSchema, {
             userId: user.id,
             buildingInfo: {
                 currentUpgrade: currentUpgrade
@@ -62,7 +62,7 @@ describe("UpgradeBuildingService", () => {
             placedItemBuildingId: placedItemBuilding.id
         })
 
-        const updatedPlacedItemBuilding = await dataSource.manager.findOne(PlacedItemEntity, {
+        const updatedPlacedItemBuilding = await dataSource.manager.findOne(PlacedItemSchema, {
             where: { id: placedItemBuilding.id },
             relations: {
                 buildingInfo: true
@@ -90,7 +90,7 @@ describe("UpgradeBuildingService", () => {
         })
         const user = await gameplayMockUserService.generate()
 
-        const placedItemBuilding = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemBuilding = await dataSource.manager.save(PlacedItemSchema, {
             userId: user.id,
             buildingInfo: {
                 currentUpgrade: upgrade.upgradeLevel
@@ -118,7 +118,7 @@ describe("UpgradeBuildingService", () => {
         const user = await gameplayMockUserService.generate({
             golds: upgrade.upgradePrice - 10
         })
-        const placedItemBuilding = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemBuilding = await dataSource.manager.save(PlacedItemSchema, {
             userId: user.id,
             buildingInfo: {
                 currentUpgrade: 0

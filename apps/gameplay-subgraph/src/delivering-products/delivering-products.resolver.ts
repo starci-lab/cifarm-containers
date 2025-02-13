@@ -15,12 +15,10 @@ export class DeliveringProductsResolver {
     @UseGuards(GraphQLJwtAuthGuard)
     @Query(() => DeliveringProductSchema, {
         name: "deliveringProduct",
-        nullable: true
     })
     async deliveringProductById(
         @Args("id", { type: () => ID }) id: string
     ): Promise<DeliveringProductSchema> {
-        this.logger.debug(`getDeliveringProductById: id=${id}`)
         return this.deliveringProductsService.getDeliveringProduct(id)
     }
 

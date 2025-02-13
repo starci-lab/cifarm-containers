@@ -16,7 +16,7 @@ export class PlacedItemsService {
     async getPlacedItem(id: string): Promise<PlacedItemSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).findById(id)
+            return await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).findById(id).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -29,14 +29,14 @@ export class PlacedItemsService {
         const mongoSession = await this.connection.startSession()
         try {
             const data = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-                .find({ user: id })
+                .find({ user: id }).session(mongoSession)
                 .skip(offset)
                 .limit(limit)
 
             const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                 .countDocuments({
                     user: id
-                })
+                }).session(mongoSession)
 
             return {
                 data,

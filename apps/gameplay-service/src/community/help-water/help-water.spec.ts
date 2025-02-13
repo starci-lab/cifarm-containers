@@ -6,7 +6,7 @@ import { HelpWaterService } from "./help-water.service"
 import {
     SystemEntity,
     UserSchema,
-    PlacedItemEntity,
+    PlacedItemSchema,
     SeedGrowthInfoEntity,
     CropCurrentState,
     SystemId,
@@ -55,7 +55,7 @@ describe("HelpWaterService", () => {
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: neighborUser.id,
@@ -128,7 +128,7 @@ describe("HelpWaterService", () => {
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: neighborUser.id,
@@ -157,7 +157,7 @@ describe("HelpWaterService", () => {
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: neighborUser.id,
@@ -193,7 +193,7 @@ describe("HelpWaterService", () => {
 
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: neighborUser.id,
@@ -232,7 +232,7 @@ describe("HelpWaterService", () => {
             where: { id: cropId }
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.NeedWater,
                 harvestQuantityRemaining: crop.maxHarvestQuantity,

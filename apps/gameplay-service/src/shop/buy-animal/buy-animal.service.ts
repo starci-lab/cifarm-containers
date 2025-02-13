@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     AnimalEntity,
     InjectPostgreSQL,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     PlacedItemTypeEntity,
     UserSchema
@@ -48,7 +48,7 @@ export class BuyAnimalService {
                 throw new GrpcFailedPreconditionException("Animal not available in shop")
             }
 
-            const placedItemBuilding = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemBuilding = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: {
                     id: request.placedItemBuildingId
                 },
@@ -82,7 +82,7 @@ export class BuyAnimalService {
                 ].capacity
 
             //Check occupancy
-            const count = await queryRunner.manager.count(PlacedItemEntity, {
+            const count = await queryRunner.manager.count(PlacedItemSchema, {
                 where: {
                     parentId: placedItemBuilding.id
                 }
@@ -111,7 +111,7 @@ export class BuyAnimalService {
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
-            const placedItemAnimal: DeepPartial<PlacedItemEntity> = {
+            const placedItemAnimal: DeepPartial<PlacedItemSchema> = {
                 userId: request.userId,
                 animalInfo: {},
                 x: request.position.x,
@@ -133,7 +133,7 @@ export class BuyAnimalService {
                     ...goldsChanged
                 })
 
-                await queryRunner.manager.save(PlacedItemEntity, [
+                await queryRunner.manager.save(PlacedItemSchema, [
                     placedItemAnimal,
                     placedItemBuilding
                 ])

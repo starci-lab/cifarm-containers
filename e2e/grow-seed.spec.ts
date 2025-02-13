@@ -22,7 +22,7 @@ import {
     getPostgreSqlToken,
     InventoryEntity,
     InventoryType,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemTypeId
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
@@ -167,7 +167,7 @@ describe("Grow seed flow", () => {
             })
             expect(isUUID(inventorySeed.id)).toBeTruthy()
 
-            const placedItemDefaultInfoTile = await dataSource.manager.findOne(PlacedItemEntity, {
+            const placedItemDefaultInfoTile = await dataSource.manager.findOne(PlacedItemSchema, {
                 where: {
                     userId: user.id,
                     placedItemTypeId: PlacedItemTypeId.DefaultInfoTile
@@ -201,7 +201,7 @@ describe("Grow seed flow", () => {
             await sleep(1100)
 
             const placedItemDefaultInfoTileAfterFirstGrow = await dataSource.manager.findOne(
-                PlacedItemEntity,
+                PlacedItemSchema,
                 {
                     where: {
                         id: placedItemDefaultInfoTile.id
@@ -246,7 +246,7 @@ describe("Grow seed flow", () => {
             await sleep(1100)
 
             const placedItemDefaultInfoTileAfterSecondGrow = await dataSource.manager.findOne(
-                PlacedItemEntity,
+                PlacedItemSchema,
                 {
                     where: {
                         id: placedItemDefaultInfoTile.id
@@ -291,7 +291,7 @@ describe("Grow seed flow", () => {
             await sleep(1100)
 
             const placedItemDefaultInfoTileAfterThirdGrow = await dataSource.manager.findOne(
-                PlacedItemEntity,
+                PlacedItemSchema,
                 {
                     where: {
                         id: placedItemDefaultInfoTile.id
@@ -359,7 +359,7 @@ describe("Grow seed flow", () => {
             await sleep(1100)
 
             const placedItemDefaultInfoTileFullyHarvest = await dataSource.manager.findOne(
-                PlacedItemEntity,
+                PlacedItemSchema,
                 {
                     where: {
                         id: placedItemDefaultInfoTile.id

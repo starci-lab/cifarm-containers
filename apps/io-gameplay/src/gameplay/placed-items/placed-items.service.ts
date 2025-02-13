@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import { InjectPostgreSQL, PlacedItemEntity } from "@src/databases"
+import { InjectPostgreSQL, PlacedItemSchema } from "@src/databases"
 import { DataSource } from "typeorm"
 import { GetPlacedItemsParams } from "./placed-items.types"
 
@@ -14,7 +14,7 @@ export class PlacedItemsService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            return await queryRunner.manager.find(PlacedItemEntity, {
+            return await queryRunner.manager.find(PlacedItemSchema, {
                 where: {
                     userId
                 },

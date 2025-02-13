@@ -13,7 +13,7 @@ import {
     InventoryEntity,
     SystemId,
     Activities,
-    PlacedItemEntity,
+    PlacedItemSchema,
     CropId,
     PlacedItemTypeId,
     getPostgreSqlToken,
@@ -61,7 +61,7 @@ describe("UseFertilizerService", () => {
         })
 
         // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,
@@ -158,7 +158,7 @@ describe("UseFertilizerService", () => {
 
 
         // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,
@@ -196,7 +196,7 @@ describe("UseFertilizerService", () => {
 
 
         // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,
@@ -232,7 +232,7 @@ describe("UseFertilizerService", () => {
         })
 
         // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,
@@ -275,7 +275,7 @@ describe("UseFertilizerService", () => {
         })
 
         // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,

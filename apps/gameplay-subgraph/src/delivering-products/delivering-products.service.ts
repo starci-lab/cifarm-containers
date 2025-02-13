@@ -16,7 +16,7 @@ export class DeliveringProductsService {
     async getDeliveringProduct(id: string): Promise<DeliveringProductSchema | null> {
         const mongoSession = await this.connection.startSession()
         try {
-            return this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name).findById(id)
+            return this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name).findById(id).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -29,15 +29,14 @@ export class DeliveringProductsService {
         const mongoSession = await this.connection.startSession()
         try {
             const data = await this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name)
-                .find({ user: id })
-                .sort({ createdAt: -1 })
+                .find({ user: id }).session(mongoSession)
                 .skip(offset)
                 .limit(limit)
 
             const count = await this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name)
                 .countDocuments({
                     user: id
-                })
+                }).session(mongoSession)
 
             return {
                 data,

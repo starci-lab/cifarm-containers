@@ -6,7 +6,7 @@ import { UsePesticideService } from "./use-pesticide.service"
 import {
     SystemEntity,
     UserSchema,
-    PlacedItemEntity,
+    PlacedItemSchema,
     SeedGrowthInfoEntity,
     CropCurrentState,
     SystemId,
@@ -53,7 +53,7 @@ describe("UsePesticideService", () => {
             energy: energyConsume + 1,
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,
@@ -123,7 +123,7 @@ describe("UsePesticideService", () => {
             energy: energyConsume + 1,
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,
@@ -150,7 +150,7 @@ describe("UsePesticideService", () => {
             energy: energyConsume + 1,
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,
@@ -183,7 +183,7 @@ describe("UsePesticideService", () => {
             energy: energyConsume - 1,
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,

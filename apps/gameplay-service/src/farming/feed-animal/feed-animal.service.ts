@@ -6,7 +6,7 @@ import {
     InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     SupplyId,
     SystemEntity,
@@ -40,7 +40,7 @@ export class FeedAnimalService {
         await queryRunner.connect()
 
         try {
-            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: {
                     id: request.placedItemAnimalId,
                     userId: request.userId,

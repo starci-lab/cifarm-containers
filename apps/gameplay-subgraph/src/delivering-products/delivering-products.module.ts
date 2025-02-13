@@ -3,6 +3,6 @@ import { DeliveringProductsService } from "./delivering-products.service"
 import { DeliveringProductsResolver } from "./delivering-products.resolver"
 
 @Module({
-    providers: [DeliveringProductsService, DeliveringProductsResolver]
+    providers: [DeliveringProductsService, ]
 })
 export class DeliveringProductsModule {}

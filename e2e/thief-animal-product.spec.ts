@@ -25,7 +25,7 @@ import {
     BuildingEntity,
     BuildingId,
     getPostgreSqlToken,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     SupplyEntity,
     SupplyId,
@@ -185,7 +185,7 @@ describe("Thief animal product flow", () => {
         messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
 
         // coop is constructed, now place an animal
-        const placedItemBuildingCoop = await dataSource.manager.findOne(PlacedItemEntity, {
+        const placedItemBuildingCoop = await dataSource.manager.findOne(PlacedItemSchema, {
             where: {
                 userId: user.id,
                 placedItemTypeId: BuildingId.Coop
@@ -219,7 +219,7 @@ describe("Thief animal product flow", () => {
         ).toBe(user.id)
         messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
 
-        const { id: placedItemAnimalId } = await dataSource.manager.findOne(PlacedItemEntity, {
+        const { id: placedItemAnimalId } = await dataSource.manager.findOne(PlacedItemSchema, {
             where: {
                 userId: user.id,
                 placedItemType: {
@@ -239,7 +239,7 @@ describe("Thief animal product flow", () => {
             //sleep 1.1s to wait for the animal to be hungry
             await sleep(1100)
 
-            const placedItemAnimal = await dataSource.manager.findOne(PlacedItemEntity, {
+            const placedItemAnimal = await dataSource.manager.findOne(PlacedItemSchema, {
                 where: {
                     id: placedItemAnimalId
                 },
@@ -288,7 +288,7 @@ describe("Thief animal product flow", () => {
             messageRecorder[PLACED_ITEMS_SYNCED_EVENT] = []
         }
 
-        const placedItemAnimalAdult = await dataSource.manager.findOne(PlacedItemEntity, {
+        const placedItemAnimalAdult = await dataSource.manager.findOne(PlacedItemSchema, {
             where: {
                 id: placedItemAnimalId
             },
@@ -336,7 +336,7 @@ describe("Thief animal product flow", () => {
         //sleep 1.1s to wait for the animal to grow, either check it will sick or not
         await sleep(1100)
 
-        const placedItemAnimalWillSick = await dataSource.manager.findOne(PlacedItemEntity, {
+        const placedItemAnimalWillSick = await dataSource.manager.findOne(PlacedItemSchema, {
             where: {
                 id: placedItemAnimalId
             },

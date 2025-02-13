@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     InjectPostgreSQL,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     PlacedItemTypeEntity,
     TileEntity,
@@ -58,7 +58,7 @@ export class BuyTileService {
             this.goldBalanceService.checkSufficient({ current: user.golds, required: tile.price })
 
             // get tiles count
-            const count = await queryRunner.manager.count(PlacedItemEntity, {
+            const count = await queryRunner.manager.count(PlacedItemSchema, {
                 where: {
                     placedItemType: {
                         tile: {
@@ -86,7 +86,7 @@ export class BuyTileService {
                 })
 
                 // Save the placed item in the database
-                await queryRunner.manager.save(PlacedItemEntity, {
+                await queryRunner.manager.save(PlacedItemSchema, {
                     userId: request.userId,
                     x: request.position.x,
                     y: request.position.y,

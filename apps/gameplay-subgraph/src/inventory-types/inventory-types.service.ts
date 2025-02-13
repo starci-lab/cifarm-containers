@@ -14,7 +14,7 @@ export class InventoryTypesService {
     async getInventoryTypes(): Promise<Array<InventoryTypeSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(InventoryTypeSchema.name).find()
+            return await this.connection.model(InventoryTypeSchema.name).find().session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -23,7 +23,7 @@ export class InventoryTypesService {
     async getInventoryType(id: string): Promise<InventoryTypeSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(InventoryTypeSchema.name).findById(id)
+            return await this.connection.model(InventoryTypeSchema.name).findById(id).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -32,7 +32,7 @@ export class InventoryTypesService {
     async getInventoryTypeByKey(key: string): Promise<InventoryTypeSchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(InventoryTypeSchema.name).findOne({ key })
+            return await this.connection.model(InventoryTypeSchema.name).findOne({ key }).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
