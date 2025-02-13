@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     CropSchema,
     DefaultInfo,
@@ -7,7 +7,7 @@ import {
     InventorySchema,
     InventoryType,
     InventoryTypeSchema,
-    SystemKey,
+    SystemId,
     SystemRecord,
     SystemSchema,
     UserSchema
@@ -35,14 +35,13 @@ export class BuySeedsService {
         )
 
         // Start session
-        const mongoSession = await this.connection.startSession()  
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
         
         try {
-            
             const crop = await this.connection.model<CropSchema>(CropSchema.name)
-                .findOne({
-                    key: request.cropId
-                })
+                .findById(createObjectId(request.cropId))
+                .session(mongoSession)
 
             if (!crop) throw new GrpcNotFoundException("Crop not found")
             if (!crop.availableInShop) throw new GrpcFailedPreconditionException("Crop not available in shop")
@@ -50,18 +49,18 @@ export class BuySeedsService {
             const totalCost = crop.price * request.quantity
 
             const user: UserSchema = await this.connection.model<UserSchema>(UserSchema.name)
-                .findOne({
-                    _id: request.userId
-                })
+                .findById(request.userId)
+                .session(mongoSession)
 
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
             //Get inventory type
             const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
-                refKey: request.cropId,
-                type: InventoryType.Seed
-            })
+                type: InventoryType.Seed,
+                crop: createObjectId(request.cropId)
+            }).session(mongoSession)
+
             if (!inventoryType) {
                 throw new GrpcNotFoundException("Inventory seed type not found")
             }  
@@ -69,15 +68,13 @@ export class BuySeedsService {
             const { count, inventories } = await this.inventoryService.getParams({
                 connection: this.connection,
                 inventoryType,
-                userId: user.id
+                userId: user.id,
+                session: mongoSession
             })
 
-            const { value: { inventoryCapacity } } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DefaultInfo>>({
-                key: SystemKey.DefaultInfo
-            })
-            
-            // Start transaction
-            mongoSession.startTransaction()
+            const { value: { inventoryCapacity } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
             try {
                 // Subtract gold
