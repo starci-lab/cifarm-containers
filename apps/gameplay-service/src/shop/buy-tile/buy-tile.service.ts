@@ -1,10 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
 import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     InjectMongoose,
-    PlacedItemSchema, PlacedItemType,
+    PlacedItemSchema,
     TileSchema,
     UserSchema
 } from "@src/databases"
@@ -35,7 +35,7 @@ export class BuyTileService {
 
         try {
             const tile = await this.connection.model<TileSchema>(TileSchema.name)
-                .findById(request.tileId)
+                .findById(createObjectId(request.tileId))
                 .session(mongoSession)
 
             if (!tile) throw new GrpcNotFoundException("Tile not found")
@@ -53,7 +53,7 @@ export class BuyTileService {
 
             // Get tile count
             const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-                .countDocuments({ "placedItemType.tile": request.tileId })
+                .countDocuments({ "placedItemType.tile": request.tileId, user: user.id })
                 .session(mongoSession)
 
             if (count >= tile.maxOwnership) {
@@ -77,8 +77,7 @@ export class BuyTileService {
                     userId: request.userId,
                     x: request.position.x,
                     y: request.position.y,
-                    placedItemType: PlacedItemType.Tile,
-                    tileInfo: {}
+                    placedItemType: createObjectId(request.tileId),
                 })
 
                 await mongoSession.commitTransaction()
