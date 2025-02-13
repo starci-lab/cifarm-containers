@@ -20,7 +20,7 @@ import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/
 import { SpinRequest, SpinResponse } from "./spin.dto"
 import { GrpcInternalException } from "nestjs-grpc-exceptions"
 import { DateUtcService } from "@src/date"
-import { DeepPartial, GrpcFailedPreconditionException } from "@src/common"
+import { createObjectId, DeepPartial, GrpcFailedPreconditionException } from "@src/common"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -40,10 +40,18 @@ export class SpinService {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
         try {
-            // Get the default info 
-            const { value: { inventoryCapacity } } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<DefaultInfo>>(SystemId.DefaultInfo).session(mongoSession)
+            // Get the default info
+            const {
+                value: { inventoryCapacity }
+            } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .session(mongoSession)
             // Get latest spin
-            const user = await this.connection.model<UserSchema>(UserSchema.name).findById(request.userId).session(mongoSession)
+            const user = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .findById(request.userId)
+                .session(mongoSession)
 
             // check if during 24-hour period user has already spun
             const now = this.dateUtcService.getDayjs()
@@ -52,15 +60,22 @@ export class SpinService {
             }
 
             // Spin the wheel
-            const spinSlots = await this.connection.model<SpinSlotSchema>(SpinSlotSchema.name).find().populate(SPIN_PRIZE).session(mongoSession)
+            const spinSlots = await this.connection
+                .model<SpinSlotSchema>(SpinSlotSchema.name)
+                .find()
+                .populate(SPIN_PRIZE)
+                .session(mongoSession)
             //check if slot not equal to 8
             if (spinSlots.length !== 8) {
                 throw new GrpcInternalException("Spin slots must be equal to 8")
             }
 
             //spin
-            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<SpinInfo>>(SystemId.SpinInfo).session(mongoSession)
-            
+            const { value } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
+                .session(mongoSession)
+
             //get the appearance chance
             const chance = this.getAppearanceChance(value)
             //we get the appearance chance, so that we randomly select a slot with that chance
@@ -77,7 +92,7 @@ export class SpinService {
 
             let balanceChanges: DeepPartial<UserSchema> = {}
             // Check type, if golds
-            const spinPrize = (selectedSlot.spinPrize as SpinPrizeSchema)
+            const spinPrize = selectedSlot.spinPrize as SpinPrizeSchema
             switch (spinPrize.type) {
             case SpinPrizeType.Gold: {
                 //we than process the reward
@@ -85,18 +100,27 @@ export class SpinService {
                     user,
                     amount: spinPrize.quantity
                 })
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
-                    ...userChanges,
-                    ...balanceChanges
-                }).session(mongoSession)
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: user.id },
+                        {
+                            ...userChanges,
+                            ...balanceChanges
+                        }
+                    )
+                    .session(mongoSession)
                 break
             }
             case SpinPrizeType.Seed: {
-                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
-                    cropId: spinPrize.crop,
-                    type: InventoryType.Seed
-                }).session(mongoSession)
-                // Get inventory same type
+                const inventoryType = await this.connection
+                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                    .findOne({
+                        crop: spinPrize.crop,
+                        type: InventoryType.Seed
+                    })
+                    .session(mongoSession)
+                    // Get inventory same type
                 const { count, inventories } = await this.inventoryService.getParams({
                     userId: request.userId,
                     inventoryType,
@@ -111,30 +135,50 @@ export class SpinService {
                     quantity: spinPrize.quantity,
                     count
                 })
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
-                    ...userChanges,
-                    ...balanceChanges,
-                }).session(mongoSession)
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: user.id },
+                        {
+                            ...userChanges,
+                            ...balanceChanges
+                        }
+                    )
+                    .session(mongoSession)
 
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
+                await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .create(createdInventories, { session: mongoSession })
                 for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({ _id: inventory._id }, inventory).session(mongoSession)
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .updateOne({ _id: inventory._id }, inventory)
+                        .session(mongoSession)
                 }
-                
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
-                    ...userChanges,
-                    ...balanceChanges
-                }).session(mongoSession)
+
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: user.id },
+                        {
+                            ...userChanges,
+                            ...balanceChanges
+                        }
+                    )
+                    .session(mongoSession)
 
                 break
             }
             case SpinPrizeType.Supply: {
-                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
-                    cropId: spinPrize.crop,
-                    type: InventoryType.Supply
-                }).session(mongoSession)
-                // Get inventory same type
-                // 
+                const inventoryType = await this.connection
+                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                    .findOne({
+                        supply: spinPrize.supply,
+                        type: InventoryType.Supply
+                    })
+                    .session(mongoSession)
+                    // Get inventory same type
+                    //
                 const { count, inventories } = await this.inventoryService.getParams({
                     userId: request.userId,
                     inventoryType,
@@ -149,14 +193,25 @@ export class SpinService {
                     quantity: spinPrize.quantity,
                     count
                 })
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
+                await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .create(createdInventories, { session: mongoSession })
                 for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({ _id: inventory._id }, inventory).session(mongoSession)
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .updateOne({ _id: inventory._id }, inventory)
+                        .session(mongoSession)
                 }
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
-                    ...userChanges,
-                    ...balanceChanges,
-                }).session(mongoSession)
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: user.id },
+                        {
+                            ...userChanges,
+                            ...balanceChanges
+                        }
+                    )
+                    .session(mongoSession)
                 break
             }
             case SpinPrizeType.Token: {
@@ -164,10 +219,16 @@ export class SpinService {
                     user,
                     amount: spinPrize.quantity
                 })
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne({ _id: user.id }, {
-                    ...userChanges,
-                    ...balanceChanges
-                }).session(mongoSession)
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: user.id },
+                        {
+                            ...userChanges,
+                            ...balanceChanges
+                        }
+                    )
+                    .session(mongoSession)
                 break
             }
             }
@@ -178,8 +239,7 @@ export class SpinService {
             this.logger.error(error)
             await mongoSession.abortTransaction()
             throw error
-        }
-        finally {
+        } finally {
             await mongoSession.endSession()
         }
     }
