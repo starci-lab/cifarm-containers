@@ -1,11 +1,9 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
 import { ChainKey, Network } from "@src/env"
 import { TutorialStep } from "../enums"
-
-export type UserDocument = HydratedDocument<UserSchema>
+import { FolloweeSchema, FolloweeSchemaClass } from "./followee.schema"
 
 export const USER_COLLECTION = "users"
 
@@ -97,6 +95,10 @@ export class UserSchema extends AbstractSchema {
     @Field(() => [String])
     @Prop({ type: Array<string>, default: [] })
         followingUserIds: Array<string>
+
+    @Field(() => [FolloweeSchema])
+    @Prop({ type: [FolloweeSchemaClass], default: [] })
+        followees: Array<FolloweeSchema>
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

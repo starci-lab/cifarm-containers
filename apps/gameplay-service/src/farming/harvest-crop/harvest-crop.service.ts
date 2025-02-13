@@ -6,7 +6,7 @@ import {
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     ProductType,
     SeedGrowthInfoEntity,
@@ -42,7 +42,7 @@ export class HarvestCropService {
         const queryRunner = this.dataSource.createQueryRunner()
         await queryRunner.connect()
         try {
-            const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemTile = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: {
                     id: request.placedItemTileId,
                     userId: request.userId,

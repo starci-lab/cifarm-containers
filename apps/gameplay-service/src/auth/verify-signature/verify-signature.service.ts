@@ -6,7 +6,7 @@ import {
     UserSchema,
     InventoryType,
     InjectMongoose,
-    SystemKey,
+    SystemId,
     SystemSchema,
     SystemRecord,
     InventoryTypeSchema,
@@ -27,7 +27,7 @@ import { InjectCache } from "@src/cache"
 import { Network } from "@src/env"
 import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
-import { DeepPartial } from "@src/common"
+import { createObjectId, DeepPartial } from "@src/common"
 import {
     GrpcInternalException,
     GrpcInvalidArgumentException,
@@ -97,19 +97,17 @@ export class VerifySignatureService {
             if (!user) {
             // get default info
                 const {
-                    value: { defaultCropKey, defaultSeedQuantity, golds, positions, inventoryCapacity }
+                    value: { defaultCropId, defaultSeedQuantity, golds, positions, inventoryCapacity }
                 } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
-                    .findOne<SystemRecord<DefaultInfo>>({
-                        key: SystemKey.DefaultInfo
-                    })
+                    .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
                 // inventories params
                 const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findOne({
-                        refKey: defaultCropKey,
-                        type: InventoryType.Seed
+                        type: InventoryType.Seed,
+                        crop: createObjectId(defaultCropId)
                     })
                     .session(mongoSession)
 
@@ -176,15 +174,14 @@ export class VerifySignatureService {
                     quantity: defaultSeedQuantity,
                     userId: user.id
                 })
-
+                console.log(createdInventories, updatedInventories)
+                
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .create(createdInventories, { session: mongoSession, ordered: true })
                 for (const inventory of updatedInventories) {
                     await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
-                        {
-                            _id: inventory._id
-                        },
+                        inventory.id,
                         inventory,
                         { session: mongoSession }
                     )

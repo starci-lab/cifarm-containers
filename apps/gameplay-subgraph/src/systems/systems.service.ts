@@ -8,7 +8,7 @@ import {
     DefaultInfo,
     InjectMongoose,
     SystemSchema,
-    SystemKey,
+    SystemId,
     SystemRecord,
     DailyRewardInfo,
 } from "@src/databases"
@@ -29,7 +29,7 @@ export class SystemsService {
         const mongoSession = await this.connection.startSession()
         try {
             const { value } =  await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<Activities>>({
-                key: SystemKey.Activities
+                key: SystemId.Activities
             })
             return value
         } finally {
@@ -41,7 +41,7 @@ export class SystemsService {
         const mongoSession = await this.connection.startSession()
         try {
             const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<CropRandomness>>({
-                key: SystemKey.CropRandomness
+                key: SystemId.CropRandomness
             })
             return value
         } finally {
@@ -53,7 +53,7 @@ export class SystemsService {
         const mongoSession = await this.connection.startSession()
         try {
             const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<AnimalRandomness>>({
-                key: SystemKey.AnimalRandomness
+                key: SystemId.AnimalRandomness
             })
             return value
         } finally {
@@ -65,7 +65,7 @@ export class SystemsService {
         const mongoSession = await this.connection.startSession()
         try {
             const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DefaultInfo>>({
-                key: SystemKey.DefaultInfo
+                key: SystemId.DefaultInfo
             })
             return value
         } finally {
@@ -77,7 +77,7 @@ export class SystemsService {
         const mongoSession = await this.connection.startSession()
         try {
             const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<SpinInfo>>({
-                key: SystemKey.SpinInfo
+                key: SystemId.SpinInfo
             })
             return value
         } finally {
@@ -89,7 +89,7 @@ export class SystemsService {
         const mongoSession = await this.connection.startSession()
         try {
             const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<EnergyRegen>>({
-                key: SystemKey.EnergyRegen
+                key: SystemId.EnergyRegen
             })
             return value
         } finally {
@@ -101,7 +101,7 @@ export class SystemsService {
         const mongoSession = await this.connection.startSession()
         try {
             const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DailyRewardInfo>>({
-                key: SystemKey.DailyRewardInfo
+                key: SystemId.DailyRewardInfo
             })
             return value
         } finally {

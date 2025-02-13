@@ -1,6 +1,6 @@
 
 // Animal Enum
-export enum AnimalKey {
+export enum AnimalId {
     Chicken = "chicken",
     Cow = "cow",
     Pig = "pig",
@@ -8,7 +8,7 @@ export enum AnimalKey {
 }
 
 // Building Enum
-export enum BuildingKey {
+export enum BuildingId {
     Coop = "coop",
     Barn = "barn",
     Home = "home"
@@ -25,7 +25,7 @@ export enum UpgradeKey {
 }
 
 // Crop Enum
-export enum CropKey {
+export enum CropId {
     Carrot = "carrot",
     Potato = "potato",
     Pineapple = "pineapple",
@@ -53,14 +53,14 @@ export enum DailyRewardPossibilityKey {
 }
 
 // Supply Enum
-export enum SupplyKey {
+export enum SupplyId {
     BasicFertilizer = "basicFertilizer",
     AnimalFeed = "animalFeed"
 }
 
 // Tile Enum
-export enum TileKey {
-    DefaultInfoTile = "starterTile",
+export enum TileId {
+    StarterTile = "starterTile",
     BasicTile1 = "basicTile1",
     BasicTile2 = "basicTile2",
     BasicTile3 = "basicTile3",
@@ -97,7 +97,7 @@ export enum ProductKey {
     BellPepperQuality = "bellPepperQuality"
 }
 
-export enum SystemKey {
+export enum SystemId {
     Activities = "activities",
     CropRandomness = "cropRandomness",
     AnimalRandomness = "animalRandomness",
@@ -107,13 +107,13 @@ export enum SystemKey {
     DailyRewardInfo = "dailyRewardInfo",
 }
 
-export enum KeyValueStoreKey {
+export enum KeyValueStoreId {
     CropGrowthLastSchedule = "cropGrowthLastSchedule",
     AnimalGrowthLastSchedule = "animalGrowthLastSchedule",
     EnergyRegenerationLastSchedule = "energyRegenerationLastSchedule"
 }
 
-export enum InventoryTypeKey {
+export enum InventoryTypeId {
     CarrotSeed = "carrotSeed",
     PotatoSeed = "potatoSeed",
     PineappleSeed = "pineappleSeed",

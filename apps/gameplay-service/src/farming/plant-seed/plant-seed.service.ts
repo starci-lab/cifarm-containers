@@ -5,7 +5,7 @@ import {
     InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     SeedGrowthInfoEntity,
     SystemEntity,
@@ -54,7 +54,7 @@ export class PlantSeedService {
             if (!inventory) throw new GrpcNotFoundException("Seed not found in inventory")
 
             //check the tile
-            const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemTile = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: {
                     id: request.placedItemTileId,
                     userId: request.userId,

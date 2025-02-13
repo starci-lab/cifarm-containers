@@ -4,7 +4,7 @@ import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { MoveService } from "./move.service"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import { PlacedItemEntity, PlacedItemTypeId, getPostgreSqlToken } from "@src/databases"
+import { PlacedItemSchema, PlacedItemTypeId, getPostgreSqlToken } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { v4 } from "uuid"
 
@@ -28,7 +28,7 @@ describe("MoveService", () => {
 
     it("should successfully move placed item to a new position", async () => {
         const user = await gameplayMockUserService.generate()
-        const placedItem = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItem = await dataSource.manager.save(PlacedItemSchema, {
             userId: user.id,
             x: 1,
             y: 1,
@@ -43,7 +43,7 @@ describe("MoveService", () => {
         })
 
         // Assert: Check that the placed item's position has been updated
-        const updatedPlacedItem = await dataSource.manager.findOne(PlacedItemEntity, {
+        const updatedPlacedItem = await dataSource.manager.findOne(PlacedItemSchema, {
             where: { id: placedItem.id }
         })
 

@@ -31,7 +31,7 @@ export class InventoryService {
         // if quantity is still remaining, create a new inventory, and add the quantity to it
         while (quantity > 0) {
             const quantityToAdd = Math.min(inventoryType.maxStack, quantity)
-            createdInventories.push({ quantity: quantityToAdd, inventoryTypeKey: inventoryType.key, user: userId })
+            createdInventories.push({ quantity: quantityToAdd, inventoryType: inventoryType.id, user: userId })
             quantity -= quantityToAdd
         }
 
@@ -75,7 +75,7 @@ export class InventoryService {
         })
         const inventories = await connection.model<InventorySchema>(InventorySchema.name).find({
             user: userId,
-            inventoryTypeKey: inventoryType.key,
+            inventoryType: inventoryType.id,
         }).session(session)
         return { count, inventories }
     }

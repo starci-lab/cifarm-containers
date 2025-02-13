@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
-import { KeyAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 import { SupplyType } from "../enums"
 
 // Mongoose document type
@@ -12,7 +12,7 @@ export type SupplyDocument = HydratedDocument<SupplySchema>;
     timestamps: true,
     collection: "supplies",
 })
-export class SupplySchema extends KeyAbstractSchema {
+export class SupplySchema extends AbstractSchema {
     @Field(() => String)
     @Prop({ type: String, required: true, enum: SupplyType })
         type: SupplyType

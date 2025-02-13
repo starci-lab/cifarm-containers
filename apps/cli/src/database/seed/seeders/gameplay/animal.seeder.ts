@@ -2,12 +2,13 @@
 import {
     AnimalType,
     AnimalSchema,
-    AnimalKey,
+    AnimalId,
     InjectMongoose
 } from "@src/databases"
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
 import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class AnimalSeeder implements Seeder {
@@ -22,7 +23,7 @@ export class AnimalSeeder implements Seeder {
         this.logger.debug("Seeding animals...")
         const data: Array<Partial<AnimalSchema>> = [
             {
-                key: AnimalKey.Chicken,
+                _id: createObjectId(AnimalId.Chicken),
                 yieldTime: 60 * 60 * 24,
                 offspringPrice: 1000,
                 isNft: false,
@@ -40,7 +41,7 @@ export class AnimalSeeder implements Seeder {
                 unlockLevel: 5,
             },
             {
-                key: AnimalKey.Cow,
+                _id: createObjectId(AnimalId.Cow),
                 yieldTime: 60 * 60 * 24 * 2,
                 offspringPrice: 2500,
                 isNft: false,
@@ -58,9 +59,13 @@ export class AnimalSeeder implements Seeder {
                 unlockLevel: 10,
             }
         ]
-
-        await this.connection.model<AnimalSchema>(AnimalSchema.name).insertMany(data)
+        try {
+            await this.connection.model<AnimalSchema>(AnimalSchema.name).insertMany(data)
+        } catch (error) {
+            console.error(error)
+        }
     }
+
         
     async drop(): Promise<void> {
         this.logger.verbose("Dropping animals...")

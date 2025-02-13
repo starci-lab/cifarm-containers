@@ -4,7 +4,7 @@ import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
-    PlacedItemEntity,
+    PlacedItemSchema,
     InventoryEntity,
     UserSchema,
     getPostgreSqlToken,
@@ -65,7 +65,7 @@ describe("TheifCropService", () => {
         })
 
         // create
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
                 harvestQuantityRemaining: crop.maxHarvestQuantity,
@@ -142,7 +142,7 @@ describe("TheifCropService", () => {
         })
 
         // create
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
                 harvestQuantityRemaining: crop.maxHarvestQuantity,
@@ -242,7 +242,7 @@ describe("TheifCropService", () => {
             where: { id: cropId }
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
                 harvestQuantityRemaining: crop.maxHarvestQuantity,
@@ -280,7 +280,7 @@ describe("TheifCropService", () => {
             where: { id: cropId }
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.FullyMatured,
                 harvestQuantityRemaining: crop.maxHarvestQuantity,
@@ -320,7 +320,7 @@ describe("TheifCropService", () => {
         })
 
         // create
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.Normal,
                 harvestQuantityRemaining: crop.maxHarvestQuantity,

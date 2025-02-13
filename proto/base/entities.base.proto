@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package base;
 
-message PlacedItemEntity {
+message PlacedItemSchema {
     string id = 1; // AbstractEntity ID
   
     int32 x = 2;

@@ -3,7 +3,7 @@ import {
     InjectPostgreSQL,
     InventoryEntity,
     InventoryType,
-    PlacedItemEntity
+    PlacedItemSchema
 } from "@src/databases"
 import { DataSource } from "typeorm"
 import { PlaceTileRequest, PlaceTileResponse } from "./place-tile.dto"
@@ -51,7 +51,7 @@ export class PlaceTileService {
                 }
 
                 // Create placed tile
-                const placedTile = await queryRunner.manager.save(PlacedItemEntity, {
+                const placedTile = await queryRunner.manager.save(PlacedItemSchema, {
                     userId: request.userId,
                     inventoryId: inventory.id,
                     placedItemTypeId: inventory.inventoryType.id,

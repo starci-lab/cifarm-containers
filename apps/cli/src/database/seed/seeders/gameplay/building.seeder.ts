@@ -1,13 +1,13 @@
 import {
     AnimalType,
-    BuildingKey,
+    BuildingId,
     BuildingSchema,
     InjectMongoose,
 } from "@src/databases"
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
 import { Connection } from "mongoose"
-import { DeepPartial } from "@src/common"
+import { DeepPartial, createObjectId } from "@src/common"
 
 @Injectable()
 export class BuildingSeeder implements Seeder {
@@ -22,7 +22,7 @@ export class BuildingSeeder implements Seeder {
         this.logger.debug("Seeding buildings...")
         const data: Array<DeepPartial<BuildingSchema>> = [
             {
-                key: BuildingKey.Home,
+                _id: createObjectId(BuildingId.Home),
                 availableInShop: false,
                 maxUpgrade: 0,
                 price: 0,
@@ -31,7 +31,7 @@ export class BuildingSeeder implements Seeder {
                 upgrades: []
             },
             {
-                key: BuildingKey.Coop,
+                _id: createObjectId(BuildingId.Coop),
                 availableInShop: true,
                 type: AnimalType.Poultry,
                 maxUpgrade: 2,
@@ -56,7 +56,7 @@ export class BuildingSeeder implements Seeder {
                 ]
             },
             {
-                key: BuildingKey.Barn,
+                _id: createObjectId(BuildingId.Barn),
                 availableInShop: true,
                 type: AnimalType.Livestock,
                 maxUpgrade: 2,

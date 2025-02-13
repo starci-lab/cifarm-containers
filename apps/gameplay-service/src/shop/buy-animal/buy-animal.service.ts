@@ -75,7 +75,7 @@ export class BuyAnimalService {
             //Check if building is same animal type
             if (building.type != animal.type)
                 throw new GrpcFailedPreconditionException("Building is not for this animal")
-
+z
             //Check if slot is occupied
             const maxCapacity =
                 building.upgrades[
@@ -110,7 +110,7 @@ export class BuyAnimalService {
             //Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
-            const placedItemAnimal: DeepPartial<PlacedItemEntity> = {
+            const placedItemAnimal: DeepPartial<PlacedItemSchema> = {
                 userId: request.userId,
                 animalInfo: {},
                 x: request.position.x,
@@ -132,7 +132,7 @@ export class BuyAnimalService {
                     ...goldsChanged
                 })
 
-                await queryRunner.manager.save(PlacedItemEntity, [
+                await queryRunner.manager.save(PlacedItemSchema, [
                     placedItemAnimal,
                     placedItemBuilding
                 ])

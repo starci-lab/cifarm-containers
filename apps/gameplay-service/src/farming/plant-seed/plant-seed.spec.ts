@@ -11,7 +11,7 @@ import {
 import {
     SeedGrowthInfoEntity,
     CropEntity,
-    PlacedItemEntity,
+    PlacedItemSchema,
     InventoryEntity,
     UserSchema,
     SystemEntity,
@@ -72,7 +72,7 @@ describe("PlantSeedService", () => {
             userId: user.id
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,
@@ -185,7 +185,7 @@ describe("PlantSeedService", () => {
             userId: user.id,
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,
@@ -224,7 +224,7 @@ describe("PlantSeedService", () => {
             userId: user.id,
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: user.id,

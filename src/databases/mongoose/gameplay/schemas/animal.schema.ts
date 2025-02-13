@@ -1,6 +1,6 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { KeyAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 import { AnimalType } from "../enums"
 
 @ObjectType()
@@ -8,7 +8,7 @@ import { AnimalType } from "../enums"
     timestamps: true,
     collection: "animals"
 })
-export class AnimalSchema extends KeyAbstractSchema {
+export class AnimalSchema extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number })
         yieldTime: number

@@ -7,7 +7,7 @@ import {
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     ProductType,
     SystemEntity,
@@ -47,7 +47,7 @@ export class CollectAnimalProductService {
         await queryRunner.connect()
 
         try {
-            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: {
                     id: request.placedItemAnimalId,
                     userId: request.userId,

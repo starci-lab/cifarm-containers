@@ -1,8 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId } from "@src/common"
 import {
     InjectMongoose,
     PlacedItemTypeKey,
-    TileKey,
+    TileId,
     TileSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
@@ -22,7 +23,7 @@ export class TileSeeder implements Seeder {
 
         const data: Array<Partial<TileSchema>> = [
             {
-                key: TileKey.DefaultInfoTile,
+                _id: createObjectId(TileId.StarterTile),
                 price: 0,
                 maxOwnership: 6,
                 isNft: false,
@@ -32,7 +33,7 @@ export class TileSeeder implements Seeder {
                 placedItemTypeKey: PlacedItemTypeKey.StarterTile
             },
             {
-                key: TileKey.BasicTile1,
+                _id: createObjectId(TileId.BasicTile1),
                 price: 1000,
                 maxOwnership: 10,
                 isNft: false,
@@ -42,7 +43,7 @@ export class TileSeeder implements Seeder {
                 placedItemTypeKey: PlacedItemTypeKey.BasicTile1
             },
             {
-                key: TileKey.BasicTile2,
+                _id: createObjectId(TileId.BasicTile2),
                 price: 2500,
                 maxOwnership: 30,
                 isNft: false,
@@ -52,7 +53,7 @@ export class TileSeeder implements Seeder {
                 placedItemTypeKey: PlacedItemTypeKey.BasicTile1
             },
             {
-                key: TileKey.BasicTile3,
+                _id: createObjectId(TileId.BasicTile3),
                 price: 10000,
                 maxOwnership: 9999,
                 isNft: false,
@@ -62,7 +63,7 @@ export class TileSeeder implements Seeder {
                 placedItemTypeKey: PlacedItemTypeKey.BasicTile3
             },
             {
-                key: TileKey.FertileTile,
+                _id: createObjectId(TileId.FertileTile),
                 isNft: true,
                 qualityProductChanceStack: 0.025,
                 qualityProductChanceLimit: 0.5,

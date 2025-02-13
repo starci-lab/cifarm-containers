@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectConnection } from "@nestjs/mongoose"
-import { SpinPrizeSchema } from "@src/databases"
+import { InjectMongoose, SpinPrizeSchema } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -8,7 +7,7 @@ export class SpinPrizesService {
     private readonly logger = new Logger(SpinPrizesService.name)
 
     constructor(
-        @InjectConnection()
+        @InjectMongoose()
         private readonly connection: Connection
     ) {}
 

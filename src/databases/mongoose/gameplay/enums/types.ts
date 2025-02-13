@@ -35,10 +35,9 @@ export enum SpinPrizeType {
 // Inventory Type Enum
 export enum InventoryType {
     Seed = "seed",
-    Tile = "tile",
-    Animal = "animal",
     Product = "product",
-    Supply = "supply"
+    Supply = "supply",
+    Tool = "tool",
 }
 
 

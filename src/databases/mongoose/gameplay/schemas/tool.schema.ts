@@ -2,14 +2,14 @@ import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { AvailableInType } from "../enums"
-import { KeyAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 
 // Mongoose document type
 export type ToolDocument = HydratedDocument<ToolSchema>;
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "tools" })
-export class ToolSchema extends KeyAbstractSchema {
+export class ToolSchema extends AbstractSchema {
     
     @Field(() => String)
     @Prop({ type: String, enum: AvailableInType, required: true })

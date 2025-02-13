@@ -7,7 +7,7 @@ import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule 
 import {
     BuildingEntity,
     BuildingId,
-    PlacedItemEntity,
+    PlacedItemSchema,
     UserSchema,
     getPostgreSqlToken
 } from "@src/databases"
@@ -56,7 +56,7 @@ describe("ConstructBuildingService", () => {
 
         expect(golds - goldsAfter).toBe(building.price)
 
-        const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
+        const placedItem = await dataSource.manager.findOne(PlacedItemSchema, {
             where: { userId: user.id, placedItemType: { building: { id: buildingId } } }
         })
 

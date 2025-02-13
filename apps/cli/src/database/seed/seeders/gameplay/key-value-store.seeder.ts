@@ -1,36 +1,46 @@
-import { KeyValueStoreEntity, KeyValueStoreId } from "@src/databases"
-import { DataSource } from "typeorm"
-import { Seeder } from "typeorm-extension"
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
-import { Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
+import { Seeder } from "nestjs-seeder"
+import { InjectMongoose, KeyValueStoreId, KeyValueStoreSchema } from "@src/databases"
+import { createObjectId, DeepPartial } from "@src/common"
+import { Connection } from "mongoose"
 dayjs.extend(utc)
 
+@Injectable()
 export class KeyValueStoreSeeder implements Seeder {
     private readonly logger = new Logger(KeyValueStoreSeeder.name)
-    track = true
-    public async run(dataSource: DataSource): Promise<void> {
-        this.logger.debug("Seeding temp...")
-        await dataSource.manager.save(KeyValueStoreEntity, [
+
+    constructor(
+        @InjectMongoose()
+        private readonly connection: Connection
+    ) {}
+
+    public async seed(): Promise<void> {
+        const data: Array<DeepPartial<KeyValueStoreSchema>> = [
             {
-                id: KeyValueStoreId.AnimalGrowthLastSchedule,
+                _id: createObjectId(KeyValueStoreId.CropGrowthLastSchedule),
                 value: {
                     date: dayjs().utc().toDate()
                 }
             },
             {
-                id: KeyValueStoreId.CropGrowthLastSchedule,
+                _id: createObjectId(KeyValueStoreId.EnergyRegenerationLastSchedule),
                 value: {
                     date: dayjs().utc().toDate()
                 }
             },
             {
-                id: KeyValueStoreId.EnergyRegenerationLastSchedule,
+                _id: createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule),
                 value: {
                     date: dayjs().utc().toDate()
                 }
             }
-        ])
-        this.logger.verbose("Temp seeded successfully.")
+        ]
+        await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).insertMany(data)
+    }
+
+    public async drop(): Promise<void> {
+        await this.connection.model(KeyValueStoreSchema.name).deleteMany({})
     }
 }

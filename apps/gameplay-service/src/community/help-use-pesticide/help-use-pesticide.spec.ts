@@ -6,7 +6,7 @@ import { HelpUsePesticideService } from "./help-use-pesticide.service"
 import {
     SystemEntity,
     UserSchema,
-    PlacedItemEntity,
+    PlacedItemSchema,
     SeedGrowthInfoEntity,
     CropCurrentState,
     SystemId,
@@ -55,7 +55,7 @@ describe("HelpUsePesticideService", () => {
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: neighborUser.id,
@@ -128,7 +128,7 @@ describe("HelpUsePesticideService", () => {
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: neighborUser.id,
@@ -157,7 +157,7 @@ describe("HelpUsePesticideService", () => {
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: neighborUser.id,
@@ -193,7 +193,7 @@ describe("HelpUsePesticideService", () => {
 
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             x: 0,
             y: 0,
             userId: neighborUser.id,
@@ -232,7 +232,7 @@ describe("HelpUsePesticideService", () => {
             where: { id: cropId }
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
             seedGrowthInfo: {
                 currentState: CropCurrentState.IsInfested,
                 harvestQuantityRemaining: crop.maxHarvestQuantity,

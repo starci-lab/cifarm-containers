@@ -11,7 +11,7 @@ import {
 import {
     AnimalInfoEntity,
     AnimalCurrentState,
-    PlacedItemEntity,
+    PlacedItemSchema,
     UserSchema,
     InventoryEntity,
     SupplyId,
@@ -59,7 +59,7 @@ describe("FeedAnimalService", () => {
         })
 
         // Create placed animal in hungry state
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 currentState: AnimalCurrentState.Hungry
             },
@@ -133,7 +133,7 @@ describe("FeedAnimalService", () => {
 
     it("should throw GrpcNotFoundException when animal belongs to a different user", async () => {
         const user = await gameplayMockUserService.generate()
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 currentState: AnimalCurrentState.Hungry
             },
@@ -163,7 +163,7 @@ describe("FeedAnimalService", () => {
             energy: energyConsume + 1
         })
 
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 currentState: AnimalCurrentState.Normal // Not hungry
             },
@@ -193,7 +193,7 @@ describe("FeedAnimalService", () => {
             energy: energyConsume + 1
         })
 
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 currentState: AnimalCurrentState.Hungry
             },
@@ -223,7 +223,7 @@ describe("FeedAnimalService", () => {
             energy: energyConsume - 1
         })
         
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 currentState: AnimalCurrentState.Hungry
             },

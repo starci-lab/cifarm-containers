@@ -9,7 +9,7 @@ import {
     InventoryEntity,
     InventoryType,
     InventoryTypeEntity,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     ProductType,
     SeedGrowthInfoEntity,
@@ -47,7 +47,7 @@ export class ThiefCropService {
 
         try {
             // get placed item
-            const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemTile = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: {
                     userId: request.neighborUserId,
                     id: request.placedItemTileId,

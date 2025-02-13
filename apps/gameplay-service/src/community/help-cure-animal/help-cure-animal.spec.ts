@@ -7,7 +7,7 @@ import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule 
 import {
     AnimalInfoEntity,
     AnimalCurrentState,
-    PlacedItemEntity,
+    PlacedItemSchema,
     UserSchema,
     SystemEntity,
     SystemId,
@@ -55,7 +55,7 @@ describe("HelpCureAnimalService", () => {
         const neighborUser = await gameplayMockUserService.generate()
     
         // create placed animal in sick state
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 currentState: AnimalCurrentState.Sick
             },
@@ -127,7 +127,7 @@ describe("HelpCureAnimalService", () => {
         })
         const neighborUser = await gameplayMockUserService.generate()
     
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 currentState: AnimalCurrentState.Sick
             },
@@ -158,7 +158,7 @@ describe("HelpCureAnimalService", () => {
             energy: energyConsume + 1
         })
 
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 animalId: AnimalId.Chicken,
                 currentState: AnimalCurrentState.Sick
@@ -190,7 +190,7 @@ describe("HelpCureAnimalService", () => {
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 currentState: AnimalCurrentState.Normal // Not sick
             },

@@ -1,7 +1,7 @@
 import {
-    TileKey,
-    AnimalKey,
-    BuildingKey,
+    TileId,
+    AnimalId,
+    BuildingId,
     PlacedItemType,
     PlacedItemTypeKey,
     PlacedItemTypeSchema,
@@ -10,6 +10,7 @@ import {
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
 import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class PlacedItemTypeSeeder implements Seeder {
@@ -25,25 +26,65 @@ export class PlacedItemTypeSeeder implements Seeder {
 
         const data: Array<Partial<PlacedItemTypeSchema>> = [
             // Tiles
-            { key: PlacedItemTypeKey.StarterTile, type: PlacedItemType.Tile, refKey: TileKey.DefaultInfoTile },
-            { key: PlacedItemTypeKey.BasicTile1, type: PlacedItemType.Tile, refKey: TileKey.BasicTile1 },
-            { key: PlacedItemTypeKey.BasicTile2, type: PlacedItemType.Tile, refKey: TileKey.BasicTile2 },
-            { key: PlacedItemTypeKey.BasicTile3, type: PlacedItemType.Tile, refKey: TileKey.BasicTile3 },
-            { key: PlacedItemTypeKey.FertileTile, type: PlacedItemType.Tile, refKey: TileKey.FertileTile },
+            {
+                _id: createObjectId(PlacedItemTypeKey.StarterTile),
+                type: PlacedItemType.Tile,
+                tile: createObjectId(TileId.StarterTile)
+            },
+            {
+                _id: createObjectId(PlacedItemTypeKey.BasicTile1),
+                type: PlacedItemType.Tile,
+                tile: createObjectId(TileId.BasicTile1)
+            },
+            {
+                _id: createObjectId(PlacedItemTypeKey.BasicTile2),
+                type: PlacedItemType.Tile,
+                tile: createObjectId(TileId.BasicTile2)
+            },
+            {
+                _id: createObjectId(PlacedItemTypeKey.BasicTile3),
+                type: PlacedItemType.Tile,
+                tile: createObjectId(TileId.BasicTile3)
+            },
+            {
+                _id: createObjectId(PlacedItemTypeKey.FertileTile),
+                type: PlacedItemType.Tile,
+                tile: createObjectId(TileId.FertileTile)
+            },
 
             // Animals
-            { key: PlacedItemTypeKey.Chicken, type: PlacedItemType.Animal, refKey: AnimalKey.Chicken },
-            { key: PlacedItemTypeKey.Cow, type: PlacedItemType.Animal, refKey: AnimalKey.Cow },
-            { key: PlacedItemTypeKey.Pig, type: PlacedItemType.Animal, refKey: AnimalKey.Pig },
-            { key: PlacedItemTypeKey.Sheep, type: PlacedItemType.Animal, refKey: AnimalKey.Sheep },
+            {
+                _id: createObjectId(PlacedItemTypeKey.Chicken),
+                type: PlacedItemType.Animal,
+                animal: createObjectId(AnimalId.Chicken)
+            },
+            {
+                _id: createObjectId(PlacedItemTypeKey.Cow),
+                type: PlacedItemType.Animal,
+                animal: createObjectId(AnimalId.Cow)
+            },
 
             // Buildings
-            { key: PlacedItemTypeKey.Coop, type: PlacedItemType.Building, refKey: BuildingKey.Coop },
-            { key: PlacedItemTypeKey.Barn, type: PlacedItemType.Building, refKey: BuildingKey.Barn },
-            { key: PlacedItemTypeKey.Home, type: PlacedItemType.Building, refKey: BuildingKey.Home }
+            {
+                _id: createObjectId(PlacedItemTypeKey.Home),
+                type: PlacedItemType.Building,
+                building: createObjectId(BuildingId.Home)
+            },
+            {
+                _id: createObjectId(PlacedItemTypeKey.Barn),
+                type: PlacedItemType.Building,
+                building: createObjectId(BuildingId.Barn)
+            },
+            {
+                _id: createObjectId(PlacedItemTypeKey.Coop),
+                type: PlacedItemType.Building,
+                building: createObjectId(BuildingId.Coop)
+            }
         ]
 
-        await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).insertMany(data)
+        await this.connection
+            .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+            .insertMany(data)
     }
 
     async drop(): Promise<void> {

@@ -5,7 +5,7 @@ import {
     Activities,
     CropCurrentState,
     InjectPostgreSQL,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemType,
     SeedGrowthInfoEntity,
     SystemEntity,
@@ -41,7 +41,7 @@ export class HelpUseHerbicideService {
 
         try {
             // get placed item
-            const placedItemTile = await queryRunner.manager.findOne(PlacedItemEntity, {
+            const placedItemTile = await queryRunner.manager.findOne(PlacedItemSchema, {
                 where: {
                     userId: request.neighborUserId,
                     id: request.placedItemTileId,

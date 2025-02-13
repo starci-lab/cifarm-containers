@@ -1,8 +1,11 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { AppearanceChance, SpinPrizeType } from "../enums"
 import { AbstractSchema } from "./abstract"
+import { Schema as MongooseSchema } from "mongoose"
+import { CropSchema } from "./crop.schema"
+import { SupplySchema } from "./supply.schema"
 
 // Mongoose document type
 export type SpinPrizeDocument = HydratedDocument<SpinPrizeSchema>;
@@ -17,9 +20,13 @@ export class SpinPrizeSchema extends AbstractSchema {
     @Prop({ type: String, required: true, enum: SpinPrizeType })
         type: SpinPrizeType
 
-    @Field(() => String, { nullable: true })
-    @Prop({ type: String, required: false })
-        refKey?: string
+    @Field(() => ID, { nullable: true })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: CropSchema.name })
+        crop?: CropSchema | string
+
+    @Field(() => ID, { nullable: true })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: SupplySchema.name })
+        supply?: SupplySchema | string
 
     @Field(() => Int)
     @Prop({ type: Number, required: true })

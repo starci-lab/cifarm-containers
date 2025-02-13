@@ -1,6 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId } from "@src/common"
 import {
-    CropKey,
+    CropId,
     CropSchema,
     InjectMongoose,
 } from "@src/databases"
@@ -20,7 +21,7 @@ export class CropSeeder implements Seeder {
         this.logger.debug("Seeding crops...")
         const data: Array<Partial<CropSchema>> = [
             {
-                key: CropKey.Carrot,
+                _id: createObjectId(CropId.Carrot),
                 price: 50,
                 growthStageDuration: 3600,
                 growthStages: 5,
@@ -35,7 +36,7 @@ export class CropSeeder implements Seeder {
                 availableInShop: true,
             },
             {
-                key: CropKey.Potato,
+                _id: createObjectId(CropId.Potato),
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,
@@ -50,7 +51,7 @@ export class CropSeeder implements Seeder {
                 availableInShop: true,
             },
             {
-                key: CropKey.Cucumber,
+                _id: createObjectId(CropId.Cucumber),
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,
@@ -65,7 +66,7 @@ export class CropSeeder implements Seeder {
                 availableInShop: true
             },
             {
-                key: CropKey.Pineapple,
+                _id: createObjectId(CropId.Pineapple),
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,
@@ -80,7 +81,7 @@ export class CropSeeder implements Seeder {
                 availableInShop: true,
             },
             {
-                key: CropKey.Watermelon,
+                _id: createObjectId(CropId.Watermelon),
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,
@@ -95,7 +96,7 @@ export class CropSeeder implements Seeder {
                 availableInShop: true,
             },
             {
-                key: CropKey.BellPepper,
+                _id: createObjectId(CropId.BellPepper),
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,

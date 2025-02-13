@@ -5,8 +5,8 @@ import { UserLike } from "@src/jwt"
 import { Connection } from "mongoose"
 
 @Injectable()
-export class InventoryService {
-    private readonly logger = new Logger(InventoryService.name)
+export class InventoriesService {
+    private readonly logger = new Logger(InventoriesService.name)
 
     constructor(
         @InjectMongoose()
@@ -16,7 +16,7 @@ export class InventoryService {
     async getInventory(id: string): Promise<InventorySchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<InventorySchema>(InventorySchema.name).findById(id)
+            return await this.connection.model<InventorySchema>(InventorySchema.name).findById(id).session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -29,15 +29,14 @@ export class InventoryService {
         const mongoSession = await this.connection.startSession()
         try {
             const data = await this.connection.model<InventorySchema>(InventorySchema.name)
-                .find({ user: id })
-                .sort({ createdAt: -1 })
+                .find({ user: id }).session(mongoSession)
                 .skip(offset)
                 .limit(limit)
 
             const count = await this.connection.model<InventorySchema>(InventorySchema.name)
                 .countDocuments({
                     user: id
-                })
+                }).session(mongoSession)
 
             return {
                 data,

@@ -9,7 +9,7 @@ import {
     AnimalId,
     BuildingId,
     getPostgreSqlToken,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemTypeId,
     UpgradeEntity,
     UserSchema
@@ -45,7 +45,7 @@ describe("BuyAnimalService", () => {
         const user = await gameplayMockUserService.generate({ golds: animal.price + 10 })
 
         //create placed item building by data source
-        const building = await dataSource.manager.save(PlacedItemEntity, {
+        const building = await dataSource.manager.save(PlacedItemSchema, {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.Coop,
             x,
@@ -71,7 +71,7 @@ describe("BuyAnimalService", () => {
 
         expect(golds - goldsAfter).toBe(totalCost)
 
-        const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
+        const placedItem = await dataSource.manager.findOne(PlacedItemSchema, {
             where: {
                 userId: user.id,
                 placedItemType: {
@@ -89,7 +89,7 @@ describe("BuyAnimalService", () => {
         const user = await gameplayMockUserService.generate()
         const invalidAnimalId = "invalid_animal_id" as AnimalId
 
-        const building = await dataSource.manager.save(PlacedItemEntity, {
+        const building = await dataSource.manager.save(PlacedItemSchema, {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.Coop,
             x: 0,
@@ -131,7 +131,7 @@ describe("BuyAnimalService", () => {
             where: { id: AnimalId.Cow }
         })
 
-        const nonBuildingPlacedItem = await dataSource.manager.save(PlacedItemEntity, {
+        const nonBuildingPlacedItem = await dataSource.manager.save(PlacedItemSchema, {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.Chicken,
             x: 0,
@@ -160,7 +160,7 @@ describe("BuyAnimalService", () => {
         })
 
         //create placed item building by data source, with occupancy equal to capacity
-        const building = await dataSource.manager.save(PlacedItemEntity, {
+        const building = await dataSource.manager.save(PlacedItemSchema, {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.Coop,
             x: 0,
@@ -193,7 +193,7 @@ describe("BuyAnimalService", () => {
         const user = await gameplayMockUserService.generate({ golds: animal.price - 10 })
 
         //create placed item building by data source
-        const building = await dataSource.manager.save(PlacedItemEntity, {
+        const building = await dataSource.manager.save(PlacedItemSchema, {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.Coop,
             x: 10,

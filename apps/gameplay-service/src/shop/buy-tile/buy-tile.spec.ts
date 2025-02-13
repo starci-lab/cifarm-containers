@@ -8,7 +8,7 @@ import {
     TileEntity,
     TileId,
     getPostgreSqlToken,
-    PlacedItemEntity,
+    PlacedItemSchema,
     PlacedItemTypeEntity,
     UserSchema,
     PlacedItemType
@@ -60,7 +60,7 @@ describe("BuyTileService", () => {
 
         expect(golds - goldsAfter).toBe(totalCost)
 
-        const placedItem = await dataSource.manager.findOne(PlacedItemEntity, {
+        const placedItem = await dataSource.manager.findOne(PlacedItemSchema, {
             where: {
                 userId: user.id,
                 placedItemType: {
@@ -102,7 +102,7 @@ describe("BuyTileService", () => {
             select: ["id"]
         })
         await dataSource.manager.save(
-            PlacedItemEntity,
+            PlacedItemSchema,
             Array.from({ length: tile.maxOwnership }, (_, i) => ({
                 userId: user.id,
                 x: i,

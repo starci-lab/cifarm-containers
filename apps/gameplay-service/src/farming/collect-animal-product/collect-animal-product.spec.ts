@@ -7,7 +7,7 @@ import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule 
 import {
     AnimalInfoEntity,
     AnimalCurrentState,
-    PlacedItemEntity,
+    PlacedItemSchema,
     InventoryEntity,
     UserSchema,
     getPostgreSqlToken,
@@ -58,7 +58,7 @@ describe("CollectAnimalProductService", () => {
         const quantity = 10
         const animalId = AnimalId.Chicken
         // create
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 animalId,
                 currentState: AnimalCurrentState.Yield,
@@ -130,7 +130,7 @@ describe("CollectAnimalProductService", () => {
         const quantity = 10
         const animalId = AnimalId.Chicken
         // create
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 animalId,
                 currentState: AnimalCurrentState.Yield,
@@ -221,7 +221,7 @@ describe("CollectAnimalProductService", () => {
             energy: energyConsume - 1
         })
 
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 currentState: AnimalCurrentState.Yield
             },
@@ -251,7 +251,7 @@ describe("CollectAnimalProductService", () => {
             energy: energyConsume + 1
         })
 
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 animalId: AnimalId.Chicken,
                 currentState: AnimalCurrentState.Yield
@@ -284,7 +284,7 @@ describe("CollectAnimalProductService", () => {
 
         const animalId = AnimalId.Chicken
         // create
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemEntity, {
+        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
             animalInfo: {
                 animalId,
                 currentState: AnimalCurrentState.Normal,
