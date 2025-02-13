@@ -29,6 +29,7 @@ import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { DeepPartial } from "@src/common"
 import {
+    GrpcInternalException,
     GrpcInvalidArgumentException,
     GrpcNotFoundException
 } from "nestjs-grpc-exceptions"
@@ -134,7 +135,7 @@ export class VerifySignatureService {
 
                 userRaw.id = userRaw._id.toString()
                 user = userRaw
-                
+
                 const { count, inventories } = await this.inventoryService.getParams({
                     connection: this.connection,
                     inventoryType,
@@ -212,7 +213,7 @@ export class VerifySignatureService {
         } catch (error) {
             this.logger.error(error)
             mongoSession.abortTransaction()
-            throw error
+            throw new GrpcInternalException(error.message)
         } finally {
             mongoSession.endSession()
         }
