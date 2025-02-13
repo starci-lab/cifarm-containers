@@ -4,7 +4,7 @@ import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule 
 import { Test } from "@nestjs/testing"
 import { isJWT, isUUID } from "class-validator"
 import { RefreshService } from "./refresh.service"
-import { getMongooseToken, SessionSchema } from "@src/databases"
+import { getMongooseToken, SessionSchema, USER_COLLECTION } from "@src/databases"
 import { Connection } from "mongoose"
 
 describe("RefreshService", () => {
@@ -29,7 +29,8 @@ describe("RefreshService", () => {
 
     it("should refresh user session and return valid access and refresh tokens", async () => {
         const user = await gameplayMockUserService.generate()
-        const session = await connection.model<SessionSchema>(SessionSchema.name).findOne({ refreshToken: user.sessions[0].refreshToken })
+        const session = await connection.model<SessionSchema>(SessionSchema.name).findOne({ user: user.id }).populate("user")
+        console.log(session)
         const { accessToken, refreshToken } = await service.refresh({
             refreshToken: session.refreshToken,
         })
@@ -38,7 +39,7 @@ describe("RefreshService", () => {
     })
 
     afterAll(async () => {
-        //await gameplayMockUserService.clear()
+        await gameplayMockUserService.clear()
         await gameplayConnectionService.closeAll()
     })
 })

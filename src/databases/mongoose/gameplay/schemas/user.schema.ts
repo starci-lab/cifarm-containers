@@ -4,7 +4,6 @@ import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
 import { ChainKey, Network } from "@src/env"
 import { TutorialStep } from "../enums"
-import { SessionSchema, SessionSchemaClass } from "./session.schema"
 
 export type UserDocument = HydratedDocument<UserSchema>
 
@@ -98,10 +97,6 @@ export class UserSchema extends AbstractSchema {
     @Field(() => [String])
     @Prop({ type: Array<string>, default: [] })
         followingUserIds: Array<string>
-
-    @Field(() => [SessionSchema])
-    @Prop({ type: [{ type: SessionSchemaClass }] })
-        sessions: Array<SessionSchema>
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

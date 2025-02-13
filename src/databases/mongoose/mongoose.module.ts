@@ -29,13 +29,12 @@ import {
     UserSchema,
     PlacedItemTypeSchema,
     PlacedItemTypeSchemaClass,
-    // SessionSchema,
-    // SessionSchemaClass,
     PlacedItemSchema,
     PlacedItemSchemaClass,
     SessionSchema,
     SessionSchemaClass
 } from "./gameplay"
+import { Connection } from "mongoose"
 
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
@@ -53,7 +52,7 @@ export class MongooseModule extends ConfigurableModuleClass {
             ...dynamicModule,
             imports: [
                 NestMongooseModule.forRoot(url, {
-                    connectionName
+                    connectionName,
                 }),
                 this.forFeature(options)
             ]
@@ -100,26 +99,26 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => SupplySchemaClass
                         },
                         {
-                            name: SessionSchema.name,
-                            useFactory: () => SessionSchemaClass
-                        },
-                        {
                             name: UserSchema.name,
                             inject: [getMongooseToken(options)],
                             useFactory: (
-                                // connection: Connection
+                                connection: Connection
                             ) => {
-                                // UserSchemaClass.pre("deleteMany", async function (next) {
-                                //     // delete all related data in session collection
-                                //     const { $in } = this.getFilter()._id
-                                //     const ids = $in
-                                //     await connection.model<SessionSchema>(SessionSchema.name).deleteMany({
-                                //         user: { $in: ids }
-                                //     })
-                                //     next()
-                                // })
+                                UserSchemaClass.pre("deleteMany", async function (next) {
+                                    // delete all related data in session collection
+                                    const { $in } = this.getFilter()._id
+                                    const ids = $in
+                                    await connection.model<SessionSchema>(SessionSchema.name).deleteMany({
+                                        user: { $in: ids }
+                                    })
+                                    next()
+                                })
                                 return UserSchemaClass
                             }
+                        },
+                        {
+                            name: SessionSchema.name,
+                            useFactory: () => SessionSchemaClass
                         },
                         {
                             name: InventorySchema.name,
