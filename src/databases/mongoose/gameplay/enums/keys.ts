@@ -148,7 +148,7 @@ export enum PlacedItemTypeKey {
     Coop = "coop",
     Barn = "barn",
     Home = "home",
-    DefaultInfoTile = "starterTile",
+    StarterTile = "starterTile",
     BasicTile1 = "basicTile1",
     BasicTile2 = "basicTile2",
     BasicTile3 = "basicTile3",

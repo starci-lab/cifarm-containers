@@ -20,40 +20,42 @@ export class RefreshService {
     public async refresh({
         refreshToken,
     }: RefreshRequest): Promise<RefreshResponse> {
-        //Get user
-        const session = await this.connection.model<SessionSchema>(SessionSchema.name).findOne({
-            refreshToken
-        })
-        if (!session) throw new GrpcUnauthenticatedException("Session not found")
-        const { expiredAt } = session
-        //if current time is after the expired time, throw error that refresh token is expired
-        if (this.dateUtcService.getDayjs().isAfter(expiredAt))
-            throw new GrpcUnauthenticatedException("Refresh token is expired")
-        const {
-            accessToken,
-            refreshToken: { token: newRefreshToken, expiredAt: newExpiredAt }
-        } = await this.jwtService.generateAuthCredentials({
-            id: session.user.toString(),
-        })
         const mongoSession = await this.connection.startSession()     
         mongoSession.startTransaction()
         try {
+            const session = await this.connection.model<SessionSchema>(SessionSchema.name).findOne({
+                refreshToken
+            })
+            if (!session) throw new GrpcUnauthenticatedException("Session not found")
+            const { expiredAt } = session
+            //if current time is after the expired time, throw error that refresh token is expired
+            if (this.dateUtcService.getDayjs().isAfter(expiredAt))
+                throw new GrpcUnauthenticatedException("Refresh token is expired")
+            const {
+                accessToken,
+                refreshToken: { token: newRefreshToken, expiredAt: newExpiredAt }
+            } = await this.jwtService.generateAuthCredentials({
+                id: session.user.toString(),
+            })
+        
+            try {
             //update the expired time of the current session
-            await this.connection.model<SessionSchema>(SessionSchema.name).updateOne(
-                { refreshToken },
-                { expiredAt: newExpiredAt }
-            )
-            mongoSession.commitTransaction()
-        } catch (error) {
-            this.logger.error(error)
-            mongoSession.abortTransaction()
-            throw new GrpcInternalException("Failed to update session")
+                await this.connection.model<SessionSchema>(SessionSchema.name).updateOne(
+                    { refreshToken },
+                    { expiredAt: newExpiredAt }
+                )
+                mongoSession.commitTransaction()
+            } catch (error) {
+                this.logger.error(error)
+                mongoSession.abortTransaction()
+                throw new GrpcInternalException("Failed to update session")
+            } 
+            return {
+                accessToken,
+                refreshToken: newRefreshToken
+            }
         } finally {
             mongoSession.endSession()
-        }
-        return {
-            accessToken,
-            refreshToken: newRefreshToken
         }
     } 
 }

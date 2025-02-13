@@ -67,3 +67,11 @@ export class InventoryNotTypePlacedException extends GrpcInvalidArgumentExceptio
         )
     }
 }
+
+export class InventoryMaxCapacityReachedException extends GrpcInvalidArgumentException {
+    constructor() {
+        super(
+            "Inventory max capacity reached."
+        )
+    }
+}

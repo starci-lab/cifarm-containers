@@ -1,7 +1,8 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
-import { HydratedDocument } from "mongoose"
+import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
+import { HydratedDocument, Schema as MongooseSchema } from "mongoose"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
+import { UserSchema } from "./user.schema"
 
 export type InventoryDocument = HydratedDocument<InventorySchema>
 
@@ -15,13 +16,9 @@ export class InventorySchema extends AbstractSchema {
     @Prop({ type: Number, required: true })
         quantity: number
 
-    @Field(() => String, { nullable: true })
-    @Prop({ type: String, required: false })
-        tokenId?: string
-
-    @Field(() => String)
-    @Prop({ type: String, required: true })
-        userId: string
+    @Field(() => ID)
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
+        user: UserSchema
     
     @Field(() => Boolean, { nullable: true })
     @Prop({ type: Boolean, required: true })

@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { PlacedItemTypeKey } from "../enums"
@@ -7,6 +7,8 @@ import { AnimalInfoSchema, AnimalInfoSchemaClass } from "./animal-info.schema"
 import { BuildingInfoSchema, BuildingInfoSchemaClass } from "./building-info.schema"
 import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-info.schema"
 import { TileInfoSchema, TileInfoSchemaClass } from "./tile-info.schema"
+import { UserSchema } from "./user.schema"
+import { Schema as MongooseSchema } from "mongoose"
 
 export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>;
 
@@ -25,6 +27,10 @@ export class PlacedItemSchema extends AbstractSchema {
     @Prop({ type: String, required: false })
         inventoryId?: string
 
+    @Field(() => ID)
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
+        user: UserSchema
+    
     @Field(() => String)
     @Prop({ type: String, required: true, enum: PlacedItemTypeKey })
         placedItemTypeKey: PlacedItemTypeKey

@@ -18,6 +18,7 @@ export class GameplayExceptionFilter implements ExceptionFilter<GameplayExceptio
         case GameplayErrorCode.UserInsufficientToken:
         case GameplayErrorCode.InventoryQuantityNotSufficient:
         case GameplayErrorCode.EnergyNotEnough: 
+        case GameplayErrorCode.InventoryCapacityExceeded:
         {
             return throwError(() => new GrpcFailedPreconditionException(exception.message).getError())
         }

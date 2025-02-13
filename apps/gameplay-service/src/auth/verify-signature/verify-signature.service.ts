@@ -12,6 +12,7 @@ import {
     InventoryTypeSchema,
     PlacedItemSchema,
     PlacedItemTypeKey,
+    InventorySchema,
 } from "@src/databases"
 import {
     IBlockchainAuthService,
@@ -20,12 +21,12 @@ import {
     getBlockchainAuthServiceToken
 } from "@src/blockchain"
 
-import { EnergyService } from "@src/gameplay"
+import { EnergyService, InventoryService } from "@src/gameplay"
 import { InjectCache } from "@src/cache"
 import { Network } from "@src/env"
 import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
-import { DeepPartial } from "typeorm"
+import { DeepPartial } from "@src/common"
 import {
     GrpcInternalException,
     GrpcInvalidArgumentException,
@@ -46,6 +47,7 @@ export class VerifySignatureService {
         private readonly moduleRef: ModuleRef,
         private readonly jwtService: JwtService,
         private readonly energyService: EnergyService,
+        private readonly inventoryService: InventoryService
     ) {}
 
     public async verifySignature({
@@ -56,86 +58,103 @@ export class VerifySignatureService {
         network,
         accountAddress,
     }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
-        const valid = await this.cacheManager.get(message)
-        if (!valid) {
-            throw new GrpcCacheNotFound(message)
-        }
+        const mongoSession = await this.connection.startSession()
+        try {
+            const valid = await this.cacheManager.get(message)
+            if (!valid) {
+                throw new GrpcCacheNotFound(message)
+            }
 
-        chainKey = chainKey || defaultChainKey
-        network = network || Network.Testnet
-        const platform = chainKeyToPlatform(chainKey)
+            chainKey = chainKey || defaultChainKey
+            network = network || Network.Testnet
+            const platform = chainKeyToPlatform(chainKey)
 
-        const authService = this.moduleRef.get<IBlockchainAuthService>(
-            getBlockchainAuthServiceToken(platform),
-            { strict: false }
-        )
+            const authService = this.moduleRef.get<IBlockchainAuthService>(
+                getBlockchainAuthServiceToken(platform),
+                { strict: false }
+            )
 
-        const verified = authService.verifyMessage({
-            message,
-            publicKey,
-            signature
-        })
+            const verified = authService.verifyMessage({
+                message,
+                publicKey,
+                signature
+            })
 
-        if (!verified) throw new GrpcInvalidArgumentException("Signature is invalid")
-            const user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
+            if (!verified) throw new GrpcInvalidArgumentException("Signature is invalid")
+            let user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
                 accountAddress,
                 chainKey,
                 network
             })
-
             if (!user) {
-                // get default info
-                const { value: { defaultCropKey, defaultSeedQuantity, golds, positions } } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DefaultInfo>>({
+            // get default info
+                const { value: { defaultCropKey, defaultSeedQuantity, golds, positions, inventoryCapacity } } = await this.connection.model<SystemSchema>(SystemSchema.name).findOne<SystemRecord<DefaultInfo>>({
                     key: SystemKey.DefaultInfo
                 })
 
-                const mongoSession = await this.connection.startSession()  
-                const energy = this.energyService.getMaxEnergy()
-
+                // inventories params
                 const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
                     refKey: defaultCropKey,
                     type: InventoryType.Seed
                 })
                 if (!inventoryType) {
                     throw new GrpcNotFoundException("Inventory seed type not found")
-                }        
+                }  
 
-                //home & tiles
-                const home: DeepPartial<PlacedItemSchema> = {
-                    placedItemTypeKey: PlacedItemTypeKey.Home,
-                    buildingInfo: {},
-                    ...positions.home
-                }
-                const tiles: Array<DeepPartial<PlacedItemEntity>> = positions.tiles.map(
-                    (tile) => ({
-                        placedItemTypeId: PlacedItemTypeId.DefaultInfoTile,
-                        tileInfo: {},
-                        ...tile
-                    })
-                )
+                const { count, inventories } = await this.inventoryService.getParams({
+                    connection: this.connection,
+                    inventoryType,
+                    userId: user.id
+                })
+  
                 try {
-                    await queryRunner.startTransaction()
+                    mongoSession.startTransaction()
 
-                    user = await queryRunner.manager.save(UserSchema, {
+                    const energy = this.energyService.getMaxEnergy()
+
+                    user = await this.connection.model<UserSchema>(UserSchema.name).create({
                         username: `${chainKey}-${accountAddress.substring(0, 5)}`,
                         accountAddress,
                         chainKey,
                         network,
                         energy,
                         golds,
-                        placedItems: [home, ...tiles],
-                        inventories: [{
-                            inventoryTypeId: inventoryType.id,
-                            quantity: defaultSeedQuantity,
-                        }]
                     })
 
-                    await queryRunner.commitTransaction()
+                    await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
+                        placedItemTypeKey: PlacedItemTypeKey.Home,
+                        buildingInfo: {},
+                    })
+
+                    const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map(
+                        (tile) => ({
+                            placedItemTypeId: PlacedItemTypeKey.StarterTile,
+                            tileInfo: {},
+                            ...tile
+                        })
+                    )
+
+                    await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(tilePartials)
+
+                    const { createdInventories, updatedInventories } = this.inventoryService.add({
+                        inventoryType,
+                        inventories,
+                        count,
+                        capacity: inventoryCapacity,
+                        quantity: defaultSeedQuantity,
+                    })
+
+                    await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                    for (const inventory of updatedInventories) {
+                        await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
+                            _id: inventory._id
+                        }, inventory)
+                    }
+                    mongoSession.commitTransaction()
                 } catch (error) {
-                    const errorMessage = `Transaction failed, reason: ${error.message}`
-                    this.logger.error(errorMessage)
-                    await queryRunner.rollbackTransaction()
-                    throw new GrpcInternalException(errorMessage)
+                    this.logger.error(error)
+                    mongoSession.abortTransaction()
+                    throw new GrpcInternalException("Failed to update session")
                 }
             }
 
@@ -146,31 +165,25 @@ export class VerifySignatureService {
                 id: user.id
             })
 
-            await queryRunner.startTransaction()
+            mongoSession.startTransaction()
             try {
-                await queryRunner.manager.save(SessionEntity, {
-                    expiredAt,
+                await this.connection.model<SystemSchema>(SystemSchema.name).create({
                     refreshToken,
-                    userId: user.id,
-                    device,
-                    os,
-                    browser,
-                    ipV4
+                    expiredAt,
+                    user: user.id
                 })
-                await queryRunner.commitTransaction()
+                mongoSession.commitTransaction()
             } catch (error) {
-                const errorMessage = `Transaction failed, reason: ${error.message}`
-                this.logger.error(errorMessage)
-                await queryRunner.rollbackTransaction()
-                throw new GrpcInternalException(errorMessage)
+                this.logger.error(error)
+                mongoSession.abortTransaction()
+                throw new GrpcInternalException("Failed to update session")
             }
-
             return {
                 accessToken,
                 refreshToken
             }
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }
