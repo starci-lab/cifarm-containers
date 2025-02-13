@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, PlacedItemSchema } from "@src/databases"
 import { MoveRequest } from "./move.dto"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -21,7 +21,7 @@ export class MoveService {
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findById(request.placedItemId)
                 .session(mongoSession)
-
+                
             if (!placedItem) throw new GrpcNotFoundException("Placed item not found")
 
             await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne({
@@ -30,10 +30,12 @@ export class MoveService {
                 x: request.position.x,
                 y: request.position.y
             }).session(mongoSession)
+
+            await mongoSession.commitTransaction()
         } catch (error) {
-            this.logger.error(`Failed to move placed item, reason: ${error.message}`)
+            this.logger.error(error)
             await mongoSession.abortTransaction()
-            throw new GrpcInternalException("Failed to move placed item")
+            throw error
         } finally {
             await mongoSession.endSession()
         }

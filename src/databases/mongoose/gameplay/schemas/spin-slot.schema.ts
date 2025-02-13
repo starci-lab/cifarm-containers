@@ -1,20 +1,19 @@
-import { Field, ObjectType } from "@nestjs/graphql"
+import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
-
-// Mongoose document type
-export type SpinSlotDocument = HydratedDocument<SpinSlotSchema>;
+import { SpinPrizeSchema } from "./spin-prize.schema"
+import { Schema as MongooseSchema } from "mongoose"
+import { SPIN_PRIZE } from "../constants"
 
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: "spin-slot",
+    collection: "spin-slot"
 })
 export class SpinSlotSchema extends AbstractSchema {
-    @Field(() => String)
-    @Prop({ type: String, required: true })
-        spinPrizeId: string
+    @Field(() => ID)
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: SpinPrizeSchema.name })
+    [SPIN_PRIZE]: SpinPrizeSchema | string
 }
 
 export const SpinSlotSchemaClass = SchemaFactory.createForClass(SpinSlotSchema)

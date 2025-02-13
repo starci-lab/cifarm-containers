@@ -1,0 +1,1 @@
+export const SPIN_PRIZE = "spinPrize"

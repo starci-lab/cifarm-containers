@@ -7,7 +7,7 @@ import {
     CropId,
     CropRandomness,
     DailyRewardInfo,
-    DailyRewardKey,
+    DailyRewardId,
     EnergyRegen,
     InjectMongoose,
     SpinInfo,
@@ -170,31 +170,31 @@ export class SystemSeeder implements Seeder {
             time: 60 * 5
         }
         const dailyRewardInfo: DailyRewardInfo = {
-            [DailyRewardKey.Day1]: {
+            [DailyRewardId.Day1]: {
                 golds: 100,
                 tokens: 0,
                 day: 1,
                 lastDay: false
             },
-            [DailyRewardKey.Day2]: {
+            [DailyRewardId.Day2]: {
                 golds: 200,
                 tokens: 0,
                 day: 2,
                 lastDay: false
             },
-            [DailyRewardKey.Day3]: {
+            [DailyRewardId.Day3]: {
                 golds: 300,
                 tokens: 0,
                 day: 3,
                 lastDay: false
             },
-            [DailyRewardKey.Day4]: {
+            [DailyRewardId.Day4]: {
                 golds: 600,
                 tokens: 0,
                 day: 4,
                 lastDay: false
             },
-            [DailyRewardKey.Day5]: {
+            [DailyRewardId.Day5]: {
                 day: 5,
                 lastDay: true,
                 golds: 1000,

@@ -1,33 +1,39 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { DailyRewardEntity, InjectPostgreSQL, UserSchema } from "@src/databases"
+import {
+    DailyRewardInfo,
+    DailyRewardId,
+    InjectMongoose,
+    SystemId,
+    SystemRecord,
+    SystemSchema,
+    UserSchema
+} from "@src/databases"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
-import { DataSource, DeepPartial } from "typeorm"
 import { ClaimDailyRewardRequest, ClaimDailyRewardResponse } from "./claim-daily-reward.dto"
-import { GrpcInternalException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { createObjectId, DeepPartial, GrpcFailedPreconditionException } from "@src/common"
 import { DateUtcService } from "@src/date"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class ClaimDailyRewardService {
     private readonly logger = new Logger(ClaimDailyRewardService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
-        private readonly dateUtcService: DateUtcService,
+        private readonly dateUtcService: DateUtcService
     ) {}
 
     async claimDailyReward(request: ClaimDailyRewardRequest): Promise<ClaimDailyRewardResponse> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
         try {
-            // Get latest claim time
-            const user = await queryRunner.manager.findOne(UserSchema, {
-                where: { id: request.userId }
-            })
+            const user = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .findById(request.userId)
+                .session(mongoSession)
 
             // check if spin last time is same as today
             const now = this.dateUtcService.getDayjs()
@@ -36,15 +42,17 @@ export class ClaimDailyRewardService {
                 throw new GrpcFailedPreconditionException("Spin already claimed today")
             }
 
-            const dailyRewards = await queryRunner.manager.find(DailyRewardEntity, {
-                order: {
-                    day: "ASC"
-                }
-            })
+            const { value } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
+                .session(mongoSession)
 
-            //check if daily rewards not equal to 5
-            if (dailyRewards.length !== 5) {
-                throw new GrpcInternalException("Daily rewards not equal to 5")
+            const dailyRewardMap: Record<number, DailyRewardId> = {
+                0: DailyRewardId.Day1,
+                1: DailyRewardId.Day2,
+                2: DailyRewardId.Day3,
+                3: DailyRewardId.Day4,
+                4: DailyRewardId.Day5
             }
 
             const userChanges: DeepPartial<UserSchema> = {
@@ -58,42 +66,41 @@ export class ClaimDailyRewardService {
             if (user.dailyRewardStreak >= 4) {
                 balanceChanges = {
                     ...this.goldBalanceService.add({
-                        entity: user,
-                        amount: dailyRewards[4].golds
+                        user,
+                        amount: value[DailyRewardId.Day5].golds
                     }),
                     ...this.tokenBalanceService.add({
-                        entity: user,
-                        amount: dailyRewards[4].tokens
+                        user,
+                        amount: value[DailyRewardId.Day5].tokens
                     })
                 }
             } else {
                 balanceChanges = {
                     ...this.goldBalanceService.add({
-                        entity: user,
-                        amount: dailyRewards[user.dailyRewardStreak].golds
+                        user,
+                        amount: value[dailyRewardMap[user.dailyRewardStreak]].golds
                     })
                 }
             }
 
-            // Start transaction
-            await queryRunner.startTransaction()
-            try {
-                // Save user
-                await queryRunner.manager.update(UserSchema, user.id, {
-                    ...userChanges,
-                    ...balanceChanges
-                })
-
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                const errorMessage = `Transaction failed, reason: ${error.message}`
-                this.logger.error(errorMessage)
-                await queryRunner.rollbackTransaction()
-                throw new GrpcInternalException(errorMessage)
-            }
+            await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .updateOne(
+                    { _id: request.userId },
+                    {
+                        ...userChanges,
+                        ...balanceChanges
+                    },
+                )
+                .session(mongoSession)
+            await mongoSession.commitTransaction()
             return {}
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

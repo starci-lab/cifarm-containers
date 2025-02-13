@@ -5,8 +5,8 @@ import { MoveService } from "./move.service"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { getMongooseToken, PlacedItemSchema, PlacedItemTypeId } from "@src/databases"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { v4 } from "uuid"
 import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 describe("MoveService", () => {
     let service: MoveService
@@ -33,7 +33,7 @@ describe("MoveService", () => {
             userId: user.id,
             x: 1,
             y: 1,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemType: createObjectId(PlacedItemTypeId.BasicTile1)
         })
 
         // Act: Call the move service
@@ -54,7 +54,7 @@ describe("MoveService", () => {
 
         await expect(service.move({
             userId: user.id, // Invalid user ID
-            placedItemId: v4(), // Invalid placed item ID
+            placedItemId: createObjectId("test"), // Invalid placed item ID
             position: { x: 5, y: 5 }
         })).rejects.toThrow(GrpcNotFoundException)
     })

@@ -11,7 +11,6 @@ import {
     TutorialStep,
     UserSchema
 } from "@src/databases"
-import { GrpcInternalException } from "nestjs-grpc-exceptions"
 import { UpdateTutorialRequest, UpdateTutorialResponse } from "./update-tutorial.dto"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import { TutorialService } from "@src/gameplay"
@@ -80,7 +79,7 @@ export class UpdateTutorialService {
         } catch (error) {
             this.logger.error(error)
             await mongoSession.abortTransaction()
-            throw new GrpcInternalException(error.message)
+            throw error
         } finally {
             await mongoSession.endSession()
         }

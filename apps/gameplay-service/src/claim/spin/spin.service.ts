@@ -1,31 +1,30 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     AppearanceChance,
-    InjectPostgreSQL,
-    InventoryEntity,
+    InjectMongoose,
     InventoryType,
-    InventoryTypeEntity,
     SpinInfo,
     SpinPrizeType,
-    SpinSlotEntity,
-    SystemEntity,
+    SpinSlotSchema,
     SystemId,
+    SystemRecord,
+    SystemSchema,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/gameplay"
-import { DataSource, DeepPartial } from "typeorm"
 import { SpinRequest, SpinResponse } from "./spin.dto"
 import { GrpcInternalException } from "nestjs-grpc-exceptions"
 import { DateUtcService } from "@src/date"
 import { GrpcFailedPreconditionException } from "@src/common"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class SpinService {
     private readonly logger = new Logger(SpinService.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
         private readonly inventoryService: InventoryService,
@@ -33,14 +32,11 @@ export class SpinService {
     ) {}
 
     async spin(request: SpinRequest): Promise<SpinResponse> {
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
         try {
             // Get latest spin
-            const user = await queryRunner.manager.findOne(UserSchema, {
-                where: { id: request.userId }
-            })
+            const user = await this.connection.model<UserSchema>(UserSchema.name).findById(request.userId).session(mongoSession)
 
             // check if during 24-hour period user has already spun
             const now = this.dateUtcService.getDayjs()
@@ -49,24 +45,19 @@ export class SpinService {
             }
 
             // Spin the wheel
-            const spinSlots = await queryRunner.manager.find(SpinSlotEntity, {
-                relations: {
-                    spinPrize: true
-                }
-            })
+            const spinPrizes = await this.connection.model<SpinSlotSchema>(SpinSlotSchema.name).find().session(mongoSession)
+            const spinSlots = await this.connection.model<SpinSlotSchema>(SpinSlotSchema.name).find().session(mongoSession)
 
             //check if slot not equal to 8
             if (spinSlots.length !== 8) {
                 throw new GrpcInternalException("Spin slots must be equal to 8")
             }
 
-            //spinnn
-            const { value } = await queryRunner.manager.findOne(SystemEntity, {
-                where: { id: SystemId.SpinInfo }
-            })
+            //spin
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<SpinInfo>>(SystemId.SpinInfo).session(mongoSession)
             
             //get the appearance chance
-            const chance = this.getAppearanceChance(value as SpinInfo)
+            const chance = this.getAppearanceChance(value)
 
             //we get the appearance chance, so that we randomly select a slot with that chance
             const rewardableSlots = spinSlots.filter(

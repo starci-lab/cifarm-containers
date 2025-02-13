@@ -2,15 +2,15 @@
 
 import { Test } from "@nestjs/testing"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
-import { DataSource } from "typeorm"
-import { DailyRewardEntity, DailyRewardId, getPostgreSqlToken, UserSchema } from "@src/databases"
+import { DailyRewardId, DailyRewardInfo, getMongooseToken, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import { DateUtcService } from "@src/date"
+import { Connection } from "mongoose"
 
 describe("ClaimDailyRewardService", () => {
     let service: ClaimDailyRewardService
-    let dataSource: DataSource
+    let connection: Connection
     let gameplayMockUserService: GameplayMockUserService
     let gameplayConnectionService: GameplayConnectionService
     let dateUtcService: DateUtcService
@@ -22,7 +22,7 @@ describe("ClaimDailyRewardService", () => {
         }).compile()
 
         service = moduleRef.get(ClaimDailyRewardService)
-        dataSource = moduleRef.get(getPostgreSqlToken())
+        connection = moduleRef.get(getMongooseToken())
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         dateUtcService = moduleRef.get(DateUtcService)
@@ -34,19 +34,17 @@ describe("ClaimDailyRewardService", () => {
             dailyRewardStreak: 1,
         })
 
-        const dailyReward = await dataSource.manager.findOne(DailyRewardEntity, {
-            where: { id: DailyRewardId.Day2 }
-        })
+        const { value } = await connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<SystemRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
         
         await service.claimDailyReward({
             userId: user.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id }
-        })
+        const userAfter = await connection.model<UserSchema>(UserSchema.name).findById(user.id)
 
-        expect(userAfter.golds).toEqual(dailyReward.golds + user.golds)
+        expect(userAfter.golds).toEqual(value[DailyRewardId.Day2].golds + user.golds)
         expect(userAfter.dailyRewardStreak).toEqual(user.dailyRewardStreak + 1)
     })
 
@@ -56,20 +54,18 @@ describe("ClaimDailyRewardService", () => {
             dailyRewardStreak: 4,
         })
 
-        const dailyReward = await dataSource.manager.findOne(DailyRewardEntity, {
-            where: { id: DailyRewardId.Day5 },
-        })
+        const { value } = await connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<SystemRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
         
         await service.claimDailyReward({
             userId: user.id
         })
 
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id }
-        })
+        const userAfter = await connection.model<UserSchema>(UserSchema.name).findById(user.id)
 
-        expect(userAfter.tokens).toEqual(dailyReward.tokens + user.tokens)
-        expect(userAfter.golds).toEqual(dailyReward.golds + user.golds)
+        expect(userAfter.tokens).toEqual(value[DailyRewardId.Day5].tokens + user.tokens)
+        expect(userAfter.golds).toEqual(value[DailyRewardId.Day5].golds + user.golds)
         expect(userAfter.dailyRewardStreak).toEqual(user.dailyRewardStreak + 1)
     })
 

@@ -1,7 +1,7 @@
 
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import JSON from "graphql-type-json"
-import { AppearanceChance, CropId, DailyRewardKey } from "../enums"
+import { AppearanceChance, CropId, DailyRewardId } from "../enums"
 import { Position } from "@src/gameplay"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
@@ -163,15 +163,15 @@ export class DailyReward {
 @ObjectType()
 export class DailyRewardInfo {
     @Field(() => DailyReward)
-    [DailyRewardKey.Day1]: DailyReward
+    [DailyRewardId.Day1]: DailyReward
     @Field(() => DailyReward)
-    [DailyRewardKey.Day2]: DailyReward
+    [DailyRewardId.Day2]: DailyReward
     @Field(() => DailyReward)
-    [DailyRewardKey.Day3]: DailyReward
+    [DailyRewardId.Day3]: DailyReward
     @Field(() => DailyReward)
-    [DailyRewardKey.Day4]: DailyReward
+    [DailyRewardId.Day4]: DailyReward
     @Field(() => DailyReward)
-    [DailyRewardKey.Day5]: DailyReward
+    [DailyRewardId.Day5]: DailyReward
 }
 
 // Generate the Mongoose schema class

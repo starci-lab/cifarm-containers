@@ -35,7 +35,7 @@ export enum CropId {
 }
 
 // Daily Reward Enum
-export enum DailyRewardKey {
+export enum DailyRewardId {
     Day1 = "day1",
     Day2 = "day2",
     Day3 = "day3",
