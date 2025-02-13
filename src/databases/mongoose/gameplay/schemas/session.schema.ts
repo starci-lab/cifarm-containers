@@ -23,7 +23,7 @@ export class SessionSchema extends AbstractSchema {
     
     @Field(() => UserSchema)
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: USER_COLLECTION })
-        user: UserSchema
+        user: MongooseSchema.Types.ObjectId
 }
 
 export const SessionSchemaClass = SchemaFactory.createForClass(SessionSchema)

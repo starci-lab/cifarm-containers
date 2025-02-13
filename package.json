@@ -46,7 +46,6 @@
     "@graphql-tools/utils": "9.2.1",
     "@grpc/grpc-js": "^1.12.2",
     "@grpc/proto-loader": "0.7.13",
-    "@jorgebodega/typeorm-seeding": "^7.1.0",
     "@keyv/redis": "^4.2.0",
     "@kubernetes/client-node": "0.22.1",
     "@metaplex-foundation/mpl-token-metadata": "3.2.1",
@@ -70,7 +69,6 @@
     "@nestjs/serve-static": "^4.0.2",
     "@nestjs/swagger": "8.0.2",
     "@nestjs/terminus": "^10.2.3",
-    "@nestjs/typeorm": "10.0.2",
     "@nestjs/websockets": "10.4.7",
     "@polkadot/util-crypto": "^9.2.2-0",
     "@socket.io/admin-ui": "^0.5.1",
@@ -106,8 +104,6 @@
     "mongodb": "^6.12.0",
     "mongodb-memory-server": "^10.1.3",
     "mongoose": "^8.10.0",
-    "mongoose-data-seed": "^2.1.6",
-    "mongoose-seed": "^0.6.0",
     "ms": "^3.0.0-canary.1",
     "multiformats": "9.9.0",
     "nanoid": "^5.0.9",
@@ -121,7 +117,6 @@
     "npmlog": "^7.0.1",
     "passport": "0.7.0",
     "passport-jwt": "4.0.1",
-    "pg": "8.13.1",
     "pg-mem": "^3.0.4",
     "redis": "^4.7.0",
     "reflect-metadata": "^0.2.0",
@@ -130,7 +125,6 @@
     "socket.io-client": "^4.8.1",
     "sqlite3": "^5.1.7",
     "telegraf": "^4.16.3",
-    "typeorm": "^0.3.20",
     "useragent": "^2.3.0",
     "uuid": "9.0.1",
     "whatwg-mimetype": "3.0.0"
@@ -177,11 +171,6 @@
     "webpack-node-externals": "^3.0.0",
     "webpack-obfuscator": "^3.5.1"
   },
-  "overrides": {
-    "typeorm": {
-      "mongodb": "^6.12.0"
-    }
-  },
   "jest": {
     "moduleFileExtensions": [
       "js",
@@ -191,7 +180,7 @@
     "rootDir": ".",
     "testRegex": "apps/.*\\.spec\\.ts$",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": "@swc/jest"
     },
     "collectCoverageFrom": [
       "**/*.(t|j)s"

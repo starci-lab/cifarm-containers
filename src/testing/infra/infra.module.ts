@@ -10,8 +10,7 @@ import { JwtModule } from "@src/jwt"
 import { GameplayModule } from "@src/gameplay"
 import { KafkaGroupId, KafkaModule } from "@src/brokers"
 import { DateModule } from "@src/date"
-import { E2EAxiosModule, E2EConnectionService } from "./e2e"
-import { E2ESocketIoModule } from "./e2e/socket-io"
+import { E2EAxiosModule, E2EConnectionService, E2ESocketIoModule } from "./e2e"
 import { MongooseModule } from "@src/databases"
 
 @Module({})

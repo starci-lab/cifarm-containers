@@ -1,6 +1,5 @@
 import { CommandRunner, SubCommand, Option } from "nest-commander"
 import { SeedersService } from "./seeders"
-import { DataSource } from "typeorm"
 import { Logger } from "@nestjs/common"
 
 @SubCommand({ name: "seed", description: "Seed static data into the data source" })
@@ -14,33 +13,23 @@ export class SeedCommand extends CommandRunner {
     }
 
     async run(_: Array<string>, options?: SeedCommandOptions): Promise<void> {
-        let dataSource: DataSource
-        try {
-            if (options?.database) {
-                // temporatory left blank
-            }
-
-            if (options?.create) {
-                // temporatory left blank
-            }
-
-            if (options?.force) {
-                // temporatory left blank
-                process.argv.push("--refresh")
-            }
-
-            //run seeders
-            await this.seedersService.runSeeders()
-
-            this.logger.log("Seeders ran successfully")
-        } catch (error) {
-            this.logger.error(`Seed command failed: ${error.message}`)
-        } finally {
-            //destroy the data source
-            if (dataSource) {
-                await dataSource.destroy()
-            }
+        if (options?.database) {
+            // temporatory left blank
         }
+
+        if (options?.create) {
+            // temporatory left blank
+        }
+
+        if (options?.force) {
+            // temporatory left blank
+            process.argv.push("--refresh")
+        }
+
+        //run seeders
+        await this.seedersService.runSeeders()
+
+        this.logger.log("Seeders ran successfully")
     }
 
     @Option({
