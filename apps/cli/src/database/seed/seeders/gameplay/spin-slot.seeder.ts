@@ -45,16 +45,16 @@ export class SpinSlotSeeder implements Seeder {
         
         const data: Array<Partial<SpinSlotSchema>> = [
             ...commonPrizes.map((prize) => ({
-                spinPrizeId: prize.id
+                spinPrize: prize.id
             })),
             ...uncommonPrizes.map((prize) => ({
-                spinPrizeId: prize.id
+                spinPrize: prize.id
             })),
             ...rarePrizes.map((prize) => ({
-                spinPrizeId: prize.id
+                spinPrize: prize.id
             })),
             ...veryRarePrizes.map((prize) => ({
-                spinPrizeId: prize.id
+                spinPrize: prize.id
             }))
         ]
         await this.connection.model<SpinSlotSchema>(SpinSlotSchema.name).insertMany(data)
