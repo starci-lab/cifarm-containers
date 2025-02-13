@@ -1,29 +1,9 @@
-import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
-import { AnimalCurrentState, CropCurrentState, PlacedItemTypeKey } from "../enums"
+import { AnimalCurrentState, PlacedItemTypeKey } from "../enums"
 import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-info"
-
-// Mongoose document type
-export type TileInfoDocument = HydratedDocument<TileInfo>;
-
-@ObjectType()
-@Schema({ timestamps: true })
-export class TileInfo extends AbstractSchema {
-    
-    @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
-        harvestCount: number
-
-    @Field(() => ID)
-    @Prop({ type: String, required: true })
-        placedItemId: string
-}
-
-export const TileInfoSchemaClass = SchemaFactory.createForClass(TileInfo)
-
-export type BuildingInfoDocument = HydratedDocument<BuildingInfo>;
 
 @ObjectType()
 @Schema({ timestamps: true })
@@ -38,50 +18,6 @@ export class BuildingInfo  extends AbstractSchema {
 }
 
 export const BuildingInfoSchemaClass = SchemaFactory.createForClass(BuildingInfo)
-
-export type AnimalInfoDocument = HydratedDocument<AnimalInfo>;
-
-@ObjectType()
-@Schema({ timestamps: true })
-export class AnimalInfo  extends AbstractSchema {
-    @Field(() => Float)
-    @Prop({ type: Number, default: 0 })
-        currentGrowthTime: number
-
-    @Field(() => Float)
-    @Prop({ type: Number, default: 0 })
-        currentHungryTime: number
-
-    @Field(() => Float)
-    @Prop({ type: Number, default: 0 })
-        currentYieldTime: number
-
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        isAdult: boolean
-
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        isQuality: boolean
-
-    @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
-        yieldCount: number
-
-    @Field(() => String)
-    @Prop({ type: String, enum: AnimalCurrentState, default: AnimalCurrentState.Normal })
-        currentState: AnimalCurrentState
-
-    @Field(() => Int, { nullable: true })
-    @Prop({ type: Number, required: false })
-        harvestQuantityRemaining?: number
-
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        immunized: boolean
-}
-
-export const AnimalInfoSchemaClass = SchemaFactory.createForClass(AnimalInfo)
 
 export type PlacedItemDocument = HydratedDocument<PlacedItemSchema>;
 
