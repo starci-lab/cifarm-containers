@@ -15,87 +15,78 @@ export class UpgradeBuildingService {
     ) {}
 
     async upgradeBuilding(request: UpgradeBuildingRequest): Promise<UpgradeBuildingResponse> {
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
+        this.logger.debug(`Upgrading building for user ${request.userId}, building ID: ${request.placedItemBuildingId}`)
 
-        // try {
-        //     // Fetch placed item
-        //     const placedItemBuilding = await queryRunner.manager.findOne(PlacedItemSchema, {
-        //         where: { id: request.placedItemBuildingId, userId: request.userId },
-        //         relations: {
-        //             buildingInfo: true,
-        //             placedItemType: {
-        //                 building: {
-        //                     upgrades: true
-        //                 }
-        //             }
-        //         }
-        //     })
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
-        //     if (!placedItemBuilding) {
-        //         throw new GrpcNotFoundException("Placed item not found")
-        //     }
+        try {
+            // const placedItemBuilding = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+            //     .findById(request.placedItemBuildingId)
+            //     .session(mongoSession)
 
-        //     const currentUpgradeLevel = placedItemBuilding.buildingInfo.currentUpgrade
+            // if (!placedItemBuilding) {
+            //     throw new GrpcNotFoundException("Placed item not found")
+            // }
 
-        //     const maxUpgradeLevel = Math.max(
-        //         ...placedItemBuilding.placedItemType.building.upgrades.map(
-        //             (upgrade) => upgrade.upgradeLevel
-        //         )
-        //     )
+            // const building = await this.connection.model<BuildingSchema>(BuildingSchema.name)
+            //     .findById(createObjectId(placedItemBuilding.placedItemType))
+            //     .session(mongoSession)
 
-        //     if (currentUpgradeLevel === maxUpgradeLevel) {
-        //         throw new GrpcFailedPreconditionException("Building already at max upgrade level")
-        //     }
+            // if (!building) {
+            //     throw new GrpcNotFoundException("Building type not found")
+            // }
 
-        //     // Fetch the next upgrade level
-        //     const nextUpgrade = placedItemBuilding.placedItemType.building.upgrades.find(
-        //         (upgrade) => upgrade.upgradeLevel === currentUpgradeLevel + 1
-        //     )
+            // const currentUpgradeLevel = placedItemBuilding.buildingInfo.currentUpgrade
 
-        //     if (!nextUpgrade) {
-        //         throw new GrpcFailedPreconditionException("Next upgrade not found")
-        //     }
+            // if (currentUpgradeLevel >= building.maxUpgradeLevel) {
+            //     throw new GrpcFailedPreconditionException("Building already at max upgrade level")
+            // }
 
-        //     // get user
-        //     const user = await queryRunner.manager.findOne(UserSchema, {
-        //         where: { id: request.userId }
-        //     })
+            // const nextUpgrade = building.upgrades.find(upgrade => upgrade.upgradeLevel === currentUpgradeLevel + 1)
 
-        //     // Check sufficient gold
-        //     this.goldBalanceService.checkSufficient({
-        //         current: user.golds,
-        //         required: nextUpgrade.upgradePrice
-        //     })
+            // if (!nextUpgrade) {
+            //     throw new GrpcFailedPreconditionException("Next upgrade not found")
+            // }
 
-        //     // Update building upgrade level
-        //     placedItemBuilding.buildingInfo.currentUpgrade = currentUpgradeLevel + 1
+            // const user = await this.connection.model<UserSchema>(UserSchema.name)
+            //     .findById(request.userId)
+            //     .session(mongoSession)
 
-        //     // Start transaction
-        //     await queryRunner.startTransaction()
-        //     try {
-        //         // Deduct gold
-        //         const goldsChanged = this.goldBalanceService.subtract({
-        //             entity: user,
-        //             amount: nextUpgrade.upgradePrice
-        //         })
-        //         await queryRunner.manager.update(UserSchema, user.id, {
-        //             ...goldsChanged
-        //         })
+            // if (!user) {
+            //     throw new GrpcNotFoundException("User not found")
+            // }
 
-        //         await queryRunner.manager.save(PlacedItemSchema, placedItemBuilding)
+            // this.goldBalanceService.checkSufficient({
+            //     current: user.golds,
+            //     required: nextUpgrade.upgradePrice
+            // })
 
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
-        //     return {}
-        // } finally {
-        //     await queryRunner.release()
-        // }
-        return {}
+            // try {
+            //     const goldsChanged = this.goldBalanceService.subtract({
+            //         user: user,
+            //         amount: nextUpgrade.upgradePrice
+            //     })
+
+            //     await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+            //         { _id: user.id },
+            //         { ...goldsChanged }
+            //     )
+
+            //     await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
+            //         { _id: placedItemBuilding._id },
+            //         { "buildingInfo.currentUpgrade": currentUpgradeLevel + 1 }
+            //     )
+
+            //     await mongoSession.commitTransaction()
+            return {}
+            // } catch (error) {
+            //     this.logger.error(`Transaction failed, reason: ${error.message}`)
+            //     await mongoSession.abortTransaction()
+            //     throw error
+            // }
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }
