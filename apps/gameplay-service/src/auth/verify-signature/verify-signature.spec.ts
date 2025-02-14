@@ -79,6 +79,7 @@ describe("VerifySignatureService", () => {
         const inventories = await connection.model<InventorySchema>(InventorySchema.name).find({
             user: user.id,
         })
+        console.log(inventories)
         expect(inventories.length).toBe(7)
 
         // delete user
