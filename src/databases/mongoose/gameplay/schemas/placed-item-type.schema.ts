@@ -10,7 +10,7 @@ import { TileSchema } from "./tile.schema"
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: "placed_item_types",
+    collection: "placed-item-types",
 })
 export class PlacedItemTypeSchema extends StaticAbstractSchema {
     @Field(() => String)
