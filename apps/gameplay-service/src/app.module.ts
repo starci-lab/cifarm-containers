@@ -19,6 +19,7 @@ import { BlockchainExceptionFilter, GameplayExceptionFilter } from "./filters"
 import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
+import { ShopModule } from "./shop"
 
 @Module({
     imports: [
@@ -46,13 +47,13 @@ import { MongooseModule } from "@src/databases"
             isGlobal: true
         }),
         AuthModule,
+        ShopModule,
         // ClaimModule,
         // CommunityModule,
         // DeliveryModule,
         // FarmingModule,
         // PlacementModule,
         // ProfileModule,
-        // ShopModule,
         // UpgradeModule
     ],
     providers: [

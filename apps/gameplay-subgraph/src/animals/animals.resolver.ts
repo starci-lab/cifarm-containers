@@ -9,6 +9,7 @@ export class AnimalsResolver {
 
     constructor(private readonly animalsService: AnimalsService) {}
 
+    
     @Query(() => [AnimalSchema], {
         name: "animals"
     })

@@ -8,14 +8,14 @@ export class InventoryTypesResolver {
     private readonly logger = new Logger(InventoryTypesResolver.name)
 
     constructor(private readonly inventoryTypesService: InventoryTypesService) {}
-
+    
     @Query(() => [InventoryTypeSchema], {
         name: "inventoryTypes"
     })
     async inventoryTypes(): Promise<Array<InventoryTypeSchema>> {
         return this.inventoryTypesService.getInventoryTypes()
     }
-
+    
     @Query(() => InventoryTypeSchema, {
         name: "inventoryType",
         nullable: true

@@ -9,6 +9,7 @@ export class PlacedItemTypesResolver {
 
     constructor(private readonly placedItemTypesService: PlacedItemTypesService) {}
 
+    
     @Query(() => [PlacedItemTypeSchema], {
         name: "placedItemTypes"
     })
@@ -16,6 +17,7 @@ export class PlacedItemTypesResolver {
         return this.placedItemTypesService.getPlacedItemTypes()
     }
 
+    
     @Query(() => PlacedItemTypeSchema, {
         name: "placedItemType",
         nullable: true

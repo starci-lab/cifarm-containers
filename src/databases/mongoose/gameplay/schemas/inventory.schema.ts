@@ -4,6 +4,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { UserSchema } from "./user.schema"
 import { InventoryTypeSchema } from "./inventory-type.schema"
+import { INVENTORY_TYPE } from "../constants"
 
 export type InventoryDocument = HydratedDocument<InventorySchema>
 
@@ -35,7 +36,7 @@ export class InventorySchema extends AbstractSchema {
 
     @Field(() => ID)
     @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: InventoryTypeSchema.name })
-        inventoryType: InventoryTypeSchema | string
+    [INVENTORY_TYPE]: InventoryTypeSchema | string
 }
 
 export const InventorySchemaClass = SchemaFactory.createForClass(InventorySchema)

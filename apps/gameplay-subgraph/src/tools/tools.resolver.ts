@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
-import { Resolver, Query, Args, ID } from "@nestjs/graphql"
-import { ToolsService } from "./tools.service"
+import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { ToolId, ToolSchema } from "@src/databases"
+import { ToolsService } from "./tools.service"
 
 @Resolver()
 export class ToolsResolver {
@@ -16,7 +16,7 @@ export class ToolsResolver {
     async getTool(@Args("id", { type: () => ID }) id: ToolId): Promise<ToolSchema> {
         return this.toolsService.getTool(id)
     }
-
+  
     @Query(() => [ToolSchema], {
         name: "tools"
     })

@@ -16,7 +16,10 @@ export class InventoriesService {
     async getInventory(id: string): Promise<InventorySchema> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<InventorySchema>(InventorySchema.name).findById(id).session(mongoSession)
+            return await this.connection
+                .model(InventorySchema.name)
+                .findById(id)
+                .session(mongoSession)
         } finally {
             await mongoSession.endSession()
         }
@@ -28,15 +31,21 @@ export class InventoriesService {
     ): Promise<GetInventoriesResponse> {
         const mongoSession = await this.connection.startSession()
         try {
-            const data = await this.connection.model<InventorySchema>(InventorySchema.name)
-                .find({ user: id }).session(mongoSession)
-                .skip(offset)
+            const data = await this.connection
+                .model(InventorySchema.name)
+                .find({
+                    user: id
+                })
                 .limit(limit)
+                .skip(offset)
+                .session(mongoSession)
 
-            const count = await this.connection.model<InventorySchema>(InventorySchema.name)
+            const count = await this.connection
+                .model<InventorySchema>(InventorySchema.name)
                 .countDocuments({
                     user: id
-                }).session(mongoSession)
+                })
+                .session(mongoSession)
 
             return {
                 data,

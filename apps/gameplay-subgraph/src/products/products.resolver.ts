@@ -8,7 +8,7 @@ export class ProductResolver {
     private readonly logger = new Logger(ProductResolver.name)
 
     constructor(private readonly productsService: ProductService) {}
-
+    
     @Query(() => [ProductSchema], {
         name: "products"
     })

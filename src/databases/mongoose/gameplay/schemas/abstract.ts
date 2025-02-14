@@ -9,7 +9,7 @@ import { Document } from "mongoose"
 export abstract class AbstractSchema extends Document {
     // field to use graphql
     @Field(() => ID)
-        _id: string
+        id: string
 
     @Field(() => Date)
     @Prop({ type: Date })

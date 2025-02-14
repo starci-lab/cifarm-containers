@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { JwtService } from "@src/jwt"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
-import { GrpcInternalException, GrpcUnauthenticatedException } from "nestjs-grpc-exceptions"
+import { GrpcUnauthenticatedException } from "nestjs-grpc-exceptions"
 import { DateUtcService } from "@src/date"
 import { InjectMongoose, SessionSchema } from "@src/databases"
 import { Connection } from "mongoose"
@@ -38,12 +38,16 @@ export class RefreshService {
                 id: session.user.toString(),
             })
 
-            //update the expired time of the current session
-            await this.connection.model<SessionSchema>(SessionSchema.name).updateOne(
-                { refreshToken },
-                { expiredAt: newExpiredAt },
+            //create new session with new refresh token and expired time
+            await this.connection.model<SessionSchema>(SessionSchema.name).create(
+                [{
+                    user: session.user,
+                    refreshToken: newRefreshToken,
+                    expiredAt: newExpiredAt
+                }],
                 { session: mongoSession }
             )
+
             await mongoSession.commitTransaction()
             
             return {
@@ -53,7 +57,7 @@ export class RefreshService {
         } catch (error) {
             this.logger.error(error)
             await mongoSession.abortTransaction()
-            throw new GrpcInternalException("Failed to update session")
+            throw error
         } finally {
             await mongoSession.endSession()
         }

@@ -2,7 +2,6 @@ import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { Logger } from "@nestjs/common"
 import { BuildingsService } from "./buildings.service"
 import { BuildingId, BuildingSchema } from "@src/databases"
-
 @Resolver()
 export class BuildingsResolver {
     private readonly logger = new Logger(BuildingsResolver.name)

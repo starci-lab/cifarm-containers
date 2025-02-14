@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { AbstractSchema } from "./abstract"
 import { AnimalType } from "../enums"
+import { AbstractSchema } from "./abstract"
 
 @ObjectType()
 @Schema({

@@ -1,14 +1,10 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { HydratedDocument } from "mongoose"
 import { ProductType } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Schema as MongooseSchema } from "mongoose"
 import { CropSchema } from "./crop.schema"
 import { AnimalSchema } from "./animal.schema"
-
-// Mongoose document type
-export type ProductDocument = HydratedDocument<ProductSchema>;
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "products" })

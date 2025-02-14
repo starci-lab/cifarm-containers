@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { AnimalKey } from "@src/databases"
+import { AnimalId } from "@src/databases"
 import { UserIdRequest } from "@src/common"
 import { Type } from "class-transformer"
 import { IsString, ValidateNested } from "class-validator"
@@ -7,8 +7,8 @@ import { Position } from "@src/gameplay"
 
 export class BuyAnimalRequest extends UserIdRequest {
     @IsString()
-    @ApiProperty({ example: AnimalKey.Chicken, description: "The ID of the animal" })
-        animalId: AnimalKey
+    @ApiProperty({ example: AnimalId.Chicken, description: "The ID of the animal" })
+        animalId: AnimalId
 
     @IsString()
     @ApiProperty({ example: "", description: "The ID of the building" })

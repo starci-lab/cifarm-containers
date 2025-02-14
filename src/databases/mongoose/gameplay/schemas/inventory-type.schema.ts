@@ -1,5 +1,4 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
-import { HydratedDocument } from "mongoose"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AvailableInType, InventoryType } from "../enums"
@@ -8,8 +7,6 @@ import { Schema as MongooseSchema } from "mongoose"
 import { ProductSchema } from "./product.schema"
 import { ToolSchema } from "./tool.schema"
 import { SupplySchema } from "./supply.schema"
-
-export type InventoryTypeDocument = HydratedDocument<InventoryTypeSchema>
 
 @ObjectType()
 @Schema({

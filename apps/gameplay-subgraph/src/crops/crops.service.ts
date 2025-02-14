@@ -29,13 +29,4 @@ export class CropsService {
             await mongoSession.endSession()
         }
     }
-
-    async getCropByKey(key: string): Promise<CropSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model<CropSchema>(CropSchema.name).findOne({ key }).session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
-    }
 }

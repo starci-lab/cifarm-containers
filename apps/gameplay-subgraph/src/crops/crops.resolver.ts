@@ -18,9 +18,4 @@ export class CropsResolver {
     async crop(@Args("id", { type: () => ID }) id: CropId): Promise<CropSchema> {
         return this.cropsService.getCrop(id)
     }
-    
-    @Query(() => CropSchema, { name: "cropByKey" })
-    async cropByKey(@Args("key") key: string): Promise<CropSchema> {
-        return this.cropsService.getCropByKey(key)
-    }
 }

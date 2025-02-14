@@ -29,7 +29,6 @@ import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { createObjectId, DeepPartial } from "@src/common"
 import {
-    GrpcInternalException,
     GrpcInvalidArgumentException,
     GrpcNotFoundException
 } from "nestjs-grpc-exceptions"
@@ -144,7 +143,7 @@ export class VerifySignatureService {
                 await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
                     [
                         {
-                            placedItemTypeKey: PlacedItemTypeId.Home,
+                            placedItemType: createObjectId(PlacedItemTypeId.Home),
                             buildingInfo: {},
                             user: user.id,
                             ...positions.home
@@ -155,7 +154,7 @@ export class VerifySignatureService {
 
                 const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map(
                     (tile) => ({
-                        placedItemTypeKey: PlacedItemTypeId.StarterTile,
+                        placedItemType: createObjectId(PlacedItemTypeId.StarterTile),
                         user: user.id,
                         tileInfo: {},
                         ...tile
@@ -174,7 +173,6 @@ export class VerifySignatureService {
                     quantity: defaultSeedQuantity,
                     userId: user.id
                 })
-                console.log(createdInventories, updatedInventories)
 
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -210,7 +208,7 @@ export class VerifySignatureService {
         } catch (error) {
             this.logger.error(error)
             await mongoSession.abortTransaction()
-            throw new GrpcInternalException(error.message)
+            throw error
         } finally {
             await mongoSession.endSession()
         }

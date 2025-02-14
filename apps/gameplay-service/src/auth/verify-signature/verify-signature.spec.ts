@@ -10,6 +10,7 @@ import { GenerateSignatureService } from "../generate-signature"
 import { getBlockchainAuthServiceToken, IBlockchainAuthService, Platform } from "@src/blockchain"
 import { Network, ChainKey } from "@src/env"
 import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 describe("VerifySignatureService", () => {
     let service: VerifySignatureService
@@ -64,13 +65,13 @@ describe("VerifySignatureService", () => {
         // fetch home and tiles
         const home = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).findOne({
             user: user.id,
-            placedItemTypeKey: PlacedItemTypeId.Home
+            placedItemType: createObjectId(PlacedItemTypeId.Home)
         })
         expect(home).toBeTruthy()
 
         const tiles = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
             user: user.id,
-            placedItemTypeKey: PlacedItemTypeId.StarterTile
+            placedItemType: createObjectId(PlacedItemTypeId.StarterTile)
         })
         expect(tiles.length).toBe(6)
 

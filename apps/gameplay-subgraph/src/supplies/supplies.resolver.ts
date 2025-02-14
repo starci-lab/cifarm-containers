@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
-import { Resolver, Query, Args, ID } from "@nestjs/graphql"
-import { SuppliesService } from "./supplies.service"
+import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { SupplyId, SupplySchema } from "@src/databases"
+import { SuppliesService } from "./supplies.service"
 
 @Resolver()
 export class SuppliesResolver {

@@ -5,9 +5,6 @@ import { AppearanceChance, CropId, DailyRewardId } from "../enums"
 import { Position } from "@src/gameplay"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { HydratedDocument } from "mongoose"
-
-export type SystemDocument = HydratedDocument<SystemSchema>
 
 @ObjectType()
 @Schema({

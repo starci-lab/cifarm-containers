@@ -15,7 +15,8 @@ export class InventoryTypesService {
     async getInventoryTypes(): Promise<Array<InventoryTypeSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model(InventoryTypeSchema.name).find().session(mongoSession)
+            const inventoryTypes = await this.connection.model(InventoryTypeSchema.name).find().session(mongoSession)
+            return inventoryTypes
         } finally {
             await mongoSession.endSession()
         }
