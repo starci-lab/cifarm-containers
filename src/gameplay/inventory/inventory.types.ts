@@ -9,12 +9,14 @@ export interface AddParams {
     inventoryType: DeepPartial<InventoryTypeSchema>
     // quantity to add
     quantity: number
-    // count
-    count: number
     // user id
     userId: string
     // max capacity
     capacity: number
+    // in toolbar or not
+    inToolbar: boolean
+    // occupied indexes
+    occupiedIndexes: Array<number>
 }
 
 export interface AddResult {
@@ -43,5 +45,6 @@ export interface GetParamsParams {
 
 export interface GetParamsResult {
     inventories: Array<InventorySchema>
-    count: number
+    // occupied indexes
+    occupiedIndexes: Array<number>
 }

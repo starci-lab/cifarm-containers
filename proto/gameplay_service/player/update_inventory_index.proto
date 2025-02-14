@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message UpdateInventoryIndexRequest {
+    string userId = 1;
+    string inventoryId = 2;
+    int32 index = 3;
+    bool inToolbar = 4;
+}

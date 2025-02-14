@@ -9,7 +9,7 @@ import "./auth/entry.proto";
 import "./community/entry.proto";
 import "./placement/entry.proto";
 import "./upgrade/entry.proto";
-import "./profile/entry.proto";
+import "./player/entry.proto";
 
 package gameplay_service;
 
@@ -67,4 +67,5 @@ service GameplayService {
 
     // Update tutorial
     rpc UpdateTutorial(UpdateTutorialRequest) returns (google.protobuf.Empty);
+    rpc UpdateInventoryIndex(UpdateInventoryIndexRequest) returns (google.protobuf.Empty);
 }

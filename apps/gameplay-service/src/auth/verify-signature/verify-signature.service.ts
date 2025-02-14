@@ -135,7 +135,7 @@ export class VerifySignatureService {
                 userRaw.id = userRaw._id.toString()
                 user = userRaw
 
-                const { count, inventories } = await this.inventoryService.getParams({
+                const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
@@ -169,6 +169,8 @@ export class VerifySignatureService {
 
                 // add tools to inventories
                 const toolInventories: Array<DeepPartial<InventorySchema>> = []
+
+                let index = 0
                 for (const toolId of Object.values(ToolId)) {
                     const inventoryType = await this.connection
                         .model<InventoryTypeSchema>(InventoryTypeSchema.name)
@@ -180,8 +182,11 @@ export class VerifySignatureService {
                         inventoryType: inventoryType.id,
                         user: user.id,
                         inToolbar: true,
+                        index,
                     })
+                    index++
                 }
+
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .create(toolInventories, { session: mongoSession, ordered: true })
@@ -189,10 +194,11 @@ export class VerifySignatureService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
-                    count,
+                    occupiedIndexes,
                     capacity: inventoryCapacity,
                     quantity: defaultSeedQuantity,
-                    userId: user.id
+                    userId: user.id,
+                    inToolbar: false
                 })
 
                 await this.connection

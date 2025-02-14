@@ -47,12 +47,8 @@ import {
     IGameplayService,
     MoveRequest,
     MoveResponse,
-    PlaceTileRequest,
-    PlaceTileResponse,
     PlantSeedRequest,
     PlantSeedResponse,
-    RecoverTileRequest,
-    RecoverTileResponse,
     RefreshRequest,
     RefreshResponse,
     RequestMessageResponse,
@@ -66,6 +62,8 @@ import {
     ThiefCropResponse,
     UnfollowRequest,
     UnfollowResponse,
+    UpdateInventoryIndexRequest,
+    UpdateInventoryIndexResponse,
     UpdateTutorialRequest,
     UpdateTutorialResponse,
     UpgradeBuildingRequest,
@@ -692,36 +690,15 @@ export class GameplayController implements OnModuleInit {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
-        type: PlaceTileResponse
+        type: UpdateInventoryIndexResponse
     })
-    @Post("/place-tile")
-    public async placeTile(
+    @Post("/update-inventory-index")
+    public async updateInventoryIndex(
         @User() user: UserLike,
-        @Body() request: PlaceTileRequest
-    ): Promise<PlaceTileResponse> {
-        this.logger.debug(`Processing place tile for user ${user?.id}`)
+        @Body() request: UpdateInventoryIndexRequest
+    ): Promise<UpdateInventoryIndexResponse> {
         return await lastValueFrom(
-            this.gameplayService.placeTile({
-                ...request,
-                userId: user?.id
-            })
-        )
-    }
-
-    @UseGuards(RestJwtAuthGuard)
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @ApiResponse({
-        type: PlaceTileResponse
-    })
-    @Post("/recover-tile")
-    public async recoverTile(
-        @User() user: UserLike,
-        @Body() request: RecoverTileRequest
-    ): Promise<RecoverTileResponse> {
-        this.logger.debug(`Processing recover tile for user ${user?.id}`)
-        return await lastValueFrom(
-            this.gameplayService.recoverTile({
+            this.gameplayService.updateInventoryIndex({
                 ...request,
                 userId: user?.id
             })
