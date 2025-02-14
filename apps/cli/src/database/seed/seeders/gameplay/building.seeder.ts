@@ -23,6 +23,7 @@ export class BuildingSeeder implements Seeder {
         const data: Array<DeepPartial<BuildingSchema>> = [
             {
                 _id: createObjectId(BuildingId.Home),
+                displayId: BuildingId.Home,
                 availableInShop: false,
                 maxUpgrade: 0,
                 price: 0,
@@ -32,6 +33,7 @@ export class BuildingSeeder implements Seeder {
             },
             {
                 _id: createObjectId(BuildingId.Coop),
+                displayId: BuildingId.Coop,
                 availableInShop: true,
                 type: AnimalType.Poultry,
                 maxUpgrade: 2,
@@ -57,6 +59,7 @@ export class BuildingSeeder implements Seeder {
             },
             {
                 _id: createObjectId(BuildingId.Barn),
+                displayId: BuildingId.Barn,
                 availableInShop: true,
                 type: AnimalType.Livestock,
                 maxUpgrade: 2,

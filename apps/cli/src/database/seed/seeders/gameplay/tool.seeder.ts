@@ -1,11 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
-import {
-    AvailableInType,
-    InjectMongoose,
-    ToolSchema,
-    ToolId
-} from "@src/databases"
+import { AvailableInType, InjectMongoose, ToolSchema, ToolId } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
 
@@ -22,12 +17,42 @@ export class ToolSeeder implements Seeder {
         this.logger.debug("Seeding tools...")
 
         const data: Array<Partial<ToolSchema>> = [
-            { _id: createObjectId(ToolId.Hand), availableIn: AvailableInType.Both, index: 0 },
-            { _id: createObjectId(ToolId.Scythe), availableIn: AvailableInType.Home, index: 1 },
-            { _id: createObjectId(ToolId.ThiefHand), availableIn: AvailableInType.Neighbor, index: 2 },
-            { _id: createObjectId(ToolId.WaterCan), availableIn: AvailableInType.Both, index: 3 },
-            { _id: createObjectId(ToolId.Pesticide), availableIn: AvailableInType.Both, index: 4 },
-            { _id: createObjectId(ToolId.Herbicide), availableIn: AvailableInType.Both, index: 5 }
+            {
+                _id: createObjectId(ToolId.Hand),
+                displayId: ToolId.Hand,
+                availableIn: AvailableInType.Both,
+                index: 0
+            },
+            {
+                _id: createObjectId(ToolId.Scythe),
+                displayId: ToolId.Scythe,
+                availableIn: AvailableInType.Home,
+                index: 1
+            },
+            {
+                _id: createObjectId(ToolId.ThiefHand),
+                displayId: ToolId.ThiefHand,
+                availableIn: AvailableInType.Neighbor,
+                index: 2
+            },
+            {
+                _id: createObjectId(ToolId.WateringCan),
+                displayId: ToolId.WateringCan,
+                availableIn: AvailableInType.Both,
+                index: 3
+            },
+            {
+                _id: createObjectId(ToolId.Pesticide),
+                displayId: ToolId.Pesticide,
+                availableIn: AvailableInType.Both,
+                index: 4
+            },
+            {
+                _id: createObjectId(ToolId.Herbicide),
+                displayId: ToolId.Herbicide,
+                availableIn: AvailableInType.Both,
+                index: 5
+            }
         ]
 
         await this.connection.model<ToolSchema>(ToolSchema.name).insertMany(data)

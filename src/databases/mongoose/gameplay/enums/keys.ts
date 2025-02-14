@@ -72,7 +72,7 @@ export enum ToolId {
     Hand = "hand",
     Scythe = "scythe",
     ThiefHand = "thiefHand",
-    WaterCan = "watercan",
+    WateringCan = "wateringCan",
     Herbicide = "herbicide",
     Pesticide = "pesticide"
 }
@@ -138,6 +138,12 @@ export enum InventoryTypeId {
     CucumberQuality = "cucumberQuality",
     BellPepper = "bellPepper",
     BellPepperQuality = "bellPepperQuality",
+    Hand = "hand",
+    Scythe = "scythe",
+    ThiefHand = "thiefHand",
+    WateringCan = "wateringCan",
+    Herbicide = "herbicide",
+    Pesticide = "pesticide"
 }
 
 export enum PlacedItemTypeId {

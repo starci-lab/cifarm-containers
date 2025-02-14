@@ -1,11 +1,11 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AvailableInType } from "../enums"
-import { AbstractSchema } from "./abstract"
+import { StaticAbstractSchema } from "./abstract"
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "tools" })
-export class ToolSchema extends AbstractSchema {
+export class ToolSchema extends StaticAbstractSchema {
     
     @Field(() => String)
     @Prop({ type: String, enum: AvailableInType, required: true })

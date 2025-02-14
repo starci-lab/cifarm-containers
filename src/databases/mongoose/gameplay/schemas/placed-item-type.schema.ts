@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { PlacedItemType } from "../enums"
-import { AbstractSchema } from "./abstract"
+import { StaticAbstractSchema } from "./abstract"
 import { BuildingSchema } from "./building.schema"
 import { AnimalSchema } from "./animal.schema"
 import { Schema as MongooseSchema } from "mongoose"
@@ -12,7 +12,7 @@ import { TileSchema } from "./tile.schema"
     timestamps: true,
     collection: "placed_item_types",
 })
-export class PlacedItemTypeSchema extends AbstractSchema {
+export class PlacedItemTypeSchema extends StaticAbstractSchema {
     @Field(() => String)
     @Prop({ type: String, enum: PlacedItemType, required: true })
         type: PlacedItemType

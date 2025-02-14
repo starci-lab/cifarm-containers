@@ -24,6 +24,7 @@ export class TileSeeder implements Seeder {
         const data: Array<Partial<TileSchema>> = [
             {
                 _id: createObjectId(TileId.StarterTile),
+                displayId: TileId.StarterTile,
                 price: 0,
                 maxOwnership: 6,
                 isNft: false,
@@ -34,6 +35,7 @@ export class TileSeeder implements Seeder {
             },
             {
                 _id: createObjectId(TileId.BasicTile1),
+                displayId: TileId.BasicTile1,
                 price: 1000,
                 maxOwnership: 10,
                 isNft: false,
@@ -44,6 +46,7 @@ export class TileSeeder implements Seeder {
             },
             {
                 _id: createObjectId(TileId.BasicTile2),
+                displayId: TileId.BasicTile2,
                 price: 2500,
                 maxOwnership: 30,
                 isNft: false,
@@ -54,6 +57,7 @@ export class TileSeeder implements Seeder {
             },
             {
                 _id: createObjectId(TileId.BasicTile3),
+                displayId: TileId.BasicTile3,
                 price: 10000,
                 maxOwnership: 9999,
                 isNft: false,
@@ -64,6 +68,7 @@ export class TileSeeder implements Seeder {
             },
             {
                 _id: createObjectId(TileId.FertileTile),
+                displayId: TileId.FertileTile,
                 isNft: true,
                 qualityProductChanceStack: 0.025,
                 qualityProductChanceLimit: 0.5,

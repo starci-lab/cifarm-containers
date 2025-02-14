@@ -23,31 +23,35 @@ export class PlacedItemTypeSeeder implements Seeder {
 
     public async seed(): Promise<void> {
         this.logger.debug("Seeding placed item types...")
-
         const data: Array<Partial<PlacedItemTypeSchema>> = [
             // Tiles
             {
                 _id: createObjectId(PlacedItemTypeId.StarterTile),
+                displayId: PlacedItemTypeId.StarterTile,
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.StarterTile)
             },
             {
                 _id: createObjectId(PlacedItemTypeId.BasicTile1),
+                displayId: PlacedItemTypeId.BasicTile1,
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.BasicTile1)
             },
             {
                 _id: createObjectId(PlacedItemTypeId.BasicTile2),
+                displayId: PlacedItemTypeId.BasicTile2,
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.BasicTile2)
             },
             {
                 _id: createObjectId(PlacedItemTypeId.BasicTile3),
+                displayId: PlacedItemTypeId.BasicTile3,
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.BasicTile3)
             },
             {
                 _id: createObjectId(PlacedItemTypeId.FertileTile),
+                displayId: PlacedItemTypeId.FertileTile,
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.FertileTile)
             },
@@ -55,11 +59,13 @@ export class PlacedItemTypeSeeder implements Seeder {
             // Animals
             {
                 _id: createObjectId(PlacedItemTypeId.Chicken),
+                displayId: PlacedItemTypeId.Chicken,
                 type: PlacedItemType.Animal,
                 animal: createObjectId(AnimalId.Chicken)
             },
             {
                 _id: createObjectId(PlacedItemTypeId.Cow),
+                displayId: PlacedItemTypeId.Cow,
                 type: PlacedItemType.Animal,
                 animal: createObjectId(AnimalId.Cow)
             },
@@ -67,16 +73,19 @@ export class PlacedItemTypeSeeder implements Seeder {
             // Buildings
             {
                 _id: createObjectId(PlacedItemTypeId.Home),
+                displayId: PlacedItemTypeId.Home,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Home)
             },
             {
                 _id: createObjectId(PlacedItemTypeId.Barn),
+                displayId: PlacedItemTypeId.Barn,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Barn)
             },
             {
                 _id: createObjectId(PlacedItemTypeId.Coop),
+                displayId: PlacedItemTypeId.Coop,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Coop)
             }

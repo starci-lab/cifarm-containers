@@ -3,7 +3,7 @@ import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import JSON from "graphql-type-json"
 import { AppearanceChance, CropId, DailyRewardId } from "../enums"
 import { Position } from "@src/gameplay"
-import { AbstractSchema } from "./abstract"
+import { StaticAbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 
 @ObjectType()
@@ -11,7 +11,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
     timestamps: true,
     collection: "systems"
 })
-export class SystemSchema extends AbstractSchema {
+export class SystemSchema extends StaticAbstractSchema {
     @Field(() => JSON)
     @Prop({ type: Object, required: true })
         value: object

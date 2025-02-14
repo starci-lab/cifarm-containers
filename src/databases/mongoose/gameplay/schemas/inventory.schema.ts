@@ -1,12 +1,10 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
-import { HydratedDocument, Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema } from "mongoose"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { UserSchema } from "./user.schema"
 import { InventoryTypeSchema } from "./inventory-type.schema"
 import { INVENTORY_TYPE } from "../constants"
-
-export type InventoryDocument = HydratedDocument<InventorySchema>
 
 @ObjectType()
 @Schema({
@@ -14,9 +12,9 @@ export type InventoryDocument = HydratedDocument<InventorySchema>
     collection: "inventories"
 })
 export class InventorySchema extends AbstractSchema {
-    @Field(() => String)
-    @Prop({ type: Number, required: true })
-        quantity: number
+    @Field(() => Int, { nullable: true })
+    @Prop({ type: Number, required: false })
+        quantity?: number
 
     @Field(() => ID)
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })

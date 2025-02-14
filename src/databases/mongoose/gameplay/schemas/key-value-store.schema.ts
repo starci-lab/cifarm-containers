@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { AbstractSchema } from "./abstract"
+import { StaticAbstractSchema } from "./abstract"
 
 @Schema({
     timestamps: true,
     collection: "key-value-stores",
 })
-export class KeyValueStoreSchema extends AbstractSchema {
+export class KeyValueStoreSchema extends StaticAbstractSchema {
     @Prop({ type: Object, required: true })
         value: object
 }

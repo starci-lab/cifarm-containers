@@ -24,6 +24,7 @@ export class SupplySeeder implements Seeder {
         const data: Array<Partial<SupplySchema>> = [
             {
                 _id: createObjectId(SupplyId.BasicFertilizer),
+                displayId: SupplyId.BasicFertilizer,
                 type: SupplyType.Fertilizer,
                 price: 50,
                 availableInShop: true,
@@ -31,6 +32,7 @@ export class SupplySeeder implements Seeder {
             },
             {
                 _id: createObjectId(SupplyId.AnimalFeed),
+                displayId: SupplyId.AnimalFeed,
                 type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,

@@ -1,6 +1,7 @@
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { ObjectId } from "mongodb"
+
 dayjs.extend(utc)
 
 export const createUtcDayjs = (date?: Date): dayjs.Dayjs => dayjs(date).utc()
@@ -16,5 +17,5 @@ export const createObjectId = (id: string): string => {
     } else if (hex.length > 24) {
         hex = hex.slice(0, 24)
     }
-    return new ObjectId(hex).toHexString()
+    return ObjectId.createFromHexString(hex).toHexString()
 }

@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
+import { createObjectId, DeepPartial } from "@src/common"
 import {
     CropId,
     InjectMongoose,
@@ -8,6 +8,7 @@ import {
     InventoryTypeSchema,
     ProductId,
     SupplyId,
+    ToolId,
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
@@ -23,9 +24,10 @@ export class InventoryTypeSeeder implements Seeder {
         
     public async seed(): Promise<void> {
         this.logger.debug("Seeding inventory types...")
-        const data: Array<Partial<InventoryTypeSchema>> = [
+        const data: Array<DeepPartial<InventoryTypeSchema>> = [
             {
                 _id: createObjectId(InventoryTypeId.Egg),
+                displayId: InventoryTypeId.Egg,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -35,6 +37,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.EggQuality),
+                displayId: InventoryTypeId.EggQuality,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -44,6 +47,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.Milk),
+                displayId: InventoryTypeId.Milk,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -53,6 +57,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.MilkQuality),
+                displayId: InventoryTypeId.MilkQuality,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -62,6 +67,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.Carrot),
+                displayId: InventoryTypeId.Carrot,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -71,6 +77,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.CarrotQuality),
+                displayId: InventoryTypeId.CarrotQuality,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -80,6 +87,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.Potato),
+                displayId: InventoryTypeId.Potato,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -89,6 +97,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.PotatoQuality),
+                displayId: InventoryTypeId.PotatoQuality,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -98,6 +107,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.Pineapple),
+                displayId: InventoryTypeId.Pineapple,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -107,6 +117,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.PineappleQuality),
+                displayId: InventoryTypeId.PineappleQuality,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -116,6 +127,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.Watermelon),
+                displayId: InventoryTypeId.Watermelon,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -125,6 +137,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.WatermelonQuality),
+                displayId: InventoryTypeId.WatermelonQuality,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -134,6 +147,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.Cucumber),
+                displayId: InventoryTypeId.Cucumber,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -143,6 +157,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.CucumberQuality),
+                displayId: InventoryTypeId.CucumberQuality,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -152,6 +167,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.BellPepper),
+                displayId: InventoryTypeId.BellPepper,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -161,6 +177,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.BellPepperQuality),
+                displayId: InventoryTypeId.BellPepperQuality,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
@@ -170,6 +187,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.CarrotSeed),
+                displayId: InventoryTypeId.CarrotSeed,
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
@@ -179,6 +197,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.PotatoSeed),
+                displayId: InventoryTypeId.PotatoSeed,
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
@@ -188,6 +207,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.PineappleSeed),
+                displayId: InventoryTypeId.PineappleSeed,
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
@@ -197,6 +217,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.WatermelonSeed),
+                displayId: InventoryTypeId.WatermelonSeed,
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
@@ -206,6 +227,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.CucumberSeed),
+                displayId: InventoryTypeId.CucumberSeed,
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
@@ -215,6 +237,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.BellPepperSeed),
+                displayId: InventoryTypeId.BellPepperSeed,
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
@@ -224,6 +247,7 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.BasicFertilizer),
+                displayId: InventoryTypeId.BasicFertilizer,
                 asTool: true,
                 deliverable: false,
                 maxStack: 64,
@@ -233,13 +257,74 @@ export class InventoryTypeSeeder implements Seeder {
             },
             {
                 _id: createObjectId(InventoryTypeId.AnimalFeed),
+                displayId: InventoryTypeId.AnimalFeed,
                 asTool: true,
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
                 supply: createObjectId(SupplyId.AnimalFeed),
                 type: InventoryType.Supply
-            }
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Hand),
+                displayId: InventoryTypeId.Hand,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                tool: createObjectId(ToolId.Hand),
+                type: InventoryType.Tool
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Scythe),
+                displayId: InventoryTypeId.Scythe,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                tool: createObjectId(InventoryTypeId.Scythe),
+                type: InventoryType.Tool
+            },
+            {
+                _id: createObjectId(InventoryTypeId.ThiefHand),
+                displayId: InventoryTypeId.ThiefHand,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                tool: createObjectId(ToolId.ThiefHand),
+                type: InventoryType.Tool
+            },
+            {
+                _id: createObjectId(InventoryTypeId.WateringCan),
+                displayId: InventoryTypeId.WateringCan,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                tool: createObjectId(ToolId.WateringCan),
+                type: InventoryType.Tool
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Pesticide),
+                displayId: InventoryTypeId.Pesticide,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                tool: createObjectId(ToolId.Pesticide),
+                type: InventoryType.Tool
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Herbicide),
+                displayId: InventoryTypeId.Herbicide,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                tool: createObjectId(ToolId.Herbicide),
+                type: InventoryType.Tool
+            },
         ]
 
         await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).insertMany(data)

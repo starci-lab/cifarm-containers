@@ -1,5 +1,5 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
-import { AbstractSchema } from "./abstract"
+import { StaticAbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AvailableInType, InventoryType } from "../enums"
 import { CropSchema } from "./crop.schema"
@@ -13,7 +13,7 @@ import { SupplySchema } from "./supply.schema"
     timestamps: true,
     collection: "inventory-types"
 })
-export class InventoryTypeSchema extends AbstractSchema {
+export class InventoryTypeSchema extends StaticAbstractSchema {
     @Field(() => String)
     @Prop({ type: String, required: true, enum: InventoryType })
         type: InventoryType
@@ -50,9 +50,13 @@ export class InventoryTypeSchema extends AbstractSchema {
     @Prop({ type: String, required: false, enum: AvailableInType })
         availableIn?: AvailableInType
 
-    @Field(() => Int)
-        @Prop({ type: Number, required: true, min: 1 })
-        maxStack: number
+    @Field(() => Boolean)
+    @Prop({ type: Boolean, required: true, default: true })
+        stackable: boolean
+
+    @Field(() => Int, { nullable: true })
+        @Prop({ type: Number, required: false, min: 1 })
+        maxStack?: number
 }
 
 export const InventoryTypeSchemaClass = SchemaFactory.createForClass(InventoryTypeSchema)

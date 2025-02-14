@@ -205,30 +205,37 @@ export class SystemSeeder implements Seeder {
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
+                displayId: SystemId.Activities,
                 value: activities
             },
             {
                 _id: createObjectId(SystemId.CropRandomness),
+                displayId: SystemId.CropRandomness,
                 value: cropRandomness
             },
             {
                 _id: createObjectId(SystemId.AnimalRandomness),
+                displayId: SystemId.AnimalRandomness,
                 value: animalRandomness
             },
             {
                 _id: createObjectId(SystemId.DefaultInfo),
+                displayId: SystemId.DefaultInfo,
                 value: defaultInfo
             },
             {
                 _id: createObjectId(SystemId.SpinInfo),
+                displayId: SystemId.SpinInfo,
                 value: spinInfo
             },
             {
                 _id: createObjectId(SystemId.EnergyRegen),
+                displayId: SystemId.EnergyRegen,
                 value: energyRegen
             },
             {
                 _id: createObjectId(SystemId.DailyRewardInfo),
+                displayId: SystemId.DailyRewardInfo,
                 value: dailyRewardInfo
             }
         ]

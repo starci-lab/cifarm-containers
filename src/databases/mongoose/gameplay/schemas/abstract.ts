@@ -19,3 +19,12 @@ export abstract class AbstractSchema extends Document {
     @Prop({ type: Date })
         updatedAt: Date
 }
+
+@ObjectType({
+    isAbstract: true
+})
+export abstract class StaticAbstractSchema extends Document {
+    @Field(() => ID)
+    @Prop({ type: String, required: true, unique: true })
+        displayId: string
+}

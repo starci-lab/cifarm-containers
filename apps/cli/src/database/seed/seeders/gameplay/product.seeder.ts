@@ -24,6 +24,7 @@ export class ProductSeeder implements Seeder {
         const data: Array<DeepPartial<ProductSchema>> = [
             {
                 _id: createObjectId(ProductId.Egg),
+                displayId: ProductId.Egg,
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -32,6 +33,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.EggQuality),
+                displayId: ProductId.EggQuality,
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -41,6 +43,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.Milk),
+                displayId: ProductId.Milk,
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -49,6 +52,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.MilkQuality),
+                displayId: ProductId.MilkQuality,
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -58,6 +62,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.Carrot),
+                displayId: ProductId.Carrot,
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -66,6 +71,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.Potato),
+                displayId: ProductId.Potato,
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -74,6 +80,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.Cucumber),
+                displayId: ProductId.Cucumber,
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -82,6 +89,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.Pineapple),
+                displayId: ProductId.Pineapple,
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -90,6 +98,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.CarrotQuality),
+                displayId: ProductId.CarrotQuality,
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -99,6 +108,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.PotatoQuality),
+                displayId: ProductId.PotatoQuality,
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -108,6 +118,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.CucumberQuality),
+                displayId: ProductId.CucumberQuality,
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -117,6 +128,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.PineappleQuality),
+                displayId: ProductId.PineappleQuality,
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -126,6 +138,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.Watermelon),
+                displayId: ProductId.Watermelon,
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -134,6 +147,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.BellPepper),
+                displayId: ProductId.BellPepper,
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,
@@ -143,6 +157,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.BellPepperQuality),
+                displayId: ProductId.BellPepperQuality,
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 5,
@@ -151,6 +166,7 @@ export class ProductSeeder implements Seeder {
             },
             {
                 _id: createObjectId(ProductId.WatermelonQuality),
+                displayId: ProductId.WatermelonQuality,
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 5,

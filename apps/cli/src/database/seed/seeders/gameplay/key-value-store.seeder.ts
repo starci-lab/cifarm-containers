@@ -21,18 +21,21 @@ export class KeyValueStoreSeeder implements Seeder {
         const data: Array<DeepPartial<KeyValueStoreSchema>> = [
             {
                 _id: createObjectId(KeyValueStoreId.CropGrowthLastSchedule),
+                displayId: KeyValueStoreId.CropGrowthLastSchedule,
                 value: {
                     date: dayjs().utc().toDate()
                 }
             },
             {
                 _id: createObjectId(KeyValueStoreId.EnergyRegenerationLastSchedule),
+                displayId: KeyValueStoreId.EnergyRegenerationLastSchedule,
                 value: {
                     date: dayjs().utc().toDate()
                 }
             },
             {
                 _id: createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule),
+                displayId: KeyValueStoreId.AnimalGrowthLastSchedule,
                 value: {
                     date: dayjs().utc().toDate()
                 }

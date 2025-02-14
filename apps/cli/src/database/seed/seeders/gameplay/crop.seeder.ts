@@ -22,6 +22,7 @@ export class CropSeeder implements Seeder {
         const data: Array<Partial<CropSchema>> = [
             {
                 _id: createObjectId(CropId.Carrot),
+                displayId: CropId.Carrot,
                 price: 50,
                 growthStageDuration: 3600,
                 growthStages: 5,
@@ -37,6 +38,7 @@ export class CropSeeder implements Seeder {
             },
             {
                 _id: createObjectId(CropId.Potato),
+                displayId: CropId.Potato,
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,
@@ -52,6 +54,7 @@ export class CropSeeder implements Seeder {
             },
             {
                 _id: createObjectId(CropId.Cucumber),
+                displayId: CropId.Cucumber,
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,
@@ -67,6 +70,7 @@ export class CropSeeder implements Seeder {
             },
             {
                 _id: createObjectId(CropId.Pineapple),
+                displayId: CropId.Pineapple,
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,
@@ -82,6 +86,7 @@ export class CropSeeder implements Seeder {
             },
             {
                 _id: createObjectId(CropId.Watermelon),
+                displayId: CropId.Watermelon,
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,
@@ -97,6 +102,7 @@ export class CropSeeder implements Seeder {
             },
             {
                 _id: createObjectId(CropId.BellPepper),
+                displayId: CropId.BellPepper,
                 price: 100,
                 growthStageDuration: 9000,
                 growthStages: 5,

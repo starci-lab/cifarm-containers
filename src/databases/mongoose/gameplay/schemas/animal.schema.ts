@@ -1,18 +1,18 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AnimalType } from "../enums"
-import { AbstractSchema } from "./abstract"
+import { StaticAbstractSchema } from "./abstract"
 
 @ObjectType()
 @Schema({
     timestamps: true,
     collection: "animals"
 })
-export class AnimalSchema extends AbstractSchema {
+export class AnimalSchema extends StaticAbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number })
         yieldTime: number
-  
+    
     @Field(() => Int)
     @Prop({ type: Number, min: 0 })
         offspringPrice: number

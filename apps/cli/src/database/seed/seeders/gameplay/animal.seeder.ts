@@ -24,6 +24,7 @@ export class AnimalSeeder implements Seeder {
         const data: Array<Partial<AnimalSchema>> = [
             {
                 _id: createObjectId(AnimalId.Chicken),
+                displayId: AnimalId.Chicken,
                 yieldTime: 60 * 60 * 24,
                 offspringPrice: 1000,
                 isNft: false,
@@ -42,6 +43,7 @@ export class AnimalSeeder implements Seeder {
             },
             {
                 _id: createObjectId(AnimalId.Cow),
+                displayId: AnimalId.Cow,
                 yieldTime: 60 * 60 * 24 * 2,
                 offspringPrice: 2500,
                 isNft: false,

@@ -1,6 +1,5 @@
 import { ObjectType, Field, Int, Float, ID } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { HydratedDocument } from "mongoose"
 import { CropCurrentState } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { CropSchema } from "./crop.schema"

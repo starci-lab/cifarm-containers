@@ -14,6 +14,7 @@ import {
     PlacedItemTypeId,
     InventorySchema,
     SessionSchema,
+    ToolId,
 } from "@src/databases"
 import {
     IBlockchainAuthService,
@@ -28,10 +29,7 @@ import { Network } from "@src/env"
 import { JwtService } from "@src/jwt"
 import { Cache } from "cache-manager"
 import { createObjectId, DeepPartial } from "@src/common"
-import {
-    GrpcInvalidArgumentException,
-    GrpcNotFoundException
-} from "nestjs-grpc-exceptions"
+import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { ModuleRef } from "@nestjs/core"
 import { Connection } from "mongoose"
 
@@ -50,16 +48,14 @@ export class VerifySignatureService {
         private readonly inventoryService: InventoryService
     ) {}
 
-    public async verifySignature(
-        {
-            message,
-            publicKey,
-            signature,
-            chainKey,
-            network,
-            accountAddress
-        }: VerifySignatureRequest
-    ): Promise<VerifySignatureResponse> {
+    public async verifySignature({
+        message,
+        publicKey,
+        signature,
+        chainKey,
+        network,
+        accountAddress
+    }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
         try {
@@ -94,9 +90,15 @@ export class VerifySignatureService {
                 .session(mongoSession)
 
             if (!user) {
-            // get default info
+                // get default info
                 const {
-                    value: { defaultCropId, defaultSeedQuantity, golds, positions, inventoryCapacity }
+                    value: {
+                        defaultCropId,
+                        defaultSeedQuantity,
+                        golds,
+                        positions,
+                        inventoryCapacity
+                    }
                 } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
                     .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
@@ -116,7 +118,7 @@ export class VerifySignatureService {
 
                 const energy = this.energyService.getMaxEnergy()
 
-                const [ userRaw ] = await this.connection.model<UserSchema>(UserSchema.name).create(
+                const [userRaw] = await this.connection.model<UserSchema>(UserSchema.name).create(
                     [
                         {
                             username: `${chainKey}-${accountAddress.substring(0, 5)}`,
@@ -165,6 +167,25 @@ export class VerifySignatureService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .create(tilePartials, { session: mongoSession, ordered: true })
 
+                // add tools to inventories
+                const toolInventories: Array<DeepPartial<InventorySchema>> = []
+                for (const toolId of Object.values(ToolId)) {
+                    const inventoryType = await this.connection
+                        .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                        .findOne({
+                            type: InventoryType.Tool,
+                            tool: createObjectId(toolId)
+                        }).session(mongoSession)
+                    toolInventories.push({
+                        inventoryType: inventoryType.id,
+                        user: user.id,
+                        inToolbar: true,
+                    })
+                }
+                await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .create(toolInventories, { session: mongoSession, ordered: true })
+
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
@@ -178,11 +199,9 @@ export class VerifySignatureService {
                     .model<InventorySchema>(InventorySchema.name)
                     .create(createdInventories, { session: mongoSession, ordered: true })
                 for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
-                        { _id: inventory._id },
-                        inventory,
-                        { session: mongoSession }
-                    )
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .updateOne({ _id: inventory._id }, inventory, { session: mongoSession })
                 }
             }
 
@@ -200,7 +219,7 @@ export class VerifySignatureService {
             })
 
             await mongoSession.commitTransaction()
-        
+
             return {
                 accessToken,
                 refreshToken
