@@ -2,7 +2,10 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
+import { GrpcNotFoundException, GrpcInternalException } from "nestjs-grpc-exceptions"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade-building.dto"
+import { PlacedItemSchema, BuildingSchema, UserSchema } from "@src/databases"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class UpgradeBuildingService {
@@ -21,70 +24,70 @@ export class UpgradeBuildingService {
         mongoSession.startTransaction()
 
         try {
-            // const placedItemBuilding = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-            //     .findById(request.placedItemBuildingId)
-            //     .session(mongoSession)
+            const placedItemBuilding = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findById(request.placedItemBuildingId)
+                .session(mongoSession)
 
-            // if (!placedItemBuilding) {
-            //     throw new GrpcNotFoundException("Placed item not found")
-            // }
+            if (!placedItemBuilding) {
+                throw new GrpcNotFoundException("Placed item not found")
+            }
 
-            // const building = await this.connection.model<BuildingSchema>(BuildingSchema.name)
-            //     .findById(createObjectId(placedItemBuilding.placedItemType))
-            //     .session(mongoSession)
+            const building = await this.connection.model<BuildingSchema>(BuildingSchema.name)
+                .findById(placedItemBuilding.placedItemType)
+                .session(mongoSession)
 
-            // if (!building) {
-            //     throw new GrpcNotFoundException("Building type not found")
-            // }
+            if (!building) {
+                throw new GrpcNotFoundException("Building type not found")
+            }
 
-            // const currentUpgradeLevel = placedItemBuilding.buildingInfo.currentUpgrade
+            const currentUpgradeLevel = placedItemBuilding.buildingInfo.currentUpgrade
 
-            // if (currentUpgradeLevel >= building.maxUpgradeLevel) {
-            //     throw new GrpcFailedPreconditionException("Building already at max upgrade level")
-            // }
+            if (currentUpgradeLevel >= building.maxUpgrade) {
+                throw new GrpcFailedPreconditionException("Building already at max upgrade level")
+            }
 
-            // const nextUpgrade = building.upgrades.find(upgrade => upgrade.upgradeLevel === currentUpgradeLevel + 1)
+            const nextUpgrade = building.upgrades.find(upgrade => upgrade.upgradeLevel === currentUpgradeLevel + 1)
 
-            // if (!nextUpgrade) {
-            //     throw new GrpcFailedPreconditionException("Next upgrade not found")
-            // }
+            if (!nextUpgrade) {
+                throw new GrpcFailedPreconditionException("Next upgrade not found")
+            }
 
-            // const user = await this.connection.model<UserSchema>(UserSchema.name)
-            //     .findById(request.userId)
-            //     .session(mongoSession)
+            const user = await this.connection.model<UserSchema>(UserSchema.name)
+                .findById(request.userId)
+                .session(mongoSession)
 
-            // if (!user) {
-            //     throw new GrpcNotFoundException("User not found")
-            // }
+            if (!user) {
+                throw new GrpcNotFoundException("User not found")
+            }
 
-            // this.goldBalanceService.checkSufficient({
-            //     current: user.golds,
-            //     required: nextUpgrade.upgradePrice
-            // })
+            this.goldBalanceService.checkSufficient({
+                current: user.golds,
+                required: nextUpgrade.upgradePrice
+            })
 
-            // try {
-            //     const goldsChanged = this.goldBalanceService.subtract({
-            //         user: user,
-            //         amount: nextUpgrade.upgradePrice
-            //     })
+            try {
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: nextUpgrade.upgradePrice
+                })
 
-            //     await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-            //         { _id: user.id },
-            //         { ...goldsChanged }
-            //     )
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...goldsChanged }
+                )
 
-            //     await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
-            //         { _id: placedItemBuilding._id },
-            //         { "buildingInfo.currentUpgrade": currentUpgradeLevel + 1 }
-            //     )
+                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
+                    { _id: placedItemBuilding._id },
+                    { "buildingInfo.currentUpgrade": currentUpgradeLevel + 1 }
+                )
 
-            //     await mongoSession.commitTransaction()
-            return {}
-            // } catch (error) {
-            //     this.logger.error(`Transaction failed, reason: ${error.message}`)
-            //     await mongoSession.abortTransaction()
-            //     throw error
-            // }
+                await mongoSession.commitTransaction()
+                return {}
+            } catch (error) {
+                this.logger.error(`Transaction failed, reason: ${error.message}`)
+                await mongoSession.abortTransaction()
+                throw new GrpcInternalException(error.message)
+            }
         } finally {
             await mongoSession.endSession()
         }
