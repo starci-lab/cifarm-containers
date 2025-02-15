@@ -1,4 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
+import { ActivityInfo, CropCurrentState, DefaultInfo, InjectMongoose, InventorySchema, InventoryType, InventoryTypeSchema, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
+import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { Connection } from "mongoose"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 
 @Injectable()
@@ -6,167 +11,111 @@ export class HarvestCropService {
     private readonly logger = new Logger(HarvestCropService.name)
 
     constructor(
-        // @InjectPostgreSQL()
-        // private readonly dataSource: DataSource,
-        // private readonly energyService: EnergyService,
-        // private readonly levelService: LevelService,
-        // private readonly inventoryService: InventoryService,
-        // private readonly productService: ProductService,
-        // @InjectKafka()
-        // private readonly clientKafka: ClientKafka
+        @InjectMongoose()
+        private readonly connection: Connection,
+        private readonly energyService: EnergyService,
+        private readonly inventoryService: InventoryService,
+        private readonly levelService: LevelService
     ) {}
 
     async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
-        // try {
-        //     const placedItemTile = await queryRunner.manager.findOne(PlacedItemSchema, {
-        //         where: {
-        //             id: request.placedItemTileId,
-        //             userId: request.userId,
-        //             placedItemType: {
-        //                 type: PlacedItemType.Tile
-        //             }
-        //         },
-        //         relations: {
-        //             seedGrowthInfo: {
-        //                 crop: true
-        //             },
-        //             placedItemType: {
-        //                 tile: true
-        //             },
-        //             tileInfo: true
-        //         }
-        //     })
+        this.logger.debug(`Harvesting crop for user ${request.userId}, tile ID: ${request.placedItemTileId}`)
 
-        //     if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
-        //     if (!placedItemTile.seedGrowthInfo)
-        //         throw new GrpcFailedPreconditionException("Tile is not planted")
+        try {
+            const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findById(request.placedItemTileId)
+                .populate(SEED_GROWTH_INFO)
+                .session(mongoSession)
 
-        //     if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured)
-        //         throw new GrpcFailedPreconditionException("Crop is not fully matured")
+            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
+            if (!placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is not planted")
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) throw new GrpcFailedPreconditionException("Crop is not fully matured")
 
-        //     const { value } = await queryRunner.manager.findOne(SystemEntity, {
-        //         where: { id: SystemId.Activities }
-        //     })
-        //     const {
-        //         water: { energyConsume, experiencesGain }
-        //     } = value as Activities
+            const { value: { energyConsume, experiencesGain } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<ActivityInfo>>(createObjectId(SystemId.Activities))
 
-        //     const user = await queryRunner.manager.findOne(UserSchema, {
-        //         where: { id: request.userId }
-        //     })
+            const user = await this.connection.model<UserSchema>(UserSchema.name)
+                .findById(request.userId)
+                .session(mongoSession)
 
-        //     this.energyService.checkSufficient({
-        //         current: user.energy,
-        //         required: energyConsume
-        //     })
+            if (!user) throw new GrpcNotFoundException("User not found")
 
-        //     // substract energy
-        //     const energyChanges = this.energyService.substract({
-        //         entity: user,
-        //         energy: energyConsume
-        //     })
-        //     const experiencesChanges = this.levelService.addExperiences({
-        //         entity: user,
-        //         experiences: experiencesGain
-        //     })
+            this.energyService.checkSufficient({
+                current: user.energy,
+                required: energyConsume
+            })
 
-        //     // compute quality chance
-        //     const tileInfoAfterHarvestChanges = this.productService.updateTileInfoAfterHarvest({
-        //         entity: placedItemTile.tileInfo
-        //     })
+            const energyChanges = this.energyService.substract({
+                user,
+                quantity: energyConsume,
+            })
+            const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
 
-        //     // get corresponding inventory type
-        //     const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-        //         where: {
-        //             type: InventoryType.Product,
-        //             product: {
-        //                 type: ProductType.Crop,
-        //                 cropId: placedItemTile.seedGrowthInfo.cropId,
-        //                 isQuality: placedItemTile.seedGrowthInfo.isQuality
-        //             }
-        //         }
-        //     })
+            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                .findOne({
+                    type: InventoryType.Product,
+                    product: placedItemTile.seedGrowthInfo.crop
+                })
+                .session(mongoSession)
 
-        //     // Get inventories same type
-        //     const existingInventories = await queryRunner.manager.find(InventoryEntity, {
-        //         where: {
-        //             userId: request.userId,
-        //             inventoryTypeId: inventoryType.id
-        //         }
-        //     })
+            if (!inventoryType) throw new GrpcNotFoundException("Inventory type not found")
 
-        //     const updatedInventories = this.inventoryService.add({
-        //         entities: existingInventories,
-        //         userId: request.userId,
-        //         data: {
-        //             inventoryType: inventoryType,
-        //             quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining,
-        //         }
-        //     })
+            const { count, inventories } = await this.inventoryService.getParams({
+                connection: this.connection,
+                inventoryType,
+                userId: user.id,
+                session: mongoSession
+            })
 
-        //     await queryRunner.startTransaction()
-        //     try {
-        //         // update user
-        //         await queryRunner.manager.update(UserSchema, user.id, {
-        //             ...energyChanges,
-        //             ...experiencesChanges
-        //         })
+            const { value: { inventoryCapacity } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+            
 
-        //         await queryRunner.manager.save(InventoryEntity, updatedInventories)
+            try {
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...energyChanges, ...experienceChanges }
+                )
 
-        //         //if current perennial count is equal to crop's perennial count - 1, remove the crop, delete the seed growth info
-        //         if (
-        //             placedItemTile.seedGrowthInfo.currentPerennialCount + 1 >=
-        //             placedItemTile.seedGrowthInfo.crop.perennialCount
-        //         ) {
-        //             await queryRunner.manager.remove(
-        //                 SeedGrowthInfoEntity,
-        //                 placedItemTile.seedGrowthInfo
-        //             )
-        //         } else {
-        //             // update seed growth info
-        //             await queryRunner.manager.update(
-        //                 SeedGrowthInfoEntity,
-        //                 placedItemTile.seedGrowthInfo.id,
-        //                 {
-        //                     currentPerennialCount:
-        //                         placedItemTile.seedGrowthInfo.currentPerennialCount + 1,
-        //                     currentState: CropCurrentState.Normal,
-        //                     currentStageTimeElapsed: 0
-        //                 }
-        //             )
-        //         }
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventoryType,
+                    inventories,
+                    count,
+                    capacity: inventoryCapacity,
+                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining,
+                    userId: user.id
+                })
 
-        //         // update tile info
-        //         await queryRunner.manager.update(
-        //             TileInfoEntity,
-        //             placedItemTile.tileInfoId,
-        //             {
-        //                 ...tileInfoAfterHarvestChanges
-        //             }
-        //         )
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                for (const inventory of updatedInventories) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
+                        _id: inventory._id
+                    }, inventory)
+                }
 
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
+                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
+                    { _id: placedItemTile._id },
+                    { 
+                        seedGrowthInfo: {
+                            currentState: CropCurrentState.Normal
+                        }
+                    }
+                )
 
-        //     // Publish event to Kafka
-        //     this.clientKafka.emit(KafkaPattern.PlacedItems, {
-        //         userId: user.id
-        //     })
-                        
-        //     return {}
-        // } finally {
-        //     await queryRunner.release()
-        // }
-
-        return {}
+                await mongoSession.commitTransaction()
+                return {}
+            } catch (error) {
+                this.logger.error(`Transaction failed, reason: ${error.message}`)
+                await mongoSession.abortTransaction()
+                throw new GrpcInternalException(error.message)
+            }
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }
