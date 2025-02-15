@@ -1,11 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { 
-    // DeliverProductRequest, 
-    DeliverProductResponse } from "./deliver-product.dto"
-// import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-// import { GrpcFailedPreconditionException } from "@src/common"
-import { InjectMongoose } from "@src/databases"
+import { DeliveringProductSchema, InjectMongoose, InventorySchema, InventoryTypeSchema } from "@src/databases"
 import { Connection } from "mongoose"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { DeliverProductResponse } from "./deliver-product.dto"
+import { GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class DeliverProductService {
@@ -16,76 +14,65 @@ export class DeliverProductService {
         private readonly connection: Connection
     ) {}
 
-    async deliverProduct(
-    //request: DeliverProductRequest
-    ): Promise<DeliverProductResponse> {
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
+    async deliverProduct(request): Promise<DeliverProductResponse> {
+        this.logger.debug(`Processing delivery for user ${request.userId}, inventory ID: ${request.inventoryId}`)
 
-        // try {
-        //     // Fetch inventory
-        //     const inventory = await queryRunner.manager.findOne(InventoryEntity, {
-        //         where: { id: request.inventoryId, userId: request.userId },
-        //         relations: {
-        //             inventoryType: true
-        //         }
-        //     })
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
-        //     if (!inventory) {
-        //         throw new GrpcNotFoundException("Inventory not found")
-        //     }
+        try {
+            const inventory = await this.connection.model<InventorySchema>(InventorySchema.name)
+                .findById(request.inventoryId)
+                .session(mongoSession)
 
-        //     if (inventory.quantity < request.quantity) {
-        //         throw new GrpcFailedPreconditionException("Not enough quantity to deliver")
-        //     }
+            if (!inventory) {
+                throw new GrpcNotFoundException("Inventory not found")
+            }
 
-        //     // Check if inventory type is deliverable
-        //     if (!inventory.inventoryType.deliverable) {
-        //         throw new GrpcFailedPreconditionException("Inventory type is not deliverable")
-        //     }
+            if (inventory.quantity < request.quantity) {
+                throw new GrpcFailedPreconditionException("Not enough quantity to deliver")
+            }
 
-        //     // Check if index is valid
-        //     const indexExists = await queryRunner.manager.exists(DeliveringProductEntity, {
-        //         where: {
-        //             userId: request.userId,
-        //             index: request.index
-        //         }
-        //     })
-        //     if (indexExists) {
-        //         throw new GrpcFailedPreconditionException("Index already in use")
-        //     }
+            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                .findById(inventory.inventoryType)
+                .session(mongoSession)
 
-        //     // Start transaction
-        //     await queryRunner.startTransaction()
+            if (!inventoryType.deliverable) {
+                throw new GrpcFailedPreconditionException("Inventory type is not deliverable")
+            }
 
-        //     try {
-        //         // Update inventory (subtract delivered quantity)
-        //         inventory.quantity -= request.quantity
-        //         if (inventory.quantity === 0) {
-        //             await queryRunner.manager.remove(InventoryEntity, inventory)
-        //         } else {
-        //             await queryRunner.manager.save(InventoryEntity, inventory)
-        //         }
+            const indexExists = await this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name)
+                .exists({ userId: request.userId, index: request.index })
+                .session(mongoSession)
 
-        //         // Save delivering product in database
-        //         await queryRunner.manager.save(DeliveringProductEntity, {
-        //             userId: request.userId,
-        //             quantity: request.quantity,
-        //             index: request.index,
-        //             productId: inventory.inventoryType.productId
-        //         })
+            if (indexExists) {
+                throw new GrpcFailedPreconditionException("Index already in use")
+            }
 
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
-        //     return {}
-        // } finally {
-        //     await queryRunner.release()
-        // }
-        return {}
+            try {
+                inventory.quantity -= request.quantity
+                if (inventory.quantity === 0) {
+                    await inventory.deleteOne()
+                } else {
+                    await inventory.save()
+                }
+
+                await this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name).create({
+                    userId: request.userId,
+                    quantity: request.quantity,
+                    index: request.index,
+                    productId: inventoryType.product
+                })
+
+                await mongoSession.commitTransaction()
+                return {}
+            } catch (error) {
+                this.logger.error(`Transaction failed, reason: ${error.message}`)
+                await mongoSession.abortTransaction()
+                throw error
+            }
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }
