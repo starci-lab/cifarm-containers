@@ -4,15 +4,15 @@ import { InjectKafka, KafkaPattern } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     AnimalSchema,
-    BUILDING_INFO,
     BuildingSchema,
     InjectMongoose,
     PlacedItemSchema, PlacedItemType,
+    PlacedItemTypeSchema,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 
 @Injectable()
@@ -37,7 +37,7 @@ export class BuyAnimalService {
 
         try {
             const animal = await this.connection.model<AnimalSchema>(AnimalSchema.name)
-                .findById(request.animalId)
+                .findById(createObjectId(request.animalId))
                 .session(mongoSession)
 
             if (!animal) throw new GrpcNotFoundException("Animal not found")
@@ -45,13 +45,18 @@ export class BuyAnimalService {
 
             const placedItemBuilding = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findById(request.placedItemBuildingId)
-                .populate(BUILDING_INFO)
                 .session(mongoSession)
 
             if (!placedItemBuilding) throw new GrpcNotFoundException("Building not found")
 
+            const placedItemType = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                .findById(placedItemBuilding.placedItemType)
+                .session(mongoSession)
+
+            console.log("placedItemBuilding", placedItemBuilding)
+
             const building = await this.connection.model<BuildingSchema>(BuildingSchema.name)
-                .findById(createObjectId(placedItemBuilding.buildingInfo.buildingKey))
+                .findById(placedItemType.building)
                 .session(mongoSession)
 
             if (building.type !== animal.type)
@@ -85,11 +90,16 @@ export class BuyAnimalService {
                     { ...goldsChanged }
                 )
 
+                const placedItemTypeAnimal = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                    .findOne({ type: PlacedItemType.Animal,
+                        animal: createObjectId(request.animalId) })
+                    .session(mongoSession)
+
                 await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
                     userId: request.userId,
                     x: request.position.x,
                     y: request.position.y,
-                    placedItemType: PlacedItemType.Animal,
+                    placedItemType: placedItemTypeAnimal,
                     parentId: placedItemBuilding.id,
                     animalInfo: {}
                 })
@@ -99,7 +109,7 @@ export class BuyAnimalService {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
                 await mongoSession.abortTransaction()
-                throw new GrpcInternalException(errorMessage)
+                throw error
             }
 
             this.clientKafka.emit(KafkaPattern.PlacedItems, {

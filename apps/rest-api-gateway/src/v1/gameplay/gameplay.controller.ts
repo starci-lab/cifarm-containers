@@ -47,12 +47,8 @@ import {
     IGameplayService,
     MoveRequest,
     MoveResponse,
-    PlaceTileRequest,
-    PlaceTileResponse,
     PlantSeedRequest,
     PlantSeedResponse,
-    RecoverTileRequest,
-    RecoverTileResponse,
     RefreshRequest,
     RefreshResponse,
     RequestMessageResponse,
@@ -682,46 +678,6 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing move for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.move({
-                ...request,
-                userId: user?.id
-            })
-        )
-    }
-
-    @UseGuards(RestJwtAuthGuard)
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @ApiResponse({
-        type: PlaceTileResponse
-    })
-    @Post("/place-tile")
-    public async placeTile(
-        @User() user: UserLike,
-        @Body() request: PlaceTileRequest
-    ): Promise<PlaceTileResponse> {
-        this.logger.debug(`Processing place tile for user ${user?.id}`)
-        return await lastValueFrom(
-            this.gameplayService.placeTile({
-                ...request,
-                userId: user?.id
-            })
-        )
-    }
-
-    @UseGuards(RestJwtAuthGuard)
-    @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
-    @ApiResponse({
-        type: PlaceTileResponse
-    })
-    @Post("/recover-tile")
-    public async recoverTile(
-        @User() user: UserLike,
-        @Body() request: RecoverTileRequest
-    ): Promise<RecoverTileResponse> {
-        this.logger.debug(`Processing recover tile for user ${user?.id}`)
-        return await lastValueFrom(
-            this.gameplayService.recoverTile({
                 ...request,
                 userId: user?.id
             })

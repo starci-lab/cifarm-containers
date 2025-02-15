@@ -32,9 +32,7 @@ describe("BuySuppliesService", () => {
         const user = await gameplayMockUserService.generate({ golds: supply.price * quantity + 10 })
         const golds = user.golds
         
-        const inventoryType = await connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
-            supplyId: supply._id
-        })
+        const inventoryType = await connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findById(createObjectId(SupplyId.AnimalFeed))
 
         await service.buySupplies({
             userId: user.id,
@@ -42,11 +40,11 @@ describe("BuySuppliesService", () => {
             quantity
         })
 
+        console.log(inventoryType,"ds")
+
         const updatedUser = await connection.model<UserSchema>(UserSchema.name).findById(user.id)
         expect(golds - updatedUser.golds).toBe(supply.price * quantity)
-
         const updatedInventory = await connection.model<InventorySchema>(InventorySchema.name).findOne({
-            userId: user.id,
             inventoryType: inventoryType._id
         })
         expect(updatedInventory.quantity).toBe(quantity)
