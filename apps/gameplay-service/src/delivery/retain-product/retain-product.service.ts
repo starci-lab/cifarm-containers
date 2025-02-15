@@ -45,7 +45,7 @@ export class RetainProductService {
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
-            const { count, inventories } = await this.inventoryService.getParams({
+            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
                 connection: this.connection,
                 inventoryType,
                 userId: request.userId,
@@ -57,10 +57,11 @@ export class RetainProductService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
-                    count,
                     capacity: inventoryCapacity,
                     quantity: deliveringProduct.quantity,
-                    userId: request.userId
+                    userId: request.userId,
+                    occupiedIndexes,
+                    inToolbar: false
                 })
 
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)

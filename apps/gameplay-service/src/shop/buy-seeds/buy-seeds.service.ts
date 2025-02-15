@@ -65,11 +65,11 @@ export class BuySeedsService {
                 throw new GrpcNotFoundException("Inventory seed type not found")
             }  
 
-            const { count, inventories } = await this.inventoryService.getParams({
+            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
                 connection: this.connection,
                 inventoryType,
                 userId: user.id,
-                session: mongoSession
+                session: mongoSession,
             })
 
             const { value: { inventoryCapacity } } = await this.connection
@@ -95,10 +95,11 @@ export class BuySeedsService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
-                    count,
                     capacity: inventoryCapacity,
                     quantity: request.quantity,
-                    userId: user.id
+                    userId: user.id,
+                    occupiedIndexes,
+                    inToolbar: false
                 })
 
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)

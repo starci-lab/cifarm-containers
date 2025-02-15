@@ -64,7 +64,7 @@ export class HarvestCropService {
 
             if (!inventoryType) throw new GrpcNotFoundException("Inventory type not found")
 
-            const { count, inventories } = await this.inventoryService.getParams({
+            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
                 connection: this.connection,
                 inventoryType,
                 userId: user.id,
@@ -85,10 +85,11 @@ export class HarvestCropService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
-                    count,
                     capacity: inventoryCapacity,
                     quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining,
-                    userId: user.id
+                    userId: user.id,
+                    occupiedIndexes,
+                    inToolbar: false
                 })
 
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
