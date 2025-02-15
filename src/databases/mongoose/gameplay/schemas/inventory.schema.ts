@@ -23,14 +23,10 @@ export class InventorySchema extends AbstractSchema {
     @Field(() => Boolean, { nullable: true })
     @Prop({ type: Boolean, required: false })
         inToolbar?: boolean
-
-    @Field(() => Int, { nullable: true })
-    @Prop({ type: Number, required: false })
-        toolbarIndex?: string
     
-    @Field(() => Int, { nullable: true })
-    @Prop({ type: Number, required: false })
-        inventoryIndex?: number
+    @Field(() => Int)
+    @Prop({ type: Number, required: true })
+        index: number
 
     @Field(() => ID)
     @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: InventoryTypeSchema.name })

@@ -20,6 +20,7 @@ import { GrpcServerExceptionFilter } from "nestjs-grpc-exceptions"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { ShopModule } from "./shop"
+import { PlayerModule } from "./player"
 
 @Module({
     imports: [
@@ -47,6 +48,7 @@ import { ShopModule } from "./shop"
             isGlobal: true
         }),
         AuthModule,
+        PlayerModule,
         ShopModule,
         // ClaimModule,
         // CommunityModule,

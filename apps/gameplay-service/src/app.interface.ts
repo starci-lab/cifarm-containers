@@ -72,8 +72,8 @@ import {
     SpinRequest,
     SpinResponse
 } from "./claim"
-import { MoveRequest, MoveResponse, PlaceTileRequest, PlaceTileResponse, RecoverTileRequest, RecoverTileResponse } from "./placement"
-import { UpdateTutorialRequest, UpdateTutorialResponse } from "./profile"
+import { MoveRequest, MoveResponse } from "./placement"
+import { UpdateTutorialRequest, UpdateTutorialResponse, UpdateInventoryIndexRequest, UpdateInventoryIndexResponse } from "./player"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 
 export interface IGameplayService {
@@ -118,11 +118,10 @@ export interface IGameplayService {
 
     // Placement
     move(request: MoveRequest): Observable<MoveResponse>
-    placeTile(request: PlaceTileRequest): Observable<PlaceTileResponse>
-    recoverTile(request: RecoverTileRequest): Observable<RecoverTileResponse>
-
+    
     // Profile
     updateTutorial(request: UpdateTutorialRequest): Observable<UpdateTutorialResponse>
+    updateInventoryIndex(request: UpdateInventoryIndexRequest): Observable<UpdateInventoryIndexResponse>
 
     // Shop
     buySeeds(request: BuySeedsRequest): Observable<BuySeedsResponse>

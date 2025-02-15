@@ -62,6 +62,8 @@ import {
     ThiefCropResponse,
     UnfollowRequest,
     UnfollowResponse,
+    UpdateInventoryIndexRequest,
+    UpdateInventoryIndexResponse,
     UpdateTutorialRequest,
     UpdateTutorialResponse,
     UpgradeBuildingRequest,
@@ -678,6 +680,25 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing move for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.move({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: UpdateInventoryIndexResponse
+    })
+    @Post("/update-inventory-index")
+    public async updateInventoryIndex(
+        @User() user: UserLike,
+        @Body() request: UpdateInventoryIndexRequest
+    ): Promise<UpdateInventoryIndexResponse> {
+        return await lastValueFrom(
+            this.gameplayService.updateInventoryIndex({
                 ...request,
                 userId: user?.id
             })

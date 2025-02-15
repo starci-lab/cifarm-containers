@@ -1,0 +1,5 @@
+export * from "./update-inventory-index.dto"
+export * from "./update-inventory-index.module"
+export * from "./update-inventory-index.service"
+export * from "./update-inventory-index.controller"
+//export * from "./claim.spec"

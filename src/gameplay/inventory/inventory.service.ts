@@ -1,8 +1,18 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InventorySchema } from "@src/databases"
 import { DeepPartial } from "@src/common"
-import { AddParams, AddResult, GetParamsParams, GetParamsResult, RemoveParams, RemoveResult } from "./inventory.types"
-import { InventoryCapacityExceededException, InventoryQuantityNotSufficientException } from "../exceptions"
+import {
+    AddParams,
+    AddResult,
+    GetParamsParams,
+    GetParamsResult,
+    RemoveParams,
+    RemoveResult
+} from "./inventory.types"
+import {
+    InventoryCapacityExceededException,
+    InventoryQuantityNotSufficientException
+} from "../exceptions"
 
 @Injectable()
 export class InventoryService {
@@ -10,7 +20,15 @@ export class InventoryService {
 
     constructor() {}
 
-    public add({ inventories, inventoryType, quantity, capacity, count, userId }: AddParams): AddResult {
+    public add({
+        inventories,
+        inventoryType,
+        quantity,
+        capacity,
+        userId,
+        occupiedIndexes,
+        inToolbar
+    }: AddParams): AddResult {
         const updatedInventories: Array<DeepPartial<InventorySchema>> = []
         const createdInventories: Array<DeepPartial<InventorySchema>> = []
 
@@ -23,26 +41,41 @@ export class InventoryService {
             if (spaceInCurrentStack > 0) {
                 const quantityToAdd = Math.min(spaceInCurrentStack, quantity)
                 inventory.quantity += quantityToAdd
-                quantity -= quantityToAdd   
+                quantity -= quantityToAdd
             }
-            updatedInventories.push(inventory)    
+            updatedInventories.push(inventory)
         }
 
         // if quantity is still remaining, create a new inventory, and add the quantity to it
         while (quantity > 0) {
             const quantityToAdd = Math.min(inventoryType.maxStack, quantity)
-            createdInventories.push({ quantity: quantityToAdd, inventoryType: inventoryType.id, user: userId })
+            // find the first available index
+            let foundAvailableIndex = false
+            for (let index = 0; index < capacity; index++) {
+                if (!occupiedIndexes.includes(index)) {
+                    createdInventories.push({
+                        quantity: quantityToAdd,
+                        inventoryType: inventoryType.id,
+                        user: userId,
+                        index,
+                        inToolbar
+                    })
+                    occupiedIndexes.push(index)
+                    foundAvailableIndex = true
+                    break
+                }
+            }
+            // if no available index is found, throw an exception
+            if (!foundAvailableIndex) {
+                throw new InventoryCapacityExceededException()
+            }
             quantity -= quantityToAdd
-        }
-
-        if (count + createdInventories.length > capacity) {
-            throw new InventoryCapacityExceededException()
         }
 
         return { updatedInventories, createdInventories }
     }
 
-    public remove({ inventories, quantity }: RemoveParams) : RemoveResult {
+    public remove({ inventories, quantity }: RemoveParams): RemoveResult {
         const updatedInventories: Array<DeepPartial<InventorySchema>> = []
         const removedInventories: Array<DeepPartial<InventorySchema>> = []
 
@@ -59,7 +92,7 @@ export class InventoryService {
                 break
             } else {
                 removedInventories.push(inventory)
-            }  
+            }
         }
 
         // if quantity is still remaining, throw an exception
@@ -69,14 +102,27 @@ export class InventoryService {
         return { updatedInventories, removedInventories }
     }
 
-    public async getParams({ connection, inventoryType, userId, session }: GetParamsParams): Promise<GetParamsResult> {
-        const count = await connection.model<InventorySchema>(InventorySchema.name).countDocuments({
-            user: userId,
-        })
-        const inventories = await connection.model<InventorySchema>(InventorySchema.name).find({
-            user: userId,
-            inventoryType: inventoryType.id,
-        }).session(session)
-        return { count, inventories }
+    public async getParams({
+        connection,
+        inventoryType,
+        userId,
+        session
+    }: GetParamsParams): Promise<GetParamsResult> {
+        const inventories = await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .find({
+                user: userId,
+                inventoryType: inventoryType.id
+            })
+            .session(session)
+
+        const occupiedIndexes = await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .distinct("index", {
+                user: userId
+            })
+            .session(session)
+
+        return { inventories, occupiedIndexes }
     }
 }
