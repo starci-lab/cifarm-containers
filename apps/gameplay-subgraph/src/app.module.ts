@@ -9,7 +9,6 @@ import { MongooseModule } from "@src/databases"
 import { BuildingsModule } from "./buildings"
 import { CropsModule } from "./crops"
 import { ProductsModule } from "./products"
-import { DeliveringProductsModule } from "./delivering-products"
 import { InventoriesModule } from "./inventories"
 import { InventoryTypesModule } from "./inventory-types"
 import { PlacedItemTypesModule } from "./placed-item-types"
@@ -51,7 +50,6 @@ import { UsersModule } from "./users"
         SpinPrizesModule,
         SpinSlotsModule,
         InventoryTypesModule,
-        DeliveringProductsModule,
         InventoriesModule,
         PlacedItemsModule,
     ]

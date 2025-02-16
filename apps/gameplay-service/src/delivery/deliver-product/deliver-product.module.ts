@@ -6,7 +6,6 @@ import { DeliverProductService } from "./deliver-product.service"
 @Module({
     imports: [],
     providers: [DeliverProductService],
-    exports: [DeliverProductService],
     controllers: [DeliverProductController]
 })
 export class DeliverProductModule {}

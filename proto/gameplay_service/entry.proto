@@ -67,5 +67,5 @@ service GameplayService {
 
     // Update tutorial
     rpc UpdateTutorial(UpdateTutorialRequest) returns (google.protobuf.Empty);
-    rpc UpdateInventoryIndex(UpdateInventoryIndexRequest) returns (google.protobuf.Empty);
+    rpc MoveInventory(MoveInventoryRequest) returns (google.protobuf.Empty);
 }

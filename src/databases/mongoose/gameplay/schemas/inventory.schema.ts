@@ -1,10 +1,11 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
-import { Schema as MongooseSchema } from "mongoose"
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
+import { Schema, SchemaFactory, Prop } from "@nestjs/mongoose"
+import { USER, INVENTORY_TYPE } from "../constants"
 import { AbstractSchema } from "./abstract"
-import { UserSchema } from "./user.schema"
 import { InventoryTypeSchema } from "./inventory-type.schema"
-import { INVENTORY_TYPE } from "../constants"
+import { UserSchema } from "./user.schema"
+import { Schema as MongooseSchema } from "mongoose"
+import { InventoryKind } from "../enums"
 
 @ObjectType()
 @Schema({
@@ -18,16 +19,16 @@ export class InventorySchema extends AbstractSchema {
 
     @Field(() => ID)
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
-        user: UserSchema | string
-    
-    @Field(() => Boolean, { nullable: true })
-    @Prop({ type: Boolean, required: false })
-        inToolbar?: boolean
-    
+    [USER]: UserSchema | string
+
     @Field(() => Int)
     @Prop({ type: Number, required: true })
         index: number
 
+    @Field(() => String)
+    @Prop({ type: String, required: true, enum: InventoryKind })
+        kind: InventoryKind
+    
     @Field(() => ID)
     @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: InventoryTypeSchema.name })
     [INVENTORY_TYPE]: InventoryTypeSchema | string

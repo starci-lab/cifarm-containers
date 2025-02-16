@@ -73,7 +73,7 @@ import {
     SpinResponse
 } from "./claim"
 import { MoveRequest, MoveResponse } from "./placement"
-import { UpdateTutorialRequest, UpdateTutorialResponse, UpdateInventoryIndexRequest, UpdateInventoryIndexResponse } from "./player"
+import { UpdateTutorialRequest, UpdateTutorialResponse, MoveInventoryRequest, MoveInventoryResponse } from "./player"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 
 export interface IGameplayService {
@@ -121,7 +121,7 @@ export interface IGameplayService {
     
     // Profile
     updateTutorial(request: UpdateTutorialRequest): Observable<UpdateTutorialResponse>
-    updateInventoryIndex(request: UpdateInventoryIndexRequest): Observable<UpdateInventoryIndexResponse>
+    moveInventory(request: MoveInventoryRequest): Observable<MoveInventoryResponse>
 
     // Shop
     buySeeds(request: BuySeedsRequest): Observable<BuySeedsResponse>

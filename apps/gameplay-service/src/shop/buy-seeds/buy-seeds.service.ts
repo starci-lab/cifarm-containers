@@ -72,7 +72,7 @@ export class BuySeedsService {
                 session: mongoSession
             })
 
-            const { value: { inventoryCapacity } } = await this.connection
+            const { value: { storageCapacity } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
@@ -96,7 +96,7 @@ export class BuySeedsService {
                     inventoryType,
                     inventories,
                     count,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     quantity: request.quantity,
                     userId: user.id
                 })

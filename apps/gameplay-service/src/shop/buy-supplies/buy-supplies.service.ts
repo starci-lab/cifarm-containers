@@ -49,7 +49,7 @@ export class BuySuppliesService {
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
-            const { value: { inventoryCapacity } } = await this.connection
+            const { value: { storageCapacity } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
@@ -88,7 +88,7 @@ export class BuySuppliesService {
                     count,
                     quantity: request.quantity,
                     userId: user.id,
-                    capacity: inventoryCapacity
+                    capacity: storageCapacity
                 })
 
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)

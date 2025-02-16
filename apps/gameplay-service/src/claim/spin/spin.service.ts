@@ -42,7 +42,7 @@ export class SpinService {
         try {
             // Get the default info
             const {
-                value: { inventoryCapacity }
+                value: { storageCapacity }
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
@@ -130,7 +130,7 @@ export class SpinService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventories,
                     userId: request.userId,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     inventoryType,
                     quantity: spinPrize.quantity,
                     count
@@ -188,7 +188,7 @@ export class SpinService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventories,
                     userId: request.userId,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     inventoryType,
                     quantity: spinPrize.quantity,
                     count

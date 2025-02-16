@@ -62,8 +62,8 @@ import {
     ThiefCropResponse,
     UnfollowRequest,
     UnfollowResponse,
-    UpdateInventoryIndexRequest,
-    UpdateInventoryIndexResponse,
+    MoveInventoryRequest,
+    MoveInventoryResponse,
     UpdateTutorialRequest,
     UpdateTutorialResponse,
     UpgradeBuildingRequest,
@@ -690,15 +690,15 @@ export class GameplayController implements OnModuleInit {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
-        type: UpdateInventoryIndexResponse
+        type: MoveInventoryResponse
     })
-    @Post("/update-inventory-index")
-    public async updateInventoryIndex(
+    @Post("/move-inventory")
+    public async moveInventory(
         @User() user: UserLike,
-        @Body() request: UpdateInventoryIndexRequest
-    ): Promise<UpdateInventoryIndexResponse> {
+        @Body() request: MoveInventoryRequest
+    ): Promise<MoveInventoryResponse> {
         return await lastValueFrom(
-            this.gameplayService.updateInventoryIndex({
+            this.gameplayService.moveInventory({
                 ...request,
                 userId: user?.id
             })

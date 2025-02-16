@@ -5,6 +5,7 @@ import { AvailableInType, InventoryType } from "../enums"
 import { CropSchema } from "./crop.schema"
 import { Schema as MongooseSchema } from "mongoose"
 import { ProductSchema } from "./product.schema"
+import { CROP, PRODUCT, SUPPLY, TOOL } from "../constants"
 import { ToolSchema } from "./tool.schema"
 import { SupplySchema } from "./supply.schema"
 
@@ -20,19 +21,19 @@ export class InventoryTypeSchema extends StaticAbstractSchema {
 
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: CropSchema.name })
-        crop: CropSchema | string
+    [CROP]: CropSchema | string
     
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: ProductSchema.name })
-        product: ProductSchema | string
+    [PRODUCT]: ProductSchema | string
 
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: ToolSchema.name })
-        tool: ToolSchema | string
+    [TOOL]: ToolSchema | string
 
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: SupplySchema.name })
-        supply: SupplySchema | string
+    [SUPPLY]: SupplySchema | string
 
     @Field(() => Boolean)
     @Prop({ type: Boolean, required: true })

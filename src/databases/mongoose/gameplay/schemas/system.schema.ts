@@ -106,7 +106,11 @@ export class DefaultInfo {
     @Field(() => Int)
         defaultSeedQuantity: number
     @Field(() => Int)
-        inventoryCapacity: number
+        storageCapacity: number
+    @Field(() => Int)
+        toolCapacity: number
+    @Field(() => Int)
+        deliveryCapacity: number
 }
 
  

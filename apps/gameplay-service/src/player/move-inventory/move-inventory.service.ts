@@ -3,6 +3,7 @@ import {
     DefaultInfo,
     InjectMongoose,
     INVENTORY_TYPE,
+    InventoryKind,
     InventorySchema,
     InventoryTypeSchema,
     SystemId,
@@ -10,44 +11,42 @@ import {
     SystemSchema,
 } from "@src/databases"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { InventoryService, TutorialService } from "@src/gameplay"
+import { InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import {
-    UpdateInventoryIndexRequest,
-    UpdateInventoryIndexResponse
-} from "./update-inventory-index.dto"
+    MoveInventoryRequest,
+    MoveInventoryResponse
+} from "./move-inventory.dto"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 
 @Injectable()
-export class UpdateInventoryIndexService {
-    private readonly logger = new Logger(UpdateInventoryIndexService.name)
+export class MoveInventoryService {
+    private readonly logger = new Logger(MoveInventoryService.name)
 
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly tutorialService: TutorialService,
         private readonly inventoryService: InventoryService
     ) {}
 
-    async updateInventoryIndex(
-        { inToolbar, index, inventoryId, userId }: UpdateInventoryIndexRequest
-    ): Promise<UpdateInventoryIndexResponse> {
+    async moveInventory(
+        { isTool, index, inventoryId, userId }: MoveInventoryRequest
+    ): Promise<MoveInventoryResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
         try {
             const {
-                value: { inventoryCapacity }
+                value: { storageCapacity, toolCapacity }
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                 .session(mongoSession)
 
-            if (
-                (index >= inventoryCapacity && !inToolbar) ||
-                (index >= 8 && inToolbar)
-            ) {
+            const capacity = isTool ? toolCapacity : storageCapacity
+            if (index >= capacity) {
                 throw new GrpcFailedPreconditionException("Inventory index is out of range")
             }
+            const kind = isTool ? InventoryKind.Tool : InventoryKind.Storage
 
             // get inventory 
             const inventory = await this.connection.model<InventorySchema>(InventorySchema.name).findById(inventoryId).session(mongoSession)
@@ -61,27 +60,34 @@ export class UpdateInventoryIndexService {
                 .findOne({
                     user: userId,
                     index,
-                    inToolbar
+                    kind
                 }).populate(INVENTORY_TYPE)
                 .session(mongoSession)
+
             if (foundInventory) {
             // if it have the same type, just update the quantity by call inventory service
+                if (foundInventory.inventoryType != inventory.inventoryType) {
+                    // do nothing, just return
+                    return {}
+                }
+                //
                 const { inventories, occupiedIndexes } = await this.inventoryService.getParams({
                     userId,
                     inventoryType: inventory.inventoryType as InventoryTypeSchema,
                     connection: this.connection,
-                    session: mongoSession
+                    session: mongoSession,
+                    kind
                 })
                 const { updatedInventories, createdInventories } = this.inventoryService.add({
                     inventories,
                     occupiedIndexes,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     inventoryType: inventory.inventoryType as InventoryTypeSchema,
                     quantity: inventory.quantity,
                     userId,
-                    inToolbar
+                    kind
                 })
-            
+                
                 // add the new inventories
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
                 // update the inventories
@@ -96,12 +102,12 @@ export class UpdateInventoryIndexService {
                 // delete the old inventory
                 await this.connection.model<InventorySchema>(InventorySchema.name).deleteOne({ _id: inventoryId }).session(mongoSession)
             } else {
-                // if not, just update the index
+                // if not, just update the index and kind
                 await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
                     { _id: inventoryId },
                     {
                         index,
-                        inToolbar
+                        kind
                     }
                 ).session(mongoSession)
             }

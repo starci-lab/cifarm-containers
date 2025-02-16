@@ -1,9 +1,9 @@
-import { InventorySchema, InventoryTypeSchema } from "@src/databases"
+import { InventoryKind, InventorySchema, InventoryTypeSchema } from "@src/databases"
 import { DeepPartial } from "@src/common"
 import { ClientSession, Connection } from "mongoose"
 
 export interface AddParams {
-    // inventories with the same type key
+    // inventories with the same type key and same kind
     inventories: Array<DeepPartial<InventorySchema>>
     // inventory type
     inventoryType: DeepPartial<InventoryTypeSchema>
@@ -13,10 +13,9 @@ export interface AddParams {
     userId: string
     // max capacity
     capacity: number
-    // in toolbar or not
-    inToolbar: boolean
     // occupied indexes
     occupiedIndexes: Array<number>
+    kind?: InventoryKind
 }
 
 export interface AddResult {
@@ -41,6 +40,7 @@ export interface GetParamsParams {
     connection: Connection,
     session: ClientSession,
     inventoryType: InventoryTypeSchema,
+    kind?: InventoryKind
 }
 
 export interface GetParamsResult {

@@ -1,11 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { 
-    // DeliverProductRequest, 
+    DeliverProductRequest,
     DeliverProductResponse } from "./deliver-product.dto"
-// import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-// import { GrpcFailedPreconditionException } from "@src/common"
-import { InjectMongoose } from "@src/databases"
+import { InjectMongoose, INVENTORY_TYPE, InventoryKind, InventorySchema, PRODUCT } from "@src/databases"
 import { Connection } from "mongoose"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 
 @Injectable()
 export class DeliverProductService {
@@ -17,75 +16,40 @@ export class DeliverProductService {
     ) {}
 
     async deliverProduct(
-    //request: DeliverProductRequest
+        { inventoryId, quantity, userId, index }: DeliverProductRequest
     ): Promise<DeliverProductResponse> {
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
+        try {
+            // Fetch inventory
+            const inventory = await this.connection.model<InventorySchema>(InventorySchema.name).findById(inventoryId).populate(INVENTORY_TYPE).populate(PRODUCT).session(mongoSession)
+            if (!inventory) {
+                throw new GrpcNotFoundException("Inventory not found")
+            }
+            if (inventory.quantity < quantity) {
+                throw new GrpcNotFoundException("Not enough quantity to deliver")
+            }
+            // Deliver is simple, just subtract quantity and create a new inventory kind Deliver
+            inventory.quantity -= quantity
+            await inventory.save()
 
-        // try {
-        //     // Fetch inventory
-        //     const inventory = await queryRunner.manager.findOne(InventoryEntity, {
-        //         where: { id: request.inventoryId, userId: request.userId },
-        //         relations: {
-        //             inventoryType: true
-        //         }
-        //     })
+            // Create new inventory kind Deliver
+            await this.connection.model<InventorySchema>(InventorySchema.name).create([{
+                quantity,
+                index,
+                kind: InventoryKind.Delivery,
+                user: userId,
+                inventoryType: inventory.inventoryType,
+            }], { session: mongoSession })
 
-        //     if (!inventory) {
-        //         throw new GrpcNotFoundException("Inventory not found")
-        //     }
-
-        //     if (inventory.quantity < request.quantity) {
-        //         throw new GrpcFailedPreconditionException("Not enough quantity to deliver")
-        //     }
-
-        //     // Check if inventory type is deliverable
-        //     if (!inventory.inventoryType.deliverable) {
-        //         throw new GrpcFailedPreconditionException("Inventory type is not deliverable")
-        //     }
-
-        //     // Check if index is valid
-        //     const indexExists = await queryRunner.manager.exists(DeliveringProductEntity, {
-        //         where: {
-        //             userId: request.userId,
-        //             index: request.index
-        //         }
-        //     })
-        //     if (indexExists) {
-        //         throw new GrpcFailedPreconditionException("Index already in use")
-        //     }
-
-        //     // Start transaction
-        //     await queryRunner.startTransaction()
-
-        //     try {
-        //         // Update inventory (subtract delivered quantity)
-        //         inventory.quantity -= request.quantity
-        //         if (inventory.quantity === 0) {
-        //             await queryRunner.manager.remove(InventoryEntity, inventory)
-        //         } else {
-        //             await queryRunner.manager.save(InventoryEntity, inventory)
-        //         }
-
-        //         // Save delivering product in database
-        //         await queryRunner.manager.save(DeliveringProductEntity, {
-        //             userId: request.userId,
-        //             quantity: request.quantity,
-        //             index: request.index,
-        //             productId: inventory.inventoryType.productId
-        //         })
-
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
-        //     return {}
-        // } finally {
-        //     await queryRunner.release()
-        // }
+            await mongoSession.commitTransaction()
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
+        } finally {
+            await mongoSession.endSession()
+        }
         return {}
     }
 }

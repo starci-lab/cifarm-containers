@@ -5,7 +5,6 @@ import { AbstractSchema } from "./abstract"
 @ObjectType()
 @Schema({ timestamps: true, autoCreate: false  })
 export class TileInfoSchema extends AbstractSchema {
-    
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         harvestCount: number

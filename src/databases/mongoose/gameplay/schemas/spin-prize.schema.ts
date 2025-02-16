@@ -6,6 +6,7 @@ import { AbstractSchema } from "./abstract"
 import { Schema as MongooseSchema } from "mongoose"
 import { CropSchema } from "./crop.schema"
 import { SupplySchema } from "./supply.schema"
+import { CROP, SUPPLY } from "../constants"
 
 // Mongoose document type
 export type SpinPrizeDocument = HydratedDocument<SpinPrizeSchema>;
@@ -22,11 +23,11 @@ export class SpinPrizeSchema extends AbstractSchema {
 
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: CropSchema.name })
-        crop?: CropSchema | string
+    [CROP]?: CropSchema | string
 
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: SupplySchema.name })
-        supply?: SupplySchema | string
+    [SUPPLY]?: SupplySchema | string
 
     @Field(() => Int)
     @Prop({ type: Number, required: true })

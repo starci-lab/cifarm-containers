@@ -2,10 +2,10 @@ import { ApiProperty } from "@nestjs/swagger"
 import { UserIdRequest } from "@src/common"
 import { IsBoolean, IsInt, IsMongoId, Min } from "class-validator"
 
-export class UpdateInventoryIndexRequest extends UserIdRequest {
+export class MoveInventoryRequest extends UserIdRequest {
     @IsBoolean()
     @ApiProperty({ example: true })
-        inToolbar: boolean
+        isTool: boolean
 
     @IsInt()
     @Min(0)
@@ -17,6 +17,6 @@ export class UpdateInventoryIndexRequest extends UserIdRequest {
         inventoryId: string
 }
 
-export class UpdateInventoryIndexResponse {
+export class MoveInventoryResponse {
     // this class is intentionally left blank
 }

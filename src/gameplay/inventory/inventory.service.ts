@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InventorySchema } from "@src/databases"
+import { InventoryKind, InventorySchema } from "@src/databases"
 import { DeepPartial } from "@src/common"
 import {
     AddParams,
@@ -27,7 +27,7 @@ export class InventoryService {
         capacity,
         userId,
         occupiedIndexes,
-        inToolbar
+        kind = InventoryKind.Storage
     }: AddParams): AddResult {
         const updatedInventories: Array<DeepPartial<InventorySchema>> = []
         const createdInventories: Array<DeepPartial<InventorySchema>> = []
@@ -58,7 +58,7 @@ export class InventoryService {
                         inventoryType: inventoryType.id,
                         user: userId,
                         index,
-                        inToolbar
+                        kind
                     })
                     occupiedIndexes.push(index)
                     foundAvailableIndex = true
@@ -106,13 +106,15 @@ export class InventoryService {
         connection,
         inventoryType,
         userId,
-        session
+        session,
+        kind = InventoryKind.Storage
     }: GetParamsParams): Promise<GetParamsResult> {
         const inventories = await connection
             .model<InventorySchema>(InventorySchema.name)
             .find({
                 user: userId,
-                inventoryType: inventoryType.id
+                inventoryType: inventoryType.id,
+                kind
             })
             .session(session)
 

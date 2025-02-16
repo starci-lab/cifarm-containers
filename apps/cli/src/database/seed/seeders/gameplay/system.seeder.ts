@@ -139,7 +139,9 @@ export class SystemSeeder implements Seeder {
             },
             defaultCropId: CropId.Carrot,
             defaultSeedQuantity: 10,
-            inventoryCapacity: 150
+            storageCapacity: 150,
+            deliveryCapacity: 9,
+            toolCapacity: 8
         }
         const spinInfo: SpinInfo = {
             appearanceChanceSlots: {
