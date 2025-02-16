@@ -4,6 +4,7 @@ import {
     CropSchema,
     DefaultInfo,
     InjectMongoose,
+    InventoryKind,
     InventorySchema,
     InventoryType,
     InventoryTypeSchema,
@@ -65,11 +66,11 @@ export class BuySeedsService {
                 throw new GrpcNotFoundException("Inventory seed type not found")
             }  
 
-            const { count, inventories } = await this.inventoryService.getParams({
+            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
                 connection: this.connection,
                 inventoryType,
                 userId: user.id,
-                session: mongoSession
+                session: mongoSession,
             })
 
             const { value: { storageCapacity } } = await this.connection
@@ -95,10 +96,11 @@ export class BuySeedsService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
-                    count,
                     capacity: storageCapacity,
                     quantity: request.quantity,
-                    userId: user.id
+                    userId: user.id,
+                    occupiedIndexes,
+                    kind: InventoryKind.Storage,
                 })
 
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)

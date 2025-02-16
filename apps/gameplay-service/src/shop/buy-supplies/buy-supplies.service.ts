@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
-    DefaultInfo, InjectMongoose, InventorySchema,
+    DefaultInfo, InjectMongoose, InventoryKind, InventorySchema,
     InventoryTypeSchema,
     SupplySchema, SystemId, SystemRecord, SystemSchema, UserSchema
 } from "@src/databases"
@@ -62,7 +62,7 @@ export class BuySuppliesService {
                 throw new GrpcNotFoundException("Inventory type not found")
             }
 
-            const { count, inventories } = await this.inventoryService.getParams({
+            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
                 connection: this.connection,
                 inventoryType,
                 userId: user.id,
@@ -85,10 +85,11 @@ export class BuySuppliesService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
-                    count,
                     quantity: request.quantity,
                     userId: user.id,
-                    capacity: storageCapacity
+                    capacity: storageCapacity,
+                    occupiedIndexes,
+                    kind: InventoryKind.Storage
                 })
 
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)

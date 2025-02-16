@@ -30,6 +30,7 @@ describe("BuyAnimalService", () => {
         const x = 100, y = 100
         const animal = await connection.model<AnimalSchema>(AnimalSchema.name)
             .findById(createObjectId(AnimalId.Cow))
+        console.log("animal", animal)
         const user = await gameplayMockUserService.generate({ golds: animal.price + 10 })
 
         const building = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
@@ -44,9 +45,15 @@ describe("BuyAnimalService", () => {
         })
 
         const golds = user.golds
+        console.log("sd", {
+            userId: user.id,
+            animalId: AnimalId.Cow,
+            placedItemBuildingId: building._id.toString(),
+            position: { x, y }
+        })
         await service.buyAnimal({
             userId: user.id,
-            animalId: animal._id.toString(),
+            animalId: AnimalId.Cow,
             placedItemBuildingId: building._id.toString(),
             position: { x, y }
         })
@@ -81,7 +88,7 @@ describe("BuyAnimalService", () => {
         await expect(
             service.buyAnimal({
                 userId: user.id,
-                animalId: animal._id.toString(),
+                animalId: AnimalId.Cow,
                 placedItemBuildingId: building._id.toString(),
                 position: { x: 0, y: 0 }
             })

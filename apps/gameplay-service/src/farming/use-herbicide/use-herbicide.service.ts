@@ -1,4 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
+import { ActivityInfo, CropCurrentState, InjectMongoose, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
+import { EnergyService, LevelService } from "@src/gameplay"
+import { Connection } from "mongoose"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UseHerbicideRequest, UseHerbicideResponse } from "./use-herbicide.dto"
 
 @Injectable()
@@ -6,97 +11,72 @@ export class UseHerbicideService {
     private readonly logger = new Logger(UseHerbicideService.name)
 
     constructor(
-        // @InjectPostgreSQL()
-        // private readonly dataSource: DataSource,
-        // private readonly energyService: EnergyService,
-        // private readonly levelService: LevelService,
-        // @InjectKafka()
-        // private readonly clientKafka: ClientKafka
-    ) {
-    }
+        @InjectMongoose()
+        private readonly connection: Connection,
+        private readonly energyService: EnergyService,
+        private readonly levelService: LevelService
+    ) {}
 
     async useHerbicide(request: UseHerbicideRequest): Promise<UseHerbicideResponse> {
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
-        // try {
-        //     const placedItemTile = await queryRunner.manager.findOne(PlacedItemSchema, {
-        //         where: { 
-        //             userId: request.userId,
-        //             id: request.placedItemTileId  
-        //         },
-        //         relations: {
-        //             seedGrowthInfo: true
-        //         }
-        //     })
+        this.logger.debug(`Applying herbicide for user ${request.userId}, tile ID: ${request.placedItemTileId}`)
 
-        //     if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
-        //     if (!placedItemTile.seedGrowthInfo)
-        //         throw new GrpcFailedPreconditionException("Tile is not planted")
+        try {
+            const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findById(request.placedItemTileId)
+                .populate(SEED_GROWTH_INFO)
+                .session(mongoSession)
 
-        //     if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy)
-        //         throw new GrpcFailedPreconditionException("Tile is not weedy")
+            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
+            if (!placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is not planted")
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) throw new GrpcFailedPreconditionException("Tile is not weedy")
 
-        //     const { value } = await queryRunner.manager.findOne(SystemEntity, {
-        //         where: { id: SystemId.Activities }
-        //     })
-        //     const {
-        //         usePesticide: { energyConsume, experiencesGain }
-        //     } = value as Activities
+            const { value: {
+                energyConsume,
+                experiencesGain
+            } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<ActivityInfo>>(createObjectId(SystemId.Activities))
 
-        //     const user = await queryRunner.manager.findOne(UserSchema, {
-        //         where: { id: request.userId }
-        //     })
+            const user = await this.connection.model<UserSchema>(UserSchema.name)
+                .findById(request.userId)
+                .session(mongoSession)
 
-        //     this.energyService.checkSufficient({
-        //         current: user.energy,
-        //         required: energyConsume
-        //     })
+            if (!user) throw new GrpcNotFoundException("User not found")
 
-        //     const energyChanges = this.energyService.substract({
-        //         entity: user,
-        //         energy: energyConsume
-        //     })
-        //     const experiencesChanges = this.levelService.addExperiences({
-        //         entity: user,
-        //         experiences: experiencesGain
-        //     })
+            this.energyService.checkSufficient({
+                current: user.energy,
+                required: energyConsume
+            })
 
-        //     await queryRunner.startTransaction()
-        //     // substract energy
-        //     try {
-        //     // update user
-        //         await queryRunner.manager.update(UserSchema, user.id, {
-        //             ...energyChanges,
-        //             ...experiencesChanges
-        //         })
+            try {
+                const energyChanges = this.energyService.substract({
+                    user,
+                    quantity: energyConsume,
+                })
+                const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
 
-        //         // update seed growth info
-        //         await queryRunner.manager.update(
-        //             SeedGrowthInfoEntity,
-        //             placedItemTile.seedGrowthInfo.id,
-        //             {
-        //                 currentState: CropCurrentState.Normal
-        //             }
-        //         )
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...energyChanges, ...experienceChanges }
+                )
 
-        //     // Publish event
-        //     this.clientKafka.emit(KafkaPattern.PlacedItems, {
-        //         userId: user.id
-        //     })
-                        
-        //     return {}
-        // } finally {
-        //     await queryRunner.release()
-        // }
+                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
+                    { _id: placedItemTile._id },
+                    { "seedGrowthInfo.currentState": "Normal" }
+                )
 
-        return {}
+                await mongoSession.commitTransaction()
+                return {}
+            } catch (error) {
+                this.logger.error(`Transaction failed, reason: ${error.message}`)
+                await mongoSession.abortTransaction()
+                throw new GrpcInternalException(error.message)
+            }
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }

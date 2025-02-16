@@ -1,15 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, 
-    // InventoryType 
-} from "@src/databases"
+import { createObjectId } from "@src/common"
+import { DefaultInfo, DeliveringProductSchema, InjectMongoose, InventorySchema, InventoryType, InventoryTypeSchema, SystemId, SystemRecord, SystemSchema } from "@src/databases"
 import { InventoryService } from "@src/gameplay"
-import { 
-    // RetainProductRequest, 
-    RetainProductResponse } from "./retain-product.dto"
-import { 
-// GrpcInternalException, GrpcNotFoundException
-} from "nestjs-grpc-exceptions"
 import { Connection } from "mongoose"
+import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { RetainProductResponse } from "./retain-product.dto"
 
 @Injectable()
 export class RetainProductService {
@@ -19,74 +14,70 @@ export class RetainProductService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly inventoryService: InventoryService
-    ) {
-    }
+    ) {}
 
-    async retainProduct(
-    // request: RetainProductRequest
-    ): Promise<RetainProductResponse> {
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
+    async retainProduct(request): Promise<RetainProductResponse> {
+        this.logger.debug(`Retaining product for user ${request.userId}, deliveringProduct ID: ${request.deliveringProductId}`)
 
-        // try {
-        //     // Fetch delivering product
-        //     const deliveringProduct = await queryRunner.manager.findOne(DeliveringProductEntity, {
-        //         where: { id: request.deliveringProductId, userId: request.userId }
-        //     })
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
-        //     if (!deliveringProduct) {
-        //         throw new GrpcNotFoundException("Delivering product not found")
-        //     }
+        try {
+            const deliveringProduct = await this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name)
+                .findById(request.deliveringProductId)
+                .session(mongoSession)
 
-        //     //Get inventory type
-        //     const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-        //         where: { type: InventoryType.Product, productId: deliveringProduct.productId }
-        //     })
+            if (!deliveringProduct) {
+                throw new GrpcNotFoundException("Delivering product not found")
+            }
 
-        //     // Get inventory same type
-        //     const existingInventories = await queryRunner.manager.find(InventoryEntity, {
-        //         where: {
-        //             userId: request.userId,
-        //             inventoryTypeId: inventoryType.id
-        //         },
-        //         relations: {
-        //             inventoryType: true
-        //         }
-        //     })
-
-        //     const updatedInventories = this.inventoryService.add({
-        //         entities: existingInventories,
-        //         userId: request.userId,
-        //         data: {
-        //             inventoryType: inventoryType,
-        //             quantity: deliveringProduct.quantity
-        //         }
-        //     })
             
-        //     // Start transaction
-        //     await queryRunner.startTransaction()
+            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
+                type: InventoryType.Seed,
+                product: deliveringProduct.deliveringProductTypeKey
+            }).session(mongoSession)
 
-        //     try {
-        //         // Save Retaining product in database
-        //         await queryRunner.manager.remove(
-        //             DeliveringProductEntity,
-        //             deliveringProduct
-        //         )
+            if (!inventoryType) {
+                throw new GrpcNotFoundException("Inventory seed type not found")
+            }  
+            
+            const { value: { inventoryCapacity } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
-        //         //Save inventory
-        //         await queryRunner.manager.save(InventoryEntity, updatedInventories)
+            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
+                connection: this.connection,
+                inventoryType,
+                userId: request.userId,
+                session: mongoSession
+            })
 
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
-        //     return {}
-        // } finally {
-        //     await queryRunner.release()
-        // }
-        return {}
+            try {
+                await this.connection.model<DeliveringProductSchema>(DeliveringProductSchema.name).deleteOne({ _id: deliveringProduct._id })
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventoryType,
+                    inventories,
+                    capacity: inventoryCapacity,
+                    quantity: deliveringProduct.quantity,
+                    userId: request.userId,
+                    occupiedIndexes,
+                    inToolbar: false
+                })
+
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                for (const inventory of updatedInventories) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({ _id: inventory._id }, inventory)
+                }
+
+                await mongoSession.commitTransaction()
+                return {}
+            } catch (error) {
+                this.logger.error(`Transaction failed, reason: ${error.message}`)
+                await mongoSession.abortTransaction()
+                throw new GrpcInternalException(error.message)
+            }
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }
