@@ -6,5 +6,5 @@ message MoveInventoryRequest {
     string userId = 1;
     string inventoryId = 2;
     int32 index = 3;
-    string kind = 4;
+    bool isTool = 4;
 }

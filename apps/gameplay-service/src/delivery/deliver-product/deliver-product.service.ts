@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { 
     DeliverProductRequest,
     DeliverProductResponse } from "./deliver-product.dto"
-import { InjectMongoose, INVENTORY_TYPE, InventoryKind, InventorySchema, PRODUCT } from "@src/databases"
+import { InjectMongoose, INVENTORY_TYPE, InventoryKind, InventorySchema, InventoryTypeSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 
@@ -22,12 +22,16 @@ export class DeliverProductService {
         mongoSession.startTransaction()
         try {
             // Fetch inventory
-            const inventory = await this.connection.model<InventorySchema>(InventorySchema.name).findById(inventoryId).populate(INVENTORY_TYPE).populate(PRODUCT).session(mongoSession)
+            const inventory = await this.connection.model<InventorySchema>(InventorySchema.name).findById(inventoryId).populate(INVENTORY_TYPE).session(mongoSession)
             if (!inventory) {
                 throw new GrpcNotFoundException("Inventory not found")
             }
             if (inventory.quantity < quantity) {
                 throw new GrpcNotFoundException("Not enough quantity to deliver")
+            }
+            const productId = (inventory.inventoryType as InventoryTypeSchema).product as string
+            if (!productId) {
+                throw new GrpcNotFoundException("The inventory type is not a product")
             }
             // Deliver is simple, just subtract quantity and create a new inventory kind Deliver
             inventory.quantity -= quantity

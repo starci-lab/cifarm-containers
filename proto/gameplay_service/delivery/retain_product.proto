@@ -4,5 +4,5 @@ package gameplay_service;
 
 message RetainProductRequest {
     string userId = 1;
-    string deliveringProductId = 2;
+    string inventoryId = 2;
 }

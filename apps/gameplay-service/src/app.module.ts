@@ -21,6 +21,7 @@ import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { ShopModule } from "./shop"
 import { PlayerModule } from "./player"
+import { DeliveryModule } from "./delivery"
 
 @Module({
     imports: [
@@ -52,7 +53,7 @@ import { PlayerModule } from "./player"
         ShopModule,
         // ClaimModule,
         // CommunityModule,
-        // DeliveryModule,
+        DeliveryModule,
         // FarmingModule,
         // PlacementModule,
         // ProfileModule,

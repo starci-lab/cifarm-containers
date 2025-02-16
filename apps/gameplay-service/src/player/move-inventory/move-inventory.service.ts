@@ -47,7 +47,6 @@ export class MoveInventoryService {
                 throw new GrpcFailedPreconditionException("Inventory index is out of range")
             }
             const kind = isTool ? InventoryKind.Tool : InventoryKind.Storage
-
             // get inventory 
             const inventory = await this.connection.model<InventorySchema>(InventorySchema.name).findById(inventoryId).session(mongoSession)
             if (!inventory) {
@@ -66,41 +65,48 @@ export class MoveInventoryService {
 
             if (foundInventory) {
             // if it have the same type, just update the quantity by call inventory service
-                if (foundInventory.inventoryType != inventory.inventoryType) {
-                    // do nothing, just return
-                    return {}
-                }
+                if (foundInventory.inventoryType === inventory.inventoryType) {
                 //
-                const { inventories, occupiedIndexes } = await this.inventoryService.getParams({
-                    userId,
-                    inventoryType: inventory.inventoryType as InventoryTypeSchema,
-                    connection: this.connection,
-                    session: mongoSession,
-                    kind
-                })
-                const { updatedInventories, createdInventories } = this.inventoryService.add({
-                    inventories,
-                    occupiedIndexes,
-                    capacity: storageCapacity,
-                    inventoryType: inventory.inventoryType as InventoryTypeSchema,
-                    quantity: inventory.quantity,
-                    userId,
-                    kind
-                })
+                    const { inventories, occupiedIndexes } = await this.inventoryService.getParams({
+                        userId,
+                        inventoryType: inventory.inventoryType as InventoryTypeSchema,
+                        connection: this.connection,
+                        session: mongoSession,
+                        kind
+                    })
+                    const { updatedInventories, createdInventories } = this.inventoryService.add({
+                        inventories,
+                        occupiedIndexes,
+                        capacity: storageCapacity,
+                        inventoryType: inventory.inventoryType as InventoryTypeSchema,
+                        quantity: inventory.quantity,
+                        userId,
+                        kind
+                    })
                 
-                // add the new inventories
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
-                // update the inventories
-                for (const updatedInventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
-                        { _id: updatedInventory.id },
-                        {
-                            quantity: updatedInventory.quantity
-                        }
-                    ).session(mongoSession)
+                    // add the new inventories
+                    await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
+                    // update the inventories
+                    for (const updatedInventory of updatedInventories) {
+                        await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
+                            { _id: updatedInventory.id },
+                            {
+                                quantity: updatedInventory.quantity
+                            }
+                        ).session(mongoSession)
+                    }
+                    // delete the old inventory
+                    await this.connection.model<InventorySchema>(InventorySchema.name).deleteOne({ _id: inventoryId }).session(mongoSession)
+                } else {
+                    // swap the inventory
+                    const { index: foundIndex, kind: foundKind } = foundInventory
+                    foundInventory.index = inventory.index
+                    foundInventory.kind = inventory.kind
+                    inventory.index = foundIndex
+                    inventory.kind = foundKind
+                    await foundInventory.save()
+                    await inventory.save()
                 }
-                // delete the old inventory
-                await this.connection.model<InventorySchema>(InventorySchema.name).deleteOne({ _id: inventoryId }).session(mongoSession)
             } else {
                 // if not, just update the index and kind
                 await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(

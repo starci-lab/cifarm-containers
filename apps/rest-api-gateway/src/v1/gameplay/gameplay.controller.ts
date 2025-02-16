@@ -356,7 +356,7 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: DeliverProductRequest
     ): Promise<DeliverProductResponse> {
-        this.logger.debug(`Processing deliver product for user ${user?.id}`)
+        console.log(this.gameplayService.deliverProduct)
         return await lastValueFrom(
             this.gameplayService.deliverProduct({
                 ...request,

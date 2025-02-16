@@ -176,13 +176,12 @@ export class VerifySignatureService {
                     sort: { $exists: true },
                     default: false
                 }).session(mongoSession)
-                
                 for (const tool of tools) {
                     const inventoryType = await this.connection
                         .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                         .findOne({
                             type: InventoryType.Tool,
-                            tool: createObjectId(tool.id)
+                            tool: tool.id
                         }).session(mongoSession)
                     toolInventories.push({
                         inventoryType: inventoryType.id,
@@ -204,6 +203,7 @@ export class VerifySignatureService {
                     capacity: storageCapacity,
                     quantity: defaultSeedQuantity,
                     userId: user.id,
+                    kind: InventoryKind.Storage
                 })
 
                 await this.connection
