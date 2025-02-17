@@ -66,7 +66,7 @@ export class BuySeedsService {
                 throw new GrpcNotFoundException("Inventory seed type not found")
             }  
 
-            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
+            const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                 connection: this.connection,
                 inventoryType,
                 userId: user.id,

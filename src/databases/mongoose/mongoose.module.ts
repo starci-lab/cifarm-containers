@@ -51,7 +51,7 @@ import {
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { FolloweeSchema, FolloweeSchemaClass } from "./gameplay/schemas/followee.schema"
-
+import normalize from "normalize-mongoose"
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
     public static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
@@ -69,6 +69,10 @@ export class MongooseModule extends ConfigurableModuleClass {
             imports: [
                 NestMongooseModule.forRoot(url, {
                     connectionName,
+                    connectionFactory: (connection: Connection) => {
+                        connection.plugin(normalize)
+                        return connection
+                    }, 
                 }),
                 this.forFeature(options)
             ]

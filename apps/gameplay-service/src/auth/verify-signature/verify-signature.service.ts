@@ -136,7 +136,7 @@ export class VerifySignatureService {
                 userRaw.id = userRaw._id.toString()
                 user = userRaw
 
-                const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
+                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,

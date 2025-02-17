@@ -59,7 +59,7 @@ export class RetainProductService {
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
-            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
+            const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                 connection: this.connection,
                 inventoryType,
                 userId,

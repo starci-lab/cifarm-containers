@@ -4,6 +4,7 @@ import { CropCurrentState } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { CropSchema } from "./crop.schema"
 import { Schema as MongooseSchema } from "mongoose"
+import { CROP } from "../constants"
 
 @ObjectType()
 @Schema({ timestamps: true, autoCreate: false  })
@@ -35,7 +36,7 @@ export class SeedGrowthInfoSchema extends AbstractSchema {
 
     @Field(() => ID)
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: CropSchema.name })
-        crop: CropSchema | string
+    [CROP]: CropSchema | string
 
     @Field(() => String)
     @Prop({ type: String, enum: CropCurrentState, default: CropCurrentState.Normal })

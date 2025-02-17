@@ -121,7 +121,7 @@ export class SpinService {
                     })
                     .session(mongoSession)
                     // Get inventory same type
-                const { count, inventories } = await this.inventoryService.getParams({
+                const { count, inventories } = await this.inventoryService.getAddParams({
                     userId: request.userId,
                     inventoryType,
                     session: mongoSession,
@@ -179,7 +179,7 @@ export class SpinService {
                     .session(mongoSession)
                     // Get inventory same type
                     //
-                const { count, inventories } = await this.inventoryService.getParams({
+                const { count, inventories } = await this.inventoryService.getAddParams({
                     userId: request.userId,
                     inventoryType,
                     session: mongoSession,

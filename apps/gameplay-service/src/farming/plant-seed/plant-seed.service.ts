@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { ActivityInfo, CropCurrentState, CropSchema, InjectMongoose, InventorySchema, InventoryTypeSchema, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
+import { Activities, CropCurrentState, CropSchema, InjectMongoose, InventorySchema, InventoryTypeSchema, PlacedItemSchema, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -19,8 +19,6 @@ export class PlantSeedService {
     ) {}
 
     async plantSeed(request: PlantSeedRequest): Promise<PlantSeedResponse> {
-        this.logger.debug(`Planting seed for user ${request.userId}, tile ID: ${request.placedItemTileId}`)
-
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
@@ -35,16 +33,14 @@ export class PlantSeedService {
 
             const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findById(request.placedItemTileId)
-                .populate(SEED_GROWTH_INFO)
                 .session(mongoSession)
 
             if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
             if (placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is already planted")
 
-            const { value: { energyConsume, experiencesGain } } = await this.connection
+            const { value: { plantSeed: { energyConsume, experiencesGain } } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<ActivityInfo>>(createObjectId(SystemId.Activities))
-
+                .findById<SystemRecord<Activities>>(createObjectId(SystemId.Activities))
             const user = await this.connection.model<UserSchema>(UserSchema.name)
                 .findById(request.userId)
                 .session(mongoSession)
@@ -65,38 +61,47 @@ export class PlantSeedService {
 
             if (!crop) throw new GrpcNotFoundException("Crop not found")
 
-            try {
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...energyChanges, ...experiencesChanges }
-                )
+            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                { _id: user.id },
+                { ...energyChanges, ...experiencesChanges }
+            ).session(mongoSession)
 
-                const updatedQuantity = inventory.quantity - 1
-                if (updatedQuantity === 0) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).deleteOne({ _id: inventory.id })
-                } else {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
-                        { _id: inventory.id },
-                        { quantity: updatedQuantity }
-                    )
-                }
-
-                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
-                    { _id: placedItemTile._id },
-                    { seedGrowthInfo: {
-                        cropId: crop.id,
-                        harvestQuantityRemaining: crop.maxHarvestQuantity,
-                        currentState: CropCurrentState.Normal
-                    }}
-                )
-
-                await mongoSession.commitTransaction()
-                return {}
-            } catch (error) {
-                this.logger.error(`Transaction failed, reason: ${error.message}`)
-                await mongoSession.abortTransaction()
-                throw new GrpcInternalException(error.message)
+            const { inventories } = await this.inventoryService.getRemoveParams({
+                connection: this.connection,
+                userId: user.id,
+                session: mongoSession,
+                inventoryType,
+                kind: inventory.kind
+            })
+            const { removedInventories, updatedInventories } = this.inventoryService.remove({
+                inventories,
+                quantity: 1,
+            })
+            for (const inventory of updatedInventories) {
+                await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
+                    { _id: inventory._id },
+                    inventory
+                ).session(mongoSession)
             }
+            await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
+                _id: { $in: removedInventories.map(inventory => inventory._id) }
+            }).session(mongoSession)
+
+            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
+                { _id: placedItemTile._id },
+                { seedGrowthInfo: {
+                    crop: crop.id,
+                    harvestQuantityRemaining: crop.maxHarvestQuantity,
+                    currentState: CropCurrentState.Normal,
+                }}
+            ).session(mongoSession)
+
+            await mongoSession.commitTransaction()
+            return {}      
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw new GrpcInternalException(error.message)
         } finally {
             await mongoSession.endSession()
         }

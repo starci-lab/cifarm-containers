@@ -35,6 +35,10 @@ export class SystemSeeder implements Seeder {
     public async seed(): Promise<void> {
         this.logger.debug("Seeding system...")
         const activities: Activities = {
+            plantSeed: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
             cureAnimal: {
                 energyConsume: 1,
                 experiencesGain: 3

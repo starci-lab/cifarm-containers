@@ -35,7 +35,7 @@ export interface RemoveResult {
     removedInventories: Array<DeepPartial<InventorySchema>>
 }
 
-export interface GetParamsParams {
+export interface GetAddParamsParams {
     userId: string
     connection: Connection,
     session: ClientSession,
@@ -43,8 +43,21 @@ export interface GetParamsParams {
     kind?: InventoryKind
 }
 
-export interface GetParamsResult {
+export interface GetAddParamsResult {
     inventories: Array<InventorySchema>
     // occupied indexes
     occupiedIndexes: Array<number>
+}
+
+
+export interface GetRemoveParamsParams {
+    userId: string
+    connection: Connection,
+    session: ClientSession,
+    inventoryType: InventoryTypeSchema
+    kind?: InventoryKind
+}
+
+export interface GetRemoveParamsResult {
+    inventories: Array<InventorySchema>
 }

@@ -67,7 +67,7 @@ export class MoveInventoryService {
             // if it have the same type, just update the quantity by call inventory service
                 if (foundInventory.inventoryType === inventory.inventoryType) {
                 //
-                    const { inventories, occupiedIndexes } = await this.inventoryService.getParams({
+                    const { inventories, occupiedIndexes } = await this.inventoryService.getAddParams({
                         userId,
                         inventoryType: inventory.inventoryType as InventoryTypeSchema,
                         connection: this.connection,

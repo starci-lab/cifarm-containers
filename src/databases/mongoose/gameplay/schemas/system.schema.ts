@@ -34,6 +34,8 @@ export class ActivityInfo {
 @ObjectType()
 export class Activities {
     @Field(() => ActivityInfo)
+        plantSeed: ActivityInfo
+    @Field(() => ActivityInfo)
         water: ActivityInfo
     @Field(() => ActivityInfo)
         feedAnimal: ActivityInfo

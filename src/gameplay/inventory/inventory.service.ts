@@ -4,8 +4,10 @@ import { DeepPartial } from "@src/common"
 import {
     AddParams,
     AddResult,
-    GetParamsParams,
-    GetParamsResult,
+    GetAddParamsParams,
+    GetAddParamsResult,
+    GetRemoveParamsParams,
+    GetRemoveParamsResult,
     RemoveParams,
     RemoveResult
 } from "./inventory.types"
@@ -131,13 +133,13 @@ export class InventoryService {
         return { updatedInventories, removedInventories }
     }
 
-    public async getParams({
+    public async getAddParams({
         connection,
         inventoryType,
         userId,
         session,
         kind = InventoryKind.Storage
-    }: GetParamsParams): Promise<GetParamsResult> {
+    }: GetAddParamsParams): Promise<GetAddParamsResult> {
         const inventories = await connection
             .model<InventorySchema>(InventorySchema.name)
             .find({
@@ -155,5 +157,23 @@ export class InventoryService {
             .session(session)
 
         return { inventories, occupiedIndexes }
+    }
+
+    public async getRemoveParams({
+        connection,
+        userId,
+        session,
+        inventoryType,
+        kind = InventoryKind.Storage
+    }: GetRemoveParamsParams): Promise<GetRemoveParamsResult> {
+        const inventories = await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .find({
+                user: userId,
+                inventoryType: inventoryType.id,
+                kind
+            })
+            .session(session)
+        return { inventories}
     }
 }
