@@ -118,28 +118,27 @@ export class UpdateTutorialService {
         const placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
-                userId: user.id,
+                user: user.id,
                 "seedGrowthInfo.crop": createObjectId(defaultCropId)
             })
             .session(mongoSession)
-
-        if (placedItems.length !== 2) {
+        if (placedItems.length < 2) {
             throw new GrpcFailedPreconditionException(
-                "You need to plant 2 default crop to enter this step"
+                "You need to plant at least 2 default crop to enter this step"
             )
         }
-        const needWateredSeedGrowthInfoId = placedItems[0].seedGrowthInfo
+        const needWateredSeedGrowthInfo = placedItems[0].seedGrowthInfo
         // update the crops to stage 1, which one of them needs watered
         for (const placedItem of placedItems) {
             await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
                 { _id: placedItem.id },
                 {
                     "seedGrowthInfo.currentStage": 1,
-                    "seedGrowthInfo.currentState": placedItem.seedGrowthInfo === needWateredSeedGrowthInfoId
+                    "seedGrowthInfo.currentState": placedItem.seedGrowthInfo.id === needWateredSeedGrowthInfo.id
                         ? CropCurrentState.NeedWater
                         : CropCurrentState.Normal
                 }
-            )
+            ).session(mongoSession)
         }
         await this.moveToNextTutorialStep({
             mongoSession,
@@ -163,12 +162,12 @@ export class UpdateTutorialService {
         }
 
         const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
-            userId: user.id,
+            user: user.id,
             "seedGrowthInfo.crop": createObjectId(defaultCropId)
-        })
+        }).session(mongoSession)
         if (placedItems.length < 2) {
             throw new GrpcFailedPreconditionException(
-                "You need to plant 2 default crop to enter this step"
+                "You need to plant at least 2 default crop to enter this step"
             )
         }
 
@@ -185,14 +184,17 @@ export class UpdateTutorialService {
             )
         }
 
+        const needWateredSeedGrowthInfo = placedItems[0].seedGrowthInfo
         for (const placedItem of placedItems) {
             await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
                 { _id: placedItem.id },
                 {
                     "seedGrowthInfo.currentStage": 2,
-                    "seedGrowthInfo.currentState": CropCurrentState.Normal
+                    "seedGrowthInfo.currentState": placedItem.seedGrowthInfo.id === needWateredSeedGrowthInfo.id
+                        ? CropCurrentState.NeedWater
+                        : CropCurrentState.Normal
                 }
-            )
+            ).session(mongoSession)
         }
         await this.moveToNextTutorialStep({
             nextStep,
@@ -210,9 +212,9 @@ export class UpdateTutorialService {
             )
         }
         const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
-            userId: user.id,
+            user: user.id,
             "seedGrowthInfo.crop": createObjectId(defaultCropId)
-        })
+        }).session(mongoSession)
         if (placedItems.length < 2) {
             throw new GrpcFailedPreconditionException(
                 "You need to plant 2 default crop to enter this step"
@@ -227,14 +229,16 @@ export class UpdateTutorialService {
                 "You need to water all the crops in stage 2 to enter this step"
             )
         }
+        const pesticideSeedGrowthInfo = placedItems[0].seedGrowthInfo
         for (const placedItem of placedItems) {
             await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
                 { _id: placedItem.id },
                 {
                     "seedGrowthInfo.currentStage": 3,
-                    "seedGrowthInfo.currentState": CropCurrentState.Normal
+                    "seedGrowthInfo.currentState": pesticideSeedGrowthInfo.id === placedItem.seedGrowthInfo.id ?
+                        CropCurrentState.IsInfested : CropCurrentState.IsWeedy
                 }
-            )
+            ).session(mongoSession)
         }
 
         // process in transaction
@@ -255,9 +259,9 @@ export class UpdateTutorialService {
         }
 
         const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
-            userId: user.id,
+            user: user.id,
             "seedGrowthInfo.crop": createObjectId(defaultCropId)
-        })
+        }).session(mongoSession)
  
         if (placedItems.length < 2) {
             throw new GrpcFailedPreconditionException(
@@ -267,11 +271,11 @@ export class UpdateTutorialService {
 
         const crop = await this.connection.model<CropSchema>(CropSchema.name).findById(
             createObjectId(defaultCropId)
-        )
+        ).session(mongoSession)
 
         await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateMany(
             {
-                userId: user.id,
+                user: user.id,
                 "seedGrowthInfo.crop": createObjectId(defaultCropId)
             },
             {
@@ -279,7 +283,7 @@ export class UpdateTutorialService {
                 "seedGrowthInfo.harvestQuantityRemaining": crop.maxHarvestQuantity,
                 "seedGrowthInfo.currentState": CropCurrentState.FullyMatured
             }
-        )
+        ).session(mongoSession)
 
         await this.moveToNextTutorialStep({
             mongoSession,

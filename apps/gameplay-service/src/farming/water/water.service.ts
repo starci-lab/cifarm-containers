@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { ActivityInfo, CropCurrentState, InjectMongoose, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
+import { Activities, CropCurrentState, InjectMongoose, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -33,13 +33,14 @@ export class WaterService {
             if (!placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is not planted")
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) throw new GrpcFailedPreconditionException("Tile does not need water")
 
-
             const { value: {
-                energyConsume,
-                experiencesGain
+                water: {
+                    energyConsume,
+                    experiencesGain
+                }
             } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<ActivityInfo>>(createObjectId(SystemId.Activities))
+                .findById<SystemRecord<Activities>>(createObjectId(SystemId.Activities)).session(mongoSession)
 
             const user = await this.connection.model<UserSchema>(UserSchema.name)
                 .findById(request.userId)
@@ -52,30 +53,27 @@ export class WaterService {
                 required: energyConsume
             })
 
-            try {
-                const energyChanges = this.energyService.substract({ 
-                    user, 
-                    quantity: energyConsume,
-                })
-                const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
+            const energyChanges = this.energyService.substract({ 
+                user, 
+                quantity: energyConsume,
+            })
+            const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
 
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...energyChanges, ...experienceChanges }
-                )
+            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                { _id: user.id },
+                { ...energyChanges, ...experienceChanges }
+            ).session(mongoSession)
 
-                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
-                    { _id: placedItemTile._id },
-                    { "seedGrowthInfo.currentState": "Normal" }
-                )
-
-                await mongoSession.commitTransaction()
-                return {}
-            } catch (error) {
-                this.logger.error(`Transaction failed, reason: ${error.message}`)
-                await mongoSession.abortTransaction()
-                throw new GrpcInternalException(error.message)
-            }
+            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
+                { _id: placedItemTile._id },
+                { "seedGrowthInfo.currentState": CropCurrentState.Normal }
+            ).session(mongoSession)
+            await mongoSession.commitTransaction()
+            return {}
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw new GrpcInternalException(error.message)
         } finally {
             await mongoSession.endSession()
         }

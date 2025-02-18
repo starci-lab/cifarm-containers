@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { ActivityInfo, CropCurrentState, DefaultInfo, InjectMongoose, InventorySchema, InventoryType, InventoryTypeSchema, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
+import { Activities, CropCurrentState, DefaultInfo, InjectMongoose, InventorySchema, InventoryType, InventoryTypeSchema, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 
 @Injectable()
@@ -34,9 +34,9 @@ export class HarvestCropService {
             if (!placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is not planted")
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) throw new GrpcFailedPreconditionException("Crop is not fully matured")
 
-            const { value: { energyConsume, experiencesGain } } = await this.connection
+            const { value: { harvestCrop: { energyConsume, experiencesGain } } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<ActivityInfo>>(createObjectId(SystemId.Activities))
+                .findById<SystemRecord<Activities>>(createObjectId(SystemId.Activities)).session(mongoSession)
 
             const user = await this.connection.model<UserSchema>(UserSchema.name)
                 .findById(request.userId)
@@ -71,7 +71,7 @@ export class HarvestCropService {
                 session: mongoSession
             })
 
-            const { value: { inventoryCapacity } } = await this.connection
+            const { value: { storageCapacity } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
             
@@ -85,35 +85,32 @@ export class HarvestCropService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining,
                     userId: user.id,
                     occupiedIndexes,
-                    inToolbar: false
                 })
 
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
                 for (const inventory of updatedInventories) {
                     await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
                         _id: inventory._id
-                    }, inventory)
+                    }, inventory).session(mongoSession)
                 }
 
                 await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
                     { _id: placedItemTile._id },
                     { 
-                        seedGrowthInfo: {
-                            currentState: CropCurrentState.Normal
-                        }
+                        seedGrowthInfo: null
                     }
-                )
+                ).session(mongoSession)
 
                 await mongoSession.commitTransaction()
                 return {}
             } catch (error) {
-                this.logger.error(`Transaction failed, reason: ${error.message}`)
+                this.logger.error(error)
                 await mongoSession.abortTransaction()
-                throw new GrpcInternalException(error.message)
+                throw error
             }
         } finally {
             await mongoSession.endSession()
