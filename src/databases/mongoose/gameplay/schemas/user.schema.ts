@@ -43,6 +43,10 @@ export class UserSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0 })
         golds: number
 
+    @Field(() => String)
+    @Prop({ type: String, default: "" })
+        avatarUrl: string
+
     @Field(() => Float)
     @Prop({ type: Number, default: 0 })
         tokens: number
@@ -91,10 +95,6 @@ export class UserSchema extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         spinCount: number
-
-    @Field(() => [String])
-    @Prop({ type: Array<string>, default: [] })
-        followingUserIds: Array<string>
 
     @Field(() => [FolloweeSchema])
     @Prop({ type: [FolloweeSchemaClass], default: [] })

@@ -1,6 +1,7 @@
 import { Field, ID, ObjectType } from "@nestjs/graphql"
-import { Schema, SchemaFactory } from "@nestjs/mongoose"
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
+import { Schema as MongooseSchema } from "mongoose"
 
 @ObjectType()
 @Schema({
@@ -8,7 +9,8 @@ import { AbstractSchema } from "./abstract"
 })
 export class FolloweeSchema extends AbstractSchema {
     @Field(() => ID)
-        id: string
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
+        followeeId: string
 }
 
 export const FolloweeSchemaClass = SchemaFactory.createForClass(FolloweeSchema)

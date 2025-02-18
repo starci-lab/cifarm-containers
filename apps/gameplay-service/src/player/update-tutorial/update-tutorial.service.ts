@@ -65,15 +65,16 @@ export class UpdateTutorialService {
                 await this.startHarvestCrop({ defaultCropId, mongoSession, user, nextStep })
                 break
             }
-            default: {
-                await this.moveToNextTutorialStep({
-                    defaultCropId,
-                    mongoSession,
-                    user,
-                    nextStep
-                })
             }
-            }
+            await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .updateOne(
+                    { _id: user.id },
+                    {
+                        tutorialStep: nextStep
+                    }
+                )
+                .session(mongoSession)
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {
@@ -83,23 +84,6 @@ export class UpdateTutorialService {
         } finally {
             await mongoSession.endSession()
         }
-    }
-
-    // increment tutorial step
-    private async moveToNextTutorialStep({
-        mongoSession,
-        user,
-        nextStep
-    }: MoveToNextTutorialStepParams): Promise<void> {
-        await this.connection
-            .model<UserSchema>(UserSchema.name)
-            .updateOne(
-                { _id: user.id },
-                {
-                    tutorialStep: nextStep
-                }
-            )
-            .session(mongoSession)
     }
 
     // water crop at stage 1
@@ -140,12 +124,6 @@ export class UpdateTutorialService {
                 }
             ).session(mongoSession)
         }
-        await this.moveToNextTutorialStep({
-            mongoSession,
-            defaultCropId,
-            user,
-            nextStep
-        })
     }
 
     // water crop at stage 2
@@ -196,12 +174,6 @@ export class UpdateTutorialService {
                 }
             ).session(mongoSession)
         }
-        await this.moveToNextTutorialStep({
-            nextStep,
-            mongoSession,
-            defaultCropId,
-            user
-        })
     }
 
     // to stage 3
@@ -240,14 +212,6 @@ export class UpdateTutorialService {
                 }
             ).session(mongoSession)
         }
-
-        // process in transaction
-        await this.moveToNextTutorialStep({
-            nextStep,
-            mongoSession,
-            defaultCropId,
-            user
-        })
     }
 
     // harvest crop
@@ -284,24 +248,15 @@ export class UpdateTutorialService {
                 "seedGrowthInfo.currentState": CropCurrentState.FullyMatured
             }
         ).session(mongoSession)
-
-        await this.moveToNextTutorialStep({
-            mongoSession,
-            defaultCropId,
-            user,
-            nextStep
-        })
     }
 }
 
-export interface MoveToNextTutorialStepParams {
+export interface StartWaterCropAtStage1Params {
     mongoSession: ClientSession
     user: UserSchema
     nextStep: TutorialStep
     defaultCropId: string
 }
-
-export type StartWaterCropAtStage1Params = MoveToNextTutorialStepParams
 export type StartWaterCropAtStage2Params = StartWaterCropAtStage1Params
 export type StartWaterCropAtStage3Params = StartWaterCropAtStage1Params
 export type StartToStage3Params = StartWaterCropAtStage1Params
