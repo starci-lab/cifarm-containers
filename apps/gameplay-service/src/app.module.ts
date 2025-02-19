@@ -23,6 +23,7 @@ import { ShopModule } from "./shop"
 import { PlayerModule } from "./player"
 import { DeliveryModule } from "./delivery"
 import { FarmingModule } from "./farming"
+import { CommunityModule } from "./community"
 
 @Module({
     imports: [
@@ -54,9 +55,8 @@ import { FarmingModule } from "./farming"
         ShopModule,
         FarmingModule,
         // ClaimModule,
-        // CommunityModule,
+        CommunityModule,
         DeliveryModule,
-        // FarmingModule,
         // PlacementModule,
         // ProfileModule,
         // UpgradeModule

@@ -12,12 +12,12 @@ import { UnfollowModule } from "./unfollow"
     imports: [
         FollowModule,
         UnfollowModule,
-        HelpCureAnimalModule,
-        HelpWaterModule,
-        HelpUsePesticideModule,
-        HelpUseHerbicideModule,
-        ThiefCropModule,
-        ThiefAnimalProductModule
+        // HelpCureAnimalModule,
+        // HelpWaterModule,
+        // HelpUsePesticideModule,
+        // HelpUseHerbicideModule,
+        // ThiefCropModule,
+        // ThiefAnimalProductModule
     ]
 })
 export class CommunityModule {}

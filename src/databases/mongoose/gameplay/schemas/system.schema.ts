@@ -113,6 +113,8 @@ export class DefaultInfo {
         toolCapacity: number
     @Field(() => Int)
         deliveryCapacity: number
+    @Field(() => Int)
+        followeeLimit: number
 }
 
  

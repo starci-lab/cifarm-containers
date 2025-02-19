@@ -1,72 +1,84 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, 
-// UserSchema 
+import {
+    DefaultInfo,
+    InjectMongoose,
+    SystemId,
+    SystemRecord,
+    SystemSchema,
+    UserSchema
 } from "@src/databases"
-// import { FollowRequest } from "./follow.dto"
-// import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-// import { GrpcFailedPreconditionException } from "@src/common"
 import { Connection } from "mongoose"
 import { FollowRequest } from "./follow.dto"
+import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class FollowService {
     private readonly logger = new Logger(FollowService.name)
 
-    
     constructor(
         @InjectMongoose()
         private readonly connection: Connection
-    ) {
-    }
+    ) {}
 
-    async follow(
-        request: FollowRequest
-    ) {
-        console.log(request)
-        // if (request.userId === request.followeeUserId) {
-        //     throw new GrpcInvalidArgumentException("Cannot follow self")
-        // }
+    async follow({ followeeUserId, userId }: FollowRequest) {
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
+        try {
+            const {
+                value: { followeeLimit }
+            } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .session(mongoSession)
+            if (userId === followeeUserId) {
+                throw new GrpcInvalidArgumentException("Cannot follow self")
+            }
+            const followee = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .findById(followeeUserId)
+                .session(mongoSession)
+            if (!followee) {
+                throw new GrpcNotFoundException("Followee not found")
+            }
+            const user = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .findById(userId)
+                .session(mongoSession)
+            
+            // check if user is already following followee
+            const following = user.followees.find((followee) => followee.id === followee.id)
+            if (following) {
+                throw new GrpcFailedPreconditionException("User is already following followee")
+            }
 
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
+            // check if user has reached followee limit
+            if (user.followees.length >= followeeLimit) {
+                throw new GrpcFailedPreconditionException("Followee limit reached")
+            }
 
-        // try {  
-        //     const followeeUserExists = await queryRunner.manager.exists(UserSchema, {
-        //         where: {
-        //             id: request.followeeUserId
-        //         }
-        //     })
-        //     if (!followeeUserExists) {
-        //         throw new GrpcNotFoundException("Followee user not found")
-        //     }
-
-        //     const followed = await queryRunner.manager.findOne(UsersFollowingUsersEntity, {
-        //         where: {
-        //             followerId: request.userId,
-        //             followeeUserId: request.followeeUserId
-        //         }
-        //     })
-        //     if (followed) {
-        //         throw new GrpcFailedPreconditionException("Already followed")
-        //     }
-        //     await queryRunner.startTransaction()
-        //     try {
-        //         await queryRunner.manager.save(UsersFollowingUsersEntity, {
-        //             followerId: request.userId,
-        //             followeeUserId: request.followeeUserId
-        //         })
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcNotFoundException(errorMessage)
-        //     }
-        //     return {} 
-        // }
-        // finally {
-        //     await queryRunner.release()
-        // } 
-        return {}
+            // update user with followee
+            await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .updateOne(
+                    { _id: userId },
+                    {
+                        $push: {
+                            followees: {
+                                followee: followee.id // Assuming followee is an instance of the followee object
+                            }
+                        }
+                    }
+                )
+                .session(mongoSession)
+            await mongoSession.commitTransaction()
+            return {}
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }

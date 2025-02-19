@@ -108,7 +108,8 @@ export class SystemSeeder implements Seeder {
             thief3: 0.95
         }
         const defaultInfo: DefaultInfo = {
-            golds: 1000,
+            golds: 1000, 
+            followeeLimit: 150,
             positions: {
                 home: {
                     x: 4,

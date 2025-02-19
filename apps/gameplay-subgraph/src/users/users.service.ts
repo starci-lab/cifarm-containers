@@ -25,10 +25,18 @@ export class UsersService {
     async getNeighbors({ id }: UserLike, { limit, offset }: GetNeighborsArgs): Promise<GetNeighborsResponse> {
         const mongoSession = await this.connection.startSession()
         try {
+            const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id).session(mongoSession)
+            
             const data = await this.connection.model<UserSchema>(UserSchema.name).find({
                 _id: { $ne: id }
             }).session(mongoSession).skip(offset).limit(limit)
 
+            // transform data to add each followed status
+            data.map((neighbor) => {
+                neighbor.followed = user.followees.some((followee) => followee.id === neighbor.id)
+                return neighbor
+            })
+            
             const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
                 _id: { $ne: id }
             }).session(mongoSession)
