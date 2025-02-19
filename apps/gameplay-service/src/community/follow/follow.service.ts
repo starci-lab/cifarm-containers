@@ -5,6 +5,7 @@ import {
     SystemId,
     SystemRecord,
     SystemSchema,
+    UserFollowRelationSchema,
     UserSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
@@ -41,36 +42,29 @@ export class FollowService {
             if (!followee) {
                 throw new GrpcNotFoundException("Followee not found")
             }
-            const user = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .findById(userId)
-                .session(mongoSession)
-            
             // check if user is already following followee
-            const following = user.followees.find((followee) => followee.id === followee.id)
+            const following = this.connection
+                .model<UserFollowRelationSchema>(UserFollowRelationSchema.name).exists({
+                    followee: followeeUserId,
+                    follower: userId
+                })
+                .session(mongoSession)
             if (following) {
-                throw new GrpcFailedPreconditionException("User is already following followee")
+                throw new GrpcFailedPreconditionException("Already following")
             }
-
             // check if user has reached followee limit
-            if (user.followees.length >= followeeLimit) {
+            const followeeCount = await this.connection
+                .model<UserFollowRelationSchema>(UserFollowRelationSchema.name).countDocuments({
+                    follower: userId
+                })
+                .session(mongoSession)
+            if (followeeCount >= followeeLimit) {
                 throw new GrpcFailedPreconditionException("Followee limit reached")
             }
-
-            // update user with followee
+            // create follow relation
             await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .updateOne(
-                    { _id: userId },
-                    {
-                        $push: {
-                            followees: {
-                                followee: followee.id // Assuming followee is an instance of the followee object
-                            }
-                        }
-                    }
-                )
-                .session(mongoSession)
+                .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
+                .create([{ followee: followeeUserId, follower: userId }], { session: mongoSession })
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {

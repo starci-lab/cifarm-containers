@@ -48,9 +48,10 @@ import {
     SupplySchemaClass,
     ToolSchema,
     ToolSchemaClass,
+    UserFollowRelationSchemaClass,
+    UserFollowRelationSchema,
 } from "./gameplay"
 import { Connection } from "mongoose"
-import { FolloweeSchema, FolloweeSchemaClass } from "./gameplay/schemas/followee.schema"
 import normalize from "normalize-mongoose"
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
@@ -115,16 +116,16 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => SpinPrizeSchemaClass
                         },
                         {
+                            name: UserFollowRelationSchema.name,
+                            useFactory: () => UserFollowRelationSchemaClass
+                        },
+                        {
                             name: SpinSlotSchema.name,
                             useFactory: () => SpinSlotSchemaClass
                         },
                         {
                             name: SupplySchema.name,
                             useFactory: () => SupplySchemaClass
-                        },
-                        {
-                            name: FolloweeSchema.name,
-                            useFactory: () => FolloweeSchemaClass
                         },
                         {
                             name: InventorySchema.name,
@@ -152,6 +153,12 @@ export class MongooseModule extends ConfigurableModuleClass {
                                     })
                                     await connection.model<InventorySchema>(InventorySchema.name).deleteMany({
                                         user: { $in: ids }
+                                    })
+                                    await connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).deleteMany({
+                                        $or: [
+                                            { followee: { $in: ids } },
+                                            { follower: { $in: ids } }
+                                        ]
                                     })
                                     next()
                                 })

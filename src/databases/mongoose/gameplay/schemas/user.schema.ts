@@ -3,7 +3,6 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { ChainKey, Network } from "@src/env"
 import { TutorialStep } from "../enums"
-import { FolloweeSchema, FolloweeSchemaClass } from "./followee.schema"
 
 @ObjectType()
 @Schema({
@@ -93,10 +92,6 @@ export class UserSchema extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         spinCount: number
-
-    @Field(() => [FolloweeSchema])
-    @Prop({ type: [FolloweeSchemaClass], default: [] })
-        followees: Array<FolloweeSchema>
 
     // graphql field
     @Field(() => Boolean)

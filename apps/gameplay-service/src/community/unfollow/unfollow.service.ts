@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { UnfollowRequest, UnfollowResponse } from "./unfollow.dto"
-import { InjectMongoose, UserSchema } from "@src/databases"
+import { InjectMongoose, UserFollowRelationSchema, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
@@ -23,22 +23,21 @@ export class UnfollowService {
                 throw new GrpcNotFoundException("Followee not found")
             }
             const user = await this.connection.model<UserSchema>(UserSchema.name).findById(userId).session(mongoSession)
-            // check if user is following followee
-            const following = user.followees.find(followee => followee.id === followee.id)
-            if (!following) {
-                throw new GrpcFailedPreconditionException("User is not following followee")
+            if (!user) {
+                throw new GrpcNotFoundException("User not found")
             }
-            // update user with followee
-            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                { _id: userId },
-                {
-                    $pull: {
-                        followees: {
-                            _id: followee._id
-                        }
-                    }
-                }
-            ).session(mongoSession)
+            const following = await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).exists({
+                followee: followeeUserId,
+                follower: userId
+            })
+            if (!following) {
+                throw new GrpcFailedPreconditionException("Not following")
+            }
+            // delete the follow relation
+            await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).deleteOne({
+                followee: followeeUserId,
+                follower: userId
+            }).session(mongoSession)
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {

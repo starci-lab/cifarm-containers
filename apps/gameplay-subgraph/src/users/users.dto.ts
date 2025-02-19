@@ -13,3 +13,16 @@ export class GetNeighborsResponse
     @Field(() => [UserSchema])
         data: Array<UserSchema>
 }
+
+
+@InputType()
+export class GetFolloweesArgs extends PaginatedArgs {}
+
+@ObjectType()
+export class GetFolloweesResponse
+    extends PaginatedResponse
+    implements IPaginatedResponse<UserSchema>
+{
+    @Field(() => [UserSchema])
+        data: Array<UserSchema>
+}

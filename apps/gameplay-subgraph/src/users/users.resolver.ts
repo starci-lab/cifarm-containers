@@ -4,7 +4,7 @@ import { UsersService } from "./users.service"
 import { UserSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { GetNeighborsArgs, GetNeighborsResponse } from "./users.dto"
+import { GetFolloweesArgs, GetFolloweesResponse, GetNeighborsArgs, GetNeighborsResponse } from "./users.dto"
 
 @Resolver()
 export class UsersResolver {
@@ -29,5 +29,16 @@ export class UsersResolver {
             @Args("args") args: GetNeighborsArgs
     ): Promise<GetNeighborsResponse> {
         return this.usersService.getNeighbors(user, args)
+    }
+
+    @UseGuards(GraphQLJwtAuthGuard)
+    @Query(() => GetFolloweesResponse, {
+        name: "followees"
+    })
+    async followees(
+            @GraphQLUser() user: UserLike,
+            @Args("args") args: GetFolloweesArgs
+    ): Promise<GetFolloweesResponse> {
+        return this.usersService.getFollowees(user, args)
     }
 }
