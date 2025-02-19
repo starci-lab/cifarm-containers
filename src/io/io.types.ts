@@ -24,6 +24,7 @@ export interface AbstractSocketData {
 
 export type TypedSocket<TSocketData extends AbstractSocketData> = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, TSocketData>
 export type TypedRemoteSocket<TSocketData extends AbstractSocketData> = RemoteSocket<DecorateAcknowledgementsWithMultipleResponses<DefaultEventsMap>, TSocketData>
+export type TypedNamespace<TSocketData extends AbstractSocketData> = Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, TSocketData>
 export type SocketLike<TSocketData extends AbstractSocketData> =
     | TypedSocket<TSocketData>
     | TypedRemoteSocket<TSocketData>

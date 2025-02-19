@@ -57,7 +57,6 @@ service GameplayService {
     rpc HelpCureAnimal(HelpCureAnimalRequest) returns (google.protobuf.Empty);
     rpc ThiefCrop(ThiefCropRequest) returns (ThiefCropResponse);
     rpc ThiefAnimalProduct(ThiefAnimalProductRequest) returns (ThiefAnimalProductResponse);
-    rpc Return(ReturnRequest) returns (google.protobuf.Empty);
 
     // Placement methods
     rpc Move(MoveRequest) returns (google.protobuf.Empty);

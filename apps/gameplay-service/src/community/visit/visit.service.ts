@@ -20,11 +20,12 @@ export class VisitService {
         private readonly clientKafka: ClientKafka
     ) {}
 
-    async visit({ followeeUserId, userId }: VisitRequest) {
+    async visit({ neighborUserId, userId }: VisitRequest) {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
+        console.log(userId)
         try {
-            if (!followeeUserId) {
+            if (!neighborUserId) {
                 const randomUser = await this.connection
                     .model<UserSchema>(UserSchema.name) // Replace UserSchema with your user schema
                     .aggregate([
@@ -42,13 +43,12 @@ export class VisitService {
                 if (!randomUser.length) {
                     throw new GrpcNotFoundException("No random user found")
                 }
-        
-                followeeUserId = randomUser[0]._id
+                neighborUserId = randomUser[0]._id
             }
             // emit via kafka
             this.clientKafka.emit(KafkaPattern.Visit, {
                 userId,
-                followeeUserId
+                neighborUserId
             })
             return {}
         } catch (error) {

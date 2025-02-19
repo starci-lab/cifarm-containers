@@ -3,14 +3,13 @@ import {
     WebSocketGateway,
     WebSocketServer
 } from "@nestjs/websockets"
-import { Namespace } from "socket.io"
 import { NAMESPACE } from "../gameplay.constants"
 import { ReturnPayload, VisitedEmitter2Payload, VisitPayload } from "./visit.types"
 import { VISITED_EMITTER2_EVENT } from "./visit.constants"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { AuthGateway, SocketData } from "../auth"
 import { ObservingData } from "../auth"
-import { SocketCoreService } from "@src/io"
+import { SocketCoreService, TypedNamespace } from "@src/io"
 
 @WebSocketGateway({
     cors: {
@@ -30,7 +29,7 @@ export class VisitGateway {
     ) {}
 
     @WebSocketServer()
-    private readonly namespace: Namespace
+    private readonly namespace: TypedNamespace<SocketData>
 
     afterInit() {
         this.logger.verbose(
