@@ -77,7 +77,10 @@ import {
     VerifySignatureRequest,
     VerifySignatureResponse,
     WaterRequest,
-    WaterResponse
+    WaterResponse,
+    VisitRequest,
+    VisitResponse,
+    ReturnResponse
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
@@ -223,6 +226,44 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing user ${user?.id} help cure animal of user ${request?.neighborUserId}`)
         return await lastValueFrom(
             this.gameplayService.helpCureAnimal({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: VisitResponse
+    })
+    @Post("/visit")
+    public async visit(
+        @User() user: UserLike,
+        @Body() request: VisitRequest
+    ): Promise<VisitResponse> {
+        return await lastValueFrom(
+            this.gameplayService.visit({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: ReturnResponse
+    })
+    @Post("/return")
+    public async return(
+        @User() user: UserLike,
+        @Body() request: VisitRequest
+    ): Promise<ReturnResponse> {
+        return await lastValueFrom(
+            this.gameplayService.return({
                 ...request,
                 userId: user?.id
             })

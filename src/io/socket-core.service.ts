@@ -1,17 +1,17 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { JwtService, UserLike } from "@src/jwt"
-import { Socket } from "socket.io"
+import { Namespace } from "socket.io"
+import { SocketLike, TypedSocket, AbstractSocketData } from "./io.types"
 
 @Injectable()
-export class SocketCoreService {
+export class SocketCoreService<TSocketData extends AbstractSocketData> {
     private logger = new Logger(SocketCoreService.name)
     constructor(private readonly jwtService: JwtService) {}
 
     // method to authenticate the socket
-    public async authenticate(socket: Socket): Promise<UserLike | undefined> {
+    public async authenticate(socket: TypedSocket<TSocketData>): Promise<UserLike | undefined> {
         // add headers for postman testing
         const token = socket.handshake.auth?.token || socket.handshake.headers?.token
-        console.log(socket.handshake)
         // if no token, disconnect
         if (!token) {
             this.logger.debug(`${socket.id} - No auth token`)
@@ -33,12 +33,19 @@ export class SocketCoreService {
         return user
     }
 
-    public async getSocketId(socket: Socket, userId: string): Promise<string> {
-        const sockets = await socket.in(userId).fetchSockets()
-        return sockets.at(0).id
+    // get the socket id via a namespace and user id
+    public async getSocket(namespace: Namespace, userId: string): Promise<SocketLike<TSocketData>> {
+        const sockets = await namespace.in(userId).fetchSockets()
+        const socket = sockets.find((socket) => socket.data.user.id === userId)
+        if (!socket) {
+            const message = `No socket found for user ${userId}`
+            this.logger.error(message)
+            throw new Error(message)
+        }
+        return socket
     }
 
-    public getUser(socket: Socket): UserLike {
+    public getUser(socket: SocketLike<TSocketData>): UserLike {
         return socket.data.user
     }
 }

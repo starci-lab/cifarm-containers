@@ -8,9 +8,9 @@ import {
     WebSocketServer
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
-import { SocketCoreService } from "@src/io"
+import { SocketCoreService, SocketLike } from "@src/io"
 import { NAMESPACE } from "../gameplay.constants"
-import { ObservingData } from "./auth.types"
+import { SocketData, ObservingData } from "./auth.types"
 
 @WebSocketGateway({
     cors: {
@@ -24,7 +24,7 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     private readonly logger = new Logger(AuthGateway.name)
 
     constructor(
-        private readonly socketCoreService: SocketCoreService
+        private readonly socketCoreService: SocketCoreService<SocketData>
     ) {}
 
     @WebSocketServer()
@@ -58,7 +58,7 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         return client.data.observing
     }
 
-    public setObservingData(client: Socket, observing: ObservingData) {
+    public setObservingData(client: SocketLike<SocketData>, observing: ObservingData) {
         client.data.observing = observing
     }
     
