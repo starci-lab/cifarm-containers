@@ -4,5 +4,9 @@ package gameplay_service;
 
 message VisitRequest {
     string userId = 1;
-    string followeeUserId = 2;
+    string neighborUserId = 2;
+}
+
+message VisitResponse {
+    string neighborUserId = 2;
 }

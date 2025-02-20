@@ -5,7 +5,7 @@ import {
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { VisitRequest } from "./visit.dto"
+import { VisitRequest, VisitResponse } from "./visit.dto"
 import { InjectKafka, KafkaPattern } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"
 
@@ -20,10 +20,9 @@ export class VisitService {
         private readonly clientKafka: ClientKafka
     ) {}
 
-    async visit({ neighborUserId, userId }: VisitRequest) {
+    async visit({ neighborUserId, userId }: VisitRequest): Promise<VisitResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
-        console.log(userId)
         try {
             if (!neighborUserId) {
                 const randomUser = await this.connection
@@ -50,7 +49,9 @@ export class VisitService {
                 userId,
                 neighborUserId
             })
-            return {}
+            return {
+                neighborUserId
+            }
         } catch (error) {
             this.logger.error(error)
             await mongoSession.abortTransaction()

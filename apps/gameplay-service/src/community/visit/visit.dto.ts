@@ -11,4 +11,7 @@ export class VisitRequest extends UserIdRequest {
 }
 
 export class VisitResponse {
+    @IsMongoId()
+    @ApiProperty({ example: "60f1b3b3b3b3b3b3b3b3b3b3" })
+        neighborUserId: string
 }

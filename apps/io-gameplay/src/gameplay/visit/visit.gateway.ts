@@ -51,10 +51,9 @@ export class VisitGateway {
         }
         this.authGateway.setObservingData(socket, observing)
         const emitter2Payload: VisitedEmitter2Payload = {
-            userId,
+            userId: neighborUserId,
             socketId: socket.id
         }
-        console.log(emitter2Payload)
         this.eventEmitter.emit(VISITED_EMITTER2_EVENT, emitter2Payload)
     }
 
