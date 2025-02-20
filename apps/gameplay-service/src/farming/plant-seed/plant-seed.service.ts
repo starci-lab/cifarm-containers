@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { Activities, CropCurrentState, CropSchema, InjectMongoose, InventorySchema, InventoryTypeSchema, PlacedItemSchema, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
+import { Activities, CropCurrentState, CropSchema, InjectMongoose, InventorySchema, InventoryTypeSchema, PlacedItemSchema, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -40,7 +40,7 @@ export class PlantSeedService {
 
             const { value: { plantSeed: { energyConsume, experiencesGain } } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<Activities>>(createObjectId(SystemId.Activities))
+                .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
             const user = await this.connection.model<UserSchema>(UserSchema.name)
                 .findById(request.userId)
                 .session(mongoSession)

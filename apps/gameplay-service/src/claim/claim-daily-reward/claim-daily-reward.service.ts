@@ -4,7 +4,7 @@ import {
     DailyRewardId,
     InjectMongoose,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     SystemSchema,
     UserSchema
 } from "@src/databases"
@@ -44,7 +44,7 @@ export class ClaimDailyRewardService {
 
             const { value } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
+                .findById<KeyValueRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
                 .session(mongoSession)
 
             const dailyRewardMap: Record<number, DailyRewardId> = {

@@ -1,5 +1,4 @@
 export const SPIN_PRIZE = "spinPrize"
-
 export const BUILDING_INFO = "buildingInfo"
 export const SEED_GROWTH_INFO = "seedGrowthInfo"
 export const ANIMAL_INFO = "animalInfo"
@@ -13,3 +12,5 @@ export const ANIMAL = "animal"
 export const PLACED_ITEM_TYPE = "placedItemType"
 export const SUPPLY = "supply"
 export const TOOL = "tool"
+export const TILE = "tile"
+export const BUILDING = "building"

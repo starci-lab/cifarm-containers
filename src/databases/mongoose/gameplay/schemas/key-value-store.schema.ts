@@ -12,3 +12,14 @@ export class KeyValueStoreSchema extends StaticAbstractSchema {
 
 // Generate Mongoose Schema
 export const KeyValueStoreSchemaClass = SchemaFactory.createForClass(KeyValueStoreSchema)
+
+// Class for KeyValueStoreSchema
+export class AnimalGrowthLastSchedule {
+    date: Date
+}
+export class CropGrowthLastSchedule {
+    date: Date
+}
+export class EnergyRegenerationLastSchedule {
+    date: Date
+}

@@ -10,7 +10,7 @@ import {
     InjectMongoose,
     SystemSchema,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     DailyRewardInfo,
 } from "@src/databases"
 import { Connection } from "mongoose"
@@ -27,7 +27,7 @@ export class SystemsService {
     async getActivities(): Promise<Activities> {
         const mongoSession = await this.connection.startSession()
         try {
-            const { value } =  await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<Activities>>(createObjectId(SystemId.Activities))
+            const { value } =  await this.connection.model<SystemSchema>(SystemSchema.name).findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
             return value
         } finally {
             await mongoSession.endSession()
@@ -37,7 +37,7 @@ export class SystemsService {
     async getCropRandomness(): Promise<CropRandomness> {
         const mongoSession = await this.connection.startSession()
         try {
-            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
             return value
         } finally {
             await mongoSession.endSession()
@@ -47,7 +47,7 @@ export class SystemsService {
     async getAnimalRandomness(): Promise<AnimalRandomness> {
         const mongoSession = await this.connection.startSession()
         try {
-            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<AnimalRandomness>>(createObjectId(SystemId.AnimalRandomness))
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<KeyValueRecord<AnimalRandomness>>(createObjectId(SystemId.AnimalRandomness))
             return value
         } finally {
             await mongoSession.endSession()
@@ -57,7 +57,7 @@ export class SystemsService {
     async getDefaultInfo(): Promise<DefaultInfo> {
         const mongoSession = await this.connection.startSession()
         try {
-            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
             return value
         } finally {
             await mongoSession.endSession()
@@ -67,7 +67,7 @@ export class SystemsService {
     async getSpinInfo(): Promise<SpinInfo> {
         const mongoSession = await this.connection.startSession()
         try {
-            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<KeyValueRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
             return value
         } finally {
             await mongoSession.endSession()
@@ -77,7 +77,7 @@ export class SystemsService {
     async getEnergyRegen(): Promise<EnergyRegen> {
         const mongoSession = await this.connection.startSession()
         try {
-            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<EnergyRegen>>(createObjectId(SystemId.EnergyRegen))
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<KeyValueRecord<EnergyRegen>>(createObjectId(SystemId.EnergyRegen))
             return value
         } finally {
             await mongoSession.endSession()
@@ -87,7 +87,7 @@ export class SystemsService {
     async getDailyRewardInfo(): Promise<DailyRewardInfo> {
         const mongoSession = await this.connection.startSession()
         try {
-            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<SystemRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
+            const { value } = await this.connection.model<SystemSchema>(SystemSchema.name).findById<KeyValueRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
             return value
         } finally {
             await mongoSession.endSession()

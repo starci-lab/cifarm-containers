@@ -7,7 +7,7 @@ import {
     InventorySchema,
     InventoryTypeSchema,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     SystemSchema
 } from "@src/databases"
 import { InventoryService } from "@src/gameplay"
@@ -57,7 +57,7 @@ export class RetainProductService {
                 value: { storageCapacity }
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
             const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                 connection: this.connection,

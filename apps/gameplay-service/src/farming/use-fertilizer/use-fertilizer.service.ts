@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { ActivityInfo, InjectMongoose, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
+import { ActivityInfo, InjectMongoose, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -38,7 +38,7 @@ export class UseFertilizerService {
                 experiencesGain
             } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<ActivityInfo>>(createObjectId(SystemId.Activities))
+                .findById<KeyValueRecord<ActivityInfo>>(createObjectId(SystemId.Activities))
 
             const user = await this.connection.model<UserSchema>(UserSchema.name)
                 .findById(request.userId)

@@ -2,7 +2,7 @@
 
 import { Test } from "@nestjs/testing"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
-import { DailyRewardId, DailyRewardInfo, getMongooseToken, SystemId, SystemRecord, SystemSchema, UserSchema } from "@src/databases"
+import { DailyRewardId, DailyRewardInfo, getMongooseToken, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import { DateUtcService } from "@src/date"
@@ -36,7 +36,7 @@ describe("ClaimDailyRewardService", () => {
 
         const { value } = await connection
             .model<SystemSchema>(SystemSchema.name)
-            .findById<SystemRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
+            .findById<KeyValueRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
         
         await service.claimDailyReward({
             userId: user.id
@@ -56,7 +56,7 @@ describe("ClaimDailyRewardService", () => {
 
         const { value } = await connection
             .model<SystemSchema>(SystemSchema.name)
-            .findById<SystemRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
+            .findById<KeyValueRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
         
         await service.claimDailyReward({
             userId: user.id

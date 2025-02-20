@@ -2,18 +2,18 @@ import { DeliveryJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { DeliveringProductEntity, InjectPostgreSQL, UserSchema } from "@src/databases"
+import { InjectMongoose, InventoryKind, InventorySchema, InventoryType, InventoryTypeSchema, ProductSchema, UserSchema } from "@src/databases"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
 import { Job } from "bullmq"
-import { DataSource, In } from "typeorm"
+import { Connection } from "mongoose"
 
 @Processor(bullData[BullQueueName.Delivery].name)
 export class DeliveryWorker extends WorkerHost {
     private readonly logger = new Logger(DeliveryWorker.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService
     ) {
@@ -25,71 +25,77 @@ export class DeliveryWorker extends WorkerHost {
 
         const { skip, take } = job.data
 
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const rawUserIds = await queryRunner.manager
-                .createQueryBuilder(DeliveringProductEntity, "delivering_products")
-                .select("delivering_products.userId", "userId")
-                .groupBy("delivering_products.userId")
-                .orderBy("delivering_products.userId", "ASC")
+            const users = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .find()
                 .skip(skip)
-                .take(take)
-                .getRawMany()
+                .limit(take)
+                .session(mongoSession)
 
-            const userIds = rawUserIds.map((raw) => raw.userId)
-
-            if (!userIds.length) {
+            if (!users.length) {
                 return
             }
 
-            const users = await queryRunner.manager.find(UserSchema, {
-                where: { id: In(userIds) }
-            })
+            const inventoryTypes = await this.connection
+                .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                .find({
+                    type: InventoryType.Product
+                })
 
             const promises: Array<Promise<void>> = []
             // use for-each to add async function to promises array
             users.forEach((user) => {
                 const promise = async () => {
-                    const deliveringProducts = await queryRunner.manager.find(DeliveringProductEntity, {
-                        where: { userId: user.id },
-                        relations: {
-                            product: true
-                        }
-                    })
-                    // Calculate total amount of gold and token
-                    const totalGoldAmount = deliveringProducts.reduce((sum, deliveringProduct) => {
-                        return sum + deliveringProduct.product.goldAmount * deliveringProduct.quantity
-                    }, 0)
-
-                    const totalTokenAmount = deliveringProducts.reduce((sum, deliveringProduct) => {
-                        return sum + deliveringProduct.product.tokenAmount * deliveringProduct.quantity
-                    }, 0)
-
-                    // Update user balance
-                    const goldChanged = this.goldBalanceService.add({
-                        entity: user,
-                        amount: totalGoldAmount
-                    })
-                    const tokenChanged = this.tokenBalanceService.add({
-                        entity: user,
-                        amount: totalTokenAmount
-                    })
-
-                    // Update user's balance
-                    await queryRunner.startTransaction()
+                    mongoSession.startTransaction()
                     try {
-                        await queryRunner.manager.update(UserSchema, user.id, {
+                        const deliveringInventories = await this.connection.model<InventorySchema>(InventorySchema.name)
+                            .find({
+                                user: user.id,
+                                kind: InventoryKind.Delivery
+                            })
+
+                        let totalGoldAmount = 0
+                        let totalTokenAmount = 0
+                        for (const inventory of deliveringInventories) {
+                            const inventoryType = inventoryTypes.find((inventoryType) => inventoryType.id === inventory.inventoryType)
+                            if (!inventoryType) {
+                                throw new Error(`Inventory type not found: ${inventory.inventoryType}`)
+                            }
+                            const product = await this.connection.model<ProductSchema>(ProductSchema.name).findById(inventoryType.product).session(mongoSession)
+                            if (!product) {
+                                throw new Error(`Product not found: ${inventoryType.product}`)
+                            }
+                            totalGoldAmount += product.goldAmount * inventory.quantity
+                            totalTokenAmount += product.tokenAmount * inventory.quantity
+                        }
+                        // Update user balance
+                        const goldChanged = this.goldBalanceService.add({
+                            user,
+                            amount: totalGoldAmount
+                        })
+                        const tokenChanged = this.tokenBalanceService.add({
+                            user,
+                            amount: totalTokenAmount
+                        })
+
+                        // delete delivering products
+                        await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
+                            user: user.id,
+                            kind: InventoryKind.Delivery
+                        }).session(mongoSession)
+                        // update user's balance
+                        await this.connection.model<UserSchema>(UserSchema.name).updateOne({
+                            _id: user.id
+                        }, {
                             ...goldChanged,
                             ...tokenChanged
-                        })
-                        await queryRunner.manager.delete(DeliveringProductEntity, {
-                            userId: user.id
-                        })
-                        await queryRunner.commitTransaction()
+                        }).session(mongoSession)
+                        await mongoSession.commitTransaction()
                     } catch (error) {
-                        this.logger.error(`Transaction failed: ${error}`)
-                        await queryRunner.rollbackTransaction()
+                        this.logger.error(error)
+                        mongoSession.abortTransaction()
                         throw error
                     }
                 }
@@ -97,7 +103,7 @@ export class DeliveryWorker extends WorkerHost {
             })
             await Promise.all(promises)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

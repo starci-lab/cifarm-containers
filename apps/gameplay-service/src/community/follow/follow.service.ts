@@ -3,7 +3,7 @@ import {
     DefaultInfo,
     InjectMongoose,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     SystemSchema,
     UserFollowRelationSchema,
     UserSchema
@@ -30,7 +30,7 @@ export class FollowService {
                 value: { followeeLimit }
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                 .session(mongoSession)
             if (userId === followeeUserId) {
                 throw new GrpcInvalidArgumentException("Cannot follow self")

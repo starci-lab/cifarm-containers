@@ -12,7 +12,7 @@ import {
     SpinPrizeType,
     SpinSlotSchema,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     SystemSchema,
     UserSchema
 } from "@src/databases"
@@ -45,7 +45,7 @@ export class SpinService {
                 value: { storageCapacity }
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                 .session(mongoSession)
             // Get latest spin
             const user = await this.connection
@@ -73,7 +73,7 @@ export class SpinService {
             //spin
             const { value } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
+                .findById<KeyValueRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
                 .session(mongoSession)
 
             //get the appearance chance

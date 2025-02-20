@@ -7,7 +7,7 @@ import {
     InventorySchema,
     InventoryTypeSchema,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     SystemSchema,
 } from "@src/databases"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
@@ -39,7 +39,7 @@ export class MoveInventoryService {
                 value: { storageCapacity, toolCapacity }
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                 .session(mongoSession)
 
             const capacity = isTool ? toolCapacity : storageCapacity

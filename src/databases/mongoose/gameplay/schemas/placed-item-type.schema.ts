@@ -6,6 +6,7 @@ import { BuildingSchema } from "./building.schema"
 import { AnimalSchema } from "./animal.schema"
 import { Schema as MongooseSchema } from "mongoose"
 import { TileSchema } from "./tile.schema"
+import { ANIMAL, BUILDING, TILE } from "../constants"
 
 @ObjectType()
 @Schema({
@@ -19,15 +20,15 @@ export class PlacedItemTypeSchema extends StaticAbstractSchema {
 
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: BuildingSchema.name })
-        building: BuildingSchema | string
+    [BUILDING]: BuildingSchema | string
             
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: AnimalSchema.name })
-        animal: AnimalSchema | string
+    [ANIMAL]: AnimalSchema | string
 
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: TileSchema.name })
-        tile: TileSchema | string
+    [TILE]: TileSchema | string
 }
 
 // Generate Mongoose Schema

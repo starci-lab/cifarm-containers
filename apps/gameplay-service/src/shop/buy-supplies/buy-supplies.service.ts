@@ -3,7 +3,7 @@ import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     DefaultInfo, InjectMongoose, InventoryKind, InventorySchema,
     InventoryTypeSchema,
-    SupplySchema, SystemId, SystemRecord, SystemSchema, UserSchema
+    SupplySchema, SystemId, KeyValueRecord, SystemSchema, UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
@@ -51,7 +51,7 @@ export class BuySuppliesService {
 
             const { value: { storageCapacity } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
             // Get inventory type
             const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)

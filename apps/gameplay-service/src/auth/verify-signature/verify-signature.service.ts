@@ -8,7 +8,7 @@ import {
     InjectMongoose,
     SystemId,
     SystemSchema,
-    SystemRecord,
+    KeyValueRecord,
     InventoryTypeSchema,
     PlacedItemSchema,
     PlacedItemTypeId,
@@ -102,7 +102,7 @@ export class VerifySignatureService {
                     }
                 } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
-                    .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
                 // inventories params
                 const inventoryType = await this.connection

@@ -2,28 +2,33 @@ import { AnimalJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { getDifferenceAndValues } from "@src/common"
+import { DeepPartial, getDifferenceAndValues } from "@src/common"
 import {
+    ANIMAL,
     AnimalCurrentState,
-    AnimalInfoEntity,
     AnimalRandomness,
-    InjectPostgreSQL,
-    SystemEntity,
-    SystemId
+    AnimalSchema,
+    InjectMongoose,
+    KeyValueRecord,
+    PlacedItemSchema,
+    PlacedItemType,
+    PlacedItemTypeSchema,
+    SystemId,
+    SystemSchema
 } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { ProductService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { isEmpty } from "lodash"
-import { DataSource, DeepPartial, LessThanOrEqual, Not } from "typeorm"
+import { Connection } from "mongoose"
 
 @Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost {
     private readonly logger = new Logger(AnimalWorker.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
         private readonly productService: ProductService
     ) {
@@ -32,145 +37,145 @@ export class AnimalWorker extends WorkerHost {
 
     public override async process(job: Job<AnimalJobData>): Promise<void> {
         const { time, skip, take, utcTime } = job.data
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
         try {
-            const animalInfos = await queryRunner.manager.find(AnimalInfoEntity, {
-                where: {
-                    currentState: Not(AnimalCurrentState.Hungry) && Not(AnimalCurrentState.Yield),
-                    createdAt: LessThanOrEqual(this.dateUtcService.getDayjs(utcTime).toDate())
-                },
-                relations: {
-                    placedItem: {
-                        placedItemType: {
-                            animal: true
-                        }
+            const placedItemTypes = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find({
+                type: PlacedItemType.Animal
+            }).populate(ANIMAL).session(mongoSession)
+            const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .find({
+                    placedItemType: {
+                        $in: placedItemTypes.map(placedItemType => placedItemType.id)
+                    },
+                    "animalInfo.currentState": {
+                        $nin: [AnimalCurrentState.Hungry, AnimalCurrentState.Yield]
+                    },
+                    createdAt: {
+                        $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                     }
-                },
-                skip,
-                take,
-                order: {
-                    createdAt: "ASC"
-                }
-            })
-
-            const system = await queryRunner.manager.findOne(SystemEntity, {
-                where: {
-                    id: SystemId.AnimalRandomness
-                }
-            })
-            const { sickChance } = system.value as AnimalRandomness
-
+                }).session(mongoSession).skip(skip).limit(take).sort({ createdAt: 1 })
+        
+            const { value: { sickChance } } = await this.connection.model<SystemSchema>(SystemSchema.name)
+                .findById<KeyValueRecord<AnimalRandomness>>(
+                    SystemId.AnimalRandomness
+                ).session(mongoSession)
             const promises: Array<Promise<void>> = []
-            for (const animalInfo of animalInfos) {
+            for (const placedItem of placedItems) {
                 const promise = async () => {
-                    const animalInfoChanges = () => {
-                        const animalInfoBeforeChanges = { ...animalInfo }
-                        
-                        // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
-                        const adultAnimalInfoChanges = (): DeepPartial<AnimalInfoEntity> => {
+                    mongoSession.startTransaction()
+                    try {
+                        const placedItemChanges = () => {
+                            const placedItemBeforeChanges = { ...placedItem }
+                            // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
+                            const adultAnimalPlacedItemChanges = (): DeepPartial<PlacedItemSchema> => {
                             // If animal is adult, add time to the animal yield
-                            animalInfo.currentYieldTime += time
-                            // if animal grow to half of the yield time, it may get sick and immunized
-                            if (
-                                !animalInfo.immunized &&
-                                animalInfo.currentYieldTime >=
+                                placedItem.animalInfo.currentYieldTime += time
+                                const placedItemType = placedItemTypes.find(
+                                    placedItemType => placedItemType.id === placedItem.placedItemType
+                                )
+                                const animal = placedItemType.animal as AnimalSchema
+                                // if animal grow to half of the yield time, it may get sick and immunized
+                                if (
+                                    !placedItemBeforeChanges.animalInfo.immunized &&
+                                placedItemBeforeChanges.animalInfo.currentYieldTime >=
                                     Math.floor(
-                                        animalInfo.placedItem.placedItemType.animal.yieldTime / 2
+                                        animal.yieldTime / 2
                                     )
-                            ) {
-                                if (Math.random() < sickChance) {
-                                    animalInfo.currentState = AnimalCurrentState.Sick
-                                }
-                                animalInfo.immunized = true
+                                ) {
+                                    if (Math.random() < sickChance) {
+                                        placedItem.animalInfo.currentState = AnimalCurrentState.Sick
+                                    }
+                                    placedItem.animalInfo.immunized = true
                                 // if animal yield time is more than or equal the yield time, it will yield
-                            }
-                            if (
-                                animalInfo.currentYieldTime >=
-                                animalInfo.placedItem.placedItemType.animal.yieldTime
-                            ) {
-                                animalInfo.currentYieldTime = 0
-                                //if sick, the harvest quantity is the average of min and max harvest quantity
-                                if (animalInfo.currentState === AnimalCurrentState.Sick) {
-                                    animalInfo.harvestQuantityRemaining =
-                                        (animalInfo.placedItem.placedItemType.animal
+                                }
+                                if (
+                                    placedItem.animalInfo.currentYieldTime >=
+                                animal.yieldTime
+                                ) {
+                                    placedItem.animalInfo.currentYieldTime = 0
+                                    //if sick, the harvest quantity is the average of min and max harvest quantity
+                                    if (placedItem.animalInfo.currentState === AnimalCurrentState.Sick) {
+                                        placedItem.animalInfo.harvestQuantityRemaining =
+                                        (animal
                                             .minHarvestQuantity +
-                                            animalInfo.placedItem.placedItemType.animal
+                                            animal
                                                 .maxHarvestQuantity) /
                                         2
-                                } else {
+                                    } else {
                                     // if not sick, the harvest quantity is the max harvest quantity
-                                    animalInfo.harvestQuantityRemaining =
-                                        animalInfo.placedItem.placedItemType.animal.maxHarvestQuantity
+                                        placedItem.animalInfo.harvestQuantityRemaining =
+                                    animal.maxHarvestQuantity
+                                    }
+                                    placedItem.animalInfo.currentState = AnimalCurrentState.Yield
                                 }
-                                animalInfo.currentState = AnimalCurrentState.Yield
+                                return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
                             }
-                            return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
-                        }
 
-                        // growthAnimalInfoChanges is a function that returns the changes in animalInfo if animal is not adult
-                        const growthAnimalInfoChanges = (): DeepPartial<AnimalInfoEntity> => {
+                            // growthAnimalInfoChanges is a function that returns the changes in animalInfo if animal is not adult
+                            const growthAnimalPlacedItemChanges = (): DeepPartial<PlacedItemSchema> => {
                             // Add time to the animal growth and hunger
-                            animalInfo.currentGrowthTime += time
-                            animalInfo.currentHungryTime += time
+                                placedItem.animalInfo.currentGrowthTime += time
+                                placedItem.animalInfo.currentHungryTime += time
 
-                            // check if animal is enough to be adult
-                            if (
-                                animalInfo.currentGrowthTime >=
-                            animalInfo.placedItem.placedItemType.animal.growthTime
-                            ) {
-                                animalInfo.isAdult = true
-                                animalInfo.currentState = AnimalCurrentState.Hungry
-                                return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
+                                const placedItemType = placedItemTypes.find(
+                                    placedItemType => placedItemType.id === placedItem.placedItemType
+                                )
+                                const animal = placedItemType.animal as AnimalSchema
+
+                                // check if animal is enough to be adult
+                                if (
+                                    placedItem.animalInfo.currentGrowthTime >=
+                                animal.growthTime
+                                ) {
+                                    placedItem.animalInfo.isAdult = true
+                                    placedItem.animalInfo.currentState = AnimalCurrentState.Hungry
+                                    return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
+                                }
+
+                                // check if animal is hungry
+                                if (
+                                    placedItem.animalInfo.currentHungryTime >=
+                                animal.hungerTime
+                                ) {
+                                    placedItem.animalInfo.currentHungryTime = 0
+                                    placedItem.animalInfo.currentState = AnimalCurrentState.Hungry
+                                    return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
+                                }
+
+                                const chance = this.productService.computeAnimalQualityChance({
+                                    animalInfo: placedItem.animalInfo,
+                                    qualityProductChanceLimit: animal.qualityProductChanceLimit,
+                                    qualityProductChanceStack: animal.qualityProductChanceStack
+                                })
+
+                                if (Math.random() < chance) {
+                                    placedItem.animalInfo.isQuality = true
+                                }
+
+                                return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
                             }
 
-                            // check if animal is hungry
-                            if (
-                                animalInfo.currentHungryTime >=
-                            animalInfo.placedItem.placedItemType.animal.hungerTime
-                            ) {
-                                animalInfo.currentHungryTime = 0
-                                animalInfo.currentState = AnimalCurrentState.Hungry
-                                return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
-                            }
-
-                            const chance = this.productService.computeTileQualityChance({
-                                entity: animalInfo.placedItem.tileInfo,
-                                qualityProductChanceLimit:
-                                animalInfo.placedItem.placedItemType.tile.qualityProductChanceLimit,
-                                qualityProductChanceStack:
-                                animalInfo.placedItem.placedItemType.tile.qualityProductChanceStack
-                            })
-
-                            if (Math.random() < chance) {
-                                animalInfo.isQuality = true
-                            }
-
-                            return getDifferenceAndValues(animalInfoBeforeChanges, animalInfo)
+                            // If animal is adult, call adultAnimalInfoChanges, else call growthAnimalInfoChanges
+                            if (placedItem.animalInfo.isAdult) {
+                                return adultAnimalPlacedItemChanges()
+                            } 
+                            return growthAnimalPlacedItemChanges() 
                         }
-
-                        // If animal is adult, call adultAnimalInfoChanges, else call growthAnimalInfoChanges
-                        if (animalInfo.isAdult) {
-                            return adultAnimalInfoChanges()
-                        } 
-                        return growthAnimalInfoChanges()   
-                    }
-
-                    const changes = animalInfoChanges()
-                    if (isEmpty(changes)) {
-                        return
-                    }
-                    await queryRunner.startTransaction()
-                    try {
-                        await queryRunner.manager.update(
-                            AnimalInfoEntity,
-                            animalInfo.id,
-                            changes
-                        )
-                        await queryRunner.commitTransaction()
+                        const changes = placedItemChanges()
+                        if (isEmpty(changes)) {
+                            return
+                        }
+                        // await queryRunner.manager.update(
+                        //     AnimalInfoEntity,
+                        //     animalInfo.id,
+                        //     changes
+                        // )
+                        // await queryRunner.commitTransaction()
+                        await placedItem.save({ session: mongoSession })
+                        await mongoSession.commitTransaction()
                     } catch (error) {
-                        this.logger.error(`Transaction failed: ${error}`)
-                        await queryRunner.rollbackTransaction()
+                        this.logger.error(error)
+                        await mongoSession.abortTransaction()
                         throw error
                     }
                 }
@@ -178,7 +183,7 @@ export class AnimalWorker extends WorkerHost {
             }
             await Promise.all(promises)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

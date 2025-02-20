@@ -17,12 +17,6 @@ export class SystemSchema extends StaticAbstractSchema {
         value: object
 }
 
-// interface for type checking
-export interface SystemRecord<Value> {
-    key: string
-    value: Value
-}
-
 @ObjectType()
 export class ActivityInfo {
     @Field(() => Int)

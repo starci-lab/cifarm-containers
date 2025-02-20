@@ -3,16 +3,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName } from "@src/bull"
 import {
-    Collection,
-    CollectionEntity,
-    EnergyGrowthLastSchedule,
-    InjectPostgreSQL,
-    KeyValueStoreEntity,
+    EnergyRegenerationLastSchedule,
+    KeyValueRecord,
     KeyValueStoreId,
+    KeyValueStoreSchema,
     UserSchema
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import { DataSource, LessThanOrEqual } from "typeorm"
 import { v4 } from "uuid"
 import { EnergyJobData } from "./energy.dto"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
@@ -21,6 +18,8 @@ import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { ENERGY_CACHE_SPEED_UP, EnergyCacheSpeedUpData } from "./energy.e2e"
 import { e2eEnabled } from "@src/env"
+import { InjectConnection } from "@nestjs/mongoose"
+import { Connection } from "mongoose"
 
 // use different name to avoid conflict with the EnergyService exported from the gameplay module
 @Injectable()
@@ -29,8 +28,8 @@ export class EnergyService {
 
     constructor(
         @InjectQueue(bullData[BullQueueName.Energy].name) private readonly EnergyQueue: Queue,
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectConnection()
+        private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
         @InjectCache()
         private readonly cacheManager: Cache
@@ -43,63 +42,65 @@ export class EnergyService {
     handleLeaderElected() {
         this.isLeader = true
     }
-    
-        @OnEventLeaderLost()
+
+    @OnEventLeaderLost()
     handleLeaderLost() {
         this.isLeader = false
     }
 
     @Cron("*/1 * * * * *")
-        async process() {
-            if (!this.isLeader) {
+    async process() {
+        if (!this.isLeader) {
+            return
+        }
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
+
+        try {
+            const utcNow = this.dateUtcService.getDayjs()
+            const count = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .countDocuments({
+                    energyFull: false,
+                    createdAt: {
+                        $lte: utcNow.toDate()
+                    }
+                })
+                .session(mongoSession)
+
+            //get the last scheduled time
+            const {
+                value: { date }
+            } = await this.connection
+                .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                .findById<
+                    KeyValueRecord<EnergyRegenerationLastSchedule>
+                >(KeyValueStoreId.EnergyRegenerationLastSchedule)
+                .session(mongoSession)
+
+            if (count === 0) {
+                //no user needs energy regeneration
                 return
             }
-            const utcNow = this.dateUtcService.getDayjs()
-            // Create a query runner
-            const queryRunner = this.dataSource.createQueryRunner()
-            await queryRunner.connect()
-            let count: number
-            try {
-                count = await queryRunner.manager.count(UserSchema, {
-                    where: {
-                        energyFull: false,
-                        createdAt: LessThanOrEqual(utcNow.toDate())
-                    }
-                })
-            
-                //get the last scheduled time
-                const energyRegenerationLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
-                    where: {
-                        id: KeyValueStoreId.EnergyRegenerationLastSchedule
-                    }
-                })
-                let date: Date 
-                if (energyRegenerationLastSchedule) {
-                    date = (energyRegenerationLastSchedule.value as EnergyGrowthLastSchedule).date
+
+            //split into 10000 per batch
+            const batchSize = bullData[BullQueueName.Energy].batchSize
+            const batchCount = Math.ceil(count / batchSize)
+
+            let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
+
+            //e2e code block for e2e purpose-only
+            if (e2eEnabled()) {
+                const speedUp =
+                    await this.cacheManager.get<EnergyCacheSpeedUpData>(ENERGY_CACHE_SPEED_UP)
+                if (speedUp) {
+                    time += speedUp.time
+                    await this.cacheManager.del(ENERGY_CACHE_SPEED_UP)
                 }
+            }
 
-                if (count === 0) {
-                    //no user needs energy regeneration
-                    return
-                }
-
-                //split into 10000 per batch
-                const batchSize = bullData[BullQueueName.Energy].batchSize
-                const batchCount = Math.ceil(count / batchSize)
-
-                let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
-                
-                //e2e code block for e2e purpose-only
-                if (e2eEnabled()) {
-                    const speedUp = await this.cacheManager.get<EnergyCacheSpeedUpData>(ENERGY_CACHE_SPEED_UP)
-                    if (speedUp) {
-                        time += speedUp.time
-                        await this.cacheManager.del(ENERGY_CACHE_SPEED_UP)
-                    }
-                }
-
-                // Create batches
-                const batches: Array<{
+            // Create batches
+            const batches: Array<{
                 name: string
                 data: EnergyJobData
                 opts?: BulkJobOptions
@@ -114,31 +115,31 @@ export class EnergyService {
                 opts: bullData[BullQueueName.Energy].opts
             }))
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
-                const jobs = await this.EnergyQueue.addBulk(batches)
-                this.logger.verbose(
-                    `Added ${jobs.at(0).name} jobs to the regen energy queue. Time: ${time}`
-                )
+            const jobs = await this.EnergyQueue.addBulk(batches)
+            this.logger.verbose(
+                `Added ${jobs.at(0).name} jobs to the regen energy queue. Time: ${time}`
+            )
 
-                await queryRunner.startTransaction()
-                try {
-                    await queryRunner.manager.delete(CollectionEntity, {
-                        collection: Collection.EnergySpeedUp
-                    })
-
-                    await queryRunner.manager.save(KeyValueStoreEntity, {
-                        id: KeyValueStoreId.EnergyRegenerationLastSchedule,
+            await this.connection
+                .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                .updateOne(
+                    {
+                        _id: KeyValueStoreId.EnergyRegenerationLastSchedule
+                    },
+                    {
                         value: {
                             date: utcNow.toDate()
                         }
-                    })
-                    await queryRunner.commitTransaction()
-                } catch (error) {
-                    this.logger.error(`Error deleting speed up collection: ${error}`)
-                    await queryRunner.rollbackTransaction()
-                    throw error
-                }
-            } finally {
-                await queryRunner.release()
-            }
+                    }
+                )
+                .session(mongoSession)
+            await mongoSession.commitTransaction()
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
+        } finally {
+            await mongoSession.endSession()
         }
+    }
 }

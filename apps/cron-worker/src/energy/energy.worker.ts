@@ -2,19 +2,19 @@ import { EnergyJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { EnergyRegen, InjectPostgreSQL, SystemEntity, SystemId, UserSchema } from "@src/databases"
+import { EnergyRegen, InjectMongoose, KeyValueRecord, SystemId, SystemSchema, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { Job } from "bullmq"
-import { DataSource, LessThanOrEqual } from "typeorm"
 import { getDifferenceAndValues } from "@src/common"
+import { Connection } from "mongoose"
 
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
     private readonly logger = new Logger(EnergyWorker.name)
 
     constructor(
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService
     ) {
         super()
@@ -23,53 +23,50 @@ export class EnergyWorker extends WorkerHost {
     public override async process(job: Job<EnergyJobData>): Promise<void> {
         const { time, skip, take, utcTime } = job.data
 
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
         try {
-            const users = await queryRunner.manager.find(UserSchema, {
-                skip,
-                take,
-                where: {
+            const users = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .find({
                     energyFull: false,
-                    createdAt: LessThanOrEqual(this.dateUtcService.getDayjs(utcTime).toDate())
-                },
-                order: {
-                    createdAt: "ASC"
-                }
-            })
+                    createdAt: {
+                        $lte: this.dateUtcService.getDayjs(utcTime).toDate()
+                    }
+                })
+                .skip(skip)
+                .limit(take)
+                .session(mongoSession)
 
-            const system = await queryRunner.manager.findOne(SystemEntity, {
-                where: {
-                    id: SystemId.EnergyRegen
-                }
-            })
-            const { time: energyRegenTime } = system.value as EnergyRegen // In Miniliseconds
+            const { value: { time: energyRegenTime } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<KeyValueRecord<EnergyRegen>>(SystemId.EnergyRegen)
 
             const promises: Array<Promise<void>> = []
             for (const user of users) {
                 const promise = async () => {
-                    const userChanges = () => {
-                        const userBeforeChanges = { ...user }
-                        // Add time to the user's energy
-                        user.energyRegenTime += time
-                        if (user.energyRegenTime >= energyRegenTime) {
-                            user.energy += 1
-                            // Reset the timer
-                            user.energyRegenTime = 0
-                        }
-                        return getDifferenceAndValues(userBeforeChanges, user)
-                    }
-                    const changes = userChanges()
-                    if (!changes) {
-                        return
-                    }
-                    await queryRunner.startTransaction()
+                    mongoSession.startTransaction()
                     try {
-                        await queryRunner.manager.update(UserSchema, user.id, changes)
-                        await queryRunner.commitTransaction()
+                        const userChanges = () => {
+                            const userBeforeChanges = { ...user }
+                            // Add time to the user's energy
+                            user.energyRegenTime += time
+                            if (user.energyRegenTime >= energyRegenTime) {
+                                user.energy += 1
+                                // Reset the timer
+                                user.energyRegenTime = 0
+                            }
+                            return getDifferenceAndValues(userBeforeChanges, user)
+                        }
+                        const changes = userChanges()
+                        if (!changes) {
+                            return
+                        }
+                        await user.save()
+                        mongoSession.commitTransaction()
                     } catch (error) {
-                        this.logger.error(`Transaction failed: ${error}`)
-                        await queryRunner.rollbackTransaction()
+                        this.logger.error(error)
+                        mongoSession.abortTransaction()
                         throw error
                     }
                 }
@@ -77,7 +74,7 @@ export class EnergyWorker extends WorkerHost {
             }
             await Promise.all(promises)
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

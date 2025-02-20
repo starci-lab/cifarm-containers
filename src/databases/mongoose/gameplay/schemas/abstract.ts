@@ -28,3 +28,4 @@ export abstract class StaticAbstractSchema extends AbstractSchema {
     @Prop({ type: String, required: true, unique: true })
         displayId: string
 }
+

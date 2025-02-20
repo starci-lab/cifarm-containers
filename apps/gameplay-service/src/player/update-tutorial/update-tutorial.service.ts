@@ -6,7 +6,7 @@ import {
     InjectMongoose,
     PlacedItemSchema,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     SystemSchema,
     TutorialStep,
     UserSchema
@@ -32,7 +32,7 @@ export class UpdateTutorialService {
         try {
             const { value: { defaultCropId } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                 .session(mongoSession)
 
             const user = await this.connection

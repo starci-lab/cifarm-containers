@@ -9,7 +9,7 @@ import {
     InventoryType,
     InventoryTypeSchema,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     SystemSchema,
     UserSchema
 } from "@src/databases"
@@ -75,7 +75,7 @@ export class BuySeedsService {
 
             const { value: { storageCapacity } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
             try {
                 // Subtract gold

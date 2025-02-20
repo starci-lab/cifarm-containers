@@ -1,9 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
-import { DeliveringProductEntity, InjectPostgreSQL } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import { DataSource } from "typeorm"
 import { v4 } from "uuid"
 import { DeliveryJobData } from "./delivery.dto"
 import {
@@ -11,6 +9,8 @@ import {
     OnEventLeaderLost
 } from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
+import { InjectMongoose, InventoryKind, InventorySchema, USER } from "@src/databases"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class DeliveryService {
@@ -31,8 +31,8 @@ export class DeliveryService {
 
     constructor(
         @InjectQueue(BullQueueName.Delivery) private readonly deliveryQueue: Queue,
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService
     ) {}
 
@@ -45,16 +45,19 @@ export class DeliveryService {
     }
 
     public async deliver() {
-        const utcNow = this.dateUtcService.getDayjs()
-        // Create a query runner
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
         try {
-            const { count } = await queryRunner.manager
-                .createQueryBuilder(DeliveringProductEntity, "delivering_products")
-                .select("COUNT(DISTINCT delivering_products.userId)", "count")
-                .getRawOne()
+            const utcNow = this.dateUtcService.getDayjs()
+
+            const count = await this.connection
+                .model<InventorySchema>(InventorySchema.name)
+                .distinct(USER)
+                .countDocuments({
+                    kind: InventoryKind.Delivery
+                })
+                .session(mongoSession)
 
             if (!count) {
                 return
@@ -79,8 +82,12 @@ export class DeliveryService {
 
             this.logger.verbose(`Adding ${batches.length} batches to the queue.`)
             await this.deliveryQueue.addBulk(batches)
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }
