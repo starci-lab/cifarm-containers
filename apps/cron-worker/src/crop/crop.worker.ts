@@ -14,14 +14,12 @@ import {
     SystemId,
     SystemSchema,
     TILE,
-    TILE_INFO,
     TileSchema
 } from "@src/databases"
 import { Job } from "bullmq"
 import { DateUtcService } from "@src/date"
 import { ProductService } from "@src/gameplay"
-import { DeepPartial, getDifferenceAndValues } from "@src/common"
-import { isEmpty } from "lodash"
+import { createObjectId, DeepPartial } from "@src/common"
 import { Connection } from "mongoose"
 
 @Processor(bullData[BullQueueName.Crop].name)
@@ -50,60 +48,57 @@ export class CropWorker extends WorkerHost {
                     type: PlacedItemType.Tile
                 })
                 .session(mongoSession)
-
             const placedItems = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .find({
                     placedItemType: {
                         $in: placedItemTypes.map((placedItemType) => placedItemType.id),
-                        SEED_GROWTH_INFO: {
-                            $exists: true
-                        },
-                        "seedGrowthInfo.currentState": {
-                            $ne: [CropCurrentState.NeedWater, CropCurrentState.FullyMatured]
-                        },
-                        createdAt: {
-                            $lte: this.dateUtcService.getDayjs(utcTime).toDate()
-                        }
+                    },
+                    seedGrowthInfo: {
+                        $ne: null
+                    },
+                    "seedGrowthInfo.currentState": {
+                        $nin: [CropCurrentState.NeedWater, CropCurrentState.FullyMatured]
+                    },
+                    createdAt: {
+                        $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                     }
                 })
-                .populate(TILE_INFO)
-                .session(mongoSession)
                 .skip(skip)
-                .limit(take)
-                .sort({ createAt: -1 })
-
+                .limit(take) 
+                .sort({ createdAt: "desc" }) 
+                .session(mongoSession)
             const {
                 value: { needWater, isWeedyOrInfested }
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<CropRandomness>>(SystemId.CropRandomness)
+                .findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
                 .session(mongoSession)
             const promises: Array<Promise<void>> = []
             for (const placedItem of placedItems) {
                 const promise = async () => {
-                    mongoSession.startTransaction()
+                    const session = await this.connection.startSession()
+                    session.startTransaction()
                     try {
                         const placedItemType = await this.connection
                             .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
                             .findById(placedItem.placedItemType)
                             .populate(TILE)
-                            .session(mongoSession)
+                            .session(session)
                         const crop = await this.connection
                             .model<CropSchema>(CropSchema.name)
                             .findById(placedItem.seedGrowthInfo.crop)
-                            .session(mongoSession)
+                            .session(session)
                         const tile = placedItemType.tile as TileSchema
                         // Add time to the seed growth
-                        const placedItemChanges = (): DeepPartial<PlacedItemSchema> => {
-                            const placedItemBeforeChanges = { ...placedItem }
+                        const updatePlacedItem = (): DeepPartial<PlacedItemSchema> => {
                             // add time to the seed growth
-                            placedItemBeforeChanges.seedGrowthInfo.currentStageTimeElapsed += time
+                            placedItem.seedGrowthInfo.currentStageTimeElapsed += time
                             if (
-                                placedItemBeforeChanges.seedGrowthInfo.currentStageTimeElapsed <
+                                placedItem.seedGrowthInfo.currentStageTimeElapsed <
                                 crop.growthStageDuration
                             ) {
-                                return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
+                                return
                             }
                             // deduct the time elapsed from the current stage time elapsed
                             placedItem.seedGrowthInfo.currentStageTimeElapsed -=
@@ -119,7 +114,7 @@ export class CropWorker extends WorkerHost {
                                     placedItem.seedGrowthInfo.currentState =
                                         CropCurrentState.NeedWater
                                 }
-                                return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
+                                return
                             }
 
                             // if the current stage is max stage - 2, check if weedy or infested
@@ -133,9 +128,8 @@ export class CropWorker extends WorkerHost {
                                             CropCurrentState.IsInfested
                                     }
                                 }
-                                return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
+                                return
                             }
-
                             // else, the crop is fully matured
                             if (
                                 placedItem.seedGrowthInfo.currentState ===
@@ -157,25 +151,29 @@ export class CropWorker extends WorkerHost {
                                 placedItem.seedGrowthInfo.isQuality = true
                             }
                             placedItem.seedGrowthInfo.currentState = CropCurrentState.FullyMatured
-                            return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
-                        }
-
-                        const changes = placedItemChanges()
-                        if (isEmpty(changes)) {
                             return
                         }
-                        await placedItem.save({ session: mongoSession })
-                        await mongoSession.commitTransaction()
+                        // update the placed item
+                        updatePlacedItem()
+                        await placedItem.save({ session: session })
+                        await session.commitTransaction()
                     } catch (error) {
                         this.logger.error(error)
-                        await mongoSession.abortTransaction()
+                        await session.abortTransaction()
                         throw error
+                    } finally {
+                        await session.endSession()
                     }
                 }
                 promises.push(promise())
             }
             await Promise.all(promises)
-        } finally {
+        } catch (error) {
+            console.error(error)
+            this.logger.error(error.message)
+            throw error
+        }
+        finally {
             await mongoSession.endSession()
         }
     }

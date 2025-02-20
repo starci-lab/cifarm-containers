@@ -4,6 +4,7 @@ import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName } from "@src/bull"
 import {
     EnergyRegenerationLastSchedule,
+    InjectMongoose,
     KeyValueRecord,
     KeyValueStoreId,
     KeyValueStoreSchema,
@@ -18,8 +19,8 @@ import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { ENERGY_CACHE_SPEED_UP, EnergyCacheSpeedUpData } from "./energy.e2e"
 import { e2eEnabled } from "@src/env"
-import { InjectConnection } from "@nestjs/mongoose"
 import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 // use different name to avoid conflict with the EnergyService exported from the gameplay module
 @Injectable()
@@ -28,7 +29,7 @@ export class EnergyService {
 
     constructor(
         @InjectQueue(bullData[BullQueueName.Energy].name) private readonly EnergyQueue: Queue,
-        @InjectConnection()
+        @InjectMongoose()
         private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
         @InjectCache()
@@ -62,12 +63,8 @@ export class EnergyService {
                 .model<UserSchema>(UserSchema.name)
                 .countDocuments({
                     energyFull: false,
-                    createdAt: {
-                        $lte: utcNow.toDate()
-                    }
                 })
                 .session(mongoSession)
-
             //get the last scheduled time
             const {
                 value: { date }
@@ -75,7 +72,7 @@ export class EnergyService {
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                 .findById<
                     KeyValueRecord<EnergyRegenerationLastSchedule>
-                >(KeyValueStoreId.EnergyRegenerationLastSchedule)
+                >(createObjectId(KeyValueStoreId.EnergyRegenerationLastSchedule))
                 .session(mongoSession)
 
             if (count === 0) {
@@ -124,7 +121,7 @@ export class EnergyService {
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                 .updateOne(
                     {
-                        _id: KeyValueStoreId.EnergyRegenerationLastSchedule
+                        _id: createObjectId(KeyValueStoreId.EnergyRegenerationLastSchedule)
                     },
                     {
                         value: {

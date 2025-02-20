@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
-    AnimalCurrentState,
+    CropCurrentState,
     CropGrowthLastSchedule,
     InjectMongoose,
     KeyValueRecord,
@@ -22,6 +22,7 @@ import { Cache } from "cache-manager"
 import { CROP_CACHE_SPEED_UP, CropCacheSpeedUpData } from "./crop.e2e"
 import { e2eEnabled } from "@src/env"
 import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class CropService {
@@ -74,13 +75,13 @@ export class CropService {
                 },
                 // Compare this snippet from apps/cron-scheduler/src/animal/animal.service.ts:
                 "seedGrowthInfo.currentState": {
-                    $nin: [AnimalCurrentState.Hungry, AnimalCurrentState.Yield]
+                    $nin: [CropCurrentState.NeedWater, CropCurrentState.FullyMatured]
                 },
                 createdAt: {
-                    $lte: utcNow.toDate()
+                    $lte: this.dateUtcService.getDayjs(utcNow).toDate()
                 }
             }).session(mongoSession)
- 
+            console.log(count)
             //get the last scheduled time, get from db not cache
             // const cropGrowthLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
             //     where: {
@@ -88,7 +89,7 @@ export class CropService {
             //     }
             // })
             const { value: { date } } = await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
-                .findById<KeyValueRecord<CropGrowthLastSchedule>>(KeyValueStoreId.CropGrowthLastSchedule)
+                .findById<KeyValueRecord<CropGrowthLastSchedule>>(createObjectId(KeyValueStoreId.CropGrowthLastSchedule))
 
             // this.logger.debug(`Found ${count} crops that need to be grown`)
             if (count !== 0) {
@@ -127,14 +128,7 @@ export class CropService {
             }
 
             await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).updateOne({
-                _id: KeyValueStoreId.CropGrowthLastSchedule
-            }, {
-                value: {
-                    date: utcNow.toDate()
-                }
-            })
-            await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).updateOne({
-                _id: KeyValueStoreId.AnimalGrowthLastSchedule
+                _id: createObjectId(KeyValueStoreId.CropGrowthLastSchedule)
             }, {
                 value: {
                     date: utcNow.toDate()

@@ -22,6 +22,7 @@ import { Cache } from "cache-manager"
 import { e2eEnabled } from "@src/env"
 import { ANIMAL_CACHE_SPEED_UP, AnimalCacheSpeedUpData } from "./animal.e2e"
 import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class AnimalService {
@@ -59,31 +60,32 @@ export class AnimalService {
 
         try {
             const utcNow = this.dateUtcService.getDayjs()
-            const placedItemTypes = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find({
-                type: PlacedItemType.Animal
-            }).session(mongoSession)
-            const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).countDocuments({
-                placedItemType: {
-                    $in: placedItemTypes.map(placedItemType => placedItemType.id)
-                },
-                "animalInfo.currentState": {
-                    $nin: [AnimalCurrentState.Hungry, AnimalCurrentState.Yield]
-                },
-                createdAt: {
-                    $lte: utcNow.toDate()
-                }
-            }).session(mongoSession)
+            const placedItemTypes = await this.connection
+                .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                .find({
+                    type: PlacedItemType.Animal
+                })
+                .session(mongoSession)
+            const count = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .countDocuments({
+                    placedItemType: {
+                        $in: placedItemTypes.map((placedItemType) => placedItemType.id)
+                    },
+                    "animalInfo.currentState": {
+                        $nin: [AnimalCurrentState.Hungry, AnimalCurrentState.Yield]
+                    }
+                })
+                .session(mongoSession)
 
-            //get the last scheduled time
-            // const animalGrowthLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
-            //     where: {
-            //         id: KeyValueStoreId.AnimalGrowthLastSchedule
-            //     }
-            // })
-            const { value: { date } } = await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
-                .findById<KeyValueRecord<AnimalGrowthLastSchedule>>(KeyValueStoreId.AnimalGrowthLastSchedule)
-            //date is 1 second ago
-            // this.logger.debug(`Found ${count} animals that need to be grown`)
+            const {
+                value: { date }
+            } = await this.connection
+                .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                .findById<
+                    KeyValueRecord<AnimalGrowthLastSchedule>
+                >(createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule))
+                .session(mongoSession)
             if (count === 0) {
                 // this.logger.verbose("No animals to grow")
                 return
@@ -96,7 +98,8 @@ export class AnimalService {
             let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
             //e2e code block for e2e purpose-only
             if (e2eEnabled()) {
-                const speedUp = await this.cacheManager.get<AnimalCacheSpeedUpData>(ANIMAL_CACHE_SPEED_UP)
+                const speedUp =
+                    await this.cacheManager.get<AnimalCacheSpeedUpData>(ANIMAL_CACHE_SPEED_UP)
                 if (speedUp) {
                     time += speedUp.time
                     await this.cacheManager.del(ANIMAL_CACHE_SPEED_UP)
@@ -121,20 +124,25 @@ export class AnimalService {
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
             const jobs = await this.animalQueue.addBulk(batches)
             this.logger.verbose(`Added ${jobs.at(0).name} jobs to the animal queue. Time: ${time}`)
-            await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).updateOne({
-                _id: KeyValueStoreId.AnimalGrowthLastSchedule
-            }, {
-                value: {
-                    date: utcNow.toDate()
-                }
-            }).session(mongoSession)
+            await this.connection
+                .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                .updateOne(
+                    {
+                        _id: createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule)
+                    },
+                    {
+                        value: {
+                            date: utcNow.toDate()
+                        }
+                    }
+                )
+                .session(mongoSession)
             await mongoSession.commitTransaction()
         } catch (error) {
             this.logger.error(error)
             await mongoSession.abortTransaction()
             throw error
-        }
-        finally {
+        } finally {
             await mongoSession.endSession()
         }
     }
