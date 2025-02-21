@@ -10,7 +10,7 @@ import {
 } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
 
 @Injectable()
@@ -27,7 +27,8 @@ export class ConstructBuildingService {
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
         this.logger.debug(
-            `Constructing building for user ${request.userId}, id: ${request.buildingId}, position: (${request.position.x}, ${request.position.y})`
+            `Constructing building for user ${request.userId}, id: ${request.buildingId},
+             position: (${request.position.x}, ${request.position.y})`
         )
 
         const mongoSession = await this.connection.startSession()
@@ -70,9 +71,11 @@ export class ConstructBuildingService {
                     { ...goldsChanged }
                 )
 
+                console.log(`User ${user.id} after buying building ${building.id}`)
+
                 // Save the placed item in the database
                 await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-                    userId: request.userId,
+                    user: user.id,
                     x: request.position.x,
                     y: request.position.y,
                     placedItemType: createObjectId(request.buildingId),
@@ -84,7 +87,7 @@ export class ConstructBuildingService {
                 const errorMessage = `Transaction failed, reason: ${error.message}`
                 this.logger.error(errorMessage)
                 await mongoSession.abortTransaction()
-                throw new GrpcInternalException(errorMessage)
+                throw error
             }
 
             // Publish event

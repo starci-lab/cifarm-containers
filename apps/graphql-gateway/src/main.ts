@@ -14,12 +14,12 @@ const bootstrap = async () => {
 }
 
 const bootstrapHealthCheck = async () => {
-    const app = await NestFactory.create(
-        HealthCheckModule.forRoot({
-            dependencies: [HealthCheckDependency.GameplaySubgraph]
-        })
-    )
-    app.listen(envConfig().containers[Container.GraphQLGateway].healthCheckPort)
+    // const app = await NestFactory.create(
+    //     HealthCheckModule.forRoot({
+    //         dependencies: [HealthCheckDependency.GameplaySubgraph]
+    //     })
+    // )
+    // app.listen(envConfig().containers[Container.GraphQLGateway].healthCheckPort)
 }
 
 bootstrap().then(bootstrapHealthCheck)

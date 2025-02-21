@@ -8,7 +8,7 @@ import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-i
 import { TileInfoSchema, TileInfoSchemaClass } from "./tile-info.schema"
 import { UserSchema } from "./user.schema"
 import { PlacedItemTypeSchema } from "./placed-item-type.schema"
-import { BUILDING_INFO } from "../constants"
+import { BUILDING_INFO, SEED_GROWTH_INFO } from "../constants"
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "placed-items" })
@@ -31,7 +31,7 @@ export class PlacedItemSchema extends AbstractSchema {
     
     @Field(() => SeedGrowthInfoSchema, { nullable: true })
     @Prop({ type: SeedGrowthInfoSchemaClass, required: false })
-        seedGrowthInfo?: SeedGrowthInfoSchema
+    [SEED_GROWTH_INFO]?: SeedGrowthInfoSchema
 
     @Field(() => TileInfoSchema, { nullable: true })
     @Prop({ type: TileInfoSchemaClass, required: false })

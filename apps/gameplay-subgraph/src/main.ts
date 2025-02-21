@@ -8,16 +8,16 @@ const bootstrap = async () => {
     await app.listen(envConfig().containers.gameplaySubgraph.port)
 }
 const bootstrapHealthCheck = async () => {
-    const app = await NestFactory.create(
-        HealthCheckModule.forRoot({
-            dependencies: [
-                HealthCheckDependency.CacheRedis,
-                HealthCheckDependency.GameplayPostgreSQL
-            ]
-        })
-    )
+    // const app = await NestFactory.create(
+    //     HealthCheckModule.forRoot({
+    //         dependencies: [
+    //             HealthCheckDependency.CacheRedis,
+    //             HealthCheckDependency.GameplayPostgreSQL
+    //         ]
+    //     })
+    // )
 
-    await app.listen(envConfig().containers.gameplaySubgraph.healthCheckPort)
+    // await app.listen(envConfig().containers.gameplaySubgraph.healthCheckPort)
 }
 
 bootstrap().then(bootstrapHealthCheck)
