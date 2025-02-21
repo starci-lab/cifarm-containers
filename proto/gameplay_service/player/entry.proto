@@ -3,5 +3,5 @@ syntax = "proto3";
 package gameplay_service;
 
 import "./update_tutorial.proto";
-import "./update_inventory_index.proto";
+import "./move_inventory.proto";
 

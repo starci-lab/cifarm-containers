@@ -1,18 +1,14 @@
 import { Logger } from "@nestjs/common"
 import {
-    ConnectedSocket,
-    MessageBody,
-    SubscribeMessage,
     WebSocketGateway,
     WebSocketServer
 } from "@nestjs/websockets"
-import { Namespace, Socket } from "socket.io"
 import { NAMESPACE } from "../gameplay.constants"
-import { VisitedEmitter2Payload, VisitPayload } from "./visit.types"
-import { VISIT_EVENT, VISITED_EMITTER2_EVENT } from "./visit.constants"
+import { ReturnPayload, VisitedEmitter2Payload, VisitPayload } from "./visit.types"
+import { VISITED_EMITTER2_EVENT } from "./visit.constants"
 import { EventEmitter2 } from "@nestjs/event-emitter"
-import { AuthGateway } from "../auth"
-import { ObservingData } from "../auth"
+import { AuthGateway, SocketData } from "../auth"
+import { SocketCoreService, TypedNamespace } from "@src/io"
 
 @WebSocketGateway({
     cors: {
@@ -27,11 +23,12 @@ export class VisitGateway {
 
     constructor(
         private readonly authGateway: AuthGateway,
+        private readonly socketCoreService: SocketCoreService<SocketData>,
         private eventEmitter: EventEmitter2
     ) {}
 
     @WebSocketServer()
-    private readonly namespace: Namespace
+    private readonly namespace: TypedNamespace<SocketData>
 
     afterInit() {
         this.logger.verbose(
@@ -39,26 +36,29 @@ export class VisitGateway {
         )
     }
 
-    @SubscribeMessage(VISIT_EVENT)
-    public async handleVisit(
-        @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: VisitPayload
+    public async visit(
+        { neighborUserId, userId }: VisitPayload
     ): Promise<void> {
-        //leave the current room
-        await socket.leave(socket.data.observing.userId)
-
-        //join the new room
-        await socket.join(payload.userId)
-        const socketsInRoom = this.namespace.adapter.rooms.get(payload.userId)
-        this.logger.verbose(`Sockets in room ${payload.userId}: ${socketsInRoom?.size}`)
-        //set observing data
-        const observing: ObservingData = {
-            userId: payload.userId
-        }
-        this.authGateway.setObservingData(socket, observing)
-
+        // get the corresponding socket for the user
+        const socket = await this.authGateway.getSocket(this.namespace, userId)
+        // start watching the player
+        this.authGateway.startWatchingUser(socket, neighborUserId)
         const emitter2Payload: VisitedEmitter2Payload = {
-            userId: payload.userId,
+            userId: neighborUserId,
+            socketId: socket.id
+        }
+        this.eventEmitter.emit(VISITED_EMITTER2_EVENT, emitter2Payload)
+    }
+
+    public async return(
+        { userId }: ReturnPayload
+    ): Promise<void> {
+        // get the corresponding socket for the user
+        const socket = await this.authGateway.getSocket(this.namespace, userId)
+        // start watching the original player
+        this.authGateway.startWatchingUser(socket, userId)
+        const emitter2Payload: VisitedEmitter2Payload = {
+            userId,
             socketId: socket.id
         }
         this.eventEmitter.emit(VISITED_EMITTER2_EVENT, emitter2Payload)

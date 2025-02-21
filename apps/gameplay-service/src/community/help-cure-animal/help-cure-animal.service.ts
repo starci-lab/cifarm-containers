@@ -1,15 +1,20 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
-import { InjectKafka } from "@src/brokers"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
 import { EnergyService, LevelService } from "@src/gameplay"
-import { 
-    HelpCureAnimalRequest,
-    HelpCureAnimalResponse 
-} from "./help-cure-animal.dto"
-// import { GrpcInternalException, GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-// import { GrpcFailedPreconditionException } from "@src/common"
-import { InjectConnection } from "@nestjs/mongoose"
+import { HelpCureAnimalRequest, HelpCureAnimalResponse } from "./help-cure-animal.dto"
 import { Connection } from "mongoose"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import {
+    Activities,
+    AnimalCurrentState,
+    InjectMongoose,
+    PlacedItemSchema,
+    SystemId,
+    SystemSchema,
+    UserSchema
+} from "@src/databases"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 
 @Injectable()
 export class HelpCureAnimalService {
@@ -18,99 +23,92 @@ export class HelpCureAnimalService {
     constructor(
         @InjectKafka()
         private readonly clientKafka: ClientKafka,
-        @InjectConnection()
+        @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {}
 
-    async helpCureAnimal(
-        request: HelpCureAnimalRequest
-    ): Promise<HelpCureAnimalResponse> {
-        console.log(request)
-        // if (request.userId === request.neighborUserId) {
-        //     throw new GrpcInvalidArgumentException("Cannot help cure yourself")
-        // }
+    async helpCureAnimal({
+        placedItemAnimalId,
+        userId
+    }: HelpCureAnimalRequest): Promise<HelpCureAnimalResponse> {
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
+        try {
+            const placedItemAnimal = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findById(placedItemAnimalId)
+                .session(mongoSession)
 
-        // try {
-        //     // get placed item
-        //     const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemSchema, {
-        //         where: {
-        //             userId: request.neighborUserId,
-        //             id: request.placedItemAnimalId,
-        //             placedItemType: {
-        //                 type: PlacedItemType.Animal
-        //             }
-        //         },
-        //         relations: {
-        //             animalInfo: true,
-        //             placedItemType: true
-        //         }
-        //     })
+            if (!placedItemAnimal) {
+                throw new GrpcNotFoundException("Placed item animal not found")
+            }
 
-        //     if (!placedItemAnimal) {
-        //         throw new GrpcNotFoundException("Animal not found")
-        //     }
+            const neighborUserId = placedItemAnimal.user.toString()
+            if (neighborUserId === userId) {
+                throw new GrpcFailedPreconditionException(
+                    "Cannot help cure on your own tile"
+                )
+            }
 
-        //     if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
-        //         throw new GrpcFailedPreconditionException("Animal is not sick")
-        //     }
+            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
+                throw new GrpcFailedPreconditionException("Animal is not sick")
+            }
 
-        //     const { value } = await queryRunner.manager.findOne(SystemEntity, {
-        //         where: { id: SystemId.Activities }
-        //     })
-        //     const {
-        //         helpCureAnimal: { energyConsume, experiencesGain }
-        //     } = value as Activities
+            const { value } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById(createObjectId(SystemId.Activities))
+                .session(mongoSession)
+            const {
+                helpCureAnimal: { energyConsume, experiencesGain }
+            } = value as Activities
 
-        //     //get user
-        //     const user = await queryRunner.manager.findOne(UserSchema, {
-        //         where: { id: request.userId }
-        //     })
+            const user = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .findById(userId)
+                .session(mongoSession)
 
-        //     this.energyService.checkSufficient({
-        //         current: user.energy,
-        //         required: energyConsume
-        //     })
+            this.energyService.checkSufficient({
+                current: user.energy,
+                required: energyConsume
+            })
 
-        //     // substract energy
-        //     const energyChanges = this.energyService.substract({
-        //         entity: user,
-        //         energy: energyConsume
-        //     })
-        //     const experiencesChanges = this.levelService.addExperiences({
-        //         entity: user,
-        //         experiences: experiencesGain
-        //     })
+            const energyChanges = this.energyService.substract({
+                user,
+                quantity: energyConsume
+            })
+            const experiencesChanges = this.levelService.addExperiences({
+                user,
+                experiences: experiencesGain
+            })
 
-        //     await queryRunner.startTransaction()
-        //     try {
-        //         // update user
-        //         await queryRunner.manager.update(UserSchema, user.id, {
-        //             ...energyChanges,
-        //             ...experiencesChanges
-        //         })
+            await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
+                .session(mongoSession)
 
-        //         // update animal info
-        //         await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
-        //             currentState: AnimalCurrentState.Normal
-        //         })
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
+            await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .updateOne(
+                    { _id: placedItemAnimal.id },
+                    { currentState: AnimalCurrentState.Normal }
+                )
+                .session(mongoSession)
 
-        //     this.clientKafka.emit(KafkaPattern.PlacedItems, {
-        //         userId: request.neighborUserId
-        //     })
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: neighborUserId
+            })
 
-        //     return {}
-        // } finally {
-        //     await queryRunner.release()
-        // }
-        return {}
+            await mongoSession.commitTransaction()
+
+            return {}
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.endSession()
+            throw error
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }

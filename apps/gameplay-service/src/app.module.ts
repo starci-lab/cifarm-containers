@@ -21,6 +21,9 @@ import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { ShopModule } from "./shop"
 import { PlayerModule } from "./player"
+import { DeliveryModule } from "./delivery"
+import { FarmingModule } from "./farming"
+import { CommunityModule } from "./community"
 
 @Module({
     imports: [
@@ -50,10 +53,10 @@ import { PlayerModule } from "./player"
         AuthModule,
         PlayerModule,
         ShopModule,
+        FarmingModule,
         // ClaimModule,
-        // CommunityModule,
-        // DeliveryModule,
-        // FarmingModule,
+        CommunityModule,
+        DeliveryModule,
         // PlacementModule,
         // ProfileModule,
         // UpgradeModule

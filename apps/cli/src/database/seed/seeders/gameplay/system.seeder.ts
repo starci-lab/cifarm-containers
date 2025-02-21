@@ -35,6 +35,10 @@ export class SystemSeeder implements Seeder {
     public async seed(): Promise<void> {
         this.logger.debug("Seeding system...")
         const activities: Activities = {
+            plantSeed: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
             cureAnimal: {
                 energyConsume: 1,
                 experiencesGain: 3
@@ -104,7 +108,8 @@ export class SystemSeeder implements Seeder {
             thief3: 0.95
         }
         const defaultInfo: DefaultInfo = {
-            golds: 1000,
+            golds: 1000, 
+            followeeLimit: 150,
             positions: {
                 home: {
                     x: 4,
@@ -139,7 +144,9 @@ export class SystemSeeder implements Seeder {
             },
             defaultCropId: CropId.Carrot,
             defaultSeedQuantity: 10,
-            inventoryCapacity: 150
+            storageCapacity: 150,
+            deliveryCapacity: 9,
+            toolCapacity: 8
         }
         const spinInfo: SpinInfo = {
             appearanceChanceSlots: {

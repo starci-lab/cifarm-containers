@@ -5,20 +5,22 @@ import { ScheduleModule } from "@nestjs/schedule"
 import { BullModule } from "@src/bull"
 import { EnvModule } from "@src/env"
 import { EnergyModule } from "./energy"
-import { PostgreSQLModule } from "@src/databases"
 import { AnimalModule } from "./animal"
 import { CropModule } from "./crop"
 import { DeliveryModule } from "./delivery"
 import { CacheModule } from "@src/cache"
 import { KubernetesModule } from "@src/kubernetes"
 import { DateModule } from "@src/date"
+import { MongooseModule } from "@src/databases"
 @Module({
     imports: [
         EnvModule.forRoot(),
         ScheduleModule.forRoot(),
         BullModule.forRoot(),
-        PostgreSQLModule.forRoot(),
-        EventEmitterModule.forRoot(),
+        MongooseModule.forRoot(),
+        EventEmitterModule.forRoot({
+            global: true
+        }),
         DateModule.register({
             isGlobal: true
         }),
@@ -35,7 +37,6 @@ import { DateModule } from "@src/date"
                 useMinikubeForDevelopment: true,
             }
         }),
-
         CropModule,
         AnimalModule,
         DeliveryModule,

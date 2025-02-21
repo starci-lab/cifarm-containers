@@ -4,11 +4,12 @@ import {
     CropSchema,
     DefaultInfo,
     InjectMongoose,
+    InventoryKind,
     InventorySchema,
     InventoryType,
     InventoryTypeSchema,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     SystemSchema,
     UserSchema
 } from "@src/databases"
@@ -65,16 +66,16 @@ export class BuySeedsService {
                 throw new GrpcNotFoundException("Inventory seed type not found")
             }  
 
-            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
+            const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                 connection: this.connection,
                 inventoryType,
                 userId: user.id,
                 session: mongoSession,
             })
 
-            const { value: { inventoryCapacity } } = await this.connection
+            const { value: { storageCapacity } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
             try {
                 // Subtract gold
@@ -95,11 +96,11 @@ export class BuySeedsService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     quantity: request.quantity,
                     userId: user.id,
                     occupiedIndexes,
-                    inToolbar: false
+                    kind: InventoryKind.Storage,
                 })
 
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)

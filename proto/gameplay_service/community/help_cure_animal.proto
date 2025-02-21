@@ -4,5 +4,5 @@ package gameplay_service;
 
 message HelpCureAnimalRequest {
     string userId = 1;
-    string neighborUserId = 2;
+    string placedItemAnimalId = 2;
 }

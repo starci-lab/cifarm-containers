@@ -11,8 +11,7 @@ export class DeliverProductController {
     constructor(private readonly deliverProductService: DeliverProductService) {}
 
     @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "DeliverProduct")
-    public async buySeed(request: DeliverProductRequest) {
-        this.logger.debug("DeliverProduct called")
+    public async deliverProduct(request: DeliverProductRequest) {
         return this.deliverProductService.deliverProduct(request)
     }
 }

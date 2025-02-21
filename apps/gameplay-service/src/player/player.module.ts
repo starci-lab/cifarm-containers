@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common"
 import { UpdateTutorialModule } from "./update-tutorial"
-import { UpdateInventoryIndexModule } from "./update-inventory-index"
+import { MoveInventoryModule } from "./move-inventory"
 
 @Module({
-    imports: [UpdateTutorialModule, UpdateInventoryIndexModule]
+    imports: [UpdateTutorialModule, MoveInventoryModule]
 })
 export class PlayerModule {}

@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
-    DefaultInfo, InjectMongoose, InventorySchema,
+    DefaultInfo, InjectMongoose, InventoryKind, InventorySchema,
     InventoryTypeSchema,
-    SupplySchema, SystemId, SystemRecord, SystemSchema, UserSchema
+    SupplySchema, SystemId, KeyValueRecord, SystemSchema, UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
@@ -49,9 +49,9 @@ export class BuySuppliesService {
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
-            const { value: { inventoryCapacity } } = await this.connection
+            const { value: { storageCapacity } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
             // Get inventory type
             const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
@@ -62,7 +62,7 @@ export class BuySuppliesService {
                 throw new GrpcNotFoundException("Inventory type not found")
             }
 
-            const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
+            const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                 connection: this.connection,
                 inventoryType,
                 userId: user.id,
@@ -87,9 +87,9 @@ export class BuySuppliesService {
                     inventories,
                     quantity: request.quantity,
                     userId: user.id,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     occupiedIndexes,
-                    inToolbar: false
+                    kind: InventoryKind.Storage
                 })
 
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)

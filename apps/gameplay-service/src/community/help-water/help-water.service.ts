@@ -1,25 +1,22 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
 import { 
-    // KafkaPattern, 
-    InjectKafka } from "@src/brokers"
+    InjectKafka, 
+    KafkaPattern} from "@src/brokers"
 import {
-    // Activities,
-    // CropCurrentState,
+    Activities,
+    CropCurrentState,
     InjectMongoose,
-    // InjectPostgreSQL,
-    // PlacedItemSchema,
-    // PlacedItemType,
-    // // SeedGrowthInfoEntity,
-    // // SystemEntity,
-    // SystemId,
-    // UserSchema
+    PlacedItemSchema,
+    SystemId,
+    SystemSchema,
+    UserSchema,
 } from "@src/databases"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { HelpWaterRequest, HelpWaterResponse } from "./help-water.dto"
-// import { GrpcInternalException, GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-// import { GrpcFailedPreconditionException } from "@src/common"
 import { Connection } from "mongoose"
+import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcFailedPreconditionException, createObjectId } from "@src/common"
 
 @Injectable()
 export class HelpWaterService {
@@ -35,111 +32,85 @@ export class HelpWaterService {
     ) {}
 
     async helpWater(
-        request: HelpWaterRequest
+        { neighborUserId, placedItemTileId, userId }: HelpWaterRequest
     ): Promise<HelpWaterResponse> {
-        console.log(request)
-        // if (request.userId === request.neighborUserId) {
-        //     throw new GrpcInvalidArgumentException("Cannot help water yourself")
-        // }
+        if (userId === neighborUserId) {
+            throw new GrpcInvalidArgumentException("Cannot help water yourself")
+        }
 
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
+        try {
+            const placedItemTile = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findById(placedItemTileId)
+                .session(mongoSession)
 
-        // try {
-        //     // get placed item
-        //     const placedItemTile = await queryRunner.manager.findOne(PlacedItemSchema, {
-        //         where: {
-        //             userId: request.neighborUserId,
-        //             id: request.placedItemTileId,
-        //             placedItemType: {
-        //                 type: PlacedItemType.Tile
-        //             }
-        //         },
-        //         relations: {
-        //             seedGrowthInfo: true,
-        //             placedItemType: true
-        //         }
-        //     })
+            if (!placedItemTile) {
+                throw new GrpcNotFoundException("Placed item tile not found")
+            }
 
-        //     if (!placedItemTile) {
-        //         throw new GrpcNotFoundException("Tile not found")
-        //     }
+            if (placedItemTile.user.toString() === userId) {
+                throw new GrpcFailedPreconditionException(
+                    "Cannot help water on your own tile"
+                )
+            }
 
-        //     if (!placedItemTile.seedGrowthInfo) {
-        //         throw new GrpcFailedPreconditionException("Tile is not planted")
-        //     }
+            if (!placedItemTile.seedGrowthInfo) {
+                throw new GrpcFailedPreconditionException("Tile is not planted")
+            }
 
-        //     if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
-        //         throw new GrpcFailedPreconditionException("Tile does not need water")
-        //     }
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
+                throw new GrpcFailedPreconditionException("Tile does not need water")
+            }
 
-        //     const { value } = await queryRunner.manager.findOne(SystemEntity, {
-        //         where: { id: SystemId.Activities }
-        //     })
-        //     const {
-        //         helpWater: { energyConsume, experiencesGain }
-        //     } = value as Activities
+            const { value } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById(createObjectId(SystemId.Activities))
+                .session(mongoSession)
+            const {
+                helpWater: { energyConsume, experiencesGain }
+            } = value as Activities
 
-        //     //get user
-        //     const user = await queryRunner.manager.findOne(UserSchema, {
-        //         where: { id: request.userId }
-        //     })
+            const user = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .findById(userId)
+                .session(mongoSession)
 
-        //     this.energyService.checkSufficient({
-        //         current: user.energy,
-        //         required: energyConsume
-        //     })
+            this.energyService.checkSufficient({
+                current: user.energy,
+                required: energyConsume
+            })
 
-        //     // substract energy
-        //     const energyChanges = this.energyService.substract({
-        //         entity: user,
-        //         energy: energyConsume
-        //     })
+            const energyChanges = this.energyService.substract({
+                user,
+                quantity: energyConsume
+            })
+            const experiencesChanges = this.levelService.addExperiences({
+                user,
+                experiences: experiencesGain
+            })
 
-        //     const experiencesChanges = this.levelService.addExperiences({
-        //         entity: user,
-        //         experiences: experiencesGain
-        //     })
+            await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
+                .session(mongoSession)
 
-        //     await queryRunner.startTransaction()
-        //     try {
-        //         // update user
-        //         await queryRunner.manager.update(UserSchema, user.id, {
-        //             ...energyChanges,
-        //             ...experiencesChanges
-        //         })
+            placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+            await placedItemTile.save({ session: mongoSession })
+            await mongoSession.commitTransaction()
 
-        //         // update crop info
-        //         await queryRunner.manager.update(
-        //             SeedGrowthInfoEntity,
-        //             placedItemTile.seedGrowthInfo.id,
-        //             {
-        //                 currentState: CropCurrentState.Normal
-        //             }
-        //         )
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: neighborUserId
+            })
 
-        //         await queryRunner.commitTransaction()
-
-        //         // send message to kafka
-        //         this.clientKafka.emit(KafkaPattern.PlacedItems, {
-        //             neighborUserId: request.neighborUserId
-        //         })
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
-
-        //     // kafka
-        //     this.clientKafka.emit(KafkaPattern.PlacedItems, {
-        //         userId: request.neighborUserId
-        //     })
-            
-        //     return {}
-        // } finally {
-        //     await queryRunner.release()
-        // }
-        return {}
+            return {}
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.endSession()
+            throw error
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }

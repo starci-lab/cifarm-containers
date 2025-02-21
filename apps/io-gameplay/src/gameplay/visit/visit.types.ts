@@ -8,4 +8,9 @@ export interface VisitedEmitter2Payload {
 
 export interface VisitPayload {
     userId: string
+    neighborUserId: string
+}
+
+export interface ReturnPayload {
+    userId: string
 }

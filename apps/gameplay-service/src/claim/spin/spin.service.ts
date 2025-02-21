@@ -12,7 +12,7 @@ import {
     SpinPrizeType,
     SpinSlotSchema,
     SystemId,
-    SystemRecord,
+    KeyValueRecord,
     SystemSchema,
     UserSchema
 } from "@src/databases"
@@ -42,10 +42,10 @@ export class SpinService {
         try {
             // Get the default info
             const {
-                value: { inventoryCapacity }
+                value: { storageCapacity }
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                 .session(mongoSession)
             // Get latest spin
             const user = await this.connection
@@ -73,7 +73,7 @@ export class SpinService {
             //spin
             const { value } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
-                .findById<SystemRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
+                .findById<KeyValueRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
                 .session(mongoSession)
 
             //get the appearance chance
@@ -121,7 +121,7 @@ export class SpinService {
                     })
                     .session(mongoSession)
                     // Get inventory same type
-                const { count, inventories } = await this.inventoryService.getParams({
+                const { count, inventories } = await this.inventoryService.getAddParams({
                     userId: request.userId,
                     inventoryType,
                     session: mongoSession,
@@ -130,7 +130,7 @@ export class SpinService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventories,
                     userId: request.userId,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     inventoryType,
                     quantity: spinPrize.quantity,
                     count
@@ -179,7 +179,7 @@ export class SpinService {
                     .session(mongoSession)
                     // Get inventory same type
                     //
-                const { count, inventories } = await this.inventoryService.getParams({
+                const { count, inventories } = await this.inventoryService.getAddParams({
                     userId: request.userId,
                     inventoryType,
                     session: mongoSession,
@@ -188,7 +188,7 @@ export class SpinService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventories,
                     userId: request.userId,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     inventoryType,
                     quantity: spinPrize.quantity,
                     count

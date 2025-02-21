@@ -5,7 +5,6 @@ import {
     SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
-    WsException,
     WsResponse
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
@@ -56,23 +55,16 @@ export class PlacedItemsGateway implements OnGatewayInit {
         //emit placed items to all clients
         const promises: Array<Promise<void>> = []
         for (const socket of sockets) {
-            const observing = this.authGateway.getObservingData(socket)
-            // if observing is not found, skip
-            if (!observing) {
-                continue
-            }
-            // if observing user id is not found, skip
-            if (!observing.userId) {
-                continue
-            }
+            const userId = this.authGateway.getWatchingUserId(socket)
+            console.log(userId)
             promises.push(
                 (async () => {
                     const placedItems = await this.placedItemsService.getPlacedItems({
-                        userId: observing.userId
+                        userId
                     })
                     const data: PlacedItemsSyncedMessage = {
                         placedItems,
-                        userId: observing.userId
+                        userId
                     }
                     socket.emit(PLACED_ITEMS_SYNCED_EVENT, data)
                 })()
@@ -109,20 +101,13 @@ export class PlacedItemsGateway implements OnGatewayInit {
     public async handleSyncPlacedItems(
         @ConnectedSocket() client: Socket
     ): Promise<WsResponse<PlacedItemsSyncedMessage>> {
-        //emit placed items to all clients
-        const observing = this.authGateway.getObservingData(client)
-        if (!observing) {
-            throw new WsException("Observing data not found")
-        }
-        if (!observing.userId) {
-            throw new WsException("Observing user id not found")
-        }
+        const userId  = this.authGateway.getWatchingUserId(client)
         const placedItems = await this.placedItemsService.getPlacedItems({
-            userId: observing.userId
+            userId
         })
         const data: PlacedItemsSyncedMessage = {
             placedItems,
-            userId: observing.userId
+            userId
         }
         return {
             event: PLACED_ITEMS_SYNCED_EVENT,
@@ -132,6 +117,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
 
     @OnEvent(VISITED_EMITTER2_EVENT)
     public async handleVisitedEmitter2(payload: VisitedEmitter2Payload) {
+        console.log(payload)
         const placedItems = await this.placedItemsService.getPlacedItems({
             userId: payload.userId
         })

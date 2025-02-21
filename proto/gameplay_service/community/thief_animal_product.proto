@@ -4,7 +4,6 @@ package gameplay_service;
 
 message ThiefAnimalProductRequest {
     string userId = 1;
-    string neighborUserId = 2;
     string placedItemAnimalId = 3;
 }
 

@@ -11,4 +11,6 @@ export enum KafkaGroupId {
 export enum KafkaPattern {
     PlacedItems = "placed.items",
     Delivery = "delivery",
+    Visit = "visit",
+    Return = "return",
 }

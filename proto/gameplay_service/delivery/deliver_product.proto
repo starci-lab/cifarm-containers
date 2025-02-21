@@ -8,7 +8,3 @@ message DeliverProductRequest {
     string inventoryId = 3;
     int32 quantity = 4;
 }
-
-message DeliverProductResponse {
-    string deliveringProductId = 1;
-}

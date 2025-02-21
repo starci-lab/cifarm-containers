@@ -1,11 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { UserIdRequest } from "@src/common"
-import { IsString } from "class-validator"
+import { IsMongoId } from "class-validator"
 
 export class RetainProductRequest extends UserIdRequest {
-    @IsString()
-    @ApiProperty({ example: "f7b3b3b3-4b3b-4b3b-4b3b-4b3b4b3b4b3b" })
-        deliveringProductId: string
+    @IsMongoId()
+    @ApiProperty({ example: "60f4b3b3b3b3b3b3b3b3b3" })
+        inventoryId: string
 }
 
 export class RetainProductResponse {

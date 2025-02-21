@@ -62,8 +62,8 @@ import {
     ThiefCropResponse,
     UnfollowRequest,
     UnfollowResponse,
-    UpdateInventoryIndexRequest,
-    UpdateInventoryIndexResponse,
+    MoveInventoryRequest,
+    MoveInventoryResponse,
     UpdateTutorialRequest,
     UpdateTutorialResponse,
     UpgradeBuildingRequest,
@@ -77,7 +77,10 @@ import {
     VerifySignatureRequest,
     VerifySignatureResponse,
     WaterRequest,
-    WaterResponse
+    WaterResponse,
+    VisitRequest,
+    VisitResponse,
+    ReturnResponse
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
@@ -233,6 +236,44 @@ export class GameplayController implements OnModuleInit {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
+        type: VisitResponse
+    })
+    @Post("/visit")
+    public async visit(
+        @User() user: UserLike,
+        @Body() request: VisitRequest
+    ): Promise<VisitResponse> {
+        return await lastValueFrom(
+            this.gameplayService.visit({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: ReturnResponse
+    })
+    @Post("/return")
+    public async return(
+        @User() user: UserLike,
+        @Body() request: VisitRequest
+    ): Promise<ReturnResponse> {
+        return await lastValueFrom(
+            this.gameplayService.return({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
         type: HelpUseHerbicideResponse
     })
     @Post("/help-use-herbicide")
@@ -356,7 +397,7 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: DeliverProductRequest
     ): Promise<DeliverProductResponse> {
-        this.logger.debug(`Processing deliver product for user ${user?.id}`)
+        console.log(this.gameplayService.deliverProduct)
         return await lastValueFrom(
             this.gameplayService.deliverProduct({
                 ...request,
@@ -690,15 +731,15 @@ export class GameplayController implements OnModuleInit {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
-        type: UpdateInventoryIndexResponse
+        type: MoveInventoryResponse
     })
-    @Post("/update-inventory-index")
-    public async updateInventoryIndex(
+    @Post("/move-inventory")
+    public async moveInventory(
         @User() user: UserLike,
-        @Body() request: UpdateInventoryIndexRequest
-    ): Promise<UpdateInventoryIndexResponse> {
+        @Body() request: MoveInventoryRequest
+    ): Promise<MoveInventoryResponse> {
         return await lastValueFrom(
-            this.gameplayService.updateInventoryIndex({
+            this.gameplayService.moveInventory({
                 ...request,
                 userId: user?.id
             })

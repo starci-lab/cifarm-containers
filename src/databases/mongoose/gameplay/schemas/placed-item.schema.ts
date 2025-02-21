@@ -8,7 +8,7 @@ import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-i
 import { TileInfoSchema, TileInfoSchemaClass } from "./tile-info.schema"
 import { UserSchema } from "./user.schema"
 import { PlacedItemTypeSchema } from "./placed-item-type.schema"
-import { BUILDING_INFO, SEED_GROWTH_INFO } from "../constants"
+import { ANIMAL_INFO, BUILDING_INFO, PLACED_ITEM_TYPE, SEED_GROWTH_INFO, TILE_INFO } from "../constants"
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "placed-items" })
@@ -27,7 +27,7 @@ export class PlacedItemSchema extends AbstractSchema {
 
     @Field(() => ID)
     @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: PlacedItemTypeSchema.name })
-        placedItemType: PlacedItemTypeSchema | string
+    [PLACED_ITEM_TYPE]: PlacedItemTypeSchema | string
     
     @Field(() => SeedGrowthInfoSchema, { nullable: true })
     @Prop({ type: SeedGrowthInfoSchemaClass, required: false })
@@ -35,11 +35,11 @@ export class PlacedItemSchema extends AbstractSchema {
 
     @Field(() => TileInfoSchema, { nullable: true })
     @Prop({ type: TileInfoSchemaClass, required: false })
-        tileInfo?: TileInfoSchema
+    [TILE_INFO]?: TileInfoSchema
 
     @Field(() => AnimalInfoSchema, { nullable: true })
     @Prop({ type: AnimalInfoSchemaClass, required: false })
-        animalInfo?: AnimalInfoSchema
+    [ANIMAL_INFO]?: AnimalInfoSchema
 
     @Field(() => BuildingInfoSchema, { nullable: true })
     @Prop({ type: BuildingInfoSchemaClass, required: false })

@@ -1,8 +1,10 @@
+import { ApiProperty } from "@nestjs/swagger"
 import { UserIdRequest } from "@src/common"
-import { IsUUID } from "class-validator"
+import { IsMongoId } from "class-validator"
 
 export class FollowRequest extends UserIdRequest {
-    @IsUUID("4")
+    @IsMongoId()
+    @ApiProperty({ example: "60f1b3b3b3b3b3b3b3b3b3b3" })
         followeeUserId: string
 }
 

@@ -55,3 +55,10 @@ export enum AppearanceChance {
     Rare = "rare",
     VeryRare = "veryRare",  
 } 
+
+// Inventory Kind
+export enum InventoryKind {
+    Storage = "storage",
+    Tool = "tool",
+    Delivery = "delivery"
+}

@@ -8,13 +8,14 @@ import {
     InjectMongoose,
     SystemId,
     SystemSchema,
-    SystemRecord,
+    KeyValueRecord,
     InventoryTypeSchema,
     PlacedItemSchema,
     PlacedItemTypeId,
     InventorySchema,
     SessionSchema,
-    ToolId,
+    InventoryKind,
+    ToolSchema,
 } from "@src/databases"
 import {
     IBlockchainAuthService,
@@ -97,11 +98,11 @@ export class VerifySignatureService {
                         defaultSeedQuantity,
                         golds,
                         positions,
-                        inventoryCapacity
+                        storageCapacity
                     }
                 } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
-                    .findById<SystemRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
                 // inventories params
                 const inventoryType = await this.connection
@@ -135,11 +136,11 @@ export class VerifySignatureService {
                 userRaw.id = userRaw._id.toString()
                 user = userRaw
 
-                const { occupiedIndexes, inventories } = await this.inventoryService.getParams({
+                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session: mongoSession
+                    session: mongoSession,
                 })
 
                 await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
@@ -171,17 +172,21 @@ export class VerifySignatureService {
                 const toolInventories: Array<DeepPartial<InventorySchema>> = []
 
                 let index = 0
-                for (const toolId of Object.values(ToolId)) {
+                const tools = await this.connection.model<ToolSchema>(ToolSchema.name).find({
+                    sort: { $exists: true },
+                    default: false
+                }).session(mongoSession)
+                for (const tool of tools) {
                     const inventoryType = await this.connection
                         .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                         .findOne({
                             type: InventoryType.Tool,
-                            tool: createObjectId(toolId)
+                            tool: tool.id
                         }).session(mongoSession)
                     toolInventories.push({
                         inventoryType: inventoryType.id,
                         user: user.id,
-                        inToolbar: true,
+                        kind: InventoryKind.Tool,
                         index,
                     })
                     index++
@@ -195,10 +200,10 @@ export class VerifySignatureService {
                     inventoryType,
                     inventories,
                     occupiedIndexes,
-                    capacity: inventoryCapacity,
+                    capacity: storageCapacity,
                     quantity: defaultSeedQuantity,
                     userId: user.id,
-                    inToolbar: false
+                    kind: InventoryKind.Storage
                 })
 
                 await this.connection

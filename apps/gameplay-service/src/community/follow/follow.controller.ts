@@ -12,7 +12,6 @@ export class FollowController {
 
     @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "Follow")
     public async follow(request: FollowRequest) {
-        this.logger.debug("Follow called")
         return this.followService.follow(request)
     }
 }

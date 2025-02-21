@@ -11,12 +11,12 @@ export abstract class AbstractSchema extends Document {
     @Field(() => ID)
         id: string
 
+    @Prop()
     @Field(() => Date)
-    @Prop({ type: Date })
         createdAt: Date
 
+    @Prop()
     @Field(() => Date)
-    @Prop({ type: Date })
         updatedAt: Date
 }
 
@@ -28,3 +28,4 @@ export abstract class StaticAbstractSchema extends AbstractSchema {
     @Prop({ type: String, required: true, unique: true })
         displayId: string
 }
+

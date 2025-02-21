@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
-import { AvailableInType, InjectMongoose, ToolSchema, ToolId } from "@src/databases"
+import { InjectMongoose, ToolSchema, ToolId } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
 
@@ -20,38 +20,28 @@ export class ToolSeeder implements Seeder {
             {
                 _id: createObjectId(ToolId.Hand),
                 displayId: ToolId.Hand,
-                availableIn: AvailableInType.Both,
-                index: 0
+                default: true,
+                sort: 0,
             },
             {
                 _id: createObjectId(ToolId.Scythe),
                 displayId: ToolId.Scythe,
-                availableIn: AvailableInType.Home,
-                index: 1
-            },
-            {
-                _id: createObjectId(ToolId.ThiefHand),
-                displayId: ToolId.ThiefHand,
-                availableIn: AvailableInType.Neighbor,
-                index: 2
+                sort: 0,
             },
             {
                 _id: createObjectId(ToolId.WateringCan),
                 displayId: ToolId.WateringCan,
-                availableIn: AvailableInType.Both,
-                index: 3
+                sort: 1,
             },
             {
                 _id: createObjectId(ToolId.Pesticide),
                 displayId: ToolId.Pesticide,
-                availableIn: AvailableInType.Both,
-                index: 4
+                sort: 2,
             },
             {
                 _id: createObjectId(ToolId.Herbicide),
                 displayId: ToolId.Herbicide,
-                availableIn: AvailableInType.Both,
-                index: 5
+                sort: 3,
             }
         ]
 

@@ -17,14 +17,10 @@ import {
     SpinPrizeSchemaClass,
     SpinSlotSchema,
     SpinSlotSchemaClass,
-    SupplySchema,
-    SupplySchemaClass,
     SystemSchema,
     SystemSchemaClass,
     TileSchema,
     TileSchemaClass,
-    ToolSchema,
-    ToolSchemaClass,
     UserSchema,
     PlacedItemTypeSchema,
     PlacedItemTypeSchemaClass,
@@ -42,18 +38,21 @@ import {
     BuildingInfoSchemaClass,
     UpgradeSchema,
     UpgradeSchemaClass,
-    DeliveringProductSchema,
-    DeliveringProductSchemaClass,
     ProductSchema,
     ProductSchemaClass,
     InventorySchema, 
     InventorySchemaClass, 
     KeyValueStoreSchema,
-    KeyValueStoreSchemaClass
+    KeyValueStoreSchemaClass,
+    SupplySchema,
+    SupplySchemaClass,
+    ToolSchema,
+    ToolSchemaClass,
+    UserFollowRelationSchemaClass,
+    UserFollowRelationSchema,
 } from "./gameplay"
 import { Connection } from "mongoose"
-import { FolloweeSchema, FolloweeSchemaClass } from "./gameplay/schemas/followee.schema"
-
+import normalize from "normalize-mongoose"
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
     public static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
@@ -71,6 +70,10 @@ export class MongooseModule extends ConfigurableModuleClass {
             imports: [
                 NestMongooseModule.forRoot(url, {
                     connectionName,
+                    connectionFactory: (connection: Connection) => {
+                        connection.plugin(normalize)
+                        return connection
+                    }, 
                 }),
                 this.forFeature(options)
             ]
@@ -113,6 +116,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => SpinPrizeSchemaClass
                         },
                         {
+                            name: UserFollowRelationSchema.name,
+                            useFactory: () => UserFollowRelationSchemaClass
+                        },
+                        {
                             name: SpinSlotSchema.name,
                             useFactory: () => SpinSlotSchemaClass
                         },
@@ -121,12 +128,12 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => SupplySchemaClass
                         },
                         {
-                            name: FolloweeSchema.name,
-                            useFactory: () => FolloweeSchemaClass
-                        },
-                        {
                             name: InventorySchema.name,
                             useFactory: () => InventorySchemaClass
+                        },
+                        {
+                            name: ToolSchema.name,
+                            useFactory: () => ToolSchemaClass
                         },
                         {
                             name: UserSchema.name,
@@ -147,8 +154,11 @@ export class MongooseModule extends ConfigurableModuleClass {
                                     await connection.model<InventorySchema>(InventorySchema.name).deleteMany({
                                         user: { $in: ids }
                                     })
-                                    await connection.model<DeliveringProductSchema>(DeliveringProductSchema.name).deleteMany({
-                                        user: { $in: ids }
+                                    await connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).deleteMany({
+                                        $or: [
+                                            { followee: { $in: ids } },
+                                            { follower: { $in: ids } }
+                                        ]
                                     })
                                     next()
                                 })
@@ -158,10 +168,6 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: SessionSchema.name,
                             useFactory: () => SessionSchemaClass
-                        },
-                        {
-                            name: ToolSchema.name,
-                            useFactory: () => ToolSchemaClass
                         },
                         {
                             name: TileSchema.name,
@@ -190,10 +196,6 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: PlacedItemSchema.name,
                             useFactory: () => PlacedItemSchemaClass
-                        },
-                        {
-                            name: DeliveringProductSchema.name,
-                            useFactory: () => DeliveringProductSchemaClass
                         },
                         {
                             name: ProductSchema.name,

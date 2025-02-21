@@ -11,3 +11,4 @@ import "./unfollow.proto";
 import "./thief_crop.proto";
 import "./thief_animal_product.proto";
 import "./return.proto";
+import "./visit.proto";

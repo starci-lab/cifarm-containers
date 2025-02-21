@@ -3,14 +3,11 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { ChainKey, Network } from "@src/env"
 import { TutorialStep } from "../enums"
-import { FolloweeSchema, FolloweeSchemaClass } from "./followee.schema"
-
-export const USER_COLLECTION = "users"
 
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: USER_COLLECTION
+    collection: "users"
 })
 export class UserSchema extends AbstractSchema {
     @Field(() => String)
@@ -42,6 +39,10 @@ export class UserSchema extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         golds: number
+
+    @Field(() => String, { nullable: true })
+    @Prop({ type: String, required: false })
+        avatarUrl?: string
 
     @Field(() => Float)
     @Prop({ type: Number, default: 0 })
@@ -92,13 +93,9 @@ export class UserSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0 })
         spinCount: number
 
-    @Field(() => [String])
-    @Prop({ type: Array<string>, default: [] })
-        followingUserIds: Array<string>
-
-    @Field(() => [FolloweeSchema])
-    @Prop({ type: [FolloweeSchemaClass], default: [] })
-        followees: Array<FolloweeSchema>
+    // graphql field
+    @Field(() => Boolean)
+        followed?: boolean
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

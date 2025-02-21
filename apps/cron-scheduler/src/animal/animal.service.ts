@@ -4,15 +4,15 @@ import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
     AnimalCurrentState,
     AnimalGrowthLastSchedule,
-    AnimalInfoEntity,
-    Collection,
-    CollectionEntity,
-    InjectPostgreSQL,
-    KeyValueStoreEntity,
-    KeyValueStoreId
+    InjectMongoose,
+    KeyValueStoreId,
+    KeyValueStoreSchema,
+    PlacedItemSchema,
+    KeyValueRecord,
+    PlacedItemType,
+    PlacedItemTypeSchema
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import { v4 } from "uuid"
 import { AnimalJobData } from "./animal.dto"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
@@ -21,14 +21,16 @@ import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { e2eEnabled } from "@src/env"
 import { ANIMAL_CACHE_SPEED_UP, AnimalCacheSpeedUpData } from "./animal.e2e"
+import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class AnimalService {
     private readonly logger = new Logger(AnimalService.name)
     constructor(
         @InjectQueue(BullQueueName.Animal) private readonly animalQueue: Queue,
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
         @InjectCache()
         private readonly cacheManager: Cache
@@ -53,32 +55,37 @@ export class AnimalService {
             return
         }
 
-        const utcNow = this.dateUtcService.getDayjs()
-        // Create a query runner
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-        let count: number
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
+
         try {
-            count = await queryRunner.manager.count(AnimalInfoEntity, {
-                where: {
-                    currentState: Not(AnimalCurrentState.Hungry) && Not(AnimalCurrentState.Yield),
-                    createdAt: LessThanOrEqual(utcNow.toDate())
-                }
-            })
+            const utcNow = this.dateUtcService.getDayjs()
+            const placedItemTypes = await this.connection
+                .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                .find({
+                    type: PlacedItemType.Animal
+                })
+                .session(mongoSession)
+            const count = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .countDocuments({
+                    placedItemType: {
+                        $in: placedItemTypes.map((placedItemType) => placedItemType.id)
+                    },
+                    "animalInfo.currentState": {
+                        $nin: [AnimalCurrentState.Hungry, AnimalCurrentState.Yield]
+                    }
+                })
+                .session(mongoSession)
 
-            //get the last scheduled time
-            const animalGrowthLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
-                where: {
-                    id: KeyValueStoreId.AnimalGrowthLastSchedule
-                }
-            })
-            let date: Date
-            if (animalGrowthLastSchedule) {
-                date = (animalGrowthLastSchedule.value as AnimalGrowthLastSchedule).date
-            }
-            //date is 1 second ago
-
-            // this.logger.debug(`Found ${count} animals that need to be grown`)
+            const {
+                value: { date }
+            } = await this.connection
+                .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                .findById<
+                    KeyValueRecord<AnimalGrowthLastSchedule>
+                >(createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule))
+                .session(mongoSession)
             if (count === 0) {
                 // this.logger.verbose("No animals to grow")
                 return
@@ -91,7 +98,8 @@ export class AnimalService {
             let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
             //e2e code block for e2e purpose-only
             if (e2eEnabled()) {
-                const speedUp = await this.cacheManager.get<AnimalCacheSpeedUpData>(ANIMAL_CACHE_SPEED_UP)
+                const speedUp =
+                    await this.cacheManager.get<AnimalCacheSpeedUpData>(ANIMAL_CACHE_SPEED_UP)
                 if (speedUp) {
                     time += speedUp.time
                     await this.cacheManager.del(ANIMAL_CACHE_SPEED_UP)
@@ -116,26 +124,26 @@ export class AnimalService {
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
             const jobs = await this.animalQueue.addBulk(batches)
             this.logger.verbose(`Added ${jobs.at(0).name} jobs to the animal queue. Time: ${time}`)
-
-            await queryRunner.startTransaction()
-            try {
-                await queryRunner.manager.delete(CollectionEntity, {
-                    collection: Collection.AnimalSpeedUp
-                })
-                await queryRunner.manager.save(KeyValueStoreEntity, {
-                    id: KeyValueStoreId.AnimalGrowthLastSchedule,
-                    value: {
-                        date: utcNow.toDate()
+            await this.connection
+                .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                .updateOne(
+                    {
+                        _id: createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule)
+                    },
+                    {
+                        value: {
+                            date: utcNow.toDate()
+                        }
                     }
-                })
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                this.logger.error(`Error deleting speed up collection: ${error}`)
-                await queryRunner.rollbackTransaction()
-                throw error
-            }
+                )
+                .session(mongoSession)
+            await mongoSession.commitTransaction()
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
         } finally {
-            await queryRunner.release()
+            await mongoSession.endSession()
         }
     }
 }

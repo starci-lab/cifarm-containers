@@ -20,12 +20,16 @@ import {
     HelpUsePesticideResponse,
     HelpWaterRequest,
     HelpWaterResponse,
+    ReturnRequest,
+    ReturnResponse,
     ThiefAnimalProductRequest,
     ThiefAnimalProductResponse,
     ThiefCropRequest,
     ThiefCropResponse,
     UnfollowRequest,
     UnfollowResponse,
+    VisitRequest,
+    VisitResponse,
 } from "./community"
 import {
     DeliverProductRequest,
@@ -73,7 +77,7 @@ import {
     SpinResponse
 } from "./claim"
 import { MoveRequest, MoveResponse } from "./placement"
-import { UpdateTutorialRequest, UpdateTutorialResponse, UpdateInventoryIndexRequest, UpdateInventoryIndexResponse } from "./player"
+import { UpdateTutorialRequest, UpdateTutorialResponse, MoveInventoryRequest, MoveInventoryResponse } from "./player"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 
 export interface IGameplayService {
@@ -98,6 +102,8 @@ export interface IGameplayService {
     thiefAnimalProduct(request: ThiefAnimalProductRequest): Observable<ThiefAnimalProductResponse>
     thiefCrop(request: ThiefCropRequest): Observable<ThiefCropResponse>
     unfollow(request: UnfollowRequest): Observable<UnfollowResponse>
+    visit(request: VisitRequest): Observable<VisitResponse>
+    return(request: ReturnRequest): Observable<ReturnResponse>
 
     // Delivery
     deliverProduct(request: DeliverProductRequest): Observable<DeliverProductResponse>
@@ -121,7 +127,7 @@ export interface IGameplayService {
     
     // Profile
     updateTutorial(request: UpdateTutorialRequest): Observable<UpdateTutorialResponse>
-    updateInventoryIndex(request: UpdateInventoryIndexRequest): Observable<UpdateInventoryIndexResponse>
+    moveInventory(request: MoveInventoryRequest): Observable<MoveInventoryResponse>
 
     // Shop
     buySeeds(request: BuySeedsRequest): Observable<BuySeedsResponse>

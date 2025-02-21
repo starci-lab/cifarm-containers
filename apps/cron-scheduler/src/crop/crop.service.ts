@@ -4,13 +4,15 @@ import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
     CropCurrentState,
     CropGrowthLastSchedule,
-    InjectPostgreSQL,
-    SeedGrowthInfoEntity,
-    KeyValueStoreEntity,
-    KeyValueStoreId
+    InjectMongoose,
+    KeyValueRecord,
+    KeyValueStoreId,
+    KeyValueStoreSchema,
+    PlacedItemSchema,
+    PlacedItemType,
+    PlacedItemTypeSchema
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
-import { DataSource, LessThanOrEqual, Not } from "typeorm"
 import { v4 } from "uuid"
 import { CropJobData } from "./crop.dto"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
@@ -19,14 +21,16 @@ import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { CROP_CACHE_SPEED_UP, CropCacheSpeedUpData } from "./crop.e2e"
 import { e2eEnabled } from "@src/env"
+import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class CropService {
     private readonly logger = new Logger(CropService.name)
     constructor(
         @InjectQueue(BullQueueName.Crop) private readonly cropQueue: Queue,
-        @InjectPostgreSQL()
-        private readonly dataSource: DataSource,
+        @InjectMongoose()
+        private readonly connection: Connection,
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly dateUtcService: DateUtcService,
@@ -51,33 +55,41 @@ export class CropService {
         if (!this.isLeader) {
             return
         }
-        const utcNow = this.dateUtcService.getDayjs()
-        // Create a query runner
-        const queryRunner = this.dataSource.createQueryRunner()
-        await queryRunner.connect()
-        let count: number
+
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
+
         try {
-            // query crops that are not fully matured and do not need water
-            //this.logger.fatal("Checking for crops that need to be grown")
-            count = await queryRunner.manager.count(SeedGrowthInfoEntity, {
-                where: {
-                    //Not fully matured and need water
-                    currentState:
-                        Not(CropCurrentState.FullyMatured) && Not(CropCurrentState.NeedWater),
-                    createdAt: LessThanOrEqual(utcNow.toDate())
+            const utcNow = this.dateUtcService.getDayjs()
+            // Create a query runner
+            const placedItemTypes = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find({
+                type: PlacedItemType.Tile
+            }).session(mongoSession)
+            const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).countDocuments({
+                placedItemType: {
+                    $in: placedItemTypes.map(placedItemType => placedItemType.id)
+                },
+                seedGrowthInfo: {
+                    // not null
+                    $ne: null
+                },
+                // Compare this snippet from apps/cron-scheduler/src/animal/animal.service.ts:
+                "seedGrowthInfo.currentState": {
+                    $nin: [CropCurrentState.NeedWater, CropCurrentState.FullyMatured]
+                },
+                createdAt: {
+                    $lte: this.dateUtcService.getDayjs(utcNow).toDate()
                 }
-            })
- 
+            }).session(mongoSession)
+            console.log(count)
             //get the last scheduled time, get from db not cache
-            const cropGrowthLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
-                where: {
-                    id: KeyValueStoreId.CropGrowthLastSchedule
-                }
-            })
-            let date: Date
-            if (cropGrowthLastSchedule) {
-                date = (cropGrowthLastSchedule.value as CropGrowthLastSchedule).date
-            }
+            // const cropGrowthLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
+            //     where: {
+            //         id: KeyValueStoreId.CropGrowthLastSchedule
+            //     }
+            // })
+            const { value: { date } } = await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                .findById<KeyValueRecord<CropGrowthLastSchedule>>(createObjectId(KeyValueStoreId.CropGrowthLastSchedule))
 
             // this.logger.debug(`Found ${count} crops that need to be grown`)
             if (count !== 0) {
@@ -115,22 +127,21 @@ export class CropService {
                 this.logger.verbose(`Added ${jobs.at(0).name} jobs to the crop queue. Time: ${time}`)
             }
 
-            await queryRunner.startTransaction()
-            try {
-                await queryRunner.manager.save(KeyValueStoreEntity, {
-                    id: KeyValueStoreId.CropGrowthLastSchedule,
-                    value: {
-                        date: utcNow.toDate()
-                    }
-                })
-                await queryRunner.commitTransaction()
-            } catch (error) {
-                this.logger.error(`Error deleting speed up collection: ${error}`)
-                await queryRunner.rollbackTransaction()
-                throw error
-            }
-        } finally {
-            await queryRunner.release()
+            await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).updateOne({
+                _id: createObjectId(KeyValueStoreId.CropGrowthLastSchedule)
+            }, {
+                value: {
+                    date: utcNow.toDate()
+                }
+            }).session(mongoSession)
+            await mongoSession.commitTransaction()
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
+        }
+        finally {
+            await mongoSession.endSession()
         }
     }
 }

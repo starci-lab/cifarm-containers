@@ -17,12 +17,6 @@ export class SystemSchema extends StaticAbstractSchema {
         value: object
 }
 
-// interface for type checking
-export interface SystemRecord<Value> {
-    key: string
-    value: Value
-}
-
 @ObjectType()
 export class ActivityInfo {
     @Field(() => Int)
@@ -33,6 +27,8 @@ export class ActivityInfo {
 
 @ObjectType()
 export class Activities {
+    @Field(() => ActivityInfo)
+        plantSeed: ActivityInfo
     @Field(() => ActivityInfo)
         water: ActivityInfo
     @Field(() => ActivityInfo)
@@ -106,7 +102,13 @@ export class DefaultInfo {
     @Field(() => Int)
         defaultSeedQuantity: number
     @Field(() => Int)
-        inventoryCapacity: number
+        storageCapacity: number
+    @Field(() => Int)
+        toolCapacity: number
+    @Field(() => Int)
+        deliveryCapacity: number
+    @Field(() => Int)
+        followeeLimit: number
 }
 
  

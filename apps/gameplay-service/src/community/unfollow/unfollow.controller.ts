@@ -12,6 +12,5 @@ export class UnfollowController {
 
     @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "Unfollow")
     public async follow(request: UnfollowRequest) {
-        this.logger.debug("Unfollow called")
         return this.unfollowService.unfollow(request)
     }}

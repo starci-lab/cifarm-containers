@@ -28,7 +28,9 @@ import { MongooseModule } from "@src/databases"
             isGlobal: true
         }),
         MongooseModule.forRoot(),
-        EventEmitterModule.forRoot(),
+        EventEmitterModule.forRoot({
+            global: true
+        }),
         ScheduleModule.forRoot(),
         IoModule.register({
             useGlobalImports: true,
