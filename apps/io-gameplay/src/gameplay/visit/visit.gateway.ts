@@ -8,7 +8,6 @@ import { ReturnPayload, VisitedEmitter2Payload, VisitPayload } from "./visit.typ
 import { VISITED_EMITTER2_EVENT } from "./visit.constants"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { AuthGateway, SocketData } from "../auth"
-import { ObservingData } from "../auth"
 import { SocketCoreService, TypedNamespace } from "@src/io"
 
 @WebSocketGateway({
@@ -41,15 +40,9 @@ export class VisitGateway {
         { neighborUserId, userId }: VisitPayload
     ): Promise<void> {
         // get the corresponding socket for the user
-        const socket = await this.socketCoreService.getSocket(this.namespace, userId)
-        // leave the current room
-        socket.leave(socket.data.observing.userId)
-        // set observing data
-        socket.join(neighborUserId)
-        const observing: ObservingData = {
-            userId: neighborUserId
-        }
-        this.authGateway.setObservingData(socket, observing)
+        const socket = await this.authGateway.getSocket(this.namespace, userId)
+        // start watching the player
+        this.authGateway.startWatchingUser(socket, neighborUserId)
         const emitter2Payload: VisitedEmitter2Payload = {
             userId: neighborUserId,
             socketId: socket.id
@@ -61,15 +54,9 @@ export class VisitGateway {
         { userId }: ReturnPayload
     ): Promise<void> {
         // get the corresponding socket for the user
-        const socket = await this.socketCoreService.getSocket(this.namespace, userId)
-        // leave the current room
-        socket.leave(socket.data.observing.userId)
-        // set observing data
-        socket.join(userId)
-        const observing: ObservingData = {
-            userId
-        }
-        this.authGateway.setObservingData(socket, observing)
+        const socket = await this.authGateway.getSocket(this.namespace, userId)
+        // start watching the original player
+        this.authGateway.startWatchingUser(socket, userId)
         const emitter2Payload: VisitedEmitter2Payload = {
             userId,
             socketId: socket.id

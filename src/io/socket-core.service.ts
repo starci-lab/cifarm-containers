@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { JwtService, UserLike } from "@src/jwt"
-import { SocketLike, TypedSocket, AbstractSocketData, TypedNamespace } from "./io.types"
+import { SocketLike, TypedSocket, AbstractSocketData } from "./io.types"
 
 @Injectable()
 export class SocketCoreService<TSocketData extends AbstractSocketData> {
@@ -30,18 +30,6 @@ export class SocketCoreService<TSocketData extends AbstractSocketData> {
         socket.data.user = user
         // return the user
         return user
-    }
-
-    // get the socket id via a namespace and user id
-    public async getSocket(namespace: TypedNamespace<TSocketData>, userId: string): Promise<SocketLike<TSocketData>> {
-        const sockets = await namespace.in(userId).fetchSockets()
-        const socket = sockets.find((socket) => socket.data.user.id === userId)
-        if (!socket) {
-            const message = `No socket found for user ${userId}`
-            this.logger.error(message)
-            throw new Error(message)
-        }
-        return socket
     }
 
     public getUser(socket: SocketLike<TSocketData>): UserLike {

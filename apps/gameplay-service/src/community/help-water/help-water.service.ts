@@ -5,7 +5,7 @@ import {
     KafkaPattern} from "@src/brokers"
 import {
     Activities,
-    AnimalCurrentState,
+    CropCurrentState,
     InjectMongoose,
     PlacedItemSchema,
     SystemId,
@@ -41,23 +41,27 @@ export class HelpWaterService {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
         try {
-            const placedItemAnimal = await this.connection
+            const placedItemTile = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findById(placedItemTileId)
                 .session(mongoSession)
 
-            if (!placedItemAnimal) {
-                throw new GrpcNotFoundException("Placed item animal not found")
+            if (!placedItemTile) {
+                throw new GrpcNotFoundException("Placed item tile not found")
             }
 
-            if (placedItemAnimal.user.toString() === userId) {
+            if (placedItemTile.user.toString() === userId) {
                 throw new GrpcFailedPreconditionException(
                     "Cannot help water on your own tile"
                 )
             }
 
-            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
-                throw new GrpcFailedPreconditionException("Animal is not sick")
+            if (!placedItemTile.seedGrowthInfo) {
+                throw new GrpcFailedPreconditionException("Tile is not planted")
+            }
+
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
+                throw new GrpcFailedPreconditionException("Tile does not need water")
             }
 
             const { value } = await this.connection
@@ -65,7 +69,7 @@ export class HelpWaterService {
                 .findById(createObjectId(SystemId.Activities))
                 .session(mongoSession)
             const {
-                helpCureAnimal: { energyConsume, experiencesGain }
+                helpWater: { energyConsume, experiencesGain }
             } = value as Activities
 
             const user = await this.connection
@@ -92,8 +96,8 @@ export class HelpWaterService {
                 .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
                 .session(mongoSession)
 
-            placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
-            await placedItemAnimal.save({ session: mongoSession })
+            placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+            await placedItemTile.save({ session: mongoSession })
             await mongoSession.commitTransaction()
 
             this.clientKafka.emit(KafkaPattern.PlacedItems, {
