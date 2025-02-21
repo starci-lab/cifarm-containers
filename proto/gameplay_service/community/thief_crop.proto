@@ -4,7 +4,7 @@ package gameplay_service;
 
 message ThiefCropRequest {
     string userId = 1;
-    string neighborUserId = 2;
+    string placedItemTileId = 2;
 }
 
 message ThiefCropResponse {

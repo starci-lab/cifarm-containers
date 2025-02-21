@@ -4,5 +4,5 @@ package gameplay_service;
 
 message HelpUseHerbicideRequest {
     string userId = 1;
-    string neighborUserId = 2;
+    string placedItemTileId = 2;
 }

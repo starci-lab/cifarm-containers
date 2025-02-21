@@ -1,12 +1,30 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { ClientKafka } from "@nestjs/microservices"
-import { InjectKafka } from "@src/brokers"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
 import {
+    Activities,
+    CROP,
+    CropCurrentState,
+    CropRandomness,
+    CropSchema,
+    DefaultInfo,
     InjectMongoose,
+    InventorySchema,
+    InventoryType,
+    InventoryTypeSchema,
+    KeyValueRecord,
+    PlacedItemSchema,
+    ProductSchema,
+    ProductType,
+    SystemId,
+    SystemSchema,
+    UserSchema,
 } from "@src/databases"
 import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
 import { Connection } from "mongoose"
+import { GrpcInvalidArgumentException } from "nestjs-grpc-exceptions"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class ThiefCropService {
@@ -22,165 +40,140 @@ export class ThiefCropService {
         private readonly inventoryService: InventoryService
     ) {}
 
-    async thiefCrop(request: ThiefCropRequest): Promise<ThiefCropResponse> {
-        // if (request.userId === request.neighborUserId) {
-        //     throw new GrpcInvalidArgumentException("Cannot thief from yourself")
-        // }
+    async thiefCrop({ placedItemTileId, userId}: ThiefCropRequest): Promise<ThiefCropResponse> {
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
+        try {
+            const placedItemTile = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findById(placedItemTileId)
+                .session(mongoSession)
 
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
+            if (!placedItemTile) {
+                throw new GrpcInvalidArgumentException("Tile not found")
+            }
 
-        // try {
-        //     // get placed item
-        //     const placedItemTile = await queryRunner.manager.findOne(PlacedItemSchema, {
-        //         where: {
-        //             userId: request.neighborUserId,
-        //             id: request.placedItemTileId,
-        //             placedItemType: {
-        //                 type: PlacedItemType.Tile
-        //             }
-        //         },
-        //         relations: {
-        //             seedGrowthInfo: {
-        //                 crop: true
-        //             },
-        //             placedItemType: true
-        //         }
-        //     })
+            const neighborUserId = placedItemTile.user.toString()
+            if (neighborUserId === userId) {
+                throw new GrpcInvalidArgumentException("Cannot thief from your own tile")
+            }
+            if (!placedItemTile.seedGrowthInfo) {
+                throw new GrpcInvalidArgumentException("Tile is not planted")
+            }
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
+                throw new GrpcInvalidArgumentException("Crop is not fully matured")
+            }
 
-        //     if (!placedItemTile) {
-        //         throw new GrpcNotFoundException("Tile not found")
-        //     }
+            const { value: { thiefCrop: { energyConsume, experiencesGain } } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
+                .session(mongoSession)
 
-        //     if (!placedItemTile.seedGrowthInfo) {
-        //         throw new GrpcNotFoundException("Tile is not planted")
-        //     }
+            const user = await this.connection
+                .model<UserSchema>(UserSchema.name).findById(userId)
+                .session(mongoSession)
 
-        //     if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
-        //         throw new GrpcFailedPreconditionException("Crop is not fully matured")
-        //     }
+            this.energyService.checkSufficient({
+                current: user.energy,
+                required: energyConsume
+            })
 
-        //     if (
-        //         placedItemTile.seedGrowthInfo.harvestQuantityRemaining ===
-        //         placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
-        //     ) {
-        //         throw new GrpcFailedPreconditionException("Crop's thief limit has been reached")
-        //     }
+            const energyChanges = this.energyService.substract({
+                user,
+                quantity: energyConsume
+            })
 
-        //     const { value: activitiesValue } = await queryRunner.manager.findOne(SystemEntity, {
-        //         where: { id: SystemId.Activities }
-        //     })
-        //     const {
-        //         thiefCrop: { energyConsume, experiencesGain }
-        //     } = activitiesValue as Activities
+            const experienceChanges = this.levelService.addExperiences({
+                user,
+                experiences: experiencesGain
+            })
 
-        //     //get user
-        //     const user = await queryRunner.manager.findOne(UserSchema, {
-        //         where: { id: request.userId }
-        //     })
+            //crop randomness
+            const { value: { thief2, thief3 } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
+                .session(mongoSession)
 
-        //     this.energyService.checkSufficient({
-        //         current: user.energy,
-        //         required: energyConsume
-        //     })
+            const product = await this.connection
+                .model<ProductSchema>(ProductSchema.name)
+                .findOne({
+                    type: ProductType.Crop,
+                    crop: placedItemTile.seedGrowthInfo.crop,
+                }).populate(CROP).session(mongoSession)
 
-        //     const { value } = await queryRunner.manager.findOne(SystemEntity, {
-        //         where: { id: SystemId.CropRandomness }
-        //     })
-        //     const { thief2, thief3 } = value as CropRandomness
-        //     const { value: computedQuantity } = this.thiefService.compute({
-        //         thief2,
-        //         thief3
-        //     })
+            const crop = product.crop as CropSchema
 
-        //     //get the actual quantity
-        //     const actualQuantity = Math.min(
-        //         computedQuantity,
-        //         placedItemTile.seedGrowthInfo.harvestQuantityRemaining -
-        //             placedItemTile.seedGrowthInfo.crop.minHarvestQuantity
-        //     )
+            const { value: computedQuantity } = this.thiefService.compute({
+                thief2,
+                thief3
+            })
 
-        //     // get inventories
-        //     const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-        //         where: {
-        //             type: InventoryType.Product,
-        //             product: {
-        //                 cropId: placedItemTile.seedGrowthInfo.crop.id,
-        //                 type: ProductType.Crop,
-        //                 isQuality: placedItemTile.seedGrowthInfo.isQuality
-        //             }
-        //         },
-        //         relations: {
-        //             product: true,
-        //         }
-        //     })
+            const actualQuantity = Math.min(
+                computedQuantity,
+                placedItemTile.seedGrowthInfo.harvestQuantityRemaining - crop.minHarvestQuantity
+            )
 
-        //     const existingInventories = await queryRunner.manager.find(InventoryEntity, {
-        //         where: {
-        //             userId: request.userId,
-        //             inventoryTypeId: inventoryType.id
-        //         }
-        //     })
+            const inventoryType = await this.connection
+                .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                .findOne({
+                    type: InventoryType.Product,
+                    product: product.id
+                })
+                .session(mongoSession)
+            
+            const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
+                connection: this.connection,
+                inventoryType,
+                userId: user.id,
+                session: mongoSession
+            })
 
-        //     const updatedInventories = this.inventoryService.add({
-        //         entities: existingInventories,
-        //         userId: request.userId,
-        //         data: {
-        //             inventoryType,
-        //             quantity: actualQuantity
-        //         }
-        //     })
+            const {
+                value: { storageCapacity }
+            } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
-        //     // substract energy
-        //     const energyChanges = this.energyService.substract({
-        //         entity: user,
-        //         energy: energyConsume
-        //     })
+            const { createdInventories, updatedInventories } = this.inventoryService.add({
+                inventoryType,
+                inventories,
+                capacity: storageCapacity,
+                quantity: actualQuantity,
+                userId: user.id,
+                occupiedIndexes
+            })
 
-        //     const experiencesChanges = this.levelService.addExperiences({
-        //         entity: user,
-        //         experiences: experiencesGain
-        //     })
+            await this.connection
+                .model<InventorySchema>(InventorySchema.name)
+                .create(createdInventories, { session: mongoSession })
+            for (const inventory of updatedInventories) {
+                await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
+                    { _id: inventory._id },
+                    inventory
+                ).session(mongoSession)
+            }
 
-        //     await queryRunner.startTransaction()
-        //     try {
-        //         // update user
-        //         await queryRunner.manager.update(UserSchema, user.id, {
-        //             ...energyChanges,
-        //             ...experiencesChanges
-        //         })
+            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                { _id: user.id },
+                { ...energyChanges, ...experienceChanges }
+            ).session(mongoSession)
 
-        //         // update inventories
-        //         await queryRunner.manager.save(InventoryEntity, updatedInventories)
+            placedItemTile.seedGrowthInfo.harvestQuantityRemaining = placedItemTile.seedGrowthInfo.harvestQuantityRemaining - actualQuantity
+            await placedItemTile.save({ session: mongoSession })
 
-        //         // update seed growth info
-        //         await queryRunner.manager.update(
-        //             SeedGrowthInfoEntity,
-        //             placedItemTile.seedGrowthInfo.id,
-        //             {
-        //                 harvestQuantityRemaining:
-        //                     placedItemTile.seedGrowthInfo.harvestQuantityRemaining - actualQuantity
-        //             }
-        //         )
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
+            await mongoSession.commitTransaction()
 
-        //     this.clientKafka.emit(KafkaPattern.PlacedItems, {
-        //         userId: request.neighborUserId
-        //     })
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: neighborUserId
+            })
 
-        //     return {
-        //         quantity: actualQuantity
-        //     }
-        // } finally {
-        //     await queryRunner.release()
-        // }
-        console.log(request)
-        return { quantity: 0 }
+            return { quantity: actualQuantity }
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }

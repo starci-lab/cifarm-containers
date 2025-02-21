@@ -18,13 +18,13 @@ export class PlantSeedService {
         private readonly levelService: LevelService
     ) {}
 
-    async plantSeed(request: PlantSeedRequest): Promise<PlantSeedResponse> {
+    async plantSeed({ inventorySeedId, placedItemTileId, userId}: PlantSeedRequest): Promise<PlantSeedResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
         try {
             const inventory = await this.connection.model<InventorySchema>(InventorySchema.name)
-                .findById(request.inventorySeedId)
+                .findById(inventorySeedId)
                 .session(mongoSession)
 
             const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
@@ -32,17 +32,18 @@ export class PlantSeedService {
                 .session(mongoSession)
 
             const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-                .findById(request.placedItemTileId)
+                .findById(placedItemTileId)
                 .session(mongoSession)
 
             if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
+            if (placedItemTile.user.toString() !== userId) throw new GrpcFailedPreconditionException("Cannot plant seed on other's tile")
             if (placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is already planted")
 
             const { value: { plantSeed: { energyConsume, experiencesGain } } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
             const user = await this.connection.model<UserSchema>(UserSchema.name)
-                .findById(request.userId)
+                .findById(userId)
                 .session(mongoSession)
 
             if (!user) throw new GrpcNotFoundException("User not found")

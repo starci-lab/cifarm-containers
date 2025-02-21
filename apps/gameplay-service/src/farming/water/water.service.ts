@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { Activities, CropCurrentState, InjectMongoose, PlacedItemSchema, SEED_GROWTH_INFO, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
+import { Activities, CropCurrentState, InjectMongoose, PlacedItemSchema, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -17,19 +17,17 @@ export class WaterService {
         private readonly levelService: LevelService
     ) {}
 
-    async water(request: WaterRequest): Promise<WaterResponse> {
-        this.logger.debug(`Watering tile for user ${request.userId}, tile ID: ${request.placedItemTileId}`)
-
+    async water({ placedItemTileId, userId}: WaterRequest): Promise<WaterResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
         try {
             const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-                .findById(request.placedItemTileId)
-                .populate(SEED_GROWTH_INFO)
+                .findById(placedItemTileId)
                 .session(mongoSession)
 
             if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
+            if (placedItemTile.user.toString() !== userId) throw new GrpcFailedPreconditionException("Cannot use water on other's tile")
             if (!placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is not planted")
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) throw new GrpcFailedPreconditionException("Tile does not need water")
 
@@ -43,7 +41,7 @@ export class WaterService {
                 .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities)).session(mongoSession)
 
             const user = await this.connection.model<UserSchema>(UserSchema.name)
-                .findById(request.userId)
+                .findById(userId)
                 .session(mongoSession)
 
             if (!user) throw new GrpcNotFoundException("User not found")
@@ -64,10 +62,9 @@ export class WaterService {
                 { ...energyChanges, ...experienceChanges }
             ).session(mongoSession)
 
-            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
-                { _id: placedItemTile._id },
-                { "seedGrowthInfo.currentState": CropCurrentState.Normal }
-            ).session(mongoSession)
+            placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+            await placedItemTile.save({ session: mongoSession })
+
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {

@@ -114,6 +114,7 @@ export class CropWorker extends WorkerHost {
                                     placedItem.seedGrowthInfo.currentState =
                                         CropCurrentState.NeedWater
                                 }
+                                placedItem.seedGrowthInfo.currentStageTimeElapsed = 0
                                 return
                             }
 
