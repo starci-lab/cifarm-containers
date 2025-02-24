@@ -31,7 +31,7 @@ service GameplayService {
     rpc CollectAnimalProduct(CollectAnimalProductRequest) returns (google.protobuf.Empty);
     rpc CureAnimal(CureAnimalRequest) returns (google.protobuf.Empty);
     rpc FeedAnimal(FeedAnimalRequest) returns (google.protobuf.Empty);
-    rpc HarvestCrop(HarvestCropRequest) returns (google.protobuf.Empty);
+    rpc HarvestCrop(HarvestCropRequest) returns (HarvestCropResponse);
     rpc PlantSeed(PlantSeedRequest) returns (google.protobuf.Empty);
     rpc UseFertilizer(UseFertilizerRequest) returns (google.protobuf.Empty);
     rpc UseHerbicide(UseHerbicideRequest) returns (google.protobuf.Empty);

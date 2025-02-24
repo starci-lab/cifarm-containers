@@ -223,7 +223,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: HelpCureAnimalRequest
     ): Promise<HelpCureAnimalResponse> {
-        this.logger.debug(`Processing user ${user?.id} help cure animal of user ${request?.neighborUserId}`)
         return await lastValueFrom(
             this.gameplayService.helpCureAnimal({
                 ...request,

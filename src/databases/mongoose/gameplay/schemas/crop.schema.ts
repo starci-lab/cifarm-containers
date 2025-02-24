@@ -54,7 +54,7 @@ export class CropSchema extends StaticAbstractSchema {
 
     @Field(() => Int)
     @Prop({ type: Number, required: true })
-        premiumHarvestExperiences: number
+        qualityHarvestExperiences: number
 }
 
 export const CropSchemaClass = SchemaFactory.createForClass(CropSchema)

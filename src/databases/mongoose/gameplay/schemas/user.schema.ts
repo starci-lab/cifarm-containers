@@ -65,7 +65,7 @@ export class UserSchema extends AbstractSchema {
         energyFull: boolean
 
     @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
+    @Prop({ type: Number, default: 1 })
         level: number
 
     // tutorial step
@@ -80,10 +80,6 @@ export class UserSchema extends AbstractSchema {
     @Field(() => Date, { nullable: true })
     @Prop({ type: Date, nullable: true })
         dailyRewardLastClaimTime?: Date
-
-    @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
-        dailyRewardNumberOfClaim: number
 
     @Field(() => Date, { nullable: true })
     @Prop({ type: Date, nullable: true })

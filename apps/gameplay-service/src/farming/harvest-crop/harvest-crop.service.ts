@@ -105,53 +105,54 @@ export class HarvestCropService {
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+            await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
 
-            try {
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
+            const quantity = placedItemTile.seedGrowthInfo.harvestQuantityRemaining
+            const { createdInventories, updatedInventories } = this.inventoryService.add({
+                inventoryType,
+                inventories,
+                capacity: storageCapacity,
+                quantity,
+                userId: user.id,
+                occupiedIndexes
+            })
 
-                const { createdInventories, updatedInventories } = this.inventoryService.add({
-                    inventoryType,
-                    inventories,
-                    capacity: storageCapacity,
-                    quantity: placedItemTile.seedGrowthInfo.harvestQuantityRemaining,
-                    userId: user.id,
-                    occupiedIndexes
-                })
-
+            await this.connection
+                .model<InventorySchema>(InventorySchema.name)
+                .create(createdInventories, { session: mongoSession })
+            for (const inventory of updatedInventories) {
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
-                    .create(createdInventories, { session: mongoSession })
-                for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne(
-                            {
-                                _id: inventory._id
-                            },
-                            inventory
-                        )
-                        .session(mongoSession)
-                }
-
-                await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .updateOne(
-                        { _id: placedItemTile._id },
                         {
-                            seedGrowthInfo: null
-                        }
+                            _id: inventory._id
+                        },
+                        inventory
                     )
                     .session(mongoSession)
-
-                await mongoSession.commitTransaction()
-                return {}
-            } catch (error) {
-                this.logger.error(error)
-                await mongoSession.abortTransaction()
-                throw error
             }
+
+            await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .updateOne(
+                    { _id: placedItemTile._id },
+                    {
+                        seedGrowthInfo: null
+                    }
+                )
+                .session(mongoSession)
+
+            await mongoSession.commitTransaction()
+                
+            return {
+                quantity
+            }
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
         } finally {
             await mongoSession.endSession()
         }

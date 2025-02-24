@@ -47,7 +47,6 @@ export class GameplayMockUserService {
             level,
             tutorialStep: 0,
             dailyRewardStreak,
-            dailyRewardNumberOfClaim: faker.number.int({ min: 0, max: 30 }),
             spinCount: faker.number.int({ min: 0, max: 100 }),
             dailyRewardLastClaimTime,
             spinLastTime,

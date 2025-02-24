@@ -15,7 +15,7 @@ message CropEntity {
     int32 minHarvestQuantity = 8;
     int32 maxHarvestQuantity = 9;
     int32 basicHarvestExperiences = 10;
-    int32 premiumHarvestExperiences = 11;
+    int32 qualityHarvestExperiences = 11;
     bool availableInShop = 12;
     int32 maxStack = 13;
     ProductEntity product = 14;

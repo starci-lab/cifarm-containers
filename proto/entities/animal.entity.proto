@@ -15,7 +15,7 @@ message AnimalEntity {
     int32 minHarvestQuantity = 8;
     int32 maxHarvestQuantity = 9;
     int32 basicHarvestExperiences = 10;
-    int32 premiumHarvestExperiences = 11;
+    int32 qualityHarvestExperiences = 11;
     string type = 12;
     ProductEntity product = 14;
 }

@@ -70,6 +70,7 @@ export class MongooseModule extends ConfigurableModuleClass {
             imports: [
                 NestMongooseModule.forRoot(url, {
                     connectionName,
+                    retryWrites: true,
                     connectionFactory: (connection: Connection) => {
                         connection.plugin(normalize)
                         return connection
