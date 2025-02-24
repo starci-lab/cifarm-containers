@@ -676,7 +676,7 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: BuyTileRequest
     ): Promise<BuyTileResponse> {
-        this.logger.debug(`Processing buyTile for user ${user?.id}`)
+        this.logger.debug(`Processing buyTile for user ${user?.id}, tileId: ${request.tileId}`)
         return await lastValueFrom(
             this.gameplayService.buyTile({
                 ...request,

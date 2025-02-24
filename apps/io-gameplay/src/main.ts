@@ -1,6 +1,5 @@
 import { NestFactory } from "@nestjs/core"
 import { Container, envConfig, loadEnv } from "@src/env"
-import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { AppModule } from "./app.module"
 import { createPrimaryServer, IO_ADAPTER_FACTORY, IoAdapterFactory } from "@src/io"
 import { MicroserviceOptions, Transport } from "@nestjs/microservices"
@@ -67,16 +66,16 @@ const bootstrapAll = async () => {
 }
 
 const bootstrapHealthCheck = async () => {
-    const app = await NestFactory.create(
-        HealthCheckModule.forRoot({
-            dependencies: [
-                HealthCheckDependency.Kafka,
-                HealthCheckDependency.GameplayPostgreSQL,
-                HealthCheckDependency.AdapterMongoDb
-            ]
-        })
-    )
-    await app.listen(envConfig().containers[Container.IoGameplay].healthCheckPort)
+    // const app = await NestFactory.create(
+    //     HealthCheckModule.forRoot({
+    //         dependencies: [
+    //             HealthCheckDependency.Kafka,
+    //             HealthCheckDependency.GameplayPostgreSQL,
+    //             HealthCheckDependency.AdapterMongoDb
+    //         ]
+    //     })
+    // )
+    // await app.listen(envConfig().containers[Container.IoGameplay].healthCheckPort)
 }
 
 const bootstrapAdminUI = async () => {

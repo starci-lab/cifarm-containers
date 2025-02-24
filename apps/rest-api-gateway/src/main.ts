@@ -80,12 +80,12 @@ const bootstrap = async () => {
 }
 
 const bootstrapHealthCheck = async () => {
-    const app = await NestFactory.create(HealthCheckModule.forRoot({
-        dependencies: [
-            HealthCheckDependency.GameplayService,
-        ]
-    }))
-    await app.listen(envConfig().containers.restApiGateway.healthCheckPort)
+    // const app = await NestFactory.create(HealthCheckModule.forRoot({
+    //     dependencies: [
+    //         HealthCheckDependency.GameplayService,
+    //     ]
+    // }))
+    // await app.listen(envConfig().containers.restApiGateway.healthCheckPort)
 }
 
 bootstrap().then(bootstrapHealthCheck)
