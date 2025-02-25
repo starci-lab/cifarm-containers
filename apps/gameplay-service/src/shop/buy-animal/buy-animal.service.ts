@@ -43,32 +43,25 @@ export class BuyAnimalService {
             if (!animal) throw new GrpcNotFoundException("Animal not found")
             if (!animal.availableInShop) throw new GrpcFailedPreconditionException("Animal not available in shop")
 
-            const placedItemBuilding = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-                .findById(request.placedItemBuildingId)
-                .session(mongoSession)
-
-            if (!placedItemBuilding) throw new GrpcNotFoundException("Building not found")
-
-            const placedItemType = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                .findById(placedItemBuilding.placedItemType)
-                .session(mongoSession)
-
-            console.log("placedItemBuilding", placedItemBuilding)
-
+            //get buildingId basedOn animalId
             const building = await this.connection.model<BuildingSchema>(BuildingSchema.name)
-                .findById(placedItemType.building)
+                .findOne({ type: animal.type })
                 .session(mongoSession)
 
-            if (building.type !== animal.type)
-                throw new GrpcFailedPreconditionException("Building is not for this animal")
-
-            const maxCapacity = building.upgrades[placedItemBuilding.buildingInfo.currentUpgrade].capacity
-            const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-                .countDocuments({ parentId: placedItemBuilding.id })
+            //placedItemType
+            const placedItemBuildingType = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                .findOne({
+                    type: PlacedItemType.Building,
+                    building: building.id
+                })
                 .session(mongoSession)
 
-            if (count >= maxCapacity)
-                throw new GrpcFailedPreconditionException("Building is full")
+            const placedItemAnimalType = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                .findOne({
+                    type: PlacedItemType.Animal,
+                    animal: animal.id
+                })
+                .session(mongoSession)
 
             const user = await this.connection.model<UserSchema>(UserSchema.name)
                 .findById(request.userId)
@@ -79,6 +72,36 @@ export class BuyAnimalService {
             const totalCost = animal.price
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
+            const animalCount = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .countDocuments({
+                    user: request.userId,
+                    placedItemType: placedItemAnimalType,
+                })
+            
+            let maxCapacity = 0
+            
+            const placedItemsBuilding = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .find({
+                    user: request.userId,
+                    placedItemType: placedItemBuildingType
+                })
+                .session(mongoSession)
+
+            
+    
+            
+            // Count maxCapacity
+            for (const placedItemBuilding of placedItemsBuilding) {
+                maxCapacity += building.upgrades[placedItemBuilding.buildingInfo.currentUpgrade].capacity
+            }
+
+            if (animalCount >= maxCapacity) {
+                throw new GrpcFailedPreconditionException("Max capacity reached")
+            }
+
+            
+
+            
             try {
                 const goldsChanged = this.goldBalanceService.subtract({
                     user: user,
@@ -100,7 +123,6 @@ export class BuyAnimalService {
                     x: request.position.x,
                     y: request.position.y,
                     placedItemType: placedItemTypeAnimal,
-                    parentId: placedItemBuilding.id,
                     animalInfo: {}
                 })
 

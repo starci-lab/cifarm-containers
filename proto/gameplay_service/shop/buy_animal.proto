@@ -5,8 +5,7 @@ package gameplay_service;
 message BuyAnimalRequest {
     string userId = 1;
     string animalId = 2;
-    string placedItemBuildingId = 3;
-    Position position = 4;
+    Position position = 3;
 }
 
 message BuyAnimalResponse {

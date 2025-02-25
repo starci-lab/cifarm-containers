@@ -10,10 +10,6 @@ export class BuyAnimalRequest extends UserIdRequest {
     @ApiProperty({ example: AnimalId.Chicken, description: "The ID of the animal" })
         animalId: AnimalId
 
-    @IsString()
-    @ApiProperty({ example: "", description: "The ID of the building" })
-        placedItemBuildingId: string
-
     @ValidateNested()
     @Type(() => Position)
     @ApiProperty({ type: Position })
