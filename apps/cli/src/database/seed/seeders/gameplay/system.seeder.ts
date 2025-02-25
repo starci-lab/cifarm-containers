@@ -14,6 +14,7 @@ import {
     DefaultInfo,
     SystemId,
     SystemSchema,
+    HoneycombInfo,
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
@@ -208,7 +209,11 @@ export class SystemSeeder implements Seeder {
                 tokens: 1
             },
         }
-
+        const honeycombInfo: HoneycombInfo = {
+            dailyRewardAmount: 10000000, // 10 $CARROT
+            dollarCarrotResourceAddress: "6JkqdDyrXsySvnvKBmFVpay9L413VXJcd78kFJ2XSABH",
+            projectAddress: "BoRbyNqh3YmYzzuFMLZ2kjFEC1whr4zS9wPskqp7uqZL"
+        }
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
@@ -244,6 +249,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.DailyRewardInfo),
                 displayId: SystemId.DailyRewardInfo,
                 value: dailyRewardInfo
+            },
+            {
+                _id: createObjectId(SystemId.HoneycombInfo),
+                displayId: SystemId.HoneycombInfo,
+                value: honeycombInfo
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

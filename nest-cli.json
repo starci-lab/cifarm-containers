@@ -125,6 +125,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/seeders/tsconfig.app.json"
       }
+    },
+    "blockchain-service": {
+      "type": "application",
+      "root": "apps/blockchain-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/blockchain-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/blockchain-service/tsconfig.app.json"
+      }
     }
   }
 }

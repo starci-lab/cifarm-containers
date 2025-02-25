@@ -10,6 +10,7 @@ import "./community/entry.proto";
 import "./placement/entry.proto";
 import "./upgrade/entry.proto";
 import "./player/entry.proto";
+import "./honeycomb/entry.proto";
 
 package gameplay_service;
 
@@ -69,4 +70,7 @@ service GameplayService {
     // Update tutorial
     rpc UpdateTutorial(UpdateTutorialRequest) returns (google.protobuf.Empty);
     rpc MoveInventory(MoveInventoryRequest) returns (google.protobuf.Empty);
+
+    // Honeycomb
+    rpc ClaimHoneycombDailyReward(ClaimHoneycombDailyRewardRequest) returns (ClaimHoneycombDailyRewardResponse);
 }

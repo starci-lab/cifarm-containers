@@ -11,7 +11,7 @@ import { IBlockchainAuthService, SignMessageParams } from "./auth.types"
 export class SolanaAuthService implements IBlockchainAuthService {
     private readonly logger = new Logger(SolanaAuthService.name)
     constructor() {}
- 
+    
     public verifyMessage({
         message,
         signature,

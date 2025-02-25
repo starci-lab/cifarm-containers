@@ -80,7 +80,8 @@ import {
     WaterResponse,
     VisitRequest,
     VisitResponse,
-    ReturnResponse
+    ReturnResponse,
+    ClaimHoneycombDailyRewardResponse
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
@@ -781,6 +782,25 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing upgrade building for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.upgradeBuilding({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        type: ClaimHoneycombDailyRewardResponse
+    })
+    @Post("/claim-honeycomb-daily-reward")
+    public async claimHoneycombDailyReward(
+        @User() user: UserLike,
+        @Body() request: ClaimHoneycombDailyRewardResponse
+    ): Promise<PlantSeedResponse> {
+        return await lastValueFrom(
+            this.gameplayService.claimHoneycombDailyReward({
                 ...request,
                 userId: user?.id
             })

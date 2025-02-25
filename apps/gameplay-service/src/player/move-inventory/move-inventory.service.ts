@@ -48,7 +48,7 @@ export class MoveInventoryService {
             }
             const kind = isTool ? InventoryKind.Tool : InventoryKind.Storage
             // get inventory 
-            const inventory = await this.connection.model<InventorySchema>(InventorySchema.name).findById(inventoryId).session(mongoSession)
+            const inventory = await this.connection.model<InventorySchema>(InventorySchema.name).findById(inventoryId).populate(INVENTORY_TYPE).session(mongoSession)
             if (!inventory) {
                 throw new GrpcNotFoundException("Inventory not found")
             }
@@ -60,16 +60,17 @@ export class MoveInventoryService {
                     user: userId,
                     index,
                     kind
-                }).populate(INVENTORY_TYPE)
+                })
                 .session(mongoSession)
 
             if (foundInventory) {
-            // if it have the same type, just update the quantity by call inventory service
-                if (foundInventory.inventoryType === inventory.inventoryType) {
+                const inventoryType = inventory.inventoryType as InventoryTypeSchema
+                // if it have the same type, just update the quantity by call inventory service
+                if (foundInventory.inventoryType.toString() === inventoryType.id) {
                 //
                     const { inventories, occupiedIndexes } = await this.inventoryService.getAddParams({
                         userId,
-                        inventoryType: inventory.inventoryType as InventoryTypeSchema,
+                        inventoryType,
                         connection: this.connection,
                         session: mongoSession,
                         kind
@@ -78,7 +79,7 @@ export class MoveInventoryService {
                         inventories,
                         occupiedIndexes,
                         capacity: storageCapacity,
-                        inventoryType: inventory.inventoryType as InventoryTypeSchema,
+                        inventoryType,
                         quantity: inventory.quantity,
                         userId,
                         kind

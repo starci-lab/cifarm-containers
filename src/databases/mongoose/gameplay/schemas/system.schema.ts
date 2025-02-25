@@ -123,6 +123,16 @@ export class SlotInfo {
 }
 
 @ObjectType()
+export class HoneycombInfo {
+    @Field(() => Int)
+        dailyRewardAmount: number
+    @Field(() => String)
+        projectAddress: string
+    @Field(() => String)
+        dollarCarrotResourceAddress: string
+}
+
+@ObjectType()
 export class AppearanceChanceSlots {
     @Field(() => SlotInfo)
     [AppearanceChance.Common]: SlotInfo

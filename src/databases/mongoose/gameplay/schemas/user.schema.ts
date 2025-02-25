@@ -83,6 +83,10 @@ export class UserSchema extends AbstractSchema {
 
     @Field(() => Date, { nullable: true })
     @Prop({ type: Date, nullable: true })
+        honeycombDailyRewardLastClaimTime?: Date
+
+    @Field(() => Date, { nullable: true })
+    @Prop({ type: Date, nullable: true })
         spinLastTime?: Date
 
     @Field(() => Int)

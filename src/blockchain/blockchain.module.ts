@@ -4,6 +4,7 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./blockchain.module-defin
 import { NftModule } from "./nft"
 import { SpecialModule } from "./special"
 import { TokenModule } from "./token"
+import { CoreModule } from "./core"
 
 @Module({})
 export class BlockchainModule extends ConfigurableModuleClass {
@@ -19,9 +20,10 @@ export class BlockchainModule extends ConfigurableModuleClass {
         const nftDynamicModule = NftModule.register({ isGlobal })
         const specialDynamicModule = SpecialModule.register({ isGlobal })
         const tokenDynamicModule = TokenModule.register({ isGlobal })
-
-        imports.push(authDynamicModule, nftDynamicModule, specialDynamicModule, tokenDynamicModule)
-        exports.push(authDynamicModule, nftDynamicModule, specialDynamicModule, tokenDynamicModule)
+        const coreDynamicModule = CoreModule.register({ isGlobal })
+        
+        imports.push(authDynamicModule, nftDynamicModule, specialDynamicModule, tokenDynamicModule, coreDynamicModule)
+        exports.push(authDynamicModule, nftDynamicModule, specialDynamicModule, tokenDynamicModule, coreDynamicModule)
 
         return {
             ...dynamicModule,

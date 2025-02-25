@@ -245,6 +245,16 @@ export const envConfig = () => ({
         }
     },
     chainCredentials: {
+        [ChainKey.Solana]: {
+            honeycombAuthority: {
+                [Network.Mainnet]: {
+                    privateKey: process.env.SOLANA_HONEYCOMB_AUTHORITY_PRIVATE_KEY_MAINNET
+                },
+                [Network.Testnet]: {
+                    privateKey: process.env.SOLANA_HONEYCOMB_AUTHORITY_PRIVATE_KEY_TESTNET
+                }
+            },
+        },
         [ChainKey.Near]: {
             tokenMinter: {
                 [Network.Testnet]: {
