@@ -33,28 +33,21 @@ describe("BuyAnimalService", () => {
         console.log("animal", animal)
         const user = await gameplayMockUserService.generate({ golds: animal.price + 10 })
 
-        const building = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            userId: user.id,
+        await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
+            user: user.id,
             placedItemType: createObjectId(PlacedItemTypeId.Barn),
             x,
             y,
             buildingInfo: {
                 currentUpgrade: 1,
-                maxCapacity: 1
+                maxCapacity: 10
             }
         })
 
         const golds = user.golds
-        console.log("sd", {
-            userId: user.id,
-            animalId: AnimalId.Cow,
-            placedItemBuildingId: building._id.toString(),
-            position: { x, y }
-        })
         await service.buyAnimal({
             userId: user.id,
             animalId: AnimalId.Cow,
-            placedItemBuildingId: building._id.toString(),
             position: { x, y }
         })
 
@@ -74,22 +67,10 @@ describe("BuyAnimalService", () => {
             .findById(createObjectId(AnimalId.Cow))
         const user = await gameplayMockUserService.generate({ golds: animal.price - 10 })
 
-        const building = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-            userId: user.id,
-            placedItemType: createObjectId(PlacedItemTypeId.Barn),
-            x: 10,
-            y: 10,
-            buildingInfo: {
-                currentUpgrade: 1,
-                maxCapacity: 1
-            }
-        })
-
         await expect(
             service.buyAnimal({
                 userId: user.id,
                 animalId: AnimalId.Cow,
-                placedItemBuildingId: building._id.toString(),
                 position: { x: 0, y: 0 }
             })
         ).rejects.toThrow(UserInsufficientGoldException)

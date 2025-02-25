@@ -52,7 +52,7 @@ import {
     UserFollowRelationSchema,
 } from "./gameplay"
 import { Connection } from "mongoose"
-import normalize from "normalize-mongoose"
+
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
     public static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
@@ -72,7 +72,9 @@ export class MongooseModule extends ConfigurableModuleClass {
                     connectionName,
                     retryWrites: true,
                     connectionFactory: (connection: Connection) => {
-                        connection.plugin(normalize)
+                        // import("normalize-mongoose").then((normalize) => {
+                        //     connection.plugin(normalize.default)
+                        // })
                         return connection
                     }, 
                 }),
