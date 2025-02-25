@@ -119,11 +119,13 @@ export class BuyAnimalService {
                     .session(mongoSession)
 
                 await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-                    userId: request.userId,
+                    user: request.userId,
                     x: request.position.x,
                     y: request.position.y,
                     placedItemType: placedItemTypeAnimal,
-                    animalInfo: {}
+                    animalInfo: {
+                        animal: createObjectId(request.animalId),
+                    }
                 })
 
                 await mongoSession.commitTransaction()
