@@ -29,7 +29,8 @@ export class BuildingSeeder implements Seeder {
                 price: 0,
                 upgradable: false,
                 unlockLevel: 0, 
-                upgrades: []
+                upgrades: [],
+                maxCount: 1
             },
             {
                 _id: createObjectId(BuildingId.Coop),
@@ -40,6 +41,7 @@ export class BuildingSeeder implements Seeder {
                 price: 2000,
                 unlockLevel: 5,
                 upgradable: false,
+                maxCount: 5,
                 upgrades: [
                     {
                         capacity: 3,
@@ -66,6 +68,7 @@ export class BuildingSeeder implements Seeder {
                 price: 2000,
                 unlockLevel: 5,
                 upgradable: false,
+                maxCount: 5,
                 upgrades: [
                     {
                         upgradePrice: 500,

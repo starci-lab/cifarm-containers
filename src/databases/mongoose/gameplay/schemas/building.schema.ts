@@ -34,6 +34,10 @@ export class BuildingSchema extends StaticAbstractSchema {
   @Prop({ type: Boolean, required: true })
       upgradable: boolean
 
+  @Field(() => Int)
+  @Prop({ type: Number, required: true, default: 5 })
+      maxCount: number
+
   @Field(() => [UpgradeSchema])
   @Prop({ type: [UpgradeSchemaClass] })
       upgrades: Array<UpgradeSchema>
