@@ -8,3 +8,7 @@ message HarvestCropRequest {
     string userId = 1;
     string placedItemTileId = 2;
 }
+
+message HarvestCropResponse {
+    int32 quantity = 1;
+}

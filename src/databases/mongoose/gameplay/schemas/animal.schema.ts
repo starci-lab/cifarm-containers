@@ -59,7 +59,7 @@ export class AnimalSchema extends StaticAbstractSchema {
   
     @Field(() => Int)
     @Prop({ type: Number, min: 0 })
-        premiumHarvestExperiences: number
+        qualityHarvestExperiences: number
     
     @Field(() => Int)
     @Prop({ type: Number, min: 1 })

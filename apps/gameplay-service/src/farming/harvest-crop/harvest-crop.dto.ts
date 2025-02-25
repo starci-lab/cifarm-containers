@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { IsUUID } from "class-validator"
+import { IsInt, IsUUID } from "class-validator"
 import { UserIdRequest } from "@src/common"
 
 export class HarvestCropRequest extends UserIdRequest {
@@ -9,5 +9,7 @@ export class HarvestCropRequest extends UserIdRequest {
 }
 
 export class HarvestCropResponse {
-    // This class is intentionally left empty for future extensions
+    @IsInt()
+    @ApiProperty({ example: 10 })
+        quantity: number
 }
