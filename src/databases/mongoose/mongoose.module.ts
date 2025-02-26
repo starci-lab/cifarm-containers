@@ -1,6 +1,6 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./mongoose.module-definition"
-import { envConfig, MongooseDatabase } from "@src/env"
+import { envConfig, MongoDatabase } from "@src/env"
 import { getMongooseConnectionName, getMongooseToken } from "./utils"
 import { MongooseModule as NestMongooseModule } from "@nestjs/mongoose"
 import {
@@ -58,11 +58,11 @@ export class MongooseModule extends ConfigurableModuleClass {
     public static forRoot(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const dynamicModule = super.forRoot(options)
 
-        options.database = options.database || MongooseDatabase.Gameplay
+        options.database = options.database || MongoDatabase.Gameplay
         const connectionName = getMongooseConnectionName(options)
 
         const { dbName, host, password, port, username } =
-            envConfig().databases.mongoose[MongooseDatabase.Gameplay]
+            envConfig().databases.mongo[MongoDatabase.Gameplay]
         const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=admin`
 
         return {

@@ -57,6 +57,7 @@ export enum RedisType {
 
 export enum MongoDatabase {
     Adapter = "adapter",
+    Gameplay = "gameplay"
 }
 
 export enum MongoDbContext {
@@ -64,9 +65,6 @@ export enum MongoDbContext {
     Mock = "mock"
 }
 
-export enum MongooseDatabase {
-    Gameplay = "gameplay",
-}
 
 export enum Brokers {
     Kafka = "kafka",

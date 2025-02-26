@@ -1,4 +1,4 @@
-import { MongoDatabase, MongooseDatabase, RedisType } from "@src/env"
+import { MongoDatabase, RedisType } from "@src/env"
 import { JOB_REDIS, CACHE_REDIS, ADAPTER_REDIS, ADAPTER_MONGODB } from "./health-check.constants"
 import { HealthCheckDependency, DependencyData } from "./health-check.types"
 import { getMongooseToken } from "@src/databases"
@@ -25,11 +25,11 @@ export const mongoDbMap = (): Partial<Record<MongoDatabase, DependencyData>> => 
     }
 })
 
-export const mongooseMap = (): Partial<Record<MongooseDatabase, DependencyData>> => ({
-    [MongooseDatabase.Gameplay]: {
+export const mongooseMap = (): Partial<Record<MongoDatabase, DependencyData>> => ({
+    [MongoDatabase.Gameplay]: {
         dependency: HealthCheckDependency.GameplayMoongoose,
         token: getMongooseToken({
-            database: MongooseDatabase.Gameplay
+            database: MongoDatabase.Gameplay
         })
     }
 })

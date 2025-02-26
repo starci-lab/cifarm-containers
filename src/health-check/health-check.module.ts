@@ -3,7 +3,6 @@ import { TerminusModule } from "@nestjs/terminus"
 import {
     EnvModule,
     MongoDatabase,
-    MongooseDatabase,
     redisClusterEnabled,
     redisClusterRunInDocker,
     RedisType
@@ -48,7 +47,7 @@ export class HealthCheckModule extends ConfigurableModuleClass {
         // if mongoose are used
         const _mongooseMap = mongooseMap()
         // if gameplay postgresql is used
-        Object.keys(_mongooseMap).forEach((database: MongooseDatabase) => {
+        Object.keys(_mongooseMap).forEach((database: MongoDatabase) => {
             if (options.dependencies.includes(_mongooseMap[database].dependency)) {
                 imports.push(
                     MongooseModule.forRoot({

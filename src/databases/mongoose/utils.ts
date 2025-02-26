@@ -1,9 +1,9 @@
-import { MongooseDatabase } from "@src/env"
+import { MongoDatabase } from "@src/env"
 import { MongooseOptions } from "./types"
 import { getConnectionToken } from "@nestjs/mongoose"
 
 export const getMongooseConnectionName = (options: MongooseOptions = {}): string => {
-    const database = options.database || MongooseDatabase.Gameplay
+    const database = options.database || MongoDatabase.Gameplay
     return `${database}`
 }
 

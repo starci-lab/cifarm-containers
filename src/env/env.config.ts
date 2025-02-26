@@ -7,7 +7,6 @@ import {
     Brokers,
     MongoDatabase,
     IoAdapterType,
-    MongooseDatabase,
 } from "./env.types"
 import {
     DEFAULT_CACHE_TIMEOUT_MS,
@@ -127,14 +126,12 @@ export const envConfig = () => ({
                 password: process.env.ADAPTER_MONGODB_PASSWORD,
                 dbName: process.env.ADAPTER_MONGODB_DBNAME
             },
-        },
-        mongoose: {
-            [MongooseDatabase.Gameplay]: {
-                host: process.env.GAMEPLAY_MONGOOSE_HOST ?? LOCALHOST,
-                port: process.env.GAMEPLAY_MONGOOSE_PORT ? Number.parseInt(process.env.GAMEPLAY_MONGOOSE_PORT) : DEFAULT_PORT,
-                username: process.env.GAMEPLAY_MONGOOSE_USERNAME,
-                password: process.env.GAMEPLAY_MONGOOSE_PASSWORD,
-                dbName: process.env.GAMEPLAY_MONGOOSE_DBNAME
+            [MongoDatabase.Gameplay]: {
+                host: process.env.GAMEPLAY_MONGODB_HOST ?? LOCALHOST,
+                port: process.env.GAMEPLAY_MONGODB_PORT ? Number.parseInt(process.env.GAMEPLAY_MONGODB_PORT) : DEFAULT_PORT,
+                username: process.env.GAMEPLAY_MONGODB_USERNAME,
+                password: process.env.GAMEPLAY_MONGODB_PASSWORD,
+                dbName: process.env.GAMEPLAY_MONGODB_DBNAME
             },
         },
         redis: {

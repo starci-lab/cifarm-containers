@@ -11,9 +11,8 @@ import {
     envConfig,
     redisClusterEnabled,
     redisClusterRunInDocker,
-    MongoDatabase,
     RedisType,
-    MongooseDatabase
+    MongoDatabase
 } from "@src/env"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
@@ -33,7 +32,7 @@ export class HealthCheckCoreService implements OnModuleInit {
         Record<RedisType, ExecDockerRedisClusterService>
     > = {}
 
-    private readonly mongooseConnections: Partial<Record<MongooseDatabase, Connection>> = {}
+    private readonly mongooseConnections: Partial<Record<MongoDatabase, Connection>> = {}
     private readonly mongoDbs: Partial<Record<MongoDatabase, MongoDbHealthIndicator>> = {}
 
     constructor(
@@ -69,7 +68,7 @@ export class HealthCheckCoreService implements OnModuleInit {
 
     // Helper function to initialize Mongoose connections
     private initializeMongooseConnections() {
-        const databases = Object.values(MongooseDatabase)
+        const databases = Object.values(MongoDatabase)
         const map = mongooseMap()
         databases.forEach((database) => {
             if (this.options.dependencies.includes(map[database].dependency)) {
@@ -141,10 +140,10 @@ export class HealthCheckCoreService implements OnModuleInit {
 
     // PostgreSQL ping check method
     public async pingCheckMongoose(
-        database: MongooseDatabase = MongooseDatabase.Gameplay
+        database: MongoDatabase = MongoDatabase.Gameplay
     ): Promise<HealthIndicatorResult> {
-        const map: Record<MongooseDatabase, HealthCheckDependency> = {
-            [MongooseDatabase.Gameplay]: HealthCheckDependency.GameplayMoongoose,
+        const map: Partial<Record<MongoDatabase, HealthCheckDependency>> = {
+            [MongoDatabase.Gameplay]: HealthCheckDependency.GameplayMoongoose,
         }
         return this.db.pingCheck(map[database], {
             connection: this.mongooseConnections[database],
