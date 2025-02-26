@@ -64,14 +64,13 @@ export class HealthCheckCoreService implements OnModuleInit {
                     strict: false
                 })
             }
-        })
+        }) 
     }
 
     // Helper function to initialize Mongoose connections
     private initializeMongooseConnections() {
         const databases = Object.values(MongooseDatabase)
         const map = mongooseMap()
-        console.log(map)
         databases.forEach((database) => {
             if (this.options.dependencies.includes(map[database].dependency)) {
                 this.mongooseConnections[database] = this.moduleRef.get<Connection>(map[database].token, {

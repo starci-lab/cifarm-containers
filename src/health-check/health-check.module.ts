@@ -49,7 +49,6 @@ export class HealthCheckModule extends ConfigurableModuleClass {
         const _mongooseMap = mongooseMap()
         // if gameplay postgresql is used
         Object.keys(_mongooseMap).forEach((database: MongooseDatabase) => {
-            console.log(database)
             if (options.dependencies.includes(_mongooseMap[database].dependency)) {
                 imports.push(
                     MongooseModule.forRoot({

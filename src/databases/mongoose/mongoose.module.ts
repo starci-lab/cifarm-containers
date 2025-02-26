@@ -62,7 +62,7 @@ export class MongooseModule extends ConfigurableModuleClass {
         const connectionName = getMongooseConnectionName(options)
 
         const { dbName, host, password, port, username } =
-            envConfig().databases.mongo[MongooseDatabase.Gameplay]
+            envConfig().databases.mongoose[MongooseDatabase.Gameplay]
         const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=admin`
 
         return {
@@ -71,10 +71,9 @@ export class MongooseModule extends ConfigurableModuleClass {
                 NestMongooseModule.forRoot(url, {
                     connectionName,
                     retryWrites: true,
-                    connectionFactory: (connection: Connection) => {
-                        // import("normalize-mongoose").then((normalize) => {
-                        //     connection.plugin(normalize.default)
-                        // })
+                    connectionFactory: async (connection: Connection) => {
+                        const normalize = await import("normalize-mongoose")
+                        connection.plugin(normalize.default)
                         return connection
                     }, 
                 }),

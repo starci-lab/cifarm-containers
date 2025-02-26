@@ -128,7 +128,7 @@ export const envConfig = () => ({
                 dbName: process.env.ADAPTER_MONGODB_DBNAME
             },
         },
-        mongooses: {
+        mongoose: {
             [MongooseDatabase.Gameplay]: {
                 host: process.env.GAMEPLAY_MONGOOSE_HOST ?? LOCALHOST,
                 port: process.env.GAMEPLAY_MONGOOSE_PORT ? Number.parseInt(process.env.GAMEPLAY_MONGOOSE_PORT) : DEFAULT_PORT,
