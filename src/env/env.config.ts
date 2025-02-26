@@ -179,16 +179,14 @@ export const envConfig = () => ({
             }
         }
     },
+    telegram: {
+        main: {
+            botToken: process.env.TELEGRAM_BOT_TOKEN,
+            miniappUrl: process.env.TELEGRAM_MINIAPP_URL
+        } 
+    },
     secrets: {
         salt: process.env.SALT,
-        telegram: {
-            botToken: process.env.TELEGRAM_BOT_TOKEN,
-            mock: {
-                authData: process.env.TELEGRAM_MOCK_AUTH_DATA,
-                userId: Number(process.env.TELEGRAM_MOCK_USER_ID),
-                username: process.env.TELEGRAM_MOCK_USERNAME
-            }
-        },
         jwt: {
             secret: process.env.JWT_SECRET,
             accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION ?? "15m",

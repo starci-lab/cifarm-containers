@@ -1,4 +1,5 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { envConfig } from "@src/env"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { InjectTelegraf } from "@src/telegraf/telegraf.decorators"
 import { readFileSync } from "fs"
@@ -6,7 +7,7 @@ import { join } from "path"
 import { Telegraf } from "telegraf"
 
 @Injectable()
-export class BotService {
+export class BotService implements OnModuleInit {
     private readonly logger = new Logger(BotService.name)
     private isLeader = false
     constructor(
@@ -14,16 +15,19 @@ export class BotService {
         private readonly telegraf: Telegraf
     ) {}
 
+    onModuleInit() {
+        this.launch()
+    }
+
     @OnEventLeaderElected()
     handleLeaderElected() {
-        this.launch()
         this.isLeader = true
     }
 
     @OnEventLeaderLost()
     handleLeaderLost() {
-        this.stop()
-        this.isLeader = false
+        //this.stop()
+        //this.isLeader = false
     }
         
     private async launch() {
@@ -45,7 +49,7 @@ export class BotService {
                         caption,
                         reply_markup: {
                             inline_keyboard: [
-                                [{ text: "Play Cifarm", url: "https://cifarm.io" }],
+                                [{ text: "Play", url: envConfig().telegram.main.miniappUrl }],
                             ]
                         }
                     }
@@ -58,6 +62,10 @@ export class BotService {
     }
 
     async stop() {
-        this.telegraf.stop()
+        try {
+            this.telegraf.stop()
+        } catch (error) {
+            this.logger.error("Error stopping bot:", error)
+        }
     }
 }

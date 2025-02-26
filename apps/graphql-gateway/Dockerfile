@@ -1,6 +1,4 @@
 #docker build -t cifarm/graphql-gateway -f ./apps/graphql-gateway/Dockerfile . & docker push cifarm/graphql-gateway
-#
-
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0
