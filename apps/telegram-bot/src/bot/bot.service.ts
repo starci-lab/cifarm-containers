@@ -29,19 +29,20 @@ export class BotService implements OnModuleInit {
         //this.stop()
         //this.isLeader = false
     }
-        
+
     private async launch() {
         this.registerStartMiddleware()
         this.logger.verbose("Bot prepared. Launching...")
         await this.telegraf.launch()
     }
-    
+
     private registerStartMiddleware() {
         this.telegraf.start(async (ctx) => {
             const photoPath = join(__dirname, "assets", "cifarm-background.png")
             try {
                 const photo = readFileSync(photoPath)
-                const caption = "🌾 Cifarm: Farm-to-earn on Telegram! 🌾\n Farm, help, visit, and even steal from other players while earning airdropped tokens! 💰\n\n🚀 Free to play & packed with rewards! Unlock the potential of Solana gaming with Cifarm. 🌱✨\n👉 Start playing now and grow your farm!\n"
+                const caption =
+                    "🌾 Cifarm: Farm-to-earn on Telegram! 🌾\n Farm, help, visit, and even steal from other players while earning airdropped tokens! 💰\n\n🚀 Free to play & packed with rewards! Unlock the potential of Solana gaming with Cifarm. 🌱✨\n👉 Start playing now and grow your farm!\n"
 
                 await ctx.replyWithPhoto(
                     { source: photo },
@@ -49,7 +50,14 @@ export class BotService implements OnModuleInit {
                         caption,
                         reply_markup: {
                             inline_keyboard: [
-                                [{ text: "Play", url: envConfig().telegram.main.miniappUrl }],
+                                [
+                                    {
+                                        text: "Play",
+                                        web_app: {
+                                            url: envConfig().telegram.main.miniappUrl
+                                        }
+                                    }
+                                ]
                             ]
                         }
                     }
