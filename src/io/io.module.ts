@@ -4,7 +4,7 @@ import { IoAdapterType, MongoDatabase, RedisType } from "@src/env"
 import { MongoDbModule, RedisModule } from "@src/native"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { IO_ADAPTER_FACTORY } from "./io.constants"
-import { ClusterIoAdapterFactory, MongoDbIoAdapterFactory, RedisIoAdapterFactory } from "./adapters"
+import { ClusterIoAdapterFactory, MongoDbIoAdapterFactory, RedisIoAdapterFactory, RedisStreamIoAdapterFactory } from "./adapters"
 import { SocketCoreService } from "./socket-core.service"
 import { JwtModule } from "@src/jwt"
 
@@ -26,11 +26,13 @@ export class IoModule extends ConfigurableModuleClass {
         // Use switch case for cleaner handling of different adapters
         switch (adapter) {
         case IoAdapterType.Redis: {
-            imports.push(
-                RedisModule.register({
-                    type: RedisType.Adapter
-                })
-            )
+            if (!options.useGlobalNativeImports) {
+                imports.push(
+                    RedisModule.register({
+                        type: RedisType.Adapter
+                    })
+                )
+            }
             const provider: Provider = {
                 provide: IO_ADAPTER_FACTORY,
                 useClass: RedisIoAdapterFactory
@@ -40,11 +42,13 @@ export class IoModule extends ConfigurableModuleClass {
             break
         }
         case IoAdapterType.MongoDb: {
-            imports.push(
-                MongoDbModule.register({
-                    database: MongoDatabase.Adapter
-                })
-            )
+            if (!options.useGlobalNativeImports) {
+                imports.push(
+                    MongoDbModule.register({
+                        database: MongoDatabase.Adapter
+                    })
+                )
+            }
             const provider: Provider = {
                 provide: IO_ADAPTER_FACTORY,
                 useClass: MongoDbIoAdapterFactory
@@ -58,6 +62,22 @@ export class IoModule extends ConfigurableModuleClass {
             const provider: Provider = {
                 provide: IO_ADAPTER_FACTORY,
                 useClass: ClusterIoAdapterFactory
+            }
+            providers.push(provider)
+            exports.push(provider)
+            break
+        }
+        case IoAdapterType.RedisStream: {
+            if (!options.useGlobalNativeImports) {
+                imports.push(
+                    RedisModule.register({
+                        type: RedisType.Adapter
+                    })
+                )
+            }
+            const provider: Provider = {
+                provide: IO_ADAPTER_FACTORY,
+                useClass: RedisStreamIoAdapterFactory
             }
             providers.push(provider)
             exports.push(provider)

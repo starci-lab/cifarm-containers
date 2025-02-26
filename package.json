@@ -75,6 +75,7 @@
     "@socket.io/admin-ui": "^0.5.1",
     "@socket.io/mongo-adapter": "^0.3.2",
     "@socket.io/redis-adapter": "^8.3.0",
+    "@socket.io/redis-streams-adapter": "^0.2.2",
     "@socket.io/sticky": "^1.0.4",
     "@solana/web3.js": "^1.98.0",
     "@swc/jest": "^0.2.37",

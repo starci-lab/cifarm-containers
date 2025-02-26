@@ -76,4 +76,5 @@ export enum IoAdapterType {
     Redis = "redis",
     MongoDb = "mongodb",
     Cluster = "cluster",
+    RedisStream = "redis-stream"
 }

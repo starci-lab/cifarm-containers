@@ -12,6 +12,7 @@ export declare class IoAdapter extends NestIoAdapter {
 
 export interface IoOptions extends BaseOptions {
     adapter?: IoAdapterType
+    useGlobalNativeImports?: boolean
 }
 
 export interface IoAdapterFactory {
