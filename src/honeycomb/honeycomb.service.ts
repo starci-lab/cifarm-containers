@@ -40,7 +40,9 @@ export class HoneycombService {
 
     private signTransaction({ network, parsedTransaction }: SignTransactionParams) {
         const tx = VersionedTransaction.deserialize(decode(parsedTransaction))
+        console.log(tx)
         tx.sign([this.authorityKeypairs[network]])
+        console.log(tx)
         return encode(tx.serialize())
     }
 

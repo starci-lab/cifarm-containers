@@ -49,7 +49,7 @@ export class ClaimHoneycombDailyRewardService {
                 resourceAddress: dollarCarrotResourceAddress,
                 network: user.network,
                 payerAddress: user.accountAddress,
-                toAddress: user.accountAddress
+                toAddress: user.accountAddress,
             })
 
             // update user honeycomb daily reward last claim time
