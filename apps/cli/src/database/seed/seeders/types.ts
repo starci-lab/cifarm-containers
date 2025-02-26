@@ -1,5 +1,5 @@
-import { MongoDbDatabase } from "@src/env"
+import { MongooseDatabase } from "@src/env"
 
 export interface SeederOptions {
-    database?: MongoDbDatabase
+    database?: MongooseDatabase
 }

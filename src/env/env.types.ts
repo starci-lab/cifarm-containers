@@ -55,19 +55,8 @@ export enum RedisType {
     Adapter = "adapter"
 }
 
-export enum PostgreSQLDatabase {
-    Gameplay = "gameplay",
-    Telegram = "telegram"
-}
-
 export enum MongoDatabase {
     Adapter = "adapter",
-    Gameplay = "gameplay"
-}
-
-export enum PostgreSQLContext {
-    Main = "main",
-    Mock = "mock"
 }
 
 export enum MongoDbContext {
@@ -75,9 +64,8 @@ export enum MongoDbContext {
     Mock = "mock"
 }
 
-export enum MongoDbDatabase {
+export enum MongooseDatabase {
     Gameplay = "gameplay",
-    Telegram = "telegram"
 }
 
 export enum Brokers {

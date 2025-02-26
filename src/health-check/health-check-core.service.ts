@@ -4,25 +4,25 @@ import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
 import {
     HealthIndicatorResult,
     MicroserviceHealthIndicator,
-    TypeOrmHealthIndicator
+    MongooseHealthIndicator,
 } from "@nestjs/terminus"
 import { KafkaOptionsFactory } from "@src/brokers"
 import {
     envConfig,
-    PostgreSQLDatabase,
     redisClusterEnabled,
     redisClusterRunInDocker,
     MongoDatabase,
-    RedisType
+    RedisType,
+    MongooseDatabase
 } from "@src/env"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
 import { HEALTH_CHECK_TIMEOUT } from "./health-check.constants"
 import { HealthCheckOptions, HealthCheckDependency } from "./health-check.types"
-import { dataSourcesMap, mongoDbMap, redisMap } from "./health-check.utils"
-import { DataSource } from "typeorm"
+import { mongooseMap, mongoDbMap, redisMap } from "./health-check.utils"
 import { MongoDbHealthIndicator } from "./mongodb"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class HealthCheckCoreService implements OnModuleInit {
@@ -33,20 +33,20 @@ export class HealthCheckCoreService implements OnModuleInit {
         Record<RedisType, ExecDockerRedisClusterService>
     > = {}
 
-    private readonly dataSources: Partial<Record<PostgreSQLDatabase, DataSource>> = {}
+    private readonly mongooseConnections: Partial<Record<MongooseDatabase, Connection>> = {}
     private readonly mongoDbs: Partial<Record<MongoDatabase, MongoDbHealthIndicator>> = {}
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN) private readonly options: HealthCheckOptions,
         private readonly kafkaOptionsFactory: KafkaOptionsFactory,
         private readonly microservice: MicroserviceHealthIndicator,
-        private readonly db: TypeOrmHealthIndicator,
+        private readonly db: MongooseHealthIndicator,
         private readonly moduleRef: ModuleRef
     ) {}
 
     onModuleInit() {
         this.initializeRedisServices()
-        this.initializeDataSources()
+        this.initializeMongooseConnections()
         this.initializeMongoDbIndicators()
     }
 
@@ -67,13 +67,14 @@ export class HealthCheckCoreService implements OnModuleInit {
         })
     }
 
-    // Helper function to initialize Redis services
-    private initializeDataSources() {
-        const dataSources = Object.values(PostgreSQLDatabase)
-        const map = dataSourcesMap()
-        dataSources.forEach((database) => {
+    // Helper function to initialize Mongoose connections
+    private initializeMongooseConnections() {
+        const databases = Object.values(MongooseDatabase)
+        const map = mongooseMap()
+        console.log(map)
+        databases.forEach((database) => {
             if (this.options.dependencies.includes(map[database].dependency)) {
-                this.dataSources[database] = this.moduleRef.get<DataSource>(map[database].token, {
+                this.mongooseConnections[database] = this.moduleRef.get<Connection>(map[database].token, {
                     strict: false
                 })
             }
@@ -140,15 +141,14 @@ export class HealthCheckCoreService implements OnModuleInit {
     }
 
     // PostgreSQL ping check method
-    public async pingCheckPostgreSql(
-        database: PostgreSQLDatabase = PostgreSQLDatabase.Gameplay
+    public async pingCheckMongoose(
+        database: MongooseDatabase = MongooseDatabase.Gameplay
     ): Promise<HealthIndicatorResult> {
-        const map: Record<PostgreSQLDatabase, HealthCheckDependency> = {
-            [PostgreSQLDatabase.Gameplay]: HealthCheckDependency.GameplayPostgreSQL,
-            [PostgreSQLDatabase.Telegram]: HealthCheckDependency.TelegramPostgreSQL
+        const map: Record<MongooseDatabase, HealthCheckDependency> = {
+            [MongooseDatabase.Gameplay]: HealthCheckDependency.GameplayMoongoose,
         }
         return this.db.pingCheck(map[database], {
-            connection: this.dataSources[database],
+            connection: this.mongooseConnections[database],
             timeout: HEALTH_CHECK_TIMEOUT
         })
     }

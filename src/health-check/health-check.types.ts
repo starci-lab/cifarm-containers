@@ -1,6 +1,5 @@
 export enum HealthCheckDependency {
-    GameplayPostgreSQL = "gameplay-postgres",
-    TelegramPostgreSQL = "telegram-postgres",
+    GameplayMoongoose = "gameplay-mongoose",
     CacheRedis = "cache-redis",
     AdapterRedis = "adapter-redis",
     JobRedis = "job-redis",

@@ -4,18 +4,16 @@ import {
     ChainKey,
     Network,
     RedisType,
-    PostgreSQLDatabase,
-    PostgreSQLContext,
     Brokers,
     MongoDatabase,
     IoAdapterType,
+    MongooseDatabase,
 } from "./env.types"
 import {
     DEFAULT_CACHE_TIMEOUT_MS,
     DEFAULT_HEALTH_PORT,
     DEFAULT_KAFKA_PORT,
     DEFAULT_PORT,
-    DEFAULT_POSTGRES_PORT,
     DEFAULT_REDIS_PORT,
     LOCALHOST
 } from "./env.constants"
@@ -121,48 +119,6 @@ export const envConfig = () => ({
         }
     },
     databases: {
-        postgresql: {
-            [PostgreSQLDatabase.Gameplay]: {
-                [PostgreSQLContext.Main]: {
-                    dbName: process.env.GAMEPLAY_POSTGRESQL_DBNAME ?? "gameplay",
-                    host: process.env.GAMEPLAY_POSTGRESQL_HOST ?? LOCALHOST,
-                    port:
-                        Number.parseInt(process.env.GAMEPLAY_POSTGRESQL_PORT) ??
-                        DEFAULT_POSTGRES_PORT,
-                    username: process.env.GAMEPLAY_POSTGRESQL_USERNAME,
-                    password: process.env.GAMEPLAY_POSTGRESQL_PASSWORD
-                },
-                [PostgreSQLContext.Mock]: {
-                    dbName: process.env.GAMEPLAY_MOCK_POSTGRESQL_DBNAME ?? "gameplay",
-                    host: process.env.GAMEPLAY_MOCK_POSTGRESQL_HOST ?? LOCALHOST,
-                    port:
-                        Number.parseInt(process.env.GAMEPLAY_MOCK_POSTGRESQL_PORT) ??
-                        DEFAULT_POSTGRES_PORT,
-                    username: process.env.GAMEPLAY_MOCK_POSTGRESQL_USERNAME,
-                    password: process.env.GAMEPLAY_MOCK_POSTGRESQL_PASSWORD
-                }
-            },
-            [PostgreSQLDatabase.Telegram]: {
-                [PostgreSQLContext.Main]: {
-                    dbName: process.env.TELEGRAM_POSTGRESQL_DBNAME ?? "telegram",
-                    host: process.env.TELEGRAM_POSTGRESQL_HOST ?? LOCALHOST,
-                    port:
-                        Number.parseInt(process.env.TELEGRAM_POSTGRESQL_PORT) ??
-                        DEFAULT_POSTGRES_PORT,
-                    username: process.env.TELEGRAM_POSTGRESQL_USERNAME,
-                    password: process.env.TELEGRAM_POSTGRESQL_PASSWORD
-                },
-                [PostgreSQLContext.Mock]: {
-                    dbName: process.env.TELEGRAM_MOCK_POSTGRESQL_DBNAME ?? "telegram",
-                    host: process.env.TELEGRAM_MOCK_POSTGRESQL_HOST ?? LOCALHOST,
-                    port:
-                        Number.parseInt(process.env.TELEGRAM_MOCK_POSTGRESQL_PORT) ??
-                        DEFAULT_POSTGRES_PORT,
-                    username: process.env.TELEGRAM_MOCK_POSTGRESQL_USERNAME,
-                    password: process.env.TELEGRAM_MOCK_POSTGRESQL_PASSWORD
-                }
-            }
-        },
         mongo: {
             [MongoDatabase.Adapter]: {
                 host: process.env.ADAPTER_MONGODB_HOST ?? LOCALHOST,
@@ -171,12 +127,14 @@ export const envConfig = () => ({
                 password: process.env.ADAPTER_MONGODB_PASSWORD,
                 dbName: process.env.ADAPTER_MONGODB_DBNAME
             },
-            [MongoDatabase.Gameplay]: {
-                host: process.env.GAMEPLAY_MONGODB_HOST ?? LOCALHOST,
-                port: process.env.GAMEPLAY_MONGODB_PORT ? Number.parseInt(process.env.GAMEPLAY_MONGODB_PORT) : DEFAULT_PORT,
-                username: process.env.GAMEPLAY_MONGODB_USERNAME,
-                password: process.env.GAMEPLAY_MONGODB_PASSWORD,
-                dbName: process.env.GAMEPLAY_MONGODB_DBNAME
+        },
+        mongooses: {
+            [MongooseDatabase.Gameplay]: {
+                host: process.env.GAMEPLAY_MONGOOSE_HOST ?? LOCALHOST,
+                port: process.env.GAMEPLAY_MONGOOSE_PORT ? Number.parseInt(process.env.GAMEPLAY_MONGOOSE_PORT) : DEFAULT_PORT,
+                username: process.env.GAMEPLAY_MONGOOSE_USERNAME,
+                password: process.env.GAMEPLAY_MONGOOSE_PASSWORD,
+                dbName: process.env.GAMEPLAY_MONGOOSE_DBNAME
             },
         },
         redis: {
@@ -331,7 +289,8 @@ export const envConfig = () => ({
     kubernetes: {
         namespace: process.env.POD_NAMESPACE ?? "containers",
         serviceHost: process.env.KUBERNETES_SERVICE_HOST,
-        hostname: process.env.KUBERNETES_HOSTNAME
+        hostname: process.env.KUBERNETES_HOSTNAME,
+        useMinikubeForDevelopment: process.env.KUBERNETES_USE_MINIKUBE_FOR_DEVELOPMENT === "true",
     },
     socketIoAdmin: {
         username: process.env.SOCKET_IO_ADMIN_USERNAME,

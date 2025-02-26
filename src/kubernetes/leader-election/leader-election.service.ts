@@ -1,5 +1,5 @@
 import { CoordinationV1Api, KubeConfig, V1Lease, V1MicroTime, Watch } from "@kubernetes/client-node"
-import { Inject, Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common"
+import { Inject, Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from "@nestjs/common"
 import { KUBECONFIG } from "../kubernetes.constants"
 import { envConfig, runInKubernetes } from "@src/env"
 import { MODULE_OPTIONS_TOKEN } from "../kubernetes.module-definition"
@@ -12,7 +12,7 @@ import {
 } from "./leader-election.constant"
 
 @Injectable()
-export class LeaderElectionService implements OnApplicationBootstrap {
+export class LeaderElectionService implements OnApplicationBootstrap, OnApplicationShutdown {
     private readonly logger = new Logger(LeaderElectionService.name)
     private readonly namespace: string
     private readonly leaseName: string
@@ -20,11 +20,12 @@ export class LeaderElectionService implements OnApplicationBootstrap {
     private readonly renewInterval: number
     private leaseRenewalTimeout: NodeJS.Timeout | null = null
     private readonly durationInSeconds: number
-    private readonly coordintationV1Api: CoordinationV1Api
+    private coordintationV1Api: CoordinationV1Api
     private isLeader: boolean
-    private readonly watch: Watch
+    private watch: Watch
     private readonly awaitLeadership: boolean
     private readonly useMinikubeForDevelopment: boolean
+    private kubernetesConnected = false
 
     constructor(
         @Inject(KUBECONFIG)
@@ -38,26 +39,40 @@ export class LeaderElectionService implements OnApplicationBootstrap {
         this.holderIdentity = envConfig().kubernetes.hostname || v4()
         this.renewInterval = this.options.leaderElection?.renewInterval ?? 10000
         this.durationInSeconds = 2 * (this.renewInterval / 1000)
-        this.coordintationV1Api = this.kubeConfig.makeApiClient(CoordinationV1Api)
-        this.watch = new Watch(kubeConfig)
         this.awaitLeadership = this.options.leaderElection?.awaitLeadership ?? true
         this.isLeader = false
         this.useMinikubeForDevelopment =
             this.options.leaderElection &&
             (this.options.leaderElection.useMinikubeForDevelopment ?? true)
+    }
 
-        process.on("SIGINT", () => this.gracefulShutdown())
-        process.on("SIGTERM", () => this.gracefulShutdown())
+    onApplicationShutdown(signal?: string) {
+        this.logger.debug(`Application is shutting down with signal: ${signal}`)
+        if (this.kubernetesConnected) {
+            this.gracefulShutdown()
+        }
     }
 
     async onApplicationBootstrap() {
+        console.log(!this.useMinikubeForDevelopment, !runInKubernetes())
         if (!this.useMinikubeForDevelopment && !runInKubernetes()) {
             this.logger.debug("Leader election is disabled for non-kubernetes environments.")
             this.isLeader = true
             this.emitLeaderElectedEvent()
             return
         }
-        
+        try {
+            this.coordintationV1Api = this.kubeConfig.makeApiClient(CoordinationV1Api)
+            this.watch = new Watch(this.kubeConfig)
+            this.kubernetesConnected = true
+        }
+        catch (error) {
+            this.logger.error(`Error while creating kubernetes client: ${error.message}`)
+            this.logger.debug("Leader election is disabled for non-kubernetes environments.")
+            this.isLeader = true
+            this.emitLeaderElectedEvent()
+            return
+        }
         this.watchLeaseObject() // This should start right away to catch any events.
 
         if (this.awaitLeadership) {

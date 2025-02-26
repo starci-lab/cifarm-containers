@@ -11,7 +11,7 @@ import { HealthCheckDependency, HealthCheckOptions } from "./health-check.types"
 import { HealthCheckCoreService } from "./health-check-core.service"
 import { HealthCheckContainersService } from "./health-check-containers.service"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
-import { MongoDatabase, PostgreSQLDatabase, RedisType } from "@src/env"
+import { MongoDatabase, MongooseDatabase, RedisType } from "@src/env"
 
 @Controller()
 export class HealthCheckController {
@@ -30,11 +30,8 @@ export class HealthCheckController {
         const healthIndicators: Array<HealthIndicatorFunction> = []
 
         // Add ping checks based on the dependencies that are enabled
-        if (this.options.dependencies.includes(HealthCheckDependency.GameplayPostgreSQL)) {
-            healthIndicators.push(async () => this.healthCheckCoreService.pingCheckPostgreSql())
-        }
-        if (this.options.dependencies.includes(HealthCheckDependency.TelegramPostgreSQL)) {
-            healthIndicators.push(async () => this.healthCheckCoreService.pingCheckPostgreSql(PostgreSQLDatabase.Telegram))
+        if (this.options.dependencies.includes(HealthCheckDependency.GameplayMoongoose)) {
+            healthIndicators.push(async () => this.healthCheckCoreService.pingCheckMongoose(MongooseDatabase.Gameplay))
         }
         if (this.options.dependencies.includes(HealthCheckDependency.CacheRedis)) {
             healthIndicators.push(async () => this.healthCheckCoreService.pingCheckRedis(RedisType.Cache))

@@ -5,13 +5,14 @@ import { HealthCheckModule, HealthCheckDependency } from "@src/health-check"
 
 const bootstrap = async () => {
     const app = await NestFactory.createApplicationContext(AppModule)
+    app.enableShutdownHooks()
     await app.init()
 }
 
 const bootstrapHealthCheck = async () => {
     const app = await NestFactory.create(HealthCheckModule.forRoot({
         dependencies: [
-            HealthCheckDependency.TelegramPostgreSQL
+            HealthCheckDependency.GameplayMoongoose
         ]
     }))
     await app.listen(envConfig().containers.telegramBot.healthCheckPort)

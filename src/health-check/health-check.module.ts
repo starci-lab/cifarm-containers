@@ -3,20 +3,19 @@ import { TerminusModule } from "@nestjs/terminus"
 import {
     EnvModule,
     MongoDatabase,
-    PostgreSQLContext,
-    PostgreSQLDatabase,
+    MongooseDatabase,
     redisClusterEnabled,
     redisClusterRunInDocker,
     RedisType
 } from "@src/env"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./health-check.module-definition"
-import { PostgreSQLModule } from "@src/databases"
+import { MongooseModule } from "@src/databases"
 import { ExecModule } from "@src/exec"
 import { HealthCheckController } from "./health-check.controller"
 import { HealthCheckCoreService } from "./health-check-core.service"
 import { HealthCheckContainersService } from "./health-check-containers.service"
 import { KafkaOptionsModule } from "@src/brokers"
-import { dataSourcesMap, mongoDbMap, redisMap } from "./health-check.utils"
+import { mongooseMap, mongoDbMap, redisMap } from "./health-check.utils"
 import { HttpModule } from "@nestjs/axios"
 import { HealthCheckDependency } from "./health-check.types"
 import { MongodbHealthModule } from "./mongodb"
@@ -46,21 +45,21 @@ export class HealthCheckModule extends ConfigurableModuleClass {
             imports.push(HttpModule.register({}))
         }
 
+        // if mongoose are used
+        const _mongooseMap = mongooseMap()
         // if gameplay postgresql is used
-        const postgreSqlDatabases = Object.values(PostgreSQLDatabase)
-        const _dataSourcesMap = dataSourcesMap()
-        // if gameplay postgresql is used
-        postgreSqlDatabases.forEach((database) => {
-            if (options.dependencies.includes(_dataSourcesMap[database].dependency)) {
+        Object.keys(_mongooseMap).forEach((database: MongooseDatabase) => {
+            console.log(database)
+            if (options.dependencies.includes(_mongooseMap[database].dependency)) {
                 imports.push(
-                    PostgreSQLModule.forRoot({
-                        context: PostgreSQLContext.Main,
-                        database
+                    MongooseModule.forRoot({
+                        database,
                     })
                 )
             }
         })
 
+        // if mongodb are used
         const mongoDatabases = Object.values(MongoDatabase)
         const _mongoDbMap = mongoDbMap()
         mongoDatabases.forEach((database) => {

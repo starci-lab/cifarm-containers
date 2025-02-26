@@ -16,13 +16,7 @@ const basePackage = {
         node: ">= 14",
     },
     dependencies: {
-        "pg": "8.13.1",
         "@nestjs/platform-express": "^10.0.0"
-    },
-    overrides: {
-        "typeorm": {
-            "mongodb": "^6.12.0"
-        }
     },
 }
 
