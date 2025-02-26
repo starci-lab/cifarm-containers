@@ -25,9 +25,9 @@ export const mongoDbMap = (): Partial<Record<MongoDatabase, DependencyData>> => 
     }
 })
 
-export const mongooseMap = (): Partial<Record<MongoDatabase, DependencyData>> => ({
+export const mongoDbWithMongooseMap = (): Partial<Record<MongoDatabase, DependencyData>> => ({
     [MongoDatabase.Gameplay]: {
-        dependency: HealthCheckDependency.GameplayMoongoose,
+        dependency: HealthCheckDependency.GameplayMongoDb,
         token: getMongooseToken({
             database: MongoDatabase.Gameplay
         })

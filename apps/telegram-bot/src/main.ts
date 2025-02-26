@@ -12,7 +12,7 @@ const bootstrap = async () => {
 const bootstrapHealthCheck = async () => {
     const app = await NestFactory.create(HealthCheckModule.forRoot({
         dependencies: [
-            HealthCheckDependency.GameplayMoongoose
+            HealthCheckDependency.GameplayMongoDb
         ]
     }))
     await app.listen(envConfig().containers.telegramBot.healthCheckPort)

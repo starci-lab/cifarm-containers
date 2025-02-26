@@ -1,5 +1,5 @@
 export enum HealthCheckDependency {
-    GameplayMoongoose = "gameplay-mongoose",
+    GameplayMongoDb = "gameplay-mongodb",
     CacheRedis = "cache-redis",
     AdapterRedis = "adapter-redis",
     JobRedis = "job-redis",

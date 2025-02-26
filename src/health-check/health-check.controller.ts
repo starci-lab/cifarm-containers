@@ -30,7 +30,7 @@ export class HealthCheckController {
         const healthIndicators: Array<HealthIndicatorFunction> = []
 
         // Add ping checks based on the dependencies that are enabled
-        if (this.options.dependencies.includes(HealthCheckDependency.GameplayMoongoose)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.GameplayMongoDb)) {
             healthIndicators.push(async () => this.healthCheckCoreService.pingCheckMongoose(MongoDatabase.Gameplay))
         }
         if (this.options.dependencies.includes(HealthCheckDependency.CacheRedis)) {

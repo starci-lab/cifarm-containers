@@ -1,7 +1,6 @@
 #!/bin/bash
 
 echo "Starting Docker build"
-
 docker build -t cifarm/cli -f ./apps/cli/Dockerfile . & docker push cifarm/cli
 docker build -t cifarm/cron-scheduler -f ./apps/cron-scheduler/Dockerfile . & docker push cifarm/cron-scheduler
 docker build -t cifarm/cron-worker -f ./apps/cron-worker/Dockerfile . & docker push cifarm/cron-worker

@@ -14,7 +14,7 @@ import { HealthCheckController } from "./health-check.controller"
 import { HealthCheckCoreService } from "./health-check-core.service"
 import { HealthCheckContainersService } from "./health-check-containers.service"
 import { KafkaOptionsModule } from "@src/brokers"
-import { mongooseMap, mongoDbMap, redisMap } from "./health-check.utils"
+import { mongoDbWithMongooseMap, mongoDbMap, redisMap } from "./health-check.utils"
 import { HttpModule } from "@nestjs/axios"
 import { HealthCheckDependency } from "./health-check.types"
 import { MongodbHealthModule } from "./mongodb"
@@ -45,7 +45,7 @@ export class HealthCheckModule extends ConfigurableModuleClass {
         }
 
         // if mongoose are used
-        const _mongooseMap = mongooseMap()
+        const _mongooseMap = mongoDbWithMongooseMap()
         // if gameplay postgresql is used
         Object.keys(_mongooseMap).forEach((database: MongoDatabase) => {
             if (options.dependencies.includes(_mongooseMap[database].dependency)) {
@@ -58,9 +58,8 @@ export class HealthCheckModule extends ConfigurableModuleClass {
         })
 
         // if mongodb are used
-        const mongoDatabases = Object.values(MongoDatabase)
         const _mongoDbMap = mongoDbMap()
-        mongoDatabases.forEach((database) => {
+        Object.keys(_mongoDbMap).forEach((database: MongoDatabase) => {
             if (options.dependencies.includes(_mongoDbMap[database].dependency)) {
                 imports.push(
                     MongodbHealthModule.register({

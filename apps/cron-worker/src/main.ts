@@ -13,7 +13,7 @@ const bootstrapHealthCheck = async () => {
     const app = await NestFactory.create(HealthCheckModule.forRoot({
         dependencies: [
             HealthCheckDependency.CacheRedis,
-            HealthCheckDependency.GameplayPostgreSQL,
+            HealthCheckDependency.GameplayMongoDb,
         ]
     }))
     const logger = new Logger("Test")

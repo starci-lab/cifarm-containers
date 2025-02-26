@@ -81,9 +81,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/gameplay-service/src",
       "compilerOptions": {
-        "webpack": true,
         "tsConfigPath": "apps/gameplay-service/tsconfig.app.json",
-        "webpackConfigPath": "apps/gameplay-service/webpack.config.js"
+        "webpackConfigPath": "apps/gameplay-service/webpack.config.js",
+        "webpack": true
       }
     },
     "cli": {

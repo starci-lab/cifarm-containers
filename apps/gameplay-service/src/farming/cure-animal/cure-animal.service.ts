@@ -1,22 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    Activities,
-    AnimalCurrentState,
-    AnimalInfoEntity,
-    InjectPostgreSQL,
-    PlacedItemSchema,
-    PlacedItemType,
-    SystemEntity,
-    SystemId,
-    UserSchema
-} from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
-import { DataSource } from "typeorm"
 import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class CureAnimalService {

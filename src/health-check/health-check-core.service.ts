@@ -18,7 +18,7 @@ import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
 import { HEALTH_CHECK_TIMEOUT } from "./health-check.constants"
 import { HealthCheckOptions, HealthCheckDependency } from "./health-check.types"
-import { mongooseMap, mongoDbMap, redisMap } from "./health-check.utils"
+import { mongoDbWithMongooseMap, mongoDbMap, redisMap } from "./health-check.utils"
 import { MongoDbHealthIndicator } from "./mongodb"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
 import { Connection } from "mongoose"
@@ -68,9 +68,8 @@ export class HealthCheckCoreService implements OnModuleInit {
 
     // Helper function to initialize Mongoose connections
     private initializeMongooseConnections() {
-        const databases = Object.values(MongoDatabase)
-        const map = mongooseMap()
-        databases.forEach((database) => {
+        const map = mongoDbWithMongooseMap()
+        Object.keys(map).forEach((database: MongoDatabase) => {
             if (this.options.dependencies.includes(map[database].dependency)) {
                 this.mongooseConnections[database] = this.moduleRef.get<Connection>(map[database].token, {
                     strict: false
@@ -80,12 +79,11 @@ export class HealthCheckCoreService implements OnModuleInit {
     }
 
     private initializeMongoDbIndicators() {
-        const mongoDatabases = Object.values(MongoDatabase)
-        const _mongoDbMap = mongoDbMap()
-        mongoDatabases.forEach((database) => {
-            if (this.options.dependencies.includes(_mongoDbMap[database].dependency)) {
+        const map = mongoDbMap()
+        Object.keys(map).forEach((database: MongoDatabase) => {
+            if (this.options.dependencies.includes(map[database].dependency)) {
                 this.mongoDbs[database] = this.moduleRef.get<MongoDbHealthIndicator>(
-                    _mongoDbMap[database].token,
+                    map[database].token,
                     { strict: false }
                 )
             }
@@ -143,7 +141,7 @@ export class HealthCheckCoreService implements OnModuleInit {
         database: MongoDatabase = MongoDatabase.Gameplay
     ): Promise<HealthIndicatorResult> {
         const map: Partial<Record<MongoDatabase, HealthCheckDependency>> = {
-            [MongoDatabase.Gameplay]: HealthCheckDependency.GameplayMoongoose,
+            [MongoDatabase.Gameplay]: HealthCheckDependency.GameplayMongoDb,
         }
         return this.db.pingCheck(map[database], {
             connection: this.mongooseConnections[database],
