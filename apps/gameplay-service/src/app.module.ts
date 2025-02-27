@@ -25,7 +25,8 @@ import { DeliveryModule } from "./delivery"
 import { FarmingModule } from "./farming"
 import { CommunityModule } from "./community"
 import { ClaimModule } from "./claim"
-
+import { HoneycombModule } from "./honeycomb"
+import { HoneycombModule as CoreHoneycombModule } from "@src/honeycomb"
 @Module({
     imports: [
         MongooseModule.forRoot(),
@@ -51,6 +52,10 @@ import { ClaimModule } from "./claim"
             useGlobalImports: true,
             isGlobal: true
         }),
+        CoreHoneycombModule.register({
+            isGlobal: true,
+            useGlobalImports: true,
+        }),
         AuthModule,
         PlayerModule,
         ShopModule,
@@ -58,6 +63,7 @@ import { ClaimModule } from "./claim"
         ClaimModule,
         CommunityModule,
         DeliveryModule,
+        HoneycombModule
         // PlacementModule,
         // ProfileModule,
         // UpgradeModule
@@ -65,7 +71,7 @@ import { ClaimModule } from "./claim"
     providers: [
         {
             provide: APP_FILTER,
-            useClass: BlockchainExceptionFilter,
+            useClass: BlockchainExceptionFilter
         },
         {
             provide: APP_FILTER,
@@ -78,4 +84,3 @@ import { ClaimModule } from "./claim"
     ]
 })
 export class AppModule {}
- 

@@ -16,14 +16,8 @@ const basePackage = {
     },
     dependencies: {
         "kafkajs": "^2.2.4",
-        "pg": "8.13.1",
         "@nestjs/platform-express": "^10.0.0",
         "ioredis": "^5.4.2",
-    },
-    overrides: {
-        "typeorm": {
-            "mongodb": "^6.12.0"
-        }
     },
 }
 

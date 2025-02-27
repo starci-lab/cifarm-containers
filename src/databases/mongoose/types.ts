@@ -1,7 +1,7 @@
-import { MongoDbDatabase } from "@src/env"
+import { MongoDatabase } from "@src/env"
 
 export interface MongooseOptions {
-    database?: MongoDbDatabase
+    database?: MongoDatabase
     // whether to use memory server for testing
     useMemoryServer?: boolean
 }

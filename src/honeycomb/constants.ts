@@ -1,0 +1,1 @@
+export const HONEYCOMB_EDGE_CLIENT_URL= "https://edge.test.honeycombprotocol.com"

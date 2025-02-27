@@ -1,7 +1,7 @@
-import { MongoDatabase, PostgreSQLDatabase, RedisType } from "@src/env"
+import { MongoDatabase, RedisType } from "@src/env"
 import { JOB_REDIS, CACHE_REDIS, ADAPTER_REDIS, ADAPTER_MONGODB } from "./health-check.constants"
 import { HealthCheckDependency, DependencyData } from "./health-check.types"
-import { getPostgreSqlToken } from "@src/databases"
+import { getMongooseToken } from "@src/databases"
 
 export const redisMap = (): Record<RedisType, DependencyData> => ({
     [RedisType.Job]: {
@@ -18,24 +18,18 @@ export const redisMap = (): Record<RedisType, DependencyData> => ({
     }
 })
 
-export const dataSourcesMap = (): Record<PostgreSQLDatabase, DependencyData> => ({
-    [PostgreSQLDatabase.Gameplay]: {
-        dependency: HealthCheckDependency.GameplayPostgreSQL,
-        token: getPostgreSqlToken({
-            database: PostgreSQLDatabase.Gameplay
-        })
-    },
-    [PostgreSQLDatabase.Telegram]: {
-        dependency: HealthCheckDependency.TelegramPostgreSQL,
-        token: getPostgreSqlToken({
-            database: PostgreSQLDatabase.Telegram
-        })
-    }
-})
-
-export const mongoDbMap = (): Record<MongoDatabase, DependencyData> => ({
+export const mongoDbMap = (): Partial<Record<MongoDatabase, DependencyData>> => ({
     [MongoDatabase.Adapter]: {
         dependency: HealthCheckDependency.AdapterMongoDb,
         token: ADAPTER_MONGODB
+    }
+})
+
+export const mongoDbWithMongooseMap = (): Partial<Record<MongoDatabase, DependencyData>> => ({
+    [MongoDatabase.Gameplay]: {
+        dependency: HealthCheckDependency.GameplayMongoDb,
+        token: getMongooseToken({
+            database: MongoDatabase.Gameplay
+        })
     }
 })

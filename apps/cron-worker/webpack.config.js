@@ -15,15 +15,9 @@ const basePackage = {
         node: ">= 14",
     },
     dependencies: {
-        "pg": "8.13.1",
         "ioredis": "^5.4.2",
         "@nestjs/platform-express": "^10.0.0",
-    },
-    overrides: {
-        "typeorm": {
-            "mongodb": "^6.12.0"
-        }
-    },
+    }
 }
 
 module.exports = {

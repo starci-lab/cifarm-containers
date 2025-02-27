@@ -1,4 +1,5 @@
-import { Injectable, OnModuleInit } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { envConfig } from "@src/env"
 import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { InjectTelegraf } from "@src/telegraf/telegraf.decorators"
 import { readFileSync } from "fs"
@@ -7,12 +8,16 @@ import { Telegraf } from "telegraf"
 
 @Injectable()
 export class BotService implements OnModuleInit {
+    private readonly logger = new Logger(BotService.name)
     private isLeader = false
-    
     constructor(
         @InjectTelegraf()
         private readonly telegraf: Telegraf
     ) {}
+
+    onModuleInit() {
+        this.launch()
+    }
 
     @OnEventLeaderElected()
     handleLeaderElected() {
@@ -21,22 +26,23 @@ export class BotService implements OnModuleInit {
 
     @OnEventLeaderLost()
     handleLeaderLost() {
-        this.isLeader = false
-    }
-        
-    onModuleInit() {
-        if (!this.isLeader) {
-            return
-        }
-        this.initializeCommands()
+        //this.stop()
+        //this.isLeader = false
     }
 
-    private async initializeCommands() {
+    private async launch() {
+        this.registerStartMiddleware()
+        this.logger.verbose("Bot prepared. Launching...")
+        await this.telegraf.launch()
+    }
+
+    private registerStartMiddleware() {
         this.telegraf.start(async (ctx) => {
             const photoPath = join(__dirname, "assets", "cifarm-background.png")
             try {
                 const photo = readFileSync(photoPath)
-                const caption = "🌾 Cifarm: Farm-to-earn on Telegram! 🌾\n Farm, help, visit, and even steal from other players while earning airdropped tokens! 💰\n\n🚀 Free to play & packed with rewards! Unlock the potential of multichain gaming with Cifarm. 🌱✨\n👉 Start playing now and grow your farm!\n"
+                const caption =
+                    "🌾 Cifarm: Farm-to-earn on Telegram! 🌾\n Farm, help, visit, and even steal from other players while earning airdropped tokens! 💰\n\n🚀 Free to play & packed with rewards! Unlock the potential of Solana gaming with Cifarm. 🌱✨\n👉 Start playing now and grow your farm!\n"
 
                 await ctx.replyWithPhoto(
                     { source: photo },
@@ -44,7 +50,14 @@ export class BotService implements OnModuleInit {
                         caption,
                         reply_markup: {
                             inline_keyboard: [
-                                [{ text: "Play Cifarm", url: "https://cifarm.io" }],
+                                [
+                                    {
+                                        text: "Play",
+                                        web_app: {
+                                            url: envConfig().telegram.main.miniappUrl
+                                        }
+                                    }
+                                ]
                             ]
                         }
                     }
@@ -54,10 +67,13 @@ export class BotService implements OnModuleInit {
                 ctx.reply("An error occurred while processing your request.")
             }
         })
+    }
 
-        process.once("SIGINT", () => this.telegraf.stop("SIGINT"))
-        process.once("SIGTERM", () => this.telegraf.stop("SIGTERM"))
-
-        await this.telegraf.launch()
+    async stop() {
+        try {
+            this.telegraf.stop()
+        } catch (error) {
+            this.logger.error("Error stopping bot:", error)
+        }
     }
 }

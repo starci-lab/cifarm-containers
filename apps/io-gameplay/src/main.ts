@@ -8,6 +8,7 @@ import cluster from "cluster"
 import { INestApplication, Logger } from "@nestjs/common"
 import { join } from "path"
 import { ServeStaticModule } from "@nestjs/serve-static"
+import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 
 const addAdapter = async (app: INestApplication) => {
     const factory = app.get<IoAdapterFactory>(IO_ADAPTER_FACTORY)
@@ -66,16 +67,17 @@ const bootstrapAll = async () => {
 }
 
 const bootstrapHealthCheck = async () => {
-    // const app = await NestFactory.create(
-    //     HealthCheckModule.forRoot({
-    //         dependencies: [
-    //             HealthCheckDependency.Kafka,
-    //             HealthCheckDependency.GameplayPostgreSQL,
-    //             HealthCheckDependency.AdapterMongoDb
-    //         ]
-    //     })
-    // )
-    // await app.listen(envConfig().containers[Container.IoGameplay].healthCheckPort)
+    const app = await NestFactory.create(
+        HealthCheckModule.forRoot({
+            dependencies: [
+                HealthCheckDependency.Kafka,
+                HealthCheckDependency.GameplayMongoDb,
+                HealthCheckDependency.CacheRedis,
+                HealthCheckDependency.AdapterRedis,
+            ]
+        })
+    )
+    await app.listen(envConfig().containers[Container.IoGameplay].healthCheckPort)
 }
 
 const bootstrapAdminUI = async () => {

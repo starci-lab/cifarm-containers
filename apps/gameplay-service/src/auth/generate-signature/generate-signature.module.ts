@@ -7,7 +7,6 @@ import { RequestMessageModule } from "../request-message"
     imports: [RequestMessageModule],
     controllers: [GenerateSignatureController],
     providers: [GenerateSignatureService],
-    exports: [GenerateSignatureService]
 })
 export class GenerateSignatureModule {
 }

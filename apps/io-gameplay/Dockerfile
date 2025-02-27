@@ -1,4 +1,4 @@
-#docker build -t cifarm/io-gameplay -f ./apps/io-gameplay/Dockerfile . & docker push cifarm/io-gameplay
+# docker build -t cifarm/io-gameplay -f ./apps/io-gameplay/Dockerfile . & docker push cifarm/io-gameplay
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0

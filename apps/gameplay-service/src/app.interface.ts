@@ -79,6 +79,7 @@ import {
 import { MoveRequest, MoveResponse } from "./placement"
 import { UpdateTutorialRequest, UpdateTutorialResponse, MoveInventoryRequest, MoveInventoryResponse } from "./player"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
+import { ClaimHoneycombDailyRewardRequest, ClaimHoneycombDailyRewardResponse } from "./honeycomb"
 
 export interface IGameplayService {
     // Auth
@@ -138,4 +139,7 @@ export interface IGameplayService {
 
     // Upgrade
     upgradeBuilding(request: UpgradeBuildingRequest): Observable<UpgradeBuildingResponse>
+
+    // Honeycomb
+    claimHoneycombDailyReward(request: ClaimHoneycombDailyRewardRequest): Observable<ClaimHoneycombDailyRewardResponse>
 }

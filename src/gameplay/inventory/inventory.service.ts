@@ -152,7 +152,8 @@ export class InventoryService {
         const occupiedIndexes = await connection
             .model<InventorySchema>(InventorySchema.name)
             .distinct("index", {
-                user: userId
+                user: userId,
+                kind
             })
             .session(session)
 

@@ -39,7 +39,7 @@ export class ClaimDailyRewardService {
             const now = this.dateUtcService.getDayjs()
 
             if (user.dailyRewardLastClaimTime && now.isSame(user.dailyRewardLastClaimTime, "day")) {
-                throw new GrpcFailedPreconditionException("Spin already claimed today")
+                throw new GrpcFailedPreconditionException("Daily reward already claimed today")
             }
 
             const { value } = await this.connection

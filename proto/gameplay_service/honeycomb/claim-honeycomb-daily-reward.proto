@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message ClaimHoneycombDailyRewardRequest {
+    string userId = 1;
+}
+
+message ClaimHoneycombDailyRewardResponse {
+    string transaction = 1;
+    string blockhash = 2;
+    int32 lastValidBlockHeight = 3;
+}

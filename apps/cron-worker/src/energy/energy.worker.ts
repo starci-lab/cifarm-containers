@@ -7,6 +7,7 @@ import { DateUtcService } from "@src/date"
 import { Job } from "bullmq"
 import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
+import { EnergyService } from "@src/gameplay"
 
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
@@ -15,7 +16,8 @@ export class EnergyWorker extends WorkerHost {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly dateUtcService: DateUtcService
+        private readonly dateUtcService: DateUtcService,
+        private readonly energyService: EnergyService
     ) {
         super()
     }
@@ -50,14 +52,19 @@ export class EnergyWorker extends WorkerHost {
                     session.startTransaction()
                     try {
                         const updateUser = () => {
+                            // skip if the user's energy is full
+                            if (user.energyFull) {
+                                return
+                            }
                             // Add time to the user's energy
                             user.energyRegenTime += time
                             if (user.energyRegenTime >= energyRegenTime) {
                                 user.energy += 1
                                 // Reset the timer
                                 user.energyRegenTime = 0
+                                // Check if the user's energy is full
+                                user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
                             }
-                            return
                         }
                         updateUser()
                         await user.save({ session })

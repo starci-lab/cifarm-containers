@@ -3,6 +3,7 @@ import { EnvModule } from "@src/env"
 import { DatabaseModule } from "./database"
 import { ExecModule } from "@src/exec"
 import { DockerModule } from "./docker/docker.module"
+import { HoneycombModule } from "./honeycomb"
 
 @Module({
     imports: [
@@ -14,7 +15,8 @@ import { DockerModule } from "./docker/docker.module"
             isGlobal: true
         }),
         DatabaseModule,
-        DockerModule
+        DockerModule,
+        HoneycombModule
     ]
 })
 export class AppModule {}

@@ -4,25 +4,24 @@ import { KafkaOptions, RedisOptions, Transport } from "@nestjs/microservices"
 import {
     HealthIndicatorResult,
     MicroserviceHealthIndicator,
-    TypeOrmHealthIndicator
+    MongooseHealthIndicator,
 } from "@nestjs/terminus"
 import { KafkaOptionsFactory } from "@src/brokers"
 import {
     envConfig,
-    PostgreSQLDatabase,
     redisClusterEnabled,
     redisClusterRunInDocker,
-    MongoDatabase,
-    RedisType
+    RedisType,
+    MongoDatabase
 } from "@src/env"
 import { ExecDockerRedisClusterService } from "@src/exec"
 import { NatMap } from "ioredis"
 import { HEALTH_CHECK_TIMEOUT } from "./health-check.constants"
 import { HealthCheckOptions, HealthCheckDependency } from "./health-check.types"
-import { dataSourcesMap, mongoDbMap, redisMap } from "./health-check.utils"
-import { DataSource } from "typeorm"
+import { mongoDbWithMongooseMap, mongoDbMap, redisMap } from "./health-check.utils"
 import { MongoDbHealthIndicator } from "./mongodb"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
+import { Connection } from "mongoose"
 
 @Injectable()
 export class HealthCheckCoreService implements OnModuleInit {
@@ -33,20 +32,20 @@ export class HealthCheckCoreService implements OnModuleInit {
         Record<RedisType, ExecDockerRedisClusterService>
     > = {}
 
-    private readonly dataSources: Partial<Record<PostgreSQLDatabase, DataSource>> = {}
+    private readonly mongooseConnections: Partial<Record<MongoDatabase, Connection>> = {}
     private readonly mongoDbs: Partial<Record<MongoDatabase, MongoDbHealthIndicator>> = {}
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN) private readonly options: HealthCheckOptions,
         private readonly kafkaOptionsFactory: KafkaOptionsFactory,
         private readonly microservice: MicroserviceHealthIndicator,
-        private readonly db: TypeOrmHealthIndicator,
+        private readonly db: MongooseHealthIndicator,
         private readonly moduleRef: ModuleRef
     ) {}
 
     onModuleInit() {
         this.initializeRedisServices()
-        this.initializeDataSources()
+        this.initializeMongooseConnections()
         this.initializeMongoDbIndicators()
     }
 
@@ -64,16 +63,15 @@ export class HealthCheckCoreService implements OnModuleInit {
                     strict: false
                 })
             }
-        })
+        }) 
     }
 
-    // Helper function to initialize Redis services
-    private initializeDataSources() {
-        const dataSources = Object.values(PostgreSQLDatabase)
-        const map = dataSourcesMap()
-        dataSources.forEach((database) => {
+    // Helper function to initialize Mongoose connections
+    private initializeMongooseConnections() {
+        const map = mongoDbWithMongooseMap()
+        Object.keys(map).forEach((database: MongoDatabase) => {
             if (this.options.dependencies.includes(map[database].dependency)) {
-                this.dataSources[database] = this.moduleRef.get<DataSource>(map[database].token, {
+                this.mongooseConnections[database] = this.moduleRef.get<Connection>(map[database].token, {
                     strict: false
                 })
             }
@@ -81,12 +79,11 @@ export class HealthCheckCoreService implements OnModuleInit {
     }
 
     private initializeMongoDbIndicators() {
-        const mongoDatabases = Object.values(MongoDatabase)
-        const _mongoDbMap = mongoDbMap()
-        mongoDatabases.forEach((database) => {
-            if (this.options.dependencies.includes(_mongoDbMap[database].dependency)) {
+        const map = mongoDbMap()
+        Object.keys(map).forEach((database: MongoDatabase) => {
+            if (this.options.dependencies.includes(map[database].dependency)) {
                 this.mongoDbs[database] = this.moduleRef.get<MongoDbHealthIndicator>(
-                    _mongoDbMap[database].token,
+                    map[database].token,
                     { strict: false }
                 )
             }
@@ -140,15 +137,14 @@ export class HealthCheckCoreService implements OnModuleInit {
     }
 
     // PostgreSQL ping check method
-    public async pingCheckPostgreSql(
-        database: PostgreSQLDatabase = PostgreSQLDatabase.Gameplay
+    public async pingCheckMongoose(
+        database: MongoDatabase = MongoDatabase.Gameplay
     ): Promise<HealthIndicatorResult> {
-        const map: Record<PostgreSQLDatabase, HealthCheckDependency> = {
-            [PostgreSQLDatabase.Gameplay]: HealthCheckDependency.GameplayPostgreSQL,
-            [PostgreSQLDatabase.Telegram]: HealthCheckDependency.TelegramPostgreSQL
+        const map: Partial<Record<MongoDatabase, HealthCheckDependency>> = {
+            [MongoDatabase.Gameplay]: HealthCheckDependency.GameplayMongoDb,
         }
         return this.db.pingCheck(map[database], {
-            connection: this.dataSources[database],
+            connection: this.mongooseConnections[database],
             timeout: HEALTH_CHECK_TIMEOUT
         })
     }
