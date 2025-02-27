@@ -21,7 +21,8 @@ export enum AvailableInType {
 // Supply Type Enum
 export enum SupplyType {
     Fertilizer = "fertilizer",
-    AnimalFeed = "animalFeed"
+    AnimalFeed = "animalFeed",
+    AnimalPill = "animalPill"
 }
 
 // Spin Type Enum

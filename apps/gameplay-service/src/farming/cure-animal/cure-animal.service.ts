@@ -1,119 +1,117 @@
 import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     Activities,
     AnimalCurrentState,
-    AnimalInfoEntity,
-    InjectPostgreSQL,
+    InjectMongoose,
+    InventorySchema,
+    InventoryType,
+    InventoryTypeSchema,
+    KeyValueRecord,
     PlacedItemSchema,
-    PlacedItemType,
-    SystemEntity,
+    SupplyId,
     SystemId,
+    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
-import { DataSource } from "typeorm"
-import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
+import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
+import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
 
 @Injectable()
 export class CureAnimalService {
     private readonly logger = new Logger(CureAnimalService.name)
 
     constructor(
-        // @InjectPostgreSQL()
-        // private readonly dataSource: DataSource,
-        // private readonly energyService: EnergyService,
-        // private readonly levelService: LevelService,
-        // @InjectKafka()
-        // private readonly clientKafka: ClientKafka
+        @InjectMongoose()
+        private readonly connection: Connection,
+        private readonly energyService: EnergyService,
+        private readonly inventoryService: InventoryService,
+        private readonly levelService: LevelService
     ) {}
 
-    async cureAnimal(request: CureAnimalRequest): Promise<CureAnimalResponse> {
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
+    async cureAnimal({ placedItemAnimalId, inventorySupplyId, userId }: CureAnimalRequest): Promise<CureAnimalResponse> {
+        const mongoSession = await this.connection.startSession()
+        mongoSession.startTransaction()
 
-        // try {
-        //     const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemSchema, {
-        //         where: {
-        //             id: request.placedItemAnimalId,
-        //             userId: request.userId,
-        //             placedItemType: {
-        //                 type: PlacedItemType.Animal
-        //             }
-        //         },
-        //         relations: {
-        //             animalInfo: true
-        //         }
-        //     })
+        try {
+            const placedItemAnimal = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findById(placedItemAnimalId)
+                .session(mongoSession)
 
-        //     if (!placedItemAnimal) {
-        //         throw new GrpcNotFoundException("Animal not found")
-        //     }
+            if (!placedItemAnimal) throw new GrpcNotFoundException("Placed Item animal not found")
+            if (placedItemAnimal.user.toString() !== userId) throw new GrpcFailedPreconditionException("Cannot cure another user's animal")
+            if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) throw new GrpcFailedPreconditionException("Animal is not sick")
 
-        //     if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick)
-        //         throw new GrpcFailedPreconditionException("Animal is not sick")
+            const { value: { cureAnimal: { energyConsume, experiencesGain } } } = await this.connection
+                .model<SystemSchema>(SystemSchema.name)
+                .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
+            
+            const user = await this.connection.model<UserSchema>(UserSchema.name)
+                .findById(userId)
+                .session(mongoSession)
 
-        //     const { value } = await queryRunner.manager.findOne(SystemEntity, {
-        //         where: { id: SystemId.Activities }
-        //     })
-        //     const {
-        //         cureAnimal: { energyConsume, experiencesGain }
-        //     } = value as Activities
+            if (!user) throw new GrpcNotFoundException("User not found")
 
-        //     const user = await queryRunner.manager.findOne(UserSchema, {
-        //         where: { id: request.userId }
-        //     })
+            this.energyService.checkSufficient({
+                current: user.energy,
+                required: energyConsume
+            })
 
-        //     this.energyService.checkSufficient({
-        //         current: user.energy,
-        //         required: energyConsume
-        //     })
+            const energyChanges = this.energyService.substract({ user, quantity: energyConsume })
+            const experiencesChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
 
-        //     // Subtract energy
-        //     const energyChanges = this.energyService.substract({
-        //         entity: user,
-        //         energy: energyConsume
-        //     })
+            const inventory = await this.connection.model<InventorySchema>(InventorySchema.name)
+                .findById(inventorySupplyId)
+                .session(mongoSession)
 
-        //     await queryRunner.startTransaction()
-        //     try {
-        //         // Update animal state
-        //         await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
-        //             currentState: AnimalCurrentState.Normal
-        //         })
+            if (!inventory) throw new GrpcNotFoundException("Inventory not found")
+            
+            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                .findById(inventory.inventoryType)
+                .session(mongoSession)
 
-        //         // Update user energy and experience
-        //         const experiencesChanges = this.levelService.addExperiences({
-        //             entity: user,
-        //             experiences: experiencesGain
-        //         })
+            if (!inventoryType || inventoryType.type !== InventoryType.Supply) throw new GrpcFailedPreconditionException("Inventory type is not supply")
+            if (inventoryType.displayId !== SupplyId.AnimalPill) throw new GrpcFailedPreconditionException("Inventory supply is not medicine")
 
-        //         await queryRunner.manager.update(UserSchema, user.id, {
-        //             ...energyChanges,
-        //             ...experiencesChanges
-        //         })
+            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                { _id: user.id },
+                { ...energyChanges, ...experiencesChanges }
+            ).session(mongoSession)
 
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
+            const { inventories } = await this.inventoryService.getRemoveParams({
+                connection: this.connection,
+                userId: user.id,
+                session: mongoSession,
+                inventoryType,
+                kind: inventory.kind
+            })
+            const { removedInventories, updatedInventories } = this.inventoryService.remove({
+                inventories,
+                quantity: 1,
+            })
+            for (const inventory of updatedInventories) {
+                await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
+                    { _id: inventory._id },
+                    inventory
+                ).session(mongoSession)
+            }
+            await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
+                _id: { $in: removedInventories.map(inventory => inventory._id) }
+            }).session(mongoSession)
 
-        //     // Publish event
-        //     this.clientKafka.emit(KafkaPattern.PlacedItems, {
-        //         userId: user.id
-        //     })
+            placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
+            await placedItemAnimal.save({ session: mongoSession })
 
-        //     return {}
-        // } finally {
-        //     await queryRunner.release()
-        // }
-
-        return {}
+            await mongoSession.commitTransaction()
+            return {}
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw new GrpcInternalException(error.message)
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }

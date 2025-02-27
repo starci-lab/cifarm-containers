@@ -7,4 +7,5 @@ package gameplay_service;
 message FeedAnimalRequest {
     string userId = 1;
     string placedItemAnimalId = 2;
+    string inventorySupplyId = 3;
 }

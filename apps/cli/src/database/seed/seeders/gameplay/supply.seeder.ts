@@ -36,6 +36,13 @@ export class SupplySeeder implements Seeder {
                 type: SupplyType.AnimalFeed,
                 price: 50,
                 availableInShop: true,
+            },
+            {
+                _id: createObjectId(SupplyId.AnimalPill),
+                displayId: SupplyId.AnimalPill,
+                type: SupplyType.AnimalPill,
+                price: 50,
+                availableInShop: true,
             }
         ]
         await this.connection.model<SupplySchema>(SupplySchema.name).insertMany(data)

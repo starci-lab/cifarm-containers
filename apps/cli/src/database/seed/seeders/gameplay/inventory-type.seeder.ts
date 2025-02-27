@@ -266,6 +266,16 @@ export class InventoryTypeSeeder implements Seeder {
                 type: InventoryType.Supply
             },
             {
+                _id: createObjectId(InventoryTypeId.AnimalPill),
+                displayId: InventoryTypeId.AnimalPill,
+                asTool: true,
+                deliverable: false,
+                maxStack: 64,
+                placeable: false,
+                supply: createObjectId(SupplyId.AnimalPill),
+                type: InventoryType.Supply
+            },
+            {
                 _id: createObjectId(InventoryTypeId.Hand),
                 displayId: InventoryTypeId.Hand,
                 stackable: false,

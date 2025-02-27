@@ -55,7 +55,8 @@ export enum DailyRewardPossibilityKey {
 // Supply Enum
 export enum SupplyId {
     BasicFertilizer = "basicFertilizer",
-    AnimalFeed = "animalFeed"
+    AnimalFeed = "animalFeed",
+    AnimalPill = "animalPill",
 }
 
 // Tile Enum
@@ -122,6 +123,7 @@ export enum InventoryTypeId {
     BellPepperSeed = "bellPepperSeed",
     BasicFertilizer = "basicFertilizer",
     AnimalFeed = "animalFeed",
+    AnimalPill = "animalPill",
     Egg = "egg",
     EggQuality = "eggQuality",
     Milk = "milk",
