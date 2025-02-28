@@ -77,50 +77,45 @@ export class BuySeedsService {
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
-            try {
-                // Subtract gold
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: totalCost
-                })
+            // Subtract gold
+            const goldsChanged = this.goldBalanceService.subtract({
+                user: user,
+                amount: totalCost
+            })
 
-                //update
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...goldsChanged }
-                )
+            //update
+            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                { _id: user.id },
+                { ...goldsChanged }
+            )
 
-                console.log("User updated", goldsChanged)
+            console.log("User updated", goldsChanged)
 
-                //Save inventory
-                const { createdInventories, updatedInventories } = this.inventoryService.add({
-                    inventoryType,
-                    inventories,
-                    capacity: storageCapacity,
-                    quantity: request.quantity,
-                    userId: user.id,
-                    occupiedIndexes,
-                    kind: InventoryKind.Storage,
-                })
+            //Save inventory
+            const { createdInventories, updatedInventories } = this.inventoryService.add({
+                inventoryType,
+                inventories,
+                capacity: storageCapacity,
+                quantity: request.quantity,
+                userId: user.id,
+                occupiedIndexes,
+                kind: InventoryKind.Storage,
+            })
 
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
-                for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
-                        _id: inventory._id
-                    }, inventory)
-                }
-
-                mongoSession.commitTransaction()
-
-                return {}
-            } catch (error) {
-                const errorMessage = `Transaction failed, reason: ${error.message}`
-                this.logger.error(errorMessage)
-                mongoSession.abortTransaction()
-                throw error
+            await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+            for (const inventory of updatedInventories) {
+                await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
+                    _id: inventory._id
+                }, inventory)
             }
+            await mongoSession.commitTransaction()
+            return {}
+        } catch (error) {
+            this.logger.error(error)
+            await mongoSession.abortTransaction()
+            throw error
         } finally {
-            mongoSession.endSession()
+            await mongoSession.endSession()
         }
     }
 }

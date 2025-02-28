@@ -24,8 +24,8 @@ export class ToolSeeder implements Seeder {
                 sort: 0,
             },
             {
-                _id: createObjectId(ToolId.Scythe),
-                displayId: ToolId.Scythe,
+                _id: createObjectId(ToolId.Crate),
+                displayId: ToolId.Crate,
                 sort: 0,
             },
             {
