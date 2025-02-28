@@ -52,6 +52,7 @@ import {
     UserFollowRelationSchema,
 } from "./gameplay"
 import { Connection } from "mongoose"
+import { normalizeMongoose } from "./plugins"
 
 @Module({})
 export class MongooseModule extends ConfigurableModuleClass {
@@ -72,8 +73,8 @@ export class MongooseModule extends ConfigurableModuleClass {
                     connectionName,
                     retryWrites: true,
                     connectionFactory: async (connection: Connection) => {
-                        const normalize = await import("normalize-mongoose")
-                        connection.plugin(normalize.default)
+                        // eslint-disable-next-line @typescript-eslint/no-require-imports
+                        connection.plugin(normalizeMongoose)
                         return connection
                     }, 
                 }),
