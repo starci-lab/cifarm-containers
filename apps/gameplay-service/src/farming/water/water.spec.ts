@@ -57,7 +57,7 @@ describe("WaterService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
             seedGrowthInfo: {
                 currentState: CropCurrentState.NeedWater,
                 currentStageTimeElapsed: 0,
@@ -127,7 +127,7 @@ describe("WaterService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
         })
 
         await expect(
@@ -160,7 +160,7 @@ describe("WaterService", () => {
                 cropId: CropId.Carrot,
                 harvestQuantityRemaining: 10,
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
         })
 
         await expect(
@@ -193,7 +193,7 @@ describe("WaterService", () => {
                 cropId: CropId.Carrot,
                 harvestQuantityRemaining: 10,
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
         })
 
         await expect(

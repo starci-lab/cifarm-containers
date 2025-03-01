@@ -30,50 +30,19 @@ export class TileSeeder implements Seeder {
                 isNft: false,
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
-                availableInShop: true,
+                availableInShop: false,
                 placedItemTypeKey: PlacedItemTypeId.StarterTile
             },
             {
-                _id: createObjectId(TileId.BasicTile1),
-                displayId: TileId.BasicTile1,
+                _id: createObjectId(TileId.BasicTile),
+                displayId: TileId.BasicTile,
                 price: 1000,
                 maxOwnership: 10,
                 isNft: false,
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
                 availableInShop: true,
-                placedItemTypeKey: PlacedItemTypeId.BasicTile1
-            },
-            {
-                _id: createObjectId(TileId.BasicTile2),
-                displayId: TileId.BasicTile2,
-                price: 2500,
-                maxOwnership: 30,
-                isNft: false,
-                availableInShop: true,
-                qualityProductChanceStack: 0.001,
-                qualityProductChanceLimit: 0.1,
-                placedItemTypeKey: PlacedItemTypeId.BasicTile1
-            },
-            {
-                _id: createObjectId(TileId.BasicTile3),
-                displayId: TileId.BasicTile3,
-                price: 10000,
-                maxOwnership: 9999,
-                isNft: false,
-                qualityProductChanceStack: 0.002,
-                qualityProductChanceLimit: 0.2,
-                availableInShop: true,
-                placedItemTypeKey: PlacedItemTypeId.BasicTile3
-            },
-            {
-                _id: createObjectId(TileId.FertileTile),
-                displayId: TileId.FertileTile,
-                isNft: true,
-                qualityProductChanceStack: 0.025,
-                qualityProductChanceLimit: 0.5,
-                availableInShop: false,
-                placedItemTypeKey: PlacedItemTypeId.FertileTile
+                placedItemTypeKey: PlacedItemTypeId.BasicTile
             }
         ]
 

@@ -59,7 +59,7 @@ describe("HelpUsePesticideService", () => {
             x: 0,
             y: 0,
             userId: neighborUser.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
             seedGrowthInfo: {
                 currentState: CropCurrentState.IsInfested,
                 currentStageTimeElapsed: 0,
@@ -132,7 +132,7 @@ describe("HelpUsePesticideService", () => {
             x: 0,
             y: 0,
             userId: neighborUser.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
         })
 
         await expect(
@@ -167,7 +167,7 @@ describe("HelpUsePesticideService", () => {
                 cropId: CropId.Carrot,
                 harvestQuantityRemaining: 10,
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
         })
 
         await expect(
@@ -203,7 +203,7 @@ describe("HelpUsePesticideService", () => {
                 cropId: CropId.Carrot,
                 harvestQuantityRemaining: 10,
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
         })
 
         await expect(
@@ -240,7 +240,7 @@ describe("HelpUsePesticideService", () => {
             },
             x: 0,
             y: 0,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
             userId: user.id
         })
 

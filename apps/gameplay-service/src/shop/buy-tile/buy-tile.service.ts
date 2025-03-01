@@ -51,15 +51,6 @@ export class BuyTileService {
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: tile.price })
 
-            // Get tile count
-            // const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-            //     .countDocuments({ "placedItemType.tile": request.tileId, user: user.id })
-            //     .session(mongoSession)
-
-            // if (count >= tile.maxOwnership) {
-            //     throw new GrpcFailedPreconditionException("Tile max ownership reached")
-            // }
-
             try {
                 // Subtract gold
                 const goldsChanged = this.goldBalanceService.subtract({

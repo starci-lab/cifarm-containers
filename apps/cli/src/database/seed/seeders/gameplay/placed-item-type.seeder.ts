@@ -32,28 +32,10 @@ export class PlacedItemTypeSeeder implements Seeder {
                 tile: createObjectId(TileId.StarterTile)
             },
             {
-                _id: createObjectId(PlacedItemTypeId.BasicTile1),
-                displayId: PlacedItemTypeId.BasicTile1,
+                _id: createObjectId(PlacedItemTypeId.BasicTile),
+                displayId: PlacedItemTypeId.BasicTile,
                 type: PlacedItemType.Tile,
-                tile: createObjectId(TileId.BasicTile1)
-            },
-            {
-                _id: createObjectId(PlacedItemTypeId.BasicTile2),
-                displayId: PlacedItemTypeId.BasicTile2,
-                type: PlacedItemType.Tile,
-                tile: createObjectId(TileId.BasicTile2)
-            },
-            {
-                _id: createObjectId(PlacedItemTypeId.BasicTile3),
-                displayId: PlacedItemTypeId.BasicTile3,
-                type: PlacedItemType.Tile,
-                tile: createObjectId(TileId.BasicTile3)
-            },
-            {
-                _id: createObjectId(PlacedItemTypeId.FertileTile),
-                displayId: PlacedItemTypeId.FertileTile,
-                type: PlacedItemType.Tile,
-                tile: createObjectId(TileId.FertileTile)
+                tile: createObjectId(TileId.BasicTile)
             },
 
             // Animals

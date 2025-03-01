@@ -28,14 +28,14 @@ describe("BuyTileService", () => {
     it("should successfully buy a tile and update user and placed item", async () => {
         const x = 100, y = 100
         
-        const tile = await connection.model<TileSchema>(TileSchema.name).findById(createObjectId(TileId.BasicTile1))
+        const tile = await connection.model<TileSchema>(TileSchema.name).findById(createObjectId(TileId.BasicTile))
         const user = await gameplayMockUserService.generate({ golds: tile.price + 10 })
         const totalCost = tile.price
         const golds = user.golds
 
         await service.buyTile({
             userId: user.id,
-            tileId: TileId.BasicTile1,
+            tileId: TileId.BasicTile,
             position: { x, y }
         })
 

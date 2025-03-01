@@ -12,7 +12,7 @@ export class BuyTileRequest extends UserIdRequest {
         position: Position
     
     @ApiProperty({
-        example: TileId.BasicTile1,
+        example: TileId.BasicTile,
     })
         tileId: TileId
 }

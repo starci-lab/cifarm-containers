@@ -33,7 +33,7 @@ describe("MoveService", () => {
             userId: user.id,
             x: 1,
             y: 1,
-            placedItemType: createObjectId(PlacedItemTypeId.BasicTile1)
+            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
         })
 
         // Act: Call the move service

@@ -250,7 +250,7 @@ describe("TheifCropService", () => {
             },
             x: 0,
             y: 0,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
             userId: neighborUser.id,
         })
 
@@ -288,7 +288,7 @@ describe("TheifCropService", () => {
             },
             x: 0,
             y: 0,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
             userId: user.id
         })
 

@@ -76,7 +76,7 @@ describe("PlantSeedService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         // Call the service method to plant the seed
@@ -194,7 +194,7 @@ describe("PlantSeedService", () => {
                 currentState: CropCurrentState.Normal,
                 harvestQuantityRemaining: 10
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         await expect(
@@ -228,7 +228,7 @@ describe("PlantSeedService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         await expect(

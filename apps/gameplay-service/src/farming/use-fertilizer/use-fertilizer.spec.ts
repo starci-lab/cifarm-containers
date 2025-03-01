@@ -71,7 +71,7 @@ describe("UseFertilizerService", () => {
                 cropId,
                 harvestQuantityRemaining: 10
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         const supplyFertilizer = await dataSource.manager.findOne(SupplyEntity, {
@@ -162,7 +162,7 @@ describe("UseFertilizerService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         await expect(
@@ -206,7 +206,7 @@ describe("UseFertilizerService", () => {
                 cropId,
                 harvestQuantityRemaining: 10
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         await expect(
@@ -242,7 +242,7 @@ describe("UseFertilizerService", () => {
                 cropId,
                 harvestQuantityRemaining: 10
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         await expect(
@@ -285,7 +285,7 @@ describe("UseFertilizerService", () => {
                 cropId,
                 harvestQuantityRemaining: 10
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile1
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
         await expect(
             service.useFertilizer({
