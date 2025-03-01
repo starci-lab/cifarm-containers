@@ -19,6 +19,8 @@ import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class HarvestCropService {
@@ -29,7 +31,9 @@ export class HarvestCropService {
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka,
     ) {}
 
     async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {
@@ -145,7 +149,11 @@ export class HarvestCropService {
                 .session(mongoSession)
 
             await mongoSession.commitTransaction()
-                
+            
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId: request.userId
+            })
+
             return {
                 quantity
             }

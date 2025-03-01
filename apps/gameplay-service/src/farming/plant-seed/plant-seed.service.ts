@@ -5,6 +5,8 @@ import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { PlantSeedRequest, PlantSeedResponse } from "./plant-seed.dto"
+import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class PlantSeedService {
@@ -15,7 +17,9 @@ export class PlantSeedService {
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async plantSeed({ inventorySeedId, placedItemTileId, userId}: PlantSeedRequest): Promise<PlantSeedResponse> {
@@ -96,6 +100,10 @@ export class PlantSeedService {
                     currentState: CropCurrentState.Normal,
                 }}
             ).session(mongoSession)
+
+            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+                userId
+            })
 
             await mongoSession.commitTransaction()
             return {}      

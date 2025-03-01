@@ -64,7 +64,9 @@ export class PlacedItemsGateway implements OnGatewayInit {
                     })
                     const data: PlacedItemsSyncedMessage = {
                         placedItems,
-                        userId
+                        userId,
+                        isSecondarySync: true
+                        
                     }
                     socket.emit(PLACED_ITEMS_SYNCED_EVENT, data)
                 })()
@@ -87,7 +89,8 @@ export class PlacedItemsGateway implements OnGatewayInit {
                     })
                     const data: PlacedItemsSyncedMessage = {
                         placedItems,
-                        userId
+                        userId,
+                        isSecondarySync: false
                     }
                     client.emit(PLACED_ITEMS_SYNCED_EVENT, data)
                 })()
@@ -107,7 +110,8 @@ export class PlacedItemsGateway implements OnGatewayInit {
         })
         const data: PlacedItemsSyncedMessage = {
             placedItems,
-            userId
+            userId,
+            isSecondarySync: false
         }
         return {
             event: PLACED_ITEMS_SYNCED_EVENT,
@@ -123,7 +127,8 @@ export class PlacedItemsGateway implements OnGatewayInit {
         })
         const data: PlacedItemsSyncedMessage = {
             placedItems,
-            userId: payload.userId
+            userId: payload.userId,
+            isSecondarySync: false
         }
         this.namespace.to(payload.socketId).emit(PLACED_ITEMS_SYNCED_EVENT, data)
     }
