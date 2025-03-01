@@ -65,6 +65,10 @@ export class MoveInventoryService {
 
             if (foundInventory) {
                 const inventoryType = inventory.inventoryType as InventoryTypeSchema
+                // if the found inventory has the same id, just return
+                if (foundInventory.id === inventoryId) {
+                    return {}
+                }
                 // if it have the same type, just update the quantity by call inventory service
                 if (foundInventory.inventoryType.toString() === inventoryType.id) {
                 //

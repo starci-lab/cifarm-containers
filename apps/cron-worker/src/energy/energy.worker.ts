@@ -26,66 +26,55 @@ export class EnergyWorker extends WorkerHost {
         this.logger.verbose(`Processing job: ${job.id}`)
         const { time, skip, take, utcTime } = job.data
 
-        const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
-        try {
-            const users = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .find({
-                    energyFull: false,
-                    createdAt: {
-                        $lte: this.dateUtcService.getDayjs(utcTime).toDate()
-                    }
-                })
-                .skip(skip)
-                .limit(take)
-                .sort({ createdAt: "desc" })
-                .session(mongoSession)
-            const { value: { time: energyRegenTime } } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<EnergyRegen>>(createObjectId(SystemId.EnergyRegen))
-
-            const promises: Array<Promise<void>> = []
-            for (const user of users) {
-                const promise = async () => {
-                    const session = await this.connection.startSession()
-                    session.startTransaction()
-                    try {
-                        const updateUser = () => {
-                            // skip if the user's energy is full
-                            if (user.energyFull) {
-                                return
-                            }
-                            // Add time to the user's energy
-                            user.energyRegenTime += time
-                            if (user.energyRegenTime >= energyRegenTime) {
-                                user.energy += 1
-                                // Reset the timer
-                                user.energyRegenTime = 0
-                                // Check if the user's energy is full
-                                user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
-                            }
-                        }
-                        updateUser()
-                        await user.save({ session })
-                        session.commitTransaction()
-                    } catch (error) {
-                        this.logger.error(error)
-                        session.abortTransaction()
-                        throw error
-                    } finally {
-                        session.endSession()
-                    }
+        const users = await this.connection
+            .model<UserSchema>(UserSchema.name)
+            .find({
+                energyFull: false,
+                createdAt: {
+                    $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                 }
-                promises.push(promise())
+            })
+            .skip(skip)
+            .limit(take)
+            .sort({ createdAt: "desc" })
+
+        const { value: { time: energyRegenTime } } = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<EnergyRegen>>(createObjectId(SystemId.EnergyRegen))
+
+        const promises: Array<Promise<void>> = []
+        for (const user of users) {
+            const promise = async () => {
+                const session = await this.connection.startSession()
+                session.startTransaction()
+                try {
+                    const updateUser = () => {
+                        // skip if the user's energy is full
+                        if (user.energyFull) {
+                            return
+                        }
+                        // Add time to the user's energy
+                        user.energyRegenTime += time
+                        if (user.energyRegenTime >= energyRegenTime) {
+                            user.energy += 1
+                            // Reset the timer
+                            user.energyRegenTime = 0
+                            // Check if the user's energy is full
+                            user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
+                        }
+                    }
+                    updateUser()
+                    await user.save({ session })
+                    session.commitTransaction()
+                } catch (error) {
+                    this.logger.error(error)
+                    session.abortTransaction()
+                } finally {
+                    session.endSession()
+                }
             }
-            await Promise.all(promises)
-        } catch (error) {
-            this.logger.error(error)
-            await mongoSession.abortTransaction()
-            throw error
-        } finally {
-            await mongoSession.endSession()
+            promises.push(promise())
         }
+        await Promise.all(promises)
     }
 }

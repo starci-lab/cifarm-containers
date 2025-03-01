@@ -286,13 +286,13 @@ export class InventoryTypeSeeder implements Seeder {
                 type: InventoryType.Tool
             },
             {
-                _id: createObjectId(InventoryTypeId.Scythe),
-                displayId: InventoryTypeId.Scythe,
+                _id: createObjectId(InventoryTypeId.Crate),
+                displayId: InventoryTypeId.Crate,
                 stackable: false,
                 asTool: true,
                 deliverable: false,
                 placeable: false,
-                tool: createObjectId(InventoryTypeId.Scythe),
+                tool: createObjectId(InventoryTypeId.Crate),
                 type: InventoryType.Tool
             },
             {

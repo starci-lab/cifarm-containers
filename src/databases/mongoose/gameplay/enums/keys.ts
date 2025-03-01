@@ -71,7 +71,7 @@ export enum TileId {
 // Tool Enum
 export enum ToolId {
     Hand = "hand",
-    Scythe = "scythe",
+    Crate = "crate",
     ThiefHand = "thiefHand",
     WateringCan = "wateringCan",
     Herbicide = "herbicide",
@@ -142,7 +142,7 @@ export enum InventoryTypeId {
     BellPepper = "bellPepper",
     BellPepperQuality = "bellPepperQuality",
     Hand = "hand",
-    Scythe = "scythe",
+    Crate = "crate",
     ThiefHand = "thiefHand",
     WateringCan = "wateringCan",
     Herbicide = "herbicide",
