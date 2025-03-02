@@ -61,7 +61,6 @@ export enum SupplyId {
 
 // Tile Enum
 export enum TileId {
-    StarterTile = "starterTile",
     BasicTile = "basicTile",
 }
 
@@ -154,6 +153,5 @@ export enum PlacedItemTypeId {
     Coop = "coop",
     Barn = "barn",
     Home = "home",
-    StarterTile = "starterTile",
     BasicTile = "basicTile",
 }

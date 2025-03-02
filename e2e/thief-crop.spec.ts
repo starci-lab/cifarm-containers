@@ -169,7 +169,7 @@ describe("Thief crop flow", () => {
             const placedItemStarterTile = await dataSource.manager.findOne(PlacedItemSchema, {
                 where: {
                     userId: user.id,
-                    placedItemTypeId: PlacedItemTypeId.StarterTile
+                    placedItemTypeId: PlacedItemTypeId.BasicTile
                 }
             })
             // Plant the seed
