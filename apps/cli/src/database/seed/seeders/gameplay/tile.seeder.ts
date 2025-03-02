@@ -23,21 +23,10 @@ export class TileSeeder implements Seeder {
 
         const data: Array<Partial<TileSchema>> = [
             {
-                _id: createObjectId(TileId.StarterTile),
-                displayId: TileId.StarterTile,
-                price: 0,
-                maxOwnership: 6,
-                isNft: false,
-                qualityProductChanceStack: 0,
-                qualityProductChanceLimit: 0,
-                availableInShop: false,
-                placedItemTypeKey: PlacedItemTypeId.StarterTile
-            },
-            {
                 _id: createObjectId(TileId.BasicTile),
                 displayId: TileId.BasicTile,
                 price: 1000,
-                maxOwnership: 10,
+                maxOwnership: 50,
                 isNft: false,
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,

@@ -74,7 +74,7 @@ describe("HarvestCropService", () => {
             tileInfo: {},
             x: 0,
             y: 0,
-            placedItemTypeId: PlacedItemTypeId.StarterTile,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
             userId: user.id
         })
 
@@ -156,7 +156,7 @@ describe("HarvestCropService", () => {
             tileInfo: {},
             x: 0,
             y: 0,
-            placedItemTypeId: PlacedItemTypeId.StarterTile,
+            placedItemTypeId: PlacedItemTypeId.BasicTile,
             userId: user.id
         })
 
@@ -254,7 +254,7 @@ describe("HarvestCropService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.StarterTile
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         await expect(
@@ -282,7 +282,7 @@ describe("HarvestCropService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.StarterTile
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         await expect(
@@ -314,7 +314,7 @@ describe("HarvestCropService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.StarterTile
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
 
         await expect(
@@ -346,7 +346,7 @@ describe("HarvestCropService", () => {
             x: 0,
             y: 0,
             userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.StarterTile
+            placedItemTypeId: PlacedItemTypeId.BasicTile
         })
         
         await expect(

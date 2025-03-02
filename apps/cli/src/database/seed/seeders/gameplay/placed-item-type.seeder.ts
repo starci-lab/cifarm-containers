@@ -24,13 +24,6 @@ export class PlacedItemTypeSeeder implements Seeder {
     public async seed(): Promise<void> {
         this.logger.debug("Seeding placed item types...")
         const data: Array<Partial<PlacedItemTypeSchema>> = [
-            // Tiles
-            {
-                _id: createObjectId(PlacedItemTypeId.StarterTile),
-                displayId: PlacedItemTypeId.StarterTile,
-                type: PlacedItemType.Tile,
-                tile: createObjectId(TileId.StarterTile)
-            },
             {
                 _id: createObjectId(PlacedItemTypeId.BasicTile),
                 displayId: PlacedItemTypeId.BasicTile,

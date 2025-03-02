@@ -71,7 +71,7 @@ describe("VerifySignatureService", () => {
 
         const tiles = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
             user: user.id,
-            placedItemType: createObjectId(PlacedItemTypeId.StarterTile)
+            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
         })
         expect(tiles.length).toBe(6)
 

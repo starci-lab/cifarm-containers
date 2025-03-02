@@ -157,7 +157,7 @@ export class VerifySignatureService {
 
                 const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map(
                     (tile) => ({
-                        placedItemType: createObjectId(PlacedItemTypeId.StarterTile),
+                        placedItemType: createObjectId(PlacedItemTypeId.BasicTile),
                         user: user.id,
                         tileInfo: {},
                         ...tile
