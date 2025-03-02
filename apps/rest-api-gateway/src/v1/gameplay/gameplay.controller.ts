@@ -84,7 +84,9 @@ import {
     ClaimHoneycombDailyRewardResponse,
     UpdateReferralResponse,
     ClaimHoneycombDailyRewardRequest,
-    UpdateReferralRequest
+    UpdateReferralRequest,
+    UpdateFollowXRequest,
+    UpdateFollowXResponse
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
@@ -764,6 +766,25 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing update tutorial for user ${user?.id}`)
         return await lastValueFrom(
             this.gameplayService.updateTutorial({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        type: UpdateFollowXResponse
+    })
+    @Post("/update-follow-x")
+    public async updateFollowX(
+        @User() user: UserLike,
+        @Body() request: UpdateFollowXRequest
+    ): Promise<UpdateReferralResponse> {
+        return await lastValueFrom(
+            this.gameplayService.updateFollowX({
                 ...request,
                 userId: user?.id
             })

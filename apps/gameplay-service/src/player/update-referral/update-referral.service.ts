@@ -53,15 +53,17 @@ export class UpdateReferralService {
 
             // check if referral user is the same as the user
             if (referralUserId === userId) {
-                throw new GrpcFailedPreconditionException("Referral user cannot be the same as the user")
+                throw new GrpcFailedPreconditionException(
+                    "Referral user cannot be the same as the user"
+                )
             }
-            
+
             // check if user already has referral
             if (user.referralUserId) {
                 return {}
             }
             // check if user is already referred by the referral user
-            if (referralUser.referredUserIds.includes(user.id)) {
+            if (referralUser.referredUserIds.map((userId) => userId.toString()).includes(user.id)) {
                 return {}
             }
             // check if limit is reached
@@ -103,7 +105,8 @@ export class UpdateReferralService {
                             referralUserId: referralUserId
                         }
                     }
-                ).session(mongoSession)
+                )
+                .session(mongoSession)
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {

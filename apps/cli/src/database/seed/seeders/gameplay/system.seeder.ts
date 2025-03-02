@@ -150,7 +150,8 @@ export class SystemSeeder implements Seeder {
             toolCapacity: 8,
             referredLimit: 25,
             referralRewardQuantity: 50,
-            referredRewardQuantity: 10
+            referredRewardQuantity: 10,
+            followXRewardQuantity: 20
         }
         const spinInfo: SpinInfo = {
             appearanceChanceSlots: {

@@ -1,0 +1,5 @@
+export * from "./update-follow-x.dto"
+export * from "./update-follow-x.module"
+export * from "./update-follow-x.service"
+export * from "./update-follow-x.controller"
+//export * from "./claim.spec"

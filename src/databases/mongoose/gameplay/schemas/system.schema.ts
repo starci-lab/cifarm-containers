@@ -115,6 +115,8 @@ export class DefaultInfo {
         referralRewardQuantity: number
     @Field(() => Int)
         referredRewardQuantity: number
+    @Field(() => Int)
+        followXRewardQuantity: number
 }
 
  

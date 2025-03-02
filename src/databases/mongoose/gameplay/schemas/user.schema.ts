@@ -101,6 +101,10 @@ export class UserSchema extends AbstractSchema {
     @Field(() => [ID])
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false })
         referredUserIds: Array<MongooseSchema.Types.ObjectId>
+    
+    @Field(() => Boolean)
+    @Prop({ type: Boolean, default: false })
+        followXAwarded: boolean
 
     // graphql field
     @Field(() => Boolean)

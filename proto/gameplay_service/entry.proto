@@ -71,6 +71,7 @@ service GameplayService {
     rpc UpdateTutorial(UpdateTutorialRequest) returns (google.protobuf.Empty);
     rpc MoveInventory(MoveInventoryRequest) returns (google.protobuf.Empty);
     rpc UpdateReferral(UpdateReferralRequest) returns (google.protobuf.Empty);
+    rpc UpdateFollowX(UpdateFollowXRequest) returns (google.protobuf.Empty);
 
     // Honeycomb
     rpc ClaimHoneycombDailyReward(ClaimHoneycombDailyRewardRequest) returns (ClaimHoneycombDailyRewardResponse);
