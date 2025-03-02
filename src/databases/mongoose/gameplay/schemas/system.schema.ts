@@ -109,6 +109,12 @@ export class DefaultInfo {
         deliveryCapacity: number
     @Field(() => Int)
         followeeLimit: number
+    @Field(() => Int)
+        referredLimit: number
+    @Field(() => Int)
+        referralRewardQuantity: number
+    @Field(() => Int)
+        referredRewardQuantity: number
 }
 
  

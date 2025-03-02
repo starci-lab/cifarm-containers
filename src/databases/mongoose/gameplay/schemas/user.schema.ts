@@ -1,9 +1,9 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { ChainKey, Network } from "@src/env"
 import { TutorialStep } from "../enums"
-
+import { Schema as MongooseSchema } from "mongoose"
 @ObjectType()
 @Schema({
     timestamps: true,
@@ -78,20 +78,29 @@ export class UserSchema extends AbstractSchema {
         dailyRewardStreak: number
 
     @Field(() => Date, { nullable: true })
-    @Prop({ type: Date, nullable: true })
+    @Prop({ type: Date, required: false })
         dailyRewardLastClaimTime?: Date
 
     @Field(() => Date, { nullable: true })
-    @Prop({ type: Date, nullable: true })
+    @Prop({ type: Date, required: false })
         honeycombDailyRewardLastClaimTime?: Date
 
     @Field(() => Date, { nullable: true })
-    @Prop({ type: Date, nullable: true })
+    @Prop({ type: Date, required: false })
         spinLastTime?: Date
 
     @Field(() => Int)
     @Prop({ type: Number, default: 0 })
         spinCount: number
+
+    // referral id
+    @Field(() => ID, { nullable: true })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false })
+        referralUserId: MongooseSchema.Types.ObjectId
+
+    @Field(() => [ID])
+    @Prop({ type: [MongooseSchema.Types.ObjectId], required: false })
+        referredUserIds: Array<MongooseSchema.Types.ObjectId>
 
     // graphql field
     @Field(() => Boolean)

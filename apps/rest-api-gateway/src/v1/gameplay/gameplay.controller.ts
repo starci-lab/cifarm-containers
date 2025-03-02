@@ -81,7 +81,10 @@ import {
     VisitRequest,
     VisitResponse,
     ReturnResponse,
-    ClaimHoneycombDailyRewardResponse
+    ClaimHoneycombDailyRewardResponse,
+    UpdateReferralResponse,
+    ClaimHoneycombDailyRewardRequest,
+    UpdateReferralRequest
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
@@ -767,6 +770,25 @@ export class GameplayController implements OnModuleInit {
         )
     }
 
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        type: UpdateReferralResponse
+    })
+    @Post("/update-referral")
+    public async updateReferral(
+        @User() user: UserLike,
+        @Body() request: UpdateReferralRequest
+    ): Promise<UpdateReferralResponse> {
+        return await lastValueFrom(
+            this.gameplayService.updateReferral({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
     // Profile
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
@@ -797,7 +819,7 @@ export class GameplayController implements OnModuleInit {
     @Post("/claim-honeycomb-daily-reward")
     public async claimHoneycombDailyReward(
         @User() user: UserLike,
-        @Body() request: ClaimHoneycombDailyRewardResponse
+        @Body() request: ClaimHoneycombDailyRewardRequest
     ): Promise<PlantSeedResponse> {
         return await lastValueFrom(
             this.gameplayService.claimHoneycombDailyReward({

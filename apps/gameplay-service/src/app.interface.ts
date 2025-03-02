@@ -77,7 +77,7 @@ import {
     SpinResponse
 } from "./claim"
 import { MoveRequest, MoveResponse } from "./placement"
-import { UpdateTutorialRequest, UpdateTutorialResponse, MoveInventoryRequest, MoveInventoryResponse } from "./player"
+import { UpdateTutorialRequest, UpdateTutorialResponse, MoveInventoryRequest, MoveInventoryResponse, UpdateReferralRequest, UpdateReferralResponse } from "./player"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 import { ClaimHoneycombDailyRewardRequest, ClaimHoneycombDailyRewardResponse } from "./honeycomb"
 
@@ -129,7 +129,8 @@ export interface IGameplayService {
     // Profile
     updateTutorial(request: UpdateTutorialRequest): Observable<UpdateTutorialResponse>
     moveInventory(request: MoveInventoryRequest): Observable<MoveInventoryResponse>
-
+    updateReferral(request: UpdateReferralRequest): Observable<UpdateReferralResponse>
+    
     // Shop
     buySeeds(request: BuySeedsRequest): Observable<BuySeedsResponse>
     buyAnimal(request: BuyAnimalRequest): Observable<BuyAnimalResponse>

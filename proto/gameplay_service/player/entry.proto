@@ -4,4 +4,5 @@ package gameplay_service;
 
 import "./update_tutorial.proto";
 import "./move_inventory.proto";
+import "./update_referral.proto";
 

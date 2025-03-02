@@ -147,7 +147,10 @@ export class SystemSeeder implements Seeder {
             defaultSeedQuantity: 10,
             storageCapacity: 150,
             deliveryCapacity: 9,
-            toolCapacity: 8
+            toolCapacity: 8,
+            referredLimit: 25,
+            referralRewardQuantity: 50,
+            referredRewardQuantity: 10
         }
         const spinInfo: SpinInfo = {
             appearanceChanceSlots: {

@@ -8,7 +8,9 @@ import { ClaimHoneycombDailyRewardRequest } from "./claim-honeycomb-daily-reward
 export class ClaimHoneycombDailyRewardController {
     private readonly logger = new Logger(ClaimHoneycombDailyRewardController.name)
 
-    constructor(private readonly claimHoneycombDailyRewardService : ClaimHoneycombDailyRewardService) {}
+    constructor(
+        private readonly claimHoneycombDailyRewardService: ClaimHoneycombDailyRewardService
+    ) {}
 
     @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "ClaimHoneycombDailyReward")
     public async claimHoneycombDailyReward(request: ClaimHoneycombDailyRewardRequest) {
