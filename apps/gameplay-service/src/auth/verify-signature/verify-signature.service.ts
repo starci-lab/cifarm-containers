@@ -16,6 +16,7 @@ import {
     SessionSchema,
     InventoryKind,
     ToolSchema,
+    InventoryTypeId,
 } from "@src/databases"
 import {
     IBlockchainAuthService,
@@ -172,7 +173,8 @@ export class VerifySignatureService {
                 // add tools to inventories
                 const toolInventories: Array<DeepPartial<InventorySchema>> = []
 
-                let index = 0
+                let indexTool = 0
+                let indexStorage = 1
                 const tools = await this.connection.model<ToolSchema>(ToolSchema.name).find({
                     sort: { $exists: true },
                     default: false
@@ -184,13 +186,23 @@ export class VerifySignatureService {
                             type: InventoryType.Tool,
                             tool: tool.id
                         }).session(mongoSession)
-                    toolInventories.push({
-                        inventoryType: inventoryType.id,
-                        user: user.id,
-                        kind: InventoryKind.Tool,
-                        index,
-                    })
-                    index++
+                    if(inventoryType.displayId === InventoryTypeId.Hammer || inventoryType.displayId === InventoryTypeId.Relocate) {
+                        toolInventories.push({
+                            inventoryType: inventoryType.id,
+                            user: user.id,
+                            kind: InventoryKind.Storage,
+                            index: indexStorage,
+                        })
+                        indexStorage++
+                    }else{
+                        toolInventories.push({
+                            inventoryType: inventoryType.id,
+                            user: user.id,
+                            kind: InventoryKind.Tool,
+                            index: indexTool,
+                        })
+                        indexTool++
+                    }
                 }
 
                 await this.connection

@@ -36,7 +36,7 @@ export class BuildingSchema extends StaticAbstractSchema {
 
   @Field(() => Int)
   @Prop({ type: Number, required: true, default: 5 })
-      maxCount: number
+      maxOwnership: number
 
   @Field(() => [UpgradeSchema])
   @Prop({ type: [UpgradeSchemaClass] })

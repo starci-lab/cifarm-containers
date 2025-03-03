@@ -6,7 +6,7 @@ import { AbstractSchema } from "./abstract"
 @Schema({ timestamps: true, autoCreate: false  })
 export class BuildingInfoSchema extends AbstractSchema {
     @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
+    @Prop({ type: Number, default: 1 })
         currentUpgrade: number
 
     @Field(() => String, { nullable: true })
