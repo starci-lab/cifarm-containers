@@ -86,21 +86,15 @@ export class BuyAnimalService {
                     placedItemType: placedItemBuildingType
                 })
                 .session(mongoSession)
-
-            
-    
             
             // Count maxCapacity
             for (const placedItemBuilding of placedItemsBuilding) {
-                maxCapacity += building.upgrades[placedItemBuilding.buildingInfo.currentUpgrade].capacity
+                maxCapacity += building.upgrades[placedItemBuilding.buildingInfo.currentUpgrade - 1].capacity
             }
 
             if (animalCount >= maxCapacity) {
                 throw new GrpcFailedPreconditionException("Max capacity reached")
             }
-
-            
-
             
             try {
                 const goldsChanged = this.goldBalanceService.subtract({
