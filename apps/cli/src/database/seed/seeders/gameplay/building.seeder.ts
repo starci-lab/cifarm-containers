@@ -30,7 +30,7 @@ export class BuildingSeeder implements Seeder {
                 upgradable: false,
                 unlockLevel: 0, 
                 upgrades: [],
-                maxCount: 1
+                maxOwnership: 1
             },
             {
                 _id: createObjectId(BuildingId.Coop),
@@ -41,21 +41,22 @@ export class BuildingSeeder implements Seeder {
                 price: 2000,
                 unlockLevel: 5,
                 upgradable: false,
-                maxCount: 5,
+                maxOwnership: 5,
                 upgrades: [
                     {
+                        upgradePrice: 500,
                         capacity: 3,
-                        upgradeLevel: 500
+                        upgradeLevel: 1,
                     },
                     {
                         upgradePrice: 1000,
                         capacity: 5,
-                        upgradeLevel: 1
+                        upgradeLevel: 2
                     },
                     {
                         upgradePrice: 2000,
                         capacity: 10,
-                        upgradeLevel: 2
+                        upgradeLevel: 3
                     }
                 ]
             },
@@ -66,24 +67,24 @@ export class BuildingSeeder implements Seeder {
                 type: AnimalType.Livestock,
                 maxUpgrade: 2,
                 price: 2000,
-                unlockLevel: 5,
+                unlockLevel: 10,
                 upgradable: false,
-                maxCount: 5,
+                maxOwnership: 5,
                 upgrades: [
                     {
                         upgradePrice: 500,
                         capacity: 3,
-                        upgradeLevel: 0
+                        upgradeLevel: 1
                     },
                     {
                         upgradePrice: 1000,
                         capacity: 5,
-                        upgradeLevel: 1
+                        upgradeLevel: 2
                     },
                     {
                         upgradePrice: 2000,
                         capacity: 10,
-                        upgradeLevel: 2
+                        upgradeLevel: 3
                     }
                 ],
             },
