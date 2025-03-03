@@ -13,7 +13,8 @@ import {
     SystemId,
     KeyValueRecord,
     SystemSchema,
-    UserSchema
+    UserSchema,
+    CropSchema
 } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
@@ -138,15 +139,31 @@ export class HarvestCropService {
                     .session(mongoSession)
             }
 
+            //Find crop id
+            const crop = await this.connection
+                .model<CropSchema>(CropSchema.name)
+                .findById(placedItemTile.seedGrowthInfo.crop)
+
+            //perennialCount & currentPerennialCount
+            if (placedItemTile.seedGrowthInfo.currentPerennialCount < crop.perennialCount) {
+                placedItemTile.seedGrowthInfo.currentPerennialCount += 1
+                placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+                placedItemTile.seedGrowthInfo.currentStage = crop.nextGrowthStageAfterHarvest
+                placedItemTile.seedGrowthInfo.currentStageTimeElapsed = 0
+            }else{
+                placedItemTile.seedGrowthInfo = null
+            }
+
             await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .updateOne(
                     { _id: placedItemTile._id },
                     {
-                        seedGrowthInfo: null
+                        seedGrowthInfo: placedItemTile.seedGrowthInfo
                     }
                 )
                 .session(mongoSession)
+
 
             await mongoSession.commitTransaction()
             

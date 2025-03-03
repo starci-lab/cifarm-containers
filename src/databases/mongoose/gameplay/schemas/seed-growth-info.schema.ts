@@ -19,7 +19,7 @@ export class SeedGrowthInfoSchema extends AbstractSchema {
         currentStageTimeElapsed: number
 
     @Field(() => Int)
-    @Prop({ type: Number, default: 0 })
+    @Prop({ type: Number, default: 1 })
         currentPerennialCount: number
 
     @Field(() => Int)

@@ -21,12 +21,28 @@ export class CropSeeder implements Seeder {
         this.logger.debug("Seeding crops...")
         const data: Array<Partial<CropSchema>> = [
             {
+                _id: createObjectId(CropId.Radish),
+                displayId: CropId.Radish,
+                price: 50,
+                growthStageDuration: 300,
+                growthStages: 5,
+                unlockLevel: 1,
+                basicHarvestExperiences: 12,
+                qualityHarvestExperiences: 60,
+                minHarvestQuantity: 14,
+                maxHarvestQuantity: 20,
+                premium: false,
+                perennialCount: 1,
+                nextGrowthStageAfterHarvest: 1,
+                availableInShop: true,
+            },
+            {
                 _id: createObjectId(CropId.Carrot),
                 displayId: CropId.Carrot,
                 price: 50,
                 growthStageDuration: 3600,
                 growthStages: 5,
-                unlockLevel: 1,
+                unlockLevel: 2,
                 basicHarvestExperiences: 12,
                 qualityHarvestExperiences: 60,
                 minHarvestQuantity: 14,
@@ -113,7 +129,7 @@ export class CropSeeder implements Seeder {
                 maxHarvestQuantity: 23,
                 premium: false,
                 perennialCount: 3,
-                nextGrowthStageAfterHarvest: 1,
+                nextGrowthStageAfterHarvest: 4,
                 availableInShop: true,
             },
         ]

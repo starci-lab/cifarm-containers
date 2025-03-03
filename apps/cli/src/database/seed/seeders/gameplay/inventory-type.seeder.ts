@@ -66,6 +66,26 @@ export class InventoryTypeSeeder implements Seeder {
                 type: InventoryType.Product
             },
             {
+                _id: createObjectId(InventoryTypeId.Radish),
+                displayId: InventoryTypeId.Radish,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.Radish),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.RadishQuality),
+                displayId: InventoryTypeId.RadishQuality,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.RadishQuality),
+                type: InventoryType.Product
+            },
+            {
                 _id: createObjectId(InventoryTypeId.Carrot),
                 displayId: InventoryTypeId.Carrot,
                 asTool: false,
@@ -184,6 +204,16 @@ export class InventoryTypeSeeder implements Seeder {
                 placeable: false,
                 product: createObjectId(ProductId.BellPepperQuality),
                 type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.RadishSeed),
+                displayId: InventoryTypeId.RadishSeed,
+                asTool: false,
+                deliverable: false,
+                maxStack: 64,
+                placeable: false,
+                crop: createObjectId(CropId.Radish),
+                type: InventoryType.Seed
             },
             {
                 _id: createObjectId(InventoryTypeId.CarrotSeed),

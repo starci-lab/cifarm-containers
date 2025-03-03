@@ -26,6 +26,7 @@ export enum UpgradeKey {
 
 // Crop Enum
 export enum CropId {
+    Radish = "radish",
     Carrot = "carrot",
     Potato = "potato",
     Pineapple = "pineapple",
@@ -82,6 +83,8 @@ export enum ProductId {
     EggQuality = "eggQuality",
     Milk = "milk",
     MilkQuality = "milkQuality",
+    Radish = "radish",
+    RadishQuality = "radishQuality",
     Carrot = "carrot",
     CarrotQuality = "carrotQuality",
     Potato = "potato",
@@ -114,6 +117,7 @@ export enum KeyValueStoreId {
 }
 
 export enum InventoryTypeId {
+    RadishSeed = "radishSeed",
     CarrotSeed = "carrotSeed",
     PotatoSeed = "potatoSeed",
     PineappleSeed = "pineappleSeed",
@@ -127,6 +131,8 @@ export enum InventoryTypeId {
     EggQuality = "eggQuality",
     Milk = "milk",
     MilkQuality = "milkQuality",
+    Radish = "radish",
+    RadishQuality = "radishQuality",
     Carrot = "carrot",
     CarrotQuality = "carrotQuality",
     Potato = "potato",
