@@ -11,7 +11,6 @@ export class VerifySignatureController {
 
     @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "VerifySignature")
     public async verifySignature(request: VerifySignatureRequest) {
-        this.logger.debug("VerifySignature called")
         return this.verifySignatureService.verifySignature(request)
     }
 }

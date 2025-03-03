@@ -56,7 +56,8 @@ export class VerifySignatureService {
         signature,
         chainKey,
         network,
-        accountAddress
+        accountAddress,
+        username
     }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
@@ -123,7 +124,7 @@ export class VerifySignatureService {
                 const [userRaw] = await this.connection.model<UserSchema>(UserSchema.name).create(
                     [
                         {
-                            username: `${chainKey}-${accountAddress.substring(0, 5)}`,
+                            username,
                             accountAddress,
                             chainKey,
                             network,

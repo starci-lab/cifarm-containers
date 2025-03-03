@@ -11,7 +11,7 @@ message VerifySignatureRequest {
     string chainKey = 4;  // Supported chain (optional)
     string network = 5;  // Network type (optional)
     string accountAddress = 6;  // Account address (optional)
-    DeviceInfo deviceInfo = 7;  // Device information
+    string username = 7;  // Username
 }
   
   // Message for VerifySignatureResponse
