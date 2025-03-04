@@ -43,7 +43,7 @@ export class FollowService {
                 throw new GrpcNotFoundException("Followee not found")
             }
             // check if user is already following followee
-            const following = this.connection
+            const following = await this.connection
                 .model<UserFollowRelationSchema>(UserFollowRelationSchema.name).exists({
                     followee: followeeUserId,
                     follower: userId
