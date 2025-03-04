@@ -51,12 +51,12 @@ export class PlacedItemsGateway implements OnGatewayInit {
         }
         //get all socket ids in this node
         const sockets = this.authGateway.getSockets()
-
+        // print the number of sockets
+        this.logger.verbose(Array.from(sockets).map(socket => socket.id))
         //emit placed items to all clients
         const promises: Array<Promise<void>> = []
         for (const socket of sockets) {
             const userId = this.authGateway.getWatchingUserId(socket)
-            console.log(userId)
             promises.push(
                 (async () => {
                     const placedItems = await this.placedItemsService.getPlacedItems({
