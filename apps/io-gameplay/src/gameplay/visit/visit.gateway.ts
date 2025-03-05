@@ -40,7 +40,7 @@ export class VisitGateway {
         { neighborUserId, userId }: VisitPayload
     ): Promise<void> {
         // get the corresponding socket for the user
-        const socket = await this.authGateway.getSocket(this.namespace, userId)
+        const socket = await this.socketCoreService.getSocket(this.namespace, userId)
         // start watching the player
         this.authGateway.startWatchingUser(socket, neighborUserId)
         const emitter2Payload: VisitedEmitter2Payload = {
@@ -54,7 +54,7 @@ export class VisitGateway {
         { userId }: ReturnPayload
     ): Promise<void> {
         // get the corresponding socket for the user
-        const socket = await this.authGateway.getSocket(this.namespace, userId)
+        const socket = await this.socketCoreService.getSocket(this.namespace, userId)
         // start watching the original player
         this.authGateway.startWatchingUser(socket, userId)
         const emitter2Payload: VisitedEmitter2Payload = {
