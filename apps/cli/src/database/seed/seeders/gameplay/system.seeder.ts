@@ -143,7 +143,7 @@ export class SystemSeeder implements Seeder {
                     }
                 ]
             },
-            defaultCropId: CropId.Radish,
+            defaultCropId: CropId.Turnip,
             defaultSeedQuantity: 10,
             storageCapacity: 150,
             deliveryCapacity: 9,

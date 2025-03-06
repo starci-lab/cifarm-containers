@@ -21,8 +21,8 @@ export class CropSeeder implements Seeder {
         this.logger.debug("Seeding crops...")
         const data: Array<Partial<CropSchema>> = [
             {
-                _id: createObjectId(CropId.Radish),
-                displayId: CropId.Radish,
+                _id: createObjectId(CropId.Turnip),
+                displayId: CropId.Turnip,
                 price: 50,
                 growthStageDuration: 300,
                 growthStages: 5,

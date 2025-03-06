@@ -66,23 +66,23 @@ export class InventoryTypeSeeder implements Seeder {
                 type: InventoryType.Product
             },
             {
-                _id: createObjectId(InventoryTypeId.Radish),
-                displayId: InventoryTypeId.Radish,
+                _id: createObjectId(InventoryTypeId.Turnip),
+                displayId: InventoryTypeId.Turnip,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductId.Radish),
+                product: createObjectId(ProductId.Turnip),
                 type: InventoryType.Product
             },
             {
-                _id: createObjectId(InventoryTypeId.RadishQuality),
-                displayId: InventoryTypeId.RadishQuality,
+                _id: createObjectId(InventoryTypeId.TurnipQuality),
+                displayId: InventoryTypeId.TurnipQuality,
                 asTool: false,
                 deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                product: createObjectId(ProductId.RadishQuality),
+                product: createObjectId(ProductId.TurnipQuality),
                 type: InventoryType.Product
             },
             {
@@ -206,13 +206,13 @@ export class InventoryTypeSeeder implements Seeder {
                 type: InventoryType.Product
             },
             {
-                _id: createObjectId(InventoryTypeId.RadishSeed),
-                displayId: InventoryTypeId.RadishSeed,
+                _id: createObjectId(InventoryTypeId.TurnipSeed),
+                displayId: InventoryTypeId.TurnipSeed,
                 asTool: false,
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
-                crop: createObjectId(CropId.Radish),
+                crop: createObjectId(CropId.Turnip),
                 type: InventoryType.Seed
             },
             {
