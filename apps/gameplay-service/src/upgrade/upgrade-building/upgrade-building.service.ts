@@ -42,7 +42,7 @@ export class UpgradeBuildingService {
 
             const currentUpgradeLevel = placedItemBuilding.buildingInfo.currentUpgrade
 
-            if (currentUpgradeLevel >= building.maxUpgrade) {
+            if (currentUpgradeLevel > building.maxUpgrade) {
                 throw new GrpcFailedPreconditionException("Building already at max upgrade level")
             }
 

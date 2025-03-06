@@ -822,7 +822,7 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: UpgradeBuildingRequest
     ): Promise<UpgradeBuildingResponse> {
-        this.logger.debug(`Processing upgrade building for user ${user?.id}`)
+        this.logger.debug(`Processing upgrade building for user ${user?.id} with ${request.placedItemBuildingId}`)
         return await lastValueFrom(
             this.gameplayService.upgradeBuilding({
                 ...request,

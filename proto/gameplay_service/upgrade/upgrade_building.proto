@@ -4,6 +4,6 @@ package gameplay_service;
 
 message UpgradeBuildingRequest {
     string userId = 1;
-    string placedItemId = 2;
+    string placedItemBuildingId = 2;
 }
 

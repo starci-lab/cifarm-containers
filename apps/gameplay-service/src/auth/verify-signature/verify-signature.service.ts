@@ -186,7 +186,7 @@ export class VerifySignatureService {
                             type: InventoryType.Tool,
                             tool: tool.id
                         }).session(mongoSession)
-                    if(inventoryType.displayId === InventoryTypeId.Hammer || inventoryType.displayId === InventoryTypeId.Relocate) {
+                    if(inventoryType.displayId === InventoryTypeId.Hammer) {
                         toolInventories.push({
                             inventoryType: inventoryType.id,
                             user: user.id,

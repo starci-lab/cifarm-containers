@@ -47,11 +47,6 @@ export class ToolSeeder implements Seeder {
                 _id: createObjectId(ToolId.Hammer),
                 displayId: ToolId.Hammer,
                 sort: 4,
-            },
-            {
-                _id: createObjectId(ToolId.Relocate),
-                displayId: ToolId.Relocate,
-                sort: 5,
             }
         ]
 

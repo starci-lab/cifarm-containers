@@ -74,7 +74,6 @@ export enum ToolId {
     Herbicide = "herbicide",
     Pesticide = "pesticide",
     Hammer = "hammer",
-    Relocate = "relocate",
 }
 
 // Product Enum
@@ -150,7 +149,6 @@ export enum InventoryTypeId {
     ThiefHand = "thiefHand",
     WateringCan = "wateringCan",
     Hammer = "hammer",
-    Relocate = "relocate",
     Herbicide = "herbicide",
     Pesticide = "pesticide"
 }
