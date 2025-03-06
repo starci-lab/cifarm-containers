@@ -3,3 +3,4 @@ syntax = "proto3";
 package gameplay_service;
 
 import "./claim-honeycomb-daily-reward.proto";
+import "./mint-offchain-tokens.proto";

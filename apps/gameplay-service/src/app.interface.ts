@@ -80,6 +80,7 @@ import { MoveRequest, MoveResponse } from "./placement"
 import { UpdateTutorialRequest, UpdateTutorialResponse, MoveInventoryRequest, MoveInventoryResponse, UpdateReferralRequest, UpdateReferralResponse, UpdateFollowXRequest, UpdateFollowXResponse } from "./player"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 import { ClaimHoneycombDailyRewardRequest, ClaimHoneycombDailyRewardResponse } from "./honeycomb"
+import { MintOffchainTokensRequest, MintOffchainTokensResponse } from "./honeycomb/mint-offchain-tokens"
 
 export interface IGameplayService {
     // Auth
@@ -144,4 +145,5 @@ export interface IGameplayService {
 
     // Honeycomb
     claimHoneycombDailyReward(request: ClaimHoneycombDailyRewardRequest): Observable<ClaimHoneycombDailyRewardResponse>
+    mintOffchainTokens(request: MintOffchainTokensRequest): Observable<MintOffchainTokensResponse>
 }

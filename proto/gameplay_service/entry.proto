@@ -75,4 +75,5 @@ service GameplayService {
 
     // Honeycomb
     rpc ClaimHoneycombDailyReward(ClaimHoneycombDailyRewardRequest) returns (ClaimHoneycombDailyRewardResponse);
+    rpc MintOffchainTokens(MintOffchainTokensRequest) returns (MintOffchainTokensResponse);
 }

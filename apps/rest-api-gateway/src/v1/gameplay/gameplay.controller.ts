@@ -86,7 +86,9 @@ import {
     ClaimHoneycombDailyRewardRequest,
     UpdateReferralRequest,
     UpdateFollowXRequest,
-    UpdateFollowXResponse
+    UpdateFollowXResponse,
+    MintOffchainTokensRequest, 
+    MintOffchainTokensResponse 
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
@@ -844,6 +846,25 @@ export class GameplayController implements OnModuleInit {
     ): Promise<PlantSeedResponse> {
         return await lastValueFrom(
             this.gameplayService.claimHoneycombDailyReward({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        type: MintOffchainTokensResponse
+    })
+    @Post("/mint-offchain-tokens")
+    public async mintOffchainTokens(
+        @User() user: UserLike,
+        @Body() request: MintOffchainTokensRequest
+    ): Promise<MintOffchainTokensResponse> {
+        return await lastValueFrom(
+            this.gameplayService.mintOffchainTokens({
                 ...request,
                 userId: user?.id
             })

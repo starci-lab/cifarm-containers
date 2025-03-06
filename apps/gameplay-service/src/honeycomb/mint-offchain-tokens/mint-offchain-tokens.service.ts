@@ -7,56 +7,46 @@ import {
     UserSchema,
     HoneycombInfo
 } from "@src/databases"
-import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
+import { computeRaw, createObjectId } from "@src/common"
 import { Connection } from "mongoose"
-import {
-    ClaimHoneycombDailyRewardRequest,
-    ClaimHoneycombDailyRewardResponse
-} from "./claim-honeycomb-daily-reward.dto"
+import { MintOffchainTokensRequest, MintOffchainTokensResponse } from "./mint-offchain-tokens.dto"
 import { HoneycombService } from "@src/honeycomb"
-import { DateUtcService } from "@src/date"
+import { TokenBalanceService } from "@src/gameplay"
 
 @Injectable()
-export class ClaimHoneycombDailyRewardService {
-    private readonly logger = new Logger(ClaimHoneycombDailyRewardService.name)
+export class MintOffchainTokensService {
+    private readonly logger = new Logger(MintOffchainTokensService.name)
 
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly honeycombService: HoneycombService,
-        private readonly dateUtcService: DateUtcService
+        private readonly tokenBalanceService: TokenBalanceService
     ) {}
 
-    async claimHoneycombDailyReward({
-        userId
-    }: ClaimHoneycombDailyRewardRequest): Promise<ClaimHoneycombDailyRewardResponse> {
+    async mintOffchainTokensService({
+        userId,
+        amount
+    }: MintOffchainTokensRequest): Promise<MintOffchainTokensResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
         try {
-            // check if spin last time is same as today
-            const now = this.dateUtcService.getDayjs()
-
             const user = await this.connection
                 .model<UserSchema>(UserSchema.name)
                 .findById(userId)
                 .session(mongoSession)
 
-            if (
-                user.honeycombDailyRewardLastClaimTime &&
-                now.isSame(user.honeycombDailyRewardLastClaimTime, "day")
-            ) {
-                throw new GrpcFailedPreconditionException(
-                    "Honeycomb daily reward already claimed today"
-                )
-            }
-
+            const tokenBalanceChanges = this.tokenBalanceService.subtract({
+                user,
+                amount
+            })
             const {
-                value: { dailyRewardAmount, tokenResourceAddress }
+                value: { tokenResourceAddress, decimals }
             } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<KeyValueRecord<HoneycombInfo>>(createObjectId(SystemId.HoneycombInfo))
             const { txResponse } = await this.honeycombService.createMintResourceTransaction({
-                amount: dailyRewardAmount,
+                amount: computeRaw(amount, decimals).toString(),
                 resourceAddress: tokenResourceAddress,
                 network: user.network,
                 payerAddress: user.accountAddress,
@@ -68,7 +58,11 @@ export class ClaimHoneycombDailyRewardService {
                 .model<UserSchema>(UserSchema.name)
                 .updateOne(
                     { _id: userId },
-                    { $set: { honeycombDailyRewardLastClaimTime: now.toDate() } }
+                    {
+                        $set: {
+                            ...tokenBalanceChanges
+                        }
+                    }
                 )
                 .session(mongoSession)
             await mongoSession.commitTransaction()

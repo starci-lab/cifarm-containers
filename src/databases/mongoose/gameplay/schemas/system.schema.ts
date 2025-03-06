@@ -137,7 +137,9 @@ export class HoneycombInfo {
     @Field(() => String)
         projectAddress: string
     @Field(() => String)
-        dollarCarrotResourceAddress: string
+        tokenResourceAddress: string
+    @Field(() => Int)
+        decimals: number
 }
 
 @ObjectType()

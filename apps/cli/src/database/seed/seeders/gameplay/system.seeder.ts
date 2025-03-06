@@ -215,8 +215,9 @@ export class SystemSeeder implements Seeder {
         }
         const honeycombInfo: HoneycombInfo = {
             dailyRewardAmount: 10000000, // 10 $CARROT
-            dollarCarrotResourceAddress: "6JkqdDyrXsySvnvKBmFVpay9L413VXJcd78kFJ2XSABH",
-            projectAddress: "BoRbyNqh3YmYzzuFMLZ2kjFEC1whr4zS9wPskqp7uqZL"
+            tokenResourceAddress: "6JkqdDyrXsySvnvKBmFVpay9L413VXJcd78kFJ2XSABH",
+            projectAddress: "BoRbyNqh3YmYzzuFMLZ2kjFEC1whr4zS9wPskqp7uqZL",
+            decimals: 6
         }
         const data: Array<Partial<SystemSchema>> = [
             {
