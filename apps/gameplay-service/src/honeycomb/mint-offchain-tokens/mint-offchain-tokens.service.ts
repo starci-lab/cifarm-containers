@@ -52,6 +52,7 @@ export class MintOffchainTokensService {
                 payerAddress: user.accountAddress,
                 toAddress: user.accountAddress
             })
+            console.log(user.accountAddress)
 
             // update user honeycomb daily reward last claim time
             await this.connection
