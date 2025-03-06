@@ -16,12 +16,8 @@ export class PlacedItemsService {
             const items = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                 .find({ user: userId })
                 .session(mongoSession)
-                .lean()
 
-            return items.map(item => ({
-                ...item,
-                id: item._id.toString(),
-            }))
+            return items.map(item => (item.toJSON()))
         } finally {
             await mongoSession.endSession()
         }

@@ -3,7 +3,10 @@ import { UserSchema } from "@src/databases"
 import { IPaginatedResponse, PaginatedArgs, PaginatedResponse } from "@src/graphql"
 
 @InputType()
-export class GetNeighborsArgs extends PaginatedArgs {}
+export class GetNeighborsArgs extends PaginatedArgs {
+    @Field(() => String, { nullable : true })
+        searchString?: string
+}
 
 @ObjectType()
 export class GetNeighborsResponse
@@ -16,7 +19,10 @@ export class GetNeighborsResponse
 
 
 @InputType()
-export class GetFolloweesArgs extends PaginatedArgs {}
+export class GetFolloweesArgs extends PaginatedArgs {
+    @Field(() => String, { nullable : true })
+        searchString?: string
+}
 
 @ObjectType()
 export class GetFolloweesResponse

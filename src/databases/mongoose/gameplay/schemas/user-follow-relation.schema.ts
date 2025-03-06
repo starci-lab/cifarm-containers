@@ -7,6 +7,7 @@ import { UserSchema } from "./user.schema"
 @ObjectType()
 @Schema({
     timestamps: true,
+    collection: "user-follow-relations"
 })
 export class UserFollowRelationSchema  extends AbstractSchema {
     // special case for followee
