@@ -121,7 +121,6 @@ export class PlacedItemsGateway implements OnGatewayInit {
 
     @OnEvent(VISITED_EMITTER2_EVENT)
     public async handleVisitedEmitter2(payload: VisitedEmitter2Payload) {
-        console.log(payload)
         const placedItems = await this.placedItemsService.getPlacedItems({
             userId: payload.userId
         })
