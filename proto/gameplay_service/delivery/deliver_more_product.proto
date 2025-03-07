@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message DeliverMoreProductRequest {
+    string userId = 1;
+    int32 index = 2;
+    string inventoryId = 3;
+    int32 quantity = 4;
+}

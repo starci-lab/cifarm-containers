@@ -41,6 +41,7 @@ service GameplayService {
 
     // Delivery methods
     rpc DeliverProduct(DeliverProductRequest) returns (google.protobuf.Empty);
+    rpc DeliverMoreProduct(DeliverMoreProductRequest) returns (google.protobuf.Empty);
     rpc RetainProduct(RetainProductRequest) returns (google.protobuf.Empty);
 
     // Claim methods

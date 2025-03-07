@@ -98,6 +98,7 @@ import { RestJwtAuthGuard } from "@src/guards"
 import { lastValueFrom } from "rxjs"
 import { UserLike } from "@src/jwt"
 import { InjectGrpc } from "@src/grpc/grpc.decorators"
+import { DeliverMoreProductRequest, DeliverMoreProductResponse } from "@apps/gameplay-service/src/delivery/deliver-more-product"
 
 @ApiTags("Gameplay")
 @Controller({
@@ -404,9 +405,28 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: DeliverProductRequest
     ): Promise<DeliverProductResponse> {
-        console.log(this.gameplayService.deliverProduct)
         return await lastValueFrom(
             this.gameplayService.deliverProduct({
+                ...request,
+                userId: user?.id
+            })
+        )
+    }
+
+    // Delivery
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        type: DeliverMoreProductResponse
+    })
+    @Post("/deliver-more-product")
+    public async deliverMoreProduct(
+        @User() user: UserLike,
+        @Body() request: DeliverMoreProductRequest
+    ): Promise<DeliverMoreProductResponse> {
+        return await lastValueFrom(
+            this.gameplayService.deliverMoreProduct({
                 ...request,
                 userId: user?.id
             })

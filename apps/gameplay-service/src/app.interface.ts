@@ -32,6 +32,8 @@ import {
     VisitResponse,
 } from "./community"
 import {
+    DeliverMoreProductRequest,
+    DeliverMoreProductResponse,
     DeliverProductRequest,
     DeliverProductResponse,
     RetainProductRequest,
@@ -110,6 +112,7 @@ export interface IGameplayService {
     // Delivery
     deliverProduct(request: DeliverProductRequest): Observable<DeliverProductResponse>
     retainProduct(request: RetainProductRequest): Observable<RetainProductResponse>
+    deliverMoreProduct(request: DeliverMoreProductRequest): Observable<DeliverMoreProductResponse>
 
     // Farming
     collectAnimalProduct(
