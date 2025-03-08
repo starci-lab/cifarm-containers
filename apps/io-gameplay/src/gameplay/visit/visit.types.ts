@@ -14,3 +14,7 @@ export interface VisitPayload {
 export interface ReturnPayload {
     userId: string
 }
+
+export interface ShowFadeMessage {
+    toNeighbor: boolean
+}

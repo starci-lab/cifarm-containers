@@ -117,16 +117,14 @@ export class PlacedItemsGateway implements OnGatewayInit {
         const placedItems = await this.placedItemsService.getPlacedItems({
             userId: payload.userId
         })
+        console.log(payload.userId)
         const data: PlacedItemsSyncedMessage = {
             placedItems,
             userId: payload.userId
         }
         this.namespace
             .to(
-                this.authGateway.getRoomName({
-                    type: RoomType.Watcher,
-                    userId: payload.userId
-                })
+                payload.socketId
             )
             .emit(PLACED_ITEMS_SYNCED_EVENT, data)
     }
