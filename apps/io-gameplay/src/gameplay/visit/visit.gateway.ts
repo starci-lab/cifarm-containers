@@ -7,7 +7,7 @@ import { NAMESPACE } from "../gameplay.constants"
 import { ReturnPayload, VisitedEmitter2Payload, VisitPayload } from "./visit.types"
 import { VISITED_EMITTER2_EVENT } from "./visit.constants"
 import { EventEmitter2 } from "@nestjs/event-emitter"
-import { AuthGateway, SocketData } from "../auth"
+import { AuthGateway, RoomType, SocketData } from "../auth"
 import { SocketCoreService, TypedNamespace } from "@src/io"
 
 @WebSocketGateway({
@@ -40,9 +40,15 @@ export class VisitGateway {
         { neighborUserId, userId }: VisitPayload
     ): Promise<void> {
         // get the corresponding socket for the user
-        const socket = await this.socketCoreService.getSocket(this.namespace, userId)
+        const socket = await this.authGateway.getSocket(this.namespace, userId)
+        // stop watching the original player
+        this.authGateway.leaveWatchingRoom(socket)
         // start watching the player
-        this.authGateway.startWatchingUser(socket, neighborUserId)
+        this.authGateway.joinRoom({
+            socket,
+            userId: neighborUserId,
+            type: RoomType.Player
+        })
         const emitter2Payload: VisitedEmitter2Payload = {
             userId: neighborUserId,
             socketId: socket.id
@@ -54,9 +60,15 @@ export class VisitGateway {
         { userId }: ReturnPayload
     ): Promise<void> {
         // get the corresponding socket for the user
-        const socket = await this.socketCoreService.getSocket(this.namespace, userId)
+        const socket = await this.authGateway.getSocket(this.namespace, userId)
+        // stop watching the original player
+        this.authGateway.leaveWatchingRoom(socket)
         // start watching the original player
-        this.authGateway.startWatchingUser(socket, userId)
+        this.authGateway.joinRoom({
+            socket,
+            userId,
+            type: RoomType.Player
+        })
         const emitter2Payload: VisitedEmitter2Payload = {
             userId,
             socketId: socket.id

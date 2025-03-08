@@ -5,6 +5,8 @@ import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { WaterRequest, WaterResponse } from "./water.dto"
+import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
 
 @Injectable()
 export class WaterService {
@@ -14,7 +16,9 @@ export class WaterService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async water({ placedItemTileId, userId}: WaterRequest): Promise<WaterResponse> {
@@ -72,6 +76,7 @@ export class WaterService {
             await mongoSession.abortTransaction()
             throw error
         } finally {
+            this.clientKafka.emit(KafkaPattern.PlacedItems, { userId })
             await mongoSession.endSession()
         }
     }

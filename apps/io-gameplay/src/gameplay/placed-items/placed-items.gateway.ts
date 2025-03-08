@@ -14,7 +14,7 @@ import { NAMESPACE } from "../gameplay.constants"
 import { PlacedItemsService } from "./placed-items.service"
 import { PLACED_ITEMS_SYNCED_EVENT, SYNC_PLACED_ITEMS_EVENT } from "./placed-items.constants"
 import { OnEvent } from "@nestjs/event-emitter"
-import { AuthGateway } from "../auth"
+import { AuthGateway, RoomType } from "../auth"
 import { VISITED_EMITTER2_EVENT, VisitedEmitter2Payload } from "../visit"
 import { e2eEnabled } from "@src/env"
 
@@ -30,7 +30,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
 
     constructor(
         private readonly authGateway: AuthGateway,
-        private readonly placedItemsService: PlacedItemsService,
+        private readonly placedItemsService: PlacedItemsService
     ) {}
 
     @WebSocketServer()
@@ -43,7 +43,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
     }
 
     //sync state every second
-    @Cron("*/1 * * * * *")
+    @Cron("*/10 * * * * *")
     public async processSyncPlacedItemsPerSecond() {
         // for e2e testing, skip this, as it will be handled by the test
         if (e2eEnabled()) {
@@ -52,7 +52,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
         //get all socket ids in this node
         const sockets = this.authGateway.getSockets()
         // print the number of sockets
-        this.logger.verbose(Array.from(sockets).map(socket => socket.id))
+        this.logger.verbose(Array.from(sockets).map((socket) => socket.id))
         //emit placed items to all clients
         const promises: Array<Promise<void>> = []
         for (const socket of sockets) {
@@ -64,9 +64,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
                     })
                     const data: PlacedItemsSyncedMessage = {
                         placedItems,
-                        userId,
-                        isSecondarySync: true
-                        
+                        userId
                     }
                     socket.emit(PLACED_ITEMS_SYNCED_EVENT, data)
                 })()
@@ -77,25 +75,23 @@ export class PlacedItemsGateway implements OnGatewayInit {
 
     //sync placed items for all socket visting userId
     public async syncPlacedItems({ userId }: SyncPlacedItemsParams) {
-        // get all sockets in the room, accross cluster
-        const sockets = await this.namespace.in(userId).fetchSockets()
         // emit placed items to all clients
         const promises: Array<Promise<void>> = []
-        for (const client of sockets) {
-            promises.push(
-                (async () => {
-                    const placedItems = await this.placedItemsService.getPlacedItems({
-                        userId
-                    })
-                    const data: PlacedItemsSyncedMessage = {
-                        placedItems,
-                        userId,
-                        isSecondarySync: false
-                    }
-                    client.emit(PLACED_ITEMS_SYNCED_EVENT, data)
-                })()
-            )
+        const placedItems = await this.placedItemsService.getPlacedItems({
+            userId
+        })
+        const data: PlacedItemsSyncedMessage = {
+            placedItems,
+            userId
         }
+        this.namespace
+            .to(
+                this.authGateway.getRoomName({
+                    userId,
+                    type: RoomType.Watcher
+                })
+            )
+            .emit(PLACED_ITEMS_SYNCED_EVENT, data)
         await Promise.all(promises)
     }
 
@@ -104,14 +100,13 @@ export class PlacedItemsGateway implements OnGatewayInit {
     public async handleSyncPlacedItems(
         @ConnectedSocket() client: Socket
     ): Promise<WsResponse<PlacedItemsSyncedMessage>> {
-        const userId  = this.authGateway.getWatchingUserId(client)
+        const userId = this.authGateway.getWatchingUserId(client)
         const placedItems = await this.placedItemsService.getPlacedItems({
             userId
         })
         const data: PlacedItemsSyncedMessage = {
             placedItems,
-            userId,
-            isSecondarySync: false
+            userId
         }
         return {
             event: PLACED_ITEMS_SYNCED_EVENT,
@@ -126,9 +121,24 @@ export class PlacedItemsGateway implements OnGatewayInit {
         })
         const data: PlacedItemsSyncedMessage = {
             placedItems,
-            userId: payload.userId,
-            isSecondarySync: false
+            userId: payload.userId
         }
-        this.namespace.to(payload.socketId).emit(PLACED_ITEMS_SYNCED_EVENT, data)
+        console.log(this.authGateway.getRoomName({
+            type: RoomType.Watcher,
+            userId: payload.userId
+        }))
+        console.log(this.authGateway.getRoomName({
+            type: RoomType.Watcher,
+            userId: payload.userId
+        })
+        )
+        this.namespace
+            .to(
+                this.authGateway.getRoomName({
+                    type: RoomType.Watcher,
+                    userId: payload.userId
+                })
+            )
+            .emit(PLACED_ITEMS_SYNCED_EVENT, data)
     }
 }

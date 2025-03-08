@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { JwtService, UserLike } from "@src/jwt"
-import { SocketLike, TypedSocket, AbstractSocketData } from "./io.types"
+import { TypedSocket, AbstractSocketData } from "./io.types"
 
 @Injectable()
 export class SocketCoreService<TSocketData extends AbstractSocketData> {
@@ -28,26 +28,7 @@ export class SocketCoreService<TSocketData extends AbstractSocketData> {
 
         // set the user id in the socket data, indicate this socket is related to this user
         socket.data.user = user
-        socket.join(this.getRoomName(user.id))
         // return the user
         return user
-    }
-
-    public getUser(socket: SocketLike<TSocketData>): UserLike {
-        return socket.data.user
-    }
-
-    // base room name, useful for retrieving the socket
-    public getRoomName(userId: string): string {
-        return `user-${userId}`
-    }
-
-    // get socket by user id
-    public async getSocket(
-        namespace: TypedSocket<TSocketData>,
-        userId: string
-    ): Promise<SocketLike<TSocketData>> {
-        const sockets = await namespace.in(this.getRoomName(userId)).fetchSockets()
-        return sockets[0]
     }
 }

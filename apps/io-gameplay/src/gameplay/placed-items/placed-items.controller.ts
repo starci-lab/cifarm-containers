@@ -12,6 +12,7 @@ export class PlacedItemsController {
 
     @EventPattern(KafkaPattern.PlacedItems)
     async syncPlacedItems(@Payload() payload: SyncPlacedItemsPayload) {
+        console.log(payload )
         this.placedItemsGateway.syncPlacedItems({ userId: payload.userId })
     }
 }

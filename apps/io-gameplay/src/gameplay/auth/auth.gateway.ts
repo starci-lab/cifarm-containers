@@ -8,10 +8,9 @@ import {
     WebSocketServer
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
-import { SocketCoreService, SocketLike } from "@src/io"
+import { SocketCoreService, SocketLike, TypedSocket } from "@src/io"
 import { NAMESPACE } from "../gameplay.constants"
 import { SocketData } from "./auth.types"
-import { PLAYER_PREFIX } from "./auth.constants"
 
 @WebSocketGateway({
     cors: {
@@ -41,7 +40,8 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         if (!user) return
         // join the room, indicate observering this user
         this.logger.verbose(`Client connected: ${socket.id}`)
-        this.startWatchingUser(socket, user.id)
+        this.joinRoom({ socket, userId: user.id, type: RoomType.Player })
+        this.joinRoom({ socket, userId: user.id, type: RoomType.Watcher })
     }
 
     async handleDisconnect(@ConnectedSocket() socket: Socket) {
@@ -52,35 +52,66 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         return Array.from(this.namespace.sockets.values())
     }
 
-    public startWatchingUser(socket: SocketLike<SocketData>, userId: string) {
-        this.stopWatchingUser(socket)
-        socket.join(this.getRoomName(userId))
+    public joinRoom({
+        socket,
+        userId,
+        type = RoomType.Player
+    }: JoinRoomNameParams) {
+        socket.join(this.getRoomName({ userId, type }))
     }
 
-    // method to stop watching the player
-    private stopWatchingUser(socket: SocketLike<SocketData>) {
-        const roomName = Array.from(socket.rooms).find((room) => room.startsWith(PLAYER_PREFIX))
+    // method to leave the watching room
+    public leaveWatchingRoom(socket: SocketLike<SocketData>) {
+        const roomName = Array.from(socket.rooms).find((room) => room.startsWith(RoomType.Watcher))
         // do nothing if room name is not found
         if (!roomName) {
-            return
+            throw new Error("Room name not found")
         }
         socket.leave(roomName)
     }
 
     // get player watching user id
     public getWatchingUserId(socket: SocketLike<SocketData>): string | undefined {
-        const rooms = Array.from(socket.rooms).find((room) => room.startsWith(PLAYER_PREFIX))
+        const rooms = Array.from(socket.rooms).find((room) => room.startsWith(RoomType.Watcher))
         if (!rooms) {
             return
         }
         return this.getUserIdFromRoomName(rooms)
     }
 
-    private getRoomName(userId: string): string {
-        return `${PLAYER_PREFIX}_${userId}`
+    public getRoomName({ userId, type = RoomType.Player }: GetRoomNameParams): string {
+        return `${type}_${userId}`
     }
 
-    private getUserIdFromRoomName(roomName: string): string {
-        return roomName.replace(PLAYER_PREFIX + "_", "")
+    public getUserIdFromRoomName(roomName: string): string {
+        return roomName.substring(roomName.indexOf("_") + 1)
     }
+
+    // get socket by user id
+    public async getSocket(
+        namespace: TypedSocket<SocketData>,
+        userId: string
+    ): Promise<SocketLike<SocketData>> {
+        const sockets = await namespace.in(this.getRoomName({
+            userId,
+            type: RoomType.Player
+        })).fetchSockets()
+        return sockets[0]
+    }
+}
+
+export enum RoomType {
+    Player = "player",
+    Watcher = "watcher"
+}
+
+export interface GetRoomNameParams {
+    type?: RoomType
+    userId: string
+}
+
+export interface JoinRoomNameParams {
+    socket: SocketLike<SocketData>
+    userId: string
+    type?: RoomType
 }
