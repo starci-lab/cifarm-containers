@@ -4,11 +4,11 @@ import {
     WebSocketServer
 } from "@nestjs/websockets"
 import { NAMESPACE } from "../gameplay.constants"
-import { ReturnPayload, VisitedEmitter2Payload, VisitPayload } from "./visit.types"
-import { VISITED_EMITTER2_EVENT } from "./visit.constants"
+import { ReturnPayload, ShowFadeMessage, VisitedEmitter2Payload, VisitPayload } from "./visit.types"
+import { SHOW_FADE_EVENT, VISITED_EMITTER2_EVENT } from "./visit.constants"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { AuthGateway, RoomType, SocketData } from "../auth"
-import { SocketCoreService, TypedNamespace } from "@src/io"
+import { TypedNamespace } from "@src/io"
 
 @WebSocketGateway({
     cors: {
@@ -23,7 +23,6 @@ export class VisitGateway {
 
     constructor(
         private readonly authGateway: AuthGateway,
-        private readonly socketCoreService: SocketCoreService<SocketData>,
         private eventEmitter: EventEmitter2
     ) {}
 
@@ -47,8 +46,14 @@ export class VisitGateway {
         this.authGateway.joinRoom({
             socket,
             userId: neighborUserId,
-            type: RoomType.Player
+            type: RoomType.Watcher
         })
+        // emit the event to show the backdrop
+        const showFadeMessage: ShowFadeMessage = {
+            toNeighbor: true
+        }
+        socket.emit(SHOW_FADE_EVENT, showFadeMessage)
+        // emit the event to the other player
         const emitter2Payload: VisitedEmitter2Payload = {
             userId: neighborUserId,
             socketId: socket.id
@@ -67,8 +72,14 @@ export class VisitGateway {
         this.authGateway.joinRoom({
             socket,
             userId,
-            type: RoomType.Player
+            type: RoomType.Watcher
         })
+        // emit the event to show the backdrop
+        const showFadeMessage: ShowFadeMessage = {
+            toNeighbor: false
+        }
+        socket.emit(SHOW_FADE_EVENT, showFadeMessage)
+        // emit the event to the other player
         const emitter2Payload: VisitedEmitter2Payload = {
             userId,
             socketId: socket.id
