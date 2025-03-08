@@ -65,12 +65,12 @@ export class EnergyWorker extends WorkerHost {
                     }
                     updateUser()
                     await user.save({ session })
-                    session.commitTransaction()
+                    await session.commitTransaction()
                 } catch (error) {
                     this.logger.error(error)
-                    session.abortTransaction()
+                    await session.abortTransaction()
                 } finally {
-                    session.endSession()
+                    await session.endSession()
                 }
             }
             promises.push(promise())

@@ -69,6 +69,7 @@ export class CropWorker extends WorkerHost {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
         const promises: Array<Promise<void>> = []
+        // console.log(`Processing ${placedItems.length} placed items`)
         for (const placedItem of placedItems) {
             const promise = async () => {
                 const session = await this.connection.startSession()
