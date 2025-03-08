@@ -17,6 +17,7 @@ import { HelpWaterRequest, HelpWaterResponse } from "./help-water.dto"
 import { Connection } from "mongoose"
 import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException, createObjectId } from "@src/common"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class HelpWaterService {
@@ -40,6 +41,9 @@ export class HelpWaterService {
 
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
+
+        let actionMessage: EmitActionPayload | undefined
+
         try {
             const placedItemTile = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -100,13 +104,22 @@ export class HelpWaterService {
             await placedItemTile.save({ session: mongoSession })
             await mongoSession.commitTransaction()
 
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
-                userId: neighborUserId
-            })
+            actionMessage = {
+                placedItemId: placedItemTileId,
+                action: ActionName.HelpWater,
+                success: true,
+                userId: neighborUserId,
+            }
+            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })
 
             return {}
         } catch (error) {
             this.logger.error(error)
+            if (actionMessage)
+            {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }  
             await mongoSession.endSession()
             throw error
         } finally {

@@ -5,6 +5,9 @@ import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { FeedAnimalRequest, FeedAnimalResponse } from "./feed-animal.dto"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class FeedAnimalService {
@@ -15,13 +18,16 @@ export class FeedAnimalService {
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async feedAnimal({ placedItemAnimalId, inventorySupplyId, userId }: FeedAnimalRequest): Promise<FeedAnimalResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
+        let actionMessage: EmitActionPayload | undefined
         try {
             const placedItemAnimal = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findById(placedItemAnimalId)
@@ -92,10 +98,23 @@ export class FeedAnimalService {
             placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
             await placedItemAnimal.save({ session: mongoSession })
 
+            actionMessage = {
+                placedItemId: placedItemAnimalId,
+                action: ActionName.FeedAnimal,
+                success: true,
+                userId,
+            }
+            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
+
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {
             this.logger.error(error)
+            if (actionMessage)
+            {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }  
             await mongoSession.abortTransaction()
             throw new GrpcInternalException(error.message)
         } finally {

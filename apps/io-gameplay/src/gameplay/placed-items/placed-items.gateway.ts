@@ -76,7 +76,6 @@ export class PlacedItemsGateway implements OnGatewayInit {
     //sync placed items for all socket visting userId
     public async syncPlacedItems({ userId }: SyncPlacedItemsParams) {
         // emit placed items to all clients
-        const promises: Array<Promise<void>> = []
         const placedItems = await this.placedItemsService.getPlacedItems({
             userId
         })
@@ -92,7 +91,6 @@ export class PlacedItemsGateway implements OnGatewayInit {
                 })
             )
             .emit(PLACED_ITEMS_SYNCED_EVENT, data)
-        await Promise.all(promises)
     }
 
     // force sync placed items
@@ -123,15 +121,6 @@ export class PlacedItemsGateway implements OnGatewayInit {
             placedItems,
             userId: payload.userId
         }
-        console.log(this.authGateway.getRoomName({
-            type: RoomType.Watcher,
-            userId: payload.userId
-        }))
-        console.log(this.authGateway.getRoomName({
-            type: RoomType.Watcher,
-            userId: payload.userId
-        })
-        )
         this.namespace
             .to(
                 this.authGateway.getRoomName({

@@ -42,7 +42,7 @@ export class ActionGateway implements OnGatewayInit {
         //     userId,
         //     type: RoomType.Player
         // })).fetchSockets()
-        // console.log(socket)
+        // console.log(socket[0].id)
         this.namespace
             .to(
                 this.authGateway.getRoomName({

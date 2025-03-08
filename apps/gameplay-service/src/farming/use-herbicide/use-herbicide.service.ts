@@ -5,6 +5,9 @@ import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UseHerbicideRequest, UseHerbicideResponse } from "./use-herbicide.dto"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class UseHerbicideService {
@@ -14,13 +17,16 @@ export class UseHerbicideService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
     async useHerbicide({ placedItemTileId, userId }: UseHerbicideRequest): Promise<UseHerbicideResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
+        let actionMessage: EmitActionPayload | undefined
         try {
             const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findById(placedItemTileId)
@@ -66,9 +72,21 @@ export class UseHerbicideService {
             placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
             await placedItemTile.save({ session: mongoSession })
 
+            actionMessage = {
+                placedItemId: placedItemTileId,
+                action: ActionName.UseHerbicide,
+                success: true,
+                userId,
+            }
+            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {
+            if (actionMessage)
+            {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }  
             this.logger.error(`Transaction failed, reason: ${error.message}`)
             await mongoSession.abortTransaction()
             throw error
