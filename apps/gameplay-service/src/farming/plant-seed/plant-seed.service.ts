@@ -7,6 +7,7 @@ import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-except
 import { PlantSeedRequest, PlantSeedResponse } from "./plant-seed.dto"
 import { ClientKafka } from "@nestjs/microservices"
 import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class PlantSeedService {
@@ -26,6 +27,7 @@ export class PlantSeedService {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
+        let actionMessage: EmitActionPayload | undefined
         try {
             const inventory = await this.connection.model<InventorySchema>(InventorySchema.name)
                 .findById(inventorySeedId)
@@ -101,13 +103,23 @@ export class PlantSeedService {
                 }}
             ).session(mongoSession)
 
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
-                userId
-            })
+            actionMessage = {
+                placedItemId: placedItemTileId,
+                action: ActionName.PlantSeed,
+                success: true,
+                userId,
+            }
+            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
 
             await mongoSession.commitTransaction()
             return {}      
-        } catch (error) {
+        } catch (error) 
+        {
+            if (actionMessage)
+            {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }  
             this.logger.error(error)
             await mongoSession.abortTransaction()
             throw new GrpcInternalException(error.message)

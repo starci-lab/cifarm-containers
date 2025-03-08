@@ -1,26 +1,26 @@
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
+import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { 
-    ActivityInfo, 
-    InjectMongoose, 
-    PlacedItemSchema, 
-    SEED_GROWTH_INFO, 
-    SystemId, 
-    KeyValueRecord, 
-    SystemSchema, 
-    UserSchema, 
-    InventorySchema, 
-    InventoryTypeSchema, 
-    InventoryTypeId, 
-    InventoryType, 
-    Activities
+import {
+    Activities,
+    InjectMongoose,
+    InventorySchema,
+    InventoryType,
+    InventoryTypeId,
+    InventoryTypeSchema,
+    KeyValueRecord,
+    PlacedItemSchema,
+    SEED_GROWTH_INFO,
+    SystemId,
+    SystemSchema,
+    UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService, InventoryService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UseFertilizerRequest, UseFertilizerResponse } from "./use-fertilizer.dto"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class UseFertilizerService {
@@ -42,6 +42,7 @@ export class UseFertilizerService {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
+        let actionMessage: EmitActionPayload | undefined
         try {
             const inventory = await this.connection.model<InventorySchema>(InventorySchema.name)
                 .findById(inventorySupplyId)
@@ -117,9 +118,21 @@ export class UseFertilizerService {
                 userId
             })
 
+            actionMessage = {
+                placedItemId: placedItemTileId,
+                action: ActionName.UseFertilizer,
+                success: true,
+                userId,
+            }
+            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {
+            if (actionMessage)
+            {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }  
             this.logger.error(`Transaction failed, reason: ${error.message}`)
             await mongoSession.abortTransaction()
             throw new GrpcInternalException(error.message)

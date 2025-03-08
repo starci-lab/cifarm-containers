@@ -1,1 +1,1 @@
-export const ACTION_EMITTED_EVENT = "action-emitted"
+export const ACTION_EMITTED_EVENT = "action_emitted"

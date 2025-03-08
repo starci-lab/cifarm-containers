@@ -22,6 +22,7 @@ import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import { InjectKafka, KafkaPattern } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"
+import { ActionName, EmitActionHarvestCropData, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class HarvestCropService {
@@ -37,18 +38,22 @@ export class HarvestCropService {
         private readonly clientKafka: ClientKafka,
     ) {}
 
-    async harvestCrop(request: HarvestCropRequest): Promise<HarvestCropResponse> {
+    async harvestCrop({
+        placedItemTileId,
+        userId
+    }: HarvestCropRequest): Promise<HarvestCropResponse> {
         this.logger.debug(
-            `Harvesting crop for user ${request.userId}, tile ID: ${request.placedItemTileId}`
+            `Harvesting crop for user ${userId}, tile ID: ${placedItemTileId}`
         )
 
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
+        let actionMessage: EmitActionPayload<EmitActionHarvestCropData> | undefined
         try {
             const placedItemTile = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .findById(request.placedItemTileId)
+                .findById(placedItemTileId)
                 .populate(SEED_GROWTH_INFO)
                 .session(mongoSession)
 
@@ -69,7 +74,7 @@ export class HarvestCropService {
 
             const user = await this.connection
                 .model<UserSchema>(UserSchema.name)
-                .findById(request.userId)
+                .findById(userId)
                 .session(mongoSession)
 
             if (!user) throw new GrpcNotFoundException("User not found")
@@ -164,11 +169,22 @@ export class HarvestCropService {
                 )
                 .session(mongoSession)
 
+            actionMessage = {
+                placedItemId: placedItemTileId,
+                action: ActionName.HarvestCrop,
+                success: true,
+                userId,
+                data: {
+                    quantity
+                }
+            }
+            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
 
             await mongoSession.commitTransaction()
             
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
-                userId: request.userId
+                userId: userId
             })
 
             return {
@@ -176,6 +192,10 @@ export class HarvestCropService {
             }
         } catch (error) {
             this.logger.error(error)
+            if (actionMessage)
+            {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }  
             await mongoSession.abortTransaction()
             throw error
         } finally {

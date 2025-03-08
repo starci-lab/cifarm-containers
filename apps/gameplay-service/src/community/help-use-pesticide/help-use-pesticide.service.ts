@@ -22,6 +22,7 @@ import {
 import { Connection } from "mongoose"
 import { GrpcFailedPreconditionException, createObjectId } from "@src/common"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class HelpUsePesticideService {
@@ -40,6 +41,9 @@ export class HelpUsePesticideService {
     ) : Promise<HelpUsePesticideResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
+
+        let actionMessage: EmitActionPayload | undefined
+
         try {
             const placedItemTile = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -97,14 +101,23 @@ export class HelpUsePesticideService {
             placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
             await placedItemTile.save({ session: mongoSession })
 
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
-                userId: neighborUserId
-            })
-
+            actionMessage = {
+                placedItemId: placedItemTileId,
+                action: ActionName.HelpUsePesticide,
+                success: true,
+                userId: neighborUserId,
+            }
+            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })
+            
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {
             this.logger.error(error)
+            if (actionMessage)
+            {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }  
             await mongoSession.abortTransaction()
             throw error
         } finally {

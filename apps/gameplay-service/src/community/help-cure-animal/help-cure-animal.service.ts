@@ -15,6 +15,7 @@ import {
     UserSchema
 } from "@src/databases"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class HelpCureAnimalService {
@@ -26,7 +27,7 @@ export class HelpCureAnimalService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
     ) {}
 
     async helpCureAnimal({
@@ -35,6 +36,9 @@ export class HelpCureAnimalService {
     }: HelpCureAnimalRequest): Promise<HelpCureAnimalResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
+
+        let actionMessage: EmitActionPayload | undefined
+
         try {
             const placedItemAnimal = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -100,11 +104,24 @@ export class HelpCureAnimalService {
                 userId: neighborUserId
             })
 
+            actionMessage = {
+                placedItemId: placedItemAnimalId,
+                action: ActionName.HelpCureAnimal,
+                success: true,
+                userId: neighborUserId,
+            }
+            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })
+
             await mongoSession.commitTransaction()
 
             return {}
         } catch (error) {
             this.logger.error(error)
+            if (actionMessage)
+            {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }  
             await mongoSession.endSession()
             throw error
         } finally {
