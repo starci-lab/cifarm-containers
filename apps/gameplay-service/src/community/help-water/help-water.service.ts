@@ -108,7 +108,7 @@ export class HelpWaterService {
                 placedItemId: placedItemTileId,
                 action: ActionName.HelpWater,
                 success: true,
-                userId: neighborUserId,
+                userId,
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })

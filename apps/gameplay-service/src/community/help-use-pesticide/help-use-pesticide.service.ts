@@ -105,7 +105,7 @@ export class HelpUsePesticideService {
                 placedItemId: placedItemTileId,
                 action: ActionName.HelpUsePesticide,
                 success: true,
-                userId: neighborUserId,
+                userId,
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })

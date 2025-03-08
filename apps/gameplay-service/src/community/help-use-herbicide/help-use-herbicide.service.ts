@@ -107,15 +107,11 @@ export class HelpUseHerbicideService {
             placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
             await placedItemTile.save({ session: mongoSession })
 
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
-                userId: neighborUserId
-            })
-
             actionMessage = {
                 placedItemId: placedItemTileId,
                 action: ActionName.HelpUseHerbicide,
                 success: true,
-                userId: neighborUserId,
+                userId,
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })
