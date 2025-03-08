@@ -64,7 +64,7 @@ export class MongooseModule extends ConfigurableModuleClass {
 
         const { dbName, host, password, port, username } =
             envConfig().databases.mongo[MongoDatabase.Gameplay]
-        const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=admin`
+        const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=admin&retryWrites=true`
 
         return {
             ...dynamicModule,
