@@ -1,19 +1,20 @@
 import { PlacedItemSchema } from "@src/databases"
 
-export enum SyncMode {
-    // Sync every second
-    Interval = "interval",
-    // Sync when triggered
-    OnDemand = "on-demand",
-    // Sync instantly
-    Immediate = "immediate"
-}
-
 export interface PlacedItemsSyncedMessage {
     //placed items
     placedItems: Array<PlacedItemSchema>
     //current user id, beneficial for debugging
     userId: string
+    // response
+    response: {
+        userId: string
+        placedItemId: string
+        action: "Water"
+        status: "Success" | "Failed"
+        data: {
+            quantity:
+        }
+    }
 }
 
 export interface SyncPlacedItemsPayload {
