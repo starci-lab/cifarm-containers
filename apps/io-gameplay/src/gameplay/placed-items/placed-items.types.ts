@@ -6,15 +6,15 @@ export interface PlacedItemsSyncedMessage {
     //current user id, beneficial for debugging
     userId: string
     // response
-    response: {
-        userId: string
-        placedItemId: string
-        action: "Water"
-        status: "Success" | "Failed"
-        data: {
-            quantity:
-        }
-    }
+    // response: {
+    //     userId: string
+    //     placedItemId: string
+    //     action: "Water"
+    //     status: "Success" | "Failed"
+    //     data: {
+    //         quantity:
+    //     }
+    // }
 }
 
 export interface SyncPlacedItemsPayload {
@@ -24,11 +24,6 @@ export interface SyncPlacedItemsPayload {
 }
 
 export interface GetPlacedItemsParams {
-    //user id
-    userId: string
-}
-
-export interface SyncPlacedItemsPayload {
     //user id
     userId: string
 }

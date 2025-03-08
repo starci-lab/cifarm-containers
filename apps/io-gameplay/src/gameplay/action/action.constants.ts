@@ -1,0 +1,1 @@
+export const ACTION_EMITTED_EVENT = "action-emitted"

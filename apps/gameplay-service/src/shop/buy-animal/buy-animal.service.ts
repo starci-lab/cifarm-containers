@@ -130,7 +130,7 @@ export class BuyAnimalService {
                 throw error
             }
 
-            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
                 userId: user.id
             })
             

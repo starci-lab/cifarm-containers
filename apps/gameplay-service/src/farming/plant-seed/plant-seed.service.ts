@@ -101,7 +101,7 @@ export class PlantSeedService {
                 }}
             ).session(mongoSession)
 
-            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
                 userId
             })
 

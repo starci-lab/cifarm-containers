@@ -100,7 +100,7 @@ export class HelpWaterService {
             await placedItemTile.save({ session: mongoSession })
             await mongoSession.commitTransaction()
 
-            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
                 userId: neighborUserId
             })
 

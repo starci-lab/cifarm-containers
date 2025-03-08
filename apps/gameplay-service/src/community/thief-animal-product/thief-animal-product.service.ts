@@ -167,7 +167,7 @@ export class ThiefAnimalProductService {
         //         throw new GrpcInternalException(errorMessage)
         //     }
 
-        //     this.clientKafka.emit(KafkaPattern.PlacedItems, {
+        //     this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
         //         userId: request.neighborUserId
         //     })
 

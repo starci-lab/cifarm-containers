@@ -90,7 +90,7 @@ export class BuyTileService {
             }
 
             // Publish event
-            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
                 userId: user.id
             })
             

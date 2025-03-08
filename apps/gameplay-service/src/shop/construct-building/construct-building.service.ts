@@ -91,7 +91,7 @@ export class ConstructBuildingService {
             }
 
             // Publish event
-            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
                 userId: user.id
             })
 

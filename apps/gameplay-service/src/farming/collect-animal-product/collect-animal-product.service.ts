@@ -143,7 +143,7 @@ export class CollectAnimalProductService {
         //     }
 
         //     // Publish event
-        //     this.clientKafka.emit(KafkaPattern.PlacedItems, {
+        //     this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
         //         userId: request.userId
         //     })
         //     return {}

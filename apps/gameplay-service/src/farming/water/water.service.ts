@@ -7,6 +7,7 @@ import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { WaterRequest, WaterResponse } from "./water.dto"
 import { ClientKafka } from "@nestjs/microservices"
 import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class WaterService {
@@ -24,17 +25,50 @@ export class WaterService {
     async water({ placedItemTileId, userId}: WaterRequest): Promise<WaterResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
-
+        
+        let actionMessage: EmitActionPayload | undefined
         try {
             const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findById(placedItemTileId)
                 .session(mongoSession)
 
-            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
+            if (!placedItemTile) {
+                {
+                    actionMessage = {
+                        placedItemId: placedItemTileId,
+                        action: ActionName.Water,
+                        success: false,
+                        userId,
+                        reasonCode: 0,
+                    }
+                    throw new GrpcFailedPreconditionException("Tile is found")
+                }
+            }
             if (placedItemTile.user.toString() !== userId) throw new GrpcFailedPreconditionException("Cannot use water on other's tile")
-            if (!placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is not planted")
-            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) throw new GrpcFailedPreconditionException("Tile does not need water")
-
+            if (!placedItemTile.seedGrowthInfo) {
+                {
+                    actionMessage = {
+                        placedItemId: placedItemTileId,
+                        action: ActionName.Water,
+                        success: false,
+                        userId,
+                        reasonCode: 1,
+                    }
+                    throw new GrpcFailedPreconditionException("Tile is not planted")
+                }
+            } 
+            
+            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater)
+            {
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.Water,
+                    success: false,
+                    userId,
+                    reasonCode: 2,
+                }
+                throw new GrpcFailedPreconditionException("Tile does not need water")
+            }
             const { value: {
                 water: {
                     energyConsume,
@@ -69,14 +103,25 @@ export class WaterService {
             placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
             await placedItemTile.save({ session: mongoSession })
 
+            actionMessage = {
+                placedItemId: placedItemTileId,
+                action: ActionName.Water,
+                success: true,
+                userId,
+            }
+            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {
+            if (actionMessage)
+            {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }   
             this.logger.error(error)
             await mongoSession.abortTransaction()
             throw error
-        } finally {
-            this.clientKafka.emit(KafkaPattern.PlacedItems, { userId })
+        } finally {   
             await mongoSession.endSession()
         }
     }

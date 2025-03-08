@@ -10,9 +10,8 @@ export class PlacedItemsController {
 
     constructor(private readonly placedItemsGateway: PlacedItemsGateway) {}
 
-    @EventPattern(KafkaPattern.PlacedItems)
+    @EventPattern(KafkaPattern.SyncPlacedItems)
     async syncPlacedItems(@Payload() payload: SyncPlacedItemsPayload) {
-        console.log(payload )
         this.placedItemsGateway.syncPlacedItems({ userId: payload.userId })
     }
 }

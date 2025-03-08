@@ -163,7 +163,7 @@ export class ThiefCropService {
 
             await mongoSession.commitTransaction()
 
-            this.clientKafka.emit(KafkaPattern.PlacedItems, {
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
                 userId: neighborUserId
             })
 
