@@ -5,9 +5,9 @@ import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UseHerbicideRequest, UseHerbicideResponse } from "./use-herbicide.dto"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class UseHerbicideService {
@@ -18,8 +18,8 @@ export class UseHerbicideService {
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
     ) {}
 
     async useHerbicide({ placedItemTileId, userId }: UseHerbicideRequest): Promise<UseHerbicideResponse> {
@@ -81,13 +81,22 @@ export class UseHerbicideService {
                 success: true,
                 userId,
             }
-            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.SyncPlacedItems,
+                messages: [{ value: JSON.stringify({ userId }) }]
+            })
             return {}
         } catch (error) {
             if (actionMessage)
             {
-                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
             }  
             this.logger.error(`Transaction failed, reason: ${error.message}`)
             await mongoSession.abortTransaction()

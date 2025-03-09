@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ClientKafka } from "@nestjs/microservices"
-import { InjectKafka } from "@src/brokers"
+import { InjectKafkaProducer } from "@src/brokers"
 import {
     InjectMongoose,
 } from "@src/databases"
@@ -12,14 +11,15 @@ import {
 } from "@src/gameplay"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 import { Connection } from "mongoose"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class ThiefAnimalProductService {
     private readonly logger = new Logger(ThiefAnimalProductService.name)
 
     constructor(
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,

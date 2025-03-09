@@ -6,8 +6,8 @@ import {
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { VisitRequest, VisitResponse } from "./visit.dto"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class VisitService {
@@ -16,8 +16,8 @@ export class VisitService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async visit({ neighborUserId, userId }: VisitRequest): Promise<VisitResponse> {
@@ -45,9 +45,16 @@ export class VisitService {
                 neighborUserId = randomUser[0]._id
             }
             // emit via kafka
-            this.clientKafka.emit(KafkaPattern.Visit, {
-                userId,
-                neighborUserId
+            this.kafkaProducer.send({
+                topic: KafkaTopic.Visit,
+                messages: [
+                    {
+                        value: JSON.stringify({
+                            userId,
+                            neighborUserId
+                        })
+                    }
+                ]
             })
             return {
                 neighborUserId

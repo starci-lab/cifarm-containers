@@ -5,9 +5,9 @@ import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { WaterRequest, WaterResponse } from "./water.dto"
-import { ClientKafka } from "@nestjs/microservices"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class WaterService {
@@ -18,8 +18,8 @@ export class WaterService {
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka
+        @InjectKafkaProducer()
+        private readonly producer: Producer
     ) {}
 
     async water({ placedItemTileId, userId}: WaterRequest): Promise<WaterResponse> {
@@ -111,14 +111,23 @@ export class WaterService {
                 success: true,
                 userId,
             }
-            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
+            this.producer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
+            this.producer.send({
+                topic: KafkaTopic.SyncPlacedItems,
+                messages: [{ value: JSON.stringify({ userId }) }]
+            })
             return {}
         } catch (error) {
             this.logger.error(error)
             if (actionMessage)
             {
-                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+                this.producer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
             }   
             await mongoSession.abortTransaction()
             throw error

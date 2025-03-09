@@ -2,8 +2,6 @@ import { NestFactory } from "@nestjs/core"
 import { Container, envConfig, loadEnv } from "@src/env"
 import { AppModule } from "./app.module"
 import { createPrimaryServer, IO_ADAPTER_FACTORY, IoAdapterFactory } from "@src/io"
-import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { KafkaGroupId, kafkaOptions } from "@src/brokers"
 import cluster from "cluster"
 import { INestApplication, Logger } from "@nestjs/common"
 import { join } from "path"
@@ -17,23 +15,9 @@ const addAdapter = async (app: INestApplication) => {
     app.useWebSocketAdapter(adapter)
 }
 
-const addMicroservices = async (app: INestApplication) => {
-    app.connectMicroservice<MicroserviceOptions>({
-        transport: Transport.KAFKA,
-        options: {
-            client: kafkaOptions(),
-            consumer: {
-                groupId: KafkaGroupId.Gameplay,
-            }
-        }
-    })
-    await app.startAllMicroservices()
-}
-
 const bootstrap = async () => {
     const app = await NestFactory.create(AppModule)
     await addAdapter(app)
-    await addMicroservices(app)
     await app.listen(envConfig().containers[Container.IoGameplay].port)
 }
 
@@ -48,7 +32,6 @@ const bootstrapWorker = async () => {
     logger.verbose(`Worker ${process.pid} started`)
 
     const app = await NestFactory.create(AppModule)
-    await addMicroservices(app)
     await addAdapter(app)
     await app.listen(envConfig().containers[Container.IoGameplay].cluster.workerPort)
 }

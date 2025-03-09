@@ -10,6 +10,7 @@ import { GameplayModule } from "./gameplay"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
+import { KafkaModule } from "@src/brokers"
 
 @Module({
     imports: [
@@ -26,6 +27,11 @@ import { MongooseModule } from "@src/databases"
         JwtModule.register({
             useGlobalImports: true,
             isGlobal: true
+        }),
+        KafkaModule.register({
+            isGlobal: true,
+            clientId: "io-gameplay",
+            
         }),
         MongooseModule.forRoot(),
         EventEmitterModule.forRoot({

@@ -14,6 +14,7 @@ import {
     SystemId,
     SystemSchema,
     TILE,
+    TILE_INFO,
     TileSchema
 } from "@src/databases"
 import { Job } from "bullmq"
@@ -60,6 +61,7 @@ export class CropWorker extends WorkerHost {
                     $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                 }
             })
+            .populate(TILE_INFO)
             .skip(skip)
             .limit(take) 
             .sort({ createdAt: "desc" }) 
@@ -69,7 +71,6 @@ export class CropWorker extends WorkerHost {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
         const promises: Array<Promise<void>> = []
-        // console.log(`Processing ${placedItems.length} placed items`)
         for (const placedItem of placedItems) {
             const promise = async () => {
                 const session = await this.connection.startSession()
@@ -138,6 +139,7 @@ export class CropWorker extends WorkerHost {
                             placedItem.seedGrowthInfo.harvestQuantityRemaining =
                                     crop.maxHarvestQuantity
                         }
+                        console.log(placedItem.tileInfo)
                         const chance = this.productService.computeTileQualityChance({
                             tileInfo: placedItem.tileInfo,
                             qualityProductChanceLimit: tile.qualityProductChanceLimit,

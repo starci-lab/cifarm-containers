@@ -1,8 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ClientKafka } from "@nestjs/microservices"
-import { 
-    InjectKafka, 
-    KafkaPattern} from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic} from "@src/brokers"
 import {
     Activities,
     CropCurrentState,
@@ -19,14 +16,15 @@ import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException, createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
 
 @Injectable()
 export class HelpWaterService {
     private readonly logger = new Logger(HelpWaterService.name)
 
     constructor(
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
@@ -55,7 +53,9 @@ export class HelpWaterService {
                 }
                 throw new GrpcFailedPreconditionException("Tile is found")
             }
-            if (placedItemTile.user.toString() === userId) {
+
+            const neighborUserId = placedItemTile.user.toString()
+            if (neighborUserId === userId) {
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.HelpWater,
@@ -129,13 +129,22 @@ export class HelpWaterService {
                 success: true,
                 userId,
             }
-            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: placedItemTile.user.toString() })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.SyncPlacedItems,
+                messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+            })
             return {}
         } catch (error) {
             if (actionMessage)
             {
-                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
             }   
             await mongoSession.abortTransaction()
             throw error

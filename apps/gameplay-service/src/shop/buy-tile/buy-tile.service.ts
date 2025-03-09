@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ClientKafka } from "@nestjs/microservices"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     InjectMongoose,
@@ -12,6 +11,8 @@ import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class BuyTileService {
@@ -21,21 +22,18 @@ export class BuyTileService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
-    async buyTile(request: BuyTileRequest): Promise<BuyTileResponse> {
-        this.logger.debug(
-            `Buying tile for user ${request.userId}, id: ${request.tileId}, position: (${request.position.x}, ${request.position.y})`
-        )
-
+    async buyTile({ position, tileId, userId}: BuyTileRequest): Promise<BuyTileResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
+        let actionMessage: EmitActionPayload | undefined
         try {
             const tile = await this.connection.model<TileSchema>(TileSchema.name)
-                .findById(createObjectId(request.tileId))
+                .findById(createObjectId(tileId))
                 .session(mongoSession)
 
             if (!tile) throw new GrpcNotFoundException("Tile not found")
@@ -43,7 +41,7 @@ export class BuyTileService {
                 throw new GrpcFailedPreconditionException("Tile not available in shop")
 
             const user = await this.connection.model<UserSchema>(UserSchema.name)
-                .findById(request.userId)
+                .findById(userId)
                 .session(mongoSession)
 
             if (!user) throw new GrpcNotFoundException("User not found")
@@ -53,8 +51,8 @@ export class BuyTileService {
 
             const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                 .countDocuments({
-                    user: request.userId,
-                    placedItemType: createObjectId(request.tileId)
+                    user: userId,
+                    placedItemType: createObjectId(tileId)
                 })
                 .session(mongoSession)
 
@@ -75,25 +73,52 @@ export class BuyTileService {
 
                 // Save the placed item in the database
                 await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-                    user: request.userId,
-                    x: request.position.x,
-                    y: request.position.y,
-                    placedItemType: createObjectId(request.tileId),
+                    user: userId,
+                    x: position.x,
+                    y: position.y,
+                    placedItemType: createObjectId(tileId),
+                    tileInfo: {}
                 })
 
                 await mongoSession.commitTransaction()
+
+                actionMessage = {
+                    placedItemId: tileId,
+                    action: ActionName.BuyTile,
+                    success: true,
+                    userId,
+                }
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [
+                        {
+                            value: JSON.stringify(actionMessage)
+                        }
+                    ]
+                })
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [
+                        {
+                            value: JSON.stringify({ userId })
+                        }
+                    ]
+                })
             } catch (error) {
-                const errorMessage = `Transaction failed, reason: ${error.message}`
-                this.logger.error(errorMessage)
+                this.logger.error(error)
+                if (actionMessage) {
+                    this.kafkaProducer.send({
+                        topic: KafkaTopic.EmitAction,
+                        messages: [
+                            {
+                                value: JSON.stringify(actionMessage)
+                            }
+                        ]
+                    })
+                }
                 await mongoSession.abortTransaction()
                 throw error
             }
-
-            // Publish event
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
-                userId: user.id
-            })
-            
             return {}
         } finally {
             await mongoSession.endSession()

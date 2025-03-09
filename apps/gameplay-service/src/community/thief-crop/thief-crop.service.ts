@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ClientKafka } from "@nestjs/microservices"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
     Activities,
     CROP,
@@ -26,13 +25,14 @@ import { Connection } from "mongoose"
 import { GrpcInvalidArgumentException } from "nestjs-grpc-exceptions"
 import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload, ThiefCropData } from "@apps/io-gameplay"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class ThiefCropService {
     private readonly logger = new Logger(ThiefCropService.name)
     constructor(
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
@@ -198,8 +198,14 @@ export class ThiefCropService {
                 userId,
                 data: { quantity: actualQuantity, cropId: crop.id }
             }
-            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.SyncPlacedItems,
+                messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+            })
 
             await mongoSession.commitTransaction()
 
@@ -207,7 +213,10 @@ export class ThiefCropService {
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {
-                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
             }
             await mongoSession.abortTransaction()
             throw error

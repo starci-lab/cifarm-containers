@@ -2,21 +2,11 @@ import { NestFactory } from "@nestjs/core"
 import { Container, envConfig } from "@src/env"
 import { AppModule } from "./app.module"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
-import { MicroserviceOptions, Transport } from "@nestjs/microservices"
-import { KafkaGroupId, kafkaOptions } from "@src/brokers"
 
 const bootstrap = async () => {
-    const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
-        transport: Transport.KAFKA,
-        options: {
-            client: kafkaOptions(),
-            consumer: {
-                groupId: KafkaGroupId.Gameplay
-            }
-        }
-    })
+    const app = await NestFactory.createApplicationContext(AppModule)
     app.enableShutdownHooks()
-    await app.listen()
+    await app.init()
 }
 
 const bootstrapHealthCheck = async () => {

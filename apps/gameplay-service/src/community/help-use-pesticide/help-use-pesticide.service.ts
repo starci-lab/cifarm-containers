@@ -1,9 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ClientKafka } from "@nestjs/microservices"
-import {
-    InjectKafka,
-    KafkaPattern
-} from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
     Activities,
     CropCurrentState,
@@ -15,36 +11,36 @@ import {
     UserSchema
 } from "@src/databases"
 import { EnergyService, LevelService } from "@src/gameplay"
-import {
-    HelpUsePesticideRequest,
-    HelpUsePesticideResponse
-} from "./help-use-pesticide.dto"
+import { HelpUsePesticideRequest, HelpUsePesticideResponse } from "./help-use-pesticide.dto"
 import { Connection } from "mongoose"
 import { GrpcFailedPreconditionException, createObjectId } from "@src/common"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
 
 @Injectable()
 export class HelpUsePesticideService {
     private readonly logger = new Logger(HelpUsePesticideService.name)
     constructor(
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {}
 
-    async helpUsePesticide(
-        { placedItemTileId, userId }: HelpUsePesticideRequest
-    ) : Promise<HelpUsePesticideResponse> {
+    async helpUsePesticide({
+        placedItemTileId,
+        userId
+    }: HelpUsePesticideRequest): Promise<HelpUsePesticideResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+            const placedItemTile = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findById(placedItemTileId)
                 .session(mongoSession)
 
@@ -54,27 +50,29 @@ export class HelpUsePesticideService {
                     action: ActionName.HelpUsePesticide,
                     success: false,
                     userId,
-                    reasonCode: 0,
+                    reasonCode: 0
                 }
                 throw new GrpcFailedPreconditionException("Tile is found")
             }
-            if (placedItemTile.user.toString() === userId) {
+
+            const neighborUserId = placedItemTile.user.toString()
+            if (neighborUserId === userId) {
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.HelpUsePesticide,
                     success: false,
                     userId,
-                    reasonCode: 1,
+                    reasonCode: 1
                 }
                 throw new GrpcFailedPreconditionException("Cannot use pesticide on your own tile")
-            } 
+            }
             if (!placedItemTile.seedGrowthInfo) {
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.HelpUsePesticide,
                     success: false,
                     userId,
-                    reasonCode: 2,
+                    reasonCode: 2
                 }
                 throw new GrpcFailedPreconditionException("Tile is not planted")
             }
@@ -84,22 +82,22 @@ export class HelpUsePesticideService {
                     action: ActionName.HelpUsePesticide,
                     success: false,
                     userId,
-                    reasonCode: 3,
+                    reasonCode: 3
                 }
                 throw new GrpcFailedPreconditionException("Tile is not infested")
             }
 
-            const { value: {
-                usePesticide: {
-                    energyConsume,
-                    experiencesGain
+            const {
+                value: {
+                    usePesticide: { energyConsume, experiencesGain }
                 }
-            } } = await this.connection
+            } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
                 .session(mongoSession)
-                
-            const user = await this.connection.model<UserSchema>(UserSchema.name)
+
+            const user = await this.connection
+                .model<UserSchema>(UserSchema.name)
                 .findById(userId)
                 .session(mongoSession)
 
@@ -112,14 +110,17 @@ export class HelpUsePesticideService {
 
             const energyChanges = this.energyService.substract({
                 user,
-                quantity: energyConsume,
+                quantity: energyConsume
             })
-            const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
+            const experienceChanges = this.levelService.addExperiences({
+                user,
+                experiences: experiencesGain
+            })
 
-            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                { _id: user.id },
-                { ...energyChanges, ...experienceChanges }
-            ).session(mongoSession)
+            await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
+                .session(mongoSession)
 
             placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
             await placedItemTile.save({ session: mongoSession })
@@ -130,16 +131,25 @@ export class HelpUsePesticideService {
                 placedItemId: placedItemTileId,
                 action: ActionName.HelpUsePesticide,
                 success: true,
-                userId,
+                userId
             }
-            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: placedItemTile.user.toString() })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.SyncPlacedItems,
+                messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+            })
+
             return {}
         } catch (error) {
-            if (actionMessage)
-            {
-                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            }   
+            if (actionMessage) {
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
+            }
             await mongoSession.abortTransaction()
             throw error
         } finally {

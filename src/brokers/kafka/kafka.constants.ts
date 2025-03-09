@@ -1,2 +1,3 @@
-export const KAFKA_OPTIONS = "KAFKA_OPTIONS"
 export const KAFKA = "KAFKA"
+export const KAFKA_PRODUCER = "KAFKA_PRODUCER"
+export const KAFKA_CONSUMER = "KAFKA_CONSUMER"
