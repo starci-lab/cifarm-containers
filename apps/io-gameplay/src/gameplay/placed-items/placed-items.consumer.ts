@@ -13,15 +13,16 @@ export class PlacedItemsConsumer implements OnModuleInit {
 
     async onModuleInit() {
         const consumer = await this.kafkaConsumersService.createConsumer({
-            groupId: KafkaGroupId.Action,
+            groupId: KafkaGroupId.PlacedItems,
             topics: [
                 KafkaTopic.SyncPlacedItems,
             ]
         })
-        consumer.run({
+        await consumer.run({
             eachMessage: async ({ topic, message }) => {
+                this.logger.log(`Received message from topic: ${topic}`)
                 switch (topic) {
-                case KafkaTopic.EmitAction:
+                case KafkaTopic.SyncPlacedItems:
                 {
                     const payload = JSON.parse(message.value.toString())
                     await this.placedItemsGateway.syncPlacedItems(payload)

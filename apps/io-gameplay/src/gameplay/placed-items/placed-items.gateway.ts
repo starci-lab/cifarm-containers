@@ -43,7 +43,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
     }
 
     //sync state every second
-    @Cron("*/1 * * * * *")
+    @Cron("*/5 * * * * *")
     public async processSyncPlacedItemsPerSecond() {
         // for e2e testing, skip this, as it will be handled by the test
         if (e2eEnabled()) {

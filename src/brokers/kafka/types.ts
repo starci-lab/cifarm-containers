@@ -4,9 +4,10 @@ export interface KafkaOptions {
 
 export enum KafkaGroupId {
     PlacedItems = "placed-items",
-    Action = "action",
+    Action = "game-action",
     Energy = "energy",
     Visit = "visit",
+    Delivery = "delivery",
 }
 
 export enum KafkaTopic {

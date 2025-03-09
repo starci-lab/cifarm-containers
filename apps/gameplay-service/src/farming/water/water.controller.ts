@@ -12,7 +12,6 @@ export class WaterController {
 
     @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "Water")
     public async water(request: WaterRequest) {
-        this.logger.debug("Water request called")
         return this.waterService.water(request)
     }
 }

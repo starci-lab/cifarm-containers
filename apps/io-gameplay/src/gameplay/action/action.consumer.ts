@@ -17,9 +17,10 @@ export class ActionConsumer implements OnModuleInit {
             topics: [
                 KafkaTopic.EmitAction,
             ]
-        })
-        consumer.run({
+        }) 
+        await consumer.run({
             eachMessage: async ({ topic, message }) => {
+                this.logger.log(`Received message from topic: ${topic}`)
                 switch (topic) {
                 case KafkaTopic.EmitAction:
                 {
