@@ -22,7 +22,8 @@ export class KafkaModule extends ConfigurableModuleClass {
                         client: kafkaOptionsFactory.createKafkaConfig(),
                         producerOnlyMode,
                         consumer: {
-                            groupId
+                            groupId,
+                            allowAutoTopicCreation: true,
                         }
                     }
                 })

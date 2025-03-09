@@ -64,16 +64,13 @@ export class MongooseModule extends ConfigurableModuleClass {
 
         const { dbName, host, password, port, username } =
             envConfig().databases.mongo[MongoDatabase.Gameplay]
-        const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}`
+        const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=admin&retryWrites=true&retryReads=true`
 
         return {
             ...dynamicModule,
             imports: [
                 NestMongooseModule.forRoot(url, {
                     connectionName,
-                    authSource: "admin",
-                    retryWrites: true,
-                    retryReads: true,
                     connectionFactory: async (connection: Connection) => {
                         // eslint-disable-next-line @typescript-eslint/no-require-imports
                         connection.plugin(normalizeMongoose)
