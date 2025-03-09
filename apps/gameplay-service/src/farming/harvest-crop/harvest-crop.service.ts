@@ -169,6 +169,8 @@ export class HarvestCropService {
                 )
                 .session(mongoSession)
 
+            await mongoSession.commitTransaction()
+
             actionMessage = {
                 placedItemId: placedItemTileId,
                 action: ActionName.HarvestCrop,
@@ -181,8 +183,6 @@ export class HarvestCropService {
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
-
-            await mongoSession.commitTransaction()
 
             return {
                 quantity

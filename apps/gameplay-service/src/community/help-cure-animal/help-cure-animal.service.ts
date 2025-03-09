@@ -103,6 +103,7 @@ export class HelpCureAnimalService {
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
                 userId: neighborUserId
             })
+            await mongoSession.commitTransaction()
 
             actionMessage = {
                 placedItemId: placedItemAnimalId,
@@ -112,8 +113,6 @@ export class HelpCureAnimalService {
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })
-
-            await mongoSession.commitTransaction()
 
             return {}
         } catch (error) {

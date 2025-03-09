@@ -131,6 +131,17 @@ export class ThiefCropService {
                 placedItemTile.seedGrowthInfo.harvestQuantityRemaining - crop.minHarvestQuantity
             )
 
+            if (actualQuantity <= 0) {
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.ThiefCrop,
+                    success: false,
+                    userId,
+                    reasonCode: 2
+                }
+                throw new GrpcInvalidArgumentException("Thief quantity is less than minimum harvest quantity")
+            }
+
             const inventoryType = await this.connection
                 .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                 .findOne({

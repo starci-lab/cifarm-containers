@@ -49,63 +49,88 @@ export class HelpUseHerbicideService {
         mongoSession.startTransaction()
 
         let actionMessage: EmitActionPayload | undefined
-
         try {
-            const placedItemTile = await this.connection
-                .model<PlacedItemSchema>(PlacedItemSchema.name)
+            const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findById(placedItemTileId)
                 .session(mongoSession)
+
             if (!placedItemTile) {
-                throw new GrpcNotFoundException("Tile not found")
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.HelpUseHerbicide,
+                    success: false,
+                    userId,
+                    reasonCode: 0,
+                }
+                throw new GrpcFailedPreconditionException("Tile is found")
             }
-            const neighborUserId = placedItemTile.user.toString()
-            if (neighborUserId === userId) {
-                throw new GrpcFailedPreconditionException(
-                    "Cannot help use herbicide on your own tile"
-                )
-            }
+            if (placedItemTile.user.toString() === userId) {
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.HelpUseHerbicide,
+                    success: false,
+                    userId,
+                    reasonCode: 1,
+                }
+                throw new GrpcFailedPreconditionException("Cannot use herbicide on own tile")
+            } 
             if (!placedItemTile.seedGrowthInfo) {
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.HelpUseHerbicide,
+                    success: false,
+                    userId,
+                    reasonCode: 2,
+                }
                 throw new GrpcFailedPreconditionException("Tile is not planted")
             }
             if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
-                throw new GrpcFailedPreconditionException("Tile is not weedy")
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.HelpUseHerbicide,
+                    success: false,
+                    userId,
+                    reasonCode: 3,
+                }
+                throw new GrpcFailedPreconditionException("Tile does not need herbicide")
             }
 
-            const {
-                value: { helpUsePesticide: { energyConsume, experiencesGain } }
-            } = await this.connection
+            const { value: {
+                helpWater: {
+                    energyConsume,
+                    experiencesGain
+                }
+            } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
                 .session(mongoSession)
-            //get user
-            const user = await this.connection
-                .model<UserSchema>(UserSchema.name)
+                
+            const user = await this.connection.model<UserSchema>(UserSchema.name)
                 .findById(userId)
                 .session(mongoSession)
+
+            if (!user) throw new GrpcNotFoundException("User not found")
 
             this.energyService.checkSufficient({
                 current: user.energy,
                 required: energyConsume
             })
 
-            // substract energy
             const energyChanges = this.energyService.substract({
                 user,
-                quantity: energyConsume
+                quantity: energyConsume,
             })
+            const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
 
-            const experiencesChanges = this.levelService.addExperiences({
-                user,
-                experiences: experiencesGain
-            })
-
-            await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
-                .session(mongoSession)
+            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                { _id: user.id },
+                { ...energyChanges, ...experienceChanges }
+            ).session(mongoSession)
 
             placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
             await placedItemTile.save({ session: mongoSession })
+
+            await mongoSession.commitTransaction()
 
             actionMessage = {
                 placedItemId: placedItemTileId,
@@ -114,16 +139,13 @@ export class HelpUseHerbicideService {
                 userId,
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })
-
-            await mongoSession.commitTransaction()
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: placedItemTile.user.toString() })
             return {}
         } catch (error) {
-            this.logger.error(error)
             if (actionMessage)
             {
                 this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            }  
+            }   
             await mongoSession.abortTransaction()
             throw error
         } finally {

@@ -103,6 +103,8 @@ export class WaterService {
             placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
             await placedItemTile.save({ session: mongoSession })
 
+            await mongoSession.commitTransaction()
+
             actionMessage = {
                 placedItemId: placedItemTileId,
                 action: ActionName.Water,
@@ -111,14 +113,13 @@ export class WaterService {
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
-            await mongoSession.commitTransaction()
             return {}
         } catch (error) {
+            this.logger.error(error)
             if (actionMessage)
             {
                 this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             }   
-            this.logger.error(error)
             await mongoSession.abortTransaction()
             throw error
         } finally {   
