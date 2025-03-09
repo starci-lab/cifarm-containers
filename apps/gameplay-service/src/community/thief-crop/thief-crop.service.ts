@@ -25,7 +25,7 @@ import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
 import { Connection } from "mongoose"
 import { GrpcInvalidArgumentException } from "nestjs-grpc-exceptions"
 import { createObjectId } from "@src/common"
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload, ThiefCropData } from "@apps/io-gameplay"
 
 @Injectable()
 export class ThiefCropService {
@@ -45,7 +45,7 @@ export class ThiefCropService {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
-        let actionMessage: EmitActionPayload | undefined
+        let actionMessage: EmitActionPayload<ThiefCropData> | undefined
         try {
             const placedItemTile = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -185,6 +185,7 @@ export class ThiefCropService {
                 action: ActionName.ThiefCrop,
                 success: true,
                 userId,
+                data: { quantity: actualQuantity, cropId: crop.id }
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })

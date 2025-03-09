@@ -7,6 +7,16 @@ export interface EmitActionPayload<TData = undefined> {
     reasonCode?: number
 }
 
+export interface ThiefCropData {
+    quantity: number
+    cropId: string
+}
+
+export interface HarvestCropData {
+    quantity: number
+    cropId: string
+}
+
 export type ActionEmittedMessage<TData = undefined> = Omit<EmitActionPayload<TData>, "userId">
 
 export enum ActionName {

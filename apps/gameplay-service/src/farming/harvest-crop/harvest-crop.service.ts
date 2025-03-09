@@ -22,7 +22,7 @@ import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import { InjectKafka, KafkaPattern } from "@src/brokers"
 import { ClientKafka } from "@nestjs/microservices"
-import { ActionName, EmitActionHarvestCropData, EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload, HarvestCropData } from "@apps/io-gameplay"
 
 @Injectable()
 export class HarvestCropService {
@@ -49,7 +49,7 @@ export class HarvestCropService {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
-        let actionMessage: EmitActionPayload<EmitActionHarvestCropData> | undefined
+        let actionMessage: EmitActionPayload<HarvestCropData> | undefined
         try {
             const placedItemTile = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -175,6 +175,7 @@ export class HarvestCropService {
                 success: true,
                 userId,
                 data: {
+                    cropId: crop.id,
                     quantity
                 }
             }
