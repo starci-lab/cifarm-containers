@@ -96,7 +96,7 @@ export class HelpUseHerbicideService {
             }
 
             const { value: {
-                helpWater: {
+                helpUseHerbicide: {
                     energyConsume,
                     experiencesGain
                 }
