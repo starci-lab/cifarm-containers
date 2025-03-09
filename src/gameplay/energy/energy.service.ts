@@ -18,7 +18,11 @@ export class EnergyService {
 
     public substract(request: SubstractParams): SubstractResult {
         this.checkSufficient({ current: request.user.energy, required: request.quantity })
-        return { energy: request.user.energy - request.quantity }
+        const energyFull = request.user.energyFull
+        return { 
+            energy: request.user.energy - request.quantity,
+            ...energyFull && { energyFull: false }
+        }
     }
 
     public getMaxEnergy(level: number = 1): number {

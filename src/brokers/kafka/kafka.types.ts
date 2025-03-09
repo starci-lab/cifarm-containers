@@ -4,8 +4,7 @@ export interface KafkaOptions {
 }
 
 export enum KafkaGroupId {
-    PlacedItems = "placed-items",
-    Delivery = "delivery",
+    Gameplay = "gameplay",
 }
 
 export enum KafkaPattern {
@@ -14,4 +13,5 @@ export enum KafkaPattern {
     Delivery = "delivery",
     Visit = "visit",
     Return = "return",
+    SyncEnergy = "sync.energy",
 }

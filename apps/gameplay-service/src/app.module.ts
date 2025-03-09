@@ -38,7 +38,7 @@ import { UpgradeModule } from "./upgrade"
         KafkaModule.register({
             isGlobal: true,
             producerOnlyMode: true,
-            groupId: KafkaGroupId.PlacedItems
+            groupId: KafkaGroupId.Gameplay
         }),
         GameplayModule.register({
             isGlobal: true

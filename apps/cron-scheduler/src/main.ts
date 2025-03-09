@@ -11,7 +11,7 @@ const bootstrap = async () => {
         options: {
             client: kafkaOptions(),
             consumer: {
-                groupId: KafkaGroupId.Delivery
+                groupId: KafkaGroupId.Gameplay
             }
         }
     })

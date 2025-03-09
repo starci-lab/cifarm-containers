@@ -3,7 +3,7 @@ import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import { Activities, CropCurrentState, CropSchema, InjectMongoose, InventorySchema, InventoryTypeSchema, PlacedItemSchema, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { PlantSeedRequest, PlantSeedResponse } from "./plant-seed.dto"
 import { ClientKafka } from "@nestjs/microservices"
 import { InjectKafka, KafkaPattern } from "@src/brokers"
@@ -123,7 +123,7 @@ export class PlantSeedService {
             }  
             this.logger.error(error)
             await mongoSession.abortTransaction()
-            throw new GrpcInternalException(error.message)
+            throw error
         } finally {
             await mongoSession.endSession()
         }

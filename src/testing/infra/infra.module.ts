@@ -45,7 +45,7 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                 }),
                 KafkaModule.register({
                     isGlobal: true,
-                    groupId: KafkaGroupId.PlacedItems,
+                    groupId: KafkaGroupId.Gameplay,
                     producerOnlyMode: true
                 }),
                 DateModule.register({
@@ -64,7 +64,7 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                     isGlobal: true
                 }),
                 KafkaModule.register({
-                    groupId: KafkaGroupId.Delivery,
+                    groupId: KafkaGroupId.Gameplay,
                     producerOnlyMode: true,
                     isGlobal: true,
                 }),

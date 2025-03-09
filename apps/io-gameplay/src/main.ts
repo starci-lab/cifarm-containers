@@ -23,7 +23,7 @@ const addMicroservices = async (app: INestApplication) => {
         options: {
             client: kafkaOptions(),
             consumer: {
-                groupId: KafkaGroupId.PlacedItems
+                groupId: KafkaGroupId.Gameplay
             }
         }
     })

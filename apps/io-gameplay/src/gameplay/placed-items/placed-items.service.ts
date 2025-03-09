@@ -13,16 +13,10 @@ export class PlacedItemsService {
     public async getPlacedItems({
         userId
     }: GetPlacedItemsParams): Promise<Array<PlacedItemSchema>> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const items = await this.connection
-                .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .find({ user: userId })
-                .session(mongoSession)
+        const items = await this.connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .find({ user: userId })
 
-            return items.map((item) => item.toJSON())
-        } finally {
-            await mongoSession.endSession()
-        }
+        return items.map((item) => item.toJSON())
     }
 }
