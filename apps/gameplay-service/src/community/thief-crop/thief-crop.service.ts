@@ -67,6 +67,21 @@ export class ThiefCropService {
                 throw new GrpcInvalidArgumentException("Crop is not fully matured")
             }
 
+
+            //check user if already thief
+            const users = placedItemTile.seedGrowthInfo.thieves
+            if (users.map(user => user.toString()).includes(userId)) {
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.ThiefCrop,
+                    success: false,
+                    userId,
+                    reasonCode: 1
+                }
+                throw new GrpcInvalidArgumentException("User already thief")
+            }
+
+
             const { value: { thiefCrop: { energyConsume, experiencesGain } } } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
@@ -162,22 +177,26 @@ export class ThiefCropService {
             ).session(mongoSession)
 
             placedItemTile.seedGrowthInfo.harvestQuantityRemaining = placedItemTile.seedGrowthInfo.harvestQuantityRemaining - actualQuantity
+            placedItemTile.seedGrowthInfo.thieves.push(user.id)
             await placedItemTile.save({ session: mongoSession })
-
-            await mongoSession.commitTransaction()
 
             actionMessage = {
                 placedItemId: placedItemTileId,
                 action: ActionName.ThiefCrop,
                 success: true,
-                userId: neighborUserId,
+                userId,
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId: neighborUserId })
 
+            await mongoSession.commitTransaction()
+
             return { quantity: actualQuantity }
         } catch (error) {
             this.logger.error(error)
+            if (actionMessage) {
+                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+            }
             await mongoSession.abortTransaction()
             throw error
         } finally {
