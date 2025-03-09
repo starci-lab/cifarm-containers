@@ -1,9 +1,9 @@
 import { KafkaConfig } from "@nestjs/microservices/external/kafka.interface"
 import { envConfig, Brokers } from "@src/env"
-import { v4 } from "uuid"
+//import { v4 } from "uuid"
 
 export const kafkaOptions = (): KafkaConfig => ({
-    clientId: v4(),
+    //clientId: v4(),
     brokers: [
         `${envConfig().brokers[Brokers.Kafka].host}:${envConfig().brokers[Brokers.Kafka].port}`
     ],

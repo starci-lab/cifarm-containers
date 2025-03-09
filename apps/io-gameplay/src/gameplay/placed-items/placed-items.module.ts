@@ -6,7 +6,9 @@ import { AuthModule } from "../auth"
 
 @Module({
     imports: [AuthModule],
-    controllers: [PlacedItemsController],
+    controllers: [
+        PlacedItemsController
+    ],
     providers: [PlacedItemsService, PlacedItemsGateway]
 })
 export class PlacedItemsModule {}

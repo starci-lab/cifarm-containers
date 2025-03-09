@@ -113,7 +113,6 @@ export class PlantSeedService {
             }
             this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
             this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
-            
             return {}      
         } catch (error) 
         {
