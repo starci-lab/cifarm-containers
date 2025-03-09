@@ -38,11 +38,6 @@ export class ActionGateway implements OnGatewayInit {
         // remove userId from payload
         const { userId, ...rest } = payload
         const message: ActionEmittedMessage = rest
-        // const socket = await this.namespace.in(this.authGateway.getRoomName({
-        //     userId,
-        //     type: RoomType.Player
-        // })).fetchSockets()
-        // console.log(socket[0].id)
         this.namespace
             .to(
                 this.authGateway.getRoomName({

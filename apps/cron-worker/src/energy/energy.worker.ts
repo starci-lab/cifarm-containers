@@ -9,8 +9,9 @@ import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
 import { EnergyService } from "@src/gameplay"
 import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
+// import { ClientKafka } from "@nestjs/microservices"
 import { SyncEnergyPayload } from "@apps/io-gameplay/src/gameplay/energy"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {

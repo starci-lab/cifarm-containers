@@ -4,7 +4,7 @@ export interface KafkaOptions {
 }
 
 export enum KafkaGroupId {
-    Gameplay = "gameplay-group",
+    Gameplay = "gameplay",
 }
 
 export enum KafkaPattern {

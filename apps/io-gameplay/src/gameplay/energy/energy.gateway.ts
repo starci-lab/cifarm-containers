@@ -6,7 +6,7 @@ import {
 } from "@nestjs/websockets"
 import { SyncEnergyPayload } from "./energy.types"
 import { NAMESPACE } from "../gameplay.constants"
-import { AuthGateway, SocketData } from "../auth"
+import { AuthGateway, RoomType, SocketData } from "../auth"
 import { TypedNamespace } from "@src/io"
 import { ENERGY_SYNCED_EVENT } from "./energy.constants"
 
@@ -34,7 +34,14 @@ export class EnergyGateway implements OnGatewayInit {
     }
 
     public async syncEnergy({ energy, userId }: SyncEnergyPayload) {
-        const socket = await this.authGateway.getSocket(this.namespace, userId)
-        socket.emit(ENERGY_SYNCED_EVENT, energy)
+        // emit energy to the room
+        this.namespace
+            .to(
+                this.authGateway.getRoomName({
+                    userId,
+                    type: RoomType.Player
+                })
+            )
+            .emit(ENERGY_SYNCED_EVENT, { energy })
     }
 }

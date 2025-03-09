@@ -12,6 +12,7 @@ export class EnergyController {
 
     @EventPattern(KafkaPattern.SyncEnergy)
     async syncEnergy(@Payload() payload: SyncEnergyPayload) {
+        this.logger.log(`Event: ${KafkaPattern.SyncEnergy}`)
         this.energyGateway.syncEnergy(payload)
     }
 }

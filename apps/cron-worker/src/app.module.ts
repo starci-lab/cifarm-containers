@@ -9,7 +9,7 @@ import { EnergyModule } from "./energy"
 import { GameplayModule } from "@src/gameplay"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
-import { KafkaGroupId, KafkaModule } from "@src/brokers"
+import { KafkaModule, KafkaGroupId } from "@src/brokers"
 
 @Module({
     imports: [
@@ -20,7 +20,7 @@ import { KafkaGroupId, KafkaModule } from "@src/brokers"
         KafkaModule.register({
             isGlobal: true,
             producerOnlyMode: true,
-            groupId: KafkaGroupId.Gameplay
+            groupId: KafkaGroupId.Gameplay,
         }),
         DateModule.register({
             isGlobal: true

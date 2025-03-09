@@ -12,7 +12,7 @@ export class ActionController {
 
     @EventPattern(KafkaPattern.EmitAction)
     async emitAction(@Payload() payload: EmitActionPayload) {
-        console.log(payload)
+        this.logger.log(`Event: ${KafkaPattern.EmitAction}`)
         await this.actionGateway.emitAction(payload)
     }
 }

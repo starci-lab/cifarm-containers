@@ -23,7 +23,6 @@ export class KafkaModule extends ConfigurableModuleClass {
                         producerOnlyMode,
                         consumer: {
                             groupId,
-                            allowAutoTopicCreation: true,
                         }
                     }
                 })
