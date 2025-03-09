@@ -1,10 +1,14 @@
 import { Injectable } from "@nestjs/common"
 import { Consumer, Kafka } from "kafkajs"
-import { KafkaGroupId } from "./kafka.types"
+import { KafkaGroupId } from "./types"
+import { InjectKafka } from "./kafka.decorators"
 
 @Injectable()
 export class KafkaConsumersService {
-    constructor(private readonly kafka: Kafka) {}
+    constructor(
+        @InjectKafka()
+        private readonly kafka: Kafka
+    ) {}
     // we map the consumers by groupId, so that each backend service can have multiple consumers per groupId
     private consumers: Partial<Record<KafkaGroupId, Consumer>> = {}
 

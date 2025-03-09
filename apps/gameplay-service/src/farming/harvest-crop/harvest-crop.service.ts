@@ -20,9 +20,9 @@ import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload, HarvestCropData } from "@apps/io-gameplay"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class HarvestCropService {
@@ -34,8 +34,8 @@ export class HarvestCropService {
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
     ) {}
 
     async harvestCrop({
@@ -181,8 +181,14 @@ export class HarvestCropService {
                     quantity
                 }
             }
-            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.SyncPlacedItems,
+                messages: [{ value: JSON.stringify({ userId }) }]
+            })
 
             return {
                 quantity
@@ -191,7 +197,10 @@ export class HarvestCropService {
             this.logger.error(error)
             if (actionMessage)
             {
-                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
             }  
             await mongoSession.abortTransaction()
             throw error

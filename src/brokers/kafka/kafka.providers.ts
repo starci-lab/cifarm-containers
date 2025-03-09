@@ -2,7 +2,7 @@ import { Provider } from "@nestjs/common"
 import { KAFKA } from "./kafka.constants"
 import { Kafka } from "kafkajs"
 import { MODULE_OPTIONS_TOKEN } from "./kafka.module-definition"
-import { KafkaOptions } from "./kafka.types"
+import { KafkaOptions } from "./types"
 import { envConfig, Brokers } from "@src/env"
 import { v4 } from "uuid"
 

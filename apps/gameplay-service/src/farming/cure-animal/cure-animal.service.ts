@@ -18,9 +18,9 @@ import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class CureAnimalService {
@@ -32,8 +32,8 @@ export class CureAnimalService {
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async cureAnimal({ placedItemAnimalId, inventorySupplyId, userId }: CureAnimalRequest): Promise<CureAnimalResponse> {
@@ -116,16 +116,24 @@ export class CureAnimalService {
                 success: true,
                 userId,
             }
-            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
-
+            this.kafkaProducer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
             await mongoSession.commitTransaction()
             return {}
         } catch (error) {
             this.logger.error(error)
             if (actionMessage)
             {
-                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
             }  
             await mongoSession.abortTransaction()
             throw new GrpcInternalException(error.message)

@@ -1,11 +1,10 @@
 import { Module } from "@nestjs/common"
-import { EnergyController } from "./energy.controller"
+import { EnergyConsumer } from "./energy.consumer"
 import { EnergyGateway } from "./energy.gateway"
 import { AuthModule } from "../auth"
 
 @Module({
     imports: [ AuthModule ],
-    controllers: [ EnergyController ],
-    providers: [ EnergyGateway ]
+    providers: [ EnergyGateway, EnergyConsumer ]
 })
 export class EnergyModule {}

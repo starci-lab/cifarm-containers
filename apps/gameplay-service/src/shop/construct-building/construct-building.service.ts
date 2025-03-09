@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { ClientKafka } from "@nestjs/microservices"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     BuildingSchema,
@@ -12,6 +11,8 @@ import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { ConstructBuildingRequest, ConstructBuildingResponse } from "./construct-building.dto"
+import { ActionEmittedMessage, ActionName } from "@apps/io-gameplay"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class ConstructBuildingService {
@@ -21,8 +22,8 @@ export class ConstructBuildingService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
@@ -34,6 +35,7 @@ export class ConstructBuildingService {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
+        let actionMessage: ActionEmittedMessage
         try {
             // Fetch building information
             const building = await this.connection.model<BuildingSchema>(BuildingSchema.name)
@@ -59,43 +61,51 @@ export class ConstructBuildingService {
             // Check sufficient gold
             this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
-            try {
-                // Subtract gold
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: totalCost
-                })
-
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...goldsChanged }
-                )
-
-                console.log(`User ${user.id} after buying building ${building.id}`)
-
-                // Save the placed item in the database
-                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
-                    user: user.id,
-                    x: request.position.x,
-                    y: request.position.y,
-                    placedItemType: createObjectId(request.buildingId),
-                    buildingInfo: {}
-                })
-
-                await mongoSession.commitTransaction()
-            } catch (error) {
-                const errorMessage = `Transaction failed, reason: ${error.message}`
-                this.logger.error(errorMessage)
-                await mongoSession.abortTransaction()
-                throw error
-            }
-
-            // Publish event
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
-                userId: user.id
+            // Subtract gold
+            const goldsChanged = this.goldBalanceService.subtract({
+                user: user,
+                amount: totalCost
             })
 
+            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                { _id: user.id },
+                { ...goldsChanged }
+            )
+            // Save the placed item in the database
+            const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create([{
+                user: user.id,
+                x: request.position.x,
+                y: request.position.y,
+                placedItemType: createObjectId(request.buildingId),
+                buildingInfo: {}
+            }], {
+                session: mongoSession
+            })
+            await mongoSession.commitTransaction()
+            actionMessage = {
+                action: ActionName.BuyAnimal,
+                placedItemId: placedItems[0]._id.toString(),
+                success: true,
+            }
+            await this.kafkaProducer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
+            await this.kafkaProducer.send({
+                topic: KafkaTopic.SyncPlacedItems,
+                messages: [{ value: JSON.stringify({ userId: user.id }) }]
+            })
             return {}
+        } catch (error) {
+            this.logger.error(error)
+            if (actionMessage) {
+                await this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
+            }
+            await mongoSession.abortTransaction()
+            throw error
         } finally {
             await mongoSession.endSession()
         }

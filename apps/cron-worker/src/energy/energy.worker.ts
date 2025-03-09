@@ -8,10 +8,9 @@ import { Job } from "bullmq"
 import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
 import { EnergyService } from "@src/gameplay"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-// import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafkaProducer, KafkaGroupId } from "@src/brokers"
 import { SyncEnergyPayload } from "@apps/io-gameplay/src/gameplay/energy"
-import { ClientKafka } from "@nestjs/microservices"
+import { Producer } from "kafkajs"
 
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
@@ -20,8 +19,8 @@ export class EnergyWorker extends WorkerHost {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
         private readonly dateUtcService: DateUtcService,
         private readonly energyService: EnergyService
     ) {
@@ -72,7 +71,12 @@ export class EnergyWorker extends WorkerHost {
                                 userId: user.id,
                                 energy: user.energy,
                             }
-                            this.clientKafka.emit(KafkaPattern.SyncEnergy, payload)
+                            this.kafkaProducer.send({
+                                topic: KafkaGroupId.Energy,
+                                messages: [
+                                    { value: JSON.stringify(payload) }
+                                ]
+                            })
                         }
                     }
                     updateUser()

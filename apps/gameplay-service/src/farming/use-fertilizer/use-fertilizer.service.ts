@@ -1,7 +1,6 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
-import { ClientKafka } from "@nestjs/microservices"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     Activities,
@@ -19,8 +18,9 @@ import {
 } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UseFertilizerRequest, UseFertilizerResponse } from "./use-fertilizer.dto"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class UseFertilizerService {
@@ -32,8 +32,8 @@ export class UseFertilizerService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async useFertilizer({ inventorySupplyId, placedItemTileId, userId }: UseFertilizerRequest): Promise<UseFertilizerResponse> {
@@ -113,10 +113,7 @@ export class UseFertilizerService {
             await placedItemTile.save({
                 session: mongoSession
             })
-
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
-                userId
-            })
+            await mongoSession.commitTransaction()
 
             actionMessage = {
                 placedItemId: placedItemTileId,
@@ -124,18 +121,26 @@ export class UseFertilizerService {
                 success: true,
                 userId,
             }
-            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
-            await mongoSession.commitTransaction()
+            this.kafkaProducer.send({
+                topic: KafkaTopic.EmitAction,
+                messages: [{ value: JSON.stringify(actionMessage) }]
+            })
+            this.kafkaProducer.send({
+                topic: KafkaTopic.SyncPlacedItems,
+                messages: [{ value: JSON.stringify({ placedItemTileId }) }]
+            })
             return {}
         } catch (error) {
+            this.logger.error(error)
             if (actionMessage)
             {
-                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
             }  
-            this.logger.error(`Transaction failed, reason: ${error.message}`)
             await mongoSession.abortTransaction()
-            throw new GrpcInternalException(error.message)
+            throw error 
         } finally {
             await mongoSession.endSession()
         }
