@@ -20,9 +20,9 @@ export class EnergyConsumer implements OnModuleInit {
             eachMessage: async ({ topic, message }) => {
                 this.logger.log(`Received message from topic: ${topic}`)
                 switch (topic) {
-                case KafkaTopic.SyncPlacedItems: {
+                case KafkaTopic.SyncEnergy: {
                     const payload = JSON.parse(message.value.toString())
-                    await this.energyGateway.syncEnergy(payload)
+                    this.energyGateway.syncEnergy(payload)
                     break
                 }
                 }

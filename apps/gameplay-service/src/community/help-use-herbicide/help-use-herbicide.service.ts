@@ -128,7 +128,7 @@ export class HelpUseHerbicideService {
                 return {} // Return an empty response after success
             })
             // Sending both Kafka messages in parallel using Promise.all()
-            Promise.all([
+            await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }],

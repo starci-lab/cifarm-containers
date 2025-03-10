@@ -131,7 +131,7 @@ export class UseFertilizerService {
             })
 
             // Send Kafka messages for success
-            Promise.all([
+            await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]

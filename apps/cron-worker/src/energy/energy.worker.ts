@@ -8,7 +8,7 @@ import { Job } from "bullmq"
 import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
 import { EnergyService } from "@src/gameplay"
-import { InjectKafkaProducer, KafkaGroupId } from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { SyncEnergyPayload } from "@apps/io-gameplay/src/gameplay/energy"
 import { Producer } from "kafkajs"
 
@@ -52,7 +52,7 @@ export class EnergyWorker extends WorkerHost {
             const promise = async () => {
                 const session = await this.connection.startSession()
                 try {
-                    const updateUser = () => {
+                    const updateUser = async () => {
                         // skip if the user's energy is full
                         if (user.energyFull) {
                             return
@@ -60,6 +60,7 @@ export class EnergyWorker extends WorkerHost {
                         // Add time to the user's energy
                         user.energyRegenTime += time
                         if (user.energyRegenTime >= energyRegenTime) {
+                            console.log("Energy regen time", user.energyRegenTime)
                             user.energy += 1
                             // Reset the timer
                             user.energyRegenTime = 0
@@ -70,15 +71,15 @@ export class EnergyWorker extends WorkerHost {
                                 userId: user.id,
                                 energy: user.energy,
                             }
-                            this.kafkaProducer.send({
-                                topic: KafkaGroupId.Energy,
+                            await this.kafkaProducer.send({
+                                topic: KafkaTopic.SyncEnergy,
                                 messages: [
                                     { value: JSON.stringify(payload) }
                                 ]
                             })
                         }
                     }
-                    updateUser()
+                    await updateUser()
                     await user.save({ session })
                 } catch (error) {
                     this.logger.error(error)

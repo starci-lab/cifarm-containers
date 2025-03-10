@@ -110,7 +110,7 @@ export class UseHerbicideService {
             })
 
             // Send Kafka messages for both actions
-            Promise.all([
+            await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]

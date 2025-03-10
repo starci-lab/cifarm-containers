@@ -134,7 +134,7 @@ export class FeedAnimalService {
             })
 
             // Send Kafka messages
-            Promise.all([
+            await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]

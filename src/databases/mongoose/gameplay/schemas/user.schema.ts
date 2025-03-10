@@ -61,7 +61,7 @@ export class UserSchema extends AbstractSchema {
         energyRegenTime: number
 
     @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
+    @Prop({ type: Boolean, default: true })
         energyFull: boolean
 
     @Field(() => Int)

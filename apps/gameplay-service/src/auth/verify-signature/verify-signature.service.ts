@@ -120,7 +120,7 @@ export class VerifySignatureService {
                                 chainKey,
                                 network,
                                 energy,
-                                golds
+                                golds,
                             }
                         ],
                         { session: mongoSession, ordered: true }

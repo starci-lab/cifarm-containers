@@ -204,7 +204,7 @@ export class ThiefCropService {
             })
 
             // Send success action message to Kafka
-            Promise.all([
+            await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }],
