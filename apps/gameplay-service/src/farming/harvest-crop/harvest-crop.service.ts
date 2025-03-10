@@ -199,20 +199,20 @@ export class HarvestCropService {
                     }
                 }
 
-                // Send Kafka messages for success
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }]
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId }) }]
-                    })
-                ])
-
                 return { quantity } // Return the quantity of harvested crops
             })
+            
+            // Send Kafka messages for success
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                })
+            ])
 
             return result // Return the result from the transaction
         } catch (error) {

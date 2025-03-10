@@ -127,20 +127,21 @@ export class UseFertilizerService {
                     userId,
                 }
 
-                // Send Kafka messages for success
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }]
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ placedItemTileId }) }]
-                    })
-                ])
-
                 return {} // Success response
             })
+
+            // Send Kafka messages for success
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ placedItemTileId }) }]
+                })
+            ])
+
 
             return result // Return successful result
         } catch (error) {

@@ -31,6 +31,8 @@ export class HelpCureAnimalService {
     async helpCureAnimal({ placedItemAnimalId, userId }: HelpCureAnimalRequest): Promise<HelpCureAnimalResponse> {
         const mongoSession = await this.connection.startSession()
 
+        let actionMessage: EmitActionPayload | undefined
+        let neighborUserId: string | undefined
         try {
             const result = await mongoSession.withTransaction(async (session) => {
                 const placedItemAnimal = await this.connection
@@ -42,7 +44,7 @@ export class HelpCureAnimalService {
                     throw new GrpcNotFoundException("Placed item animal not found")
                 }
 
-                const neighborUserId = placedItemAnimal.user.toString()
+                neighborUserId = placedItemAnimal.user.toString()
                 if (neighborUserId === userId) {
                     throw new GrpcFailedPreconditionException("Cannot help cure on your own tile")
                 }
@@ -92,27 +94,27 @@ export class HelpCureAnimalService {
                     .session(session)
 
                 // Kafka producer actions (sending them in parallel)
-                const actionMessage: EmitActionPayload = {
+                actionMessage = {
                     placedItemId: placedItemAnimalId,
                     action: ActionName.HelpCureAnimal,
                     success: true,
                     userId: neighborUserId,
                 }
 
-                // Using Promise.all() to send Kafka messages concurrently
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }],
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
-                    }),
-                ])
-
                 return {} // Return empty response after success
             })
+
+            // Using Promise.all() to send Kafka messages concurrently
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }],
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
+                }),
+            ])
 
             return result // Return the result from the transaction
         } catch (error) {

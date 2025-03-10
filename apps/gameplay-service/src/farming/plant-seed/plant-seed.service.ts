@@ -1,6 +1,18 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { Activities, CropCurrentState, CropSchema, InjectMongoose, InventorySchema, InventoryTypeSchema, PlacedItemSchema, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
+import {
+    Activities,
+    CropCurrentState,
+    CropSchema,
+    InjectMongoose,
+    InventorySchema,
+    InventoryTypeSchema,
+    PlacedItemSchema,
+    SystemId,
+    KeyValueRecord,
+    SystemSchema,
+    UserSchema
+} from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -21,7 +33,11 @@ export class PlantSeedService {
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
-    async plantSeed({ inventorySeedId, placedItemTileId, userId }: PlantSeedRequest): Promise<PlantSeedResponse> {
+    async plantSeed({
+        inventorySeedId,
+        placedItemTileId,
+        userId
+    }: PlantSeedRequest): Promise<PlantSeedResponse> {
         this.logger.debug(`Planting seed for user ${userId}, tile ID: ${placedItemTileId}`)
 
         const mongoSession = await this.connection.startSession() // Create session
@@ -31,31 +47,43 @@ export class PlantSeedService {
             // Using withTransaction to manage the transaction lifecycle
             const result = await mongoSession.withTransaction(async (session) => {
                 // Fetch inventory and inventoryType
-                const inventory = await this.connection.model<InventorySchema>(InventorySchema.name)
+                const inventory = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySeedId)
                     .session(session)
 
-                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                const inventoryType = await this.connection
+                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findById(inventory.inventoryType)
                     .session(session)
 
                 // Fetch the placed item tile and check conditions
-                const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                const placedItemTile = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
 
                 if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
-                if (placedItemTile.user.toString() !== userId) throw new GrpcFailedPreconditionException("Cannot plant seed on another user's tile")
-                if (placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is already planted")
+                if (placedItemTile.user.toString() !== userId)
+                    throw new GrpcFailedPreconditionException(
+                        "Cannot plant seed on another user's tile"
+                    )
+                if (placedItemTile.seedGrowthInfo)
+                    throw new GrpcFailedPreconditionException("Tile is already planted")
 
                 // Fetch system settings for planting seed
-                const { value: { plantSeed: { energyConsume, experiencesGain } } } = await this.connection
+                const {
+                    value: {
+                        plantSeed: { energyConsume, experiencesGain }
+                    }
+                } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
                     .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
                     .session(session)
 
                 // Fetch the user
-                const user = await this.connection.model<UserSchema>(UserSchema.name)
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
@@ -68,21 +96,28 @@ export class PlantSeedService {
                 })
 
                 // Deduct energy and add experience points
-                const energyChanges = this.energyService.substract({ user, quantity: energyConsume })
-                const experiencesChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
+                const energyChanges = this.energyService.substract({
+                    user,
+                    quantity: energyConsume
+                })
+                const experiencesChanges = this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
 
                 // Fetch the crop for the seed
-                const crop = await this.connection.model<CropSchema>(CropSchema.name)
+                const crop = await this.connection
+                    .model<CropSchema>(CropSchema.name)
                     .findById(inventoryType.crop)
                     .session(session)
 
                 if (!crop) throw new GrpcNotFoundException("Crop not found")
 
                 // Update user with energy and experience changes
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...energyChanges, ...experiencesChanges }
-                ).session(session)
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
+                    .session(session)
 
                 // Remove the seed from the user's inventory
                 const { inventories } = await this.inventoryService.getRemoveParams({
@@ -95,53 +130,62 @@ export class PlantSeedService {
 
                 const { removedInventories, updatedInventories } = this.inventoryService.remove({
                     inventories,
-                    quantity: 1,
+                    quantity: 1
                 })
 
                 // Update inventories
                 for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name)
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
                         .updateOne({ _id: inventory._id }, inventory)
                         .session(session)
                 }
 
                 // Delete removed inventories
-                await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
-                    _id: { $in: removedInventories.map(inventory => inventory._id) }
-                }).session(session)
+                await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .deleteMany({
+                        _id: { $in: removedInventories.map((inventory) => inventory._id) }
+                    })
+                    .session(session)
 
                 // Update the placed item tile with seed growth info
-                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
-                    { _id: placedItemTile._id },
-                    { seedGrowthInfo: {
-                        crop: crop.id,
-                        harvestQuantityRemaining: crop.maxHarvestQuantity,
-                        currentState: CropCurrentState.Normal,
-                    }}
-                ).session(session)
+                await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .updateOne(
+                        { _id: placedItemTile._id },
+                        {
+                            seedGrowthInfo: {
+                                crop: crop.id,
+                                harvestQuantityRemaining: crop.maxHarvestQuantity,
+                                currentState: CropCurrentState.Normal
+                            }
+                        }
+                    )
+                    .session(session)
 
                 // Prepare success action message
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.PlantSeed,
                     success: true,
-                    userId,
+                    userId
                 }
-
-                // Send Kafka messages for success
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }]
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId }) }]
-                    })
-                ])
 
                 return {} // Return empty success response
             })
+
+            // Send Kafka messages for success
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                })
+            ])
 
             return result // Return successful result
         } catch (error) {

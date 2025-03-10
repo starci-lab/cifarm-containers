@@ -111,19 +111,19 @@ export class WaterService {
                     userId,
                 }
     
-                await Promise.all([
-                    this.producer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId }) }]
-                    }),
-                    this.producer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }]
-                    })
-                ])
-    
                 return {} // Successful result after all operations
             })
+
+            Promise.all([
+                this.producer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                }),
+                this.producer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
+            ])
             
             return result
         } catch (error) {

@@ -130,20 +130,20 @@ export class CureAnimalService {
                     userId,
                 }
 
-                // Send Kafka messages
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }]
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId }) }]
-                    })
-                ])
-
                 return {} // Return an empty object as the response
             })
+
+            // Send Kafka messages
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                })
+            ])
 
             return result // Return the result from the transaction
         } catch (error) {

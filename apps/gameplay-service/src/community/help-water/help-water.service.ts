@@ -36,7 +36,7 @@ export class HelpWaterService {
         const mongoSession = await this.connection.startSession()
         
         let actionMessage: EmitActionPayload | undefined
-        
+        let neighborUserId: string | undefined
         try {
             // Using session.withTransaction for MongoDB operations and automatic transaction handling
             await mongoSession.withTransaction(async () => {
@@ -56,7 +56,7 @@ export class HelpWaterService {
                     throw new GrpcFailedPreconditionException("Tile is not found")
                 }
 
-                const neighborUserId = placedItemTile.user.toString()
+                neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
@@ -132,19 +132,19 @@ export class HelpWaterService {
                     success: true,
                     userId,
                 }
-
-                // Send Kafka messages in parallel
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }],
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
-                    }),
-                ])
             })
+
+            // Send Kafka messages in parallel
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }],
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
+                }),
+            ])
 
             // Return empty response after successful commit
             return {}

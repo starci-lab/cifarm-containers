@@ -36,6 +36,7 @@ export class HelpUseHerbicideService {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
+        let neighborUserId: string | undefined
         try {
             const result = await mongoSession.withTransaction(async () => {
                 const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -52,7 +53,7 @@ export class HelpUseHerbicideService {
                     }
                     throw new GrpcFailedPreconditionException("Tile is found")
                 }
-                const neighborUserId = placedItemTile.user.toString()
+                neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
@@ -124,20 +125,19 @@ export class HelpUseHerbicideService {
                     userId,
                 }
 
-                // Sending both Kafka messages in parallel using Promise.all()
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }],
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
-                    })
-                ])
-
                 return {} // Return an empty response after success
             })
+            // Sending both Kafka messages in parallel using Promise.all()
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }],
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
+                })
+            ])
             return result
         } catch (error) {
             // If there was an error, send the action message with failure status

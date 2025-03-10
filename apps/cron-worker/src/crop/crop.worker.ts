@@ -87,6 +87,12 @@ export class CropWorker extends WorkerHost {
                     const tile = placedItemType.tile as TileSchema
                     // Add time to the seed growth
                     const updatePlacedItem = (): DeepPartial<PlacedItemSchema> => {
+                        // return if the current stage is already max stage
+                        if (
+                            placedItem.seedGrowthInfo.currentStage >= crop.growthStages - 1
+                        ) {
+                            return
+                        }
                         // add time to the seed growth
                         placedItem.seedGrowthInfo.currentStageTimeElapsed += time
                         if (
@@ -138,7 +144,6 @@ export class CropWorker extends WorkerHost {
                             placedItem.seedGrowthInfo.harvestQuantityRemaining =
                                     crop.maxHarvestQuantity
                         }
-                        console.log(placedItem.tileInfo)
                         const chance = this.productService.computeTileQualityChance({
                             tileInfo: placedItem.tileInfo,
                             qualityProductChanceLimit: tile.qualityProductChanceLimit,

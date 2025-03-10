@@ -106,20 +106,20 @@ export class UseHerbicideService {
                     userId,
                 }
 
-                // Send Kafka messages for both actions
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }]
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId }) }]
-                    })
-                ])
-
                 return {} // Successful result after all operations
             })
+
+            // Send Kafka messages for both actions
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                })
+            ])
 
             return result
         } catch (error) {

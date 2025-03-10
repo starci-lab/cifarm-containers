@@ -1,12 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import {
-    InjectMongoose,
-    PlacedItemSchema,
-    TileSchema,
-    UserSchema
-} from "@src/databases"
+import { InjectMongoose, PlacedItemSchema, TileSchema, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -19,9 +14,9 @@ export class BuyTileService {
     private readonly logger = new Logger(BuyTileService.name)
 
     constructor(
-    @InjectMongoose() private readonly connection: Connection,
-    private readonly goldBalanceService: GoldBalanceService,
-    @InjectKafkaProducer() private readonly kafkaProducer: Producer
+        @InjectMongoose() private readonly connection: Connection,
+        private readonly goldBalanceService: GoldBalanceService,
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
     async buyTile({ position, tileId, userId }: BuyTileRequest): Promise<BuyTileResponse> {
@@ -30,7 +25,7 @@ export class BuyTileService {
         let actionMessage: EmitActionPayload | undefined
         try {
             const result = await mongoSession.withTransaction(async () => {
-            // Fetch tile details
+                // Fetch tile details
                 const tile = await this.connection
                     .model<TileSchema>(TileSchema.name)
                     .findById(createObjectId(tileId))
@@ -49,7 +44,10 @@ export class BuyTileService {
                 if (!user) throw new GrpcNotFoundException("User not found")
 
                 // Check sufficient gold
-                this.goldBalanceService.checkSufficient({ current: user.golds, required: tile.price })
+                this.goldBalanceService.checkSufficient({
+                    current: user.golds,
+                    required: tile.price
+                })
 
                 // Check the number of tiles owned by the user
                 const count = await this.connection
@@ -99,20 +97,21 @@ export class BuyTileService {
                     userId
                 }
 
-                // Send Kafka messages for success
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }]
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId }) }]
-                    })
-                ])
-
                 return {} // Return an empty object (response)
             })
+
+            // Send Kafka messages for success
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                })
+            ])
+
             return result // Return the result from the transaction
         } catch (error) {
             this.logger.error(error)

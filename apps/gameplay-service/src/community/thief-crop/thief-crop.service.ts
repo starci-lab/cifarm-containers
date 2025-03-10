@@ -43,6 +43,7 @@ export class ThiefCropService {
     async thiefCrop({ placedItemTileId, userId }: ThiefCropRequest): Promise<ThiefCropResponse> {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload<ThiefCropData> | undefined
+        let neighborUserId: string | undefined
         try {
             // Use `withTransaction` to handle the MongoDB session and transaction automatically
             const result = await mongoSession.withTransaction(async (mongoSession) => {
@@ -55,7 +56,7 @@ export class ThiefCropService {
                     throw new GrpcInvalidArgumentException("Tile not found")
                 }
 
-                const neighborUserId = placedItemTile.user.toString()
+                neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {
                     throw new GrpcInvalidArgumentException("Cannot thief from your own tile")
                 }
@@ -198,21 +199,21 @@ export class ThiefCropService {
                     data: { quantity: actualQuantity, cropId: crop.id },
                 }
 
-                // Send success action message to Kafka
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }],
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
-                    }),
-                ])
-
                 // Commit the transaction automatically after all operations are successful
                 return { quantity: actualQuantity }
             })
+
+            // Send success action message to Kafka
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }],
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
+                }),
+            ])
 
             return result
         } catch (error) {

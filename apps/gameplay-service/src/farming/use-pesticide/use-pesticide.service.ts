@@ -1,6 +1,15 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { Activities, CropCurrentState, InjectMongoose, PlacedItemSchema, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
+import {
+    Activities,
+    CropCurrentState,
+    InjectMongoose,
+    PlacedItemSchema,
+    SystemId,
+    KeyValueRecord,
+    SystemSchema,
+    UserSchema
+} from "@src/databases"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -22,7 +31,10 @@ export class UsePesticideService {
         private readonly kafkaProducer: Producer
     ) {}
 
-    async usePesticide({ placedItemTileId, userId }: UsePesticideRequest): Promise<UsePesticideResponse> {
+    async usePesticide({
+        placedItemTileId,
+        userId
+    }: UsePesticideRequest): Promise<UsePesticideResponse> {
         const mongoSession = await this.connection.startSession() // Create the session
         let actionMessage: EmitActionPayload | undefined
 
@@ -30,7 +42,8 @@ export class UsePesticideService {
             // Using withTransaction to handle the transaction automatically
             const result = await mongoSession.withTransaction(async (session) => {
                 // Fetch the placed item tile with session
-                const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                const placedItemTile = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
 
@@ -40,13 +53,15 @@ export class UsePesticideService {
                         action: ActionName.UsePesticide,
                         success: false,
                         userId,
-                        reasonCode: 0,
+                        reasonCode: 0
                     }
                     throw new GrpcFailedPreconditionException("Tile not found")
                 }
 
                 if (placedItemTile.user.toString() !== userId) {
-                    throw new GrpcFailedPreconditionException("Cannot use pesticide on other's tile")
+                    throw new GrpcFailedPreconditionException(
+                        "Cannot use pesticide on other's tile"
+                    )
                 }
 
                 if (!placedItemTile.seedGrowthInfo) {
@@ -58,13 +73,18 @@ export class UsePesticideService {
                 }
 
                 // Fetch system configuration (activity settings)
-                const { value: { usePesticide: { energyConsume, experiencesGain } } } = await this.connection
+                const {
+                    value: {
+                        usePesticide: { energyConsume, experiencesGain }
+                    }
+                } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
                     .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
                     .session(session)
 
                 // Fetch user data
-                const user = await this.connection.model<UserSchema>(UserSchema.name)
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
@@ -79,7 +99,7 @@ export class UsePesticideService {
                 // Subtract energy and add experience
                 const energyChanges = this.energyService.substract({
                     user,
-                    quantity: energyConsume,
+                    quantity: energyConsume
                 })
                 const experienceChanges = this.levelService.addExperiences({
                     user,
@@ -87,11 +107,9 @@ export class UsePesticideService {
                 })
 
                 // Update the user data
-                await this.connection.model<UserSchema>(UserSchema.name)
-                    .updateOne(
-                        { _id: user.id },
-                        { ...energyChanges, ...experienceChanges }
-                    )
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
                     .session(session)
 
                 // Update placed item tile state
@@ -103,23 +121,23 @@ export class UsePesticideService {
                     placedItemId: placedItemTileId,
                     action: ActionName.UsePesticide,
                     success: true,
-                    userId,
+                    userId
                 }
-
-                // Send Kafka messages for both actions
-                await Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }]
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId }) }]
-                    })
-                ])
 
                 return {} // Successful result after all operations
             })
+
+            // Send Kafka messages for both actions
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                })
+            ])
 
             return result
         } catch (error) {
