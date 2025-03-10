@@ -46,8 +46,6 @@ export class DeliveryService {
 
     public async deliver() {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
-
         try {
             const utcNow = this.dateUtcService.getDayjs()
 
@@ -84,7 +82,6 @@ export class DeliveryService {
             await this.deliveryQueue.addBulk(batches)
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         } finally {
             await mongoSession.endSession()

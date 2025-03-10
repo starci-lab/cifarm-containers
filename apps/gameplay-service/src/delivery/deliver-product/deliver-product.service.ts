@@ -77,7 +77,7 @@ export class DeliverProductService {
             return result // Return an empty object as the response
         } catch (error) {
             this.logger.error(error)
-            throw error // No need for abortTransaction, as withTransaction automatically handles that
+            throw error
         } finally {
             await mongoSession.endSession() // Ensure the session is closed
         }

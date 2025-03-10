@@ -158,7 +158,6 @@ export class HelpWaterService {
                 })
             }
 
-            await mongoSession.abortTransaction() // Abort transaction on error
             throw error // Rethrow error for handling by higher layers
         } finally {
             await mongoSession.endSession() // End session after transaction completes
