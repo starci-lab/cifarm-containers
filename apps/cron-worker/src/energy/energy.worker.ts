@@ -52,7 +52,8 @@ export class EnergyWorker extends WorkerHost {
             const promise = async () => {
                 const session = await this.connection.startSession()
                 try {
-                    const updateUser = async () => {
+                    let emit = false
+                    const updateUser = () => {
                         // skip if the user's energy is full
                         if (user.energyFull) {
                             return
@@ -66,21 +67,23 @@ export class EnergyWorker extends WorkerHost {
                             user.energyRegenTime = 0
                             // Check if the user's energy is full
                             user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
-                            
-                            const payload: SyncEnergyPayload = {
-                                userId: user.id,
-                                energy: user.energy,
-                            }
-                            await this.kafkaProducer.send({
-                                topic: KafkaTopic.SyncEnergy,
-                                messages: [
-                                    { value: JSON.stringify(payload) }
-                                ]
-                            })
+                            emit = true
                         }
                     }
-                    await updateUser()
+                    updateUser()
                     await user.save({ session })
+                    if (emit) {
+                        const payload: SyncEnergyPayload = {
+                            userId: user.id,
+                            energy: user.energy,
+                        }
+                        await this.kafkaProducer.send({
+                            topic: KafkaTopic.SyncEnergy,
+                            messages: [
+                                { value: JSON.stringify(payload) }
+                            ]
+                        })
+                    }
                 } catch (error) {
                     this.logger.error(error)
                 } finally {
