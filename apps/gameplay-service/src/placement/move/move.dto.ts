@@ -3,7 +3,8 @@
 import { ApiProperty } from "@nestjs/swagger"
 import {  UserIdRequest } from "@src/common"
 import { Position } from "@src/gameplay"
-import { IsMongoId } from "class-validator"
+import { Type } from "class-transformer"
+import { IsMongoId, ValidateNested } from "class-validator"
 
 export class MoveRequest extends UserIdRequest {
     @IsMongoId()
@@ -13,7 +14,10 @@ export class MoveRequest extends UserIdRequest {
     })
         placedItemId: string
 
-    position: Position
+    @ValidateNested()
+    @Type(() => Position)
+    @ApiProperty({ type: Position })
+        position: Position
 }
 
 export class MoveResponse {

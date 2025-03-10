@@ -3,6 +3,8 @@ import { InjectMongoose, PlacedItemSchema } from "@src/databases"
 import { MoveRequest } from "./move.dto"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { Connection } from "mongoose"
+import { InjectKafka, KafkaPattern } from "@src/brokers"
+import { ClientKafka } from "@nestjs/microservices"
 
 @Injectable()
 export class MoveService {
@@ -10,26 +12,30 @@ export class MoveService {
 
     constructor(
         @InjectMongoose() 
-        private readonly connection: Connection
+        private readonly connection: Connection,
+        @InjectKafka()
+        private readonly clientKafka: ClientKafka
     ) {}
 
-    async move(request: MoveRequest) {
+    async move({ placedItemId, position, userId }: MoveRequest) {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
         try {
             const placedItem = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .findById(request.placedItemId)
+                .findById(placedItemId)
                 .session(mongoSession)
                 
             if (!placedItem) throw new GrpcNotFoundException("Placed item not found")
 
             await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne({
-                _id: request.placedItemId
+                _id: placedItemId
             }, {
-                x: request.position.x,
-                y: request.position.y
+                x: position.x,
+                y: position.y
             }).session(mongoSession)
+
+            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
 
             await mongoSession.commitTransaction()
         } catch (error) {
