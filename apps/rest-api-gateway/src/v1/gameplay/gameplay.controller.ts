@@ -99,6 +99,7 @@ import { lastValueFrom } from "rxjs"
 import { UserLike } from "@src/jwt"
 import { InjectGrpc } from "@src/grpc/grpc.decorators"
 import { DeliverMoreProductRequest, DeliverMoreProductResponse } from "@apps/gameplay-service/src/delivery/deliver-more-product"
+import { BuyToolRequest, BuyToolResponse } from "@apps/gameplay-service/src/shop/buy-tool"
 
 @ApiTags("Gameplay")
 @Controller({
@@ -173,11 +174,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: ClaimDailyRewardRequest
     ): Promise<ClaimDailyRewardResponse> {
-        this.logger.debug(`Processing claimDailyReward for user ${user?.id}`)
+        this.logger.debug(`Processing claimDailyReward for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.claimDailyReward({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
 
@@ -192,11 +193,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: SpinRequest
     ): Promise<SpinResponse> {
-        this.logger.debug(`Processing spin for user ${user?.id}`)
+        this.logger.debug(`Processing spin for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.spin({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -216,7 +217,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.follow({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -235,7 +236,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.helpCureAnimal({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -254,7 +255,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.visit({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -273,7 +274,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.return({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -292,7 +293,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.helpUseHerbicide({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -311,7 +312,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.helpUsePesticide({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -330,7 +331,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.helpWater({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -349,7 +350,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.thiefAnimalProduct({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -368,7 +369,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.thiefCrop({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -387,7 +388,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.unfollow({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -407,7 +408,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.deliverProduct({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -427,7 +428,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.deliverMoreProduct({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -443,11 +444,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: RetainProductRequest
     ): Promise<RetainProductResponse> {
-        this.logger.debug(`Processing retain product for user ${user?.id}`)
+        this.logger.debug(`Processing retain product for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.retainProduct({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -467,7 +468,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.collectAnimalProduct({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -483,11 +484,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: CureAnimalRequest
     ): Promise<CureAnimalResponse> {
-        this.logger.debug(`Processing cure animal for user ${user?.id}`)
+        this.logger.debug(`Processing cure animal for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.cureAnimal({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -503,11 +504,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: FeedAnimalRequest
     ): Promise<FeedAnimalResponse> {
-        this.logger.debug(`Processing feed animal for user ${user?.id}`)
+        this.logger.debug(`Processing feed animal for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.feedAnimal({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -523,11 +524,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: HarvestCropRequest
     ): Promise<HarvestCropResponse> {
-        this.logger.debug(`Processing harvest crop for user ${user?.id}`)
+        this.logger.debug(`Processing harvest crop for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.harvestCrop({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -543,11 +544,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: PlantSeedRequest
     ): Promise<PlantSeedResponse> {
-        this.logger.debug(`Processing plant seed for user ${user?.id}`)
+        this.logger.debug(`Processing plant seed for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.plantSeed({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -563,11 +564,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: UseFertilizerRequest
     ): Promise<UseFertilizerResponse> {
-        this.logger.debug(`Processing use fertilizer for user ${user?.id}`)
+        this.logger.debug(`Processing use fertilizer for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.useFertilizer({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -583,11 +584,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: UseHerbicideRequest
     ): Promise<UseHerbicideResponse> {
-        this.logger.debug(`Processing use herbicide for user ${user?.id}`)
+        this.logger.debug(`Processing use herbicide for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.useHerbicide({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -603,11 +604,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: UsePesticideRequest
     ): Promise<UsePesticideResponse> {
-        this.logger.debug(`Processing use pesticide for user ${user?.id}`)
+        this.logger.debug(`Processing use pesticide for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.usePesticide({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -623,7 +624,7 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: WaterRequest
     ): Promise<WaterResponse> {
-        this.logger.debug(`Processing water plant for user ${user?.id}`)
+        this.logger.debug(`Processing water plant for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.water({
                 ...request,
@@ -648,7 +649,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.buySeeds({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -667,7 +668,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.buyAnimal({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -683,18 +684,18 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: BuySuppliesRequest
     ): Promise<BuySuppliesResponse> {
-        this.logger.debug(`Processing buySupplies for user ${user?.id}`)
+        this.logger.debug(`Processing buySupplies for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.buySupplies({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
 
     @UseGuards(RestJwtAuthGuard)
     @ApiBearerAuth()
-    @HttpCode(HttpStatus.OK)
+    @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
         type: BuyTileResponse
     })
@@ -703,11 +704,31 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: BuyTileRequest
     ): Promise<BuyTileResponse> {
-        this.logger.debug(`Processing buyTile for user ${user?.id}, tileId: ${request.tileId}`)
+        this.logger.debug(`Processing buyTile for user ${user.id}, tileId: ${request.tileId}`)
         return await lastValueFrom(
             this.gameplayService.buyTile({
                 ...request,
-                userId: user?.id
+                userId: user.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        type: BuyTileResponse
+    })
+    @Post("/buy-tool")
+    public async buyTool(
+        @User() user: UserLike,
+        @Body() request: BuyToolRequest
+    ): Promise<BuyToolResponse> {
+        this.logger.debug(`Processing buyTool for user ${user.id}, toolId: ${request.toolId}`)
+        return await lastValueFrom(
+            this.gameplayService.buyTool({
+                toolId: request.toolId,
+                userId: user.id
             })
         )
     }
@@ -723,11 +744,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: ConstructBuildingRequest
     ): Promise<ConstructBuildingResponse> {
-        this.logger.debug(`Processing constructBuilding for user ${user?.id}`)
+        this.logger.debug(`Processing constructBuilding for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.constructBuilding({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -744,11 +765,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: MoveRequest
     ): Promise<MoveResponse> {
-        this.logger.debug(`Processing move for user ${user?.id}`)
+        this.logger.debug(`Processing move for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.move({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -767,7 +788,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.moveInventory({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -784,11 +805,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: UpdateTutorialRequest
     ): Promise<UpdateTutorialResponse> {
-        this.logger.debug(`Processing update tutorial for user ${user?.id}`)
+        this.logger.debug(`Processing update tutorial for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.updateTutorial({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -807,7 +828,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.updateFollowX({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -826,7 +847,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.updateReferral({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -843,11 +864,11 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: UpgradeBuildingRequest
     ): Promise<UpgradeBuildingResponse> {
-        this.logger.debug(`Processing upgrade building for user ${user?.id} with ${request.placedItemBuildingId}`)
+        this.logger.debug(`Processing upgrade building for user ${user.id} with ${request.placedItemBuildingId}`)
         return await lastValueFrom(
             this.gameplayService.upgradeBuilding({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -866,7 +887,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.claimHoneycombDailyReward({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }
@@ -885,7 +906,7 @@ export class GameplayController implements OnModuleInit {
         return await lastValueFrom(
             this.gameplayService.mintOffchainTokens({
                 ...request,
-                userId: user?.id
+                userId: user.id
             })
         )
     }

@@ -41,13 +41,23 @@ export class BuyTileService {
                     .findById(userId)
                     .session(mongoSession)
 
-                if (!user) throw new GrpcNotFoundException("User not found")
-
                 // Check sufficient gold
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
                     required: tile.price
                 })
+
+                
+                // Deduct gold and update the user's gold balance
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: tile.price
+                })
+
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne({ _id: user.id }, { ...goldsChanged })
+                    .session(mongoSession)
 
                 // Check the number of tiles owned by the user
                 const count = await this.connection
@@ -60,17 +70,6 @@ export class BuyTileService {
 
                 if (count >= tile.maxOwnership)
                     throw new GrpcFailedPreconditionException("Max ownership reached")
-
-                // Deduct gold and update the user's gold balance
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: tile.price
-                })
-
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged })
-                    .session(mongoSession)
 
                 // Save the placed item (tile) in the database
                 const [placedItemTileRaw] = await this.connection

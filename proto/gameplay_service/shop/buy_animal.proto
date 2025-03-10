@@ -7,8 +7,3 @@ message BuyAnimalRequest {
     string animalId = 2;
     Position position = 3;
 }
-
-message BuyAnimalResponse {
-    string placedItemId = 1;
-}
-

@@ -39,10 +39,20 @@ export class BuySuppliesService {
                     .findById(userId)
                     .session(mongoSession)
 
-                if (!user) throw new GrpcNotFoundException("User not found")
-
                 // Check sufficient gold
                 this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
+
+                // Subtract gold
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: totalCost
+                })
+
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...goldsChanged },
+                    { session: mongoSession }
+                )
 
                 const { value: { storageCapacity } } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
@@ -63,17 +73,7 @@ export class BuySuppliesService {
                     userId: user.id,
                     session: mongoSession
                 })
-                // Subtract gold
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: totalCost
-                })
-
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...goldsChanged }
-                )
-
+                
                 // Save inventory
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
@@ -85,12 +85,12 @@ export class BuySuppliesService {
                     kind: InventoryKind.Storage
                 })
 
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
                 for (const inventory of updatedInventories) {
                     await this.connection.model<InventorySchema>(InventorySchema.name).updateOne(
                         { _id: inventory._id },
                         inventory
-                    )
+                    ).session(mongoSession)
                 }
 
                 return {}

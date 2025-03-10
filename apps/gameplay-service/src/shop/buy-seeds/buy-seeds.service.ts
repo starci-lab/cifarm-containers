@@ -52,6 +52,19 @@ export class BuySeedsService {
                 //Check sufficient gold
                 this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
+                // Subtract gold
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: totalCost
+                })
+
+                //update
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...goldsChanged },
+                    { session: mongoSession }
+                )
+
                 //Get inventory type
                 const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
                     type: InventoryType.Seed,
@@ -72,18 +85,6 @@ export class BuySeedsService {
                 const { value: { storageCapacity } } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
                     .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-
-                // Subtract gold
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: totalCost
-                })
-
-                //update
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...goldsChanged }
-                )
                 
                 //Save inventory
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
@@ -96,11 +97,11 @@ export class BuySeedsService {
                     kind: InventoryKind.Storage,
                 })
 
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
                 for (const inventory of updatedInventories) {
                     await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
                         _id: inventory._id
-                    }, inventory)
+                    }, inventory).session(mongoSession)
                 }
                 return {}
             })

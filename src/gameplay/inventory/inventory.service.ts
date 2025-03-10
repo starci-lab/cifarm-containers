@@ -6,8 +6,10 @@ import {
     AddResult,
     GetAddParamsParams,
     GetAddParamsResult,
+    GetFirstUnoccupiedIndexParams,
     GetRemoveParamsParams,
     GetRemoveParamsResult,
+    GetUnoccupiedIndexesParams,
     RemoveParams,
     RemoveResult
 } from "./inventory.types"
@@ -175,6 +177,52 @@ export class InventoryService {
                 kind
             })
             .session(session)
-        return { inventories}
+        return { inventories }
+    }
+
+    public async getUnoccupiedIndexes({
+        connection,
+        userId,
+        session,
+        kind = InventoryKind.Storage,
+        storageCapacity
+    }: GetUnoccupiedIndexesParams): Promise<Array<number>> {
+        const indexes = await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .distinct("index", {
+                user: userId,
+                kind
+            })
+            .session(session)
+        const unoccupiedIndexes: Array<number> = []
+        for (let index = 0; index < storageCapacity; index++) {
+            if (!indexes.includes(index)) {
+                unoccupiedIndexes.push(index)
+            }
+        }
+        return unoccupiedIndexes
+    }
+
+    public async getFirstUnoccupiedIndex({
+        connection,
+        userId,
+        session,
+        kind = InventoryKind.Storage,
+        storageCapacity
+    }: GetFirstUnoccupiedIndexParams): Promise<number> {
+        // get the smallest index that is not occupied
+        const inventory = await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .findOne({
+                user: userId,
+                kind
+            }).sort({ index: 1 })
+            .session(session)
+        
+        const firstUnoccupiedIndex = inventory ? inventory.index + 1 : 0
+        if (firstUnoccupiedIndex >= storageCapacity) {
+            throw new InventoryCapacityExceededException()
+        }
+        return firstUnoccupiedIndex
     }
 }

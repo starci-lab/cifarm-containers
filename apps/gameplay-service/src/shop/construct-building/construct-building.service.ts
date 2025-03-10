@@ -52,8 +52,6 @@ export class ConstructBuildingService {
                     .findById(userId)
                     .session(mongoSession)
 
-                if (!user) throw new GrpcNotFoundException("User not found")
-
                 // Check if the user has enough gold
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
@@ -68,7 +66,7 @@ export class ConstructBuildingService {
 
                 await this.connection
                     .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged })
+                    .updateOne({ _id: user.id }, { ...goldsChanged }, { session: mongoSession })
                     .session(mongoSession)
 
                 // Place the building

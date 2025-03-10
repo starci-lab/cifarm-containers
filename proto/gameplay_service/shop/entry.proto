@@ -8,4 +8,5 @@ import "./buy_seeds.proto";
 import "./buy_supplies.proto";
 import "./buy_animal.proto";
 import "./buy_tile.proto";
+import "./buy_tool.proto";
 

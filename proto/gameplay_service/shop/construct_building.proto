@@ -7,8 +7,3 @@ message ConstructBuildingRequest {
     string buildingId = 2;
     Position position = 3;
 }
-
-message ConstructBuildingResponse {
-    string placedItemId = 1;
-}
-

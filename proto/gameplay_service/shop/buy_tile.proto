@@ -7,8 +7,3 @@ message BuyTileRequest {
     Position position = 2;
     string tileId = 3;
 }
-
-message BuyTileResponse {
-    string placedItemId = 1;
-}
-
