@@ -24,7 +24,6 @@ import {
     defaultChainKey,
     getBlockchainAuthServiceToken
 } from "@src/blockchain"
-
 import { EnergyService, InventoryService } from "@src/gameplay"
 import { InjectCache } from "@src/cache"
 import { Network } from "@src/env"
@@ -40,10 +39,8 @@ export class VerifySignatureService {
     private readonly logger = new Logger(VerifySignatureService.name)
 
     constructor(
-        @InjectMongoose()
-        private readonly connection: Connection,
-        @InjectCache()
-        private readonly cacheManager: Cache,
+        @InjectMongoose() private readonly connection: Connection,
+        @InjectCache() private readonly cacheManager: Cache,
         private readonly moduleRef: ModuleRef,
         private readonly jwtService: JwtService,
         private readonly energyService: EnergyService,
@@ -60,197 +57,187 @@ export class VerifySignatureService {
         username
     }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
+
         try {
-            const valid = await this.cacheManager.get(message)
-            if (!valid) {
-                throw new GrpcCacheNotFound(message)
-            }
-
-            chainKey = chainKey || defaultChainKey
-            network = network || Network.Testnet
-            const platform = chainKeyToPlatform(chainKey)
-
-            const authService = this.moduleRef.get<IBlockchainAuthService>(
-                getBlockchainAuthServiceToken(platform),
-                { strict: false }
-            )
-
-            const verified = authService.verifyMessage({
-                message,
-                publicKey,
-                signature
-            })
-
-            if (!verified) throw new GrpcInvalidArgumentException("Signature is invalid")
-            let user = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .findOne({
-                    accountAddress,
-                    chainKey,
-                    network
-                })
-                .session(mongoSession)
-
-            if (!user) {
-                // get default info
-                const {
-                    value: {
-                        defaultCropId,
-                        defaultSeedQuantity,
-                        golds,
-                        positions,
-                        storageCapacity
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-
-                // inventories params
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findOne({
-                        type: InventoryType.Seed,
-                        crop: createObjectId(defaultCropId)
-                    })
-                    .session(mongoSession)
-
-                if (!inventoryType) {
-                    throw new GrpcNotFoundException("Inventory seed type not found")
+        // Using `withTransaction` for automatic transaction handling
+            const result = await mongoSession.withTransaction(async () => {
+                const valid = await this.cacheManager.get(message)
+                if (!valid) {
+                    throw new GrpcCacheNotFound(message)
                 }
 
-                const energy = this.energyService.getMaxEnergy()
+                chainKey = chainKey || defaultChainKey
+                network = network || Network.Testnet
+                const platform = chainKeyToPlatform(chainKey)
 
-                const [userRaw] = await this.connection.model<UserSchema>(UserSchema.name).create(
-                    [
-                        {
-                            username,
-                            accountAddress,
-                            chainKey,
-                            network,
-                            energy,
-                            golds
-                        }
-                    ],
-                    { session: mongoSession, ordered: true }
+                const authService = this.moduleRef.get<IBlockchainAuthService>(
+                    getBlockchainAuthServiceToken(platform),
+                    { strict: false }
                 )
 
-                userRaw.id = userRaw._id.toString()
-                user = userRaw
+                const verified = authService.verifyMessage({ message, publicKey, signature })
+                if (!verified) {
+                    throw new GrpcInvalidArgumentException("Signature is invalid")
+                }
 
-                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
-                    connection: this.connection,
-                    inventoryType,
-                    userId: user.id,
-                    session: mongoSession,
-                })
+                let user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findOne({ accountAddress, chainKey, network })
+                    .session(mongoSession)
 
-                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
-                    [
-                        {
-                            placedItemType: createObjectId(PlacedItemTypeId.Home),
-                            buildingInfo: {},
-                            user: user.id,
-                            ...positions.home
+                if (!user) {
+                    const {
+                        value: {
+                            defaultCropId,
+                            defaultSeedQuantity,
+                            golds,
+                            positions,
+                            storageCapacity
                         }
-                    ],
-                    { session: mongoSession, ordered: true }
-                )
+                    } = await this.connection
+                        .model<SystemSchema>(SystemSchema.name)
+                        .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
-                const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map(
-                    (tile) => ({
+                    const inventoryType = await this.connection
+                        .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                        .findOne({
+                            type: InventoryType.Seed,
+                            crop: createObjectId(defaultCropId)
+                        })
+                        .session(mongoSession)
+
+                    if (!inventoryType) {
+                        throw new GrpcNotFoundException("Inventory seed type not found")
+                    }
+
+                    const energy = this.energyService.getMaxEnergy()
+
+                    const [userRaw] = await this.connection.model<UserSchema>(UserSchema.name).create(
+                        [
+                            {
+                                username,
+                                accountAddress,
+                                chainKey,
+                                network,
+                                energy,
+                                golds
+                            }
+                        ],
+                        { session: mongoSession, ordered: true }
+                    )
+
+                    userRaw.id = userRaw._id.toString()
+                    user = userRaw
+
+                    const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
+                        connection: this.connection,
+                        inventoryType,
+                        userId: user.id,
+                        session: mongoSession,
+                    })
+
+                    await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
+                        [
+                            {
+                                placedItemType: createObjectId(PlacedItemTypeId.Home),
+                                buildingInfo: {},
+                                user: user.id,
+                                ...positions.home
+                            }
+                        ],
+                        { session: mongoSession, ordered: true }
+                    )
+
+                    const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map((tile) => ({
                         placedItemType: createObjectId(PlacedItemTypeId.BasicTile),
                         user: user.id,
                         tileInfo: {},
                         ...tile
+                    }))
+
+                    await this.connection
+                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                        .create(tilePartials, { session: mongoSession, ordered: true })
+
+                    const toolInventories: Array<DeepPartial<InventorySchema>> = []
+                    let indexTool = 0
+                    let indexStorage = 1
+
+                    const tools = await this.connection.model<ToolSchema>(ToolSchema.name).find({
+                        sort: { $exists: true },
+                        default: false
+                    }).session(mongoSession)
+
+                    for (const tool of tools) {
+                        const inventoryType = await this.connection
+                            .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                            .findOne({
+                                type: InventoryType.Tool,
+                                tool: tool.id
+                            }).session(mongoSession)
+
+                        if (inventoryType.displayId === InventoryTypeId.Hammer) {
+                            toolInventories.push({
+                                inventoryType: inventoryType.id,
+                                user: user.id,
+                                kind: InventoryKind.Storage,
+                                index: indexStorage,
+                            })
+                            indexStorage++
+                        } else {
+                            toolInventories.push({
+                                inventoryType: inventoryType.id,
+                                user: user.id,
+                                kind: InventoryKind.Tool,
+                                index: indexTool,
+                            })
+                            indexTool++
+                        }
+                    }
+
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .create(toolInventories, { session: mongoSession, ordered: true })
+
+                    const { createdInventories, updatedInventories } = this.inventoryService.add({
+                        inventoryType,
+                        inventories,
+                        occupiedIndexes,
+                        capacity: storageCapacity,
+                        quantity: defaultSeedQuantity,
+                        userId: user.id,
+                        kind: InventoryKind.Storage
                     })
-                )
 
-                await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .create(tilePartials, { session: mongoSession, ordered: true })
-
-                // add tools to inventories
-                const toolInventories: Array<DeepPartial<InventorySchema>> = []
-
-                let indexTool = 0
-                let indexStorage = 1
-                const tools = await this.connection.model<ToolSchema>(ToolSchema.name).find({
-                    sort: { $exists: true },
-                    default: false
-                }).session(mongoSession)
-                for (const tool of tools) {
-                    const inventoryType = await this.connection
-                        .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                        .findOne({
-                            type: InventoryType.Tool,
-                            tool: tool.id
-                        }).session(mongoSession)
-                    if(inventoryType.displayId === InventoryTypeId.Hammer) {
-                        toolInventories.push({
-                            inventoryType: inventoryType.id,
-                            user: user.id,
-                            kind: InventoryKind.Storage,
-                            index: indexStorage,
-                        })
-                        indexStorage++
-                    }else{
-                        toolInventories.push({
-                            inventoryType: inventoryType.id,
-                            user: user.id,
-                            kind: InventoryKind.Tool,
-                            index: indexTool,
-                        })
-                        indexTool++
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .create(createdInventories, { session: mongoSession, ordered: true })
+                    for (const inventory of updatedInventories) {
+                        await this.connection
+                            .model<InventorySchema>(InventorySchema.name)
+                            .updateOne({ _id: inventory._id }, inventory, { session: mongoSession })
                     }
                 }
 
-                await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .create(toolInventories, { session: mongoSession, ordered: true })
-
-                const { createdInventories, updatedInventories } = this.inventoryService.add({
-                    inventoryType,
-                    inventories,
-                    occupiedIndexes,
-                    capacity: storageCapacity,
-                    quantity: defaultSeedQuantity,
-                    userId: user.id,
-                    kind: InventoryKind.Storage
+                const { accessToken, refreshToken: { token: refreshToken, expiredAt } } = await this.jwtService.generateAuthCredentials({
+                    id: user.id
                 })
 
-                await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .create(createdInventories, { session: mongoSession, ordered: true })
-                for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne({ _id: inventory._id }, inventory, { session: mongoSession })
+                await this.connection.model<SessionSchema>(SessionSchema.name).create({
+                    refreshToken,
+                    expiredAt,
+                    user: user.id
+                })
+
+                return {
+                    accessToken,
+                    refreshToken
                 }
-            }
-
-            const {
-                accessToken,
-                refreshToken: { token: refreshToken, expiredAt }
-            } = await this.jwtService.generateAuthCredentials({
-                id: user.id
             })
 
-            await this.connection.model<SessionSchema>(SessionSchema.name).create({
-                refreshToken,
-                expiredAt,
-                user: user.id
-            })
-
-            await mongoSession.commitTransaction()
-
-            return {
-                accessToken,
-                refreshToken
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         } finally {
             await mongoSession.endSession()

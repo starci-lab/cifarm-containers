@@ -19,94 +19,114 @@ export class ConstructBuildingService {
     private readonly logger = new Logger(ConstructBuildingService.name)
 
     constructor(
-        @InjectMongoose()
-        private readonly connection: Connection,
-        private readonly goldBalanceService: GoldBalanceService,
-        @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer
+    @InjectMongoose() private readonly connection: Connection,
+    private readonly goldBalanceService: GoldBalanceService,
+    @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
-    async constructBuilding(request: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
-        this.logger.debug(
-            `Constructing building for user ${request.userId}, id: ${request.buildingId},
-             position: (${request.position.x}, ${request.position.y})`
-        )
-
+    async constructBuilding({
+        buildingId,
+        position,
+        userId
+    }: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
         const mongoSession = await this.connection.startSession()
         mongoSession.startTransaction()
 
-        let actionMessage: ActionEmittedMessage
+        let actionMessage: ActionEmittedMessage | undefined
         try {
-            // Fetch building information
-            const building = await this.connection.model<BuildingSchema>(BuildingSchema.name)
-                .findById(createObjectId(request.buildingId))
+            // Fetch building details
+            const building = await this.connection
+                .model<BuildingSchema>(BuildingSchema.name)
+                .findById(createObjectId(buildingId))
                 .session(mongoSession)
 
-            if (!building) {
-                throw new GrpcNotFoundException("Building not found")
-            }
+            if (!building) throw new GrpcNotFoundException("Building not found")
+            if (!building.availableInShop) throw new GrpcFailedPreconditionException("Building not available in shop")
 
-            if (!building.availableInShop) {
-                throw new GrpcFailedPreconditionException("Building not available in shop")
-            }
             // Calculate total cost
             const totalCost = building.price
 
-            const user = await this.connection.model<UserSchema>(UserSchema.name)
-                .findById(request.userId)
+            // Fetch user details
+            const user = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .findById(userId)
                 .session(mongoSession)
 
             if (!user) throw new GrpcNotFoundException("User not found")
 
-            // Check sufficient gold
-            this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
+            // Check if the user has enough gold
+            this.goldBalanceService.checkSufficient({
+                current: user.golds,
+                required: totalCost
+            })
 
-            // Subtract gold
+            // Deduct gold
             const goldsChanged = this.goldBalanceService.subtract({
                 user: user,
                 amount: totalCost
             })
 
-            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                { _id: user.id },
-                { ...goldsChanged }
-            )
-            // Save the placed item in the database
-            const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create([{
-                user: user.id,
-                x: request.position.x,
-                y: request.position.y,
-                placedItemType: createObjectId(request.buildingId),
-                buildingInfo: {}
-            }], {
-                session: mongoSession
-            })
+            await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .updateOne({ _id: user.id }, { ...goldsChanged })
+                .session(mongoSession)
+
+            // Place the building
+            const [ placedItemBuildingRaw ] = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .create(
+                    [
+                        {
+                            user: user.id,
+                            x: position.x,
+                            y: position.y,
+                            placedItemType: createObjectId(buildingId),
+                            buildingInfo: {}
+                        }
+                    ],
+                    { session: mongoSession }
+                )
+
             await mongoSession.commitTransaction()
+
+            const placedItemId = placedItemBuildingRaw._id.toString()
+
+            // Prepare action message
             actionMessage = {
-                action: ActionName.BuyAnimal,
-                placedItemId: placedItems[0]._id.toString(),
-                success: true,
+                action: ActionName.ConstructBuilding,
+                placedItemId,
+                success: true
             }
-            await this.kafkaProducer.send({
-                topic: KafkaTopic.EmitAction,
-                messages: [{ value: JSON.stringify(actionMessage) }]
-            })
-            await this.kafkaProducer.send({
-                topic: KafkaTopic.SyncPlacedItems,
-                messages: [{ value: JSON.stringify({ userId: user.id }) }]
-            })
-            return {}
+
+            // Send Kafka messages
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId: user.id }) }]
+                })
+            ])
+
+            return {} // Return an empty response
         } catch (error) {
             this.logger.error(error)
+
+            // Send failure action message if any error occurs
             if (actionMessage) {
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
+
+            // Rollback transaction automatically handled by withTransaction
             await mongoSession.abortTransaction()
-            throw error
+            throw error // Rethrow error to be handled higher up
         } finally {
+            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

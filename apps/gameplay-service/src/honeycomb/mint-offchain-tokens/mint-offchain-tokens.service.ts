@@ -29,48 +29,48 @@ export class MintOffchainTokensService {
         amount
     }: MintOffchainTokensRequest): Promise<MintOffchainTokensResponse> {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
         try {
-            const user = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .findById(userId)
-                .session(mongoSession)
+            const result = await mongoSession.withTransaction(async () => {
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(mongoSession)
 
-            const tokenBalanceChanges = this.tokenBalanceService.subtract({
-                user,
-                amount
-            })
-            const {
-                value: { tokenResourceAddress, decimals }
-            } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<HoneycombInfo>>(createObjectId(SystemId.HoneycombInfo))
-            const { txResponse } = await this.honeycombService.createMintResourceTransaction({
-                amount: computeRaw(amount, decimals).toString(),
-                resourceAddress: tokenResourceAddress,
-                network: user.network,
-                payerAddress: user.accountAddress,
-                toAddress: user.accountAddress
-            })
-            console.log(user.accountAddress)
+                const tokenBalanceChanges = this.tokenBalanceService.subtract({
+                    user,
+                    amount
+                })
+                const {
+                    value: { tokenResourceAddress, decimals }
+                } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<HoneycombInfo>>(createObjectId(SystemId.HoneycombInfo))
+                const { txResponse } = await this.honeycombService.createMintResourceTransaction({
+                    amount: computeRaw(amount, decimals).toString(),
+                    resourceAddress: tokenResourceAddress,
+                    network: user.network,
+                    payerAddress: user.accountAddress,
+                    toAddress: user.accountAddress
+                })
+                console.log(user.accountAddress)
 
-            // update user honeycomb daily reward last claim time
-            await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .updateOne(
-                    { _id: userId },
-                    {
-                        $set: {
-                            ...tokenBalanceChanges
+                // update user honeycomb daily reward last claim time
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: userId },
+                        {
+                            $set: {
+                                ...tokenBalanceChanges
+                            }
                         }
-                    }
-                )
-                .session(mongoSession)
-            await mongoSession.commitTransaction()
-            return txResponse
+                    )
+                    .session(mongoSession)
+                return txResponse
+            })
+            return result
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         } finally {
             await mongoSession.endSession()

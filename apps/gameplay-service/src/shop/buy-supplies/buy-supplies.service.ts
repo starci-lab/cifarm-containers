@@ -21,55 +21,48 @@ export class BuySuppliesService {
         private readonly goldBalanceService: GoldBalanceService
     ) {}
 
-    async buySupplies(request: BuySuppliesRequest): Promise<BuySuppliesResponse> {
-        this.logger.debug(
-            `Buying supply for user ${request.userId}, id: ${request.supplyId}, quantity: ${request.quantity}`
-        )
-
+    async buySupplies({ quantity, supplyId, userId }: BuySuppliesRequest): Promise<BuySuppliesResponse> { 
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
-
         try {
-            const supply = await this.connection.model<SupplySchema>(SupplySchema.name)
-                .findById(createObjectId(request.supplyId))
-                .session(mongoSession)
+            const result = await mongoSession.withTransaction(async () => {
+                const supply = await this.connection.model<SupplySchema>(SupplySchema.name)
+                    .findById(createObjectId(supplyId))
+                    .session(mongoSession)
 
-            if (!supply) throw new GrpcNotFoundException("Supply not found")
-            if (!supply.availableInShop)
-                throw new GrpcFailedPreconditionException("Supply not available in shop")
+                if (!supply) throw new GrpcNotFoundException("Supply not found")
+                if (!supply.availableInShop)
+                    throw new GrpcFailedPreconditionException("Supply not available in shop")
 
-            const totalCost = supply.price * request.quantity
+                const totalCost = supply.price * quantity
 
-            const user = await this.connection.model<UserSchema>(UserSchema.name)
-                .findById(request.userId)
-                .session(mongoSession)
+                const user = await this.connection.model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(mongoSession)
 
-            if (!user) throw new GrpcNotFoundException("User not found")
+                if (!user) throw new GrpcNotFoundException("User not found")
 
-            // Check sufficient gold
-            this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
+                // Check sufficient gold
+                this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
-            const { value: { storageCapacity } } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                const { value: { storageCapacity } } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
-            // Get inventory type
-            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                .findById(createObjectId(request.supplyId))
-                .session(mongoSession)
+                // Get inventory type
+                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                    .findById(createObjectId(supplyId))
+                    .session(mongoSession)
 
-            if (!inventoryType) {
-                throw new GrpcNotFoundException("Inventory type not found")
-            }
+                if (!inventoryType) {
+                    throw new GrpcNotFoundException("Inventory type not found")
+                }
 
-            const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
-                connection: this.connection,
-                inventoryType,
-                userId: user.id,
-                session: mongoSession
-            })
-
-            try {
+                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
+                    connection: this.connection,
+                    inventoryType,
+                    userId: user.id,
+                    session: mongoSession
+                })
                 // Subtract gold
                 const goldsChanged = this.goldBalanceService.subtract({
                     user: user,
@@ -85,7 +78,7 @@ export class BuySuppliesService {
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
-                    quantity: request.quantity,
+                    quantity,
                     userId: user.id,
                     capacity: storageCapacity,
                     occupiedIndexes,
@@ -102,12 +95,11 @@ export class BuySuppliesService {
 
                 await mongoSession.commitTransaction()
                 return {}
-            } catch (error) {
-                const errorMessage = `Transaction failed, reason: ${error.message}`
-                this.logger.error(errorMessage)
-                await mongoSession.abortTransaction()
-                throw error
-            }
+            })
+            return result
+        } catch (error) {
+            this.logger.error(error)
+            throw error
         } finally {
             await mongoSession.endSession()
         }

@@ -9,35 +9,41 @@ export class MoveService {
     private readonly logger = new Logger(MoveService.name)
 
     constructor(
-        @InjectMongoose() 
+        @InjectMongoose()
         private readonly connection: Connection
     ) {}
 
     async move(request: MoveRequest) {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
+
         try {
-            const placedItem = await this.connection
-                .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .findById(request.placedItemId)
-                .session(mongoSession)
-                
-            if (!placedItem) throw new GrpcNotFoundException("Placed item not found")
+            // Using `withTransaction` for automatic transaction handling
+            const result = await mongoSession.withTransaction(async () => {
+                const placedItem = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .findById(request.placedItemId)
+                    .session(mongoSession)
 
-            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne({
-                _id: request.placedItemId
-            }, {
-                x: request.position.x,
-                y: request.position.y
-            }).session(mongoSession)
+                // If the placed item is not found, throw an error
+                if (!placedItem) throw new GrpcNotFoundException("Placed item not found")
 
-            await mongoSession.commitTransaction()
+                // Update the placed item position in the database
+                await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .updateOne(
+                        { _id: request.placedItemId },
+                        { x: request.position.x, y: request.position.y }
+                    )
+                    .session(mongoSession)
+
+            })
+
+            return result
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         } finally {
-            await mongoSession.endSession()
+            await mongoSession.endSession()  // End the session after the transaction
         }
     }
 }

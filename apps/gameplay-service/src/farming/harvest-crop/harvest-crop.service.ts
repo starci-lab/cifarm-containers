@@ -29,13 +29,11 @@ export class HarvestCropService {
     private readonly logger = new Logger(HarvestCropService.name)
 
     constructor(
-        @InjectMongoose()
-        private readonly connection: Connection,
+        @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
-        @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer,
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
     async harvestCrop({
@@ -47,164 +45,191 @@ export class HarvestCropService {
         )
 
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
-
         let actionMessage: EmitActionPayload<HarvestCropData> | undefined
+
         try {
-            const placedItemTile = await this.connection
-                .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .findById(placedItemTileId)
-                .populate(SEED_GROWTH_INFO)
-                .session(mongoSession)
+            // Using withTransaction to handle the transaction lifecycle
+            const result = await mongoSession.withTransaction(async (session) => {
+                // Fetch placed item tile
+                const placedItemTile = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .findById(placedItemTileId)
+                    .populate(SEED_GROWTH_INFO)
+                    .session(session)
 
-            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
-            if (!placedItemTile.seedGrowthInfo)
-                throw new GrpcFailedPreconditionException("Tile is not planted")
-            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured)
-                throw new GrpcFailedPreconditionException("Crop is not fully matured")
+                if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
+                if (!placedItemTile.seedGrowthInfo)
+                    throw new GrpcFailedPreconditionException("Tile is not planted")
+                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured)
+                    throw new GrpcFailedPreconditionException("Crop is not fully matured")
 
-            const {
-                value: {
-                    harvestCrop: { energyConsume, experiencesGain }
-                }
-            } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                .session(mongoSession)
+                // Fetch system settings
+                const {
+                    value: {
+                        harvestCrop: { energyConsume, experiencesGain }
+                    }
+                } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
+                    .session(session)
 
-            const user = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .findById(userId)
-                .session(mongoSession)
+                // Fetch user details
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(session)
 
-            if (!user) throw new GrpcNotFoundException("User not found")
+                if (!user) throw new GrpcNotFoundException("User not found")
 
-            this.energyService.checkSufficient({
-                current: user.energy,
-                required: energyConsume
-            })
-
-            const energyChanges = this.energyService.substract({
-                user,
-                quantity: energyConsume
-            })
-            const experienceChanges = this.levelService.addExperiences({
-                user,
-                experiences: experiencesGain
-            })
-
-            const inventoryType = await this.connection
-                .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                .findOne({
-                    type: InventoryType.Product,
-                    product: placedItemTile.seedGrowthInfo.crop
+                // Check if the user has sufficient energy
+                this.energyService.checkSufficient({
+                    current: user.energy,
+                    required: energyConsume
                 })
-                .session(mongoSession)
 
-            if (!inventoryType) throw new GrpcNotFoundException("Inventory type not found")
+                // Deduct energy and add experience
+                const energyChanges = this.energyService.substract({
+                    user,
+                    quantity: energyConsume
+                })
+                const experienceChanges = this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
 
-            const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
-                connection: this.connection,
-                inventoryType,
-                userId: user.id,
-                session: mongoSession
-            })
+                // Fetch inventory type for the harvested crop
+                const inventoryType = await this.connection
+                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                    .findOne({
+                        type: InventoryType.Product,
+                        product: placedItemTile.seedGrowthInfo.crop
+                    })
+                    .session(session)
 
-            const {
-                value: { storageCapacity }
-            } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-            await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
+                if (!inventoryType) throw new GrpcNotFoundException("Inventory type not found")
 
-            const quantity = placedItemTile.seedGrowthInfo.harvestQuantityRemaining
-            const { createdInventories, updatedInventories } = this.inventoryService.add({
-                inventoryType,
-                inventories,
-                capacity: storageCapacity,
-                quantity,
-                userId: user.id,
-                occupiedIndexes
-            })
+                // Get parameters for adding inventory
+                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
+                    connection: this.connection,
+                    inventoryType,
+                    userId: user.id,
+                    session
+                })
 
-            await this.connection
-                .model<InventorySchema>(InventorySchema.name)
-                .create(createdInventories, { session: mongoSession })
-            for (const inventory of updatedInventories) {
+                // Fetch storage capacity setting
+                const {
+                    value: { storageCapacity }
+                } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+
+                // Update user with energy and experience changes
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
+                    .session(session)
+
+                // Harvest quantity
+                const quantity = placedItemTile.seedGrowthInfo.harvestQuantityRemaining
+
+                // Add the harvested crop to the inventory
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventoryType,
+                    inventories,
+                    capacity: storageCapacity,
+                    quantity,
+                    userId: user.id,
+                    occupiedIndexes
+                })
+
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
-                    .updateOne(
-                        {
-                            _id: inventory._id
-                        },
-                        inventory
-                    )
-                    .session(mongoSession)
-            }
+                    .create(createdInventories, { session })
 
-            //Find crop id
-            const crop = await this.connection
-                .model<CropSchema>(CropSchema.name)
-                .findById(placedItemTile.seedGrowthInfo.crop)
-
-            //perennialCount & currentPerennialCount
-            if (placedItemTile.seedGrowthInfo.currentPerennialCount < crop.perennialCount) {
-                placedItemTile.seedGrowthInfo.currentPerennialCount += 1
-                placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
-                placedItemTile.seedGrowthInfo.currentStage = crop.nextGrowthStageAfterHarvest
-                placedItemTile.seedGrowthInfo.currentStageTimeElapsed = 0
-            }else{
-                placedItemTile.seedGrowthInfo = null
-            }
-
-            await this.connection
-                .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .updateOne(
-                    { _id: placedItemTile._id },
-                    {
-                        seedGrowthInfo: placedItemTile.seedGrowthInfo
-                    }
-                )
-                .session(mongoSession)
-
-            await mongoSession.commitTransaction()
-
-            actionMessage = {
-                placedItemId: placedItemTileId,
-                action: ActionName.HarvestCrop,
-                success: true,
-                userId,
-                data: {
-                    cropId: crop.id,
-                    quantity
+                for (const inventory of updatedInventories) {
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .updateOne(
+                            {
+                                _id: inventory._id
+                            },
+                            inventory
+                        )
+                        .session(session)
                 }
-            }
-            this.kafkaProducer.send({
-                topic: KafkaTopic.EmitAction,
-                messages: [{ value: JSON.stringify(actionMessage) }]
-            })
-            this.kafkaProducer.send({
-                topic: KafkaTopic.SyncPlacedItems,
-                messages: [{ value: JSON.stringify({ userId }) }]
+
+                // Fetch crop details to update perennial count
+                const crop = await this.connection
+                    .model<CropSchema>(CropSchema.name)
+                    .findById(placedItemTile.seedGrowthInfo.crop)
+                    .session(session)
+
+                if (!crop) throw new GrpcNotFoundException("Crop not found")
+
+                // Handle perennial crop growth cycle
+                if (placedItemTile.seedGrowthInfo.currentPerennialCount < crop.perennialCount) {
+                    placedItemTile.seedGrowthInfo.currentPerennialCount += 1
+                    placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+                    placedItemTile.seedGrowthInfo.currentStage = crop.nextGrowthStageAfterHarvest
+                    placedItemTile.seedGrowthInfo.currentStageTimeElapsed = 0
+                } else {
+                    placedItemTile.seedGrowthInfo = null // End of the plant's life cycle
+                }
+
+                // Update the placed item tile with new seed growth information
+                await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .updateOne(
+                        { _id: placedItemTile._id },
+                        {
+                            seedGrowthInfo: placedItemTile.seedGrowthInfo
+                        }
+                    )
+                    .session(session)
+
+                // Prepare action message
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.HarvestCrop,
+                    success: true,
+                    userId,
+                    data: {
+                        cropId: crop.id,
+                        quantity
+                    }
+                }
+
+                // Send Kafka messages for success
+                await Promise.all([
+                    this.kafkaProducer.send({
+                        topic: KafkaTopic.EmitAction,
+                        messages: [{ value: JSON.stringify(actionMessage) }]
+                    }),
+                    this.kafkaProducer.send({
+                        topic: KafkaTopic.SyncPlacedItems,
+                        messages: [{ value: JSON.stringify({ userId }) }]
+                    })
+                ])
+
+                return { quantity } // Return the quantity of harvested crops
             })
 
-            return {
-                quantity
-            }
+            return result // Return the result from the transaction
         } catch (error) {
             this.logger.error(error)
-            if (actionMessage)
-            {
-                this.kafkaProducer.send({
+
+            // Send failure action message if any error occurs
+            if (actionMessage) {
+                await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
-            }  
-            await mongoSession.abortTransaction()
-            throw error
+            }
+
+            // withTransaction handles rollback automatically, no need for manual abort
+            throw error // Rethrow error to be handled higher up
         } finally {
+            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

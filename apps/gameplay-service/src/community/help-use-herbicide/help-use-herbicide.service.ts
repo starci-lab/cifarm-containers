@@ -1,15 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    InjectKafkaProducer,
-    KafkaTopic
-    // KafkaPattern
-} from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { EnergyService, LevelService } from "@src/gameplay"
-import {
-    HelpUseHerbicideRequest,
-    // HelpUseHerbicideRequest,
-    HelpUseHerbicideResponse
-} from "./help-use-herbicide.dto"
+import { HelpUseHerbicideRequest, HelpUseHerbicideResponse } from "./help-use-herbicide.dto"
 import { Connection } from "mongoose"
 import {
     Activities,
@@ -21,9 +13,7 @@ import {
     SystemSchema,
     UserSchema
 } from "@src/databases"
-import {
-    GrpcNotFoundException
-} from "nestjs-grpc-exceptions"
+import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
@@ -33,10 +23,8 @@ export class HelpUseHerbicideService {
     private readonly logger = new Logger(HelpUseHerbicideService.name)
 
     constructor(
-        @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer,
-        @InjectMongoose()
-        private readonly connection: Connection,
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
+        @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
     ) {}
@@ -74,7 +62,7 @@ export class HelpUseHerbicideService {
                     reasonCode: 1,
                 }
                 throw new GrpcFailedPreconditionException("Cannot use herbicide on own tile")
-            } 
+            }
             if (!placedItemTile.seedGrowthInfo) {
                 actionMessage = {
                     placedItemId: placedItemTileId,
@@ -96,16 +84,13 @@ export class HelpUseHerbicideService {
                 throw new GrpcFailedPreconditionException("Tile does not need herbicide")
             }
 
-            const { value: {
-                helpUseHerbicide: {
-                    energyConsume,
-                    experiencesGain
-                }
-            } } = await this.connection
+            const { value } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
                 .session(mongoSession)
-                
+
+            const { helpUseHerbicide: { energyConsume, experiencesGain } } = value as Activities
+
             const user = await this.connection.model<UserSchema>(UserSchema.name)
                 .findById(userId)
                 .session(mongoSession)
@@ -133,33 +118,39 @@ export class HelpUseHerbicideService {
 
             await mongoSession.commitTransaction()
 
+            // Kafka action message
             actionMessage = {
                 placedItemId: placedItemTileId,
                 action: ActionName.HelpUseHerbicide,
                 success: true,
                 userId,
             }
-            this.kafkaProducer.send({
-                topic: KafkaTopic.EmitAction,
-                messages: [{ value: JSON.stringify(actionMessage) }]
-            })
-            this.kafkaProducer.send({
-                topic: KafkaTopic.SyncPlacedItems,
-                messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
-            })
-            return {}
-        } catch (error) {
-            if (actionMessage)
-            {
+
+            // Sending both Kafka messages in parallel using Promise.all()
+            await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }]
+                    messages: [{ value: JSON.stringify(actionMessage) }],
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
                 })
-            }   
-            await mongoSession.abortTransaction()
+            ])
+
+            return {} // Return an empty response after success
+        } catch (error) {
+            // If there was an error, send the action message with failure status
+            if (actionMessage) {
+                await this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }],
+                })
+            }
+            await mongoSession.abortTransaction() // Abort transaction on error
             throw error
         } finally {
-            await mongoSession.endSession()
+            await mongoSession.endSession() // End the session after transaction completes
         }
     }
 }

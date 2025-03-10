@@ -31,88 +31,82 @@ export class BuySeedsService {
     }
 
     async buySeeds(request: BuySeedsRequest): Promise<BuySeedsResponse> {
-        this.logger.debug(
-            `Calling buying seed for user ${request.userId}, id: ${request.cropId}, quantity: ${request.quantity}`
-        )
-
         // Start session
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
         
         try {
-            const crop = await this.connection.model<CropSchema>(CropSchema.name)
-                .findById(createObjectId(request.cropId))
-                .session(mongoSession)
+            const result = await mongoSession.withTransaction(async () => {
+                const crop = await this.connection.model<CropSchema>(CropSchema.name)
+                    .findById(createObjectId(request.cropId))
+                    .session(mongoSession)
 
-            if (!crop) throw new GrpcNotFoundException("Crop not found")
-            if (!crop.availableInShop) throw new GrpcFailedPreconditionException("Crop not available in shop")
+                if (!crop) throw new GrpcNotFoundException("Crop not found")
+                if (!crop.availableInShop) throw new GrpcFailedPreconditionException("Crop not available in shop")
 
-            const totalCost = crop.price * request.quantity
+                const totalCost = crop.price * request.quantity
 
-            const user: UserSchema = await this.connection.model<UserSchema>(UserSchema.name)
-                .findById(request.userId)
-                .session(mongoSession)
+                const user: UserSchema = await this.connection.model<UserSchema>(UserSchema.name)
+                    .findById(request.userId)
+                    .session(mongoSession)
 
-            //Check sufficient gold
-            this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
+                //Check sufficient gold
+                this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
 
-            //Get inventory type
-            const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
-                type: InventoryType.Seed,
-                crop: createObjectId(request.cropId)
-            }).session(mongoSession)
+                //Get inventory type
+                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
+                    type: InventoryType.Seed,
+                    crop: createObjectId(request.cropId)
+                }).session(mongoSession)
 
-            if (!inventoryType) {
-                throw new GrpcNotFoundException("Inventory seed type not found")
-            }  
+                if (!inventoryType) {
+                    throw new GrpcNotFoundException("Inventory seed type not found")
+                }  
 
-            const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
-                connection: this.connection,
-                inventoryType,
-                userId: user.id,
-                session: mongoSession,
+                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
+                    connection: this.connection,
+                    inventoryType,
+                    userId: user.id,
+                    session: mongoSession,
+                })
+
+                const { value: { storageCapacity } } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+
+                // Subtract gold
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: totalCost
+                })
+
+                //update
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...goldsChanged }
+                )
+                
+                //Save inventory
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventoryType,
+                    inventories,
+                    capacity: storageCapacity,
+                    quantity: request.quantity,
+                    userId: user.id,
+                    occupiedIndexes,
+                    kind: InventoryKind.Storage,
+                })
+
+                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
+                for (const inventory of updatedInventories) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
+                        _id: inventory._id
+                    }, inventory)
+                }
+                return {}
             })
-
-            const { value: { storageCapacity } } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-
-            // Subtract gold
-            const goldsChanged = this.goldBalanceService.subtract({
-                user: user,
-                amount: totalCost
-            })
-
-            //update
-            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                { _id: user.id },
-                { ...goldsChanged }
-            )
-
-            console.log("User updated", goldsChanged)
-
-            //Save inventory
-            const { createdInventories, updatedInventories } = this.inventoryService.add({
-                inventoryType,
-                inventories,
-                capacity: storageCapacity,
-                quantity: request.quantity,
-                userId: user.id,
-                occupiedIndexes,
-                kind: InventoryKind.Storage,
-            })
-
-            await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories)
-            for (const inventory of updatedInventories) {
-                await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
-                    _id: inventory._id
-                }, inventory)
-            }
-            await mongoSession.commitTransaction()
-            return {}
+            return result
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         } finally {
             await mongoSession.endSession()

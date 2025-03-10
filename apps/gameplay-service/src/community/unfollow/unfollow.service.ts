@@ -16,35 +16,58 @@ export class UnfollowService {
 
     async unfollow({ followeeUserId, userId }: UnfollowRequest): Promise<UnfollowResponse> {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
         try {
-            const followee = await this.connection.model<UserSchema>(UserSchema.name).findById(followeeUserId).session(mongoSession)
-            if (!followee) {
-                throw new GrpcNotFoundException("Followee not found")
-            }
-            const user = await this.connection.model<UserSchema>(UserSchema.name).findById(userId).session(mongoSession)
-            if (!user) {
-                throw new GrpcNotFoundException("User not found")
-            }
-            const following = await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).exists({
-                followee: followeeUserId,
-                follower: userId
+            const result = await mongoSession.withTransaction(async (mongoSession) => {
+                const followee = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(followeeUserId)
+                    .session(mongoSession)
+                if (!followee) {
+                    throw new GrpcNotFoundException("Followee not found")
+                }
+
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(mongoSession)
+                if (!user) {
+                    throw new GrpcNotFoundException("User not found")
+                }
+
+                const following = await this.connection
+                    .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
+                    .exists({
+                        followee: followeeUserId,
+                        follower: userId
+                    })
+                    .session(mongoSession)
+
+                if (!following) {
+                    throw new GrpcFailedPreconditionException("Not following")
+                }
+
+                // delete the follow relation
+                await this.connection
+                    .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
+                    .deleteOne({
+                        followee: followeeUserId,
+                        follower: userId
+                    })
+                    .session(mongoSession)
+
+                // Commit the transaction
+                await mongoSession.commitTransaction()
+                return {}
             })
-            if (!following) {
-                throw new GrpcFailedPreconditionException("Not following")
-            }
-            // delete the follow relation
-            await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).deleteOne({
-                followee: followeeUserId,
-                follower: userId
-            }).session(mongoSession)
-            await mongoSession.commitTransaction()
-            return {}
+
+            return result
         } catch (error) {
             this.logger.error(error)
+            // Abort transaction in case of error
             await mongoSession.abortTransaction()
             throw error
         } finally {
+            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

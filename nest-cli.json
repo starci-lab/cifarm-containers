@@ -81,7 +81,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/gameplay-service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/gameplay-service/tsconfig.app.json"
+        "tsConfigPath": "apps/gameplay-service/tsconfig.app.json",
+        "webpack": true,
+        "webpackConfigPath": "apps/gameplay-service/webpack.config.js"
       }
     },
     "cli": {
@@ -106,22 +108,15 @@
         "webpackConfigPath": "apps/telegram-bot/webpack.config.js"
       }
     },
-    "test": {
-      "type": "application",
-      "root": "apps/test",
-      "entryFile": "main",
-      "sourceRoot": "apps/test/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/test/tsconfig.app.json"
-      }
-    },
     "seeders": {
       "type": "application",
       "root": "apps/seeders",
       "entryFile": "main",
       "sourceRoot": "apps/seeders/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/seeders/tsconfig.app.json"
+        "tsConfigPath": "apps/seeders/tsconfig.app.json",
+        "webpack": true,
+        "webpackConfigPath": "apps/seeders/webpack.config.js"
       }
     },
     "blockchain-service": {
