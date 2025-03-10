@@ -1,4 +1,4 @@
-import { EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -30,7 +30,7 @@ export class MoveService {
                     .session(mongoSession)
 
                 //check user id
-                if (placedItem.user !== userId) {
+                if (placedItem.user.toString() !== userId) {
                     throw new GrpcNotFoundException("User not match")
                 }
 
@@ -45,6 +45,13 @@ export class MoveService {
                         { x: position.x, y: position.y }
                     )
                     .session(mongoSession)
+
+                    actionMessage = {
+                        placedItemId: placedItemId,
+                        action: ActionName.Move,
+                        success: true,
+                        userId
+                    }
             })
 
             await Promise.all([
@@ -52,15 +59,22 @@ export class MoveService {
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 }),
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
-                })
+                // this.kafkaProducer.send({
+                //     topic: KafkaTopic.SyncPlacedItems,
+                //     messages: [{ value: JSON.stringify({ userId }) }]
+                // })
             ])
 
             return result
         } catch (error) {
             this.logger.error(error)
+            if (actionMessage) {
+                await this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
+            }
+            
             throw error
         } finally {
             await mongoSession.endSession()  // End the session after the transaction
