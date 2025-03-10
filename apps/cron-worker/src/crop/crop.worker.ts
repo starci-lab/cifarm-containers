@@ -74,7 +74,6 @@ export class CropWorker extends WorkerHost {
         for (const placedItem of placedItems) {
             const promise = async () => {
                 const session = await this.connection.startSession()
-                session.startTransaction()
                 try {
                     const placedItemType = await this.connection
                         .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
@@ -154,10 +153,8 @@ export class CropWorker extends WorkerHost {
                     // update the placed item
                     updatePlacedItem()
                     await placedItem.save({ session })
-                    await session.commitTransaction()
                 } catch (error) {
                     this.logger.error(error)
-                    await session.abortTransaction()
                 } finally {
                     await session.endSession()
                 }

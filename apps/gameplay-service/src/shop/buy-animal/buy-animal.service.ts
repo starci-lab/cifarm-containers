@@ -153,8 +153,6 @@ export class BuyAnimalService {
                         { session }
                     )
 
-                await mongoSession.commitTransaction()
-
                 const placedItemAnimalId = placedItemAnimalRaw._id.toString()
 
                 // Prepare action message for Kafka

@@ -26,95 +26,94 @@ export class BuyTileService {
 
     async buyTile({ position, tileId, userId }: BuyTileRequest): Promise<BuyTileResponse> {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
 
         let actionMessage: EmitActionPayload | undefined
         try {
+            const result = await mongoSession.withTransaction(async () => {
             // Fetch tile details
-            const tile = await this.connection
-                .model<TileSchema>(TileSchema.name)
-                .findById(createObjectId(tileId))
-                .session(mongoSession)
+                const tile = await this.connection
+                    .model<TileSchema>(TileSchema.name)
+                    .findById(createObjectId(tileId))
+                    .session(mongoSession)
 
-            if (!tile) throw new GrpcNotFoundException("Tile not found")
-            if (!tile.availableInShop)
-                throw new GrpcFailedPreconditionException("Tile not available in shop")
+                if (!tile) throw new GrpcNotFoundException("Tile not found")
+                if (!tile.availableInShop)
+                    throw new GrpcFailedPreconditionException("Tile not available in shop")
 
-            // Fetch user details
-            const user = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .findById(userId)
-                .session(mongoSession)
+                // Fetch user details
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(mongoSession)
 
-            if (!user) throw new GrpcNotFoundException("User not found")
+                if (!user) throw new GrpcNotFoundException("User not found")
 
-            // Check sufficient gold
-            this.goldBalanceService.checkSufficient({ current: user.golds, required: tile.price })
+                // Check sufficient gold
+                this.goldBalanceService.checkSufficient({ current: user.golds, required: tile.price })
 
-            // Check the number of tiles owned by the user
-            const count = await this.connection
-                .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .countDocuments({
-                    user: userId,
-                    placedItemType: createObjectId(tileId)
+                // Check the number of tiles owned by the user
+                const count = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .countDocuments({
+                        user: userId,
+                        placedItemType: createObjectId(tileId)
+                    })
+                    .session(mongoSession)
+
+                if (count >= tile.maxOwnership)
+                    throw new GrpcFailedPreconditionException("Max ownership reached")
+
+                // Deduct gold and update the user's gold balance
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: tile.price
                 })
-                .session(mongoSession)
 
-            if (count >= tile.maxOwnership)
-                throw new GrpcFailedPreconditionException("Max ownership reached")
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne({ _id: user.id }, { ...goldsChanged })
+                    .session(mongoSession)
 
-            // Deduct gold and update the user's gold balance
-            const goldsChanged = this.goldBalanceService.subtract({
-                user: user,
-                amount: tile.price
+                // Save the placed item (tile) in the database
+                const [placedItemTileRaw] = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .create(
+                        [
+                            {
+                                user: userId,
+                                x: position.x,
+                                y: position.y,
+                                placedItemType: createObjectId(tileId),
+                                tileInfo: {}
+                            }
+                        ],
+                        { session: mongoSession }
+                    )
+                const placedItemTileId = placedItemTileRaw._id.toString()
+
+                // Prepare the action message to emit to Kafka
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.BuyTile,
+                    success: true,
+                    userId
+                }
+
+                // Send Kafka messages for success
+                await Promise.all([
+                    this.kafkaProducer.send({
+                        topic: KafkaTopic.EmitAction,
+                        messages: [{ value: JSON.stringify(actionMessage) }]
+                    }),
+                    this.kafkaProducer.send({
+                        topic: KafkaTopic.SyncPlacedItems,
+                        messages: [{ value: JSON.stringify({ userId }) }]
+                    })
+                ])
+
+                return {} // Return an empty object (response)
             })
-
-            await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .updateOne({ _id: user.id }, { ...goldsChanged })
-                .session(mongoSession)
-
-            // Save the placed item (tile) in the database
-            const [placedItemTileRaw] = await this.connection
-                .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .create(
-                    [
-                        {
-                            user: userId,
-                            x: position.x,
-                            y: position.y,
-                            placedItemType: createObjectId(tileId),
-                            tileInfo: {}
-                        }
-                    ],
-                    { session: mongoSession }
-                )
-
-            await mongoSession.commitTransaction()
-
-            const placedItemTileId = placedItemTileRaw._id.toString()
-
-            // Prepare the action message to emit to Kafka
-            actionMessage = {
-                placedItemId: placedItemTileId,
-                action: ActionName.BuyTile,
-                success: true,
-                userId
-            }
-
-            // Send Kafka messages for success
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }]
-                }),
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
-                })
-            ])
-
-            return {} // Return an empty object (response)
+            return result // Return the result from the transaction
         } catch (error) {
             this.logger.error(error)
 
@@ -126,8 +125,6 @@ export class BuyTileService {
                 })
             }
 
-            // Rollback transaction automatically handled by withTransaction
-            await mongoSession.abortTransaction()
             throw error // Rethrow error to be handled higher up
         } finally {
             // End the session after the transaction is complete

@@ -57,11 +57,11 @@ export class AnimalWorker extends WorkerHost {
             .findById<KeyValueRecord<AnimalRandomness>>(
                 SystemId.AnimalRandomness
             )
+            
         const promises: Array<Promise<void>> = []
         for (const placedItem of placedItems) {
             const promise = async () => {
                 const session = await this.connection.startSession()
-                session.startTransaction()
                 try {
                     const placedItemChanges = () => {
                         const placedItemBeforeChanges = { ...placedItem }
@@ -164,17 +164,9 @@ export class AnimalWorker extends WorkerHost {
                     if (isEmpty(changes)) {
                         return
                     }
-                    // await queryRunner.manager.update(
-                    //     AnimalInfoEntity,
-                    //     animalInfo.id,
-                    //     changes
-                    // )
-                    // await queryRunner.commitTransaction()
                     await placedItem.save({ session })
-                    await session.commitTransaction()
                 } catch (error) {
                     this.logger.error(error)
-                    await session.abortTransaction()
                 } finally {
                     await session.endSession()
                 }

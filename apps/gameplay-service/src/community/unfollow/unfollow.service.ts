@@ -54,17 +54,12 @@ export class UnfollowService {
                         follower: userId
                     })
                     .session(mongoSession)
-
-                // Commit the transaction
-                await mongoSession.commitTransaction()
                 return {}
             })
 
             return result
         } catch (error) {
             this.logger.error(error)
-            // Abort transaction in case of error
-            await mongoSession.abortTransaction()
             throw error
         } finally {
             // End the session after the transaction is complete

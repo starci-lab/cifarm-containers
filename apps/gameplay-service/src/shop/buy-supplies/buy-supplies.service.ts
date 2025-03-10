@@ -93,7 +93,6 @@ export class BuySuppliesService {
                     )
                 }
 
-                await mongoSession.commitTransaction()
                 return {}
             })
             return result

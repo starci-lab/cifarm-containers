@@ -30,87 +30,87 @@ export class ConstructBuildingService {
         userId
     }: ConstructBuildingRequest): Promise<ConstructBuildingResponse> {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
 
         let actionMessage: ActionEmittedMessage | undefined
         try {
+            const result = await mongoSession.withTransaction(async () => {
             // Fetch building details
-            const building = await this.connection
-                .model<BuildingSchema>(BuildingSchema.name)
-                .findById(createObjectId(buildingId))
-                .session(mongoSession)
+                const building = await this.connection
+                    .model<BuildingSchema>(BuildingSchema.name)
+                    .findById(createObjectId(buildingId))
+                    .session(mongoSession)
 
-            if (!building) throw new GrpcNotFoundException("Building not found")
-            if (!building.availableInShop) throw new GrpcFailedPreconditionException("Building not available in shop")
+                if (!building) throw new GrpcNotFoundException("Building not found")
+                if (!building.availableInShop) throw new GrpcFailedPreconditionException("Building not available in shop")
 
-            // Calculate total cost
-            const totalCost = building.price
+                // Calculate total cost
+                const totalCost = building.price
 
-            // Fetch user details
-            const user = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .findById(userId)
-                .session(mongoSession)
+                // Fetch user details
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(mongoSession)
 
-            if (!user) throw new GrpcNotFoundException("User not found")
+                if (!user) throw new GrpcNotFoundException("User not found")
 
-            // Check if the user has enough gold
-            this.goldBalanceService.checkSufficient({
-                current: user.golds,
-                required: totalCost
-            })
-
-            // Deduct gold
-            const goldsChanged = this.goldBalanceService.subtract({
-                user: user,
-                amount: totalCost
-            })
-
-            await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .updateOne({ _id: user.id }, { ...goldsChanged })
-                .session(mongoSession)
-
-            // Place the building
-            const [ placedItemBuildingRaw ] = await this.connection
-                .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .create(
-                    [
-                        {
-                            user: user.id,
-                            x: position.x,
-                            y: position.y,
-                            placedItemType: createObjectId(buildingId),
-                            buildingInfo: {}
-                        }
-                    ],
-                    { session: mongoSession }
-                )
-
-            await mongoSession.commitTransaction()
-
-            const placedItemId = placedItemBuildingRaw._id.toString()
-
-            // Prepare action message
-            actionMessage = {
-                action: ActionName.ConstructBuilding,
-                placedItemId,
-                success: true
-            }
-
-            // Send Kafka messages
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }]
-                }),
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: user.id }) }]
+                // Check if the user has enough gold
+                this.goldBalanceService.checkSufficient({
+                    current: user.golds,
+                    required: totalCost
                 })
-            ])
 
-            return {} // Return an empty response
+                // Deduct gold
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: totalCost
+                })
+
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne({ _id: user.id }, { ...goldsChanged })
+                    .session(mongoSession)
+
+                // Place the building
+                const [ placedItemBuildingRaw ] = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .create(
+                        [
+                            {
+                                user: user.id,
+                                x: position.x,
+                                y: position.y,
+                                placedItemType: createObjectId(buildingId),
+                                buildingInfo: {}
+                            }
+                        ],
+                        { session: mongoSession }
+                    )
+
+                const placedItemId = placedItemBuildingRaw._id.toString()
+
+                // Prepare action message
+                actionMessage = {
+                    action: ActionName.ConstructBuilding,
+                    placedItemId,
+                    success: true
+                }
+
+                // Send Kafka messages
+                await Promise.all([
+                    this.kafkaProducer.send({
+                        topic: KafkaTopic.EmitAction,
+                        messages: [{ value: JSON.stringify(actionMessage) }]
+                    }),
+                    this.kafkaProducer.send({
+                        topic: KafkaTopic.SyncPlacedItems,
+                        messages: [{ value: JSON.stringify({ userId: user.id }) }]
+                    })
+                ])
+
+                return {} // Return an empty response
+            })
+            return result
         } catch (error) {
             this.logger.error(error)
 
@@ -121,9 +121,7 @@ export class ConstructBuildingService {
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
-
-            // Rollback transaction automatically handled by withTransaction
-            await mongoSession.abortTransaction()
+            
             throw error // Rethrow error to be handled higher up
         } finally {
             // End the session after the transaction is complete

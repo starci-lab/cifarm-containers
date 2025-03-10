@@ -51,7 +51,6 @@ export class EnergyWorker extends WorkerHost {
         for (const user of users) {
             const promise = async () => {
                 const session = await this.connection.startSession()
-                session.startTransaction()
                 try {
                     const updateUser = () => {
                         // skip if the user's energy is full
@@ -81,10 +80,8 @@ export class EnergyWorker extends WorkerHost {
                     }
                     updateUser()
                     await user.save({ session })
-                    await session.commitTransaction()
                 } catch (error) {
                     this.logger.error(error)
-                    await session.abortTransaction()
                 } finally {
                     await session.endSession()
                 }

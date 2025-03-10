@@ -56,8 +56,6 @@ export class AnimalService {
         }
 
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
-
         try {
             const utcNow = this.dateUtcService.getDayjs()
             const placedItemTypes = await this.connection
@@ -137,10 +135,8 @@ export class AnimalService {
                     }
                 )
                 .session(mongoSession)
-            await mongoSession.commitTransaction()
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         } finally {
             await mongoSession.endSession()

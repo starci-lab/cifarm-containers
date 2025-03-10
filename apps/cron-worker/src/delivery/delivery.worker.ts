@@ -46,7 +46,6 @@ export class DeliveryWorker extends WorkerHost {
         users.forEach((user) => {
             const promise = async () => {
                 const session = await this.connection.startSession()
-                session.startTransaction()
                 try {
                     const deliveringInventories = await this.connection.model<InventorySchema>(InventorySchema.name)
                         .find({
@@ -90,10 +89,8 @@ export class DeliveryWorker extends WorkerHost {
                         ...goldChanged,
                         ...tokenChanged
                     }).session(session)
-                    await session.commitTransaction()
                 } catch (error) {
                     this.logger.error(error)
-                    session.abortTransaction()
                     throw error
                 } finally {
                     session.endSession()
