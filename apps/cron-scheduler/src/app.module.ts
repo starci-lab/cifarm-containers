@@ -12,6 +12,7 @@ import { CacheModule } from "@src/cache"
 import { KubernetesModule } from "@src/kubernetes"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
+import { KafkaModule } from "@src/brokers"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -26,6 +27,9 @@ import { MongooseModule } from "@src/databases"
         }),
         CacheModule.register({
             isGlobal: true
+        }),
+        KafkaModule.register({
+            isGlobal: true,
         }),
         ScheduleModule.forRoot(),
         //register here for global access

@@ -50,6 +50,8 @@ import {
     ToolSchemaClass,
     UserFollowRelationSchemaClass,
     UserFollowRelationSchema,
+    PetSchema,
+    PetSchemaClass,
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -64,13 +66,17 @@ export class MongooseModule extends ConfigurableModuleClass {
 
         const { dbName, host, password, port, username } =
             envConfig().databases.mongo[MongoDatabase.Gameplay]
-        const url = `mongodb://${username}:${password}@${host}:${port}/${dbName}?authSource=admin&retryWrites=true&retryReads=true`
+        const url = `mongodb://${username}:${password}@${host}:${port}`
 
         return {
             ...dynamicModule,
             imports: [
                 NestMongooseModule.forRoot(url, {
                     connectionName,
+                    retryWrites: true,
+                    retryReads: true,
+                    authSource: "admin",
+                    dbName,
                     connectionFactory: async (connection: Connection) => {
                         // eslint-disable-next-line @typescript-eslint/no-require-imports
                         connection.plugin(normalizeMongoose)
@@ -120,6 +126,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: UserFollowRelationSchema.name,
                             useFactory: () => UserFollowRelationSchemaClass
+                        },
+                        {
+                            name: PetSchema.name,
+                            useFactory: () => PetSchemaClass
                         },
                         {
                             name: SpinSlotSchema.name,

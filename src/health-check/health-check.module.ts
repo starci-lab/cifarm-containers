@@ -13,7 +13,6 @@ import { ExecModule } from "@src/exec"
 import { HealthCheckController } from "./health-check.controller"
 import { HealthCheckCoreService } from "./health-check-core.service"
 import { HealthCheckContainersService } from "./health-check-containers.service"
-import { KafkaOptionsModule } from "@src/brokers"
 import { mongoDbWithMongooseMap, mongoDbMap, redisMap } from "./health-check.utils"
 import { HttpModule } from "@nestjs/axios"
 import { HealthCheckDependency } from "./health-check.types"
@@ -25,7 +24,6 @@ export class HealthCheckModule extends ConfigurableModuleClass {
         const imports: Array<typeof TerminusModule | DynamicModule> = [
             TerminusModule,
             EnvModule.forRoot(),
-            KafkaOptionsModule.register(),
             HttpModule.register({})
         ]
 

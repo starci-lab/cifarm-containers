@@ -8,10 +8,9 @@ import { Job } from "bullmq"
 import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
 import { EnergyService } from "@src/gameplay"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-// import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { SyncEnergyPayload } from "@apps/io-gameplay/src/gameplay/energy"
-import { ClientKafka } from "@nestjs/microservices"
+import { Producer } from "kafkajs"
 
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
@@ -20,8 +19,8 @@ export class EnergyWorker extends WorkerHost {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
         private readonly dateUtcService: DateUtcService,
         private readonly energyService: EnergyService
     ) {
@@ -52,8 +51,8 @@ export class EnergyWorker extends WorkerHost {
         for (const user of users) {
             const promise = async () => {
                 const session = await this.connection.startSession()
-                session.startTransaction()
                 try {
+                    let emit = false
                     const updateUser = () => {
                         // skip if the user's energy is full
                         if (user.energyFull) {
@@ -62,25 +61,31 @@ export class EnergyWorker extends WorkerHost {
                         // Add time to the user's energy
                         user.energyRegenTime += time
                         if (user.energyRegenTime >= energyRegenTime) {
+                            //console.log("Energy regen time", user.energyRegenTime)
                             user.energy += 1
                             // Reset the timer
                             user.energyRegenTime = 0
                             // Check if the user's energy is full
                             user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
-                            
-                            const payload: SyncEnergyPayload = {
-                                userId: user.id,
-                                energy: user.energy,
-                            }
-                            this.clientKafka.emit(KafkaPattern.SyncEnergy, payload)
+                            emit = true
                         }
                     }
                     updateUser()
                     await user.save({ session })
-                    await session.commitTransaction()
+                    if (emit) {
+                        const payload: SyncEnergyPayload = {
+                            userId: user.id,
+                            energy: user.energy,
+                        }
+                        await this.kafkaProducer.send({
+                            topic: KafkaTopic.SyncEnergy,
+                            messages: [
+                                { value: JSON.stringify(payload) }
+                            ]
+                        })
+                    }
                 } catch (error) {
                     this.logger.error(error)
-                    await session.abortTransaction()
                 } finally {
                     await session.endSession()
                 }

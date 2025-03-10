@@ -1,7 +1,7 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { StaticAbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { AvailableInType, InventoryType } from "../enums"
+import { AvailableInType, InventoryType, InventoryTypeId } from "../enums"
 import { CropSchema } from "./crop.schema"
 import { Schema as MongooseSchema } from "mongoose"
 import { ProductSchema } from "./product.schema"
@@ -14,7 +14,7 @@ import { SupplySchema } from "./supply.schema"
     timestamps: true,
     collection: "inventory-types"
 })
-export class InventoryTypeSchema extends StaticAbstractSchema {
+export class InventoryTypeSchema extends StaticAbstractSchema<InventoryTypeId> {
     @Field(() => String)
     @Prop({ type: String, required: true, enum: InventoryType })
         type: InventoryType

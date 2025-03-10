@@ -5,9 +5,9 @@ import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UseHerbicideRequest, UseHerbicideResponse } from "./use-herbicide.dto"
-import { InjectKafka, KafkaPattern } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class UseHerbicideService {
@@ -18,81 +18,125 @@ export class UseHerbicideService {
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        @InjectKafka()
-        private readonly clientKafka: ClientKafka
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async useHerbicide({ placedItemTileId, userId }: UseHerbicideRequest): Promise<UseHerbicideResponse> {
-        const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
-
+        const mongoSession = await this.connection.startSession() // Create the session
         let actionMessage: EmitActionPayload | undefined
+
         try {
-            const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-                .findById(placedItemTileId)
-                .session(mongoSession)
+            // Using withTransaction to automatically handle session and transaction
+            const result = await mongoSession.withTransaction(async (session) => {
+                // Fetch the placed item tile
+                const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .findById(placedItemTileId)
+                    .session(session)
 
-            if (!placedItemTile) throw new GrpcNotFoundException("Tile not found")
-            if (placedItemTile.user.toString() !== userId) throw new GrpcFailedPreconditionException("Cannot use herbicide on other's tile")
-            if (!placedItemTile.seedGrowthInfo) throw new GrpcFailedPreconditionException("Tile is not planted")
-            if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) throw new GrpcFailedPreconditionException("Tile is not weedy")
-
-            const { value: {
-                useHerbicide: {
-                    energyConsume,
-                    experiencesGain
+                if (!placedItemTile) {
+                    actionMessage = {
+                        placedItemId: placedItemTileId,
+                        action: ActionName.UseHerbicide,
+                        success: false,
+                        userId,
+                        reasonCode: 0,
+                    }
+                    throw new GrpcNotFoundException("Tile not found")
                 }
-            } } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                .session(mongoSession)
 
-            const user = await this.connection.model<UserSchema>(UserSchema.name)
-                .findById(userId)
-                .session(mongoSession)
+                if (placedItemTile.user.toString() !== userId) {
+                    throw new GrpcFailedPreconditionException("Cannot use herbicide on other's tile")
+                }
 
-            if (!user) throw new GrpcNotFoundException("User not found")
+                if (!placedItemTile.seedGrowthInfo) {
+                    throw new GrpcFailedPreconditionException("Tile is not planted")
+                }
 
-            this.energyService.checkSufficient({
-                current: user.energy,
-                required: energyConsume
+                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
+                    throw new GrpcFailedPreconditionException("Tile is not weedy")
+                }
+
+                // Fetch system configuration (activity settings)
+                const { value: { useHerbicide: { energyConsume, experiencesGain } } } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
+                    .session(session)
+
+                // Fetch user data
+                const user = await this.connection.model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(session)
+
+                if (!user) throw new GrpcNotFoundException("User not found")
+
+                // Check if the user has enough energy
+                this.energyService.checkSufficient({
+                    current: user.energy,
+                    required: energyConsume
+                })
+
+                // Subtract energy and add experience
+                const energyChanges = this.energyService.substract({
+                    user,
+                    quantity: energyConsume,
+                })
+                const experienceChanges = this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
+
+                // Update the user data
+                await this.connection.model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: user.id },
+                        { ...energyChanges, ...experienceChanges }
+                    )
+                    .session(session)
+
+                // Update placed item tile state
+                placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+                await placedItemTile.save({ session })
+
+                // Prepare the action message for success
+                actionMessage = {
+                    placedItemId: placedItemTileId,
+                    action: ActionName.UseHerbicide,
+                    success: true,
+                    userId,
+                }
+
+                return {} // Successful result after all operations
             })
 
-            const energyChanges = this.energyService.substract({
-                user,
-                quantity: energyConsume,
-            })
-            const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
+            // Send Kafka messages for both actions
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                })
+            ])
 
-            await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                { _id: user.id },
-                { ...energyChanges, ...experienceChanges }
-            ).session(mongoSession)
-
-            placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
-            await placedItemTile.save({ session: mongoSession })
-
-            await mongoSession.commitTransaction()
-
-            
-            actionMessage = {
-                placedItemId: placedItemTileId,
-                action: ActionName.UseHerbicide,
-                success: true,
-                userId,
-            }
-            this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            this.clientKafka.emit(KafkaPattern.SyncPlacedItems, { userId })
-            return {}
+            return result
         } catch (error) {
-            if (actionMessage)
-            {
-                this.clientKafka.emit(KafkaPattern.EmitAction, actionMessage)
-            }  
+            // Handle error and send the action message even if failure occurs
             this.logger.error(`Transaction failed, reason: ${error.message}`)
-            await mongoSession.abortTransaction()
-            throw error
+
+            if (actionMessage) {
+                await this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                })
+            }
+
+            // Since withTransaction automatically handles rollback, no need to manually abort the transaction
+            throw error // Re-throwing the error after logging and handling the action message
         } finally {
+            // End the session after the transaction
             await mongoSession.endSession()
         }
     }

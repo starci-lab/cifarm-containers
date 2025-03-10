@@ -31,51 +31,51 @@ export class ClaimHoneycombDailyRewardService {
         userId
     }: ClaimHoneycombDailyRewardRequest): Promise<ClaimHoneycombDailyRewardResponse> {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
         try {
+            const result = await mongoSession.withTransaction(async () => {
             // check if spin last time is same as today
-            const now = this.dateUtcService.getDayjs()
+                const now = this.dateUtcService.getDayjs()
 
-            const user = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .findById(userId)
-                .session(mongoSession)
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(mongoSession)
 
-            if (
-                user.honeycombDailyRewardLastClaimTime &&
+                if (
+                    user.honeycombDailyRewardLastClaimTime &&
                 now.isSame(user.honeycombDailyRewardLastClaimTime, "day")
-            ) {
-                throw new GrpcFailedPreconditionException(
-                    "Honeycomb daily reward already claimed today"
-                )
-            }
+                ) {
+                    throw new GrpcFailedPreconditionException(
+                        "Honeycomb daily reward already claimed today"
+                    )
+                }
 
-            const {
-                value: { dailyRewardAmount, tokenResourceAddress }
-            } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<HoneycombInfo>>(createObjectId(SystemId.HoneycombInfo))
-            const { txResponse } = await this.honeycombService.createMintResourceTransaction({
-                amount: dailyRewardAmount,
-                resourceAddress: tokenResourceAddress,
-                network: user.network,
-                payerAddress: user.accountAddress,
-                toAddress: user.accountAddress
+                const {
+                    value: { dailyRewardAmount, tokenResourceAddress }
+                } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<HoneycombInfo>>(createObjectId(SystemId.HoneycombInfo))
+                const { txResponse } = await this.honeycombService.createMintResourceTransaction({
+                    amount: dailyRewardAmount,
+                    resourceAddress: tokenResourceAddress,
+                    network: user.network,
+                    payerAddress: user.accountAddress,
+                    toAddress: user.accountAddress
+                })
+
+                // update user honeycomb daily reward last claim time
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: userId },
+                        { $set: { honeycombDailyRewardLastClaimTime: now.toDate() } }
+                    )
+                    .session(mongoSession)
+                return txResponse
             })
-
-            // update user honeycomb daily reward last claim time
-            await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .updateOne(
-                    { _id: userId },
-                    { $set: { honeycombDailyRewardLastClaimTime: now.toDate() } }
-                )
-                .session(mongoSession)
-            await mongoSession.commitTransaction()
-            return txResponse
+            return result
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         } finally {
             await mongoSession.endSession()

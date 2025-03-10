@@ -57,7 +57,6 @@ export enum DailyRewardPossibilityKey {
 export enum SupplyId {
     BasicFertilizer = "basicFertilizer",
     AnimalFeed = "animalFeed",
-    AnimalPill = "animalPill",
 }
 
 // Tile Enum
@@ -74,6 +73,13 @@ export enum ToolId {
     Herbicide = "herbicide",
     Pesticide = "pesticide",
     Hammer = "hammer",
+    AnimalMedicine = "animalMedicine",
+}
+
+// Pet Enum
+export enum PetId {
+    Dog = "dog",
+    Cat = "cat",
 }
 
 // Product Enum
@@ -125,7 +131,6 @@ export enum InventoryTypeId {
     BellPepperSeed = "bellPepperSeed",
     BasicFertilizer = "basicFertilizer",
     AnimalFeed = "animalFeed",
-    AnimalPill = "animalPill",
     Egg = "egg",
     EggQuality = "eggQuality",
     Milk = "milk",
@@ -150,7 +155,8 @@ export enum InventoryTypeId {
     WateringCan = "wateringCan",
     Hammer = "hammer",
     Herbicide = "herbicide",
-    Pesticide = "pesticide"
+    Pesticide = "pesticide",
+    AnimalMedicine = "animalMedicine",
 }
 
 export enum PlacedItemTypeId {

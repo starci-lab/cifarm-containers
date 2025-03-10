@@ -35,6 +35,9 @@ export enum ActionName {
     HelpWater = "HelpWater",
     ThiefAnimalProduct = "ThiefAnimalProduct",
     ThiefCrop = "ThiefCrop",
+    BuyTile = "BuyTile",
+    BuyAnimal = "BuyAnimal",
+    ConstructBuilding = "ConstructBuilding",
 }
 
 export interface EmitActionHarvestCropData{

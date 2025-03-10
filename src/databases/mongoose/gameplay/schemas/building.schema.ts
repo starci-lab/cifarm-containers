@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { AnimalType } from "../enums"
+import { AnimalType, BuildingId } from "../enums"
 import { StaticAbstractSchema } from "./abstract"
 import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
 
@@ -9,7 +9,7 @@ import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
     timestamps: true,
     collection: "buildings"
 })
-export class BuildingSchema extends StaticAbstractSchema {
+export class BuildingSchema extends StaticAbstractSchema<BuildingId> {
   @Field(() => Boolean)
   @Prop({ type: Boolean })
       availableInShop: boolean

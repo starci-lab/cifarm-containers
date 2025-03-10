@@ -12,7 +12,6 @@ export class HarvestCropController {
 
     @GrpcMethod(getGrpcData(GrpcName.Gameplay).data.service, "HarvestCrop")
     public async harvestCrop(request: HarvestCropRequest) {
-        this.logger.debug("Harvest crop request called")
         return this.harvestCropService.harvestCrop(request)
     }
 }

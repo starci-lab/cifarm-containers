@@ -1,37 +1,24 @@
 import { DynamicModule, Module } from "@nestjs/common"
-import { ClientsModule, Transport } from "@nestjs/microservices"
-import { KAFKA } from "./kafka.constants"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./kafka.module-definition"
-import { KafkaGroupId } from "./kafka.types"
-import { KafkaOptionsFactory, KafkaOptionsModule } from "./options"
+import { createKafkaFactoryProvider } from "./kafka.providers"
+import { createKafkaProducerFactoryProvider } from "./producer.providers"
+import { NestExport, NestProvider } from "@src/common"
+import { KafkaConsumersService } from "./consumers.service"
 
 @Module({})
 export class KafkaModule extends ConfigurableModuleClass {
     public static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
-        const groupId = options.groupId ?? KafkaGroupId.Gameplay
-        const producerOnlyMode = options.producerOnlyMode ?? false
         const dynamicModule = super.register(options)
-        const kafkaDynamicModule = ClientsModule.registerAsync([
-            {
-                name: KAFKA,
-                imports: [KafkaOptionsModule.register()],
-                inject: [KafkaOptionsFactory],
-                useFactory: (kafkaOptionsFactory: KafkaOptionsFactory) => ({
-                    transport: Transport.KAFKA,
-                    options: {
-                        client: kafkaOptionsFactory.createKafkaConfig(),
-                        producerOnlyMode,
-                        consumer: {
-                            groupId,
-                        }
-                    }
-                })
-            }
-        ])
+        const providers: Array<NestProvider> = []
+        const exports: Array<NestExport> = []
+        const kafkaProvider = createKafkaFactoryProvider()
+        const producerProvider = createKafkaProducerFactoryProvider()
+        providers.push(kafkaProvider, producerProvider, KafkaConsumersService)
+        exports.push(kafkaProvider, producerProvider, KafkaConsumersService)
         return {
             ...dynamicModule,
-            imports: [kafkaDynamicModule],
-            exports: [kafkaDynamicModule]
+            providers: [...dynamicModule.providers, ...providers],
+            exports
         }
     }
 }

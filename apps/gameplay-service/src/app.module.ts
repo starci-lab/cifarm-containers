@@ -1,15 +1,7 @@
 import { Module } from "@nestjs/common"
-import { KafkaGroupId, KafkaModule } from "@src/brokers"
+import { KafkaModule } from "@src/brokers"
 import { CacheModule } from "@src/cache"
 import { EnvModule } from "@src/env"
-// import { UpgradeModule } from "./upgrade"
-// import { ClaimModule } from "./claim"
-// import { CommunityModule } from "./community"
-// import { FarmingModule } from "./farming"
-// import { PlacementModule } from "./placement"
-// import { ProfileModule } from "./profile"
-// import { ShopModule } from "./shop"
-// import { DeliveryModule } from "./delivery"
 import { AuthModule } from "./auth"
 import { GameplayModule } from "@src/gameplay"
 import { BlockchainModule } from "@src/blockchain"
@@ -38,8 +30,6 @@ import { PlacementModule } from "./placement"
         EnvModule,
         KafkaModule.register({
             isGlobal: true,
-            producerOnlyMode: true,
-            groupId: KafkaGroupId.Gameplay
         }),
         GameplayModule.register({
             isGlobal: true

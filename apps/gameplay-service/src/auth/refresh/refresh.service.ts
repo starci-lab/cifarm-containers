@@ -17,49 +17,58 @@ export class RefreshService {
         private readonly dateUtcService: DateUtcService
     ) {}
 
-    public async refresh({
-        refreshToken,
-    }: RefreshRequest): Promise<RefreshResponse> {
-        const mongoSession = await this.connection.startSession()     
-        mongoSession.startTransaction()
+    public async refresh({ refreshToken }: RefreshRequest): Promise<RefreshResponse> {
+        const mongoSession = await this.connection.startSession()
+
         try {
-            const session = await this.connection.model<SessionSchema>(SessionSchema.name).findOne({
-                refreshToken
-            }).session(mongoSession)
-            if (!session) throw new GrpcUnauthenticatedException("Session not found")
-            const { expiredAt } = session
-            //if current time is after the expired time, throw error that refresh token is expired
-            if (this.dateUtcService.getDayjs().isAfter(expiredAt))
-                throw new GrpcUnauthenticatedException("Refresh token is expired")
-            const {
-                accessToken,
-                refreshToken: { token: newRefreshToken, expiredAt: newExpiredAt }
-            } = await this.jwtService.generateAuthCredentials({
-                id: session.user.toString(),
+        // Using `withTransaction` to handle the transaction automatically
+            const result = await mongoSession.withTransaction(async () => {
+            // Fetch the session with the provided refresh token
+                const session = await this.connection
+                    .model<SessionSchema>(SessionSchema.name)
+                    .findOne({ refreshToken })
+                    .session(mongoSession)
+
+                if (!session) {
+                    throw new GrpcUnauthenticatedException("Session not found")
+                }
+
+                const { expiredAt } = session
+
+                // Check if the refresh token has expired
+                if (this.dateUtcService.getDayjs().isAfter(expiredAt)) {
+                    throw new GrpcUnauthenticatedException("Refresh token is expired")
+                }
+
+                // Generate new access and refresh tokens
+                const {
+                    accessToken,
+                    refreshToken: { token: newRefreshToken, expiredAt: newExpiredAt }
+                } = await this.jwtService.generateAuthCredentials({
+                    id: session.user.toString(),
+                })
+
+                // Create a new session with the new refresh token and expiration date
+                await this.connection.model<SessionSchema>(SessionSchema.name).create(
+                    [{
+                        user: session.user,
+                        refreshToken: newRefreshToken,
+                        expiredAt: newExpiredAt
+                    }],
+                    { session: mongoSession }
+                )
+
+                return {
+                    accessToken,
+                    refreshToken: newRefreshToken
+                }
             })
-
-            //create new session with new refresh token and expired time
-            await this.connection.model<SessionSchema>(SessionSchema.name).create(
-                [{
-                    user: session.user,
-                    refreshToken: newRefreshToken,
-                    expiredAt: newExpiredAt
-                }],
-                { session: mongoSession }
-            )
-
-            await mongoSession.commitTransaction()
-            
-            return {
-                accessToken,
-                refreshToken: newRefreshToken
-            }
+            return result // Return the result after the transaction
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         } finally {
             await mongoSession.endSession()
         }
-    } 
+    }
 }

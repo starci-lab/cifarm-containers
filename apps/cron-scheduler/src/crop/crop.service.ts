@@ -57,8 +57,7 @@ export class CropService {
         }
 
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
-
+        
         try {
             const utcNow = this.dateUtcService.getDayjs()
             // Create a query runner
@@ -81,7 +80,6 @@ export class CropService {
                     $lte: this.dateUtcService.getDayjs(utcNow).toDate()
                 }
             }).session(mongoSession)
-            console.log(count)
             //get the last scheduled time, get from db not cache
             // const cropGrowthLastSchedule = await queryRunner.manager.findOne(KeyValueStoreEntity, {
             //     where: {
@@ -134,10 +132,8 @@ export class CropService {
                     date: utcNow.toDate()
                 }
             }).session(mongoSession)
-            await mongoSession.commitTransaction()
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         }
         finally {

@@ -26,48 +26,56 @@ export class UpdateFollowXService {
         userId
     }: UpdateFollowXRequest): Promise<UpdateFollowXResponse> {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
-        try {
-            const {
-                value: { followXRewardQuantity }
-            } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                .session(mongoSession)
-            const user = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .findById(userId)
-                .session(mongoSession)
-                    
-            if (user.followXAwarded) {
-                return {}
-            }
 
-            const tokenBalanceChanges = this.tokenBalanceService.add({
-                user,
-                amount: followXRewardQuantity
+        try {
+            // Using `withTransaction` for automatic transaction handling
+            const result = await mongoSession.withTransaction(async () => {
+                // Get followX reward quantity from system configuration
+                const {
+                    value: { followXRewardQuantity }
+                } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                    .session(mongoSession)
+
+                // Get the user data
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(mongoSession)
+
+                // If the user already has followX awarded, return early
+                if (user.followXAwarded) {
+                    return {}
+                }
+
+                // Update the token balance for the user
+                const tokenBalanceChanges = this.tokenBalanceService.add({
+                    user,
+                    amount: followXRewardQuantity
+                })
+
+                // Update user with the new token balance and mark followXAwarded as true
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: userId },
+                        {
+                            $set: {
+                                ...tokenBalanceChanges,
+                                followXAwarded: true
+                            },
+                        }
+                    )
+                    .session(mongoSession)
             })
 
-            await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .updateOne(
-                    { _id: userId },
-                    {
-                        $set: {
-                            ...tokenBalanceChanges,
-                            followXAwarded: true
-                        },
-                    }
-                )
-                .session(mongoSession)
-            await mongoSession.commitTransaction()
-            return {}
+            return result
         } catch (error) {
             this.logger.error(error)
-            await mongoSession.abortTransaction()
             throw error
         } finally {
-            await mongoSession.endSession()
+            await mongoSession.endSession() // End the session after the transaction
         }
     }
 }

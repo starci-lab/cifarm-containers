@@ -6,7 +6,6 @@ import {
     MicroserviceHealthIndicator,
     MongooseHealthIndicator,
 } from "@nestjs/terminus"
-import { KafkaOptionsFactory } from "@src/brokers"
 import {
     envConfig,
     redisClusterEnabled,
@@ -22,6 +21,7 @@ import { mongoDbWithMongooseMap, mongoDbMap, redisMap } from "./health-check.uti
 import { MongoDbHealthIndicator } from "./mongodb"
 import { MODULE_OPTIONS_TOKEN } from "./health-check.module-definition"
 import { Connection } from "mongoose"
+import { kafkaOptions } from "@src/brokers"
 
 @Injectable()
 export class HealthCheckCoreService implements OnModuleInit {
@@ -37,7 +37,6 @@ export class HealthCheckCoreService implements OnModuleInit {
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN) private readonly options: HealthCheckOptions,
-        private readonly kafkaOptionsFactory: KafkaOptionsFactory,
         private readonly microservice: MicroserviceHealthIndicator,
         private readonly db: MongooseHealthIndicator,
         private readonly moduleRef: ModuleRef
@@ -127,10 +126,10 @@ export class HealthCheckCoreService implements OnModuleInit {
 
     // Kafka ping check method
     public async pingCheckKafka(): Promise<HealthIndicatorResult> {
-        return this.microservice.pingCheck<KafkaOptions>(HealthCheckDependency.Kafka, {
+        return this.microservice.pingCheck<KafkaOptions>("kafka", {
             transport: Transport.KAFKA,
             options: {
-                client: this.kafkaOptionsFactory.createKafkaConfig()
+                client: kafkaOptions()
             },
             timeout: HEALTH_CHECK_TIMEOUT
         })

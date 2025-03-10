@@ -33,7 +33,7 @@ export class EnergyGateway implements OnGatewayInit {
         )
     }
 
-    public async syncEnergy({ energy, userId }: SyncEnergyPayload) {
+    public syncEnergy({ energy, userId }: SyncEnergyPayload) {
         // emit energy to the room
         this.namespace
             .to(
@@ -42,6 +42,6 @@ export class EnergyGateway implements OnGatewayInit {
                     type: RoomType.Player
                 })
             )
-            .emit(ENERGY_SYNCED_EVENT, { energy })
+            .emit(ENERGY_SYNCED_EVENT, energy)
     }
 }

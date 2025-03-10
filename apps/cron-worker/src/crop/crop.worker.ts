@@ -14,6 +14,7 @@ import {
     SystemId,
     SystemSchema,
     TILE,
+    TILE_INFO,
     TileSchema
 } from "@src/databases"
 import { Job } from "bullmq"
@@ -60,6 +61,7 @@ export class CropWorker extends WorkerHost {
                     $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                 }
             })
+            .populate(TILE_INFO)
             .skip(skip)
             .limit(take) 
             .sort({ createdAt: "desc" }) 
@@ -69,11 +71,9 @@ export class CropWorker extends WorkerHost {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
         const promises: Array<Promise<void>> = []
-        // console.log(`Processing ${placedItems.length} placed items`)
         for (const placedItem of placedItems) {
             const promise = async () => {
                 const session = await this.connection.startSession()
-                session.startTransaction()
                 try {
                     const placedItemType = await this.connection
                         .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
@@ -87,6 +87,12 @@ export class CropWorker extends WorkerHost {
                     const tile = placedItemType.tile as TileSchema
                     // Add time to the seed growth
                     const updatePlacedItem = (): DeepPartial<PlacedItemSchema> => {
+                        // return if the current stage is already max stage
+                        if (
+                            placedItem.seedGrowthInfo.currentStage >= crop.growthStages - 1
+                        ) {
+                            return
+                        }
                         // add time to the seed growth
                         placedItem.seedGrowthInfo.currentStageTimeElapsed += time
                         if (
@@ -152,10 +158,8 @@ export class CropWorker extends WorkerHost {
                     // update the placed item
                     updatePlacedItem()
                     await placedItem.save({ session })
-                    await session.commitTransaction()
                 } catch (error) {
                     this.logger.error(error)
-                    await session.abortTransaction()
                 } finally {
                     await session.endSession()
                 }
