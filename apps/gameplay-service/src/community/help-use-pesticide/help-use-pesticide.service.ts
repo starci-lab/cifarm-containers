@@ -143,17 +143,17 @@ export class HelpUsePesticideService {
             })
 
             
-                // Send Kafka messages in parallel
-                Promise.all([
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.EmitAction,
-                        messages: [{ value: JSON.stringify(actionMessage) }]
-                    }),
-                    this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncPlacedItems,
-                        messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
-                    })
-                ])
+            // Send Kafka messages in parallel
+            Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                })
+            ])
 
             return result
         } catch (error) {
