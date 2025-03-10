@@ -61,7 +61,7 @@ export class EnergyWorker extends WorkerHost {
                         // Add time to the user's energy
                         user.energyRegenTime += time
                         if (user.energyRegenTime >= energyRegenTime) {
-                            console.log("Energy regen time", user.energyRegenTime)
+                            //console.log("Energy regen time", user.energyRegenTime)
                             user.energy += 1
                             // Reset the timer
                             user.energyRegenTime = 0
