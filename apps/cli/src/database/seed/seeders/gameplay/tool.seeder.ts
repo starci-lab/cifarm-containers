@@ -26,28 +26,40 @@ export class ToolSeeder implements Seeder {
             {
                 _id: createObjectId(ToolId.Crate),
                 displayId: ToolId.Crate,
+                givenAsDefault: true,
                 sort: 0,
             },
             {
                 _id: createObjectId(ToolId.WateringCan),
                 displayId: ToolId.WateringCan,
+                givenAsDefault: true,
                 sort: 1,
             },
             {
                 _id: createObjectId(ToolId.Pesticide),
                 displayId: ToolId.Pesticide,
+                givenAsDefault: true,
                 sort: 2,
             },
             {
                 _id: createObjectId(ToolId.Herbicide),
                 displayId: ToolId.Herbicide,
+                givenAsDefault: true,
                 sort: 3,
             },
             {
                 _id: createObjectId(ToolId.Hammer),
                 displayId: ToolId.Hammer,
-                sort: 4,
-            }
+                availableInShop: true,
+                price: 200,
+            },
+            {
+                _id: createObjectId(ToolId.AnimalMedicine),
+                displayId: ToolId.AnimalMedicine,
+                availableInShop: true,
+                price: 200,
+                unlockLevel: 5,
+            },
         ]
 
         await this.connection.model<ToolSchema>(ToolSchema.name).insertMany(data)

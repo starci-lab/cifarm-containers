@@ -50,6 +50,8 @@ import {
     ToolSchemaClass,
     UserFollowRelationSchemaClass,
     UserFollowRelationSchema,
+    PetSchema,
+    PetSchemaClass,
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -124,6 +126,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: UserFollowRelationSchema.name,
                             useFactory: () => UserFollowRelationSchemaClass
+                        },
+                        {
+                            name: PetSchema.name,
+                            useFactory: () => PetSchemaClass
                         },
                         {
                             name: SpinSlotSchema.name,

@@ -1,11 +1,12 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { StaticAbstractSchema } from "./abstract"
+import { KeyValueStoreId } from "../enums"
 
 @Schema({
     timestamps: true,
     collection: "key-value-stores",
 })
-export class KeyValueStoreSchema extends StaticAbstractSchema {
+export class KeyValueStoreSchema extends StaticAbstractSchema<KeyValueStoreId> {
     @Prop({ type: Object, required: true })
         value: object
 }

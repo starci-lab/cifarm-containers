@@ -296,16 +296,6 @@ export class InventoryTypeSeeder implements Seeder {
                 type: InventoryType.Supply
             },
             {
-                _id: createObjectId(InventoryTypeId.AnimalPill),
-                displayId: InventoryTypeId.AnimalPill,
-                asTool: true,
-                deliverable: false,
-                maxStack: 64,
-                placeable: false,
-                supply: createObjectId(SupplyId.AnimalPill),
-                type: InventoryType.Supply
-            },
-            {
                 _id: createObjectId(InventoryTypeId.Hand),
                 displayId: InventoryTypeId.Hand,
                 stackable: false,
@@ -374,7 +364,17 @@ export class InventoryTypeSeeder implements Seeder {
                 placeable: false,
                 tool: createObjectId(ToolId.Hammer),
                 type: InventoryType.Tool
-            }
+            },
+            {
+                _id: createObjectId(InventoryTypeId.AnimalMedicine),
+                displayId: InventoryTypeId.AnimalMedicine,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                tool: createObjectId(ToolId.AnimalMedicine),
+                type: InventoryType.Tool
+            },
         ]
 
         await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).insertMany(data)

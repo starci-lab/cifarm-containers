@@ -23,9 +23,9 @@ export abstract class AbstractSchema extends Document {
 @ObjectType({
     isAbstract: true
 })
-export abstract class StaticAbstractSchema extends AbstractSchema {
+export abstract class StaticAbstractSchema<T> extends AbstractSchema {
     @Field(() => ID)
     @Prop({ type: String, required: true, unique: true })
-        displayId: string
+        displayId: T
 }
 

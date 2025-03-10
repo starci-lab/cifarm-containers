@@ -1,14 +1,14 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { StaticAbstractSchema } from "./abstract"
-import { SupplyType } from "../enums"
+import { SupplyId, SupplyType } from "../enums"
 
 @ObjectType()
 @Schema({
     timestamps: true,
     collection: "supplies",
 })
-export class SupplySchema extends StaticAbstractSchema {
+export class SupplySchema extends StaticAbstractSchema<SupplyId> {
     @Field(() => String)
     @Prop({ type: String, required: true, enum: SupplyType })
         type: SupplyType
@@ -24,6 +24,10 @@ export class SupplySchema extends StaticAbstractSchema {
     @Field(() => Int, { nullable: true })
     @Prop({ type: Number, required: false })
         fertilizerEffectTimeReduce?: number
+
+    @Field(() => Int, { nullable: true })
+    @Prop({ type: Number, required: false })
+        unlockLevel?: number
 }
 
 export const SupplySchemaClass = SchemaFactory.createForClass(SupplySchema)

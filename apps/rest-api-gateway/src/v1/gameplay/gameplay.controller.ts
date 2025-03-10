@@ -327,7 +327,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: HelpWaterRequest
     ): Promise<HelpWaterResponse> {
-        this.logger.debug(`Processing user ${user?.id} help water of user ${request?.neighborUserId}`)
         return await lastValueFrom(
             this.gameplayService.helpWater({
                 ...request,
