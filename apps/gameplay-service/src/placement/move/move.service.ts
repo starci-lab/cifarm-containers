@@ -46,12 +46,12 @@ export class MoveService {
                     )
                     .session(mongoSession)
 
-                    actionMessage = {
-                        placedItemId: placedItemId,
-                        action: ActionName.Move,
-                        success: true,
-                        userId
-                    }
+                actionMessage = {
+                    placedItemId: placedItemId,
+                    action: ActionName.Move,
+                    success: true,
+                    userId
+                }
             })
 
             await Promise.all([
