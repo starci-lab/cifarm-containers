@@ -31,7 +31,9 @@ export class TileSeeder implements Seeder {
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
                 availableInShop: true,
-                placedItemTypeKey: PlacedItemTypeId.BasicTile
+                placedItemTypeKey: PlacedItemTypeId.BasicTile,
+                sellable: true,
+                sellPrice: 500,
             }
         ]
 

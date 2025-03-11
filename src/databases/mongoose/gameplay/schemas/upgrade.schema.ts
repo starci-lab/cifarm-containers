@@ -19,6 +19,11 @@ export class UpgradeSchema extends AbstractSchema {
     @Field(() => Int)
     @Prop({ type: Number, required: true })
         upgradeLevel: number
+
+    @Field(() => Int, { nullable: true })
+    @Prop({ type: Number, required: false, default: 0 })
+        sellPrice?: number
+
 }
 
 // Generate Mongoose Schema

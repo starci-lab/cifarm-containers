@@ -1,14 +1,14 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
+import { CropId } from "../enums"
 import { StaticAbstractSchema } from "./abstract"
-import { TileId } from "../enums"
 
 @ObjectType()
 @Schema({
     timestamps: true,
     collection: "crops",
 })
-export class CropSchema extends StaticAbstractSchema<TileId> {
+export class CropSchema extends StaticAbstractSchema<CropId> {
     @Field(() => Int)
     @Prop({ type: Number, required: true })
         growthStageDuration: number

@@ -28,8 +28,7 @@ export class BuildingSchema extends StaticAbstractSchema<BuildingId> {
 
   @Field(() => Int)
   @Prop({ type: Number, required: true })
-      unlockLevel: number
-    
+      unlockLevel: number    
   @Field(() => Boolean)
   @Prop({ type: Boolean, required: true })
       upgradable: boolean
@@ -41,6 +40,10 @@ export class BuildingSchema extends StaticAbstractSchema<BuildingId> {
   @Field(() => [UpgradeSchema])
   @Prop({ type: [UpgradeSchemaClass] })
       upgrades: Array<UpgradeSchema>
+
+    @Field(() => Boolean)
+    @Prop({ type: Boolean, default: false })
+        sellable: boolean
 }
 
 // Generate the Mongoose schema class

@@ -42,21 +42,24 @@ export class BuildingSeeder implements Seeder {
                 unlockLevel: 5,
                 upgradable: false,
                 maxOwnership: 5,
+                sellable: true,
                 upgrades: [
                     {
-                        upgradePrice: 500,
                         capacity: 3,
                         upgradeLevel: 1,
+                        sellPrice: 1000
                     },
                     {
                         upgradePrice: 1000,
                         capacity: 5,
-                        upgradeLevel: 2
+                        upgradeLevel: 2,
+                        sellPrice: 1500
                     },
                     {
                         upgradePrice: 2000,
                         capacity: 10,
-                        upgradeLevel: 3
+                        upgradeLevel: 3,
+                        sellPrice: 2000
                     }
                 ]
             },
@@ -70,21 +73,24 @@ export class BuildingSeeder implements Seeder {
                 unlockLevel: 10,
                 upgradable: false,
                 maxOwnership: 5,
+                sellable: true,
                 upgrades: [
                     {
-                        upgradePrice: 500,
                         capacity: 3,
-                        upgradeLevel: 1
+                        upgradeLevel: 1,
+                        sellPrice: 1000
                     },
                     {
                         upgradePrice: 1000,
                         capacity: 5,
-                        upgradeLevel: 2
+                        upgradeLevel: 2,
+                        sellPrice: 1500
                     },
                     {
                         upgradePrice: 2000,
                         capacity: 10,
-                        upgradeLevel: 3
+                        upgradeLevel: 3,
+                        sellPrice: 2000
                     }
                 ],
             },
