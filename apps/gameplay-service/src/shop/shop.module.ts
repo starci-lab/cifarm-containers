@@ -4,6 +4,7 @@ import { BuySuppliesModule } from "./buy-supplies"
 import { ConstructBuildingModule } from "./construct-building"
 import { BuyAnimalModule } from "./buy-animal"
 import { BuyTileModule } from "./buy-tile"
+import { BuyToolModule } from "./buy-tool"
 
 @Module({
     imports: [
@@ -11,7 +12,8 @@ import { BuyTileModule } from "./buy-tile"
         BuySeedsModule,
         BuySuppliesModule,
         BuyAnimalModule,
-        BuyTileModule
+        BuyTileModule,
+        BuyToolModule
     ]
 })
 export class ShopModule {}

@@ -23,10 +23,11 @@ service GameplayService {
 
     // Shop methods
     rpc BuySeeds(BuySeedsRequest) returns (google.protobuf.Empty);
-    rpc BuyAnimal(BuyAnimalRequest) returns (BuyAnimalResponse);
+    rpc BuyAnimal(BuyAnimalRequest) returns (google.protobuf.Empty);
     rpc BuySupplies(BuySuppliesRequest) returns (google.protobuf.Empty);
-    rpc ConstructBuilding(ConstructBuildingRequest) returns (ConstructBuildingResponse);
-    rpc BuyTile (BuyTileRequest) returns (BuyTileResponse);
+    rpc ConstructBuilding(ConstructBuildingRequest) returns (google.protobuf.Empty);
+    rpc BuyTile (BuyTileRequest) returns (google.protobuf.Empty);
+    rpc BuyTool(BuyToolRequest) returns (google.protobuf.Empty);
 
     // Farming methods
     rpc CollectAnimalProduct(CollectAnimalProductRequest) returns (google.protobuf.Empty);

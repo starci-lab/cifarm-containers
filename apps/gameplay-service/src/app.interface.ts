@@ -68,6 +68,8 @@ import {
     BuySuppliesResponse,
     BuyTileRequest,
     BuyTileResponse,
+    BuyToolRequest,
+    BuyToolResponse,
     ConstructBuildingRequest,
     ConstructBuildingResponse
 } from "./shop"
@@ -142,6 +144,7 @@ export interface IGameplayService {
     buySupplies(request: BuySuppliesRequest): Observable<BuySuppliesResponse>
     buyTile(request: BuyTileRequest): Observable<BuyTileResponse>
     constructBuilding(request: ConstructBuildingRequest): Observable<ConstructBuildingResponse>
+    buyTool(request: BuyToolRequest): Observable<BuyToolResponse>
 
     // Upgrade
     upgradeBuilding(request: UpgradeBuildingRequest): Observable<UpgradeBuildingResponse>

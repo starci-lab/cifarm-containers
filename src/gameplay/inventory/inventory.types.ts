@@ -58,6 +58,17 @@ export interface GetRemoveParamsParams {
     kind?: InventoryKind
 }
 
+export interface GetUnoccupiedIndexesParams {
+    userId: string
+    connection: Connection,
+    session: ClientSession,
+    inventoryType: InventoryTypeSchema
+    kind?: InventoryKind
+    storageCapacity: number
+}
+
+export type GetFirstUnoccupiedIndexParams = GetUnoccupiedIndexesParams
+
 export interface GetRemoveParamsResult {
     inventories: Array<InventorySchema>
 }

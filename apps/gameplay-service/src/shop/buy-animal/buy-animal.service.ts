@@ -33,15 +33,14 @@ export class BuyAnimalService {
         userId
     }: BuyAnimalRequest): Promise<BuyAnimalResponse> {
         const mongoSession = await this.connection.startSession()
-        mongoSession.startTransaction()
 
         let actionMessage: ActionEmittedMessage | undefined
         try {
-            const result = await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (mongoSession) => {
                 const animal = await this.connection
                     .model<AnimalSchema>(AnimalSchema.name)
                     .findById(createObjectId(animalId))
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!animal) throw new GrpcNotFoundException("Animal not found")
                 if (!animal.availableInShop)
@@ -51,7 +50,7 @@ export class BuyAnimalService {
                 const building = await this.connection
                     .model<BuildingSchema>(BuildingSchema.name)
                     .findOne({ type: animal.type })
-                    .session(session)
+                    .session(mongoSession)
 
                 // Get placed item types
                 const placedItemBuildingType = await this.connection
@@ -60,7 +59,7 @@ export class BuyAnimalService {
                         type: PlacedItemType.Building,
                         building: building.id
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 const placedItemAnimalType = await this.connection
                     .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
@@ -68,22 +67,30 @@ export class BuyAnimalService {
                         type: PlacedItemType.Animal,
                         animal: animal.id
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 // Fetch user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
-                if (!user) throw new GrpcNotFoundException("User not found")
+                
+                // Deduct gold and update the user's gold balance
+                const goldsChanged = this.goldBalanceService.subtract({
+                    user: user,
+                    amount: animal.price
+                })
 
-                // Check if the user has enough gold
-                const totalCost = animal.price
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
-                    required: totalCost
+                    required: animal.price
                 })
+
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne({ _id: user.id }, { ...goldsChanged })
+                    .session(mongoSession)
 
                 // Get current animal count for the user
                 const animalCount = await this.connection
@@ -92,7 +99,7 @@ export class BuyAnimalService {
                         user: userId,
                         placedItemType: placedItemAnimalType
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 // Get building placement for capacity calculation
                 let maxCapacity = 0
@@ -102,7 +109,7 @@ export class BuyAnimalService {
                         user: userId,
                         placedItemType: placedItemBuildingType
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 // Calculate max capacity based on upgrades
                 for (const placedItemBuilding of placedItemsBuilding) {
@@ -115,17 +122,6 @@ export class BuyAnimalService {
                     throw new GrpcFailedPreconditionException("Max capacity reached")
                 }
 
-                // Deduct gold and update the user's gold balance
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: totalCost
-                })
-
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged })
-                    .session(session)
-
                 // Fetch the placed item type for the animal
                 const placedItemTypeAnimal = await this.connection
                     .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
@@ -133,7 +129,7 @@ export class BuyAnimalService {
                         type: PlacedItemType.Animal,
                         animal: createObjectId(animalId)
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 // Place the animal in the user's inventory (at the specified position)
                 const [placedItemAnimalRaw] = await this.connection
@@ -150,7 +146,7 @@ export class BuyAnimalService {
                                 }
                             }
                         ],
-                        { session }
+                        { session: mongoSession }
                     )
 
                 const placedItemAnimalId = placedItemAnimalRaw._id.toString()
