@@ -2,7 +2,7 @@ import { AnimalJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { DeepPartial, getDifferenceAndValues } from "@src/common"
+import { createObjectId, DeepPartial } from "@src/common"
 import {
     ANIMAL,
     AnimalCurrentState,
@@ -19,7 +19,6 @@ import {
 import { DateUtcService } from "@src/date"
 import { ProductService } from "@src/gameplay"
 import { Job } from "bullmq"
-import { isEmpty } from "lodash"
 import { Connection } from "mongoose"
 
 @Processor(bullData[BullQueueName.Animal].name)
@@ -36,6 +35,7 @@ export class AnimalWorker extends WorkerHost {
     }
 
     public override async process(job: Job<AnimalJobData>): Promise<void> {
+        this.logger.verbose(`Processing job: ${job.id}`)
         const { time, skip, take, utcTime } = job.data
         const placedItemTypes = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find({
             type: PlacedItemType.Animal
@@ -52,10 +52,9 @@ export class AnimalWorker extends WorkerHost {
                     $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                 }
             }).skip(skip).limit(take).sort({ createdAt: 1 })
-        
         const { value: { sickChance } } = await this.connection.model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<AnimalRandomness>>(
-                SystemId.AnimalRandomness
+                createObjectId(SystemId.AnimalRandomness)
             )
             
         const promises: Array<Promise<void>> = []
@@ -63,23 +62,20 @@ export class AnimalWorker extends WorkerHost {
             const promise = async () => {
                 const session = await this.connection.startSession()
                 try {
-                    const placedItemChanges = () => {
-                        const placedItemBeforeChanges = { ...placedItem }
+                    const updatePlacedItem = () => {
+                        const placedItemType = placedItemTypes.find(
+                            placedItemType => placedItemType.id === placedItem.placedItemType.toString()
+                        )
+                        const animal = placedItemType.animal as AnimalSchema
                         // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
-                        const adultAnimalPlacedItemChanges = (): DeepPartial<PlacedItemSchema> => {
+                        const updateAdultAnimalPlacedItem = () => {
                             // If animal is adult, add time to the animal yield
                             placedItem.animalInfo.currentYieldTime += time
-                            const placedItemType = placedItemTypes.find(
-                                placedItemType => placedItemType.id === placedItem.placedItemType
-                            )
-                            const animal = placedItemType.animal as AnimalSchema
+                            
                             // if animal grow to half of the yield time, it may get sick and immunized
                             if (
-                                !placedItemBeforeChanges.animalInfo.immunized &&
-                                placedItemBeforeChanges.animalInfo.currentYieldTime >=
-                                    Math.floor(
-                                        animal.yieldTime / 2
-                                    )
+                                placedItem.animalInfo.currentYieldTime >= Math.floor(animal.yieldTime / 2)
+                                && !placedItem.animalInfo.immunized
                             ) {
                                 if (Math.random() < sickChance) {
                                     placedItem.animalInfo.currentState = AnimalCurrentState.Sick
@@ -107,19 +103,13 @@ export class AnimalWorker extends WorkerHost {
                                 }
                                 placedItem.animalInfo.currentState = AnimalCurrentState.Yield
                             }
-                            return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
                         }
 
                         // growthAnimalInfoChanges is a function that returns the changes in animalInfo if animal is not adult
-                        const growthAnimalPlacedItemChanges = (): DeepPartial<PlacedItemSchema> => {
+                        const updateBabyAnimalPlacedItem = (): DeepPartial<PlacedItemSchema> => {
                             // Add time to the animal growth and hunger
                             placedItem.animalInfo.currentGrowthTime += time
                             placedItem.animalInfo.currentHungryTime += time
-
-                            const placedItemType = placedItemTypes.find(
-                                placedItemType => placedItemType.id === placedItem.placedItemType
-                            )
-                            const animal = placedItemType.animal as AnimalSchema
 
                             // check if animal is enough to be adult
                             if (
@@ -128,7 +118,7 @@ export class AnimalWorker extends WorkerHost {
                             ) {
                                 placedItem.animalInfo.isAdult = true
                                 placedItem.animalInfo.currentState = AnimalCurrentState.Hungry
-                                return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
+                                return
                             }
 
                             // check if animal is hungry
@@ -138,7 +128,7 @@ export class AnimalWorker extends WorkerHost {
                             ) {
                                 placedItem.animalInfo.currentHungryTime = 0
                                 placedItem.animalInfo.currentState = AnimalCurrentState.Hungry
-                                return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
+                                return
                             }
 
                             const chance = this.productService.computeAnimalQualityChance({
@@ -151,19 +141,17 @@ export class AnimalWorker extends WorkerHost {
                                 placedItem.animalInfo.isQuality = true
                             }
 
-                            return getDifferenceAndValues(placedItemBeforeChanges, placedItem)
+                            return
                         }
 
                         // If animal is adult, call adultAnimalInfoChanges, else call growthAnimalInfoChanges
                         if (placedItem.animalInfo.isAdult) {
-                            return adultAnimalPlacedItemChanges()
+                            return updateAdultAnimalPlacedItem()
                         } 
-                        return growthAnimalPlacedItemChanges() 
+                        return updateBabyAnimalPlacedItem() 
                     }
-                    const changes = placedItemChanges()
-                    if (isEmpty(changes)) {
-                        return
-                    }
+                    updatePlacedItem()
+
                     await placedItem.save({ session })
                 } catch (error) {
                     this.logger.error(error)

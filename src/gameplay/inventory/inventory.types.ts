@@ -67,8 +67,6 @@ export interface GetUnoccupiedIndexesParams {
     storageCapacity: number
 }
 
-export type GetFirstUnoccupiedIndexParams = GetUnoccupiedIndexesParams
-
 export interface GetRemoveParamsResult {
     inventories: Array<InventorySchema>
 }
