@@ -93,13 +93,14 @@ export class BuyToolService {
                 }
 
                 // Get the first unoccupied index
-                const firstUnoccupiedIndex = await this.inventoryService.getFirstUnoccupiedIndex({
+                const unoccupiedIndexes = await this.inventoryService.getUnoccupiedIndexes({
                     inventoryType,
                     userId,
                     connection: this.connection,
                     session: mongoSesion,
                     storageCapacity
                 })
+                const firstUnoccupiedIndex = unoccupiedIndexes[0]
 
                 // Create a new inventory
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(

@@ -20,7 +20,7 @@ import {
 import { Job } from "bullmq"
 import { DateUtcService } from "@src/date"
 import { ProductService } from "@src/gameplay"
-import { createObjectId, DeepPartial } from "@src/common"
+import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
 
 @Processor(bullData[BullQueueName.Crop].name)
@@ -86,7 +86,7 @@ export class CropWorker extends WorkerHost {
                         .session(session)
                     const tile = placedItemType.tile as TileSchema
                     // Add time to the seed growth
-                    const updatePlacedItem = (): DeepPartial<PlacedItemSchema> => {
+                    const updatePlacedItem = () => {
                         // return if the current stage is already max stage
                         if (
                             placedItem.seedGrowthInfo.currentStage >= crop.growthStages - 1
