@@ -12,10 +12,6 @@ export class PetSchema extends StaticAbstractSchema<PetId> {
     @Field(() => Int, { nullable: true })
     @Prop({ type: Number, required: false })
         price?: number
-        
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        sellable: boolean
     @Field(() => Int, { nullable: true })
     @Prop({ type: Number, required: false, default: 0 })
         sellPrice?: number

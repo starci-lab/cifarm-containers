@@ -23,7 +23,6 @@ export class PetSeeder implements Seeder {
                 availableInShop: true,
                 price: 1000,
                 unlockLevel: 20,
-                sellable: true,
                 sellPrice: 500,
             },
             {
@@ -32,7 +31,6 @@ export class PetSeeder implements Seeder {
                 displayId: PetId.Cat,
                 price: 1000,
                 unlockLevel: 20,
-                sellable: true,
                 sellPrice: 500,
             },
         ]

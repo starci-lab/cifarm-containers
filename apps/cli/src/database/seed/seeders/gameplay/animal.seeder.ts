@@ -40,7 +40,6 @@ export class AnimalSeeder implements Seeder {
                 price: 1000,
                 type: AnimalType.Poultry,
                 unlockLevel: 5,
-                sellable: true,
                 sellPrice: 500
             },
             {
@@ -61,7 +60,6 @@ export class AnimalSeeder implements Seeder {
                 price: 2500,
                 type: AnimalType.Livestock,
                 unlockLevel: 10,
-                sellable: true,
                 sellPrice: 1250
             }
         ]
