@@ -20,6 +20,7 @@ import { ClaimModule } from "./claim"
 import { HoneycombModule } from "./honeycomb"
 import { HoneycombModule as CoreHoneycombModule } from "@src/honeycomb"
 import { UpgradeModule } from "./upgrade"
+import { PlacementModule } from "./placement"
 @Module({
     imports: [
         MongooseModule.forRoot(),
@@ -55,8 +56,8 @@ import { UpgradeModule } from "./upgrade"
         CommunityModule,
         DeliveryModule,
         HoneycombModule,
-        UpgradeModule
-        // PlacementModule,
+        UpgradeModule,
+        PlacementModule,
         // ProfileModule,
     ],
     providers: [
