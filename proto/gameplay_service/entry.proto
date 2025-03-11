@@ -63,8 +63,7 @@ service GameplayService {
 
     // Placement methods
     rpc Move(MoveRequest) returns (google.protobuf.Empty);
-    rpc PlaceTile(PlaceTileRequest) returns (PlaceTileResponse);
-    rpc RecoverTile(RecoverTileRequest) returns (RecoverTileResponse);
+    rpc Sell(SellRequest) returns (SellResponse);
 
     // Upgrade methods
     rpc UpgradeBuilding(UpgradeBuildingRequest) returns (google.protobuf.Empty);

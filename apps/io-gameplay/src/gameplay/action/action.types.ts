@@ -39,6 +39,7 @@ export enum ActionName {
     BuyAnimal = "BuyAnimal",
     ConstructBuilding = "ConstructBuilding",
     Move = "Move",
+    Sell = "Sell",
 }
 
 export interface EmitActionHarvestCropData{

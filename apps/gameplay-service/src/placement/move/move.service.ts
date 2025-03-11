@@ -59,10 +59,10 @@ export class MoveService {
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 }),
-                // this.kafkaProducer.send({
-                //     topic: KafkaTopic.SyncPlacedItems,
-                //     messages: [{ value: JSON.stringify({ userId }) }]
-                // })
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                })
             ])
 
             return result

@@ -5,7 +5,6 @@ package gameplay_service;
 import  "../../entities/entry.proto";
 
 import "./move.proto";
-import "./place_tile.proto";
-import "./recover_tile.proto";
+import "./sell.proto";
 
 

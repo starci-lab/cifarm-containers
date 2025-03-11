@@ -40,24 +40,24 @@ import {
     RetainProductResponse
 } from "./delivery"
 import {
-    HarvestCropRequest,
-    HarvestCropResponse,
-    PlantSeedRequest,
-    PlantSeedResponse,
-    UseHerbicideRequest,
-    UseHerbicideResponse,
-    UsePesticideRequest,
-    UsePesticideResponse,
-    WaterRequest,
-    WaterResponse,
     CollectAnimalProductRequest,
     CollectAnimalProductResponse,
     CureAnimalRequest,
     CureAnimalResponse,
     FeedAnimalRequest,
     FeedAnimalResponse,
+    HarvestCropRequest,
+    HarvestCropResponse,
+    PlantSeedRequest,
+    PlantSeedResponse,
     UseFertilizerRequest,
-    UseFertilizerResponse
+    UseFertilizerResponse,
+    UseHerbicideRequest,
+    UseHerbicideResponse,
+    UsePesticideRequest,
+    UsePesticideResponse,
+    WaterRequest,
+    WaterResponse
 } from "./farming"
 import {
     BuyAnimalRequest,
@@ -80,11 +80,11 @@ import {
     SpinRequest,
     SpinResponse
 } from "./claim"
-import { MoveRequest, MoveResponse } from "./placement"
-import { UpdateTutorialRequest, UpdateTutorialResponse, MoveInventoryRequest, MoveInventoryResponse, UpdateReferralRequest, UpdateReferralResponse, UpdateFollowXRequest, UpdateFollowXResponse } from "./player"
-import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 import { ClaimHoneycombDailyRewardRequest, ClaimHoneycombDailyRewardResponse } from "./honeycomb"
-import { MintOffchainTokensRequest, MintOffchainTokensResponse } from "./honeycomb/mint-offchain-tokens"
+import { MintOffchainTokensRequest, MintOffchainTokensResponse } from "./honeycomb"
+import { MoveRequest, MoveResponse, SellRequest, SellResponse } from "./placement"
+import { MoveInventoryRequest, MoveInventoryResponse, UpdateFollowXRequest, UpdateFollowXResponse, UpdateReferralRequest, UpdateReferralResponse, UpdateTutorialRequest, UpdateTutorialResponse } from "./player"
+import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 
 export interface IGameplayService {
     // Auth
@@ -131,6 +131,7 @@ export interface IGameplayService {
 
     // Placement
     move(request: MoveRequest): Observable<MoveResponse>
+    sell(request: SellRequest): Observable<SellResponse>
     
     // Profile
     updateTutorial(request: UpdateTutorialRequest): Observable<UpdateTutorialResponse>

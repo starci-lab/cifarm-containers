@@ -88,7 +88,9 @@ import {
     UpdateFollowXRequest,
     UpdateFollowXResponse,
     MintOffchainTokensRequest, 
-    MintOffchainTokensResponse 
+    MintOffchainTokensResponse, 
+    SellResponse,
+    SellRequest
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
@@ -768,6 +770,26 @@ export class GameplayController implements OnModuleInit {
         this.logger.debug(`Processing move for user ${user.id}`)
         return await lastValueFrom(
             this.gameplayService.move({
+                ...request,
+                userId: user.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: SellResponse
+    })
+    @Post("/sell")
+    public async sell(
+        @User() user: UserLike,
+        @Body() request: SellRequest
+    ): Promise<SellResponse> {
+        this.logger.debug(`Processing sell for user ${user.id}`)
+        return await lastValueFrom(
+            this.gameplayService.sell({
                 ...request,
                 userId: user.id
             })
