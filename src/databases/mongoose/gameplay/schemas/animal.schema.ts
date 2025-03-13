@@ -24,6 +24,7 @@ export class AnimalSchema extends StaticAbstractSchema<AnimalId> {
     @Field(() => Int, { nullable: true })
     @Prop({ type: Number, required: false, min: 0 })
         price: number
+        
     @Field(() => Int, { nullable: true })
     @Prop({ type: Number, required: false, default: 0 })
         sellPrice?: number

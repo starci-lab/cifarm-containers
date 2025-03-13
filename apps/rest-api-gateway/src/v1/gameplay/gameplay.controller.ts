@@ -22,8 +22,8 @@ import {
     ClaimDailyRewardResponse,
     CollectAnimalProductRequest,
     CollectAnimalProductResponse,
-    ConstructBuildingRequest,
-    ConstructBuildingResponse,
+    BuyBuildingRequest,
+    BuyBuildingResponse,
     CureAnimalRequest,
     CureAnimalResponse,
     DeliverProductRequest,
@@ -90,7 +90,13 @@ import {
     MintOffchainTokensRequest, 
     MintOffchainTokensResponse, 
     SellResponse,
-    SellRequest
+    SellRequest,
+    DeliverMoreProductRequest,
+    DeliverMoreProductResponse,
+    BuyToolRequest,
+    BuyToolResponse,
+    BuyFruitRequest,
+    BuyFruitResponse
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
@@ -100,8 +106,6 @@ import { RestJwtAuthGuard } from "@src/guards"
 import { lastValueFrom } from "rxjs"
 import { UserLike } from "@src/jwt"
 import { InjectGrpc } from "@src/grpc/grpc.decorators"
-import { DeliverMoreProductRequest, DeliverMoreProductResponse } from "@apps/gameplay-service/src/delivery/deliver-more-product"
-import { BuyToolRequest, BuyToolResponse } from "@apps/gameplay-service/src/shop/buy-tool"
 
 @ApiTags("Gameplay")
 @Controller({
@@ -739,16 +743,34 @@ export class GameplayController implements OnModuleInit {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
-        type: ConstructBuildingResponse
+        type: BuyBuildingResponse
     })
-    @Post("/construct-building")
-    public async constructBuilding(
+    @Post("/buy-building")
+    public async buyBuilding(
         @User() user: UserLike,
-        @Body() request: ConstructBuildingRequest
-    ): Promise<ConstructBuildingResponse> {
-        this.logger.debug(`Processing constructBuilding for user ${user.id}`)
+        @Body() request: BuyBuildingRequest
+    ): Promise<BuyBuildingResponse> {
         return await lastValueFrom(
-            this.gameplayService.constructBuilding({
+            this.gameplayService.buyBuilding({
+                ...request,
+                userId: user.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        type: BuyFruitResponse
+    })
+    @Post("/buy-fruit")
+    public async buyFruit(
+        @User() user: UserLike,
+        @Body() request: BuyFruitRequest
+    ): Promise<BuyFruitResponse> {
+        return await lastValueFrom(
+            this.gameplayService.buyFruit({
                 ...request,
                 userId: user.id
             })
@@ -886,7 +908,6 @@ export class GameplayController implements OnModuleInit {
         @User() user: UserLike,
         @Body() request: UpgradeBuildingRequest
     ): Promise<UpgradeBuildingResponse> {
-        this.logger.debug(`Processing upgrade building for user ${user.id} with ${request.placedItemBuildingId}`)
         return await lastValueFrom(
             this.gameplayService.upgradeBuilding({
                 ...request,

@@ -6,8 +6,9 @@ import { BuildingSchema } from "./building.schema"
 import { AnimalSchema } from "./animal.schema"
 import { Schema as MongooseSchema } from "mongoose"
 import { TileSchema } from "./tile.schema"
-import { ANIMAL, BUILDING, PET, TILE } from "../constants"
+import { ANIMAL, BUILDING, FRUIT, PET, TILE } from "../constants"
 import { PetSchema } from "./pet.schema"
+import { FruitSchema } from "./fruit.schema"
 
 @ObjectType()
 @Schema({
@@ -38,6 +39,10 @@ export class PlacedItemTypeSchema extends StaticAbstractSchema<PlacedItemTypeId>
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: PetSchema.name })
     [PET]: PetSchema | string
+
+    @Field(() => ID, { nullable: true })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FruitSchema.name })
+    [FRUIT]: FruitSchema | string
 
     @Field(() => Int)
     @Prop({ type: Number, required: true, default: 1 })

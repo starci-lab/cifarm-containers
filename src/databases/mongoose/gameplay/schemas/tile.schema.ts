@@ -11,10 +11,6 @@ export class TileSchema extends StaticAbstractSchema<TileId> {
     @Prop({ type: Number, required: false })
         price?: number
 
-    @Field(() => Int, { nullable: true })
-    @Prop({ type: Number, required: false })
-        maxOwnership?: number
-
     @Field(() => Boolean)
     @Prop({ type: Boolean, required: true })
         isNft: boolean

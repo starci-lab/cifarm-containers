@@ -70,8 +70,8 @@ import {
     BuyTileResponse,
     BuyToolRequest,
     BuyToolResponse,
-    ConstructBuildingRequest,
-    ConstructBuildingResponse
+    BuyBuildingRequest,
+    BuyBuildingResponse
 } from "./shop"
 
 import {
@@ -85,6 +85,7 @@ import { MintOffchainTokensRequest, MintOffchainTokensResponse } from "./honeyco
 import { MoveRequest, MoveResponse, SellRequest, SellResponse } from "./placement"
 import { MoveInventoryRequest, MoveInventoryResponse, UpdateFollowXRequest, UpdateFollowXResponse, UpdateReferralRequest, UpdateReferralResponse, UpdateTutorialRequest, UpdateTutorialResponse } from "./player"
 import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
+import { BuyFruitRequest, BuyFruitResponse } from "./shop/buy-fruit"
 
 export interface IGameplayService {
     // Auth
@@ -144,9 +145,10 @@ export interface IGameplayService {
     buyAnimal(request: BuyAnimalRequest): Observable<BuyAnimalResponse>
     buySupplies(request: BuySuppliesRequest): Observable<BuySuppliesResponse>
     buyTile(request: BuyTileRequest): Observable<BuyTileResponse>
-    constructBuilding(request: ConstructBuildingRequest): Observable<ConstructBuildingResponse>
+    buyBuilding(request: BuyBuildingRequest): Observable<BuyBuildingResponse>
     buyTool(request: BuyToolRequest): Observable<BuyToolResponse>
-
+    buyFruit(request: BuyFruitRequest): Observable<BuyFruitResponse>
+    
     // Upgrade
     upgradeBuilding(request: UpgradeBuildingRequest): Observable<UpgradeBuildingResponse>
 

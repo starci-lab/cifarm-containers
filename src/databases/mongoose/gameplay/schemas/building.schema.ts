@@ -24,6 +24,10 @@ export class BuildingSchema extends StaticAbstractSchema<BuildingId> {
 
   @Field(() => Int, { nullable: true })
   @Prop({ type: Number, required: false })
+      maxOwnership?: number
+
+  @Field(() => Int, { nullable: true })
+  @Prop({ type: Number, required: false })
       price?: number
 
   @Field(() => Int)
@@ -32,10 +36,6 @@ export class BuildingSchema extends StaticAbstractSchema<BuildingId> {
   @Field(() => Boolean)
   @Prop({ type: Boolean, required: true })
       upgradable: boolean
-
-  @Field(() => Int)
-  @Prop({ type: Number, required: true, default: 5 })
-      maxOwnership: number
 
   @Field(() => [UpgradeSchema])
   @Prop({ type: [UpgradeSchemaClass] })

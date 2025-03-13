@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package gameplay_service;
+
+message BuyBuildingRequest {
+    string userId = 1;
+    string buildingId = 2;
+    Position position = 3;
+}

@@ -41,7 +41,7 @@ export class BuildingSeeder implements Seeder {
                 price: 2000,
                 unlockLevel: 5,
                 upgradable: false,
-                maxOwnership: 5,
+                maxOwnership: 3,
                 upgrades: [
                     {
                         capacity: 3,
@@ -71,7 +71,7 @@ export class BuildingSeeder implements Seeder {
                 price: 2000,
                 unlockLevel: 10,
                 upgradable: false,
-                maxOwnership: 5,
+                maxOwnership: 3,
                 upgrades: [
                     {
                         capacity: 3,
