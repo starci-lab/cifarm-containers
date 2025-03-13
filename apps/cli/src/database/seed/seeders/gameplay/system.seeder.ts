@@ -264,8 +264,9 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.PlacedItemInfo),
                 displayId: SystemId.PlacedItemInfo,
                 value: {
-                    tileLimit: 50,
+                    tileLimit: 60,
                     fruitLimit: 10,
+                    buildingLimit: 30
                 }
             }
         ]
