@@ -17,6 +17,10 @@ export interface HarvestCropData {
     cropId: string
 }
 
+export interface SellData {
+    quantity: number
+}
+
 export type ActionEmittedMessage<TData = undefined> = Omit<EmitActionPayload<TData>, "userId">
 
 export enum ActionName {

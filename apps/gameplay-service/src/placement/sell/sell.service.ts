@@ -1,8 +1,9 @@
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload, SellData } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { InjectMongoose, PlacedItemSchema } from "@src/databases"
+import { AnimalSchema, BUILDING_INFO, BuildingSchema, InjectMongoose, PlacedItemSchema, PlacedItemType, PlacedItemTypeSchema, TileSchema, UserSchema } from "@src/databases"
+import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { SellRequest } from "./sell.dto"
@@ -14,12 +15,13 @@ export class SellService {
     constructor(
         @InjectMongoose() 
         private readonly connection: Connection,
+        private readonly goldBalanceService: GoldBalanceService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
     async sell({ placedItemId, userId }: SellRequest) {
         const mongoSession = await this.connection.startSession()
-        let actionMessage: EmitActionPayload | undefined
+        let actionMessage: EmitActionPayload<SellData> | undefined
 
         try {
             // Using `withTransaction` for automatic transaction handling
@@ -27,6 +29,7 @@ export class SellService {
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
+                    .populate(BUILDING_INFO)
                     .session(mongoSession)
 
                 //check user id
@@ -37,20 +40,93 @@ export class SellService {
                 // If the placed item is not found, throw an error
                 if (!placedItem) throw new GrpcNotFoundException("Placed item not found")
 
-                // Update the placed item position in the database
-                await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .updateOne(
-                        { _id: placedItemId },
-                    )
+                //get placed item type
+                const placedItemType = await this.connection
+                    .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                    .findById(placedItem.placedItemType)
+                    .session(mongoSession)
+
+                //check sellable
+                if (!placedItemType.sellable) {
+                    throw new GrpcNotFoundException("Item not sellable")
+                }
+
+                //get sell price
+                let sellPrice: number = 0
+
+                switch (placedItemType.type) {
+                case PlacedItemType.Building: {
+                    const building = await this.connection
+                        .model<BuildingSchema>(BuildingSchema.name)
+                        .findById(placedItemType.building)
+                        .session(mongoSession)
+
+                    if (!building) {
+                        throw new Error("Building not found")
+                    }
+                    const upgradeLevel = placedItem?.buildingInfo?.currentUpgrade ?? 1
+                    const upgradePrice = building.upgrades?.find(upgrade => upgrade.upgradeLevel === upgradeLevel)?.sellPrice ?? 0
+                    sellPrice = upgradePrice
+                    break
+                }
+                case PlacedItemType.Tile: {
+                    const tile = await this.connection
+                        .model<TileSchema>(TileSchema.name)
+                        .findById(placedItemType.tile)
+                        .session(mongoSession)
+                    if (!tile) {
+                        throw new Error("Tile not found")
+                    }
+                    sellPrice = tile.sellPrice ?? 0
+                    break
+                }
+                case PlacedItemType.Animal: {
+                    const animal = await this.connection
+                        .model<AnimalSchema>(AnimalSchema.name)
+                        .findById(placedItemType.animal)
+                        .session(mongoSession)
+                    if (!animal) {
+                        throw new Error("Animal not found")
+                    }
+                    sellPrice = animal.sellPrice ?? 0
+                    break
+                }
+                }
+
+                const user: UserSchema = await this.connection.model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(mongoSession)
+
+
+                // Subtract gold
+                const goldsChanged = this.goldBalanceService.add({
+                    user: user,
+                    amount: sellPrice
+                })
+
+                //update
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...goldsChanged },
+                    { session: mongoSession }
+                )
+
+                //remove
+                await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .deleteOne({ _id: placedItemId })
                     .session(mongoSession)
 
                 actionMessage = {
                     placedItemId: placedItemId,
                     action: ActionName.Sell,
                     success: true,
-                    userId
+                    userId,
+                    data: {
+                        quantity: sellPrice
+                    }
                 }
+
+                return { quantity: sellPrice }
             })
 
             await Promise.all([

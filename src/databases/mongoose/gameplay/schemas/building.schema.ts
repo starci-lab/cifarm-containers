@@ -41,9 +41,7 @@ export class BuildingSchema extends StaticAbstractSchema<BuildingId> {
   @Prop({ type: [UpgradeSchemaClass] })
       upgrades: Array<UpgradeSchema>
 
-    @Field(() => Boolean)
-    @Prop({ type: Boolean, default: false })
-        sellable: boolean
+    
 }
 
 // Generate the Mongoose schema class
