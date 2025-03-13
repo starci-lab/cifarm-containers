@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { FruitSchema, InjectMongoose, KeyValueRecord, PlacedItemInfo, PlacedItemSchema, PlacedItemType, PlacedItemTypeSchema, SystemId, UserSchema } from "@src/databases"
+import { FruitSchema, InjectMongoose, KeyValueRecord, PlacedItemInfo, PlacedItemSchema, PlacedItemType, PlacedItemTypeSchema, SystemId, SystemSchema, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -36,7 +36,7 @@ export class BuyFruitService {
                     throw new GrpcFailedPreconditionException("Fruit not available in shop")
 
                 const { value: { fruitLimit } } = await this.connection
-                    .model<PlacedItemInfo>(PlacedItemInfo.name)
+                    .model<SystemSchema>(SystemSchema.name)
                     .findById<KeyValueRecord<PlacedItemInfo>>(createObjectId(SystemId.PlacedItemInfo))
                 // Fetch user details
                 const user = await this.connection
@@ -89,7 +89,7 @@ export class BuyFruitService {
                                 user: userId,
                                 x: position.x,
                                 y: position.y,
-                                placedItemType: createObjectId(fruit.id),
+                                placedItemType: createObjectId(fruit.displayId),
                                 fruitInfo: {
                                     fruit: fruit.id,
                                 },

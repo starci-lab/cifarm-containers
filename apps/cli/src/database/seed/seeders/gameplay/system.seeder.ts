@@ -15,6 +15,7 @@ import {
     SystemId,
     SystemSchema,
     HoneycombInfo,
+    PlacedItemInfo,
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
@@ -219,6 +220,11 @@ export class SystemSeeder implements Seeder {
             projectAddress: "BoRbyNqh3YmYzzuFMLZ2kjFEC1whr4zS9wPskqp7uqZL",
             decimals: 6
         }
+        const placedItemInfo : PlacedItemInfo = {
+            tileLimit: 60,
+            fruitLimit: 10,
+            buildingLimit: 30
+        }
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
@@ -263,11 +269,7 @@ export class SystemSeeder implements Seeder {
             {
                 _id: createObjectId(SystemId.PlacedItemInfo),
                 displayId: SystemId.PlacedItemInfo,
-                value: {
-                    tileLimit: 60,
-                    fruitLimit: 10,
-                    buildingLimit: 30
-                }
+                value: placedItemInfo
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

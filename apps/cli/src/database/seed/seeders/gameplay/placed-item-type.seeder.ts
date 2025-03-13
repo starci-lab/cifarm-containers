@@ -96,7 +96,7 @@ export class PlacedItemTypeSeeder implements Seeder {
                 _id: createObjectId(PlacedItemTypeId.Banana),
                 displayId: PlacedItemTypeId.Banana,
                 type: PlacedItemType.Fruit,
-                fruit: createObjectId(FruitId.Apple),
+                fruit: createObjectId(FruitId.Banana),
                 sellable: true,
                 sizeX: 2,
                 sizeY: 2
