@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from "@nestjs/graphql"
+import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { PlacedItemType, PlacedItemTypeId } from "../enums"
 import { StaticAbstractSchema } from "./abstract"
@@ -38,6 +38,14 @@ export class PlacedItemTypeSchema extends StaticAbstractSchema<PlacedItemTypeId>
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: PetSchema.name })
     [PET]: PetSchema | string
+
+    @Field(() => Int)
+    @Prop({ type: Number, required: true, default: 1 })
+        sizeX: number
+    
+    @Field(() => Int)
+    @Prop({ type: Number, required: true, default: 1 })
+        sizeY: number
 }
 
 // Generate Mongoose Schema

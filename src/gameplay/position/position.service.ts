@@ -1,0 +1,49 @@
+import { Injectable } from "@nestjs/common"
+import { CheckPositionAvailableParams, GetOccupiedPositionsParams } from "./position.types"
+import { PlacedItemSchema } from "@src/databases"
+import { Position } from "../gameplay.types"
+import _ from "lodash"
+
+//service for computing the position of placed items
+@Injectable()
+export class PositionService {
+    constructor() {}
+
+    public async getOccupiedPositions({
+        connection,
+        userId
+    }: GetOccupiedPositionsParams): Promise<Array<Position>> {
+        return await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .find({ userId })
+            .select("x y") // Correct field selection
+            .lean() // Ensure plain JavaScript objects are returned
+            .exec() // Execute the query
+    }
+
+    public checkPositionAvailable(
+        {
+            placedItemType,
+            occupiedPositions
+        }: CheckPositionAvailableParams
+    ): boolean {
+        const { sizeX, sizeY } = placedItemType
+
+        // Create an array of positions from (sizeX-2, sizeY-2) to (sizeX, sizeY)
+        const positions: Array<Position> = []
+    
+        for (let x = sizeX - 2; x <= sizeX; x++) {
+            for (let y = sizeY - 2; y <= sizeY; y++) {
+                positions.push({ x, y })
+            }
+        }
+
+        // use lodash to check if the positions are available
+        // Use lodash _.every and _.some to check if the positions are available
+        return _.every(positions, position => {
+            return !_.some(occupiedPositions, occupiedPosition => {
+                return _.isEqual(occupiedPosition, position) // Use _.isEqual for deep comparison
+            })
+        })    
+    }
+}

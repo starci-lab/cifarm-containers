@@ -29,7 +29,9 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.BasicTile,
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.BasicTile),
-                sellable: true
+                sellable: true,
+                sizeX: 1,
+                sizeY: 1
             },
 
             // Animals
@@ -38,14 +40,18 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.Chicken,
                 type: PlacedItemType.Animal,
                 animal: createObjectId(AnimalId.Chicken),
-                sellable: true
+                sellable: true,
+                sizeX: 1,
+                sizeY: 1
             },
             {
                 _id: createObjectId(PlacedItemTypeId.Cow),
                 displayId: PlacedItemTypeId.Cow,
                 type: PlacedItemType.Animal,
                 animal: createObjectId(AnimalId.Cow),
-                sellable: true
+                sellable: true,
+                sizeX: 1,
+                sizeY: 1
             },
 
             // Buildings
@@ -54,21 +60,27 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.Home,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Home),
-                sellable: false
+                sellable: false,
+                sizeX: 3,
+                sizeY: 3
             },
             {
                 _id: createObjectId(PlacedItemTypeId.Barn),
                 displayId: PlacedItemTypeId.Barn,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Barn),
-                sellable: true
+                sellable: true,
+                sizeX: 3,
+                sizeY: 3
             },
             {
                 _id: createObjectId(PlacedItemTypeId.Coop),
                 displayId: PlacedItemTypeId.Coop,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Coop),
-                sellable: true
+                sellable: true,
+                sizeX: 3,
+                sizeY: 3
             }
         ]
 
