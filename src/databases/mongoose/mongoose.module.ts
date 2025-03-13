@@ -52,6 +52,8 @@ import {
     UserFollowRelationSchema,
     PetSchema,
     PetSchemaClass,
+    FruitSchemaClass,
+    FruitSchema
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -148,6 +150,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => ToolSchemaClass
                         },
                         {
+                            name: FruitSchema.name,
+                            useFactory: () => FruitSchemaClass
+                        }
+                        ,{
                             name: UserSchema.name,
                             inject: [getMongooseToken(options)],
                             useFactory: (

@@ -35,6 +35,12 @@ export enum CropId {
     BellPepper = "bellPepper"
 }
 
+// Fruit Enum
+export enum FruitId {
+    Banana = "banana",
+    Apple = "apple",
+}
+
 // Daily Reward Enum
 export enum DailyRewardId {
     Day1 = "day1",
@@ -168,4 +174,6 @@ export enum PlacedItemTypeId {
     Barn = "barn",
     Home = "home",
     BasicTile = "basicTile",
+    Apple = "apple",
+    Banana = "banana"
 }

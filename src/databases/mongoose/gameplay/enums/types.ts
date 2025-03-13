@@ -46,7 +46,8 @@ export enum InventoryType {
 export enum PlacedItemType {
     Tile = "tile",
     Building = "building",
-    Animal = "animal"
+    Animal = "animal",
+    Fruit = "fruit",
 }
 
 // AppearanceChance Enum

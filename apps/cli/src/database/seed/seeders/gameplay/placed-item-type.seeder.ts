@@ -5,7 +5,8 @@ import {
     PlacedItemType,
     PlacedItemTypeId,
     PlacedItemTypeSchema,
-    InjectMongoose
+    InjectMongoose,
+    FruitId
 } from "@src/databases"
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
@@ -81,7 +82,25 @@ export class PlacedItemTypeSeeder implements Seeder {
                 sellable: true,
                 sizeX: 3,
                 sizeY: 3
-            }
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.Apple),
+                displayId: PlacedItemTypeId.Apple,
+                type: PlacedItemType.Fruit,
+                building: createObjectId(FruitId.Apple),
+                sellable: true,
+                sizeX: 2,
+                sizeY: 2
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.Banana),
+                displayId: PlacedItemTypeId.Banana,
+                type: PlacedItemType.Fruit,
+                building: createObjectId(FruitId.Apple),
+                sellable: true,
+                sizeX: 2,
+                sizeY: 2
+            },
         ]
 
         await this.connection

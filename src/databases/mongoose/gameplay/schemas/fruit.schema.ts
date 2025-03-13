@@ -1,14 +1,14 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { CropId } from "../enums"
+import { FruitId } from "../enums"
 import { StaticAbstractSchema } from "./abstract"
 
 @ObjectType()
 @Schema({
     timestamps: true,
-    collection: "crops",
+    collection: "fruits",
 })
-export class CropSchema extends StaticAbstractSchema<CropId> {
+export class FruitSchema extends StaticAbstractSchema<FruitId> {
     @Field(() => Int)
     @Prop({ type: Number, required: true })
         growthStageDuration: number
@@ -20,10 +20,6 @@ export class CropSchema extends StaticAbstractSchema<CropId> {
     @Field(() => Int)
     @Prop({ type: Number, required: true })
         price: number
-
-    @Field(() => Int)
-    @Prop({ type: Number, required: true, default: 1 })
-        perennialCount: number
 
     @Field(() => Int)
     @Prop({ type: Number, required: true, min: 1 })
@@ -54,4 +50,4 @@ export class CropSchema extends StaticAbstractSchema<CropId> {
         qualityHarvestExperiences: number
 }
 
-export const CropSchemaClass = SchemaFactory.createForClass(CropSchema)
+export const FruitSchemaClass = SchemaFactory.createForClass(FruitSchema)

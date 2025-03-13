@@ -10,7 +10,7 @@ export class CropsResolver {
     constructor(private readonly cropsService: CropsService) {}
 
     @Query(() => [CropSchema], { name: "crops" })
-    async buildings(): Promise<Array<CropSchema>> {
+    async crops(): Promise<Array<CropSchema>> {
         return this.cropsService.getCrops()
     }
     

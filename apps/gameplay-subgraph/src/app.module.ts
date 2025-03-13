@@ -21,6 +21,7 @@ import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
 import { UsersModule } from "./users"
 import { PetsModule } from "./pets"
+import { FruitsModule } from "./fruits"
 
 @Module({
     imports: [
@@ -53,7 +54,8 @@ import { PetsModule } from "./pets"
         InventoryTypesModule,
         InventoriesModule,
         PlacedItemsModule,
-        PetsModule
+        PetsModule,
+        FruitsModule
     ]
 }) 
 export class AppModule {}
