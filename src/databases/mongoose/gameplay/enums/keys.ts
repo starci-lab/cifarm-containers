@@ -118,7 +118,8 @@ export enum SystemId {
     SpinInfo = "spinInfo",
     EnergyRegen = "energyRegen",
     DailyRewardInfo = "dailyRewardInfo",
-    HoneycombInfo = "honeycombInfo"
+    HoneycombInfo = "honeycombInfo",
+    PlacedItemInfo = "placedItemInfo"
 }
 
 export enum KeyValueStoreId {

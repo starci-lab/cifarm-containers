@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { InjectMongoose, PlacedItemSchema, TileSchema, UserSchema } from "@src/databases"
+import { InjectMongoose, KeyValueRecord, PlacedItemInfo, PlacedItemSchema, SystemId, SystemSchema, TileSchema, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
@@ -35,6 +35,9 @@ export class BuyTileService {
                 if (!tile.availableInShop)
                     throw new GrpcFailedPreconditionException("Tile not available in shop")
 
+                const { value: { tileLimit } } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<PlacedItemInfo>>(createObjectId(SystemId.PlacedItemInfo))
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -68,7 +71,7 @@ export class BuyTileService {
                     })
                     .session(mongoSession)
 
-                if (count >= tile.maxOwnership)
+                if (count >= tileLimit)
                     throw new GrpcFailedPreconditionException("Max ownership reached")
 
                 // Save the placed item (tile) in the database

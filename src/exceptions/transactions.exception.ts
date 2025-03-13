@@ -138,7 +138,7 @@ export class BuyTileTransactionFailedException extends GrpcInternalException {
     }
 }
 
-export class ConstructBuildingTransactionFailedException extends GrpcInternalException {
+export class BuyBuildingTransactionFailedException extends GrpcInternalException {
     constructor(error: Error) {
         super(`Failed to construct building: ${error.message}`)
     }

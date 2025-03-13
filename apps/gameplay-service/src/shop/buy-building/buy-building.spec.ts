@@ -6,22 +6,22 @@ import { BuildingId, BuildingSchema, getMongooseToken, PlacedItemSchema, UserSch
 import { UserInsufficientGoldException } from "@src/gameplay"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { Connection } from "mongoose"
-import { ConstructBuildingService } from "./construct-building.service"
+import { BuyBuildingService } from "./buy-building.service"
 
-describe("ConstructBuildingService", () => {
+describe("BuyBuildingService", () => {
     let connection: Connection
-    let service: ConstructBuildingService
+    let service: BuyBuildingService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [ConstructBuildingService]
+            providers: [BuyBuildingService]
         }).compile()
 
         connection = moduleRef.get(getMongooseToken())
-        service = moduleRef.get(ConstructBuildingService)
+        service = moduleRef.get(BuyBuildingService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })

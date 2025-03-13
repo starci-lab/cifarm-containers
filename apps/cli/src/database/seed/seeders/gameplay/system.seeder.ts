@@ -259,6 +259,14 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.HoneycombInfo),
                 displayId: SystemId.HoneycombInfo,
                 value: honeycombInfo
+            },
+            {
+                _id: createObjectId(SystemId.PlacedItemInfo),
+                displayId: SystemId.PlacedItemInfo,
+                value: {
+                    tileLimit: 50,
+                    fruitLimit: 10,
+                }
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

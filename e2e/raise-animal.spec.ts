@@ -7,8 +7,8 @@ import {
     BuySuppliesResponse,
     CollectAnimalProductRequest,
     CollectAnimalProductResponse,
-    ConstructBuildingRequest,
-    ConstructBuildingResponse,
+    BuyBuildingRequest,
+    BuyBuildingResponse,
     CureAnimalRequest,
     CureAnimalResponse,
     FeedAnimalRequest,
@@ -161,9 +161,9 @@ describe("Raise animal flow", () => {
 
         // Construct a building
         const constructBuilding = await authAxios.post<
-            ConstructBuildingResponse,
-            AxiosResponse<ConstructBuildingResponse, Omit<ConstructBuildingRequest, "userId">>,
-            Omit<ConstructBuildingRequest, "userId">
+            BuyBuildingResponse,
+            AxiosResponse<BuyBuildingResponse, Omit<BuyBuildingRequest, "userId">>,
+            Omit<BuyBuildingRequest, "userId">
         >("gameplay/construct-building", {
             buildingId: BuildingId.Coop,
             position: {

@@ -1,7 +1,7 @@
 
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import JSON from "graphql-type-json"
-import { AppearanceChance, CropId, DailyRewardId, SystemId, TileId } from "../enums"
+import { AppearanceChance, CropId, DailyRewardId, SystemId } from "../enums"
 import { Position } from "@src/gameplay"
 import { StaticAbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
@@ -140,6 +140,16 @@ export class HoneycombInfo {
         tokenResourceAddress: string
     @Field(() => Int)
         decimals: number
+}
+
+@ObjectType()
+export class PlacedItemInfo {
+    @Field(() => Int)
+        tileLimit: number
+    @Field(() => Int)
+        fruitLimit: number
+    @Field(() => Int)
+        buildingLimit: number
 }
 
 @ObjectType()
