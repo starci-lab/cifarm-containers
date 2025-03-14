@@ -1,13 +1,13 @@
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { InjectMongoose, KeyValueRecord, PlacedItemInfo, PlacedItemSchema, SystemId, SystemSchema, TileSchema, UserSchema } from "@src/databases"
+import { DefaultInfo, InjectMongoose, KeyValueRecord, PlacedItemSchema, SystemId, SystemSchema, TileSchema, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuyTileRequest, BuyTileResponse } from "./buy-tile.dto"
-import { Producer } from "@nestjs/microservices/external/kafka.interface"
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class BuyTileService {
@@ -37,7 +37,7 @@ export class BuyTileService {
 
                 const { value: { tileLimit } } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<PlacedItemInfo>>(createObjectId(SystemId.PlacedItemInfo))
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)

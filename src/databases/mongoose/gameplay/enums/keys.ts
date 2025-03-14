@@ -119,7 +119,6 @@ export enum SystemId {
     EnergyRegen = "energyRegen",
     DailyRewardInfo = "dailyRewardInfo",
     HoneycombInfo = "honeycombInfo",
-    PlacedItemInfo = "placedItemInfo"
 }
 
 export enum KeyValueStoreId {

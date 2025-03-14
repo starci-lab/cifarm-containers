@@ -7,6 +7,8 @@ import { HelpUseHerbicideModule } from "./help-use-herbicide"
 import { HelpUsePesticideModule } from "./help-use-pesticide"
 import { HelpWaterModule } from "./help-water"
 import { ThiefCropModule } from "./thief-crop"
+import { ThiefAnimalProductModule } from "./thief-animal-product"
+import { HelpCureAnimalModule } from "./help-cure-animal"
 
 @Module({
     imports: [
@@ -14,12 +16,12 @@ import { ThiefCropModule } from "./thief-crop"
         UnfollowModule,
         VisitModule,
         ReturnModule,
-        // HelpCureAnimalModule,
+        HelpCureAnimalModule,
         HelpWaterModule,
         HelpUsePesticideModule,
         HelpUseHerbicideModule,
         ThiefCropModule,
-        // ThiefAnimalProductModule
+        ThiefAnimalProductModule
     ]
 })
 export class CommunityModule {}

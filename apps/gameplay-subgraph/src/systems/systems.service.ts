@@ -4,15 +4,14 @@ import {
     Activities,
     AnimalRandomness,
     CropRandomness,
-    EnergyRegen,
-    SpinInfo,
-    DefaultInfo,
-    InjectMongoose,
-    SystemSchema,
-    SystemId,
-    KeyValueRecord,
     DailyRewardInfo,
-    PlacedItemInfo
+    DefaultInfo,
+    EnergyRegen,
+    InjectMongoose,
+    KeyValueRecord,
+    SpinInfo,
+    SystemId,
+    SystemSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
 
@@ -105,18 +104,6 @@ export class SystemsService {
             const { value } = await this.connection
                 .model<SystemSchema>(SystemSchema.name)
                 .findById<KeyValueRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
-            return value
-        } finally {
-            await mongoSession.endSession()
-        }
-    }
-
-    async getPlacedItemInfo(): Promise<PlacedItemInfo> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const { value } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<PlacedItemInfo>>(createObjectId(SystemId.PlacedItemInfo))
             return value
         } finally {
             await mongoSession.endSession()

@@ -1,11 +1,12 @@
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     BuildingSchema,
+    DefaultInfo,
     InjectMongoose,
     KeyValueRecord,
-    PlacedItemInfo,
     PlacedItemSchema,
     PlacedItemType,
     PlacedItemTypeSchema,
@@ -14,11 +15,10 @@ import {
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
+import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuyBuildingRequest, BuyBuildingResponse } from "./buy-building.dto"
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Producer } from "kafkajs"
 
 @Injectable()
 export class BuyBuildingService {
@@ -43,9 +43,8 @@ export class BuyBuildingService {
                 // Fetch building details
                 const { value: { buildingLimit } } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<PlacedItemInfo>>(createObjectId(SystemId.PlacedItemInfo))
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                     .session(mongoSession)
-
 
                 const building = await this.connection
                     .model<BuildingSchema>(BuildingSchema.name)

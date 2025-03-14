@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
-import { Resolver, Query } from "@nestjs/graphql"
+import { Query, Resolver } from "@nestjs/graphql"
+import { Activities, AnimalRandomness, CropRandomness, DailyRewardInfo, DefaultInfo, EnergyRegen, SpinInfo } from "@src/databases"
 import { SystemsService } from "./systems.service"
-import { Activities, AnimalRandomness, CropRandomness, EnergyRegen, SpinInfo, DefaultInfo, DailyRewardInfo, PlacedItemInfo } from "@src/databases"
 
 @Resolver()
 export class SystemsResolver {
@@ -56,13 +56,6 @@ export class SystemsResolver {
     })
     async dailyRewardInfo(): Promise<DailyRewardInfo> {
         return this.systemsService.getDailyRewardInfo()
-    }
-
-    @Query(() => PlacedItemInfo, {
-        name: "placedItemInfo"
-    })
-    async placedItemInfo(): Promise<PlacedItemInfo> {
-        return this.systemsService.getPlacedItemInfo()
     }
 }
 

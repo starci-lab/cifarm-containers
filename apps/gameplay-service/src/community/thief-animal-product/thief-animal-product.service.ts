@@ -4,7 +4,7 @@ import {
     ThiefAnimalProductData,
 } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectKafkaProducer } from "@src/brokers"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
     Activities,
     AnimalCurrentState, AnimalRandomness, DefaultInfo, InjectMongoose, InventorySchema,
@@ -63,6 +63,18 @@ export class ThiefAnimalProductService {
 
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
                     throw new GrpcInvalidArgumentException("Animal is not yielding")
+                }
+
+                const users = placedItemAnimal.animalInfo.thieves
+                if (users.map(user => user.toString()).includes(userId)) {
+                    actionMessage = {
+                        placedItemId: placedItemAnimalId,
+                        action: ActionName.ThiefAnimalProduct,
+                        success: false,
+                        userId,
+                        reasonCode: 1,
+                    }
+                    throw new GrpcInvalidArgumentException("User already thief")
                 }
 
                 const { value: { thiefAnimalProduct: { energyConsume, experiencesGain } } } = await this.connection
@@ -169,6 +181,7 @@ export class ThiefAnimalProductService {
                 ).session(mongoSession)
 
                 placedItemAnimal.animalInfo.harvestQuantityRemaining -= actualQuantity
+                placedItemAnimal.animalInfo.thieves.push(user.id)
                 await placedItemAnimal.save({ session: mongoSession })
 
                 actionMessage = {
@@ -185,17 +198,24 @@ export class ThiefAnimalProductService {
                 return { quantity: actualQuantity }
             })
 
-            await this.kafkaProducer.send({
-                topic: "EmitAction",
-                messages: [{ value: JSON.stringify(actionMessage) }],
-            })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.EmitAction,
+                    messages: [{ value: JSON.stringify(actionMessage) }],
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
+                }),
+            ])
 
             return result
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {
+                // Send failure action message in case of error
                 await this.kafkaProducer.send({
-                    topic: "EmitAction",
+                    topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }],
                 })
             }

@@ -4,7 +4,7 @@ package gameplay_service;
 
 message ThiefAnimalProductRequest {
     string userId = 1;
-    string placedItemAnimalId = 3;
+    string placedItemAnimalId = 2;
 }
 
 message ThiefAnimalProductResponse {

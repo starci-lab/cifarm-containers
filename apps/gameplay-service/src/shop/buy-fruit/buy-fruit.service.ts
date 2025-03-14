@@ -1,13 +1,13 @@
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
-import { FruitSchema, InjectMongoose, KeyValueRecord, PlacedItemInfo, PlacedItemSchema, PlacedItemType, PlacedItemTypeSchema, SystemId, SystemSchema, UserSchema } from "@src/databases"
+import { DefaultInfo, FruitSchema, InjectMongoose, KeyValueRecord, PlacedItemSchema, PlacedItemType, PlacedItemTypeSchema, SystemId, SystemSchema, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuyFruitRequest, BuyFruitResponse } from "./buy-fruit.dto"
-import { Producer } from "@nestjs/microservices/external/kafka.interface"
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class BuyFruitService {
@@ -37,7 +37,7 @@ export class BuyFruitService {
 
                 const { value: { fruitLimit } } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<PlacedItemInfo>>(createObjectId(SystemId.PlacedItemInfo))
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)

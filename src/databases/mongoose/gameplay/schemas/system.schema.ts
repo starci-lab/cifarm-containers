@@ -117,6 +117,12 @@ export class DefaultInfo {
         referredRewardQuantity: number
     @Field(() => Int)
         followXRewardQuantity: number
+    @Field(() => Int)
+        tileLimit: number
+    @Field(() => Int)
+        fruitLimit: number
+    @Field(() => Int)
+        buildingLimit: number
 }
 
  
@@ -140,16 +146,6 @@ export class HoneycombInfo {
         tokenResourceAddress: string
     @Field(() => Int)
         decimals: number
-}
-
-@ObjectType()
-export class PlacedItemInfo {
-    @Field(() => Int)
-        tileLimit: number
-    @Field(() => Int)
-        fruitLimit: number
-    @Field(() => Int)
-        buildingLimit: number
 }
 
 @ObjectType()
