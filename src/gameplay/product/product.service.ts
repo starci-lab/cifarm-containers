@@ -52,7 +52,8 @@ export class ProductService {
         return {
             yieldCount,
             currentState: AnimalCurrentState.Normal,
-            harvestQuantityRemaining: 0
+            harvestQuantityRemaining: 0,
+            currentHungryTime: 0
         }
     }
 }

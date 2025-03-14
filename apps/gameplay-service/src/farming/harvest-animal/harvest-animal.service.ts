@@ -186,6 +186,7 @@ export class HarvestAnimalService {
                         { _id: placedItemAnimal._id },
                         {
                             animalInfo: {
+                                ...placedItemAnimal.animalInfo,
                                 ...animalInfoAfterCollectChanges
                             }
                         }
