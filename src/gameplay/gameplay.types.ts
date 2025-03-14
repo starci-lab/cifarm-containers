@@ -16,6 +16,7 @@ export class Position {
 
 export interface GameplayOptions {
     theif?: TheifOptions
+    loadStatic?: boolean
 }
 
 export interface TheifOptions {
