@@ -54,9 +54,18 @@ export class DeliverProductService {
                 }
 
                 // Subtract the quantity from the user's inventory
-                inventory.quantity -= quantity
-                await inventory.save({ session: mongoSession })
-
+                if (inventory.quantity === quantity) {
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .deleteOne({
+                            _id: inventoryId
+                        })
+                        .session(mongoSession)
+                } else {
+                    inventory.quantity -= quantity
+                    await inventory.save({ session: mongoSession })
+                }
+                
                 // Create a new inventory kind for Delivery
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(
                     [
