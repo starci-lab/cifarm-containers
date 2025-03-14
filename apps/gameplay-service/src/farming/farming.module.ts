@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common"
-import { WaterModule } from "./water"
 import { HarvestCropModule } from "./harvest-crop"
 import { PlantSeedModule } from "./plant-seed"
 import { UseHerbicideModule } from "./use-herbicide"
@@ -8,6 +7,7 @@ import { CollectAnimalProductModule } from "./collect-animal-product"
 import { FeedAnimalModule } from "./feed-animal"
 import { CureAnimalModule } from "./cure-animal"
 import { UseFertilizerModule } from "./use-fertilizer"
+import { WaterCropModule } from "./water-crop"
 
 @Module({
     imports: [
@@ -19,7 +19,7 @@ import { UseFertilizerModule } from "./use-fertilizer"
         UseFertilizerModule,
         UseHerbicideModule,
         UsePesticideModule,
-        WaterModule,
+        WaterCropModule,
     ]
 })
 export class FarmingModule {}

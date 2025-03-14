@@ -2,7 +2,7 @@
 
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
-import { WaterService } from "./water.service"
+import { WaterCropService } from "./water.service"
 import {
     SystemEntity,
     UserSchema,
@@ -21,8 +21,8 @@ import { v4 } from "uuid"
 import { GrpcFailedPreconditionException } from "@src/common"
 import { GameplayMockUserService, GameplayConnectionService, TestingInfraModule } from "@src/testing"
 
-describe("WaterService", () => {
-    let service: WaterService
+describe("WaterCropService", () => {
+    let service: WaterCropService
     let dataSource: DataSource
     let levelService: LevelService
     let gameplayMockUserService: GameplayMockUserService
@@ -31,11 +31,11 @@ describe("WaterService", () => {
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [WaterService, EnergyService, LevelService],
+            providers: [WaterCropService, EnergyService, LevelService],
         }).compile()
 
         dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(WaterService)
+        service = moduleRef.get(WaterCropService)
         levelService = moduleRef.get(LevelService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
@@ -59,7 +59,7 @@ describe("WaterService", () => {
             userId: user.id,
             placedItemTypeId: PlacedItemTypeId.BasicTile,
             seedGrowthInfo: {
-                currentState: CropCurrentState.NeedWater,
+                currentState: CropCurrentState.NeedWaterCrop,
                 currentStageTimeElapsed: 0,
                 cropId: CropId.Carrot,
                 harvestQuantityRemaining: 10,
@@ -188,7 +188,7 @@ describe("WaterService", () => {
             y: 0,
             userId: user.id,
             seedGrowthInfo: {
-                currentState: CropCurrentState.NeedWater, // Not weedy
+                currentState: CropCurrentState.NeedWaterCrop, // Not weedy
                 currentStageTimeElapsed: 0,
                 cropId: CropId.Carrot,
                 harvestQuantityRemaining: 10,

@@ -76,8 +76,8 @@ import {
     UsePesticideResponse,
     VerifySignatureRequest,
     VerifySignatureResponse,
-    WaterRequest,
-    WaterResponse,
+    WaterCropRequest,
+    WaterCropResponse,
     VisitRequest,
     VisitResponse,
     ReturnResponse,
@@ -623,16 +623,16 @@ export class GameplayController implements OnModuleInit {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
-        type: WaterResponse
+        type: WaterCropResponse
     })
-    @Post("/water")
-    public async water(
+    @Post("/water-crop")
+    public async waterCrop(
         @User() user: UserLike,
-        @Body() request: WaterRequest
-    ): Promise<WaterResponse> {
+        @Body() request: WaterCropRequest
+    ): Promise<WaterCropResponse> {
         this.logger.debug(`Processing water plant for user ${user.id}`)
         return await lastValueFrom(
-            this.gameplayService.water({
+            this.gameplayService.waterCrop({
                 ...request,
                 userId: user.id
             })

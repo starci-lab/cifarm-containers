@@ -8,6 +8,6 @@ export * from "./plant-seed"
 export * from "./use-fertilizer"
 export * from "./use-herbicide"
 export * from "./use-pesticide"
-export * from "./water"
+export * from "./water-crop"
 
 

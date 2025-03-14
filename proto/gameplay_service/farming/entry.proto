@@ -11,4 +11,4 @@ import "./plant_seed.proto";
 import "./use_fertilizer.proto";
 import "./use_pesticide.proto";
 import "./use_herbicide.proto";
-import "./water.proto";
+import "./water_crop.proto";

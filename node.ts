@@ -18,16 +18,16 @@ const getResponse = async (url: string, body: any) => {
 
 const t = async () => {
     await Promise.all([
-        getResponse("http://localhost:3001/api/v1/gameplay/water", { 
+        getResponse("http://localhost:3001/api/v1/gameplay/water-crop", { 
             placedItemTileId: "67ce23b73baa0fdb8ac61928"      
         }),
-        getResponse("http://localhost:3001/api/v1/gameplay/water", { 
+        getResponse("http://localhost:3001/api/v1/gameplay/water-crop", { 
             placedItemTileId: "67ce23b73baa0fdb8ac61928"      
         }),
-        getResponse("http://localhost:3001/api/v1/gameplay/water", { 
+        getResponse("http://localhost:3001/api/v1/gameplay/water-crop", { 
             placedItemTileId: "67ce23b73baa0fdb8ac61928"      
         }),
-        getResponse("http://localhost:3001/api/v1/gameplay/water", { 
+        getResponse("http://localhost:3001/api/v1/gameplay/water-crop", { 
             placedItemTileId: "67ce23b73baa0fdb8ac61928"      
         }),
     ])

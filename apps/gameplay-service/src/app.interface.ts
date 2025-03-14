@@ -56,12 +56,14 @@ import {
     UseHerbicideResponse,
     UsePesticideRequest,
     UsePesticideResponse,
-    WaterRequest,
-    WaterResponse
+    WaterCropRequest,
+    WaterCropResponse
 } from "./farming"
 import {
     BuyAnimalRequest,
     BuyAnimalResponse,
+    BuyBuildingRequest,
+    BuyBuildingResponse,
     BuySeedsRequest,
     BuySeedsResponse,
     BuySuppliesRequest,
@@ -69,9 +71,7 @@ import {
     BuyTileRequest,
     BuyTileResponse,
     BuyToolRequest,
-    BuyToolResponse,
-    BuyBuildingRequest,
-    BuyBuildingResponse
+    BuyToolResponse
 } from "./shop"
 
 import {
@@ -80,12 +80,11 @@ import {
     SpinRequest,
     SpinResponse
 } from "./claim"
-import { ClaimHoneycombDailyRewardRequest, ClaimHoneycombDailyRewardResponse } from "./honeycomb"
-import { MintOffchainTokensRequest, MintOffchainTokensResponse } from "./honeycomb"
+import { ClaimHoneycombDailyRewardRequest, ClaimHoneycombDailyRewardResponse, MintOffchainTokensRequest, MintOffchainTokensResponse } from "./honeycomb"
 import { MoveRequest, MoveResponse, SellRequest, SellResponse } from "./placement"
 import { MoveInventoryRequest, MoveInventoryResponse, UpdateFollowXRequest, UpdateFollowXResponse, UpdateReferralRequest, UpdateReferralResponse, UpdateTutorialRequest, UpdateTutorialResponse } from "./player"
-import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 import { BuyFruitRequest, BuyFruitResponse } from "./shop/buy-fruit"
+import { UpgradeBuildingRequest, UpgradeBuildingResponse } from "./upgrade"
 
 export interface IGameplayService {
     // Auth
@@ -128,7 +127,7 @@ export interface IGameplayService {
     useFertilizer(request: UseFertilizerRequest): Observable<UseFertilizerResponse>
     useHerbicide(request: UseHerbicideRequest): Observable<UseHerbicideResponse>
     usePesticide(request: UsePesticideRequest): Observable<UsePesticideResponse>
-    water(request: WaterRequest): Observable<WaterResponse>
+    waterCrop(request: WaterCropRequest): Observable<WaterCropResponse>
 
     // Placement
     move(request: MoveRequest): Observable<MoveResponse>

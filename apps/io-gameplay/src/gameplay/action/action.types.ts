@@ -24,7 +24,7 @@ export interface SellData {
 export type ActionEmittedMessage<TData = undefined> = Omit<EmitActionPayload<TData>, "userId">
 
 export enum ActionName {
-    Water = "water",
+    WaterCrop = "watercrop",
     UsePesticide = "usepesticide",
     UseHerbicide = "useherbicide",
     UseFertilizer = "usefertilizer",
