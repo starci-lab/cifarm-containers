@@ -30,11 +30,11 @@ export class Activities {
     @Field(() => ActivityInfo)
         plantSeed: ActivityInfo
     @Field(() => ActivityInfo)
-        water: ActivityInfo
+        waterCrop: ActivityInfo
     @Field(() => ActivityInfo)
         feedAnimal: ActivityInfo
     @Field(() => ActivityInfo)
-        collectAnimalProduct: ActivityInfo
+        harvestAnimal: ActivityInfo
     @Field(() => ActivityInfo)
         usePesticide: ActivityInfo
     @Field(() => ActivityInfo)

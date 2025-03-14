@@ -20,7 +20,8 @@ export class StaticService implements OnModuleInit {
     public crops: Array<CropSchema>
     public buildings: Array<BuildingSchema>
 
-    constructor(@InjectMongoose() private readonly connection: Connection) {}
+    constructor(@InjectMongoose()
+    private readonly connection: Connection) {}
 
     async onModuleInit() {
         const { value } = await this.connection

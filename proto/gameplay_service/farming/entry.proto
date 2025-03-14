@@ -3,7 +3,7 @@ syntax = "proto3";
 package gameplay_service;
 
 import "../../entities/entry.proto";
-import "./collect_animal_product.proto";
+import "./harvest_animal.proto";
 import "./cure_animal.proto";
 import "./feed_animal.proto";
 import "./harvest_crop.proto";

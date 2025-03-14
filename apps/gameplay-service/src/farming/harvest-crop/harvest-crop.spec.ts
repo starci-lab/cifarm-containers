@@ -52,7 +52,7 @@ describe("HarvestCropService", () => {
             where: { id: SystemId.Activities }
         })
         const {
-            collectAnimalProduct: { energyConsume, experiencesGain }
+            harvestAnimal: { energyConsume, experiencesGain }
         } = value as Activities
     
         const user = await gameplayMockUserService.generate({
@@ -134,7 +134,7 @@ describe("HarvestCropService", () => {
             where: { id: SystemId.Activities }
         })
         const {
-            collectAnimalProduct: { energyConsume, experiencesGain }
+            harvestAnimal: { energyConsume, experiencesGain }
         } = value as Activities
     
         const user = await gameplayMockUserService.generate({

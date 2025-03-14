@@ -60,7 +60,7 @@ export class SpeedUpTransactionFailedException extends GrpcInternalException {
     }
 }
 
-export class CollectAnimalProductTransactionFailedException extends GrpcInternalException {
+export class HarvestAnimalTransactionFailedException extends GrpcInternalException {
     constructor(error: Error) {
         super(`Collect animal product transaction failed: ${error.message}`)
     }

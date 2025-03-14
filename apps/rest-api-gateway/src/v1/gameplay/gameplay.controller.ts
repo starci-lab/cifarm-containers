@@ -20,8 +20,8 @@ import {
     BuyTileResponse,
     ClaimDailyRewardRequest,
     ClaimDailyRewardResponse,
-    CollectAnimalProductRequest,
-    CollectAnimalProductResponse,
+    HarvestAnimalRequest,
+    HarvestAnimalResponse,
     BuyBuildingRequest,
     BuyBuildingResponse,
     CureAnimalRequest,
@@ -464,15 +464,15 @@ export class GameplayController implements OnModuleInit {
     @ApiBearerAuth()
     @HttpCode(HttpStatus.CREATED)
     @ApiResponse({
-        type: CollectAnimalProductResponse
+        type: HarvestAnimalResponse
     })
-    @Post("/collect-animal-product")
-    public async collectAnimalProduct(
+    @Post("/harvest-animal")
+    public async harvestAnimal(
         @User() user: UserLike,
-        @Body() request: CollectAnimalProductRequest
-    ): Promise<CollectAnimalProductResponse> {
+        @Body() request: HarvestAnimalRequest
+    ): Promise<HarvestAnimalResponse> {
         return await lastValueFrom(
-            this.gameplayService.collectAnimalProduct({
+            this.gameplayService.harvestAnimal({
                 ...request,
                 userId: user.id
             })

@@ -1,6 +1,6 @@
 export * from "./farming.module"
 
-export * from "./collect-animal-product"
+export * from "./harvest-animal"
 export * from "./cure-animal"
 export * from "./feed-animal"
 export * from "./harvest-crop"

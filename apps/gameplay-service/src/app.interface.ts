@@ -40,8 +40,8 @@ import {
     RetainProductResponse
 } from "./delivery"
 import {
-    CollectAnimalProductRequest,
-    CollectAnimalProductResponse,
+    HarvestAnimalRequest,
+    HarvestAnimalResponse,
     CureAnimalRequest,
     CureAnimalResponse,
     FeedAnimalRequest,
@@ -117,9 +117,9 @@ export interface IGameplayService {
     deliverMoreProduct(request: DeliverMoreProductRequest): Observable<DeliverMoreProductResponse>
 
     // Farming
-    collectAnimalProduct(
-        request: CollectAnimalProductRequest
-    ): Observable<CollectAnimalProductResponse>
+    harvestAnimal(
+        request: HarvestAnimalRequest
+    ): Observable<HarvestAnimalResponse>
     cureAnimal(request: CureAnimalRequest): Observable<CureAnimalResponse>
     feedAnimal(request: FeedAnimalRequest): Observable<FeedAnimalResponse>
     harvestCrop(request: HarvestCropRequest): Observable<HarvestCropResponse>

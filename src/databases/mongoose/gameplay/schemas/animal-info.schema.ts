@@ -41,8 +41,12 @@ export class AnimalInfoSchema extends AbstractSchema {
     @Prop({ type: String, enum: AnimalCurrentState, default: AnimalCurrentState.Normal })
         currentState: AnimalCurrentState
 
+    @Field(() => [ID])
+    @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
+        thieves: Array<MongooseSchema.Types.ObjectId>
+
     @Field(() => Int, { nullable: true })
-    @Prop({ type: Number, required: false })
+    @Prop({ type: Number, required: false, default: 0 })
         harvestQuantityRemaining?: number
 
     @Field(() => Boolean)

@@ -1,4 +1,6 @@
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
 import {
     Activities,
@@ -6,21 +8,19 @@ import {
     InjectMongoose,
     InventorySchema,
     InventoryType,
+    InventoryTypeId,
     InventoryTypeSchema,
     KeyValueRecord,
     PlacedItemSchema,
-    SupplyId,
     SystemId,
     SystemSchema,
     UserSchema
 } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { CureAnimalRequest, CureAnimalResponse } from "./cure-animal.dto"
-import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Producer } from "kafkajs"
 
 @Injectable()
 export class CureAnimalService {
@@ -84,8 +84,8 @@ export class CureAnimalService {
                     .findById(inventory.inventoryType)
                     .session(session)
 
-                if (!inventoryType || inventoryType.type !== InventoryType.Supply) throw new GrpcFailedPreconditionException("Inventory type is not supply")
-                if (inventoryType.displayId !== SupplyId.AnimalPill) throw new GrpcFailedPreconditionException("Inventory supply is not medicine")
+                if (!inventoryType || inventoryType.type !== InventoryType.Tool) throw new GrpcFailedPreconditionException("Inventory type is not supply")
+                if (inventoryType.displayId !== InventoryTypeId.AnimalMedicine) throw new GrpcFailedPreconditionException("Inventory supply is not medicine")
 
                 // Update user with energy and experience changes
                 await this.connection.model<UserSchema>(UserSchema.name)

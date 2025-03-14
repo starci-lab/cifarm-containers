@@ -113,7 +113,7 @@ describe("CureAnimalService", () => {
             where: { id: SystemId.Activities }
         })
         const {
-            collectAnimalProduct: { energyConsume }
+            harvestAnimal: { energyConsume }
         } = value as Activities
     
         const user = await gameplayMockUserService.generate({

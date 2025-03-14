@@ -46,6 +46,7 @@ export class BuyBuildingService {
                     .findById<KeyValueRecord<PlacedItemInfo>>(createObjectId(SystemId.PlacedItemInfo))
                     .session(mongoSession)
 
+
                 const building = await this.connection
                     .model<BuildingSchema>(BuildingSchema.name)
                     .findById(createObjectId(buildingId))
@@ -80,7 +81,8 @@ export class BuyBuildingService {
                     throw new GrpcFailedPreconditionException("Max building ownership reached")
                 }
                 // filter building with the same type
-                const placedItemType = placedItemTypes.find(placedItemType => placedItemType.building === buildingId)
+                const placedItemType = placedItemTypes.find(placedItemType => placedItemType.building.toString() === createObjectId(buildingId))
+                
                 if (!placedItemType) {
                     throw new GrpcNotFoundException("Placed item type not found")
                 }

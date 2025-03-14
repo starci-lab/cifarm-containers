@@ -5,8 +5,8 @@ import {
     BuyAnimalResponse,
     BuySuppliesRequest,
     BuySuppliesResponse,
-    CollectAnimalProductRequest,
-    CollectAnimalProductResponse,
+    HarvestAnimalRequest,
+    HarvestAnimalResponse,
     BuyBuildingRequest,
     BuyBuildingResponse,
     CureAnimalRequest,
@@ -375,17 +375,17 @@ describe("Raise animal flow", () => {
         //sleep 1.1s to wait for the animal to yield
         await sleep(1100)
         //collect animal product
-        const collectAnimalProductResponse = await authAxios.post<
-            CollectAnimalProductResponse,
+        const harvestAnimalResponse = await authAxios.post<
+            HarvestAnimalResponse,
             AxiosResponse<
-                CollectAnimalProductResponse,
-                Omit<CollectAnimalProductRequest, "userId">
+                HarvestAnimalResponse,
+                Omit<HarvestAnimalRequest, "userId">
             >,
-            Omit<CollectAnimalProductRequest, "userId">
-        >("gameplay/collect-animal-product", {
+            Omit<HarvestAnimalRequest, "userId">
+        >("gameplay/harvest-animal", {
             placedItemAnimalId
         })
-        expect(collectAnimalProductResponse.status).toBe(HttpStatus.CREATED)
+        expect(harvestAnimalResponse.status).toBe(HttpStatus.CREATED)
 
         await sleep(500)
         // ensure message are transmitted via Kafka, now we have 2 listeners, so that we expect 2 messages in the recorder

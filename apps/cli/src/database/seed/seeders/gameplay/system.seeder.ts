@@ -45,7 +45,7 @@ export class SystemSeeder implements Seeder {
                 energyConsume: 1,
                 experiencesGain: 3
             },
-            collectAnimalProduct: {
+            harvestAnimal: {
                 energyConsume: 1,
                 experiencesGain: 3
             },
@@ -89,7 +89,7 @@ export class SystemSeeder implements Seeder {
                 energyConsume: 1,
                 experiencesGain: 3
             },
-            water: {
+            waterCrop: {
                 energyConsume: 1,
                 experiencesGain: 3
             },

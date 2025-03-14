@@ -1,8 +1,8 @@
-// npx jest apps/gameplay-service/src/farming/collect-animal-product/collect-animal-product.spec.ts
+// npx jest apps/gameplay-service/src/farming/harvest-animal/harvest-animal.spec.ts
 
 import { Test } from "@nestjs/testing"
 import { DataSource } from "typeorm"
-import { CollectAnimalProductService } from "./collect-animal-product.service"
+import { HarvestAnimalService } from "./harvest-animal.service"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import {
     AnimalInfoEntity,
@@ -24,9 +24,9 @@ import { v4 } from "uuid"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { GrpcFailedPreconditionException } from "@src/common"
 
-describe("CollectAnimalProductService", () => {
+describe("HarvestAnimalService", () => {
     let dataSource: DataSource
-    let service: CollectAnimalProductService
+    let service: HarvestAnimalService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
@@ -34,11 +34,11 @@ describe("CollectAnimalProductService", () => {
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [CollectAnimalProductService]
+            providers: [HarvestAnimalService]
         }).compile()
 
         dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(CollectAnimalProductService)
+        service = moduleRef.get(HarvestAnimalService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
         levelService = moduleRef.get(LevelService)
@@ -49,7 +49,7 @@ describe("CollectAnimalProductService", () => {
             where: { id: SystemId.Activities }
         })
         const {
-            collectAnimalProduct: { energyConsume, experiencesGain }
+            harvestAnimal: { energyConsume, experiencesGain }
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
@@ -71,7 +71,7 @@ describe("CollectAnimalProductService", () => {
             userId: user.id
         })
 
-        await service.collectAnimalProduct({
+        await service.harvestAnimal({
             userId: user.id,
             placedItemAnimalId: placedItemAnimal.id
         })
@@ -121,7 +121,7 @@ describe("CollectAnimalProductService", () => {
             where: { id: SystemId.Activities }
         })
         const {
-            collectAnimalProduct: { energyConsume, experiencesGain }
+            harvestAnimal: { energyConsume, experiencesGain }
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
@@ -143,7 +143,7 @@ describe("CollectAnimalProductService", () => {
             userId: user.id
         })
 
-        await service.collectAnimalProduct({
+        await service.harvestAnimal({
             userId: user.id,
             placedItemAnimalId: placedItemAnimal.id
         })
@@ -202,7 +202,7 @@ describe("CollectAnimalProductService", () => {
         const invalidPlacedItemAnimalId = v4()
 
         await expect(
-            service.collectAnimalProduct({
+            service.harvestAnimal({
                 userId: user.id,
                 placedItemAnimalId: invalidPlacedItemAnimalId
             })
@@ -214,7 +214,7 @@ describe("CollectAnimalProductService", () => {
             where: { id: SystemId.Activities }
         })
         const {
-            collectAnimalProduct: { energyConsume }
+            harvestAnimal: { energyConsume }
         } = value as Activities
 
         const user = await gameplayMockUserService.generate({
@@ -232,7 +232,7 @@ describe("CollectAnimalProductService", () => {
         })
 
         await expect(
-            service.collectAnimalProduct({
+            service.harvestAnimal({
                 userId: user.id,
                 placedItemAnimalId: placedItemAnimal.id
             })
@@ -263,7 +263,7 @@ describe("CollectAnimalProductService", () => {
         })
 
         await expect(
-            service.collectAnimalProduct({
+            service.harvestAnimal({
                 userId: v4(),
                 placedItemAnimalId: placedItemAnimal.id
             })
@@ -296,7 +296,7 @@ describe("CollectAnimalProductService", () => {
         })
 
         await expect(
-            service.collectAnimalProduct({
+            service.harvestAnimal({
                 userId: user.id,
                 placedItemAnimalId: placedItemAnimal.id
             })

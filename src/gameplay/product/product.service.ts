@@ -7,6 +7,7 @@ import {
     UpdateTileInfoAfterHarvestParams,
     UpdateTileInfoAfterHarvestResult
 } from "./product.types"
+import { AnimalCurrentState } from "@src/databases"
 
 //booster service is to compute the quality,.. of tile, animal after several time of harvest
 @Injectable()
@@ -49,7 +50,9 @@ export class ProductService {
     }: UpdateAnimalInfoAfterCollectParams): UpdateAnimalInfoAfterCollectResult {
         const yieldCount = animalInfo.yieldCount + 1
         return {
-            yieldCount
+            yieldCount,
+            currentState: AnimalCurrentState.Normal,
+            harvestQuantityRemaining: 0
         }
     }
 }

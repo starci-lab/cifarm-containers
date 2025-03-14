@@ -8,12 +8,13 @@ import { GoldBalanceService, TokenBalanceService } from "./wallet"
 import { ProductService } from "./product"
 import { TutorialService } from "./tutorial"
 import { PositionService } from "./position"
-import { NestExport, NestProvider, NestService } from "@src/common"
+import { NestExport, NestImport, NestProvider, NestService } from "@src/common"
 import { StaticService } from "./static"
+import { MongooseModule } from "@src/databases"
 
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {
-    static register(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
+    static register(options: typeof OPTIONS_TYPE) : DynamicModule {
         const dynamicModule = super.register(options)
 
         const loadStatic = options.loadStatic ?? true
@@ -31,14 +32,14 @@ export class GameplayModule extends ConfigurableModuleClass {
         ]
         if (loadStatic) {
             // services that are loaded if static is enabled
-            services.push(StaticService)
+            // services.push(StaticService)
         }
         const providers: Array<NestProvider> = services
         const exports: Array<NestExport> = services
 
         return {
             ...dynamicModule,
-            providers,
+            providers: [...dynamicModule.providers, ...providers],
             exports
         }
     }

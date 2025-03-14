@@ -69,7 +69,7 @@ export class WaterCropService {
                     throw new GrpcFailedPreconditionException("Tile does not need water")
                 }
     
-                const { value: { water: { energyConsume, experiencesGain } } } = await this.connection
+                const { value: { waterCrop: { energyConsume, experiencesGain } } } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
                     .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
                     .session(mongoSession)

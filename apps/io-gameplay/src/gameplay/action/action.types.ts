@@ -17,6 +17,11 @@ export interface HarvestCropData {
     cropId: string
 }
 
+export interface ThiefAnimalProductData {
+    quantity: number
+    productId: string
+}
+
 export interface SellData {
     quantity: number
 }
@@ -32,7 +37,7 @@ export enum ActionName {
     PlantSeed = "plantseed",
     CureAnimal = "cureanimal",
     FeedAnimal = "feedanimal",
-    CollectAnimalProduct = "collectanimalproduct",
+    HarvestAnimal = "havestanimal",
     HelpCureAnimal = "helpcureanimal",
     HelpUseHerbicide = "helpuseherbicide",
     HelpUsePesticide = "helpusepesticide",

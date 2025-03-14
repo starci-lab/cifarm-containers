@@ -1,182 +1,207 @@
+import {
+    ActionName,
+    EmitActionPayload,
+    ThiefAnimalProductData,
+} from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer } from "@src/brokers"
 import {
-    InjectMongoose,
+    Activities,
+    AnimalCurrentState, AnimalRandomness, DefaultInfo, InjectMongoose, InventorySchema,
+    InventoryType,
+    InventoryTypeSchema, KeyValueRecord, PlacedItemSchema, ProductSchema, ProductType, SystemId,
+    SystemSchema,
+    UserSchema
 } from "@src/databases"
 import {
     EnergyService,
     InventoryService,
     LevelService,
-    ThiefService
+    ThiefService,
 } from "@src/gameplay"
-import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
-import { Connection } from "mongoose"
 import { Producer } from "kafkajs"
+import { Connection } from "mongoose"
+import { GrpcInvalidArgumentException } from "nestjs-grpc-exceptions"
+import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class ThiefAnimalProductService {
     private readonly logger = new Logger(ThiefAnimalProductService.name)
 
     constructor(
-        @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer,
-        @InjectMongoose()
-        private readonly connection: Connection,
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
+        @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        private readonly theifService: ThiefService,
+        private readonly thiefService: ThiefService,
         private readonly inventoryService: InventoryService
     ) {}
 
     async thiefAnimalProduct(
-        request: ThiefAnimalProductRequest
+        { placedItemAnimalId, userId }: ThiefAnimalProductRequest
     ): Promise<ThiefAnimalProductResponse> {
-        console.log(request)
-        // if (request.userId === request.neighborUserId) {
-        //     throw new GrpcInvalidArgumentException("Cannot thief from yourself")
-        // }
-        // const queryRunner = this.dataSource.createQueryRunner()
-        // await queryRunner.connect()
+        const mongoSession = await this.connection.startSession()
+        let actionMessage: EmitActionPayload<ThiefAnimalProductData> | undefined
+        let neighborUserId: string | undefined
+        
+        try {
+            const result = await mongoSession.withTransaction(async (mongoSession) => {
+                const placedItemAnimal = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .findById(placedItemAnimalId)
+                    .session(mongoSession)
 
-        // try {
-        //     // get placed item
-        //     const placedItemAnimal = await queryRunner.manager.findOne(PlacedItemSchema, {
-        //         where: {
-        //             userId: request.neighborUserId,
-        //             id: request.placedItemAnimalId,
-        //             placedItemType: {
-        //                 type: PlacedItemType.Animal
-        //             }
-        //         },
-        //         relations: {
-        //             animalInfo: true,
-        //             placedItemType: {
-        //                 animal: true
-        //             }
-        //         }
-        //     })
+                if (!placedItemAnimal) {
+                    throw new GrpcInvalidArgumentException("Animal not found")
+                }
 
-        //     if (!placedItemAnimal) {
-        //         throw new GrpcNotFoundException("Animal not found")
-        //     }
+                neighborUserId = placedItemAnimal.user.toString()
+                if (neighborUserId === userId) {
+                    throw new GrpcInvalidArgumentException("Cannot thief from your own animal")
+                }
 
-        //     if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
-        //         throw new GrpcFailedPreconditionException("Animal is not yielding")
-        //     }
+                if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
+                    throw new GrpcInvalidArgumentException("Animal is not yielding")
+                }
 
-        //     if (
-        //         placedItemAnimal.animalInfo.harvestQuantityRemaining ===
-        //         placedItemAnimal.placedItemType.animal.minHarvestQuantity
-        //     ) {
-        //         throw new GrpcFailedPreconditionException("Animal's thief limit has been reached")
-        //     }
+                const { value: { thiefAnimalProduct: { energyConsume, experiencesGain } } } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
+                    .session(mongoSession)
 
-        //     const { value: activitiesValue } = await queryRunner.manager.findOne(SystemEntity, {
-        //         where: { id: SystemId.Activities }
-        //     })
-        //     const {
-        //         thiefAnimalProduct: { energyConsume, experiencesGain }
-        //     } = activitiesValue as Activities
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(mongoSession)
 
-        //     //get user
-        //     const user = await queryRunner.manager.findOne(UserSchema, {
-        //         where: { id: request.userId }
-        //     })
+                this.energyService.checkSufficient({
+                    current: user.energy,
+                    required: energyConsume,
+                })
 
-        //     this.energyService.checkSufficient({
-        //         current: user.energy,
-        //         required: energyConsume
-        //     })
+                const energyChanges = this.energyService.substract({
+                    user,
+                    quantity: energyConsume,
+                })
 
-        //     const { value } = await queryRunner.manager.findOne(SystemEntity, {
-        //         where: { id: SystemId.AnimalRandomness }
-        //     })
-        //     const { thief2, thief3 } = value as AnimalRandomness
-        //     const { value: computedQuantity } = this.theifService.compute({
-        //         thief2,
-        //         thief3
-        //     })
+                const experienceChanges = this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain,
+                })
 
-        //     //get the actual quantity
-        //     const actualQuantity = Math.min(
-        //         computedQuantity,
-        //         placedItemAnimal.animalInfo.harvestQuantityRemaining -
-        //             placedItemAnimal.placedItemType.animal.minHarvestQuantity
-        //     )
+                const { value: { thief2, thief3 } } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<AnimalRandomness>>(createObjectId(SystemId.AnimalRandomness))
+                    .session(mongoSession)
 
-        //     // get inventories
-        //     const inventoryType = await queryRunner.manager.findOne(InventoryTypeEntity, {
-        //         where: {
-        //             type: InventoryType.Product,
-        //             product: {
-        //                 type: ProductType.Animal,
-        //                 animalId: placedItemAnimal.placedItemType.animalId,
-        //                 isQuality: placedItemAnimal.animalInfo.isQuality
-        //             }
-        //         }
-        //     })
+                const { value: computedQuantity } = this.thiefService.compute({
+                    thief2, thief3
+                })
 
-        //     const existingInventories = await queryRunner.manager.find(InventoryEntity, {
-        //         where: {
-        //             userId: request.userId,
-        //             inventoryTypeId: inventoryType.id
-        //         }
-        //     })
+                const actualQuantity = Math.min(
+                    computedQuantity,
+                    placedItemAnimal.animalInfo.harvestQuantityRemaining
+                )
 
-        //     const updatedInventories = this.inventoryService.add({
-        //         entities: existingInventories,
-        //         userId: request.userId,
-        //         data: {
-        //             inventoryType,
-        //             quantity: actualQuantity
-        //         }
-        //     })
+                if (actualQuantity <= 0) {
+                    actionMessage = {
+                        placedItemId: placedItemAnimalId,
+                        action: ActionName.ThiefAnimalProduct,
+                        success: false,
+                        userId,
+                        reasonCode: 2,
+                    }
+                    throw new GrpcInvalidArgumentException("Thief quantity is less than minimum yield quantity")
+                }
 
-        //     // substract energy
-        //     const energyChanges = this.energyService.substract({
-        //         entity: user,
-        //         energy: energyConsume
-        //     })
+                const product = await this.connection
+                    .model<ProductSchema>(ProductSchema.name)
+                    .findOne({
+                        type: ProductType.Animal,
+                        animal: placedItemAnimal.animalInfo.animal,
+                        isQuality: placedItemAnimal.animalInfo.isQuality,
+                    })
+                    .session(mongoSession)
 
-        //     const experiencesChanges = this.levelService.addExperiences({
-        //         entity: user,
-        //         experiences: experiencesGain
-        //     })
+                const inventoryType = await this.connection
+                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                    .findOne({
+                        type: InventoryType.Product,
+                        product: product.id,
+                    })
+                    .session(mongoSession)
 
-        //     await queryRunner.startTransaction()
-        //     try {
-        //         // update user
-        //         await queryRunner.manager.update(UserSchema, user.id, {
-        //             ...energyChanges,
-        //             ...experiencesChanges
-        //         })
+                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
+                    connection: this.connection,
+                    inventoryType,
+                    userId: user.id,
+                    session: mongoSession,
+                })
 
-        //         // update inventories
-        //         await queryRunner.manager.save(InventoryEntity, updatedInventories)
+                const { value: { storageCapacity } } = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
 
-        //         // update animal growth info
-        //         await queryRunner.manager.update(AnimalInfoEntity, placedItemAnimal.animalInfo.id, {
-        //             harvestQuantityRemaining:
-        //                 placedItemAnimal.animalInfo.harvestQuantityRemaining - actualQuantity
-        //         })
-        //         await queryRunner.commitTransaction()
-        //     } catch (error) {
-        //         const errorMessage = `Transaction failed, reason: ${error.message}`
-        //         this.logger.error(errorMessage)
-        //         await queryRunner.rollbackTransaction()
-        //         throw new GrpcInternalException(errorMessage)
-        //     }
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventoryType,
+                    inventories,
+                    capacity: storageCapacity,
+                    quantity: actualQuantity,
+                    userId: user.id,
+                    occupiedIndexes,
+                })
 
-        //     this.clientKafka.emit(KafkaPattern.SyncPlacedItems, {
-        //         userId: request.neighborUserId
-        //     })
+                await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .create(createdInventories, { session: mongoSession })
 
-        //     return {
-        //         quantity: actualQuantity
-        //     }
-        // } finally {
-        //     await queryRunner.release()
-        // }
-        return { quantity: 0 }
+                for (const inventory of updatedInventories) {
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .updateOne({ _id: inventory._id }, inventory)
+                        .session(mongoSession)
+                }
+
+                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
+                    { _id: user.id },
+                    { ...energyChanges, ...experienceChanges }
+                ).session(mongoSession)
+
+                placedItemAnimal.animalInfo.harvestQuantityRemaining -= actualQuantity
+                await placedItemAnimal.save({ session: mongoSession })
+
+                actionMessage = {
+                    placedItemId: placedItemAnimalId,
+                    action: ActionName.ThiefAnimalProduct,
+                    success: true,
+                    userId,
+                    data: { 
+                        quantity: actualQuantity,
+                        productId: product?.displayId,
+                    },
+                }
+
+                return { quantity: actualQuantity }
+            })
+
+            await this.kafkaProducer.send({
+                topic: "EmitAction",
+                messages: [{ value: JSON.stringify(actionMessage) }],
+            })
+
+            return result
+        } catch (error) {
+            this.logger.error(error)
+            if (actionMessage) {
+                await this.kafkaProducer.send({
+                    topic: "EmitAction",
+                    messages: [{ value: JSON.stringify(actionMessage) }],
+                })
+            }
+            throw error
+        } finally {
+            await mongoSession.endSession()
+        }
     }
 }
