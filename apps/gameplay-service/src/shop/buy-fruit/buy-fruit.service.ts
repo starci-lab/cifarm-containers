@@ -80,8 +80,8 @@ export class BuyFruitService {
                 if (count >= fruitLimit)
                     throw new GrpcFailedPreconditionException("Max fruit limit reached")
 
-                // Save the placed item (tile) in the database
-                const [placedItemTileRaw] = await this.connection
+                // Save the placed item (fruit) in the database
+                const [placedItemFruitRaw] = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .create(
                         [
@@ -97,7 +97,7 @@ export class BuyFruitService {
                         ],
                         { session: mongoSession }
                     )
-                const placedItemTileId = placedItemTileRaw._id.toString()
+                const placedItemTileId = placedItemFruitRaw._id.toString()
 
                 // Prepare the action message to emit to Kafka
                 actionMessage = {

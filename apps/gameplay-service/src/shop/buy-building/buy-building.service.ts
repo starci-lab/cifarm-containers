@@ -17,7 +17,7 @@ import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuyBuildingRequest, BuyBuildingResponse } from "./buy-building.dto"
-import { ActionEmittedMessage, ActionName } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 
 @Injectable()
@@ -37,7 +37,7 @@ export class BuyBuildingService {
     }: BuyBuildingRequest): Promise<BuyBuildingResponse> {
         const mongoSession = await this.connection.startSession()
 
-        let actionMessage: ActionEmittedMessage | undefined
+        let actionMessage: EmitActionPayload | undefined
         try {
             const result = await mongoSession.withTransaction(async () => {
                 // Fetch building details
@@ -131,7 +131,8 @@ export class BuyBuildingService {
                 actionMessage = {
                     action: ActionName.BuyBuilding,
                     placedItemId,
-                    success: true
+                    success: true,
+                    userId,
                 }
 
                 return {} // Return an empty response

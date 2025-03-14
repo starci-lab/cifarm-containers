@@ -15,7 +15,7 @@ import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { BuyAnimalRequest, BuyAnimalResponse } from "./buy-animal.dto"
 import { Producer } from "kafkajs"
-import { ActionEmittedMessage, ActionName } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 
 @Injectable()
 export class BuyAnimalService {
@@ -34,7 +34,7 @@ export class BuyAnimalService {
     }: BuyAnimalRequest): Promise<BuyAnimalResponse> {
         const mongoSession = await this.connection.startSession()
 
-        let actionMessage: ActionEmittedMessage | undefined
+        let actionMessage: EmitActionPayload | undefined
         try {
             const result = await mongoSession.withTransaction(async (mongoSession) => {
                 const animal = await this.connection
@@ -155,7 +155,8 @@ export class BuyAnimalService {
                 actionMessage = {
                     action: ActionName.BuyAnimal,
                     success: true,
-                    placedItemId: placedItemAnimalId
+                    placedItemId: placedItemAnimalId,
+                    userId,
                 }
 
                 return {} // Return an empty object (response)
