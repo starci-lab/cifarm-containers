@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from "@nestjs/common"
 import { ChainKey, envConfig, Network } from "@src/env"
-import { HONEYCOMB_EDGE_CLIENT_URL } from "./constants"
-import createEdgeClient, { ResourceStorageEnum } from "@honeycomb-protocol/edge-client"
+import { edgeClientUrlMap, HONEYCOMB_EDGE_CLIENT_URL } from "./constants"
+import createEdgeClient, { CreateSplStakingPoolMetadataInput, ResourceStorageEnum } from "@honeycomb-protocol/edge-client"
 import { EdgeClient } from "@honeycomb-protocol/edge-client/client/types"
 import { MODULE_OPTIONS_TOKEN } from "./honeycomb.module-definition"
 import { HoneycombOptions } from "./types"
@@ -13,15 +13,16 @@ import { sendTransaction } from "@honeycomb-protocol/edge-client/client/helpers"
 @Injectable()
 export class HoneycombService {
     private readonly logger = new Logger(HoneycombService.name)
-    private readonly edgeClient: EdgeClient
     private authorityKeypairs: Record<Network, Keypair>
+    private edgeClients: Record<Network, EdgeClient>
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: HoneycombOptions,
         private readonly solanaCoreService: SolanaCoreService
     ) {
-        this.edgeClient = createEdgeClient(HONEYCOMB_EDGE_CLIENT_URL, true)
-
+        for (const network of Object.values(Network)) {
+            this.edgeClients[network] = createEdgeClient(edgeClientUrlMap[network], true)
+        }
         this.authorityKeypairs = {
             [Network.Mainnet]: this.solanaCoreService.getKeypair(
                 (this.options.authorityPrivateKeys?.[Network.Mainnet]) ??
@@ -40,14 +41,12 @@ export class HoneycombService {
 
     private signTransaction({ network, parsedTransaction }: SignTransactionParams) {
         const tx = VersionedTransaction.deserialize(decode(parsedTransaction))
-        console.log(tx)
         tx.sign([this.authorityKeypairs[network]])
-        console.log(tx)
         return encode(tx.serialize())
     }
 
     public sendTransaction({ txResponse, network = Network.Testnet }: SendTransactionParams) {
-        return sendTransaction(this.edgeClient, txResponse, [this.authorityKeypairs[network]])
+        return sendTransaction(this.edgeClients[network], txResponse, [this.authorityKeypairs[network]])
     }
 
     public async createCreateCreateProjectTransaction({
@@ -61,7 +60,7 @@ export class HoneycombService {
                 project: projectAddress, // This is the project address once it'll be created
                 tx: txResponse // This is the transaction response, you'll need to sign and send this transaction
             }
-        } = await this.edgeClient.createCreateProjectTransaction({
+        } = await this.edgeClients[network].createCreateProjectTransaction({
             name: projectName, // Name of the project
             authority: this.authorityKeypairs[network].publicKey.toBase58(), // Public key of the project authority, this authority has complete control over the project
             profileDataConfig: {
@@ -98,7 +97,7 @@ export class HoneycombService {
                 resource: resourceAddress, // This is the resource address once it'll be created
                 tx: txResponse // This is the transaction response, you'll need to sign and send this transaction
             }
-        } = await this.edgeClient.createCreateNewResourceTransaction({
+        } = await this.edgeClients[network].createCreateNewResourceTransaction({
             project: projectAddress,
             authority: this.authorityKeypairs[network].publicKey.toBase58(), // Public key of the resource authority, this authority has complete control over the resource
             params: {
@@ -132,7 +131,7 @@ export class HoneycombService {
     }: CreateMintResourceTransactionParams): Promise<CreateMintResourceTransactionResponse> {
         const {
             createMintResourceTransaction: txResponse // This is the transaction response, you'll need to sign and send this transaction
-        } = await this.edgeClient.createMintResourceTransaction({
+        } = await this.edgeClients[network].createMintResourceTransaction({
             resource: resourceAddress.toString(), // Resource public key as a string
             amount: amount.toString(), // Amount of the resource to mint
             authority: this.authorityKeypairs[network].publicKey.toBase58(), // Project authority's public key
@@ -145,6 +144,36 @@ export class HoneycombService {
         })
 
         return { txResponse: { ...txResponse, transaction: signedTransaction } }
+    }
+
+    public async createCreateSplStakingPoolTransaction({
+        network = Network.Testnet,
+        projectAddress,
+        tokenAddress,
+        delegateAuthority,
+        payerAddress,
+        metadata
+    }: CreateCreateSplStakingPoolTransactionParams): Promise<CreateCreateSplStakingPoolTransactionResponse> {
+        const {
+            createCreateSplStakingPoolTransaction: {
+                tx: txResponse, // The transaction response, you'll need to sign and send this transaction
+                splStakingPoolAddress
+            },
+        } = await this.edgeClients[network].createCreateSplStakingPoolTransaction({
+            project: projectAddress.toString(),
+            stakeTokenMint: tokenAddress.toString(), // Token's mint address in string format
+            authority: this.authorityKeypairs[network].publicKey.toBase58(), // Authority's pubkey address in string format
+            delegateAuthority, // Optional, delegate authority's pubkey address in string format
+            payer: payerAddress, // Optional, fee payer's pubkey address in string format
+            metadata
+        })
+
+        const signedTransaction = this.signTransaction({
+            network,
+            parsedTransaction: txResponse.transaction
+        })
+            
+        return { txResponse: { ...txResponse, transaction: signedTransaction }, splStakingPoolAddress }
     }
 }
 
@@ -223,4 +252,17 @@ export enum HoneycombPrefix {
 export interface SendTransactionParams {
     txResponse: EdgeTxResponse
     network?: Network
+}
+
+export interface CreateCreateSplStakingPoolTransactionParams extends BaseHoneycombTransactionParams {
+    projectAddress: string
+    tokenAddress: string
+    delegateAuthority: string
+    payerAddress: string
+    tokenStakingPoolName: string
+    metadata: CreateSplStakingPoolMetadataInput
+}
+
+export interface CreateCreateSplStakingPoolTransactionResponse extends BaseHoneycombTransactionResponse {
+    splStakingPoolAddress: string
 }

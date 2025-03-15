@@ -45,7 +45,7 @@ export class MintResourceCommand extends CommandRunner {
     @Option({
         flags: "-a, --amount <amount>",
         description: "Amount to mint",
-        defaultValue: 100
+        defaultValue: 10000000 // 10 $CARROT
     })
     parseAmount(amount: string): number {
         return parseInt(amount)

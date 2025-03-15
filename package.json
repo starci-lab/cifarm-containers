@@ -46,7 +46,7 @@
     "@graphql-tools/utils": "9.2.1",
     "@grpc/grpc-js": "^1.12.2",
     "@grpc/proto-loader": "0.7.13",
-    "@honeycomb-protocol/edge-client": "^0.0.7-beta.13",
+    "@honeycomb-protocol/edge-client": "^0.0.7-beta.14",
     "@keyv/redis": "^4.2.0",
     "@kubernetes/client-node": "0.22.1",
     "@metaplex-foundation/mpl-token-metadata": "3.2.1",
