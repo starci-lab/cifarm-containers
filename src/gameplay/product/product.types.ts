@@ -14,6 +14,12 @@ export interface ComputeTileQualityChanceParams {
     qualityProductChanceStack: number
 }
 
+export interface ComputeFruitQualityChanceParams {
+    fruitInfo: FruitInfoSchema
+    qualityProductChanceLimit: number
+    qualityProductChanceStack: number
+}
+
 export interface UpdateTileInfoAfterHarvestParams {
     tileInfo: TileInfoSchema
 }

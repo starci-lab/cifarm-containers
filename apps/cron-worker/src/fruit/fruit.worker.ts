@@ -2,6 +2,7 @@ import { FruitJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
+import { createObjectId } from "@src/common"
 import {
     FruitCurrentState,
     FruitRandomness,
@@ -13,14 +14,11 @@ import {
     PlacedItemTypeSchema,
     SystemId,
     SystemSchema,
-    TILE,
-    TILE_INFO,
-    TileSchema
+    TILE_INFO
 } from "@src/databases"
-import { Job } from "bullmq"
 import { DateUtcService } from "@src/date"
 import { ProductService } from "@src/gameplay"
-import { createObjectId } from "@src/common"
+import { Job } from "bullmq"
 import { Connection } from "mongoose"
 
 @Processor(bullData[BullQueueName.Fruit].name)
@@ -75,16 +73,10 @@ export class FruitWorker extends WorkerHost {
             const promise = async () => {
                 const session = await this.connection.startSession()
                 try {
-                    const placedItemType = await this.connection
-                        .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                        .findById(placedItem.placedItemType)
-                        .populate(TILE)
-                        .session(session)
                     const fruit = await this.connection
                         .model<FruitSchema>(FruitSchema.name)
                         .findById(placedItem.fruitInfo.fruit)
                         .session(session)
-                    const tile = placedItemType.tile as TileSchema
                     // Add time to the seed growth
                     const updatePlacedItem = () => {
                         // return if the current stage is already max stage
@@ -136,10 +128,10 @@ export class FruitWorker extends WorkerHost {
                             placedItem.fruitInfo.harvestQuantityRemaining =
                                     fruit.maxHarvestQuantity
                         }
-                        const chance = this.productService.computeTileQualityChance({
-                            tileInfo: placedItem.tileInfo,
-                            qualityProductChanceLimit: tile.qualityProductChanceLimit,
-                            qualityProductChanceStack: tile.qualityProductChanceStack
+                        const chance = this.productService.computeFruitQualityChance({
+                            fruitInfo: placedItem.fruitInfo,
+                            qualityProductChanceLimit: fruit.qualityProductChanceLimit,
+                            qualityProductChanceStack: fruit.qualityProductChanceStack
                         })
                         if (Math.random() < chance) {
                             placedItem.fruitInfo.isQuality = true

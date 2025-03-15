@@ -26,7 +26,6 @@ export class TileSeeder implements Seeder {
                 _id: createObjectId(TileId.BasicTile),
                 displayId: TileId.BasicTile,
                 price: 1000,
-                maxOwnership: 50,
                 isNft: false,
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,

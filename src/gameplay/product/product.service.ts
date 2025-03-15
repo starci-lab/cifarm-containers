@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import {
     ComputeAnimalQualityChanceParams,
+    ComputeFruitQualityChanceParams,
     ComputeTileQualityChanceParams,
     UpdateAnimalInfoAfterCollectParams,
     UpdateAnimalInfoAfterCollectResult,
@@ -35,6 +36,16 @@ export class ProductService {
         harvestCount += 1
         return Math.min(qualityProductChanceLimit, qualityProductChanceStack * harvestCount)
     }
+
+    public computeFruitQualityChance({
+        fruitInfo: { harvestCount },
+        qualityProductChanceLimit,
+        qualityProductChanceStack
+    }: ComputeFruitQualityChanceParams): number {
+        harvestCount += 1
+        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * harvestCount)
+    }
+
 
     //update the tile information after harvest
     public updateTileInfoAfterHarvest({
