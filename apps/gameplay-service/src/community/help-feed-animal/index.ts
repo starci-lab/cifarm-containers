@@ -1,0 +1,5 @@
+export * from "./help-feed-animal.dto"
+export * from "./help-feed-animal.module"
+export * from "./help-feed-animal.service"
+export * from "./help-feed-animal.controller"
+//export * from "./claim.spec"

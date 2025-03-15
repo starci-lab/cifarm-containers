@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common"
 import { BullModule, BullQueueName } from "@src/bull"
-import { CropService } from "./fruit.service"
+import { FruitService } from "./fruit.service"
 
 @Module({
     imports: [
         BullModule.registerQueue({
-            queueName: BullQueueName.Crop
+            queueName: BullQueueName.Fruit
         })
     ],
-    providers: [CropService]
+    providers: [FruitService]
 })
-export class CropModule {}
+export class FruitModule {}

@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { IsInt } from "class-validator"
 
-export class CropJobData {
+export class FruitJobData {
     @IsInt()
     @ApiProperty({ example: 0, description: "Number of items to skip in the paginated request" })
         skip: number

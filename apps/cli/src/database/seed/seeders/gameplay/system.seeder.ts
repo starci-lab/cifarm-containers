@@ -53,6 +53,10 @@ export class SystemSeeder implements Seeder {
                 energyConsume: 1,
                 experiencesGain: 3
             },
+            helpFeedAnimal: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
             helpCureAnimal: {
                 energyConsume: 1,
                 experiencesGain: 3
@@ -94,6 +98,30 @@ export class SystemSeeder implements Seeder {
                 experiencesGain: 3
             },
             harvestCrop: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            useFruitFertilizer: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            useBugNet: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            helpUseFruitFertilizer: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            helpUseBugNet: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            harvestFruit: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            thiefFruit: {
                 energyConsume: 1,
                 experiencesGain: 3
             }

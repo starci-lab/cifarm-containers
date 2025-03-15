@@ -96,7 +96,21 @@ import {
     BuyToolRequest,
     BuyToolResponse,
     BuyFruitRequest,
-    BuyFruitResponse
+    BuyFruitResponse,
+    HelpFeedAnimalRequest,
+    HelpFeedAnimalResponse,
+    HarvestFruitRequest,
+    HarvestFruitResponse,
+    HelpUseBugNetRequest,
+    HelpUseBugNetResponse,
+    HelpUseFruitFertilizerRequest,
+    HelpUseFruitFertilizerResponse,
+    ThiefFruitRequest,
+    ThiefFruitResponse,
+    UseBugNetRequest,
+    UseBugNetResponse,
+    UseFruitFertilizerRequest,
+    UseFruitFertilizerResponse
 } from "@apps/gameplay-service"
 import { ClientGrpc } from "@nestjs/microservices"
 import { ApiBearerAuth, ApiResponse, ApiTags } from "@nestjs/swagger"
@@ -241,6 +255,25 @@ export class GameplayController implements OnModuleInit {
     ): Promise<HelpCureAnimalResponse> {
         return await lastValueFrom(
             this.gameplayService.helpCureAnimal({
+                ...request,
+                userId: user.id
+            })
+        )
+    }
+
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: HelpFeedAnimalResponse
+    })
+    @Post("/help-feed-animal")
+    public async helpFeedAnimal(
+        @User() user: UserLike,
+        @Body() request: HelpFeedAnimalRequest
+    ): Promise<HelpFeedAnimalResponse> {
+        return await lastValueFrom(
+            this.gameplayService.helpFeedAnimal({
                 ...request,
                 userId: user.id
             })
@@ -953,4 +986,126 @@ export class GameplayController implements OnModuleInit {
             })
         )
     }
+
+    // Harvest fruit
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        type: HarvestFruitResponse
+    })
+    @Post("/harvest-fruit")
+    public async harvestFruit(
+        @User() user: UserLike,
+        @Body() request: HarvestFruitRequest
+    ): Promise<HarvestFruitResponse> {
+        return await lastValueFrom(
+            this.gameplayService.harvestFruit({
+                ...request,
+                userId: user.id
+            })
+        )
+    }
+
+    // Use bug net
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: UseBugNetResponse
+    })
+    @Post("/use-bug-net")
+    public async useBugNet(
+        @User() user: UserLike,
+        @Body() request: UseBugNetRequest
+    ): Promise<UseBugNetResponse> {
+        return await lastValueFrom(
+            this.gameplayService.useBugNet({
+                ...request,
+                userId: user.id
+            })
+        )
+    }
+
+    // Use fruit fertilizer
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: UseFruitFertilizerResponse
+    })
+    @Post("/use-fruit-fertilizer")
+    public async useFruitFertilizer(
+        @User() user: UserLike,
+        @Body() request: UseFruitFertilizerRequest
+    ): Promise<UseFruitFertilizerResponse> {
+        return await lastValueFrom(
+            this.gameplayService.useFruitFertilizer({
+                ...request,
+                userId: user.id
+            })
+        )
+    }
+
+    // Help use bug net
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: HelpUseBugNetResponse
+    })
+    @Post("/help-use-bug-net")
+    public async helpUseBugNet(
+        @User() user: UserLike,
+        @Body() request: HelpUseBugNetRequest
+    ): Promise<HelpUseBugNetResponse> {
+        return await lastValueFrom(
+            this.gameplayService.helpUseBugNet({
+                ...request,
+                userId: user.id
+            })
+        )
+    }
+
+    // Help use fruit fertilizer
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.OK)
+    @ApiResponse({
+        type: HelpUseFruitFertilizerResponse
+    })
+    @Post("/help-use-fruit-fertilizer")
+    public async helpUseFruitFertilizer(
+        @User() user: UserLike,
+        @Body() request: HelpUseFruitFertilizerRequest
+    ): Promise<HelpUseFruitFertilizerResponse> {
+        return await lastValueFrom(
+            this.gameplayService.helpUseFruitFertilizer({
+                ...request,
+                userId: user.id
+            })
+        )
+    }
+
+    // Thief fruit
+    @UseGuards(RestJwtAuthGuard)
+    @ApiBearerAuth()
+    @HttpCode(HttpStatus.CREATED)
+    @ApiResponse({
+        type: ThiefFruitResponse
+    })
+    @Post("/thief-fruit")
+    public async thiefFruit(
+        @User() user: UserLike,
+        @Body() request: ThiefFruitRequest
+    ): Promise<ThiefFruitResponse> {
+        return await lastValueFrom(
+            this.gameplayService.thiefFruit({
+                ...request,
+                userId: user.id
+            })
+        )
+    }
+
+
 }

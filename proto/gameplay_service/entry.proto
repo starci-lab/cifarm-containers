@@ -40,6 +40,9 @@ service GameplayService {
     rpc UseHerbicide(UseHerbicideRequest) returns (google.protobuf.Empty);
     rpc UsePesticide(UsePesticideRequest) returns (google.protobuf.Empty);
     rpc WaterCrop(WaterCropRequest) returns (google.protobuf.Empty);
+    rpc UseBugNet(UseBugNetRequest) returns (google.protobuf.Empty);
+    rpc UseFruitFertilizer(UseFruitFertilizerRequest) returns (google.protobuf.Empty);
+    rpc HarvestFruit(HarvestFruitRequest) returns (HarvestFruitResponse);
 
     // Delivery methods
     rpc DeliverProduct(DeliverProductRequest) returns (google.protobuf.Empty);
@@ -61,6 +64,10 @@ service GameplayService {
     rpc HelpCureAnimal(HelpCureAnimalRequest) returns (google.protobuf.Empty);
     rpc ThiefCrop(ThiefCropRequest) returns (ThiefCropResponse);
     rpc ThiefAnimalProduct(ThiefAnimalProductRequest) returns (ThiefAnimalProductResponse);
+    rpc HelpUseBugNet(HelpUseBugNetRequest) returns (google.protobuf.Empty);
+    rpc HelpUseFruitFertilizer(HelpUseFruitFertilizerRequest) returns (google.protobuf.Empty);
+    rpc HelpFeedAnimal(HelpFeedAnimalRequest) returns (google.protobuf.Empty);
+    rpc ThiefFruit(ThiefFruitRequest) returns (ThiefFruitResponse);
 
     // Placement methods
     rpc Move(MoveRequest) returns (google.protobuf.Empty);

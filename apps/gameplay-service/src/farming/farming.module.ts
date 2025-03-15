@@ -8,6 +8,9 @@ import { FeedAnimalModule } from "./feed-animal"
 import { CureAnimalModule } from "./cure-animal"
 import { UseFertilizerModule } from "./use-fertilizer"
 import { WaterCropModule } from "./water-crop"
+import { HarvestFruitModule } from "./harvest-fruit"
+import { UseBugNetModule } from "./use-bug-net"
+import { UseFruitFertilizerModule } from "./use-fruit-fertilizer"
 
 @Module({
     imports: [
@@ -20,6 +23,9 @@ import { WaterCropModule } from "./water-crop"
         UseHerbicideModule,
         UsePesticideModule,
         WaterCropModule,
+        HarvestFruitModule,
+        UseBugNetModule,
+        UseFruitFertilizerModule
     ]
 })
 export class FarmingModule {}

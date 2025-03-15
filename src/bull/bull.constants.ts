@@ -67,6 +67,21 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
                 count: queueOptions.FAILED_JOB_COUNT
             },
         }
+    },
+    [BullQueueName.Fruit]: {
+        name: "FRUIT_QUEUE",
+        batchSize: 10000,
+        prefix: formatWithBraces("fruit"),
+        opts: {
+            removeOnComplete: {
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.COMPLETE_JOB_COUNT
+            },
+            removeOnFail: {
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.FAILED_JOB_COUNT
+            },
+        }
     }
 }
 

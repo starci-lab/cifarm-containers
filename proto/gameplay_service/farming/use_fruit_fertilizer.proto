@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package gameplay_service;
+
+message UseFruitFertilizerRequest {
+    string userId = 1;
+    string placedItemFruitId = 2;
+    string inventorySupplyId = 3;
+}

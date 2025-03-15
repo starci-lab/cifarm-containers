@@ -9,5 +9,8 @@ export * from "./use-fertilizer"
 export * from "./use-herbicide"
 export * from "./use-pesticide"
 export * from "./water-crop"
+export * from "./harvest-fruit"
+export * from "./use-bug-net"
+export * from "./use-fruit-fertilizer"
 
 

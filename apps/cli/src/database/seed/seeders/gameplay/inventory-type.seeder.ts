@@ -322,7 +322,8 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
-                supply: createObjectId(SupplyId.FruitFertilizer)
+                supply: createObjectId(SupplyId.FruitFertilizer),
+                type: InventoryType.Supply
             },
             {
                 _id: createObjectId(InventoryTypeId.BasicFertilizer),
@@ -427,11 +428,12 @@ export class InventoryTypeSeeder implements Seeder {
             {
                 _id: createObjectId(InventoryTypeId.BugNet),
                 displayId: InventoryTypeId.BugNet,
+                stackable: false,
                 asTool: true,
                 deliverable: false,
-                maxStack: 64,
                 placeable: false,
                 tool: createObjectId(ToolId.BugNet),
+                type: InventoryType.Tool
             },
         ]
 

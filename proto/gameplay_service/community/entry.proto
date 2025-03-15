@@ -12,3 +12,7 @@ import "./thief_crop.proto";
 import "./thief_animal_product.proto";
 import "./return.proto";
 import "./visit.proto";
+import "./help_feed_animal.proto";
+import "./help_use_bug_net.proto";
+import "./help_use_fruit_fertilizer.proto";
+import "./thief_fruit.proto";

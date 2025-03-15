@@ -1,5 +1,6 @@
-import { AnimalInfoSchema, TileInfoSchema } from "@src/databases"
+import { AnimalInfoSchema, FruitSchema, TileInfoSchema } from "@src/databases"
 import { DeepPartial } from "@src/common"
+import { FruitInfoSchema } from "@src/databases/mongoose/gameplay/schemas/fruit-info.schema"
 
 export interface ComputeAnimalQualityChanceParams {
     animalInfo: AnimalInfoSchema
@@ -21,3 +22,10 @@ export interface UpdateAnimalInfoAfterCollectParams {
     animalInfo: AnimalInfoSchema
 }
 export type UpdateAnimalInfoAfterCollectResult = DeepPartial<AnimalInfoSchema>
+
+export interface UpdateFruitInfoAfterHarvestParams {
+    fruitInfo: FruitInfoSchema,
+    fruit: FruitSchema
+}
+
+export type UpdateFruitInfoAfterHarvestResult = DeepPartial<FruitInfoSchema>

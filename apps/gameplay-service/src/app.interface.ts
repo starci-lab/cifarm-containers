@@ -14,6 +14,12 @@ import {
     FollowResponse,
     HelpCureAnimalRequest,
     HelpCureAnimalResponse,
+    HelpFeedAnimalRequest,
+    HelpFeedAnimalResponse,
+    HelpUseBugNetRequest,
+    HelpUseBugNetResponse,
+    HelpUseFruitFertilizerRequest,
+    HelpUseFruitFertilizerResponse,
     HelpUseHerbicideRequest,
     HelpUseHerbicideResponse,
     HelpUsePesticideRequest,
@@ -26,6 +32,8 @@ import {
     ThiefAnimalProductResponse,
     ThiefCropRequest,
     ThiefCropResponse,
+    ThiefFruitRequest,
+    ThiefFruitResponse,
     UnfollowRequest,
     UnfollowResponse,
     VisitRequest,
@@ -57,7 +65,13 @@ import {
     UsePesticideRequest,
     UsePesticideResponse,
     WaterCropRequest,
-    WaterCropResponse
+    WaterCropResponse,
+    HarvestFruitRequest,
+    HarvestFruitResponse,
+    UseBugNetRequest,
+    UseBugNetResponse,
+    UseFruitFertilizerRequest,
+    UseFruitFertilizerResponse
 } from "./farming"
 import {
     BuyAnimalRequest,
@@ -102,6 +116,7 @@ export interface IGameplayService {
     // Community
     follow(request: FollowRequest): Observable<FollowResponse>
     helpCureAnimal(request: HelpCureAnimalRequest): Observable<HelpCureAnimalResponse>
+    helpFeedAnimal(request: HelpFeedAnimalRequest): Observable<HelpFeedAnimalResponse>
     helpUseHerbicide(request: HelpUseHerbicideRequest): Observable<HelpUseHerbicideResponse>
     helpUsePesticide(request: HelpUsePesticideRequest): Observable<HelpUsePesticideResponse>
     helpWater(request: HelpWaterRequest): Observable<HelpWaterResponse>
@@ -110,6 +125,9 @@ export interface IGameplayService {
     unfollow(request: UnfollowRequest): Observable<UnfollowResponse>
     visit(request: VisitRequest): Observable<VisitResponse>
     return(request: ReturnRequest): Observable<ReturnResponse>
+    helpUseBugNet(request: HelpUseBugNetRequest): Observable<HelpUseBugNetResponse>
+    helpUseFruitFertilizer(request: HelpUseFruitFertilizerRequest): Observable<HelpUseFruitFertilizerResponse>
+    thiefFruit(request: ThiefFruitRequest): Observable<ThiefFruitResponse>
 
     // Delivery
     deliverProduct(request: DeliverProductRequest): Observable<DeliverProductResponse>
@@ -128,6 +146,9 @@ export interface IGameplayService {
     useHerbicide(request: UseHerbicideRequest): Observable<UseHerbicideResponse>
     usePesticide(request: UsePesticideRequest): Observable<UsePesticideResponse>
     waterCrop(request: WaterCropRequest): Observable<WaterCropResponse>
+    harvestFruit(request: HarvestFruitRequest): Observable<HarvestFruitResponse>
+    useBugNet(request: UseBugNetRequest): Observable<UseBugNetResponse>
+    useFruitFertilizer(request: UseFruitFertilizerRequest): Observable<UseFruitFertilizerResponse>
 
     // Placement
     move(request: MoveRequest): Observable<MoveResponse>

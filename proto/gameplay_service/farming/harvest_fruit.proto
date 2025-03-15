@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package gameplay_service;
+
+message HarvestFruitRequest {
+    string userId = 1;
+    string placedItemFruitId = 2;
+}
+
+message HarvestFruitResponse {
+    int32 quantity = 1;
+}

@@ -9,6 +9,10 @@ import { HelpWaterModule } from "./help-water"
 import { ThiefCropModule } from "./thief-crop"
 import { ThiefAnimalProductModule } from "./thief-animal-product"
 import { HelpCureAnimalModule } from "./help-cure-animal"
+import { HelpFeedAnimalModule } from "./help-feed-animal"
+import { HelpUseBugNetModule } from "./help-use-bug-net"
+import { HelpUseFruitFertilizerModule } from "./help-use-fruit-fertilizer"
+import { ThiefFruitModule } from "./thief-fruit"
 
 @Module({
     imports: [
@@ -21,7 +25,11 @@ import { HelpCureAnimalModule } from "./help-cure-animal"
         HelpUsePesticideModule,
         HelpUseHerbicideModule,
         ThiefCropModule,
-        ThiefAnimalProductModule
+        ThiefAnimalProductModule,
+        HelpFeedAnimalModule,
+        HelpUseBugNetModule,
+        HelpUseFruitFertilizerModule,
+        ThiefFruitModule
     ]
 })
 export class CommunityModule {}

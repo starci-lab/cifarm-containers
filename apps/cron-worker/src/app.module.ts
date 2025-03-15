@@ -10,6 +10,7 @@ import { GameplayModule } from "@src/gameplay"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { KafkaModule } from "@src/brokers"
+import { FruitModule } from "./fruit"
 
 @Module({
     imports: [
@@ -29,7 +30,8 @@ import { KafkaModule } from "@src/brokers"
         CropModule,
         AnimalModule,
         DeliveryModule,
-        EnergyModule
+        EnergyModule,
+        FruitModule
     ]
 })
 export class AppModule {}
