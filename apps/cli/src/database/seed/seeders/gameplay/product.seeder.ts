@@ -3,6 +3,7 @@ import { createObjectId, DeepPartial } from "@src/common"
 import {
     AnimalId,
     CropId,
+    FruitId,
     InjectMongoose,
     ProductId,
     ProductSchema,
@@ -192,7 +193,47 @@ export class ProductSeeder implements Seeder {
                 tokenAmount: 1,
                 type: ProductType.Crop,
                 crop: createObjectId(CropId.Watermelon),
-            }
+            },
+            {
+                _id: createObjectId(ProductId.Banana),
+                displayId: ProductId.Banana,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 10,
+                tokenAmount: 1,
+                type: ProductType.Fruit,
+                fruit: createObjectId(FruitId.Banana),
+            },
+            {
+                _id: createObjectId(ProductId.BananaQuality),
+                displayId: ProductId.BananaQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 10,
+                tokenAmount: 1,
+                type: ProductType.Fruit,
+                fruit: createObjectId(FruitId.Banana),
+            },
+            {
+                _id: createObjectId(ProductId.Apple),
+                displayId: ProductId.Apple,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 10,
+                tokenAmount: 1,
+                type: ProductType.Fruit,
+                fruit: createObjectId(FruitId.Apple),
+            },
+            {
+                _id: createObjectId(ProductId.AppleQuality),
+                displayId: ProductId.AppleQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 10,
+                tokenAmount: 1,
+                type: ProductType.Fruit,
+                fruit: createObjectId(FruitId.Apple),
+            },
         ]
         
         await this.connection.model<ProductSchema>(ProductSchema.name).insertMany(data)

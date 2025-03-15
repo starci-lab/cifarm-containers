@@ -82,6 +82,18 @@ export class AnimalRandomness {
 }
 
 @ObjectType()
+export class FruitRandomness {
+    @Field(() => Float)
+        thief3: number
+    @Field(() => Float)
+        thief2: number
+    @Field(() => Float)
+        needFertilizer: number
+    @Field(() => Float)
+        hasCaterpillar: number
+}
+
+@ObjectType()
 export class Positions {
     //starter tiles
     @Field(() => [Position])

@@ -10,6 +10,7 @@ import {
     DailyRewardInfo,
     DefaultInfo,
     EnergyRegen,
+    FruitRandomness,
     HoneycombInfo,
     InjectMongoose,
     SpinInfo,
@@ -107,6 +108,12 @@ export class SystemSeeder implements Seeder {
             sickChance: 0.5,
             thief2: 0.8,
             thief3: 0.95
+        }
+        const fruitRandomness: FruitRandomness = {
+            thief2: 0.8,
+            thief3: 0.95,
+            hasCaterpillar: 1,
+            needFertilizer: 0.5
         }
         const defaultInfo: DefaultInfo = {
             golds: 1000, 
@@ -237,6 +244,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.AnimalRandomness),
                 displayId: SystemId.AnimalRandomness,
                 value: animalRandomness
+            },
+            {
+                _id: createObjectId(SystemId.FruitRandomness),
+                displayId: SystemId.FruitRandomness,
+                value: fruitRandomness
             },
             {
                 _id: createObjectId(SystemId.DefaultInfo),

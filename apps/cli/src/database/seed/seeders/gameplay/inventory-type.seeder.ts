@@ -206,6 +206,46 @@ export class InventoryTypeSeeder implements Seeder {
                 type: InventoryType.Product
             },
             {
+                _id: createObjectId(InventoryTypeId.Banana),
+                displayId: InventoryTypeId.Banana,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.Banana),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.BananaQuality),
+                displayId: InventoryTypeId.BananaQuality,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.BananaQuality),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Apple),
+                displayId: InventoryTypeId.Apple,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.Apple),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.AppleQuality),
+                displayId: InventoryTypeId.AppleQuality,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.AppleQuality),
+                type: InventoryType.Product
+            },
+            {
                 _id: createObjectId(InventoryTypeId.TurnipSeed),
                 displayId: InventoryTypeId.TurnipSeed,
                 asTool: false,
@@ -274,6 +314,15 @@ export class InventoryTypeSeeder implements Seeder {
                 placeable: false,
                 crop: createObjectId(CropId.BellPepper),
                 type: InventoryType.Seed
+            },
+            {
+                _id: createObjectId(InventoryTypeId.FruitFertilizer),
+                displayId: InventoryTypeId.FruitFertilizer,
+                asTool: true,
+                deliverable: false,
+                maxStack: 64,
+                placeable: false,
+                supply: createObjectId(SupplyId.FruitFertilizer)
             },
             {
                 _id: createObjectId(InventoryTypeId.BasicFertilizer),
@@ -374,6 +423,15 @@ export class InventoryTypeSeeder implements Seeder {
                 placeable: false,
                 tool: createObjectId(ToolId.AnimalMedicine),
                 type: InventoryType.Tool
+            },
+            {
+                _id: createObjectId(InventoryTypeId.BugNet),
+                displayId: InventoryTypeId.BugNet,
+                asTool: true,
+                deliverable: false,
+                maxStack: 64,
+                placeable: false,
+                tool: createObjectId(ToolId.BugNet),
             },
         ]
 

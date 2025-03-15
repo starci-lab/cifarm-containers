@@ -2,7 +2,8 @@
 // Product Type Enum
 export enum ProductType {
     Animal = "animal",
-    Crop = "crop"
+    Crop = "crop",
+    Fruit = "fruit",
 }
 
 // Animal Type Enum
@@ -22,7 +23,8 @@ export enum AvailableInType {
 export enum SupplyType {
     Fertilizer = "fertilizer",
     AnimalFeed = "animalFeed",
-    AnimalPill = "animalPill"
+    AnimalPill = "animalPill",
+    FruitFertilizer = "fruitFertilizer",
 }
 
 // Spin Type Enum

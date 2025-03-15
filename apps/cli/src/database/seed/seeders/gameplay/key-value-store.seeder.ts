@@ -39,6 +39,13 @@ export class KeyValueStoreSeeder implements Seeder {
                 value: {
                     date: dayjs().utc().toDate()
                 }
+            },
+            {
+                _id: createObjectId(KeyValueStoreId.FruitGrowthLastSchedule),
+                displayId: KeyValueStoreId.FruitGrowthLastSchedule,
+                value: {
+                    date: dayjs().utc().toDate()
+                }
             }
         ]
         await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).insertMany(data)

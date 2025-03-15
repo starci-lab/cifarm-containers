@@ -63,6 +63,7 @@ export enum DailyRewardPossibilityKey {
 export enum SupplyId {
     BasicFertilizer = "basicFertilizer",
     AnimalFeed = "animalFeed",
+    FruitFertilizer = "fruitFertilizer",
 }
 
 // Tile Enum
@@ -80,6 +81,7 @@ export enum ToolId {
     Pesticide = "pesticide",
     Hammer = "hammer",
     AnimalMedicine = "animalMedicine",
+    BugNet = "bugNet",
 }
 
 // Pet Enum
@@ -107,13 +109,18 @@ export enum ProductId {
     Cucumber = "cucumber",
     CucumberQuality = "cucumberQuality",
     BellPepper = "bellPepper",
-    BellPepperQuality = "bellPepperQuality"
+    BellPepperQuality = "bellPepperQuality",
+    Banana = "banana",
+    BananaQuality = "bananaQuality",
+    Apple = "apple",
+    AppleQuality = "appleQuality",
 }
 
 export enum SystemId {
     Activities = "activities",
     CropRandomness = "cropRandomness",
     AnimalRandomness = "animalRandomness",
+    FruitRandomness = "fruitRandomness",
     DefaultInfo = "defaultInfo",
     SpinInfo = "spinInfo",
     EnergyRegen = "energyRegen",
@@ -124,7 +131,8 @@ export enum SystemId {
 export enum KeyValueStoreId {
     CropGrowthLastSchedule = "cropGrowthLastSchedule",
     AnimalGrowthLastSchedule = "animalGrowthLastSchedule",
-    EnergyRegenerationLastSchedule = "energyRegenerationLastSchedule"
+    EnergyRegenerationLastSchedule = "energyRegenerationLastSchedule",
+    FruitGrowthLastSchedule = "fruitGrowthLastSchedule",
 }
 
 export enum InventoryTypeId {
@@ -137,6 +145,7 @@ export enum InventoryTypeId {
     BellPepperSeed = "bellPepperSeed",
     BasicFertilizer = "basicFertilizer",
     AnimalFeed = "animalFeed",
+    FruitFertilizer = "fruitFertilizer",
     Egg = "egg",
     EggQuality = "eggQuality",
     Milk = "milk",
@@ -155,6 +164,10 @@ export enum InventoryTypeId {
     CucumberQuality = "cucumberQuality",
     BellPepper = "bellPepper",
     BellPepperQuality = "bellPepperQuality",
+    Banana = "banana",
+    BananaQuality = "bananaQuality",
+    Apple = "apple",
+    AppleQuality = "appleQuality",
     Hand = "hand",
     Crate = "crate",
     ThiefHand = "thiefHand",
@@ -163,6 +176,7 @@ export enum InventoryTypeId {
     Herbicide = "herbicide",
     Pesticide = "pesticide",
     AnimalMedicine = "animalMedicine",
+    BugNet = "bugNet",
 }
 
 export enum PlacedItemTypeId {
