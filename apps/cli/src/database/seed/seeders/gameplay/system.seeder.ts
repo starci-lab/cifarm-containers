@@ -10,6 +10,7 @@ import {
     DailyRewardInfo,
     DefaultInfo,
     EnergyRegen,
+    FruitRandomness,
     HoneycombInfo,
     InjectMongoose,
     SpinInfo,
@@ -49,6 +50,10 @@ export class SystemSeeder implements Seeder {
                 experiencesGain: 3
             },
             feedAnimal: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            helpFeedAnimal: {
                 energyConsume: 1,
                 experiencesGain: 3
             },
@@ -95,6 +100,30 @@ export class SystemSeeder implements Seeder {
             harvestCrop: {
                 energyConsume: 1,
                 experiencesGain: 3
+            },
+            useFruitFertilizer: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            useBugNet: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            helpUseFruitFertilizer: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            helpUseBugNet: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            harvestFruit: {
+                energyConsume: 1,
+                experiencesGain: 3
+            },
+            thiefFruit: {
+                energyConsume: 1,
+                experiencesGain: 3
             }
         }
         const cropRandomness: CropRandomness = {
@@ -107,6 +136,12 @@ export class SystemSeeder implements Seeder {
             sickChance: 0.5,
             thief2: 0.8,
             thief3: 0.95
+        }
+        const fruitRandomness: FruitRandomness = {
+            thief2: 0.8,
+            thief3: 0.95,
+            hasCaterpillar: 1,
+            needFertilizer: 0.5
         }
         const defaultInfo: DefaultInfo = {
             golds: 1000, 
@@ -237,6 +272,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.AnimalRandomness),
                 displayId: SystemId.AnimalRandomness,
                 value: animalRandomness
+            },
+            {
+                _id: createObjectId(SystemId.FruitRandomness),
+                displayId: SystemId.FruitRandomness,
+                value: fruitRandomness
             },
             {
                 _id: createObjectId(SystemId.DefaultInfo),

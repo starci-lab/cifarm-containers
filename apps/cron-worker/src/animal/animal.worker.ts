@@ -91,11 +91,12 @@ export class AnimalWorker extends WorkerHost {
                                 //if sick, the harvest quantity is the average of min and max harvest quantity
                                 if (placedItem.animalInfo.currentState === AnimalCurrentState.Sick) {
                                     placedItem.animalInfo.harvestQuantityRemaining =
-                                        (animal
-                                            .minHarvestQuantity +
-                                            animal
-                                                .maxHarvestQuantity) /
-                                        2
+                                    Math.floor((animal
+                                        .minHarvestQuantity +
+                                        animal
+                                            .maxHarvestQuantity) /
+                                    2)
+                                        
                                 } else {
                                     // if not sick, the harvest quantity is the max harvest quantity
                                     placedItem.animalInfo.harvestQuantityRemaining =

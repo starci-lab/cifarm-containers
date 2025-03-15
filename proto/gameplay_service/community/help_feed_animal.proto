@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package gameplay_service;
+
+message HelpFeedAnimalRequest {
+    string userId = 1;
+    string placedItemAnimalId = 2;
+}

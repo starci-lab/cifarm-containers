@@ -4,7 +4,8 @@ export enum BullQueueName {
     Crop = "crop",
     Animal = "animal",
     Delivery = "delivery",
-    Energy = "energy"
+    Energy = "energy",
+    Fruit = "fruit",
 }
 
 export interface BullQueueData {

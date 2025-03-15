@@ -57,6 +57,20 @@ export class Activities {
         helpCureAnimal: ActivityInfo
     @Field(() => ActivityInfo)
         harvestCrop: ActivityInfo
+    @Field(() => ActivityInfo)
+        helpFeedAnimal: ActivityInfo
+    @Field(() => ActivityInfo)
+        useFruitFertilizer: ActivityInfo
+    @Field(() => ActivityInfo)
+        useBugNet: ActivityInfo
+    @Field(() => ActivityInfo)
+        helpUseFruitFertilizer: ActivityInfo
+    @Field(() => ActivityInfo)
+        helpUseBugNet: ActivityInfo
+    @Field(() => ActivityInfo)
+        harvestFruit: ActivityInfo
+    @Field(() => ActivityInfo)
+        thiefFruit: ActivityInfo
 }
 
 @ObjectType()
@@ -79,6 +93,18 @@ export class AnimalRandomness {
         thief3: number
     @Field(() => Float)
         thief2: number
+}
+
+@ObjectType()
+export class FruitRandomness {
+    @Field(() => Float)
+        thief3: number
+    @Field(() => Float)
+        thief2: number
+    @Field(() => Float)
+        needFertilizer: number
+    @Field(() => Float)
+        hasCaterpillar: number
 }
 
 @ObjectType()

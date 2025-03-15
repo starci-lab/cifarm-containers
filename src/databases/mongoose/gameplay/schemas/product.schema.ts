@@ -5,6 +5,7 @@ import { StaticAbstractSchema } from "./abstract"
 import { Schema as MongooseSchema } from "mongoose"
 import { CropSchema } from "./crop.schema"
 import { AnimalSchema } from "./animal.schema"
+import { FruitSchema } from "./fruit.schema"
 
 @ObjectType()
 @Schema({ timestamps: true, collection: "products" })
@@ -36,6 +37,10 @@ export class ProductSchema extends StaticAbstractSchema<ProductId> {
     @Field(() => ID, { nullable: true })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: AnimalSchema.name })
         animal: AnimalSchema | string
+
+    @Field(() => ID, { nullable: true })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FruitSchema.name })
+        fruit: FruitSchema | string
 }
 
 // Generate Mongoose Schema

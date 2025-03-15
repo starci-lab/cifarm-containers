@@ -15,3 +15,11 @@ export enum AnimalCurrentState {
     Sick = "sick",
     Yield = "yield",
 }
+
+// Fruit Current State Enum
+export enum FruitCurrentState {
+    Normal = "normal",
+    NeedFertilizer = "needFertilizer",
+    IsInfested = "isInfested",
+    FullyMatured = "fullyMatured",
+}

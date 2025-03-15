@@ -21,6 +21,10 @@ export class AnimalGrowthLastSchedule {
 export class CropGrowthLastSchedule {
     date: Date
 }
+//fruit
+export class FruitGrowthLastSchedule {
+    date: Date
+}
 export class EnergyRegenerationLastSchedule {
     date: Date
 }

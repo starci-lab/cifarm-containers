@@ -1,4 +1,4 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { FruitId } from "../enums"
 import { StaticAbstractSchema } from "./abstract"
@@ -36,6 +36,14 @@ export class FruitSchema extends StaticAbstractSchema<FruitId> {
     @Field(() => Int)
     @Prop({ type: Number, required: true })
         minHarvestQuantity: number
+
+    @Field(() => Float)
+    @Prop({ type: Number, min: 0 })
+        qualityProductChanceStack: number
+    
+    @Field(() => Float)
+    @Prop({ type: Number, min: 0 })
+        qualityProductChanceLimit: number
 
     @Field(() => Int)
     @Prop({ type: Number, required: true })

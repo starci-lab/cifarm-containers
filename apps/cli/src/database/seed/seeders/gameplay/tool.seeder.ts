@@ -60,6 +60,13 @@ export class ToolSeeder implements Seeder {
                 price: 200,
                 unlockLevel: 5,
             },
+            {
+                _id: createObjectId(ToolId.BugNet),
+                displayId: ToolId.BugNet,
+                availableInShop: true,
+                price: 200,
+                unlockLevel: 10,
+            }
         ]
 
         await this.connection.model<ToolSchema>(ToolSchema.name).insertMany(data)

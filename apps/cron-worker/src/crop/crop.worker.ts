@@ -139,7 +139,7 @@ export class CropWorker extends WorkerHost {
                                 placedItem.seedGrowthInfo.currentState === CropCurrentState.IsWeedy
                         ) {
                             placedItem.seedGrowthInfo.harvestQuantityRemaining =
-                                    (crop.minHarvestQuantity + crop.maxHarvestQuantity) / 2
+                                    Math.floor((crop.minHarvestQuantity + crop.maxHarvestQuantity) / 2)
                         } else {
                             placedItem.seedGrowthInfo.harvestQuantityRemaining =
                                     crop.maxHarvestQuantity

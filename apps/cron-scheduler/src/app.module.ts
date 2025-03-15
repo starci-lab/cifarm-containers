@@ -13,6 +13,7 @@ import { KubernetesModule } from "@src/kubernetes"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { KafkaModule } from "@src/brokers"
+import { FruitModule } from "./fruit"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -44,7 +45,8 @@ import { KafkaModule } from "@src/brokers"
         CropModule,
         AnimalModule,
         DeliveryModule,
-        EnergyModule
+        EnergyModule,
+        FruitModule
     ]
 })
 export class AppModule {}
