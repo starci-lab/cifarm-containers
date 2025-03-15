@@ -26,7 +26,6 @@ export class CreateResourceCommand extends CommandRunner {
                 projectAddress: options.projectAddress,
                 storage: options.storage
             })
-            console.log(resourceAddress)
             const { signature } = await this.honeycombService.sendTransaction({
                 network: options.network,
                 txResponse
@@ -86,7 +85,7 @@ export class CreateResourceCommand extends CommandRunner {
     @Option({
         flags: "-s, --storage <storage>",
         description: "Resource storage",
-        defaultValue: ResourceStorageEnum.AccountState
+        defaultValue: ResourceStorageEnum.LedgerState
     })
     parseStorage(storage: string): ResourceStorageEnum {
         return storage as ResourceStorageEnum
@@ -95,7 +94,7 @@ export class CreateResourceCommand extends CommandRunner {
     @Option({
         flags: "-pa, --project-address <projectAddress>",
         description: "Project address",
-        defaultValue: "0x123"
+        defaultValue: "BoRbyNqh3YmYzzuFMLZ2kjFEC1whr4zS9wPskqp7uqZL"
     })
     parseProjectAddress(projectAddress: string): string {
         return projectAddress
