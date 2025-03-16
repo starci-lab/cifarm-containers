@@ -1,0 +1,5 @@
+export * from "./help-cure-animal.dto"
+export * from "./help-cure-animal.module"
+export * from "./help-cure-animal.service"
+export * from "./help-cure-animal.resolver"
+//export * from "./claim.spec"

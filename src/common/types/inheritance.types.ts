@@ -1,26 +1,9 @@
-import { ApiHideProperty, ApiProperty } from "@nestjs/swagger"
+import { ObjectType } from "@nestjs/graphql"
+import { ApiProperty } from "@nestjs/swagger"
 import { IsOptional, IsString, IsUUID } from "class-validator"
-import { Socket } from "socket.io"
 
-export class UserIdRequest {
-    @IsUUID("4")
-    @ApiHideProperty()
-        userId: string
-}
-
-export class NeighborAndUserIdRequest extends UserIdRequest {
-    @IsUUID("4")
-    @ApiProperty({ example: "e1f98d80-1f3f-43f5-b2d3-7436fded7d26" })
-        neighborUserId: string
-}
-
-export interface UserIdParams {
-     userId: string
-}
-
-export interface UserIdWithSocketParams extends UserIdParams {
-    socket: Socket
-}
+@ObjectType()
+export class EmptyObjectType {}
 
 export class CreatedResponse {
     @IsUUID("4")

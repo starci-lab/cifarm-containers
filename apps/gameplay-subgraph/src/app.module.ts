@@ -1,28 +1,13 @@
-import { Module } from "@nestjs/common"
+import { Module, ValidationPipe } from "@nestjs/common"
 import { EnvModule } from "@src/env"
 import { GraphQLSubgraphModule } from "@src/graphql"
-import { AnimalsModule } from "./animals"
 import { CryptoModule } from "@src/crypto"
 import { CacheModule } from "@src/cache"
 import { JwtModule } from "@src/jwt"
 import { MongooseModule } from "@src/databases"
-import { BuildingsModule } from "./buildings"
-import { CropsModule } from "./crops"
-import { ProductsModule } from "./products"
-import { InventoriesModule } from "./inventories"
-import { InventoryTypesModule } from "./inventory-types"
-import { PlacedItemTypesModule } from "./placed-item-types"
-import { PlacedItemsModule } from "./placed-items"
-import { SpinPrizesModule } from "./spin-prizes"
-import { SpinSlotsModule } from "./spin-slots"
-import { SuppliesModule } from "./supplies"
-import { SystemsModule } from "./systems"
-import { TilesModule } from "./tiles"
-import { ToolsModule } from "./tools"
-import { UsersModule } from "./users"
-import { PetsModule } from "./pets"
-import { FruitsModule } from "./fruits"
-
+import { QueriesModule } from "./queries"
+import { APP_PIPE } from "@nestjs/core"
+import { MutationsModule } from "./mutations"
 @Module({
     imports: [
         //core modules
@@ -39,23 +24,17 @@ import { FruitsModule } from "./fruits"
         GraphQLSubgraphModule.forRoot(),
         MongooseModule.forRoot(),
         //functional modules
-        AnimalsModule,
-        BuildingsModule,
-        CropsModule,
-        ProductsModule,
-        SuppliesModule,
-        SystemsModule,
-        TilesModule,
-        ToolsModule,
-        UsersModule,
-        PlacedItemTypesModule,
-        SpinPrizesModule,
-        SpinSlotsModule,
-        InventoryTypesModule,
-        InventoriesModule,
-        PlacedItemsModule,
-        PetsModule,
-        FruitsModule
+        QueriesModule,
+        MutationsModule
+    ],
+    providers: [
+        {
+            provide: APP_PIPE,
+            useValue: new ValidationPipe({
+                transform: true,
+                whitelist: true
+            })
+        }
     ]
 }) 
 export class AppModule {}
