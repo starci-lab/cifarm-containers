@@ -337,7 +337,7 @@ export class HoneycombService {
         order
     }: CreateCreateAssemblerConfigTransactionParams): Promise<CreateCreateAssemblerConfigTransactionResponse> {
         const {
-            createCreateAssemblerConfigTransaction: { tx: txResponse, assemblerConfig }
+            createCreateAssemblerConfigTransaction: { tx: txResponse, assemblerConfig: assemblerConfigAddress }
         } = await this.edgeClients[network].createCreateAssemblerConfigTransaction({
             project: projectAddress.toString(),
             authority: this.authorityKeypairs[network].publicKey.toBase58(),
@@ -352,7 +352,7 @@ export class HoneycombService {
             parsedTransaction: txResponse.transaction
         })
 
-        return { txResponse: { ...txResponse, transaction: signedTransaction }, assemblerConfig }
+        return { txResponse: { ...txResponse, transaction: signedTransaction }, assemblerConfigAddress }
     }
 
     public async createCreateCharacterModelTransaction({
@@ -365,7 +365,7 @@ export class HoneycombService {
         cooldown
     }: CreateCreateCharacterModelTransactionParams): Promise<CreateCreateCharacterModelTransactionResponse> {
         const {
-            createCreateCharacterModelTransaction: { tx: txResponse, characterModel }
+            createCreateCharacterModelTransaction: { tx: txResponse, characterModel: characterModelAddress }
         } = await this.edgeClients[network].createCreateCharacterModelTransaction({
             project: projectAddress.toString(),
             authority: this.authorityKeypairs[network].publicKey.toBase58(),
@@ -381,7 +381,7 @@ export class HoneycombService {
             parsedTransaction: txResponse.transaction
         })
 
-        return { txResponse: { ...txResponse, transaction: signedTransaction }, characterModel }
+        return { txResponse: { ...txResponse, transaction: signedTransaction }, characterModelAddress }
     }
 
     public async createCreateCharactersTreeTransaction({
@@ -474,21 +474,20 @@ export interface CreateCreateCharacterModelTransactionParams
 
 export interface CreateCreateCharacterModelTransactionResponse
     extends BaseHoneycombTransactionResponse {
-    characterModel: string
+    characterModelAddress: string
 }
 
 export interface CreateCreateAssemblerConfigTransactionParams
     extends BaseHoneycombTransactionParams {
     projectAddress: string
-    payerAddress: string
     treeConfig: TreeSetupConfig
     ticker: string
-    order: Array<string>
+    order?: Array<string>
 }
 
 export interface CreateCreateAssemblerConfigTransactionResponse
     extends BaseHoneycombTransactionResponse {
-    assemblerConfig: string
+    assemblerConfigAddress: string
 }
 
 export interface CreateNewUserWithProfileTransactionParams extends BaseHoneycombTransactionParams {
