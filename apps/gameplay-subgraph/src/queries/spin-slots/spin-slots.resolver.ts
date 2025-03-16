@@ -10,7 +10,8 @@ export class SpinSlotsResolver {
     constructor(private readonly spinSlotsService: SpinSlotsService) {}
 
     @Query(() => [SpinSlotSchema], {
-        name: "spinSlots"
+        name: "spinSlots",
+        description: "Get all spin slots"
     })
     async spinSlots(): Promise<Array<SpinSlotSchema>> {
         return this.spinSlotsService.getSpinSlots()
@@ -18,9 +19,11 @@ export class SpinSlotsResolver {
 
     @Query(() => SpinSlotSchema, {
         name: "spinSlot",
-        nullable: true
+        description: "Get a spin slot by ID"
     })
-    async spinSlot(@Args("id", { type: () => ID }) id: string): Promise<SpinSlotSchema> {
+    async spinSlot(
+        @Args("id", { type: () => ID, description: "The ID of the spin slot" }) id: string
+    ): Promise<SpinSlotSchema> {
         return this.spinSlotsService.getSpinSlot(id)
     }
 }

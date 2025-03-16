@@ -1,22 +1,18 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { UserIdRequest } from "@src/common"
+import { Field, InputType } from "@nestjs/graphql"
 import { IsBoolean, IsInt, IsMongoId, Min } from "class-validator"
 
-export class MoveInventoryRequest extends UserIdRequest {
+@InputType()
+export class MoveInventoryRequest {
     @IsBoolean()
-    @ApiProperty({ example: true })
+    @Field(() => Boolean, { description: "Whether the inventory is a tool" })
         isTool: boolean
 
     @IsInt()
     @Min(0)
-    @ApiProperty({ example: 1 })
+    @Field(() => Number, { description: "The index of the inventory to move" })
         index: number
 
     @IsMongoId()
-    @ApiProperty({ example: "60f2b4f3e0c6b8f6c1c4b7d0" })
+    @Field(() => String, { description: "The id of the inventory to move" })
         inventoryId: string
-}
-
-export class MoveInventoryResponse {
-    // this class is intentionally left blank
 }

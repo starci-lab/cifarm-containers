@@ -3,73 +3,109 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AnimalId, AnimalType } from "../enums"
 import { StaticAbstractSchema } from "./abstract"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for animal"
+})
 @Schema({
     timestamps: true,
     collection: "animals"
 })
 export class AnimalSchema extends StaticAbstractSchema<AnimalId> {
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The yield time of the animal"
+    })
     @Prop({ type: Number })
         yieldTime: number
     
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The offspring price of the animal"
+    })
     @Prop({ type: Number, min: 0 })
         offspringPrice: number
   
-    @Field(() => Boolean)
+    @Field(() => Boolean, {
+        description: "Whether the animal is an NFT"
+    })
     @Prop({ type: Boolean })
         isNft: boolean
   
-    @Field(() => Int, { nullable: true })
+    @Field(() => Int, {
+        description: "The price of the animal",
+        nullable: true
+    })
     @Prop({ type: Number, required: false, min: 0 })
         price: number
         
-    @Field(() => Int, { nullable: true })
+    @Field(() => Int, {
+        description: "The sell price of the animal",
+        nullable: true
+    })
     @Prop({ type: Number, required: false, default: 0 })
         sellPrice?: number
   
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The growth time of the animal"
+    })
     @Prop({ type: Number, min: 0 })
         growthTime: number
   
-    @Field(() => Boolean)
+    @Field(() => Boolean, {
+        description: "Whether the animal is available in the shop"
+    })
     @Prop({ type: Boolean, default: false })
         availableInShop: boolean
   
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The hunger time of the animal"
+    })
     @Prop({ type: Number, min: 0 })
         hungerTime: number
   
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "The quality product chance stack of the animal"
+    })
     @Prop({ type: Number, min: 0 })
         qualityProductChanceStack: number
   
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "The quality product chance limit of the animal"
+    })
     @Prop({ type: Number, min: 0 })
         qualityProductChanceLimit: number
   
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The minimum harvest quantity of the animal"
+    })
     @Prop({ type: Number, min: 0 })
         minHarvestQuantity: number
   
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The maximum harvest quantity of the animal"
+    })
     @Prop({ type: Number, min: 0 })
         maxHarvestQuantity: number
   
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The basic harvest experiences of the animal"
+    })
     @Prop({ type: Number, min: 0 })
         basicHarvestExperiences: number
   
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The quality harvest experiences of the animal"
+    })
     @Prop({ type: Number, min: 0 })
         qualityHarvestExperiences: number
     
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The unlock level of the animal"
+    })
     @Prop({ type: Number, min: 1 })
         unlockLevel: number
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: "The type of the animal"
+    })
     @Prop({ type: String, enum: AnimalType, default: AnimalType.Poultry }) // Assuming AnimalType is an enum
         type: AnimalType
 }

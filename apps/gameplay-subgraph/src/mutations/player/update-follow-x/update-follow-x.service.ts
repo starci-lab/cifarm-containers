@@ -8,9 +8,9 @@ import {
     UserSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
-import { UpdateFollowXRequest, UpdateFollowXResponse } from "./update-follow-x.dto"
-import { createObjectId } from "@src/common"
+import { createObjectId, EmptyObjectType } from "@src/common"
 import { TokenBalanceService } from "@src/gameplay"
+import { UserLike } from "@src/jwt"
 
 @Injectable()
 export class UpdateFollowXService {
@@ -23,8 +23,8 @@ export class UpdateFollowXService {
     ) {}
 
     async updateFollowX({
-        userId
-    }: UpdateFollowXRequest): Promise<UpdateFollowXResponse> {
+        id: userId
+    }: UserLike): Promise<EmptyObjectType> {
         const mongoSession = await this.connection.startSession()
 
         try {

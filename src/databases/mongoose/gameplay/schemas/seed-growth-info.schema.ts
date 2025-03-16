@@ -6,47 +6,69 @@ import { CropCurrentState } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { CropSchema } from "./crop.schema"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for tracking seed growth information"
+})
 @Schema({ timestamps: true, autoCreate: false  })
 export class SeedGrowthInfoSchema extends AbstractSchema {
     
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The current growth stage of the seed"
+    })
     @Prop({ type: Number, default: 0 })
         currentStage: number
 
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "The time elapsed in the current growth stage"
+    })
     @Prop({ type: Number, default: 0 })
         currentStageTimeElapsed: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The current perennial count for perennial crops"
+    })
     @Prop({ type: Number, default: 1 })
         currentPerennialCount: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The remaining quantity that can be harvested"
+    })
     @Prop({ type: Number, default: 0 })
         harvestQuantityRemaining: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The number of times the crop has been harvested"
+    })
     @Prop({ type: Number, default: 0 })
         harvestCount: number
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, {
+        description: "Whether the crop will produce quality products"
+    })
     @Prop({ type: Boolean, default: false })
         isQuality: boolean
 
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: "The crop type being grown"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: CropSchema.name })
     [CROP]: CropSchema | string
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: "The current state of the crop (normal, withered, etc.)"
+    })
     @Prop({ type: String, enum: CropCurrentState, default: CropCurrentState.Normal })
         currentState: CropCurrentState
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, {
+        description: "Whether the crop has been fertilized"
+    })
     @Prop({ type: Boolean, default: false })
         isFertilized: boolean
     
-    @Field(() => [ID])
+    @Field(() => [ID], {
+        description: "The list of users who have stolen from this crop"
+    })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
         thieves: Array<MongooseSchema.Types.ObjectId>
 }

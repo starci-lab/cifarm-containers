@@ -7,29 +7,42 @@ import { UserSchema } from "./user.schema"
 import { Schema as MongooseSchema } from "mongoose"
 import { InventoryKind } from "../enums"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for inventory items"
+})
 @Schema({
     timestamps: true,
     collection: "inventories"
 })
 export class InventorySchema extends AbstractSchema {
-    @Field(() => Int, { nullable: true })
+    @Field(() => Int, { 
+        nullable: true,
+        description: "The quantity of the inventory item"
+    })
     @Prop({ type: Number, required: false })
         quantity?: number
 
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: "The user who owns this inventory item"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
     [USER]: UserSchema | string
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The index position of the inventory item"
+    })
     @Prop({ type: Number, required: true })
         index: number
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: "The kind of inventory item"
+    })
     @Prop({ type: String, required: true, enum: InventoryKind })
         kind: InventoryKind
     
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: "The inventory type reference"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: InventoryTypeSchema.name })
     [INVENTORY_TYPE]: InventoryTypeSchema | string
 }

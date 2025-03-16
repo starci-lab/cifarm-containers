@@ -11,6 +11,7 @@ import { MutationsModule } from "./mutations"
 import { KafkaModule } from "@src/brokers"
 import { BlockchainModule } from "@src/blockchain"
 import { GameplayModule } from "@src/gameplay"
+import { DateModule } from "@src/date"
 @Module({
     imports: [
         //core modules
@@ -31,6 +32,9 @@ import { GameplayModule } from "@src/gameplay"
             isGlobal: true
         }),
         GameplayModule.register({
+            isGlobal: true
+        }),
+        DateModule.register({
             isGlobal: true
         }),
         GraphQLSubgraphModule.forRoot(),

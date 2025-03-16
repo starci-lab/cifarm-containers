@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import {
     DefaultInfo,
     InjectMongoose,
@@ -10,10 +10,10 @@ import {
     KeyValueRecord,
     SystemSchema
 } from "@src/databases"
-import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
+import { createObjectId, EmptyObjectType } from "@src/common"
 import { Connection } from "mongoose"
-import { MoveInventoryRequest, MoveInventoryResponse } from "./move-inventory.dto"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
+import { MoveInventoryRequest } from "./move-inventory.dto"
+import { UserLike } from "@src/jwt"
 
 @Injectable()
 export class MoveInventoryService {
@@ -24,12 +24,15 @@ export class MoveInventoryService {
         private readonly connection: Connection
     ) {}
 
-    async moveInventory({
-        isTool,
-        index,
-        inventoryId,
-        userId
-    }: MoveInventoryRequest): Promise<MoveInventoryResponse> {
+    async moveInventory(
+        {
+            id: userId
+        }: UserLike,
+        {
+            isTool,
+            index,
+            inventoryId
+        }: MoveInventoryRequest): Promise<EmptyObjectType> {
         const mongoSession = await this.connection.startSession()
 
         try {
@@ -44,7 +47,7 @@ export class MoveInventoryService {
 
                 const capacity = isTool ? toolCapacity : storageCapacity
                 if (index >= capacity) {
-                    throw new GrpcFailedPreconditionException("Inventory index is out of range")
+                    throw new BadRequestException("Inventory index is out of range")
                 }
                 const kind = isTool ? InventoryKind.Tool : InventoryKind.Storage
 
@@ -55,7 +58,7 @@ export class MoveInventoryService {
                     .populate(INVENTORY_TYPE)
                     .session(mongoSession)
                 if (!inventory) {
-                    throw new GrpcNotFoundException("Inventory not found")
+                    throw new NotFoundException("Inventory not found")
                 }
 
                 // Check if there is an inventory at the target index

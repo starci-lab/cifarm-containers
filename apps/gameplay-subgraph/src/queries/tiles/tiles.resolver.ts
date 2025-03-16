@@ -10,7 +10,8 @@ export class TilesResolver {
     constructor(private readonly tilesService: TilesService) {}
 
     @Query(() => [TileSchema], {
-        name: "tiles"
+        name: "tiles",
+        description: "Get all tiles"
     })
     async tiles(): Promise<Array<TileSchema>> {
         return this.tilesService.getTiles()
@@ -18,9 +19,11 @@ export class TilesResolver {
 
     @Query(() => TileSchema, {
         name: "tile",
-        nullable: true
+        description: "Get a tile by ID"
     })
-    async tile(@Args("id", { type: () => ID }) id: TileId): Promise<TileSchema | null> {
+    async tile(
+        @Args("id", { type: () => ID, description: "The ID of the tile" }) id: TileId
+    ): Promise<TileSchema | null> {
         return this.tilesService.getTile(id)
     }
 }

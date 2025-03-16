@@ -4,18 +4,24 @@ import { AbstractSchema } from "./abstract"
 import { Schema as MongooseSchema } from "mongoose"
 import { UserSchema } from "./user.schema"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for user follow relationships"
+})
 @Schema({
     timestamps: true,
     collection: "user-follow-relations"
 })
-export class UserFollowRelationSchema  extends AbstractSchema {
+export class UserFollowRelationSchema extends AbstractSchema {
     // special case for followee
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: "The user being followed (followee)"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name, required: true })
         followee: UserSchema | string
     
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: "The user who is following (follower)"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name, required: true })
         follower: UserSchema | string
 }

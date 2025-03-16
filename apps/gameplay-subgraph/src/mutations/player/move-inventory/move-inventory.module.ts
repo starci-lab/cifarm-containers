@@ -1,11 +1,8 @@
 import { Module } from "@nestjs/common"
 import { MoveInventoryService } from "./move-inventory.service"
-import { MoveInventoryController } from "./move-inventory.controller"
-
+import { MoveInventoryResolver } from "./move-inventory.resolver"
 
 @Module({
-    imports: [],
-    providers: [MoveInventoryService],
-    controllers: [MoveInventoryController]
+    providers: [MoveInventoryService, MoveInventoryResolver]
 })
 export class MoveInventoryModule {}

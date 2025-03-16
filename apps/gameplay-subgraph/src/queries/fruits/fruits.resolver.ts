@@ -9,13 +9,13 @@ export class FruitsResolver {
 
     constructor(private readonly fruitService: FruitsService) {}
 
-    @Query(() => [FruitSchema], { name: "fruits" })
+    @Query(() => [FruitSchema], { name: "fruits", description: "Get all fruits" })
     async fruits(): Promise<Array<FruitSchema>> {
         return this.fruitService.getFruits()
     }
     
-    @Query(() => FruitSchema, { name: "fruit" })
-    async crop(@Args("id", { type: () => ID }) id: FruitId): Promise<FruitSchema> {
+    @Query(() => FruitSchema, { name: "fruit", description: "Get a fruit by ID" })
+    async fruit(@Args("id", { type: () => ID, description: "The ID of the fruit" }) id: FruitId): Promise<FruitSchema> {
         return this.fruitService.getFruit(id)
     }
 }

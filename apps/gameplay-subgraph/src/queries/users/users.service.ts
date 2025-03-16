@@ -2,9 +2,9 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, UserFollowRelationSchema, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import {
-    GetFolloweesArgs,
+    GetFolloweesRequest,
     GetFolloweesResponse,
-    GetNeighborsArgs,
+    GetNeighborsRequest,
     GetNeighborsResponse
 } from "./users.dto"
 import { UserLike } from "@src/jwt"
@@ -32,7 +32,7 @@ export class UsersService {
 
     async getNeighbors(
         { id }: UserLike,
-        { limit, offset, searchString }: GetNeighborsArgs
+        { limit, offset, searchString }: GetNeighborsRequest
     ): Promise<GetNeighborsResponse> {
         const mongoSession = await this.connection.startSession()
         try {
@@ -79,7 +79,7 @@ export class UsersService {
 
     async getFollowees(
         { id }: UserLike,
-        { limit, offset, searchString }: GetFolloweesArgs
+        { limit, offset, searchString }: GetFolloweesRequest
     ): Promise<GetFolloweesResponse> {
         const mongoSession = await this.connection.startSession()
         try {

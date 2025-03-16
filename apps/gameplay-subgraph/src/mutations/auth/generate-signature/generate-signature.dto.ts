@@ -6,7 +6,6 @@ import { Field, InputType, ObjectType } from "@nestjs/graphql"
 export class GenerateSignatureRequest {
     @IsEnum(ChainKey)
     @Field(() => String, {
-        nullable: true,
         defaultValue: ChainKey.Solana,
         description: "Chain key to generate signature for"
     })
@@ -14,7 +13,6 @@ export class GenerateSignatureRequest {
 
     @IsInt()
     @Field(() => Number, {
-        nullable: true,
         defaultValue: 0,
         description: "Account number to generate signature for"
     })
@@ -22,7 +20,6 @@ export class GenerateSignatureRequest {
 
     @IsEnum(Network)
     @Field(() => String, {
-        nullable: true,
         defaultValue: Network.Testnet,
         description: "Network to generate signature for"
     })

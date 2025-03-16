@@ -9,7 +9,7 @@ import {
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
-import { createObjectId, DeepPartial, EmptyObjectType } from "@src/common"
+import { createObjectId, DeepPartial } from "@src/common"
 import { DateUtcService } from "@src/date"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
@@ -26,11 +26,11 @@ export class ClaimDailyRewardService {
         private readonly dateUtcService: DateUtcService
     ) {}
 
-    async claimDailyReward({ id: userId }: UserLike): Promise<EmptyObjectType> {
+    async claimDailyReward({ id: userId }: UserLike): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         try {
-            const result = await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
@@ -100,11 +100,7 @@ export class ClaimDailyRewardService {
                         }
                     )
                     .session(mongoSession)
-
-                return {}
             })
-
-            return result
         } catch (error) {
             this.logger.error(error)
             throw error

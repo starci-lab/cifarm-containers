@@ -1,10 +1,10 @@
 import { Logger, UseGuards } from "@nestjs/common"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
 import { Resolver, Mutation } from "@nestjs/graphql"
-import { EmptyObjectType } from "@src/common"
 import { GraphQLJwtAuthGuard } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
 import { UserLike } from "@src/jwt"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class ClaimDailyRewardResolver {
@@ -13,7 +13,7 @@ export class ClaimDailyRewardResolver {
     constructor(private readonly claimDailyRewardService: ClaimDailyRewardService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "claimDailyReward" })
+    @Mutation(() => VoidResolver, { name: "claimDailyReward" })
     public async claimDailyReward(
         @GraphQLUser() user: UserLike,
     ) {

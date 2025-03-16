@@ -16,7 +16,3 @@ export class MoveRequest {
     @Field(() => Position, { description: "The new position of the placed item" })
         position: Position
 }
-
-export class MoveResponse {
-    // This class is intentionally left empty for future extensions
-}

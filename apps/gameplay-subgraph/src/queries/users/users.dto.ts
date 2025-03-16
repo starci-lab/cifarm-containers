@@ -1,10 +1,10 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
 import { UserSchema } from "@src/databases"
-import { IPaginatedResponse, PaginatedArgs, PaginatedResponse } from "@src/graphql"
+import { IPaginatedResponse, PaginatedRequest, PaginatedResponse } from "@src/graphql"
 
 @InputType()
-export class GetNeighborsArgs extends PaginatedArgs {
-    @Field(() => String, { nullable : true })
+export class GetNeighborsRequest extends PaginatedRequest {
+    @Field(() => String, { nullable : true, description: "The search string" })
         searchString?: string
 }
 
@@ -19,8 +19,8 @@ export class GetNeighborsResponse
 
 
 @InputType()
-export class GetFolloweesArgs extends PaginatedArgs {
-    @Field(() => String, { nullable : true })
+export class GetFolloweesRequest extends PaginatedRequest {
+    @Field(() => String, { nullable : true, description: "The search string" })
         searchString?: string
 }
 

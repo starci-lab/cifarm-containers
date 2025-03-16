@@ -1,11 +1,8 @@
 import { Module } from "@nestjs/common"
 import { UpdateFollowXService } from "./update-follow-x.service"
-import { UpdateFollowXController } from "./update-follow-x.controller"
-
+import { UpdateFollowXResolver } from "./update-follow-x.resolver"
 
 @Module({
-    imports: [],
-    providers: [UpdateFollowXService],
-    controllers: [UpdateFollowXController]
+    providers: [UpdateFollowXService, UpdateFollowXResolver]
 })
 export class UpdateFollowXModule {}

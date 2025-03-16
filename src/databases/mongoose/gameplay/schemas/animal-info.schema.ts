@@ -6,50 +6,76 @@ import { ANIMAL } from "../constants"
 import { AnimalSchema } from "./animal.schema"
 import { Schema as MongooseSchema } from "mongoose"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for animal info"
+})
 @Schema({ timestamps: true, autoCreate: false })
 export class AnimalInfoSchema extends AbstractSchema {
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "The current growth time of the animal"
+    })
     @Prop({ type: Number, default: 0 })
         currentGrowthTime: number
 
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "The current hungry time of the animal"
+    })
     @Prop({ type: Number, default: 0 })
         currentHungryTime: number
 
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "The current yield time of the animal"
+    })
     @Prop({ type: Number, default: 0 })
         currentYieldTime: number
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, {
+        description: "Whether the animal is an adult"
+    })
     @Prop({ type: Boolean, default: false })
         isAdult: boolean
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, {
+        description: "Whether the animal is quality"
+    })
     @Prop({ type: Boolean, default: false })
         isQuality: boolean
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The yield count of the animal"
+    })
     @Prop({ type: Number, default: 0 })
         yieldCount: number
 
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: "The animal ID"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: AnimalSchema.name })
     [ANIMAL]: AnimalSchema | string
 
-    @Field(() => String)
+    @Field(() => String, {
+        description: "The current state of the animal"
+    })
     @Prop({ type: String, enum: AnimalCurrentState, default: AnimalCurrentState.Normal })
         currentState: AnimalCurrentState
 
-    @Field(() => [ID])
+    @Field(() => [ID], {
+        description: "The thieves of the animal"
+    })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
         thieves: Array<MongooseSchema.Types.ObjectId>
 
-    @Field(() => Int, { nullable: true })
+    @Field(() => Int, {
+        description: "The harvest quantity remaining of the animal",
+        nullable: true
+    })
     @Prop({ type: Number, required: false, default: 0 })
         harvestQuantityRemaining?: number
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, {
+        description: "Whether the animal is immunized",
+        nullable: true
+    })
     @Prop({ type: Boolean, default: false })
         immunized: boolean
 }

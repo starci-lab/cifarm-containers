@@ -1,11 +1,10 @@
 import { Module } from "@nestjs/common"
-import { RequestMessageController } from "./request-message.controller"
+import { RequestMessageResolver } from "./request-message.resolver"
 import { RequestMessageService } from "./request-message.service"
 
  
 @Module({
-    controllers: [RequestMessageController],
-    providers: [RequestMessageService],
+    providers: [RequestMessageService, RequestMessageResolver],
     exports: [RequestMessageService]
 })
 export class RequestMessageModule {}

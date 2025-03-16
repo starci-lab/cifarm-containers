@@ -8,13 +8,13 @@ export class BuildingsResolver {
 
     constructor(private readonly buildingsService: BuildingsService) {}
 
-    @Query(() => [BuildingSchema], { name: "buildings" })
+    @Query(() => [BuildingSchema], { name: "buildings", description: "Get all buildings" })
     async buildings(): Promise<Array<BuildingSchema>> {
         return this.buildingsService.getBuildings()
     }
 
-    @Query(() => BuildingSchema, { name: "building" })
-    async building(@Args("id", { type: () => ID }) id: BuildingId): Promise<BuildingSchema> {
+    @Query(() => BuildingSchema, { name: "building", description: "Get a building by ID" })
+    async building(@Args("id", { type: () => ID, description: "The ID of the building" }) id: BuildingId): Promise<BuildingSchema> {
         return this.buildingsService.getBuilding(id)
     }
 }

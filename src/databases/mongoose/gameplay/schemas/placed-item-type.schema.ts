@@ -10,45 +10,70 @@ import { ANIMAL, BUILDING, FRUIT, PET, TILE } from "../constants"
 import { PetSchema } from "./pet.schema"
 import { FruitSchema } from "./fruit.schema"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for placed item types that can be placed on the farm"
+})
 @Schema({
     timestamps: true,
     collection: "placed-item-types",
 })
 export class PlacedItemTypeSchema extends StaticAbstractSchema<PlacedItemTypeId> {
-    @Field(() => String)
+    @Field(() => String, {
+        description: "The type of placed item"
+    })
     @Prop({ type: String, enum: PlacedItemType, required: true })
         type: PlacedItemType
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, {
+        description: "Whether the placed item can be sold"
+    })
     @Prop({ type: Boolean, default: false })
         sellable: boolean
 
-    @Field(() => ID, { nullable: true })
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The building associated with this placed item type, if applicable"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: BuildingSchema.name })
     [BUILDING]: BuildingSchema | string
             
-    @Field(() => ID, { nullable: true })
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The animal associated with this placed item type, if applicable"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: AnimalSchema.name })
     [ANIMAL]: AnimalSchema | string
 
-    @Field(() => ID, { nullable: true })
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The tile associated with this placed item type, if applicable"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: TileSchema.name })
     [TILE]: TileSchema | string
 
-    @Field(() => ID, { nullable: true })
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The pet associated with this placed item type, if applicable"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: PetSchema.name })
     [PET]: PetSchema | string
 
-    @Field(() => ID, { nullable: true })
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The fruit associated with this placed item type, if applicable"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FruitSchema.name })
     [FRUIT]: FruitSchema | string
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The width of the placed item in grid cells"
+    })
     @Prop({ type: Number, required: true, default: 1 })
         sizeX: number
     
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The height of the placed item in grid cells"
+    })
     @Prop({ type: Number, required: true, default: 1 })
         sizeY: number
 }

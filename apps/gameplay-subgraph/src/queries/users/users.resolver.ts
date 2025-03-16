@@ -4,7 +4,7 @@ import { UsersService } from "./users.service"
 import { UserSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { GetFolloweesArgs, GetFolloweesResponse, GetNeighborsArgs, GetNeighborsResponse } from "./users.dto"
+import { GetFolloweesRequest, GetFolloweesResponse, GetNeighborsRequest, GetNeighborsResponse } from "./users.dto"
 
 @Resolver()
 export class UsersResolver {
@@ -14,7 +14,8 @@ export class UsersResolver {
 
     @UseGuards(GraphQLJwtAuthGuard)
     @Query(() => UserSchema, {
-        name: "user"
+        name: "user",
+        description: "Get a user by ID"
     })
     async user(@GraphQLUser() user: UserLike): Promise<UserSchema> {
         return await this.usersService.getUser(user.id)
@@ -22,23 +23,25 @@ export class UsersResolver {
 
     @UseGuards(GraphQLJwtAuthGuard)
     @Query(() => GetNeighborsResponse, {
-        name: "neighbors"
+        name: "neighbors",
+        description: "Get neighbors of a user with pagination"
     })
     async neighbors(
             @GraphQLUser() user: UserLike,
-            @Args("args") args: GetNeighborsArgs
+            @Args("request") request: GetNeighborsRequest
     ): Promise<GetNeighborsResponse> {
-        return this.usersService.getNeighbors(user, args)
+        return this.usersService.getNeighbors(user, request)
     }
 
     @UseGuards(GraphQLJwtAuthGuard)
     @Query(() => GetFolloweesResponse, {
-        name: "followees"
+        name: "followees",
+        description: "Get followees of a user with pagination"
     })
     async followees(
             @GraphQLUser() user: UserLike,
-            @Args("args") args: GetFolloweesArgs
+            @Args("request") request: GetFolloweesRequest
     ): Promise<GetFolloweesResponse> {
-        return this.usersService.getFollowees(user, args)
+        return this.usersService.getFollowees(user, request)
     }
 }

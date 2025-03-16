@@ -1,12 +1,19 @@
+import { Field, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { StaticAbstractSchema } from "./abstract"
 import { KeyValueStoreId } from "../enums"
 
+@ObjectType({
+    description: "The schema for key-value store entries"
+})
 @Schema({
     timestamps: true,
     collection: "key-value-stores",
 })
 export class KeyValueStoreSchema extends StaticAbstractSchema<KeyValueStoreId> {
+    @Field(() => Object, {
+        description: "The value stored for this key"
+    })
     @Prop({ type: Object, required: true })
         value: object
 }
@@ -15,16 +22,42 @@ export class KeyValueStoreSchema extends StaticAbstractSchema<KeyValueStoreId> {
 export const KeyValueStoreSchemaClass = SchemaFactory.createForClass(KeyValueStoreSchema)
 
 // Class for KeyValueStoreSchema
+@ObjectType({
+    description: "Schedule information for animal growth"
+})
 export class AnimalGrowthLastSchedule {
-    date: Date
+    @Field(() => Date, {
+        description: "The date of the last animal growth schedule"
+    })
+        date: Date
 }
+
+@ObjectType({
+    description: "Schedule information for crop growth"
+})
 export class CropGrowthLastSchedule {
-    date: Date
+    @Field(() => Date, {
+        description: "The date of the last crop growth schedule"
+    })
+        date: Date
 }
-//fruit
+
+@ObjectType({
+    description: "Schedule information for fruit growth"
+})
 export class FruitGrowthLastSchedule {
-    date: Date
+    @Field(() => Date, {
+        description: "The date of the last fruit growth schedule"
+    })
+        date: Date
 }
+
+@ObjectType({
+    description: "Schedule information for energy regeneration"
+})
 export class EnergyRegenerationLastSchedule {
-    date: Date
+    @Field(() => Date, {
+        description: "The date of the last energy regeneration schedule"
+    })
+        date: Date
 }

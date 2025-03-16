@@ -5,6 +5,7 @@ import { Injectable } from "@nestjs/common"
 import { Int } from "@nestjs/graphql"
 import { KeyvService } from "@src/cache"
 import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } from "graphql"
+import { VoidResolver } from "graphql-scalars"
 
 @Injectable()
 export class SubgraphOptionsFactory {
@@ -15,6 +16,9 @@ export class SubgraphOptionsFactory {
         return {
             autoSchemaFile: {
                 federation: 2
+            },
+            resolvers: {
+                Void: VoidResolver,
             },
             cache: keyvAdapter,
             plugins: [ApolloServerPluginCacheControl(), responseCachePlugin()],

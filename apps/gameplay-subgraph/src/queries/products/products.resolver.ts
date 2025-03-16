@@ -8,18 +8,22 @@ export class ProductResolver {
     private readonly logger = new Logger(ProductResolver.name)
 
     constructor(private readonly productsService: ProductService) {}
-    
+
     @Query(() => [ProductSchema], {
-        name: "products"
+        name: "products",
+        description: "Get all products"
     })
     async products(): Promise<Array<ProductSchema>> {
         return this.productsService.getProducts()
     }
 
     @Query(() => ProductSchema, {
-        name: "product"
+        name: "product",
+        description: "Get a product by ID"
     })
-    async product(@Args("id", { type: () => ID }) id: ProductId): Promise<ProductSchema> {
+    async product(
+        @Args("id", { type: () => ID, description: "The ID of the product" }) id: ProductId
+    ): Promise<ProductSchema> {
         return this.productsService.getProduct(id)
     }
 }

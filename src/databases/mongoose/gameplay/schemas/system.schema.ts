@@ -1,4 +1,3 @@
-
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import JSON from "graphql-type-json"
 import { AppearanceChance, CropId, DailyRewardId, SystemId } from "../enums"
@@ -6,224 +5,464 @@ import { Position } from "@src/gameplay"
 import { StaticAbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for system configuration"
+})
 @Schema({
     timestamps: true,
     collection: "systems"
 })
 export class SystemSchema extends StaticAbstractSchema<SystemId> {
-    @Field(() => JSON)
+    @Field(() => JSON, {
+        description: "The system configuration value"
+    })
     @Prop({ type: Object, required: true })
         value: object
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Information about an activity's rewards and costs"
+})
 export class ActivityInfo {
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The amount of experience gained from the activity"
+    })
         experiencesGain: number
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The amount of energy consumed by the activity"
+    })
         energyConsume: number
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for all gameplay activities"
+})
 export class Activities {
-    @Field(() => ActivityInfo)
+    @Field(() => ActivityInfo, {
+        description: "Configuration for planting seeds"
+    })
         plantSeed: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for watering crops"
+    })
         waterCrop: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for feeding animals"
+    })
         feedAnimal: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for harvesting animal products"
+    })
         harvestAnimal: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for using pesticide"
+    })
         usePesticide: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for using fertilizer"
+    })
         useFertilizer: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for using herbicide"
+    })
         useHerbicide: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for helping others use herbicide"
+    })
         helpUseHerbicide: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for helping others use pesticide"
+    })
         helpUsePesticide: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for helping others water crops"
+    })
         helpWater: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for stealing crops"
+    })
         thiefCrop: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for stealing animal products"
+    })
         thiefAnimalProduct: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for curing sick animals"
+    })
         cureAnimal: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for helping others cure animals"
+    })
         helpCureAnimal: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for harvesting crops"
+    })
         harvestCrop: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for helping others feed animals"
+    })
         helpFeedAnimal: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for using fruit fertilizer"
+    })
         useFruitFertilizer: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for using bug net"
+    })
         useBugNet: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for helping others use fruit fertilizer"
+    })
         helpUseFruitFertilizer: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for helping others use bug net"
+    })
         helpUseBugNet: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for harvesting fruits"
+    })
         harvestFruit: ActivityInfo
-    @Field(() => ActivityInfo)
+    
+    @Field(() => ActivityInfo, {
+        description: "Configuration for stealing fruits"
+    })
         thiefFruit: ActivityInfo
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for crop randomness events"
+})
 export class CropRandomness {
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "Chance for a crop to be stolen by 3 thieves"
+    })
         thief3: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Chance for a crop to be stolen by 2 thieves"
+    })
         thief2: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Chance for a crop to need water"
+    })
         needWater: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Chance for a crop to become weedy or infested"
+    })
         isWeedyOrInfested: number
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for animal randomness events"
+})
 export class AnimalRandomness {
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "Chance for an animal to become sick"
+    })
         sickChance: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Chance for an animal product to be stolen by 3 thieves"
+    })
         thief3: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Chance for an animal product to be stolen by 2 thieves"
+    })
         thief2: number
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for fruit randomness events"
+})
 export class FruitRandomness {
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "Chance for a fruit to be stolen by 3 thieves"
+    })
         thief3: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Chance for a fruit to be stolen by 2 thieves"
+    })
         thief2: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Chance for a fruit to need fertilizer"
+    })
         needFertilizer: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Chance for a fruit to have caterpillars"
+    })
         hasCaterpillar: number
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Default positions for farm elements"
+})
 export class Positions {
-    //starter tiles
-    @Field(() => [Position])
+    @Field(() => [Position], {
+        description: "Default positions for tiles"
+    })
         tiles: Array<Position>
-    //home
-    @Field(() => Position)
+    
+    @Field(() => Position, {
+        description: "Default position for the home building"
+    })
         home: Position
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Default configuration for new users"
+})
 export class DefaultInfo {
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "Default starting gold amount"
+    })
         golds: number
-    @Field(() => Positions)
+    
+    @Field(() => Positions, {
+        description: "Default positions for farm elements"
+    })
         positions: Positions
-    @Field(() => String)
+    
+    @Field(() => String, {
+        description: "Default crop ID given to new users"
+    })
         defaultCropId: CropId
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Default seed quantity given to new users"
+    })
         defaultSeedQuantity: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Default storage capacity"
+    })
         storageCapacity: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Default tool capacity"
+    })
         toolCapacity: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Default delivery capacity"
+    })
         deliveryCapacity: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Maximum number of users that can be followed"
+    })
         followeeLimit: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Maximum number of users that can be referred"
+    })
         referredLimit: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Reward quantity for referring a user"
+    })
         referralRewardQuantity: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Reward quantity for being referred by a user"
+    })
         referredRewardQuantity: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Reward quantity for following on X/Twitter"
+    })
         followXRewardQuantity: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Maximum number of tiles a user can have"
+    })
         tileLimit: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Maximum number of fruits a user can have"
+    })
         fruitLimit: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Maximum number of buildings a user can have"
+    })
         buildingLimit: number
 }
 
- 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for spin wheel slots"
+})
 export class SlotInfo {
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "Number of slots of this type"
+    })
         count: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Minimum threshold for this slot type"
+    })
         thresholdMin: number
-    @Field(() => Float)
+    
+    @Field(() => Float, {
+        description: "Maximum threshold for this slot type"
+    })
         thresholdMax: number
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for honeycomb rewards"
+})
 export class HoneycombInfo {
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "Daily reward amount for honeycomb"
+    })
         dailyRewardAmount: number
-    @Field(() => String)
+    
+    @Field(() => String, {
+        description: "Project address for honeycomb"
+    })
         projectAddress: string
-    @Field(() => String)
+    
+    @Field(() => String, {
+        description: "Token resource address for honeycomb"
+    })
         tokenResourceAddress: string
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Number of decimals for honeycomb tokens"
+    })
         decimals: number
-    @Field(() => [String])
+    
+    @Field(() => [String], {
+        description: "Profile tree addresses for honeycomb"
+    })
         profilesTreeAddresses: Array<string>
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for appearance chance slots"
+})
 export class AppearanceChanceSlots {
-    @Field(() => SlotInfo)
+    @Field(() => SlotInfo, {
+        description: "Configuration for common slots"
+    })
     [AppearanceChance.Common]: SlotInfo
-    @Field(() => SlotInfo)
-    [AppearanceChance.Rare]: SlotInfo
-    @Field(() => SlotInfo)
+    
+    @Field(() => SlotInfo, {
+        description: "Configuration for uncommon slots"
+    })
     [AppearanceChance.Uncommon]: SlotInfo
-    @Field(() => SlotInfo)
+    
+    @Field(() => SlotInfo, {
+        description: "Configuration for rare slots"
+    })
+    [AppearanceChance.Rare]: SlotInfo
+    
+    @Field(() => SlotInfo, {
+        description: "Configuration for very rare slots"
+    })
     [AppearanceChance.VeryRare]: SlotInfo
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for spin wheel"
+})
 export class SpinInfo {
-    @Field(() => AppearanceChanceSlots)
+    @Field(() => AppearanceChanceSlots, {
+        description: "Configuration for appearance chance slots"
+    })
         appearanceChanceSlots: AppearanceChanceSlots
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for energy regeneration"
+})
 export class EnergyRegen {
-    @Field(() => Int)
-        time: number // In milliseconds
+    @Field(() => Int, {
+        description: "Time in milliseconds for energy regeneration"
+    })
+        time: number
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for daily rewards"
+})
 export class DailyReward {
-    @Field(() => Int, { nullable: true })
+    @Field(() => Int, { 
+        nullable: true,
+        description: "Gold amount for this daily reward"
+    })
         golds: number
-    // Extra tokens, only claim in last day
-    @Field(() => Float, { nullable: true })
+    
+    @Field(() => Float, { 
+        nullable: true,
+        description: "Token amount for this daily reward"
+    })
         tokens: number
-    @Field(() => Int)
+    
+    @Field(() => Int, {
+        description: "Day number for this daily reward"
+    })
         day: number
-    @Field(() => Boolean)
+    
+    @Field(() => Boolean, {
+        description: "Whether this is the last day in the daily reward cycle"
+    })
         lastDay: boolean
 }
 
-@ObjectType()
+@ObjectType({
+    description: "Configuration for daily reward system"
+})
 export class DailyRewardInfo {
-    @Field(() => DailyReward)
+    @Field(() => DailyReward, {
+        description: "Day 1 reward"
+    })
     [DailyRewardId.Day1]: DailyReward
-    @Field(() => DailyReward)
+    
+    @Field(() => DailyReward, {
+        description: "Day 2 reward"
+    })
     [DailyRewardId.Day2]: DailyReward
-    @Field(() => DailyReward)
+    
+    @Field(() => DailyReward, {
+        description: "Day 3 reward"
+    })
     [DailyRewardId.Day3]: DailyReward
-    @Field(() => DailyReward)
+    
+    @Field(() => DailyReward, {
+        description: "Day 4 reward"
+    })
     [DailyRewardId.Day4]: DailyReward
-    @Field(() => DailyReward)
+    
+    @Field(() => DailyReward, {
+        description: "Day 5 reward"
+    })
     [DailyRewardId.Day5]: DailyReward
 }
 

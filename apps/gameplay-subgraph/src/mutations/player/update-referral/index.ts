@@ -1,5 +1,5 @@
 export * from "./update-referral.dto"
 export * from "./update-referral.module"
 export * from "./update-referral.service"
-export * from "./update-referral.controller"
+export * from "./update-referral.resolver"
 //export * from "./claim.spec"

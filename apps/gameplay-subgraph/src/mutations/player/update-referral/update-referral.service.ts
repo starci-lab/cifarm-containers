@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common"
 import {
     DefaultInfo,
     InjectMongoose,
@@ -8,10 +8,10 @@ import {
     UserSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
-import { UpdateReferralRequest, UpdateReferralResponse } from "./update-referral.dto"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
+import { UpdateReferralRequest } from "./update-referral.dto"
+import { createObjectId, EmptyObjectType } from "@src/common"
 import { TokenBalanceService } from "@src/gameplay"
+import { UserLike } from "@src/jwt"
 
 @Injectable()
 export class UpdateReferralService {
@@ -23,10 +23,13 @@ export class UpdateReferralService {
         private readonly tokenBalanceService: TokenBalanceService
     ) {}
 
-    async updateReferral({
-        referralUserId,
-        userId
-    }: UpdateReferralRequest): Promise<UpdateReferralResponse> {
+    async updateReferral(
+        {
+            id: userId
+        }: UserLike,
+        {
+            referralUserId
+        }: UpdateReferralRequest): Promise<EmptyObjectType> {
         const mongoSession = await this.connection.startSession()
 
         try {
@@ -45,11 +48,11 @@ export class UpdateReferralService {
                     .findById(referralUserId)
                     .session(mongoSession)
                 if (!referralUser) {
-                    throw new GrpcNotFoundException("Referral user not found")
+                    throw new NotFoundException("Referral user not found")
                 }
 
                 if (referralUser.referredUserIds.length >= referredLimit) {
-                    throw new GrpcFailedPreconditionException("Referral user has reached the limit")
+                    throw new BadRequestException("Referral user has reached the limit")
                 }
 
                 const user = await this.connection
@@ -59,9 +62,7 @@ export class UpdateReferralService {
 
                 // Check if referral user is the same as the user
                 if (referralUserId === userId) {
-                    throw new GrpcFailedPreconditionException(
-                        "Referral user cannot be the same as the user"
-                    )
+                    throw new BadRequestException("Referral user cannot be the same as the user")
                 }
 
                 // Check if user already has a referral

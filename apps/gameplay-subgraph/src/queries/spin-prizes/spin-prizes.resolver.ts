@@ -9,7 +9,8 @@ export class SpinPrizeResolver {
     constructor(private readonly spinPrizesService: SpinPrizesService) {}
 
     @Query(() => [SpinPrizeSchema], {
-        name: "spinPrizes"
+        name: "spinPrizes",
+        description: "Get all spin prizes"
     })
     async spinPrizes(): Promise<Array<SpinPrizeSchema>> {
         return this.spinPrizesService.getSpinPrizes()
@@ -17,9 +18,11 @@ export class SpinPrizeResolver {
 
     @Query(() => SpinPrizeSchema, {
         name: "spinPrize",
-        nullable: true
+        description: "Get a spin prize by ID"
     })
-    async spinPrize(@Args("id", { type: () => ID }) id: string): Promise<SpinPrizeSchema> {
+    async spinPrize(
+        @Args("id", { type: () => ID, description: "The ID of the spin prize" }) id: string
+    ): Promise<SpinPrizeSchema> {
         return this.spinPrizesService.getSpinPrize(id)
     }
 }

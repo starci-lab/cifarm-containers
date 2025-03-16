@@ -1,4 +1,4 @@
-import { IsOptional, IsUUID, IsEnum, IsJWT } from "class-validator"
+import { IsUUID, IsEnum, IsJWT } from "class-validator"
 import { Network, ChainKey } from "@src/env"
 import { SignedMessage } from "@src/blockchain"
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
@@ -18,17 +18,14 @@ export class VerifySignatureRequest implements SignedMessage {
     @Field(() => String, { description: "Username to verify signature for" })
         username: string
 
-    @IsOptional()
     @IsEnum(ChainKey)
-    @Field(() => ChainKey, { description: "Chain key to verify signature for", defaultValue: ChainKey.Solana })
+    @Field(() => String, { description: "Chain key to verify signature for", defaultValue: ChainKey.Solana })
         chainKey: ChainKey
 
-    @IsOptional()
     @IsEnum(Network)
-    @Field(() => Network, { description: "Network to verify signature for", defaultValue: Network.Testnet })
+    @Field(() => String, { description: "Network to verify signature for", defaultValue: Network.Testnet })
         network: Network
 
-    @IsOptional()
     @Field(() => String, { description: "Account address to verify signature for", nullable: true })
         accountAddress?: string
 }

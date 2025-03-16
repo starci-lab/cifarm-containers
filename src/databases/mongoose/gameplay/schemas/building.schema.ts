@@ -4,40 +4,61 @@ import { AnimalType, BuildingId } from "../enums"
 import { StaticAbstractSchema } from "./abstract"
 import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for building"
+})
 @Schema({
     timestamps: true,
     collection: "buildings"
 })
 export class BuildingSchema extends StaticAbstractSchema<BuildingId> {
-  @Field(() => Boolean)
+  @Field(() => Boolean, {
+      description: "Whether the building is available in the shop"
+  })
   @Prop({ type: Boolean })
       availableInShop: boolean
 
-  @Field(() => String, { nullable: true })
+  @Field(() => String, {
+      description: "The type of the building",
+      nullable: true
+  })
   @Prop({ type: String, enum: AnimalType, required: false })
       type?: AnimalType
 
-  @Field(() => Int)
+  @Field(() => Int, {
+      description: "The maximum upgrade of the building"
+  })
   @Prop({ type: Number })
       maxUpgrade: number
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Int, {
+      description: "The maximum ownership of the building",
+      nullable: true
+  })
   @Prop({ type: Number, required: false })
       maxOwnership?: number
 
-  @Field(() => Int, { nullable: true })
+  @Field(() => Int, {
+      description: "The price of the building",
+      nullable: true
+  })
   @Prop({ type: Number, required: false })
       price?: number
 
-  @Field(() => Int)
+  @Field(() => Int, {
+      description: "The unlock level of the building"
+  })
   @Prop({ type: Number, required: true })
       unlockLevel: number    
-  @Field(() => Boolean)
+  @Field(() => Boolean, {
+      description: "Whether the building is upgradable"
+  })
   @Prop({ type: Boolean, required: true })
       upgradable: boolean
 
-  @Field(() => [UpgradeSchema])
+  @Field(() => [UpgradeSchema], {
+      description: "The upgrades of the building"
+  })
   @Prop({ type: [UpgradeSchemaClass] })
       upgrades: Array<UpgradeSchema>
 

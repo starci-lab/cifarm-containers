@@ -10,14 +10,16 @@ export class SuppliesResolver {
     constructor(private readonly suppliesService: SuppliesService) {}
 
     @Query(() => SupplySchema, {
-        name: "supply"
+        name: "supply",
+        description: "Get a supply by ID"
     })
-    async supply(@Args("id", { type: () => ID }) id: SupplyId): Promise<SupplySchema> {
+    async supply(@Args("id", { type: () => ID, description: "The ID of the supply" }) id: SupplyId): Promise<SupplySchema> {
         return this.suppliesService.getSupply(id)
     }
     
     @Query(() => [SupplySchema], {
-        name: "supplies"
+        name: "supplies",
+        description: "Get all supplies"
     })
     async supplies(): Promise<Array<SupplySchema>> {
         return this.suppliesService.getSupplies()

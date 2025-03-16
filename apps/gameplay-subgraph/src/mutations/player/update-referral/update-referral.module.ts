@@ -1,11 +1,9 @@
 import { Module } from "@nestjs/common"
 import { UpdateReferralService } from "./update-referral.service"
-import { UpdateReferralController } from "./update-referral.controller"
+import { UpdateReferralResolver } from "./update-referral.resolver"
 
 
 @Module({
-    imports: [],
-    providers: [UpdateReferralService],
-    controllers: [UpdateReferralController]
+    providers: [UpdateReferralService, UpdateReferralResolver]
 })
 export class UpdateReferralModule {}

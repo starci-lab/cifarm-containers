@@ -1,10 +1,8 @@
 import { Module } from "@nestjs/common"
-import { MoveController } from "./move.resolver"
 import { MoveService } from "./move.service"
+import { MoveResolver } from "./move.resolver"
 
 @Module({
-    imports: [],
-    providers: [MoveService],
-    controllers: [MoveController]
+    providers: [MoveService, MoveResolver],
 })
 export class MoveModule {}

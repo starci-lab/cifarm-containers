@@ -7,21 +7,29 @@ import { UserSchema } from "./user.schema"
 
 export type SessionDocument = HydratedDocument<SessionSchema>
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for user sessions"
+})
 @Schema({
     timestamps: true,
     collection: "sessions",
 })
 export class SessionSchema extends AbstractSchema {
-    @Field(() => String)
+    @Field(() => String, {
+        description: "The refresh token for the session"
+    })
     @Prop({ type: String, required: true, unique: true, length: 100 })
         refreshToken: string
 
-    @Field(() => Date)
+    @Field(() => Date, {
+        description: "The expiration date of the session"
+    })
     @Prop({ type: Date, required: true })
         expiredAt: Date
     
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: "The user associated with this session"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
         user: UserSchema
 }

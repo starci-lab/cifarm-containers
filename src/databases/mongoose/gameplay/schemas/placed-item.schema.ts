@@ -18,42 +18,67 @@ import {
 } from "../constants"
 import { FruitInfoSchema, FruitInfoSchemaClass } from "./fruit-info.schema"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for items placed on the farm"
+})
 @Schema({ timestamps: true, collection: "placed-items" })
 export class PlacedItemSchema extends AbstractSchema {
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The x-coordinate position of the placed item"
+    })
     @Prop({ type: Number, required: true })
         x: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The y-coordinate position of the placed item"
+    })
     @Prop({ type: Number, required: true })
         y: number
 
-    @Field(() => ID)
+    @Field(() => ID, {
+        description: "The user who owns this placed item"
+    })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
         user: UserSchema | string
 
-    @Field(() => ID)
-    @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: PlacedItemTypeSchema.name })
+    @Field(() => ID, {
+        description: "The type of the placed item"
+    })
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: PlacedItemTypeSchema.name })
     [PLACED_ITEM_TYPE]: PlacedItemTypeSchema | string
 
-    @Field(() => SeedGrowthInfoSchema, { nullable: true })
-    @Prop({ type: SeedGrowthInfoSchemaClass, required: false })
-    [SEED_GROWTH_INFO]?: SeedGrowthInfoSchema
-
-    @Field(() => TileInfoSchema, { nullable: true })
-    @Prop({ type: TileInfoSchemaClass, required: false })
-    [TILE_INFO]?: TileInfoSchema
-
-    @Field(() => AnimalInfoSchema, { nullable: true })
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The animal info associated with this placed item, if applicable"
+    })
     @Prop({ type: AnimalInfoSchemaClass, required: false })
     [ANIMAL_INFO]?: AnimalInfoSchema
 
-    @Field(() => BuildingInfoSchema, { nullable: true })
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The building info associated with this placed item, if applicable"
+    })
     @Prop({ type: BuildingInfoSchemaClass, required: false })
     [BUILDING_INFO]?: BuildingInfoSchema
 
-    @Field(() => FruitInfoSchema, { nullable: true })
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The seed growth info associated with this placed item, if applicable"
+    })
+    @Prop({ type: SeedGrowthInfoSchemaClass, required: false })
+    [SEED_GROWTH_INFO]?: SeedGrowthInfoSchema
+
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The tile info associated with this placed item, if applicable"
+    })
+    @Prop({ type: TileInfoSchemaClass, required: false })
+    [TILE_INFO]?: TileInfoSchema
+
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The fruit info associated with this placed item, if applicable"
+    })
     @Prop({ type: FruitInfoSchemaClass, required: false })
     [FRUIT_INFO]?: FruitInfoSchema
 }

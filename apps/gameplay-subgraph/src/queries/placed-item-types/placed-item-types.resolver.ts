@@ -11,7 +11,8 @@ export class PlacedItemTypesResolver {
 
     
     @Query(() => [PlacedItemTypeSchema], {
-        name: "placedItemTypes"
+        name: "placedItemTypes",
+        description: "Get all placed item types"
     })
     async placedItemTypes(): Promise<Array<PlacedItemTypeSchema>> {
         return this.placedItemTypesService.getPlacedItemTypes()
@@ -20,10 +21,10 @@ export class PlacedItemTypesResolver {
     
     @Query(() => PlacedItemTypeSchema, {
         name: "placedItemType",
-        nullable: true
+        description: "Get a placed item type by ID"
     })
     async placedItemType(
-        @Args("id", { type: () => ID }) id: PlacedItemTypeId
+        @Args("id", { type: () => ID, description: "The ID of the placed item type" }) id: PlacedItemTypeId
     ): Promise<PlacedItemTypeSchema> {
         return this.placedItemTypesService.getPlacedItemType(id)
     }

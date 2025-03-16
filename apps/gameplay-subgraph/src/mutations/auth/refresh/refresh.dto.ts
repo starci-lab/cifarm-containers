@@ -1,5 +1,4 @@
 import { InputType, Field, ObjectType } from "@nestjs/graphql"
-import { ApiProperty } from "@nestjs/swagger"
 import { IsJWT, IsUUID } from "class-validator"
 
 @InputType()
@@ -14,13 +13,13 @@ export class RefreshRequest {
 @ObjectType()
 export class RefreshResponse {
     @IsJWT()
-    @ApiProperty({
+    @Field(() => String, {
         description: "Access token for the user"
     })
         accessToken: string
 
     @IsUUID()
-    @ApiProperty({
+    @Field(() => String, {
         description: "Refresh token to get a new access token",
     })
         refreshToken: string

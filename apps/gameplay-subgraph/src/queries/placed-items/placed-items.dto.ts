@@ -1,9 +1,9 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
 import { PlacedItemSchema } from "@src/databases"
-import { IPaginatedResponse, PaginatedArgs, PaginatedResponse } from "@src/graphql"
+import { IPaginatedResponse, PaginatedRequest, PaginatedResponse } from "@src/graphql"
 
 @InputType()
-export class GetPlacedItemsArgs extends PaginatedArgs {}
+export class GetPlacedItemsRequest extends PaginatedRequest {}
 
 @ObjectType()
 export class GetPlacedItemsResponse

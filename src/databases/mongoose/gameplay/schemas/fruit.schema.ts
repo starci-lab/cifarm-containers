@@ -3,57 +3,83 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { FruitId } from "../enums"
 import { StaticAbstractSchema } from "./abstract"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for fruit"
+})
 @Schema({
     timestamps: true,
-    collection: "fruits",
+    collection: "fruits"
 })
 export class FruitSchema extends StaticAbstractSchema<FruitId> {
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The growth stage duration of the fruit"
+    })
     @Prop({ type: Number, required: true })
         growthStageDuration: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The number of growth stages of the fruit"
+    })
     @Prop({ type: Number, required: true })
         growthStages: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The price of the fruit"
+    })
     @Prop({ type: Number, required: true })
         price: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The unlock level of the fruit"
+    })
     @Prop({ type: Number, required: true, min: 1 })
         unlockLevel: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The next growth stage after harvest"
+    })
     @Prop({ type: Number, required: true })
         nextGrowthStageAfterHarvest: number
 
-    @Field(() => Boolean)
+    @Field(() => Boolean, {
+        description: "Whether the fruit is available in the shop"
+    })
     @Prop({ type: Boolean, required: true })
         availableInShop: boolean
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The minimum harvest quantity of the fruit"
+    })
     @Prop({ type: Number, required: true })
         minHarvestQuantity: number
 
-    @Field(() => Float)
+    @Field(() => Float, {
+        description: "The quality product chance stack of the fruit"
+    })
     @Prop({ type: Number, min: 0 })
         qualityProductChanceStack: number
-    
-    @Field(() => Float)
+
+    @Field(() => Float, {
+        description: "The quality product chance limit of the fruit"
+    })
     @Prop({ type: Number, min: 0 })
         qualityProductChanceLimit: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The maximum harvest quantity of the fruit"
+    })
     @Prop({ type: Number, required: true })
         maxHarvestQuantity: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The basic harvest experiences of the fruit"
+    })
     @Prop({ type: Number, required: true })
         basicHarvestExperiences: number
 
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The quality harvest experiences of the fruit"
+    })
     @Prop({ type: Number, required: true })
         qualityHarvestExperiences: number
 }

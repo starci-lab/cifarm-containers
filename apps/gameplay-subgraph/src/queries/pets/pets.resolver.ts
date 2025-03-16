@@ -9,13 +9,13 @@ export class PetsResolver {
 
     constructor(private readonly petsService: PetsService) {}
 
-    @Query(() => [PetSchema], { name: "pets" })
+    @Query(() => [PetSchema], { name: "pets", description: "Get all pets" })
     async pets(): Promise<Array<PetSchema>> {
         return this.petsService.getPets()
     }
     
-    @Query(() => PetSchema, { name: "pet" })
-    async pet(@Args("id", { type: () => ID }) id: PetId): Promise<PetSchema> {
+    @Query(() => PetSchema, { name: "pet", description: "Get a pet by ID" })
+    async pet(@Args("id", { type: () => ID, description: "The ID of the pet" }) id: PetId): Promise<PetSchema> {
         return this.petsService.getPet(id)
     }
 }

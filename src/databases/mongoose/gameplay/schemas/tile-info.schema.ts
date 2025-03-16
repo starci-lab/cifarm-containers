@@ -2,10 +2,14 @@ import { ObjectType, Field, Int } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 
-@ObjectType()
+@ObjectType({
+    description: "The schema for tile information"
+})
 @Schema({ timestamps: true, autoCreate: false  })
 export class TileInfoSchema extends AbstractSchema {
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The number of times the tile has been harvested"
+    })
     @Prop({ type: Number, default: 0 })
         harvestCount: number
 }
