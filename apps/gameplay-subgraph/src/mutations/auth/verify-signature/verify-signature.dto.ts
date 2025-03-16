@@ -1,20 +1,23 @@
-import { IsUUID, IsEnum, IsJWT } from "class-validator"
+import { IsUUID, IsEnum, IsJWT, IsNotEmpty, IsOptional } from "class-validator"
 import { Network, ChainKey } from "@src/env"
 import { SignedMessage } from "@src/blockchain"
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
 
 @InputType()    
 export class VerifySignatureRequest implements SignedMessage {
-    @IsUUID()
+    @IsUUID("4")
     @Field(() => String, { description: "Message to verify signature for" })
         message: string
 
+    @IsNotEmpty()
     @Field(() => String, { description: "Public key to verify signature for" })
         publicKey: string
     
+    @IsNotEmpty()
     @Field(() => String, { description: "Signature to verify signature for" })
         signature: string
     
+    @IsNotEmpty()
     @Field(() => String, { description: "Username to verify signature for" })
         username: string
 
@@ -26,6 +29,7 @@ export class VerifySignatureRequest implements SignedMessage {
     @Field(() => String, { description: "Network to verify signature for", defaultValue: Network.Testnet })
         network: Network
 
+    @IsOptional()
     @Field(() => String, { description: "Account address to verify signature for", nullable: true })
         accountAddress?: string
 }

@@ -9,7 +9,7 @@ export class RequestMessageResolver {
 
     constructor(private readonly requestMessageService: RequestMessageService) {}
 
-    @Mutation(() => RequestMessageResponse, { name: "requestMessage" })
+    @Mutation(() => RequestMessageResponse, { name: "requestMessage", description: "Request a message to sign" })
     public async requestMessage() {
         return this.requestMessageService.requestMessage()
     }

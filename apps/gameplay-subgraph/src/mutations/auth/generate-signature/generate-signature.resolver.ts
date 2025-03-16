@@ -9,7 +9,10 @@ export class GenerateSignatureResolver {
 
     constructor(private readonly generateSignatureService: GenerateSignatureService) {}
 
-    @Mutation(() => GenerateSignatureResponse, { name: "generateSignature" })
+    @Mutation(() => GenerateSignatureResponse, {
+        name: "generateSignature",
+        description: "Generate a signature"
+    })
     public async generateSignature(@Args("request") request: GenerateSignatureRequest) {
         return this.generateSignatureService.generateSignature(request)
     }

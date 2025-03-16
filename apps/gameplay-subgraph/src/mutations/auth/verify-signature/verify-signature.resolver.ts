@@ -9,7 +9,7 @@ export class VerifySignatureResolver {
 
     constructor(private readonly verifySignatureService: VerifySignatureService) {}
 
-    @Mutation(() => VerifySignatureResponse, { name: "verifySignature" })
+    @Mutation(() => VerifySignatureResponse, { name: "verifySignature", description: "Verify a signature" })
     public async verifySignature(@Args("request") request: VerifySignatureRequest) {
         return this.verifySignatureService.verifySignature(request)
     }
