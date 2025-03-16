@@ -71,6 +71,7 @@ export class VerifySignatureService {
                     { strict: false }
                 )
 
+                console.log({ message, publicKey, signature })
                 const verified = authService.verifyMessage({ message, publicKey, signature })
                 if (!verified) {
                     throw new BadRequestException("Signature is invalid")
