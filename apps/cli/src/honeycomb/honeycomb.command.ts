@@ -3,12 +3,13 @@ import { Logger } from "@nestjs/common"
 import { CreateProjectCommand } from "./create-project"
 import { CreateResourceCommand } from "./create-resource"
 import { MintResourceCommand } from "./mint-resource"
-
+import { CreateSplStakingPoolCommand } from "./create-spl-staking-pool"
+import { CreateProfilesTreeCommand } from "./create-profiles-tree"
 @Command({
     name: "honeycomb",
     aliases: ["hc"],
     description: "manage honeycomb actions",
-    subCommands: [ CreateProjectCommand, CreateResourceCommand, MintResourceCommand ]
+    subCommands: [ CreateProjectCommand, CreateResourceCommand, MintResourceCommand, CreateSplStakingPoolCommand, CreateProfilesTreeCommand ]
 })
 export class HoneycombCommand extends CommandRunner {
     private readonly logger = new Logger(HoneycombCommand.name)

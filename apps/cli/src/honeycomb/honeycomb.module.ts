@@ -5,7 +5,8 @@ import { CreateProjectModule } from "./create-project"
 import { HoneycombCommand } from "./honeycomb.command"
 import { CreateResourceModule } from "./create-resource"
 import { MintResourceModule } from "./mint-resource"
-
+import { CreateSplStakingPoolModule } from "./create-spl-staking-pool"
+import { CreateProfilesTreeModule } from "./create-profiles-tree"
 @Module({
     imports: [
         BlockchainModule.register({
@@ -17,7 +18,9 @@ import { MintResourceModule } from "./mint-resource"
         }), 
         CreateProjectModule,
         CreateResourceModule,
-        MintResourceModule
+        MintResourceModule,
+        CreateSplStakingPoolModule,
+        CreateProfilesTreeModule
     ],
     providers: [HoneycombCommand],
 })

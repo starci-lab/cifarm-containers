@@ -14,8 +14,7 @@ export class MintResourceCommand extends CommandRunner {
     }
 
     async run(_: Array<string>, options?: CreateResourceCommandOptions): Promise<void> {
-        console.log(options)
-        this.logger.debug("Creating the resource...")
+        this.logger.debug("Minting the resource...")
         try {
             const { txResponse } = await this.honeycombService.createMintResourceTransaction({
                 network: options.network,
@@ -54,6 +53,7 @@ export class MintResourceCommand extends CommandRunner {
     @Option({
         flags: "-ra, --resource-address <resourceAddress>",
         description: "Resource address",
+        defaultValue: "6JkqdDyrXsySvnvKBmFVpay9L413VXJcd78kFJ2XSABH"
     })
     parseResourceAddress(resourceAddress: string): string {
         return resourceAddress
