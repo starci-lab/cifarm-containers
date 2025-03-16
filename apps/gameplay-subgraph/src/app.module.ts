@@ -8,6 +8,9 @@ import { MongooseModule } from "@src/databases"
 import { QueriesModule } from "./queries"
 import { APP_PIPE } from "@nestjs/core"
 import { MutationsModule } from "./mutations"
+import { KafkaModule } from "@src/brokers"
+import { BlockchainModule } from "@src/blockchain"
+import { GameplayModule } from "@src/gameplay"
 @Module({
     imports: [
         //core modules
@@ -19,6 +22,15 @@ import { MutationsModule } from "./mutations"
             isGlobal: true
         }),
         JwtModule.register({
+            isGlobal: true
+        }),
+        KafkaModule.register({
+            isGlobal: true
+        }),
+        BlockchainModule.register({
+            isGlobal: true
+        }),
+        GameplayModule.register({
             isGlobal: true
         }),
         GraphQLSubgraphModule.forRoot(),

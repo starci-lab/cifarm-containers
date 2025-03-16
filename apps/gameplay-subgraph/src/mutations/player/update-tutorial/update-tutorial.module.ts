@@ -1,11 +1,8 @@
 import { Module } from "@nestjs/common"
-import { UpdateTutorialController } from "./update-tutorial.controller"
+import { UpdateTutorialResolver } from "./update-tutorial.resolver"
 import { UpdateTutorialService } from "./update-tutorial.service"
 
 @Module({
-    imports: [],
-    providers: [UpdateTutorialService],
-    exports: [UpdateTutorialService],
-    controllers: [UpdateTutorialController]
+    providers: [UpdateTutorialService, UpdateTutorialResolver],
 })
 export class UpdateTutorialModule {}

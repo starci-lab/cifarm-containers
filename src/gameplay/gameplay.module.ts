@@ -8,9 +8,7 @@ import { GoldBalanceService, TokenBalanceService } from "./wallet"
 import { ProductService } from "./product"
 import { TutorialService } from "./tutorial"
 import { PositionService } from "./position"
-import { NestExport, NestImport, NestProvider, NestService } from "@src/common"
-import { StaticService } from "./static"
-import { MongooseModule } from "@src/databases"
+import { NestExport, NestProvider, NestService } from "@src/common"
 
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {

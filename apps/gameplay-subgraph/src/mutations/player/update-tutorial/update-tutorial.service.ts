@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { BadRequestException, Injectable, Logger } from "@nestjs/common"
 import {
     CropCurrentState,
     CropSchema,
@@ -11,10 +11,10 @@ import {
     TutorialStep,
     UserSchema
 } from "@src/databases"
-import { UpdateTutorialRequest, UpdateTutorialResponse } from "./update-tutorial.dto"
-import { createObjectId, GrpcFailedPreconditionException } from "@src/common"
+import { createObjectId, EmptyObjectType } from "@src/common"
 import { TutorialService } from "@src/gameplay"
 import { ClientSession, Connection } from "mongoose"
+import { UserLike } from "@src/jwt"
 
 @Injectable()
 export class UpdateTutorialService {
@@ -26,7 +26,9 @@ export class UpdateTutorialService {
         private readonly tutorialService: TutorialService
     ) {}
 
-    async updateTutorial(request: UpdateTutorialRequest): Promise<UpdateTutorialResponse> {
+    async updateTutorial(
+        { id: userId }: UserLike
+    ): Promise<EmptyObjectType> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using `withTransaction` to handle the transaction automatically
@@ -38,13 +40,13 @@ export class UpdateTutorialService {
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
-                    .findById(request.userId)
+                    .findById(userId)
                     .session(mongoSession)
 
                 // Check if last step is reached
                 const lastStep = this.tutorialService.isLastStep(user.tutorialStep)
                 if (lastStep) {
-                    throw new GrpcFailedPreconditionException(
+                    throw new BadRequestException(
                         "You have reached the last step of the tutorial"
                     )
                 }
@@ -101,7 +103,7 @@ export class UpdateTutorialService {
         user
     }: StartWaterCropAtStage1Params): Promise<void> {
         if (nextStep != TutorialStep.StartWaterCropAtStage1) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You are not in the right state to water crop at stage 1"
             )
         }
@@ -115,7 +117,7 @@ export class UpdateTutorialService {
             .session(mongoSession)
 
         if (placedItems.length < 2) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You need to plant at least 2 default crop to enter this step"
             )
         }
@@ -143,7 +145,7 @@ export class UpdateTutorialService {
         user
     }: StartWaterCropAtStage2Params): Promise<void> {
         if (nextStep != TutorialStep.StartWaterCropAtStage2) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You are not in the right state to water crop at stage 2"
             )
         }
@@ -154,7 +156,7 @@ export class UpdateTutorialService {
         }).session(mongoSession)
 
         if (placedItems.length < 2) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You need to plant at least 2 default crop to enter this step"
             )
         }
@@ -164,7 +166,7 @@ export class UpdateTutorialService {
         )
 
         if (someNeedWater) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You need to water all the crops in stage 1 to enter this step"
             )
         }
@@ -186,7 +188,7 @@ export class UpdateTutorialService {
     // to stage 3
     private async startToStage3({ mongoSession, defaultCropId, nextStep, user }: StartToStage3Params): Promise<void> {
         if (nextStep != TutorialStep.StartToStage3) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You are not in the right state to water crop at stage 3"
             )
         }
@@ -197,7 +199,7 @@ export class UpdateTutorialService {
         }).session(mongoSession)
 
         if (placedItems.length < 2) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You need to plant 2 default crop to enter this step"
             )
         }
@@ -207,7 +209,7 @@ export class UpdateTutorialService {
         )
 
         if (someNeedWater) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You need to water all the crops in stage 2 to enter this step"
             )
         }
@@ -228,7 +230,7 @@ export class UpdateTutorialService {
     // harvest crop
     private async startHarvestCrop({ mongoSession, defaultCropId, nextStep, user }: StartHarvestCropParams): Promise<void> {
         if (nextStep != TutorialStep.StartHarvestCrop) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You are not in the right state to water crop at harvest"
             )
         }
@@ -239,7 +241,7 @@ export class UpdateTutorialService {
         }).session(mongoSession)
 
         if (placedItems.length < 2) {
-            throw new GrpcFailedPreconditionException(
+            throw new BadRequestException(
                 "You need to plant 2 default crop to enter this step"
             )
         }
