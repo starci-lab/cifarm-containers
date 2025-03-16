@@ -13,7 +13,7 @@ export class HarvestAnimalResolver {
     constructor(private readonly harvestAnimalService: HarvestAnimalService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "harvestAnimal" })
+    @Mutation(() => VoidResolver, { name: "harvestAnimal", description: "Harvest an animal", nullable: true })
     public async harvestAnimal(
         @GraphQLUser() user: UserLike,
         @Args("request") request: HarvestAnimalRequest

@@ -3,8 +3,8 @@ import { FollowService } from "./follow.service"
 import { FollowRequest } from "./follow.dto"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { Resolver, Mutation, Args } from "@nestjs/graphql"
-import { VoidResolver } from "graphql-scalars"
 import { GraphQLUser } from "@src/decorators"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class FollowResolver {
@@ -13,8 +13,8 @@ export class FollowResolver {
     constructor(private readonly followService: FollowService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "follow" })
-    public async follow(@GraphQLUser() user: UserLike, @Args("request") request: FollowRequest): Promise<void> {
+    @Mutation(() => VoidResolver, { name: "follow", description: "Follow a user", nullable: true })
+    public async follow(@GraphQLUser() user: UserLike, @Args("request") request: FollowRequest) {
         return this.followService.follow(user, request)
     }
 }

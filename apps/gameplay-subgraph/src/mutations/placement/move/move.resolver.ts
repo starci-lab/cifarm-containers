@@ -14,7 +14,7 @@ export class MoveResolver {
     ){}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "move" })
+    @Mutation(() => VoidResolver, { name: "move", description: "Move a placed item", nullable: true })
     public async move(@GraphQLUser() user: UserLike, @Args("request") request: MoveRequest) {
         return await this.placementService.move(user, request)
     }

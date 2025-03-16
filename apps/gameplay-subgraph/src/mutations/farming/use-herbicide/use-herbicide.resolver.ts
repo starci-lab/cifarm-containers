@@ -14,7 +14,7 @@ export class UseHerbicideResolver {
     constructor(private readonly useHerbicideService: UseHerbicideService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "useHerbicide" })
+    @Mutation(() => VoidResolver, { name: "useHerbicide", description: "Use a herbicide", nullable: true })
     public async useHerbicide(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UseHerbicideRequest

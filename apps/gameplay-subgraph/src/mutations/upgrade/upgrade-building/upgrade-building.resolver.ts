@@ -14,7 +14,7 @@ export class UpgradeBuildingResolver {
     constructor(private readonly UpgradeBuildingService: UpgradeBuildingService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "upgradeBuilding" })
+    @Mutation(() => VoidResolver, { name: "upgradeBuilding", description: "Upgrade a building", nullable: true })
     public async upgradeBuilding(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UpgradeBuildingRequest

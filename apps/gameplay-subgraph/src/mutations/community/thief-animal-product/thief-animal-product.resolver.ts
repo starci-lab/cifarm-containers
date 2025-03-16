@@ -15,8 +15,7 @@ export class ThiefAnimalProductResolver {
     @UseGuards(GraphQLJwtAuthGuard)
     @Mutation(() => ThiefAnimalProductResponse, {
         name: "thiefAnimalProduct",
-        description: "Thief animal product",
-        nullable: true
+        description: "Thief animal product"
     })
     public async thiefAnimalProduct(
         @GraphQLUser() user: UserLike,

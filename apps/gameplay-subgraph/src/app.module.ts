@@ -17,6 +17,7 @@ import { HoneycombModule } from "@src/honeycomb"
     imports: [
         //core modules
         EnvModule.forRoot(),
+        GraphQLSubgraphModule.forRoot(),
         CryptoModule.register({
             isGlobal: true
         }),
@@ -41,7 +42,6 @@ import { HoneycombModule } from "@src/honeycomb"
         HoneycombModule.register({
             isGlobal: true
         }),
-        GraphQLSubgraphModule.forRoot(),
         MongooseModule.forRoot(),
         //functional modules
         QueriesModule,

@@ -14,7 +14,7 @@ export class SellResolver {
     ){}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "sell" })
+    @Mutation(() => VoidResolver, { name: "sell", description: "Sell a placed item", nullable: true })
     public async sell(@GraphQLUser() user: UserLike, @Args("request") request: SellRequest) {
         return await this.placementService.sell(user, request)
     }

@@ -15,7 +15,6 @@ export class ThiefCropResolver {
     @Mutation(() => ThiefCropResponse, {
         name: "thiefCrop",
         description: "Thief crop",
-        nullable: true
     })
     public async thiefCrop(
         @GraphQLUser() user: UserLike,

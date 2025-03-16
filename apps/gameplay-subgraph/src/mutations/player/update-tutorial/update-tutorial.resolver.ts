@@ -14,7 +14,8 @@ export class UpdateTutorialResolver {
     @UseGuards(GraphQLJwtAuthGuard)
     @Mutation(() => VoidResolver, {
         name: "updateTutorial",
-        description: "Update the tutorial step"
+        description: "Update the tutorial step",
+        nullable: true
     })
     public async updateTutorial(@GraphQLUser() user: UserLike) {
         await this.updateTutorialService.updateTutorial(user)

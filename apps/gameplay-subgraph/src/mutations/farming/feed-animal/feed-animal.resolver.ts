@@ -14,7 +14,7 @@ export class FeedAnimalResolver {
     constructor(private readonly feedAnimalService: FeedAnimalService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "feedAnimal" })
+    @Mutation(() => VoidResolver, { name: "feedAnimal", description: "Feed an animal", nullable: true })
     public async feedAnimal(
         @GraphQLUser() user: UserLike,
         @Args("request") request: FeedAnimalRequest

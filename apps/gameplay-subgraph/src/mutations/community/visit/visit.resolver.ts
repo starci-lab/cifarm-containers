@@ -15,8 +15,7 @@ export class VisitResolver {
     @UseGuards(GraphQLJwtAuthGuard)
     @Mutation(() => VisitResponse, {
         name: "visit",
-        description: "Visit a user",
-        nullable: true
+        description: "Visit a user"
     })
     public async visit(
         @GraphQLUser() user: UserLike,

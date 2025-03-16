@@ -24,6 +24,7 @@ import { Connection } from "mongoose"
 import { GrpcInvalidArgumentException } from "nestjs-grpc-exceptions"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 import { createObjectId } from "@src/common"
+import { UserLike } from "@src/jwt"
 
 @Injectable()
 export class ThiefAnimalProductService {
@@ -39,7 +40,8 @@ export class ThiefAnimalProductService {
     ) {}
 
     async thiefAnimalProduct(
-        { placedItemAnimalId, userId }: ThiefAnimalProductRequest
+        { id: userId }: UserLike,
+        { placedItemAnimalId }: ThiefAnimalProductRequest
     ): Promise<ThiefAnimalProductResponse> {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload<ThiefAnimalProductData> | undefined

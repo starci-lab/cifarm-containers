@@ -14,7 +14,7 @@ export class UseFertilizerResolver {
     constructor(private readonly useFertilizerService: UseFertilizerService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "useFertilizer" })
+    @Mutation(() => VoidResolver, { name: "useFertilizer", description: "Use a fertilizer", nullable: true })
     public async useFertilizer(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UseFertilizerRequest

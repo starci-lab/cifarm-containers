@@ -1,5 +1,5 @@
 import { FruitId } from "@src/databases"
-import { Position } from "@src/gameplay"
+import { Position, PositionInput } from "@src/gameplay"
 import { Type } from "class-transformer"
 import { ValidateNested, IsString } from "class-validator"
 import { Field, InputType } from "@nestjs/graphql"
@@ -7,8 +7,8 @@ import { Field, InputType } from "@nestjs/graphql"
 @InputType()
 export class BuyFruitRequest {
     @ValidateNested()
-    @Type(() => Position)
-    @Field(() => Position, { description: "The position of the fruit" })
+    @Type(() => PositionInput)
+    @Field(() => PositionInput, { description: "The position of the fruit" })
         position: Position
     
     @IsString()

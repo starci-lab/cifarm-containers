@@ -8,7 +8,6 @@ import { TileId } from "../enums"
 })
 @Schema({ timestamps: true, collection: "tiles" })
 export class TileSchema extends StaticAbstractSchema<TileId> {
-    
     @Field(() => Float, { 
         nullable: true,
         description: "The price of the tile"

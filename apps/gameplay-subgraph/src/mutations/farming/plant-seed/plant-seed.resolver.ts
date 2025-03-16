@@ -14,7 +14,7 @@ export class PlantSeedResolver {
     constructor(private readonly plantSeedService: PlantSeedService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "plantSeed" })
+    @Mutation(() => VoidResolver, { name: "plantSeed", description: "Plant a seed", nullable: true })
     public async plantSeed(
         @GraphQLUser() user: UserLike,
         @Args("request") request: PlantSeedRequest

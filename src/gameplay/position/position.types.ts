@@ -1,6 +1,6 @@
 import { PlacedItemTypeSchema } from "@src/databases"
 import { Connection } from "mongoose"
-import { Position } from "../gameplay.types"
+import { PositionOutput } from "../gameplay.types"
 
 export interface GetOccupiedPositionsParams {
     userId: string
@@ -9,5 +9,5 @@ export interface GetOccupiedPositionsParams {
 
 export interface CheckPositionAvailableParams {
     placedItemType: PlacedItemTypeSchema,
-    occupiedPositions: Array<Position>
+    occupiedPositions: Array<PositionOutput>
 }

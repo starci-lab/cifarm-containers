@@ -13,7 +13,7 @@ export class WaterCropResolver {
     constructor(private readonly waterService: WaterCropService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "waterCrop" })     
+    @Mutation(() => VoidResolver, { name: "waterCrop", description: "Water a crop", nullable: true })     
     public async water(
         @GraphQLUser() user: UserLike,
         @Args("request") request: WaterCropRequest

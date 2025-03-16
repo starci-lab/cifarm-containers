@@ -14,7 +14,7 @@ export class UseBugNetResolver {
     constructor(private readonly useBugNetService: UseBugNetService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "useBugNet" })
+    @Mutation(() => VoidResolver, { name: "useBugNet", description: "Use a bug net", nullable: true })
     public async useBugNet(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UseBugNetRequest

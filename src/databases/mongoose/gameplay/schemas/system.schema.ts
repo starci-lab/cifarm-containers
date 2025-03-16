@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import JSON from "graphql-type-json"
 import { AppearanceChance, CropId, DailyRewardId, SystemId } from "../enums"
-import { Position } from "@src/gameplay"
+import { PositionOutput } from "@src/gameplay"
 import { StaticAbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 
@@ -223,15 +223,15 @@ export class FruitRandomness {
     description: "Default positions for farm elements"
 })
 export class Positions {
-    @Field(() => [Position], {
+    @Field(() => [PositionOutput], {
         description: "Default positions for tiles"
     })
-        tiles: Array<Position>
+        tiles: Array<PositionOutput>
     
-    @Field(() => Position, {
+    @Field(() => PositionOutput, {
         description: "Default position for the home building"
     })
-        home: Position
+        home: PositionOutput
 }
 
 @ObjectType({
