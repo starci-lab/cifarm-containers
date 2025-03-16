@@ -13,7 +13,7 @@ export class MoveInventoryResolver {
     constructor(private readonly moveInventoryService : MoveInventoryService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "moveInventory" })
+    @Mutation(() => VoidResolver, { name: "moveInventory", description: "Move inventory", nullable: true })
     public async moveInventory(
         @GraphQLUser() user: UserLike,
         @Args("request") request: MoveInventoryRequest

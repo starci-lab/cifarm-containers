@@ -12,10 +12,11 @@ export class UpdateTutorialResolver {
     constructor(private readonly updateTutorialService: UpdateTutorialService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "updateTutorial", description: "Update the tutorial step" })
-    public async updateTutorial(
-        @GraphQLUser() user: UserLike
-    ) {
+    @Mutation(() => VoidResolver, {
+        name: "updateTutorial",
+        description: "Update the tutorial step"
+    })
+    public async updateTutorial(@GraphQLUser() user: UserLike) {
         await this.updateTutorialService.updateTutorial(user)
     }
 }

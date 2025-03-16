@@ -14,7 +14,7 @@ export class RetainProductResolver {
     constructor(private readonly retainProductService: RetainProductService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "retainProduct" })
+    @Mutation(() => VoidResolver, { name: "retainProduct", description: "Retain product", nullable: true })
     public async retainProduct(
         @GraphQLUser() user: UserLike,
         @Args("request") request: RetainProductRequest

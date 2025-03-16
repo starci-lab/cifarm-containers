@@ -13,7 +13,7 @@ export class DeliverMoreProductResolver {
     constructor(private readonly deliverMoreProductService: DeliverMoreProductService) { }
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "deliverMoreProduct" })
+    @Mutation(() => VoidResolver, { name: "deliverMoreProduct", description: "Deliver more product", nullable: true })
     public async deliverMoreProduct(
         @GraphQLUser() user: UserLike,
         @Args("request") request: DeliverMoreProductRequest

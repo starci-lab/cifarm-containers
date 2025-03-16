@@ -13,7 +13,7 @@ export class UpdateReferralResolver {
     constructor(private readonly updateReferralService : UpdateReferralService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "updateReferral" })
+    @Mutation(() => VoidResolver, { name: "updateReferral", description: "Update referral", nullable: true })
     public async updateReferral(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UpdateReferralRequest

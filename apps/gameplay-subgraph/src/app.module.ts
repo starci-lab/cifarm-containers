@@ -12,6 +12,7 @@ import { KafkaModule } from "@src/brokers"
 import { BlockchainModule } from "@src/blockchain"
 import { GameplayModule } from "@src/gameplay"
 import { DateModule } from "@src/date"
+import { HoneycombModule } from "@src/honeycomb"
 @Module({
     imports: [
         //core modules
@@ -35,6 +36,9 @@ import { DateModule } from "@src/date"
             isGlobal: true
         }),
         DateModule.register({
+            isGlobal: true
+        }),
+        HoneycombModule.register({
             isGlobal: true
         }),
         GraphQLSubgraphModule.forRoot(),

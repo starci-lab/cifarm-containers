@@ -1,12 +1,13 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, InputType, Int, ObjectType } from "@nestjs/graphql"
 import { IsInt } from "class-validator"
 
-@ObjectType()
+@InputType()
 export class Position {
     @IsInt()
     @Field(() => Int)
         x: number
 
+    @IsInt()
     @Field(() => Int)
         y: number
 }
