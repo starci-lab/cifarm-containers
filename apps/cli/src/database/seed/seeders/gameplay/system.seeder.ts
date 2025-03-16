@@ -255,7 +255,8 @@ export class SystemSeeder implements Seeder {
             dailyRewardAmount: 10000000, // 10 $CARROT
             tokenResourceAddress: "6JkqdDyrXsySvnvKBmFVpay9L413VXJcd78kFJ2XSABH",
             projectAddress: "BoRbyNqh3YmYzzuFMLZ2kjFEC1whr4zS9wPskqp7uqZL",
-            decimals: 6
+            decimals: 6,
+            profilesTreeAddresses: ["BTjBVuqM9be9LbSy7USu6VFhZcdmAyWfatNRNCAuqdtu"]
         }
         const data: Array<Partial<SystemSchema>> = [
             {

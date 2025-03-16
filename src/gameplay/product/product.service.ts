@@ -66,7 +66,8 @@ export class ProductService {
             yieldCount,
             currentState: AnimalCurrentState.Normal,
             harvestQuantityRemaining: 0,
-            currentHungryTime: 0
+            currentHungryTime: 0,
+            animal: animalInfo.animal
         }
     }
 
@@ -80,7 +81,9 @@ export class ProductService {
             harvestCount,
             currentState: FruitCurrentState.Normal,
             currentStage: fruit.nextGrowthStageAfterHarvest,
-            currentStageTimeElapsed: 0
+            currentStageTimeElapsed: 0,
+            harvestQuantityRemaining: 0,
+            fruit: fruit._id
         }
     }
 }

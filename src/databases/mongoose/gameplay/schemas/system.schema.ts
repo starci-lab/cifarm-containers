@@ -172,6 +172,8 @@ export class HoneycombInfo {
         tokenResourceAddress: string
     @Field(() => Int)
         decimals: number
+    @Field(() => [String])
+        profilesTreeAddresses: Array<string>
 }
 
 @ObjectType()

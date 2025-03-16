@@ -190,7 +190,6 @@ export class HarvestFruitService {
                         { _id: placedItemFruit._id },
                         {
                             fruitInfo: {
-                                ...placedItemFruit.fruitInfo,
                                 ...fruitInfoAfterCollectChanges
                             }
                         }
