@@ -9,7 +9,7 @@ import { CreateSplStakingPoolModule } from "./create-spl-staking-pool"
 import { CreateProfilesTreeModule } from "./create-profiles-tree"
 import { CreateAssemblerConfigModule } from "./create-assembler-config"
 import { CreateCharacterModelModule } from "./create-character-model"
-
+import { CreateCharacterTreeModule } from "./create-character-tree"
 @Module({
     imports: [
         BlockchainModule.register({
@@ -25,7 +25,8 @@ import { CreateCharacterModelModule } from "./create-character-model"
         CreateSplStakingPoolModule,
         CreateProfilesTreeModule,
         CreateAssemblerConfigModule,
-        CreateCharacterModelModule
+        CreateCharacterModelModule,
+        CreateCharacterTreeModule
     ],
     providers: [HoneycombCommand],
 })

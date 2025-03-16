@@ -453,7 +453,6 @@ export interface CreateCreateCharactersTreeTransactionParams
     extends BaseHoneycombTransactionParams {
     projectAddress: string
     characterModel: string
-    payerAddress: string
     treeConfig: TreeSetupConfig
 }
 

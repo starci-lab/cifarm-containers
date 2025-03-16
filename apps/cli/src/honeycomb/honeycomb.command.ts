@@ -7,7 +7,7 @@ import { CreateSplStakingPoolCommand } from "./create-spl-staking-pool"
 import { CreateProfilesTreeCommand } from "./create-profiles-tree"
 import { CreateAssemblerConfigCommand } from "./create-assembler-config"
 import { CreateCharacterModelCommand } from "./create-character-model"
-
+import { CreateCharacterTreeCommand } from "./create-character-tree"
 @Command({
     name: "honeycomb",
     aliases: ["hc"],
@@ -19,7 +19,8 @@ import { CreateCharacterModelCommand } from "./create-character-model"
         CreateSplStakingPoolCommand,
         CreateProfilesTreeCommand,
         CreateAssemblerConfigCommand,
-        CreateCharacterModelCommand
+        CreateCharacterModelCommand,
+        CreateCharacterTreeCommand
     ]
 })
 export class HoneycombCommand extends CommandRunner {
