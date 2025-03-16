@@ -3,8 +3,8 @@ import { MoveService } from "./move.service"
 import { MoveRequest } from "./move.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 import { GraphQLUser } from "@src/decorators"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class MoveResolver {
@@ -14,7 +14,7 @@ export class MoveResolver {
     ){}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "move" })
+    @Mutation(() => VoidResolver, { name: "move" })
     public async move(@GraphQLUser() user: UserLike, @Args("request") request: MoveRequest) {
         return await this.placementService.move(user, request)
     }

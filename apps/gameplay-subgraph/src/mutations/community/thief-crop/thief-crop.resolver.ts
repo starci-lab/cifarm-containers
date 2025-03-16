@@ -12,7 +12,11 @@ export class ThiefCropResolver {
     constructor(private readonly thiefCropService : ThiefCropService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => ThiefCropResponse, { name: "thiefCrop" })
+    @Mutation(() => ThiefCropResponse, {
+        name: "thiefCrop",
+        description: "Thief crop",
+        nullable: true
+    })
     public async thiefCrop(
         @GraphQLUser() user: UserLike,
         @Args("request") request: ThiefCropRequest

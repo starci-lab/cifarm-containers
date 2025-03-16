@@ -13,10 +13,12 @@ export class ClaimDailyRewardResolver {
     constructor(private readonly claimDailyRewardService: ClaimDailyRewardService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, { name: "claimDailyReward" })
-    public async claimDailyReward(
-        @GraphQLUser() user: UserLike,
-    ) {
+    @Mutation(() => VoidResolver, {
+        name: "claimDailyReward",
+        description: "Claim the daily reward",
+        nullable: true
+    })
+    public async claimDailyReward(@GraphQLUser() user: UserLike) {
         return this.claimDailyRewardService.claimDailyReward(user)
     }
 }

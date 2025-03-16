@@ -2,7 +2,7 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 import { UpdateFollowXService } from "./update-follow-x.service"
 
 @Resolver()
@@ -12,7 +12,11 @@ export class UpdateFollowXResolver {
     constructor(private readonly updateFollowXService: UpdateFollowXService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "updateFollowX" })
+    @Mutation(() => VoidResolver, {
+        name: "updateFollowX",
+        description: "Update follow X",
+        nullable: true
+    })
     public async updateFollowX(@GraphQLUser() user: UserLike) {
         return this.updateFollowXService.updateFollowX(user)
     }

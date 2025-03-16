@@ -4,7 +4,7 @@ import { MintOffchainTokensRequest } from "./mint-offchain-tokens.dto"
 import { MintOffchainTokensService } from "./mint-offchain-tokens.service"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class MintOffchainTokensResolver {
@@ -15,7 +15,10 @@ export class MintOffchainTokensResolver {
     ) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "mintOffchainTokens" })
+    @Mutation(() => VoidResolver, { name: "mintOffchainTokens",
+        description: "Mint offchain tokens",
+        nullable: true
+    })
     public async mintOffchainTokens(
         @GraphQLUser() user: UserLike,
         @Args("request") request: MintOffchainTokensRequest

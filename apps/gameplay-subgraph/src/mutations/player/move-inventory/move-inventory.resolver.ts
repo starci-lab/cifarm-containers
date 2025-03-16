@@ -4,7 +4,7 @@ import { MoveInventoryRequest } from "./move-inventory.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class MoveInventoryResolver {
@@ -13,7 +13,7 @@ export class MoveInventoryResolver {
     constructor(private readonly moveInventoryService : MoveInventoryService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "moveInventory" })
+    @Mutation(() => VoidResolver, { name: "moveInventory" })
     public async moveInventory(
         @GraphQLUser() user: UserLike,
         @Args("request") request: MoveInventoryRequest

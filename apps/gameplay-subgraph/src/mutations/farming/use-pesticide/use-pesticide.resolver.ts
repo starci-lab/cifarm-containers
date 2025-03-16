@@ -3,9 +3,9 @@ import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { UsePesticideRequest } from "./use-pesticide.dto"
 import { UsePesticideService } from "./use-pesticide.service"
 import { GraphQLJwtAuthGuard } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 import { GraphQLUser } from "@src/decorators"
 import { UserLike } from "@src/jwt"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class UsePesticideResolver {
@@ -14,7 +14,7 @@ export class UsePesticideResolver {
     constructor(private readonly usePesticideService: UsePesticideService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "usePesticide" })
+    @Mutation(() => VoidResolver, { name: "usePesticide" })
     public async usePesticide(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UsePesticideRequest

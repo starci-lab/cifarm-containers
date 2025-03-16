@@ -5,7 +5,7 @@ import { UseFertilizerRequest } from "./use-fertilizer.dto"
 import { UseFertilizerService } from "./use-fertilizer.service"
 import { GraphQLUser } from "@src/decorators"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class UseFertilizerResolver {
@@ -14,7 +14,7 @@ export class UseFertilizerResolver {
     constructor(private readonly useFertilizerService: UseFertilizerService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "useFertilizer" })
+    @Mutation(() => VoidResolver, { name: "useFertilizer" })
     public async useFertilizer(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UseFertilizerRequest

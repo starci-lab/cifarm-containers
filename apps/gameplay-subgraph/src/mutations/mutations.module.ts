@@ -13,15 +13,15 @@ import { PlacementModule } from "./placement"
 @Module({
     imports: [
         AuthModule,
-        // CommunityModule,
+        CommunityModule,
         ClaimModule,
-        // DeliveryModule,
-        // FarmingModule,
-        // UpgradeModule,
-        // ShopModule,
-        // HoneycombModule,
-        // PlayerModule,
-        // PlacementModule
+        DeliveryModule,
+        FarmingModule,
+        UpgradeModule,
+        ShopModule,
+        HoneycombModule,
+        PlayerModule,
+        PlacementModule
     ]
 })
 export class MutationsModule {}

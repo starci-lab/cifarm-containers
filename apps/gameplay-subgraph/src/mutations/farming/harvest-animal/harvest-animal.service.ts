@@ -23,7 +23,6 @@ import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HarvestAnimalRequest } from "./harvest-animal.dto"
 import { UserLike } from "@src/jwt" 
-import { EmptyObjectType } from "@src/common"
 
 interface HarvestAnimalData {
     productId: string;
@@ -46,7 +45,7 @@ export class HarvestAnimalService {
     async harvestAnimal(
         { id: userId }: UserLike,
         { placedItemAnimalId }: HarvestAnimalRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         this.logger.debug(
             `Harvesting animal for user ${userId}, animal ID: ${placedItemAnimalId}`
         )
@@ -55,7 +54,7 @@ export class HarvestAnimalService {
         let actionMessage: EmitActionPayload<HarvestAnimalData> | undefined
 
         try {
-            const result = await mongoSession.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 // Fetch placed item animal with its info
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -221,8 +220,7 @@ export class HarvestAnimalService {
                 })
             ])
 
-            return result
-
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 

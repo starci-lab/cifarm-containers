@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import { Activities, CropCurrentState, InjectMongoose, PlacedItemSchema, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { Connection } from "mongoose"
@@ -25,12 +25,12 @@ export class WaterCropService {
     async water(
         { id: userId }: UserLike,
         { placedItemTileId }: WaterCropRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         let actionMessage: EmitActionPayload | undefined
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to automatically handle session and transaction
-            const result = await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(mongoSession)
@@ -113,8 +113,8 @@ export class WaterCropService {
                     success: true,
                     userId,
                 }
-    
-                return {} // Successful result after all operations
+                
+                // No return value needed for void
             })
 
             await Promise.all([
@@ -128,7 +128,7 @@ export class WaterCropService {
                 })
             ])
             
-            return result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {

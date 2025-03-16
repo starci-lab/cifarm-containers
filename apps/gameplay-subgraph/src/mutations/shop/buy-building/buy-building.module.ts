@@ -1,10 +1,9 @@
 import { Module } from "@nestjs/common"
-import { BuyBuildingController } from "./buy-building.controller"
+import { BuyBuildingResolver } from "./buy-building.resolver"
 import { BuyBuildingService } from "./buy-building.service"
 
 @Module({
-    controllers: [BuyBuildingController],
-    providers: [BuyBuildingService]
+    providers: [BuyBuildingResolver, BuyBuildingService]
 })
 export class BuyBuildingModule {}
  

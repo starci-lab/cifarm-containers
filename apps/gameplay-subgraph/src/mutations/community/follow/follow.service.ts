@@ -19,12 +19,12 @@ export class FollowService {
 
     constructor(@InjectMongoose() private readonly connection: Connection) {}
 
-    async follow({ id: userId }: UserLike, { followeeUserId }: FollowRequest) {
+    async follow({ id: userId }: UserLike, { followeeUserId }: FollowRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         try {
             // Using withTransaction to handle the transaction lifecycle
-            const result = await mongoSession.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 const {
                     value: { followeeLimit }
                 } = await this.connection
@@ -75,10 +75,8 @@ export class FollowService {
                     .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
                     .create([{ followee: followeeUserId, follower: userId }], { session })
 
-                return {} // Return an empty object as the response
+                // No return value needed for void
             })
-
-            return result // Return the result from the transaction
         } catch (error) {
             this.logger.error(error)
             // withTransaction automatically handles rollback, no need for manual abort

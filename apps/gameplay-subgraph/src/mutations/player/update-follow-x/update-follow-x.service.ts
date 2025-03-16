@@ -8,7 +8,7 @@ import {
     UserSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import { TokenBalanceService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 
@@ -24,12 +24,12 @@ export class UpdateFollowXService {
 
     async updateFollowX({
         id: userId
-    }: UserLike): Promise<EmptyObjectType> {
+    }: UserLike): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         try {
             // Using `withTransaction` for automatic transaction handling
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 // Get followX reward quantity from system configuration
                 const {
                     value: { followXRewardQuantity }
@@ -46,7 +46,8 @@ export class UpdateFollowXService {
 
                 // If the user already has followX awarded, return early
                 if (user.followXAwarded) {
-                    return {}
+                    // No return value needed for void
+                    return
                 }
 
                 // Update the token balance for the user
@@ -70,7 +71,7 @@ export class UpdateFollowXService {
                     .session(mongoSession)
             })
 
-            return result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error

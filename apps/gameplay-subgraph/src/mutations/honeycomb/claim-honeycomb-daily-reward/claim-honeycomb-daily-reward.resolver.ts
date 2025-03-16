@@ -3,8 +3,8 @@ import { Mutation, Resolver } from "@nestjs/graphql"
 import { ClaimHoneycombDailyRewardService } from "./claim-honeycomb-daily-reward.service"
 import { GraphQLJwtAuthGuard } from "@src/jwt"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 import { GraphQLUser } from "@src/decorators"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class ClaimHoneycombDailyRewardResolver {
@@ -15,9 +15,13 @@ export class ClaimHoneycombDailyRewardResolver {
     ) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "claimHoneycombDailyReward" })
+    @Mutation(() => VoidResolver, {
+        name: "claimHoneycombDailyReward",
+        description: "Claim honeycomb daily reward",
+        nullable: true
+    })
     public async claimHoneycombDailyReward(
-        @GraphQLUser() user: UserLike,
+        @GraphQLUser() user: UserLike
     ) {
         return this.claimHoneycombDailyRewardService.claimHoneycombDailyReward(user)
     }

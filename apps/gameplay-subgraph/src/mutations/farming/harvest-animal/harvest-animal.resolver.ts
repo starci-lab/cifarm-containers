@@ -4,7 +4,7 @@ import { HarvestAnimalService } from "./harvest-animal.service"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class HarvestAnimalResolver {
@@ -13,7 +13,7 @@ export class HarvestAnimalResolver {
     constructor(private readonly harvestAnimalService: HarvestAnimalService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "harvestAnimal" })
+    @Mutation(() => VoidResolver, { name: "harvestAnimal" })
     public async harvestAnimal(
         @GraphQLUser() user: UserLike,
         @Args("request") request: HarvestAnimalRequest

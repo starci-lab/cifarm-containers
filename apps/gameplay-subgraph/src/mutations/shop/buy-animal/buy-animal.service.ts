@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import {
     AnimalSchema,
     BuildingSchema,
@@ -33,12 +33,12 @@ export class BuyAnimalService {
             animalId,
             position,
         }: BuyAnimalRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            const result = await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 const animal = await this.connection
                     .model<AnimalSchema>(AnimalSchema.name)
                     .findById(createObjectId(animalId))
@@ -162,8 +162,6 @@ export class BuyAnimalService {
                     placedItemId: placedItemAnimalId,
                     userId,
                 }
-
-                return {} // Return an empty object (response)
             })
 
             // Send Kafka messages for success
@@ -177,8 +175,6 @@ export class BuyAnimalService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            return result // Return result from the transaction
         } catch (error) {
             this.logger.error(error)
 

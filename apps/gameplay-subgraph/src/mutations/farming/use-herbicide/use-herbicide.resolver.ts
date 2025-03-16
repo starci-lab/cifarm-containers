@@ -4,8 +4,8 @@ import { UseHerbicideRequest } from "./use-herbicide.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { UserLike } from "@src/jwt"
 import { GraphQLJwtAuthGuard } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 import { GraphQLUser } from "@src/decorators"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class UseHerbicideResolver {
@@ -14,7 +14,7 @@ export class UseHerbicideResolver {
     constructor(private readonly useHerbicideService: UseHerbicideService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "useHerbicide" })
+    @Mutation(() => VoidResolver, { name: "useHerbicide" })
     public async useHerbicide(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UseHerbicideRequest

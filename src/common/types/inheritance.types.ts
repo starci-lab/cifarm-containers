@@ -1,9 +1,5 @@
-import { ObjectType } from "@nestjs/graphql"
 import { ApiProperty } from "@nestjs/swagger"
 import { IsOptional, IsString, IsUUID } from "class-validator"
-
-@ObjectType()
-export class EmptyObjectType {}
 
 export class CreatedResponse {
     @IsUUID("4")

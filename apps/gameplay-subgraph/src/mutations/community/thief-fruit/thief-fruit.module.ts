@@ -1,10 +1,9 @@
 import { Module } from "@nestjs/common"
-import { ThiefFruitController } from "./thief-fruit.resolver"
+import { ThiefFruitResolver } from "./thief-fruit.resolver"
 import { ThiefFruitService } from "./thief-fruit.service"
 
  
 @Module({
-    providers: [ThiefFruitService],
-    controllers: [ThiefFruitController]
+    providers: [ThiefFruitService, ThiefFruitResolver]
 })
 export class ThiefFruitModule {}

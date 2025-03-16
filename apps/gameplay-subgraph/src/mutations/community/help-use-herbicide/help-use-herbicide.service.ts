@@ -13,7 +13,7 @@ import {
     SystemSchema,
     UserSchema
 } from "@src/databases"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
@@ -32,13 +32,13 @@ export class HelpUseHerbicideService {
     async helpUseHerbicide(
         { id: userId }: UserLike,
         { placedItemTileId }: HelpUseHerbicideRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         let neighborUserId: string | undefined
         try {
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
@@ -132,7 +132,7 @@ export class HelpUseHerbicideService {
                     userId
                 }
 
-                return {} // Return an empty response after success
+                // No return value needed for void
             })
             // Sending both Kafka messages in parallel using Promise.all()
             await Promise.all([
@@ -145,7 +145,7 @@ export class HelpUseHerbicideService {
                     messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
                 })
             ])
-            return result
+            // No return value needed for void
         } catch (error) {
             // If there was an error, send the action message with failure status
             if (actionMessage) {
@@ -156,7 +156,7 @@ export class HelpUseHerbicideService {
             }
             throw error
         } finally {
-            await mongoSession.endSession() // End the session after transaction completes
+            await mongoSession.endSession()
         }
     }
 }

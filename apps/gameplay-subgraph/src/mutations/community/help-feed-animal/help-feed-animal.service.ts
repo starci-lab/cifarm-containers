@@ -1,7 +1,7 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import {
     Activities,
     ANIMAL_INFO,
@@ -37,13 +37,13 @@ export class HelpFeedAnimalService {
     async helpFeedAnimal(
         { id: userId }: UserLike,
         { placedItemAnimalId, inventorySupplyId }: HelpFeedAnimalRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         let neighborUserId: string | undefined
         try {
-            const result = await mongoSession.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
@@ -179,7 +179,7 @@ export class HelpFeedAnimalService {
                     userId
                 }
 
-                return {} // Return empty response after success
+                // No return value needed for void
             })
 
             // Using Promise.all() to send Kafka messages concurrently
@@ -194,7 +194,7 @@ export class HelpFeedAnimalService {
                 })
             ])
 
-            return result // Return the result from the transaction
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {
@@ -206,7 +206,7 @@ export class HelpFeedAnimalService {
             // withTransaction automatically handles rollback
             throw error
         } finally {
-            await mongoSession.endSession() // End the session after transaction completes
+            await mongoSession.endSession()
         }
     }
 }

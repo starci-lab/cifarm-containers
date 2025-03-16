@@ -10,7 +10,7 @@ import {
     KeyValueRecord,
     SystemSchema
 } from "@src/databases"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
 import { MoveInventoryRequest } from "./move-inventory.dto"
 import { UserLike } from "@src/jwt"
@@ -32,12 +32,12 @@ export class MoveInventoryService {
             isTool,
             index,
             inventoryId
-        }: MoveInventoryRequest): Promise<EmptyObjectType> {
+        }: MoveInventoryRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         try {
             // Using `withTransaction` for automatic transaction handling
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const {
                     value: { storageCapacity, toolCapacity }
                 } = await this.connection
@@ -74,7 +74,8 @@ export class MoveInventoryService {
                     const inventoryType = inventory.inventoryType as InventoryTypeSchema
                     // If the found inventory has the same id, just return
                     if (foundInventory.id === inventoryId) {
-                        return {}
+                        // No return value needed for void
+                        return
                     }
 
                     // If it has the same type, just update the quantity
@@ -116,7 +117,7 @@ export class MoveInventoryService {
                 }
             })
 
-            return result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error

@@ -9,7 +9,6 @@ import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuySuppliesRequest } from "./buy-supplies.dto"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"   
 
 @Injectable()
 export class BuySuppliesService {
@@ -25,10 +24,10 @@ export class BuySuppliesService {
     async buySupplies(
         { id: userId }: UserLike,
         { quantity, supplyId }: BuySuppliesRequest
-    ): Promise<EmptyObjectType> { 
+    ): Promise<void> { 
         const mongoSession = await this.connection.startSession()
         try {
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const supply = await this.connection.model<SupplySchema>(SupplySchema.name)
                     .findById(createObjectId(supplyId))
                     .session(mongoSession)
@@ -97,9 +96,8 @@ export class BuySuppliesService {
                     ).session(mongoSession)
                 }
 
-                return {}
+                // No return value needed for void
             })
-            return result
         } catch (error) {
             this.logger.error(error)
             throw error

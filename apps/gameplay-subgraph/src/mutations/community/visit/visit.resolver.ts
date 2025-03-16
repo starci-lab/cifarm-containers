@@ -13,7 +13,11 @@ export class VisitResolver {
     constructor(private readonly visitService: VisitService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VisitResponse, { name: "visit" })
+    @Mutation(() => VisitResponse, {
+        name: "visit",
+        description: "Visit a user",
+        nullable: true
+    })
     public async visit(
         @GraphQLUser() user: UserLike,
         @Args("request") request: VisitRequest

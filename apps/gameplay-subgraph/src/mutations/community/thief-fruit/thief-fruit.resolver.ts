@@ -7,13 +7,17 @@ import { GraphQLUser } from "@src/decorators"
 import { UserLike } from "@src/jwt"
 
 @Resolver()
-export class ThiefFruitController {
-    private readonly logger = new Logger(ThiefFruitController.name)
+export class ThiefFruitResolver {
+    private readonly logger = new Logger(ThiefFruitResolver.name)
 
     constructor(private readonly thiefFruitService: ThiefFruitService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => ThiefFruitResponse, { name: "thiefFruit" })
+    @Mutation(() => ThiefFruitResponse, {
+        name: "thiefFruit",
+        description: "Thief fruit",
+        nullable: true
+    })
     public async thiefFruit(
         @GraphQLUser() user: UserLike,
         @Args("request") request: ThiefFruitRequest

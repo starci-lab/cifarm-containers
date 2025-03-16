@@ -5,7 +5,7 @@ import { Connection } from "mongoose"
 import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UpgradeBuildingRequest } from "./upgrade-building.dto"
 import { PlacedItemSchema, BuildingSchema, UserSchema } from "@src/databases"
-import { EmptyObjectType, GrpcFailedPreconditionException } from "@src/common"
+import { GrpcFailedPreconditionException } from "@src/common"
 import { UserLike } from "@src/jwt"
 
 @Injectable()
@@ -21,10 +21,10 @@ export class UpgradeBuildingService {
     async upgradeBuilding(
         { id: userId }: UserLike,
         { placedItemBuildingId }: UpgradeBuildingRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         try {
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const placedItemBuilding = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemBuildingId)
@@ -88,9 +88,9 @@ export class UpgradeBuildingService {
                         { _id: placedItemBuilding._id },
                         { "buildingInfo.currentUpgrade": currentUpgradeLevel + 1 }
                     )
-                return {}
+                // No return value needed for void
             })
-            return result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error

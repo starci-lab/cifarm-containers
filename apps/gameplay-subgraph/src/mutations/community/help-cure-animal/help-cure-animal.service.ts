@@ -25,16 +25,19 @@ export class HelpCureAnimalService {
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService,
+        private readonly levelService: LevelService
     ) {}
 
-    async helpCureAnimal({ id: userId }: UserLike, { placedItemAnimalId }: HelpCureAnimalRequest) {
+    async helpCureAnimal(
+        { id: userId }: UserLike,
+        { placedItemAnimalId }: HelpCureAnimalRequest
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         let neighborUserId: string | undefined
         try {
-            const result = await mongoSession.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
@@ -46,7 +49,7 @@ export class HelpCureAnimalService {
                         action: ActionName.HelpCureAnimal,
                         success: false,
                         userId,
-                        reasonCode: 0,
+                        reasonCode: 0
                     }
                     throw new NotFoundException("Placed item animal not found")
                 }
@@ -58,7 +61,7 @@ export class HelpCureAnimalService {
                         action: ActionName.HelpCureAnimal,
                         success: false,
                         userId,
-                        reasonCode: 1,
+                        reasonCode: 1
                     }
                     throw new BadRequestException("Cannot help cure on your own tile")
                 }
@@ -69,7 +72,7 @@ export class HelpCureAnimalService {
                         action: ActionName.HelpCureAnimal,
                         success: false,
                         userId,
-                        reasonCode: 3,
+                        reasonCode: 3
                     }
                     throw new BadRequestException("Animal is not sick")
                 }
@@ -78,8 +81,10 @@ export class HelpCureAnimalService {
                     .model<SystemSchema>(SystemSchema.name)
                     .findById(createObjectId(SystemId.Activities))
                     .session(session)
-                
-                const { helpCureAnimal: { energyConsume, experiencesGain } } = value as Activities
+
+                const {
+                    helpCureAnimal: { energyConsume, experiencesGain }
+                } = value as Activities
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -88,16 +93,16 @@ export class HelpCureAnimalService {
 
                 this.energyService.checkSufficient({
                     current: user.energy,
-                    required: energyConsume,
+                    required: energyConsume
                 })
 
                 const energyChanges = this.energyService.substract({
                     user,
-                    quantity: energyConsume,
+                    quantity: energyConsume
                 })
                 const experiencesChanges = this.levelService.addExperiences({
                     user,
-                    experiences: experiencesGain,
+                    experiences: experiencesGain
                 })
 
                 // Update the user and placed item animal in one session
@@ -116,37 +121,37 @@ export class HelpCureAnimalService {
                     placedItemId: placedItemAnimalId,
                     action: ActionName.HelpCureAnimal,
                     success: true,
-                    userId,
+                    userId
                 }
 
-                return {} // Return empty response after success
+                // No return value needed for void
             })
 
             // Using Promise.all() to send Kafka messages concurrently
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
-                }),
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                })
             ])
 
-            return result // Return the result from the transaction
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
             // withTransaction automatically handles rollback
             throw error
         } finally {
-            await mongoSession.endSession() // End the session after transaction completes
+            await mongoSession.endSession()
         }
     }
 }

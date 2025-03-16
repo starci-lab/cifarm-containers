@@ -3,8 +3,8 @@ import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { WaterCropService } from "./water-crop.service"
 import { WaterCropRequest } from "./water-crop.dto"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 import { GraphQLUser } from "@src/decorators"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class WaterCropResolver {
@@ -13,11 +13,11 @@ export class WaterCropResolver {
     constructor(private readonly waterService: WaterCropService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "waterCrop" })     
+    @Mutation(() => VoidResolver, { name: "waterCrop" })     
     public async water(
         @GraphQLUser() user: UserLike,
         @Args("request") request: WaterCropRequest
-    ) {
+    ): Promise<void> {
         return this.waterService.water(user, request)
     }
 }

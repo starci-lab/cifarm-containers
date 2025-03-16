@@ -17,7 +17,7 @@ export class ReturnService {
         private readonly kafkaProducer: Producer,
     ) {}
 
-    async return({ id: userId }: UserLike) {
+    async return({ id: userId }: UserLike): Promise<void> {
         // emit via kafka
         this.kafkaProducer.send({
             topic: KafkaTopic.Return,
@@ -25,6 +25,6 @@ export class ReturnService {
                 userId
             }) }]
         })
-        return {}
+        // No return value needed for void
     }
 }

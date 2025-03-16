@@ -21,7 +21,6 @@ import { Connection } from "mongoose"
 import { UseFertilizerRequest } from "./use-fertilizer.dto"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 
 @Injectable()
 export class UseFertilizerService {
@@ -38,14 +37,14 @@ export class UseFertilizerService {
     async useFertilizer(
         { id: userId }: UserLike,
         { inventorySupplyId, placedItemTileId }: UseFertilizerRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
 
         const mongoSession = await this.connection.startSession() // Create session
 
         let actionMessage: EmitActionPayload | undefined
         try {
             // Using withTransaction to manage transaction lifecycle
-            const result = await mongoSession.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 // Fetch inventory and inventoryType
                 const inventory = await this.connection.model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySupplyId)
@@ -130,7 +129,7 @@ export class UseFertilizerService {
                     userId,
                 }
 
-                return {} // Success response
+                // No return value needed for void
             })
 
             // Send Kafka messages for success
@@ -146,7 +145,7 @@ export class UseFertilizerService {
             ])
 
 
-            return result // Return successful result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 

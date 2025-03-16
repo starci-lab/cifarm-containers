@@ -11,7 +11,7 @@ import {
     TutorialStep,
     UserSchema
 } from "@src/databases"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import { TutorialService } from "@src/gameplay"
 import { ClientSession, Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
@@ -28,11 +28,11 @@ export class UpdateTutorialService {
 
     async updateTutorial(
         { id: userId }: UserLike
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using `withTransaction` to handle the transaction automatically
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const { value: { defaultCropId } } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
                     .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
@@ -83,10 +83,10 @@ export class UpdateTutorialService {
                     )
                     .session(mongoSession)
 
-                return {}
+                // No return value needed for void
             })
 
-            return result // Return the result from the transaction
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging

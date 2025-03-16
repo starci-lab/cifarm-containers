@@ -9,7 +9,7 @@ import {
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { UpdateReferralRequest } from "./update-referral.dto"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import { TokenBalanceService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 
@@ -29,12 +29,12 @@ export class UpdateReferralService {
         }: UserLike,
         {
             referralUserId
-        }: UpdateReferralRequest): Promise<EmptyObjectType> {
+        }: UpdateReferralRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         try {
             // Using `withTransaction` for automatic transaction handling
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const {
                     value: { referredLimit, referralRewardQuantity, referredRewardQuantity }
                 } = await this.connection
@@ -67,12 +67,14 @@ export class UpdateReferralService {
 
                 // Check if user already has a referral
                 if (user.referralUserId) {
-                    return {}
+                    // No return value needed for void
+                    return
                 }
 
                 // Check if the user has already been referred by the same referral user
                 if (referralUser.referredUserIds.includes(user.id)) {
-                    return {}
+                    // No return value needed for void
+                    return
                 }
 
                 // Handle referral rewards and update balances
@@ -116,10 +118,10 @@ export class UpdateReferralService {
                     )
                     .session(mongoSession)
 
-                return {} // Return the response after the transaction
+                // No return value needed for void
             })
 
-            return result // Return the result from the transaction
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging

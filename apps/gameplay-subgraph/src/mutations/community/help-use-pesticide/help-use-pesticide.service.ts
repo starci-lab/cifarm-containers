@@ -13,7 +13,7 @@ import {
 import { EnergyService, LevelService } from "@src/gameplay"
 import { HelpUsePesticideRequest } from "./help-use-pesticide.dto"
 import { Connection } from "mongoose"
-import { EmptyObjectType, createObjectId } from "@src/common"
+import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
@@ -32,13 +32,13 @@ export class HelpUsePesticideService {
     async helpUsePesticide(
         { id: userId }: UserLike,
         { placedItemTileId }: HelpUsePesticideRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()        
         let actionMessage: EmitActionPayload | undefined
         let neighborUserId: string | undefined
         try {
             // Using session.withTransaction for MongoDB operations and automatic transaction handling
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
@@ -138,7 +138,7 @@ export class HelpUsePesticideService {
                     userId
                 }
 
-                return {}
+                // No return value needed for void
             })
 
             // Send Kafka messages in parallel
@@ -153,7 +153,7 @@ export class HelpUsePesticideService {
                 })
             ])
 
-            return result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {

@@ -5,7 +5,7 @@ import { Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { Args, Mutation } from "@nestjs/graphql"
 import { GraphQLUser } from "@src/decorators"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class HelpFeedAnimalResolver {
@@ -14,7 +14,11 @@ export class HelpFeedAnimalResolver {
     constructor(private readonly helpFeedAnimalService: HelpFeedAnimalService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "helpFeedAnimal" })
+    @Mutation(() => VoidResolver, {
+        name: "helpFeedAnimal",
+        description: "Help feed an animal",
+        nullable: true
+    })
     public async helpFeedAnimal(
         @GraphQLUser() user: UserLike,
         @Args("request") request: HelpFeedAnimalRequest

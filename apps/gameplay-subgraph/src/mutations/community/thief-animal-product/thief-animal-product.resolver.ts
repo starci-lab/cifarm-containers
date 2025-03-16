@@ -13,7 +13,11 @@ export class ThiefAnimalProductResolver {
     constructor(private readonly thiefAnimalProductService: ThiefAnimalProductService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => ThiefAnimalProductResponse, { name: "thiefAnimalProduct" })
+    @Mutation(() => ThiefAnimalProductResponse, {
+        name: "thiefAnimalProduct",
+        description: "Thief animal product",
+        nullable: true
+    })
     public async thiefAnimalProduct(
         @GraphQLUser() user: UserLike,
         @Args("request") request: ThiefAnimalProductRequest

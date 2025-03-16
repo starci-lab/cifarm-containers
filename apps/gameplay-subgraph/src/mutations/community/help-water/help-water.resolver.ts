@@ -3,8 +3,8 @@ import { HelpWaterService } from "./help-water.service"
 import { HelpWaterRequest } from "./help-water.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 import { GraphQLUser } from "@src/decorators"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class HelpWaterResolver {
@@ -13,7 +13,11 @@ export class HelpWaterResolver {
     constructor(private readonly helpWaterService: HelpWaterService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "helpWater" })
+    @Mutation(() => VoidResolver, {
+        name: "helpWater",
+        description: "Help water a placed item",
+        nullable: true
+    })
     public async helpWater(
         @GraphQLUser() user: UserLike,
         @Args("request") request: HelpWaterRequest

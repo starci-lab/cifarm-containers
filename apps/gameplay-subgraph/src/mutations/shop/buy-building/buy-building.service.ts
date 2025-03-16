@@ -19,7 +19,6 @@ import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyBuildingRequest } from "./buy-building.dto"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 
 @Injectable()
 export class BuyBuildingService {
@@ -37,12 +36,12 @@ export class BuyBuildingService {
             buildingId,
             position,
         }: BuyBuildingRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 // Fetch building details
                 const { value: { buildingLimit } } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
@@ -139,7 +138,7 @@ export class BuyBuildingService {
                     userId,
                 }
 
-                return {} // Return an empty response
+                // No return value needed for void
             })
 
             // Send Kafka messages
@@ -154,7 +153,7 @@ export class BuyBuildingService {
                 })
             ])
 
-            return result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 

@@ -17,7 +17,6 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 
 @Injectable()
 export class UseHerbicideService {
@@ -35,13 +34,13 @@ export class UseHerbicideService {
     async useHerbicide(
         { id: userId }: UserLike,
         { placedItemTileId }: UseHerbicideRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession() // Create the session
         let actionMessage: EmitActionPayload | undefined
 
         try {
             // Using withTransaction to automatically handle session and transaction
-            const result = await mongoSession.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 // Fetch the placed item tile
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -123,7 +122,7 @@ export class UseHerbicideService {
                     userId
                 }
 
-                return {} // Successful result after all operations
+                // No return value needed for void
             })
 
             // Send Kafka messages for both actions
@@ -138,7 +137,7 @@ export class UseHerbicideService {
                 })
             ])
 
-            return result
+            // No return value needed for void
         } catch (error) {
             // Handle error and send the action message even if failure occurs
             this.logger.error(`Transaction failed, reason: ${error.message}`)

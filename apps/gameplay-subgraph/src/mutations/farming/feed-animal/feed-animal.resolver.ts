@@ -3,9 +3,9 @@ import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 import { FeedAnimalService } from "./feed-animal.service"
 import { FeedAnimalRequest } from "./feed-animal.dto"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class FeedAnimalResolver {
@@ -14,7 +14,7 @@ export class FeedAnimalResolver {
     constructor(private readonly feedAnimalService: FeedAnimalService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "feedAnimal" })
+    @Mutation(() => VoidResolver, { name: "feedAnimal" })
     public async feedAnimal(
         @GraphQLUser() user: UserLike,
         @Args("request") request: FeedAnimalRequest

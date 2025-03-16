@@ -5,7 +5,7 @@ import { DeliverProductRequest } from "./deliver-product.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLJwtAuthGuard } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class DeliverProductResolver {
@@ -14,7 +14,7 @@ export class DeliverProductResolver {
     constructor(private readonly deliverProductService: DeliverProductService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "deliverProduct" })
+    @Mutation(() => VoidResolver, { name: "deliverProduct" })
     public async deliverProduct(
         @GraphQLUser() user: UserLike,
         @Args("request") request: DeliverProductRequest

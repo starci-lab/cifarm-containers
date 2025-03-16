@@ -5,7 +5,7 @@ import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"   
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class CureAnimalResolver {
@@ -14,7 +14,7 @@ export class CureAnimalResolver {
     constructor(private readonly cureAnimalService: CureAnimalService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "cureAnimal" })
+    @Mutation(() => VoidResolver, { name: "cureAnimal" })
     public async cureAnimal(
         @GraphQLUser() user: UserLike,
         @Args("request") request: CureAnimalRequest

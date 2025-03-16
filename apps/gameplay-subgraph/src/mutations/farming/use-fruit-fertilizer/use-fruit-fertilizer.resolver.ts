@@ -4,7 +4,7 @@ import { UseFruitFertilizerService } from "./use-fruit-fertilizer.service"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class UseFruitFertilizerResolver {
@@ -13,7 +13,7 @@ export class UseFruitFertilizerResolver {
     constructor(private readonly useFruitFertilizerService: UseFruitFertilizerService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "useFruitFertilizer" })
+    @Mutation(() => VoidResolver, { name: "useFruitFertilizer" })
     public async useFruitFertilizer(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UseFruitFertilizerRequest

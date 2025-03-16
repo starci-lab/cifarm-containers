@@ -4,7 +4,7 @@ import { UnfollowRequest } from "./unfollow.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class UnfollowResolver {
@@ -13,7 +13,11 @@ export class UnfollowResolver {
     constructor(private readonly unfollowService: UnfollowService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "unfollow" })
+    @Mutation(() => VoidResolver, {
+        name: "unfollow",
+        description: "Unfollow a user",
+        nullable: true
+    })
     public async unfollow(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UnfollowRequest

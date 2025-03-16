@@ -1,7 +1,7 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import {
     Activities,
     AnimalCurrentState,
@@ -38,13 +38,13 @@ export class CureAnimalService {
     async cureAnimal(
         { id: userId }: UserLike,
         { placedItemAnimalId, inventorySupplyId }: CureAnimalRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
 
         try {
             // Using withTransaction to handle the transaction lifecycle
-            const result = await mongoSession.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 // Fetch placed item animal
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -158,7 +158,7 @@ export class CureAnimalService {
                     userId
                 }
 
-                return {} // Return an empty object as the response
+                // No return value needed for void
             })
 
             // Send Kafka messages
@@ -173,7 +173,7 @@ export class CureAnimalService {
                 })
             ])
 
-            return result // Return the result from the transaction
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 

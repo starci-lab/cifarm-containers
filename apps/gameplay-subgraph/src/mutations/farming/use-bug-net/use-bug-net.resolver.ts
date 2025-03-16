@@ -5,7 +5,8 @@ import { GraphQLUser } from "@src/decorators"
 import { UserLike } from "@src/jwt"
 import { UseBugNetService } from "./use-bug-net.service"
 import { UseBugNetRequest } from "./use-bug-net.dto"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
+
 @Resolver()
 export class UseBugNetResolver {
     private readonly logger = new Logger(UseBugNetResolver.name)
@@ -13,7 +14,7 @@ export class UseBugNetResolver {
     constructor(private readonly useBugNetService: UseBugNetService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "useBugNet" })
+    @Mutation(() => VoidResolver, { name: "useBugNet" })
     public async useBugNet(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UseBugNetRequest

@@ -17,7 +17,6 @@ import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyTileRequest } from "./buy-tile.dto"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 
 @Injectable()
 export class BuyTileService {
@@ -32,12 +31,12 @@ export class BuyTileService {
     async buyTile(
         { id: userId }: UserLike,
         { position, tileId }: BuyTileRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 // Fetch tile details
                 const tile = await this.connection
                     .model<TileSchema>(TileSchema.name)
@@ -112,7 +111,7 @@ export class BuyTileService {
                     userId
                 }
 
-                return {} // Return an empty object (response)
+                // No return value needed for void
             })
 
             // Send Kafka messages for success
@@ -127,7 +126,7 @@ export class BuyTileService {
                 })
             ])
 
-            return result // Return the result from the transaction
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 

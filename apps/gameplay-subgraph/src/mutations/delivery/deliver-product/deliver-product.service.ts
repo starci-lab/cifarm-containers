@@ -9,7 +9,6 @@ import {
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 
 @Injectable()
 export class DeliverProductService {
@@ -26,11 +25,11 @@ export class DeliverProductService {
             inventoryId,
             quantity,
             index
-        }: DeliverProductRequest): Promise<EmptyObjectType> {
+        }: DeliverProductRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to manage the transaction
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 // Fetch the user's inventory
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -82,10 +81,10 @@ export class DeliverProductService {
                     { session: mongoSession }
                 )
 
-                return {}
+                // No return value needed for void
             })
             
-            return result // Return an empty object as the response
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error

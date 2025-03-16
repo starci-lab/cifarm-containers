@@ -4,7 +4,7 @@ import { UpdateReferralRequest } from "./update-referral.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class UpdateReferralResolver {
@@ -13,7 +13,7 @@ export class UpdateReferralResolver {
     constructor(private readonly updateReferralService : UpdateReferralService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "updateReferral" })
+    @Mutation(() => VoidResolver, { name: "updateReferral" })
     public async updateReferral(
         @GraphQLUser() user: UserLike,
         @Args("request") request: UpdateReferralRequest

@@ -13,7 +13,7 @@ import {
 import { EnergyService, LevelService } from "@src/gameplay"
 import { HelpWaterRequest } from "./help-water.dto"
 import { Connection } from "mongoose"
-import { EmptyObjectType, createObjectId } from "@src/common"
+import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
@@ -32,7 +32,7 @@ export class HelpWaterService {
     async helpWater(
         { id: userId }: UserLike,
         { placedItemTileId }: HelpWaterRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         
         let actionMessage: EmitActionPayload | undefined
@@ -146,21 +146,19 @@ export class HelpWaterService {
                 }),
             ])
 
-            // Return empty response after successful commit
-            return {}
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {
-                // Send failure action message in case of error
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }],
                 })
             }
 
-            throw error // Rethrow error for handling by higher layers
+            throw error
         } finally {
-            await mongoSession.endSession() // End session after transaction completes
+            await mongoSession.endSession()
         }
     }
 }

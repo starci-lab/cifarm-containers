@@ -14,7 +14,6 @@ import { InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { RetainProductRequest } from "./retain-product.dto"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 
 @Injectable()
 export class RetainProductService {
@@ -28,12 +27,12 @@ export class RetainProductService {
 
     async retainProduct(
         { id: userId }: UserLike, 
-        { inventoryId }: RetainProductRequest): Promise<EmptyObjectType> {
+        { inventoryId }: RetainProductRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         try {
             // Using withTransaction to manage the transaction
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
@@ -100,10 +99,10 @@ export class RetainProductService {
                     .model<InventorySchema>(InventorySchema.name)
                     .deleteOne({ _id: inventory._id }, { session: mongoSession })
 
-                return {}
+                // No return value needed for void
             })
 
-            return result // Return an empty object as the response
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error // withTransaction will automatically handle the rollback

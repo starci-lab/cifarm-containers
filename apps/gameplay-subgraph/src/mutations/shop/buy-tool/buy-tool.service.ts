@@ -17,9 +17,8 @@ import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyToolRequest } from "./buy-tool.dto"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
 
-@Injectable()
+@Injectable()   
 export class BuyToolService {
     private readonly logger = new Logger(BuyToolService.name)
 
@@ -32,10 +31,10 @@ export class BuyToolService {
     async buyTool(
         { id: userId }: UserLike,
         { toolId }: BuyToolRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         try {
-            const result = await mongoSession.withTransaction(async (mongoSesion) => {
+            await mongoSession.withTransaction(async (mongoSesion) => {
                 const {
                     value: { storageCapacity }
                 } = await this.connection
@@ -119,10 +118,10 @@ export class BuyToolService {
                     { session: mongoSesion }
                 )
 
-                return {} // Return an empty object (response)
+                // No return value needed for void
             })
 
-            return result // Return result from the transaction
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow error to be handled higher up

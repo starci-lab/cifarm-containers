@@ -3,7 +3,7 @@ import { ReturnService } from "./return.service"
 import { Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class ReturnResolver {
@@ -12,10 +12,12 @@ export class ReturnResolver {
     constructor(private readonly returnService: ReturnService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "return" })
-    public async return(
-        @GraphQLUser() user: UserLike,
-    ) {
+    @Mutation(() => VoidResolver, {
+        name: "return",
+        description: "Return a placed item",
+        nullable: true
+    })
+    public async return(@GraphQLUser() user: UserLike) {
         return this.returnService.return(user)
     }
 }

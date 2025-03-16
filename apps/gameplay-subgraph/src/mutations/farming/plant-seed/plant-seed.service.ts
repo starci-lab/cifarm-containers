@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
-import { createObjectId, EmptyObjectType } from "@src/common"
+import { createObjectId } from "@src/common"
 import {
     Activities,
     CropCurrentState,
@@ -36,7 +36,7 @@ export class PlantSeedService {
     async plantSeed(
         { id: userId }: UserLike,
         { inventorySeedId, placedItemTileId }: PlantSeedRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         this.logger.debug(`Planting seed for user ${userId}, tile ID: ${placedItemTileId}`)
 
         const mongoSession = await this.connection.startSession() // Create session
@@ -44,7 +44,7 @@ export class PlantSeedService {
 
         try {
             // Using withTransaction to manage the transaction lifecycle
-            const result = await mongoSession.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 // Fetch inventory and inventoryType
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -171,7 +171,7 @@ export class PlantSeedService {
                     userId
                 }
 
-                return {} // Return empty success response
+                // No return value needed for void
             })
 
             // Send Kafka messages for success
@@ -186,7 +186,7 @@ export class PlantSeedService {
                 })
             ])
 
-            return result // Return successful result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 

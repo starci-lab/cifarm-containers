@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from "@nes
 import { UnfollowRequest } from "./unfollow.dto"
 import { InjectMongoose, UserFollowRelationSchema, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
-import { EmptyObjectType } from "@src/common"
 import { UserLike } from "@src/jwt"  
 @Injectable()
 export class UnfollowService {
@@ -16,10 +15,10 @@ export class UnfollowService {
     async unfollow(
         { id: userId }: UserLike,
         { followeeUserId }: UnfollowRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         try {
-            const result = await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 const followee = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(followeeUserId)
@@ -56,15 +55,13 @@ export class UnfollowService {
                         follower: userId
                     })
                     .session(mongoSession)
-                return {}
             })
 
-            return result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
-            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

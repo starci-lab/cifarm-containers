@@ -16,7 +16,6 @@ import {
 import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuySeedsRequest } from "./buy-seeds.dto"
-import { EmptyObjectType } from "@src/common"
 import { UserLike } from "@src/jwt"
 
 @Injectable()
@@ -34,12 +33,12 @@ export class BuySeedsService {
     async buySeeds(
         { id: userId }: UserLike,
         request: BuySeedsRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         // Start session
         const mongoSession = await this.connection.startSession()
         
         try {
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const crop = await this.connection.model<CropSchema>(CropSchema.name)
                     .findById(createObjectId(request.cropId))
                     .session(mongoSession)
@@ -107,9 +106,8 @@ export class BuySeedsService {
                         _id: inventory._id
                     }, inventory).session(mongoSession)
                 }
-                return {}
+                // No return value needed for void
             })
-            return result
         } catch (error) {
             this.logger.error(error)
             throw error

@@ -4,7 +4,7 @@ import { DeliverMoreProductRequest } from "./deliver-more-product.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class DeliverMoreProductResolver {
@@ -13,7 +13,7 @@ export class DeliverMoreProductResolver {
     constructor(private readonly deliverMoreProductService: DeliverMoreProductService) { }
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "deliverMoreProduct" })
+    @Mutation(() => VoidResolver, { name: "deliverMoreProduct" })
     public async deliverMoreProduct(
         @GraphQLUser() user: UserLike,
         @Args("request") request: DeliverMoreProductRequest

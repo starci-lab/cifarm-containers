@@ -20,13 +20,13 @@ export class MoveService {
     async move(
         { id: userId }: UserLike,
         { placedItemId, position }: MoveRequest
-    ) {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
 
         try {
             // Using `withTransaction` for automatic transaction handling
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
@@ -68,7 +68,7 @@ export class MoveService {
                 })
             ])
 
-            return result
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {

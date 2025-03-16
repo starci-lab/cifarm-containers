@@ -3,12 +3,22 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from "@nes
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
-import { DefaultInfo, FruitSchema, InjectMongoose, KeyValueRecord, PlacedItemSchema, PlacedItemType, PlacedItemTypeSchema, SystemId, SystemSchema, UserSchema } from "@src/databases"
+import {
+    DefaultInfo,
+    FruitSchema,
+    InjectMongoose,
+    KeyValueRecord,
+    PlacedItemSchema,
+    PlacedItemType,
+    PlacedItemTypeSchema,
+    SystemId,
+    SystemSchema,
+    UserSchema
+} from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyFruitRequest } from "./buy-fruit.dto"
 import { UserLike } from "@src/jwt"
-import { EmptyObjectType } from "@src/common"   
 
 @Injectable()
 export class BuyFruitService {
@@ -23,12 +33,12 @@ export class BuyFruitService {
     async buyFruit(
         { id: userId }: UserLike,
         { position, fruitId }: BuyFruitRequest
-    ): Promise<EmptyObjectType> {
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            const result = await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async () => {
                 // Fetch tile details
                 const fruit = await this.connection
                     .model<FruitSchema>(FruitSchema.name)
@@ -39,7 +49,9 @@ export class BuyFruitService {
                 if (!fruit.availableInShop)
                     throw new BadRequestException("Fruit not available in shop")
 
-                const { value: { fruitLimit } } = await this.connection
+                const {
+                    value: { fruitLimit }
+                } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
                     .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
                 // Fetch user details
@@ -53,7 +65,7 @@ export class BuyFruitService {
                     current: user.golds,
                     required: fruit.price
                 })
-                
+
                 // Deduct gold and update the user's gold balance
                 const goldsChanged = this.goldBalanceService.subtract({
                     user: user,
@@ -66,8 +78,8 @@ export class BuyFruitService {
                     .session(mongoSession)
 
                 // Check the number of fruits the user has
-                const placedItemTypes = await this.connection.
-                    model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+                const placedItemTypes = await this.connection
+                    .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
                     .find({ type: PlacedItemType.Fruit })
                     .session(mongoSession)
 
@@ -76,13 +88,12 @@ export class BuyFruitService {
                     .countDocuments({
                         user: userId,
                         placedItemType: {
-                            $in: placedItemTypes.map(placedItemType => placedItemType.id)
-                        },
+                            $in: placedItemTypes.map((placedItemType) => placedItemType.id)
+                        }
                     })
                     .session(mongoSession)
 
-                if (count >= fruitLimit)
-                    throw new BadRequestException("Max fruit limit reached")
+                if (count >= fruitLimit) throw new BadRequestException("Max fruit limit reached")
 
                 // Save the placed item (fruit) in the database
                 const [placedItemFruitRaw] = await this.connection
@@ -95,8 +106,8 @@ export class BuyFruitService {
                                 y: position.y,
                                 placedItemType: createObjectId(fruit.displayId),
                                 fruitInfo: {
-                                    fruit: fruit.id,
-                                },
+                                    fruit: fruit.id
+                                }
                             }
                         ],
                         { session: mongoSession }
@@ -111,7 +122,7 @@ export class BuyFruitService {
                     userId
                 }
 
-                return {} // Return an empty object (response)
+                // No return value needed for void
             })
 
             // Send Kafka messages for success
@@ -126,7 +137,7 @@ export class BuyFruitService {
                 })
             ])
 
-            return result // Return the result from the transaction
+            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 

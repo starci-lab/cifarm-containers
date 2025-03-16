@@ -5,7 +5,7 @@ import { GraphQLUser } from "@src/decorators"
 import { UserLike } from "@src/jwt"
 import { PlantSeedService } from "./plant-seed.service"
 import { PlantSeedRequest } from "./plant-seed.dto"
-import { EmptyObjectType } from "@src/common"
+import { VoidResolver } from "graphql-scalars"
 
 @Resolver()
 export class PlantSeedResolver {
@@ -14,7 +14,7 @@ export class PlantSeedResolver {
     constructor(private readonly plantSeedService: PlantSeedService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => EmptyObjectType, { name: "plantSeed" })
+    @Mutation(() => VoidResolver, { name: "plantSeed" })
     public async plantSeed(
         @GraphQLUser() user: UserLike,
         @Args("request") request: PlantSeedRequest
