@@ -1,16 +1,15 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     CropCurrentState,
-    CropSchema,
     InjectMongoose,
     PlacedItemSchema,
     TutorialStep,
     UserSchema
 } from "@src/databases"
-import { createObjectId } from "@src/common"
-import { TutorialService, StaticService } from "@src/gameplay"
 import { ClientSession, Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
+import { TutorialService, StaticService } from "@src/gameplay"
 
 @Injectable()
 export class UpdateTutorialService {
@@ -23,49 +22,75 @@ export class UpdateTutorialService {
         private readonly staticService: StaticService
     ) {}
 
-    async updateTutorial(
-        { id: userId }: UserLike
-    ): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+    async updateTutorial({ id: userId }: UserLike): Promise<void> {
+        const session = await this.connection.startSession()
         try {
             // Using `withTransaction` to handle the transaction automatically
-            await mongoSession.withTransaction(async () => {
-                const { defaultCropId } = this.staticService.defaultInfo
-
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * CHECK TUTORIAL COMPLETION
+                 ************************************************************/
                 // Check if last step is reached
                 const lastStep = this.tutorialService.isLastStep(user.tutorialStep)
                 if (lastStep) {
-                    throw new BadRequestException(
-                        "You have reached the last step of the tutorial"
-                    )
+                    throw new GraphQLError("You have reached the last step of the tutorial", {
+                        extensions: {
+                            code: "TUTORIAL_LAST_STEP_REACHED"
+                        }
+                    })
                 }
 
+                /************************************************************
+                 * PROCESS NEXT TUTORIAL STEP
+                 ************************************************************/
                 const nextStep = user.tutorialStep + 1
 
                 switch (nextStep) {
                 case TutorialStep.StartWaterCropAtStage1: {
-                    await this.startWaterCropAtStage1({ defaultCropId, mongoSession, user, nextStep })
+                    await this.startWaterCropAtStage1({
+                        session,
+                        user,
+                        nextStep
+                    })
                     break
                 }
                 case TutorialStep.StartWaterCropAtStage2: {
-                    await this.startWaterCropAtStage2({ defaultCropId, mongoSession, user, nextStep })
+                    await this.startWaterCropAtStage2({
+                        session,
+                        user,
+                        nextStep
+                    })
                     break
                 }
                 case TutorialStep.StartToStage3: {
-                    await this.startToStage3({ defaultCropId, mongoSession, user, nextStep })
+                    await this.startToStage3({ session, user, nextStep })
                     break
                 }
                 case TutorialStep.StartHarvestCrop: {
-                    await this.startHarvestCrop({ defaultCropId, mongoSession, user, nextStep })
+                    await this.startHarvestCrop({ session, user, nextStep })
                     break
                 }
                 }
 
+                /************************************************************
+                 * UPDATE USER TUTORIAL PROGRESS
+                 ************************************************************/
                 // Update the user with the next tutorial step
                 await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -75,195 +100,160 @@ export class UpdateTutorialService {
                             tutorialStep: nextStep
                         }
                     )
-                    .session(mongoSession)
-
-                // No return value needed for void
+                    .session(session)
             })
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging
         } finally {
-            await mongoSession.endSession() // Ensure the session is always ended
+            await session.endSession() // Ensure the session is always ended
         }
     }
 
     // water crop at stage 1
     private async startWaterCropAtStage1({
-        mongoSession,
+        session,
         nextStep,
-        defaultCropId,
         user
     }: StartWaterCropAtStage1Params): Promise<void> {
         if (nextStep != TutorialStep.StartWaterCropAtStage1) {
-            throw new BadRequestException(
-                "You are not in the right state to water crop at stage 1"
-            )
+            throw new GraphQLError("Invalid tutorial step", {
+                extensions: {
+                    code: "INVALID_TUTORIAL_STEP"
+                }
+            })
         }
-        // Check your tiles if you have 1 default crop planted
+
+        // Find the latest 2 crop placed items for this user
         const placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
-                user: user.id,
-                "seedGrowthInfo.crop": createObjectId(defaultCropId)
+                user: user.id
             })
-            .session(mongoSession)
+            .sort({ createdAt: -1 })
+            .limit(2)
+            .session(session)
 
-        if (placedItems.length < 2) {
-            throw new BadRequestException(
-                "You need to plant at least 2 default crop to enter this step"
-            )
-        }
+        // update the top 2 latested crop to stage 1, and one of them need water
+        // the first crop is normal, the second crop is need water
+        placedItems[0].seedGrowthInfo.currentState = CropCurrentState.Normal
+        placedItems[0].seedGrowthInfo.currentStage = 1
+        await placedItems[0].save({ session })
 
-        const needWateredSeedGrowthInfo = placedItems[0].seedGrowthInfo
-        // Update the crops to stage 1, which one of them needs watered
-        for (const placedItem of placedItems) {
-            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
-                { _id: placedItem.id },
-                {
-                    "seedGrowthInfo.currentStage": 1,
-                    "seedGrowthInfo.currentState": placedItem.seedGrowthInfo.id === needWateredSeedGrowthInfo.id
-                        ? CropCurrentState.NeedWater
-                        : CropCurrentState.Normal
-                }
-            ).session(mongoSession)
-        }
+        // the second crop is need water
+        placedItems[1].seedGrowthInfo.currentState = CropCurrentState.NeedWater
+        placedItems[1].seedGrowthInfo.currentStage = 1
+        await placedItems[1].save({ session })
     }
 
     // water crop at stage 2
     private async startWaterCropAtStage2({
-        mongoSession,
-        defaultCropId,
+        session,
         nextStep,
         user
     }: StartWaterCropAtStage2Params): Promise<void> {
         if (nextStep != TutorialStep.StartWaterCropAtStage2) {
-            throw new BadRequestException(
-                "You are not in the right state to water crop at stage 2"
-            )
-        }
-
-        const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
-            user: user.id,
-            "seedGrowthInfo.crop": createObjectId(defaultCropId)
-        }).session(mongoSession)
-
-        if (placedItems.length < 2) {
-            throw new BadRequestException(
-                "You need to plant at least 2 default crop to enter this step"
-            )
-        }
-
-        const someNeedWater = placedItems.some(
-            (placedItem) => placedItem.seedGrowthInfo.currentState === CropCurrentState.NeedWater
-        )
-
-        if (someNeedWater) {
-            throw new BadRequestException(
-                "You need to water all the crops in stage 1 to enter this step"
-            )
-        }
-
-        const needWateredSeedGrowthInfo = placedItems[0].seedGrowthInfo
-        for (const placedItem of placedItems) {
-            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
-                { _id: placedItem.id },
-                {
-                    "seedGrowthInfo.currentStage": 2,
-                    "seedGrowthInfo.currentState": placedItem.seedGrowthInfo.id === needWateredSeedGrowthInfo.id
-                        ? CropCurrentState.NeedWater
-                        : CropCurrentState.Normal
+            throw new GraphQLError("Invalid tutorial step", {
+                extensions: {
+                    code: "INVALID_TUTORIAL_STEP"
                 }
-            ).session(mongoSession)
+            })
         }
+
+        // Find all crop placed items for this user
+        const placedItems = await this.connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .find({
+                user: user.id
+            })
+            .sort({ createdAt: -1 })
+            .limit(2)
+            .session(session)
+
+        // update the top 2 latested crop to stage 1, and one of them need water
+        // the first crop is need water, the second crop is normal
+        placedItems[0].seedGrowthInfo.currentState = CropCurrentState.NeedWater
+        placedItems[0].seedGrowthInfo.currentStage = 2
+        await placedItems[0].save({ session })
+
+        // the second crop is need water
+        placedItems[1].seedGrowthInfo.currentState = CropCurrentState.Normal
+        placedItems[1].seedGrowthInfo.currentStage = 2
+        await placedItems[1].save({ session })
     }
 
-    // to stage 3
-    private async startToStage3({ mongoSession, defaultCropId, nextStep, user }: StartToStage3Params): Promise<void> {
+    private async startToStage3({ session, nextStep, user }: StartToStage3Params): Promise<void> {
         if (nextStep != TutorialStep.StartToStage3) {
-            throw new BadRequestException(
-                "You are not in the right state to water crop at stage 3"
-            )
-        }
-
-        const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
-            user: user.id,
-            "seedGrowthInfo.crop": createObjectId(defaultCropId)
-        }).session(mongoSession)
-
-        if (placedItems.length < 2) {
-            throw new BadRequestException(
-                "You need to plant 2 default crop to enter this step"
-            )
-        }
-
-        const someNeedWater = placedItems.some(
-            (placedItem) => placedItem.seedGrowthInfo.currentState === CropCurrentState.NeedWater
-        )
-
-        if (someNeedWater) {
-            throw new BadRequestException(
-                "You need to water all the crops in stage 2 to enter this step"
-            )
-        }
-
-        const pesticideSeedGrowthInfo = placedItems[0].seedGrowthInfo
-        for (const placedItem of placedItems) {
-            await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateOne(
-                { _id: placedItem.id },
-                {
-                    "seedGrowthInfo.currentStage": 3,
-                    "seedGrowthInfo.currentState": pesticideSeedGrowthInfo.id === placedItem.seedGrowthInfo.id ?
-                        CropCurrentState.IsInfested : CropCurrentState.IsWeedy
+            throw new GraphQLError("Invalid tutorial step", {
+                extensions: {
+                    code: "INVALID_TUTORIAL_STEP"
                 }
-            ).session(mongoSession)
+            })
         }
+
+        // Find all crop placed items for this user
+        const placedItems = await this.connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .find({
+                user: user.id
+            })
+            .sort({ createdAt: -1 })
+            .limit(2)
+            .session(session)
+
+        // update the top 2 latested crop to stage 1, and one of them need water
+        // the first crop is need water, the second crop is normal
+        placedItems[0].seedGrowthInfo.currentState = CropCurrentState.IsInfested
+        placedItems[0].seedGrowthInfo.currentStage = 3
+        await placedItems[0].save({ session })
+
+        // the second crop is need water
+        placedItems[1].seedGrowthInfo.currentState = CropCurrentState.IsWeedy
+        placedItems[1].seedGrowthInfo.currentStage = 3
+        await placedItems[1].save({ session })
     }
 
-    // harvest crop
-    private async startHarvestCrop({ mongoSession, defaultCropId, nextStep, user }: StartHarvestCropParams): Promise<void> {
+    private async startHarvestCrop({
+        session,
+        nextStep,
+        user
+    }: StartHarvestCropParams): Promise<void> {
         if (nextStep != TutorialStep.StartHarvestCrop) {
-            throw new BadRequestException(
-                "You are not in the right state to water crop at harvest"
-            )
+            throw new GraphQLError("Invalid tutorial step", {
+                extensions: {
+                    code: "INVALID_TUTORIAL_STEP"
+                }
+            })
         }
 
-        const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).find({
-            user: user.id,
-            "seedGrowthInfo.crop": createObjectId(defaultCropId)
-        }).session(mongoSession)
+        // Find all crop placed items for this user
+        const placedItems = await this.connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .find({
+                user: user.id
+            })
+            .sort({ createdAt: -1 })
+            .limit(2)
+            .session(session)
 
-        if (placedItems.length < 2) {
-            throw new BadRequestException(
-                "You need to plant 2 default crop to enter this step"
-            )
-        }
+        // update the top 2 latested crop to last stage
+        placedItems[0].seedGrowthInfo.currentState = CropCurrentState.FullyMatured
+        placedItems[0].seedGrowthInfo.currentStage = 4
+        await placedItems[0].save({ session })
 
-        const crop = await this.connection.model<CropSchema>(CropSchema.name).findById(
-            createObjectId(defaultCropId)
-        ).session(mongoSession)
-
-        await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).updateMany(
-            {
-                user: user.id,
-                "seedGrowthInfo.crop": createObjectId(defaultCropId)
-            },
-            {
-                "seedGrowthInfo.currentStage": crop.growthStages - 1,
-                "seedGrowthInfo.harvestQuantityRemaining": crop.maxHarvestQuantity,
-                "seedGrowthInfo.currentState": CropCurrentState.FullyMatured
-            }
-        ).session(mongoSession)
+        // the second crop is need water
+        placedItems[1].seedGrowthInfo.currentState = CropCurrentState.FullyMatured
+        placedItems[1].seedGrowthInfo.currentStage = 4
+        await placedItems[1].save({ session })
     }
 }
 
 export interface StartWaterCropAtStage1Params {
-    mongoSession: ClientSession
+    session: ClientSession
     user: UserSchema
     nextStep: TutorialStep
-    defaultCropId: string
 }
+
 export type StartWaterCropAtStage2Params = StartWaterCropAtStage1Params
 export type StartWaterCropAtStage3Params = StartWaterCropAtStage1Params
 export type StartToStage3Params = StartWaterCropAtStage1Params

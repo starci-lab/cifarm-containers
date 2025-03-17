@@ -22,15 +22,18 @@ export class MoveService {
         { id: userId }: UserLike,
         { placedItemId, position }: MoveRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
 
         try {
-            await mongoSession.withTransaction(async () => {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM
+                 ************************************************************/
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!placedItem) {
                     throw new GraphQLError("Placed item not found", {
@@ -40,6 +43,9 @@ export class MoveService {
                     })
                 }
 
+                /************************************************************
+                 * VALIDATE OWNERSHIP
+                 ************************************************************/
                 if (placedItem.user.toString() !== userId) {
                     throw new GraphQLError("User not match", {
                         extensions: {
@@ -48,6 +54,9 @@ export class MoveService {
                     })
                 }
 
+                /************************************************************
+                 * UPDATE PLACED ITEM POSITION
+                 ************************************************************/
                 // Update the placed item position in the database
                 await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -55,7 +64,7 @@ export class MoveService {
                         { _id: placedItemId },
                         { x: position.x, y: position.y }
                     )
-                    .session(mongoSession)
+                    .session(session)
 
                 actionMessage = {
                     placedItemId: placedItemId,
@@ -65,6 +74,9 @@ export class MoveService {
                 }
             })
 
+            /************************************************************
+             * SEND KAFKA MESSAGES
+             ************************************************************/
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -75,8 +87,6 @@ export class MoveService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {
@@ -88,7 +98,7 @@ export class MoveService {
             
             throw error
         } finally {
-            await mongoSession.endSession()  // End the session after the transaction
+            await session.endSession()  // End the session after the transaction
         }
     }
 }

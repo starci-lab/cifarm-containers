@@ -24,18 +24,34 @@ export class GenerateSignatureService {
         chainKey,
         network
     }: GenerateSignatureRequest): Promise<GenerateSignatureResponse> {
+        /************************************************************
+         * INITIALIZE PARAMETERS
+         ************************************************************/
+        // Set default values for optional parameters
         network = network || defaultNetwork
-        const { message } = await this.requestMessageService.requestMessage()
         chainKey = chainKey ?? defaultChainKey
         accountNumber = accountNumber ?? 0
 
+        /************************************************************
+         * REQUEST MESSAGE
+         ************************************************************/
+        // Get a unique message from the request message service
+        const { message } = await this.requestMessageService.requestMessage()
+        
+        /************************************************************
+         * GET BLOCKCHAIN AUTH SERVICE
+         ************************************************************/
+        // Get the appropriate blockchain auth service based on the chain key
         const platform = chainKeyToPlatform(chainKey)
-
         const authService = this.moduleRef.get<IBlockchainAuthService>(
             getBlockchainAuthServiceToken(platform),
             { strict: false }
         )
 
+        /************************************************************
+         * GENERATE KEYS AND SIGNATURE
+         ************************************************************/
+        // Get key pair and sign the message
         const { publicKey, privateKey, accountAddress } = authService.getKeyPair(accountNumber)
         const signature = authService.signMessage({ message, privateKey })
 

@@ -2,26 +2,26 @@
 
 import { Test } from "@nestjs/testing"
 import { createObjectId } from "@src/common"
-import { AnimalId, AnimalSchema, getMongooseToken, PlacedItemSchema, PlacedItemTypeId, UserSchema } from "@src/databases"
+import { AnimalId, AnimalSchema, getMongooseToken, PlacedItemSchema, PlacedItemTypeId, ToolId, UserSchema } from "@src/databases"
 import { UserInsufficientGoldException } from "@src/gameplay"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { Connection } from "mongoose"
-import { BuyAnimalService } from "./buy-tool.service"
+import { BuyToolService } from "./buy-tool.service"
 
-describe("BuyAnimalService", () => {
+describe("BuyToolService", () => {
     let connection: Connection
-    let service: BuyAnimalService
+    let service: BuyToolService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
 
     beforeAll(async () => {
         const moduleRef = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [BuyAnimalService]
+            providers: [BuyToolService]
         }).compile()
 
         connection = moduleRef.get(getMongooseToken())
-        service = moduleRef.get(BuyAnimalService)
+        service = moduleRef.get(BuyToolService)
         gameplayConnectionService = moduleRef.get(GameplayConnectionService)
         gameplayMockUserService = moduleRef.get(GameplayMockUserService)
     })
@@ -45,10 +45,11 @@ describe("BuyAnimalService", () => {
         })
 
         const golds = user.golds
-        await service.buyAnimal({
-            userId: user.id,
-            animalId: AnimalId.Cow,
-            position: { x, y }
+        await service.buyTool({
+            id: user.id
+        },
+        {
+            toolId: ToolId.AnimalMedicine,
         })
 
         const updatedUser = await connection.model<UserSchema>(UserSchema.name).findById(user.id)
@@ -68,10 +69,11 @@ describe("BuyAnimalService", () => {
         const user = await gameplayMockUserService.generate({ golds: animal.price - 10 })
 
         await expect(
-            service.buyAnimal({
-                userId: user.id,
-                animalId: AnimalId.Cow,
-                position: { x: 0, y: 0 }
+            service.buyTool({
+                id: user.id
+            },
+            {
+                toolId: ToolId.AnimalMedicine,
             })
         ).rejects.toThrow(UserInsufficientGoldException)
     })

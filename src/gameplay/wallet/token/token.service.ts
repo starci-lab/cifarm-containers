@@ -15,9 +15,8 @@ export class TokenBalanceService {
         if (amount < 0)
             throw new TokenCannotBeZeroOrNegativeException(amount)
 
-        return {
-            tokens: amount + user.tokens
-        }
+        user.tokens += amount
+        return user
     }
 
     public subtract({ amount, user }: SubtractParams): SubtractResult {
@@ -29,8 +28,7 @@ export class TokenBalanceService {
             required: amount
         })
 
-        return {
-            tokens: user.tokens - amount
-        }
+        user.tokens -= amount
+        return user
     }
 }

@@ -66,7 +66,7 @@ describe("BuyAnimalService", () => {
         
         // Create placed item type for building
         const placedItemBuildingType = staticService.placedItemTypes.find(
-            (placedItemType) => placedItemType.type === PlacedItemType.Building && placedItemType.building === building.id
+            (placedItemType) => placedItemType.type === PlacedItemType.Building && placedItemType.building.toString() === building.id.toString()
         )
         
         // Create a building for the animal

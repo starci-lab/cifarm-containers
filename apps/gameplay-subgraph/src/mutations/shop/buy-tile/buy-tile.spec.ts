@@ -34,7 +34,9 @@ describe("BuyTileService", () => {
         const golds = user.golds
 
         await service.buyTile({
-            userId: user.id,
+            id: user.id
+        },
+        {
             tileId: TileId.BasicTile,
             position: { x, y }
         })

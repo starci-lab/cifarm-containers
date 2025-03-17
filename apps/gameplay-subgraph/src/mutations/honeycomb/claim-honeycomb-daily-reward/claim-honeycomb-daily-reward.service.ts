@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     InjectMongoose,
     UserSchema,
@@ -9,6 +9,7 @@ import { DateUtcService } from "@src/date"
 import { UserLike } from "@src/jwt"
 import { TxResponse } from "../types"
 import { StaticService } from "@src/gameplay"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class ClaimHoneycombDailyRewardService {
@@ -26,24 +27,46 @@ export class ClaimHoneycombDailyRewardService {
         { id: userId }: UserLike,): Promise<TxResponse> {
         const mongoSession = await this.connection.startSession()
         try {
-            const result = await mongoSession.withTransaction(async () => {
-            // check if spin last time is same as today
-                const now = this.dateUtcService.getDayjs()
-
+            const result = await mongoSession.withTransaction(async (mongoSession) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
 
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * CHECK DAILY REWARD ELIGIBILITY
+                 ************************************************************/
+                // Check if reward was already claimed today
+                const now = this.dateUtcService.getDayjs()
+
                 if (
                     user.honeycombDailyRewardLastClaimTime &&
-                now.isSame(user.honeycombDailyRewardLastClaimTime, "day")
+                    now.isSame(user.honeycombDailyRewardLastClaimTime, "day")
                 ) {
-                    throw new BadRequestException(
-                        "Honeycomb daily reward already claimed today"
+                    throw new GraphQLError(
+                        "Honeycomb daily reward already claimed today",
+                        {
+                            extensions: {
+                                code: "HONEYCOMB_DAILY_REWARD_ALREADY_CLAIMED_TODAY"
+                            }
+                        }
                     )
                 }
 
+                /************************************************************
+                 * CREATE MINT TRANSACTION
+                 ************************************************************/
                 const { dailyRewardAmount, tokenResourceAddress } = this.staticService.honeycombInfo
 
                 const { txResponse } = await this.honeycombService.createMintResourceTransaction({
@@ -54,14 +77,12 @@ export class ClaimHoneycombDailyRewardService {
                     toAddress: user.accountAddress
                 })
 
-                // update user honeycomb daily reward last claim time
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne(
-                        { _id: userId },
-                        { $set: { honeycombDailyRewardLastClaimTime: now.toDate() } }
-                    )
-                    .session(mongoSession)
+                /************************************************************
+                 * UPDATE USER DATA
+                 ************************************************************/
+                // Update user honeycomb daily reward last claim time
+                user.honeycombDailyRewardLastClaimTime = now.toDate()
+                await user.save({ session: mongoSession })
                 return txResponse
             })
             return result

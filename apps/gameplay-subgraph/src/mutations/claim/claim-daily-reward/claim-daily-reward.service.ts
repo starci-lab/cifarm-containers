@@ -5,7 +5,6 @@ import {
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, StaticService, TokenBalanceService } from "@src/gameplay"
-import {  DeepPartial } from "@src/common"
 import { DateUtcService } from "@src/date"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
@@ -25,15 +24,29 @@ export class ClaimDailyRewardService {
     ) {}
 
     async claimDailyReward({ id: userId }: UserLike): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
 
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * CHECK DAILY REWARD ELIGIBILITY
+                 ************************************************************/
                 // Check if spin last time is the same as today
                 const now = this.dateUtcService.getDayjs()
 
@@ -51,6 +64,9 @@ export class ClaimDailyRewardService {
                     )
                 }
 
+                /************************************************************
+                 * DETERMINE REWARD BASED ON STREAK
+                 ************************************************************/
                 const { dailyRewardInfo } = this.staticService
 
                 const dailyRewardMap: Record<number, DailyRewardId> = {
@@ -61,52 +77,43 @@ export class ClaimDailyRewardService {
                     4: DailyRewardId.Day5
                 }
 
-                const userChanges: DeepPartial<UserSchema> = {
-                    dailyRewardLastClaimTime: now.toDate(),
-                    dailyRewardStreak: user.dailyRewardStreak + 1
-                }
+                user.dailyRewardLastClaimTime = now.toDate()
+                user.dailyRewardStreak += 1
 
-                let balanceChanges: DeepPartial<UserSchema> = {}
-
+                /************************************************************
+                 * APPLY REWARDS BASED ON STREAK
+                 ************************************************************/
                 // Check streak
                 if (user.dailyRewardStreak >= 4) {
-                    balanceChanges = {
-                        ...this.goldBalanceService.add({
-                            user,
-                            amount: dailyRewardInfo[DailyRewardId.Day5].golds
-                        }),
-                        ...this.tokenBalanceService.add({
-                            user,
-                            amount: dailyRewardInfo[DailyRewardId.Day5].tokens
-                        })
-                    }
+                    // Day 5 reward (gold + tokens)
+                    this.goldBalanceService.add({
+                        user,
+                        amount: dailyRewardInfo[DailyRewardId.Day5].golds
+                    })
+                    this.tokenBalanceService.add({
+                        user,
+                        amount: dailyRewardInfo[DailyRewardId.Day5].tokens
+                    })
                 } else {
-                    balanceChanges = {
-                        ...this.goldBalanceService.add({
-                            user,
-                            amount: dailyRewardInfo[dailyRewardMap[user.dailyRewardStreak]].golds
-                        })
-                    }
+                    // Day 1-4 rewards (gold only)
+                    this.goldBalanceService.add({
+                        user,
+                        amount: dailyRewardInfo[dailyRewardMap[user.dailyRewardStreak]].golds
+                    })
                 }
 
+                /************************************************************
+                 * UPDATE USER DATA
+                 ************************************************************/
                 // Update the user with the changes
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne(
-                        { _id: userId },
-                        {
-                            ...userChanges,
-                            ...balanceChanges
-                        }
-                    )
-                    .session(mongoSession)
+                await user.save({ session })
             })
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
             // End the session after the transaction is complete
-            await mongoSession.endSession()
+            await session.endSession()
         }
     }
 }

@@ -18,18 +18,21 @@ export class RefreshService {
     ) {}
 
     public async refresh({ refreshToken }: RefreshRequest): Promise<RefreshResponse> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
 
         try {
-        // Using `withTransaction` to handle the transaction automatically
-            const result = await mongoSession.withTransaction(async () => {
-            // Fetch the session with the provided refresh token
-                const session = await this.connection
+            // Using `withTransaction` to handle the transaction automatically
+            const result = await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE SESSION
+                 ************************************************************/
+                // Fetch the session with the provided refresh token
+                const sessionData = await this.connection
                     .model<SessionSchema>(SessionSchema.name)
                     .findOne({ refreshToken })
-                    .session(mongoSession)
+                    .session(session)
 
-                if (!session) {
+                if (!sessionData) {
                     throw new GraphQLError("Session not found", {
                         extensions: {
                             code: "SESSION_NOT_FOUND"
@@ -37,7 +40,7 @@ export class RefreshService {
                     })
                 }
 
-                const { expiredAt } = session
+                const { expiredAt } = sessionData
 
                 // Check if the refresh token has expired
                 if (this.dateUtcService.getDayjs().isAfter(expiredAt)) {
@@ -48,22 +51,28 @@ export class RefreshService {
                     })
                 }
 
+                /************************************************************
+                 * GENERATE NEW TOKENS
+                 ************************************************************/
                 // Generate new access and refresh tokens
                 const {
                     accessToken,
                     refreshToken: { token: newRefreshToken, expiredAt: newExpiredAt }
                 } = await this.jwtService.generateAuthCredentials({
-                    id: session.user.toString(),
+                    id: sessionData.user.toString(),
                 })
 
+                /************************************************************
+                 * CREATE NEW SESSION
+                 ************************************************************/
                 // Create a new session with the new refresh token and expiration date
                 await this.connection.model<SessionSchema>(SessionSchema.name).create(
                     [{
-                        user: session.user,
+                        user: sessionData.user,
                         refreshToken: newRefreshToken,
                         expiredAt: newExpiredAt
                     }],
-                    { session: mongoSession }
+                    { session }
                 )
 
                 return {
@@ -76,7 +85,7 @@ export class RefreshService {
             this.logger.error(error)
             throw error
         } finally {
-            await mongoSession.endSession()
+            await session.endSession()
         }
     }
 }

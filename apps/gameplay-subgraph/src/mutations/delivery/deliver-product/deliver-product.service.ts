@@ -1,15 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DeliverProductRequest } from "./deliver-product.dto"
-import {
-    InjectMongoose,
-    INVENTORY_TYPE,
-    InventoryKind,
-    InventorySchema,
-    InventoryTypeSchema
-} from "@src/databases"
+import { InjectMongoose, InventoryKind, InventorySchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { StaticService } from "@src/gameplay"
 
 @Injectable()
 export class DeliverProductService {
@@ -17,26 +12,27 @@ export class DeliverProductService {
 
     constructor(
         @InjectMongoose()
-        private readonly connection: Connection
+        private readonly connection: Connection,
+        private readonly staticService: StaticService
     ) {}
 
     async deliverProduct(
         { id: userId }: UserLike,
-        {
-            inventoryId,
-            quantity,
-            index
-        }: DeliverProductRequest): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        { inventoryId, quantity, index }: DeliverProductRequest
+    ): Promise<void> {
+        const session = await this.connection.startSession()
         try {
             // Using withTransaction to manage the transaction
-            await mongoSession.withTransaction(async () => {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY
+                 ************************************************************/
                 // Fetch the user's inventory
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
-                    .populate(INVENTORY_TYPE)
-                    .session(mongoSession)
+
+                    .session(session)
 
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
@@ -45,6 +41,10 @@ export class DeliverProductService {
                         }
                     })
                 }
+
+                /************************************************************
+                 * VALIDATE OWNERSHIP AND QUANTITY
+                 ************************************************************/
 
                 if (inventory.user.toString() !== userId) {
                     throw new GraphQLError("Delivery product does not belong to user", {
@@ -62,7 +62,13 @@ export class DeliverProductService {
                     })
                 }
 
-                const productId = (inventory.inventoryType as InventoryTypeSchema).product as string
+                /************************************************************
+                 * VALIDATE PRODUCT TYPE
+                 ************************************************************/
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (type) => type.id === inventory.inventoryType
+                )
+                const productId = inventoryType.product.toString()
                 if (!productId) {
                     throw new GraphQLError("The inventory type is not a product", {
                         extensions: {
@@ -71,19 +77,27 @@ export class DeliverProductService {
                     })
                 }
 
+                /************************************************************
+                 * UPDATE SOURCE INVENTORY
+                 ************************************************************/
                 // Subtract the quantity from the user's inventory
                 if (inventory.quantity === quantity) {
+                    // Delete the inventory if all quantity is used
                     await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .deleteOne({
                             _id: inventoryId
                         })
-                        .session(mongoSession)
+                        .session(session)
                 } else {
+                    // Update the inventory with reduced quantity
                     inventory.quantity -= quantity
-                    await inventory.save({ session: mongoSession })
+                    await inventory.save({ session })
                 }
-                
+
+                /************************************************************
+                 * CREATE DELIVERY INVENTORY
+                 ************************************************************/
                 // Create a new inventory kind for Delivery
                 await this.connection.model<InventorySchema>(InventorySchema.name).create(
                     [
@@ -95,18 +109,14 @@ export class DeliverProductService {
                             inventoryType: inventory.inventoryType
                         }
                     ],
-                    { session: mongoSession }
+                    { session }
                 )
-
-                // No return value needed for void
             })
-            
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
-            await mongoSession.endSession() // Ensure the session is closed
+            await session.endSession() // Ensure the session is closed
         }
     }
 }

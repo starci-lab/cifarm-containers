@@ -11,11 +11,21 @@ export class RequestMessageService {
     constructor(
         @InjectCache()
         private readonly cacheManager: Cache
-    ) { }
+    ) {}
 
     public async requestMessage(): Promise<RequestMessageResponse> {
+        /************************************************************
+         * GENERATE UNIQUE MESSAGE
+         ************************************************************/
+        // Generate a unique message using UUID
         const message = v4()
+        
+        /************************************************************
+         * STORE MESSAGE IN CACHE
+         ************************************************************/
+        // Store the message in cache with a 60-second expiration
         await this.cacheManager.set(message, true, 60 * 1000)
+        
         return {
             message
         }

@@ -1,16 +1,15 @@
 import { UserSchema } from "@src/databases"
-import { DeepPartial } from "@src/common"
 
 export interface AddParams {
-    user: DeepPartial<UserSchema>
+    user: UserSchema
     amount: number
 }
 
-export type AddResult = DeepPartial<UserSchema>
+export type AddResult = UserSchema
 
 export interface SubtractParams {
-    user: DeepPartial<UserSchema>
+    user: UserSchema
     amount: number
 }
 
-export type SubtractResult = DeepPartial<UserSchema>
+export type SubtractResult = UserSchema

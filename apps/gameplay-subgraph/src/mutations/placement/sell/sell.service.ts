@@ -35,7 +35,10 @@ export class SellService {
         let actionMessage: EmitActionPayload<SellData> | undefined
 
         try {
-            await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async (mongoSession) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM
+                 ************************************************************/
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
@@ -50,6 +53,9 @@ export class SellService {
                     })
                 }
 
+                /************************************************************
+                 * VALIDATE OWNERSHIP
+                 ************************************************************/
                 if (placedItem.user.toString() !== userId) {
                     throw new GraphQLError("User not match", {
                         extensions: {
@@ -58,6 +64,9 @@ export class SellService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TYPE
+                 ************************************************************/
                 const placedItemType = await this.connection
                     .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
                     .findById(placedItem.placedItemType)
@@ -71,6 +80,9 @@ export class SellService {
                     })
                 }
 
+                /************************************************************
+                 * DETERMINE SELL PRICE BASED ON ITEM TYPE
+                 ************************************************************/
                 let sellPrice: number = 0
 
                 switch (placedItemType.type) {
@@ -127,28 +139,45 @@ export class SellService {
                 }
                 }
 
+                /************************************************************
+                 * RETRIEVE AND UPDATE USER DATA
+                 ************************************************************/
                 const user: UserSchema = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
 
-                // Subtract gold
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                // Add gold from selling
                 const goldsChanged = this.goldBalanceService.add({
                     user: user,
                     amount: sellPrice
                 })
 
-                //update
+                // Update user with gold changes
                 await this.connection
                     .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged }, { session: mongoSession })
+                    .updateOne({ _id: user.id }, { ...goldsChanged })
+                    .session(mongoSession)
 
-                //remove
+                /************************************************************
+                 * REMOVE PLACED ITEM
+                 ************************************************************/
                 await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .deleteOne({ _id: placedItemId })
                     .session(mongoSession)
 
+                /************************************************************
+                 * PREPARE ACTION MESSAGE
+                 ************************************************************/
                 actionMessage = {
                     placedItemId: placedItemId,
                     action: ActionName.Sell,
@@ -158,10 +187,11 @@ export class SellService {
                         quantity: sellPrice
                     }
                 }
-
-                return { quantity: sellPrice }
             })
 
+            /************************************************************
+             * SEND KAFKA MESSAGES
+             ************************************************************/
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -172,8 +202,6 @@ export class SellService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {

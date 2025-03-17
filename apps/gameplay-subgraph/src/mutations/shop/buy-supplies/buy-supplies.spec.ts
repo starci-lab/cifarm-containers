@@ -34,11 +34,15 @@ describe("BuySuppliesService", () => {
         
         const inventoryType = await connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findById(createObjectId(SupplyId.AnimalFeed))
 
-        await service.buySupplies({
-            userId: user.id,
-            supplyId: SupplyId.AnimalFeed,
-            quantity
-        })
+        await service.buySupplies(
+            {
+                id: user.id
+            },
+            {
+                supplyId: SupplyId.AnimalFeed,
+                quantity
+            }
+        )
 
         console.log(inventoryType,"ds")
 
@@ -55,11 +59,15 @@ describe("BuySuppliesService", () => {
         const user = await gameplayMockUserService.generate({ golds: supply.price - 10 })
 
         await expect(
-            service.buySupplies({
-                userId: user.id,
-                supplyId: SupplyId.AnimalFeed,
-                quantity: 2
-            })
+            service.buySupplies(
+                {
+                    id: user.id
+                },
+                {
+                    supplyId: SupplyId.AnimalFeed,
+                    quantity: 2
+                }
+            )
         ).rejects.toThrow(UserInsufficientGoldException)
     })
 

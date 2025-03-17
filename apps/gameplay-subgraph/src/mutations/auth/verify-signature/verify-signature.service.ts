@@ -50,10 +50,13 @@ export class VerifySignatureService {
         accountAddress,
         username
     }: VerifySignatureRequest): Promise<VerifySignatureResponse> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
 
         try {
-            const result = await mongoSession.withTransaction(async () => {
+            const result = await session.withTransaction(async (session) => {
+                /************************************************************
+                 * VALIDATE MESSAGE AND SIGNATURE
+                 ************************************************************/
                 const valid = await this.cacheManager.get(message)
                 if (!valid) {
                     throw new GraphQLError("Message not found", {
@@ -81,12 +84,18 @@ export class VerifySignatureService {
                     })
                 }
 
+                /************************************************************
+                 * FIND OR CREATE USER
+                 ************************************************************/
                 let user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findOne({ accountAddress, chainKey, network })
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
+                    /************************************************************
+                     * CREATE NEW USER AND INITIAL ITEMS
+                     ************************************************************/
                     const { defaultCropId, defaultSeedQuantity, golds, positions } = this.staticService.defaultInfo
 
                     const energy = this.energyService.getMaxEnergy()
@@ -102,12 +111,15 @@ export class VerifySignatureService {
                                 golds,
                             }
                         ],
-                        { session: mongoSession, ordered: true }
+                        { session, ordered: true }
                     )
 
                     userRaw.id = userRaw._id.toString()
                     user = userRaw
 
+                    /************************************************************
+                     * CREATE HOME AND TILES
+                     ************************************************************/
                     await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
                         [
                             {
@@ -117,7 +129,7 @@ export class VerifySignatureService {
                                 ...positions.home
                             }
                         ],
-                        { session: mongoSession, ordered: true }
+                        { session, ordered: true }
                     )
 
                     const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map((tile) => ({
@@ -129,8 +141,11 @@ export class VerifySignatureService {
 
                     await this.connection
                         .model<PlacedItemSchema>(PlacedItemSchema.name)
-                        .create(tilePartials, { session: mongoSession, ordered: true })
+                        .create(tilePartials, { session, ordered: true })
 
+                    /************************************************************
+                     * CREATE DEFAULT TOOLS
+                     ************************************************************/
                     const toolInventories: Array<DeepPartial<InventorySchema>> = []
                     let indexTool = 0
 
@@ -138,7 +153,7 @@ export class VerifySignatureService {
                         sort: { $exists: true },
                         default: false,
                         givenAsDefault: true
-                    }).session(mongoSession)
+                    }).session(session)
 
                     for (const tool of tools) {
                         const inventoryType = await this.connection
@@ -146,7 +161,16 @@ export class VerifySignatureService {
                             .findOne({
                                 type: InventoryType.Tool,
                                 tool: tool.id
-                            }).session(mongoSession)
+                            }).session(session)
+                        
+                        if (!inventoryType) {
+                            throw new GraphQLError("Inventory tool type not found", {
+                                extensions: {
+                                    code: "INVENTORY_TOOL_TYPE_NOT_FOUND"
+                                }
+                            })
+                        }
+                        
                         toolInventories.push({
                             inventoryType: inventoryType.id,
                             user: user.id,
@@ -156,17 +180,22 @@ export class VerifySignatureService {
                         indexTool++
                     }
 
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .create(toolInventories, { session: mongoSession, ordered: true })
+                    if (toolInventories.length > 0) {
+                        await this.connection
+                            .model<InventorySchema>(InventorySchema.name)
+                            .create(toolInventories, { session, ordered: true })
+                    }
 
+                    /************************************************************
+                     * CREATE DEFAULT SEEDS
+                     ************************************************************/
                     const inventoryType = await this.connection
                         .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                         .findOne({
                             type: InventoryType.Seed,
                             crop: createObjectId(defaultCropId)
                         })
-                        .session(mongoSession)
+                        .session(session)
 
                     if (!inventoryType) {
                         throw new GraphQLError("Inventory seed type not found", {
@@ -186,19 +215,25 @@ export class VerifySignatureService {
                                 index: 0,
                             }
                         ],
-                        { session: mongoSession, ordered: true }
+                        { session, ordered: true }
                     )
                 }
 
+                /************************************************************
+                 * GENERATE AUTH TOKENS
+                 ************************************************************/
                 const { accessToken, refreshToken: { token: refreshToken, expiredAt } } = await this.jwtService.generateAuthCredentials({
                     id: user.id
                 })
 
-                await this.connection.model<SessionSchema>(SessionSchema.name).create({
-                    refreshToken,
-                    expiredAt,
-                    user: user.id
-                })
+                await this.connection.model<SessionSchema>(SessionSchema.name).create(
+                    [{
+                        refreshToken,
+                        expiredAt,
+                        user: user.id
+                    }],
+                    { session }
+                )
 
                 return {
                     accessToken,
@@ -211,7 +246,7 @@ export class VerifySignatureService {
             this.logger.error(error)
             throw error
         } finally {
-            await mongoSession.endSession()
+            await session.endSession()
         }
     }
 }

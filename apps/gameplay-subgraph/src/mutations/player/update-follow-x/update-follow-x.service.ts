@@ -6,6 +6,7 @@ import {
 import { Connection } from "mongoose"
 import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class UpdateFollowXService {
@@ -21,32 +22,54 @@ export class UpdateFollowXService {
     async updateFollowX({
         id: userId
     }: UserLike): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
 
         try {
             // Using `withTransaction` for automatic transaction handling
-            await mongoSession.withTransaction(async () => {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE CONFIGURATION DATA
+                 ************************************************************/
                 // Get followX reward quantity from system configuration
                 const { followXRewardQuantity } = this.staticService.defaultInfo
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 // Get the user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * CHECK ELIGIBILITY
+                 ************************************************************/
                 // If the user already has followX awarded, return early
                 if (user.followXAwarded) {
-                    // No return value needed for void
                     return
                 }
 
+                /************************************************************
+                 * UPDATE TOKEN BALANCE
+                 ************************************************************/
                 // Update the token balance for the user
                 const tokenBalanceChanges = this.tokenBalanceService.add({
                     user,
                     amount: followXRewardQuantity
                 })
 
+                /************************************************************
+                 * UPDATE USER DATA
+                 ************************************************************/
                 // Update user with the new token balance and mark followXAwarded as true
                 await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -59,15 +82,13 @@ export class UpdateFollowXService {
                             },
                         }
                     )
-                    .session(mongoSession)
+                    .session(session)
             })
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
-            await mongoSession.endSession() // End the session after the transaction
+            await session.endSession() // End the session after the transaction
         }
     }
 }

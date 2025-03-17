@@ -34,7 +34,15 @@ describe("BuySeedsService", () => {
         const user = await gameplayMockUserService.generate({ golds: crop.price * quantity + 10 })
         const initialGolds = user.golds
 
-        await service.buySeeds({ userId: user.id, cropId: CropId.Carrot, quantity })
+        await service.buySeeds(
+            {
+                id: user.id
+            },
+            {
+                cropId: CropId.Carrot,
+                quantity
+            }
+        )
 
         const updatedUser = await connection.model<UserSchema>(UserSchema.name).findOne({ _id: user._id })
         expect(initialGolds - updatedUser.golds).toBe(crop.price * quantity)
@@ -52,7 +60,13 @@ describe("BuySeedsService", () => {
         
         const user = await gameplayMockUserService.generate({ golds: crop.price * 2 - 5 })
         await expect(
-            service.buySeeds({ userId: user.id, cropId: CropId.Carrot, quantity: 2 })
+            service.buySeeds(
+                {
+                    id: user.id
+                },
+                {
+                    cropId: CropId.Carrot,
+                    quantity: 2 })
         ).rejects.toThrow(UserInsufficientGoldException)
     })
 

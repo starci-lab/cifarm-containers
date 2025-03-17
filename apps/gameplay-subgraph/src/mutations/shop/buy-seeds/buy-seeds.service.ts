@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
-    CropSchema,
     InjectMongoose,
     InventoryKind,
     InventorySchema,
@@ -27,21 +26,18 @@ export class BuySeedsService {
         private readonly staticService: StaticService
     ) {}
 
-    async buySeeds(
-        { id: userId }: UserLike,
-        request: BuySeedsRequest
-    ): Promise<void> {
+    async buySeeds({ id: userId }: UserLike, request: BuySeedsRequest): Promise<void> {
         // Start session
         const session = await this.connection.startSession()
-        
+
         try {
             await session.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE CROP
                  ************************************************************/
-                const crop = await this.connection.model<CropSchema>(CropSchema.name)
-                    .findById(createObjectId(request.cropId))
-                    .session(session)
+                const crop = this.staticService.crops.find(
+                    (crop) => crop.id.toString() === request.cropId
+                )
 
                 if (!crop) {
                     throw new GraphQLError("Crop not found", {
@@ -50,7 +46,7 @@ export class BuySeedsService {
                         }
                     })
                 }
-                
+
                 if (!crop.availableInShop) {
                     throw new GraphQLError("Crop not available in shop", {
                         extensions: {
@@ -58,13 +54,14 @@ export class BuySeedsService {
                         }
                     })
                 }
-                
+
                 const totalCost = crop.price * request.quantity
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                const user: UserSchema = await this.connection.model<UserSchema>(UserSchema.name)
+                const user: UserSchema = await this.connection
+                    .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
@@ -77,16 +74,17 @@ export class BuySeedsService {
                 }
 
                 //Check sufficient gold
-                this.goldBalanceService.checkSufficient({ 
-                    current: user.golds, 
-                    required: totalCost 
+                this.goldBalanceService.checkSufficient({
+                    current: user.golds,
+                    required: totalCost
                 })
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY TYPE
                  ************************************************************/
                 //Get inventory type
-                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                const inventoryType = await this.connection
+                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findOne({
                         type: InventoryType.Seed,
                         crop: createObjectId(request.cropId)
@@ -99,7 +97,7 @@ export class BuySeedsService {
                             code: "INVENTORY_SEED_TYPE_NOT_FOUND"
                         }
                     })
-                }  
+                }
 
                 /************************************************************
                  * VALIDATE AND UPDATE USER GOLD
@@ -120,11 +118,11 @@ export class BuySeedsService {
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session,
+                    session
                 })
 
                 const { storageCapacity } = this.staticService.defaultInfo
-                
+
                 //Save inventory
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
@@ -133,23 +131,19 @@ export class BuySeedsService {
                     quantity: request.quantity,
                     userId: user.id,
                     occupiedIndexes,
-                    kind: InventoryKind.Storage,
+                    kind: InventoryKind.Storage
                 })
 
                 // Create new inventory items
                 if (createdInventories.length > 0) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name)
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session })
                 }
-                
+
                 // Update existing inventory items
                 for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name)
-                        .updateOne(
-                            { _id: inventory._id },
-                            inventory
-                        )
-                        .session(session)
+                    await inventory.save({ session })
                 }
             })
         } catch (error) {

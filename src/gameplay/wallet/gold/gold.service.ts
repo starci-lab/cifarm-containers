@@ -19,7 +19,12 @@ export class GoldBalanceService {
 
     public subtract({ amount, user }: SubtractParams): SubtractResult {
         if (amount < 0) throw new GoldCannotBeZeroOrNegativeException(amount)
-        if (user.golds < amount) throw new UserInsufficientGoldException(user.golds, amount)
+
+        this.checkSufficient({
+            current: user.golds,
+            required: amount
+        })
+
         user.golds -= amount
         return user
     }

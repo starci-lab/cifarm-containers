@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     InjectMongoose,
     UserSchema
@@ -7,6 +7,7 @@ import { Connection } from "mongoose"
 import { UpdateReferralRequest } from "./update-referral.dto"
 import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class UpdateReferralService {
@@ -26,98 +27,121 @@ export class UpdateReferralService {
         {
             referralUserId
         }: UpdateReferralRequest): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
 
         try {
             // Using `withTransaction` for automatic transaction handling
-            await mongoSession.withTransaction(async () => {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE CONFIGURATION DATA
+                 ************************************************************/
                 const { referredLimit, referralRewardQuantity, referredRewardQuantity } = this.staticService.defaultInfo
 
-                // Retrieve referral and user data
+                /************************************************************
+                 * RETRIEVE AND VALIDATE REFERRAL USER
+                 ************************************************************/
                 const referralUser = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(referralUserId)
-                    .session(mongoSession)
+                    .session(session)
+                    
                 if (!referralUser) {
-                    throw new NotFoundException("Referral user not found")
+                    throw new GraphQLError("Referral user not found", {
+                        extensions: {
+                            code: "REFERRAL_USER_NOT_FOUND"
+                        }
+                    })
                 }
 
                 if (referralUser.referredUserIds.length >= referredLimit) {
-                    throw new BadRequestException("Referral user has reached the limit")
+                    throw new GraphQLError("Referral user has reached the limit", {
+                        extensions: {
+                            code: "REFERRAL_LIMIT_REACHED"
+                        }
+                    })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * VALIDATE REFERRAL ELIGIBILITY
+                 ************************************************************/
                 // Check if referral user is the same as the user
                 if (referralUserId === userId) {
-                    throw new BadRequestException("Referral user cannot be the same as the user")
+                    throw new GraphQLError("Referral user cannot be the same as the user", {
+                        extensions: {
+                            code: "INVALID_SELF_REFERRAL"
+                        }
+                    })
                 }
 
                 // Check if user already has a referral
                 if (user.referralUserId) {
-                    // No return value needed for void
                     return
                 }
 
                 // Check if the user has already been referred by the same referral user
                 if (referralUser.referredUserIds.includes(user.id)) {
-                    // No return value needed for void
                     return
                 }
 
+                /************************************************************
+                 * UPDATE TOKEN BALANCES
+                 ************************************************************/
                 // Handle referral rewards and update balances
-                const referralUserTokenBalanceChanges = this.tokenBalanceService.add({
+                this.tokenBalanceService.add({
                     amount: referredRewardQuantity,
                     user: referralUser
                 })
 
-                const userTokenBalanceChanges = this.tokenBalanceService.add({
+                this.tokenBalanceService.add({
                     amount: referralRewardQuantity,
                     user
                 })
 
-                // Update the referral user with the new referred user and token balance changes
+                /************************************************************
+                 * UPDATE REFERRAL USER DATA
+                 ************************************************************/
+                // Update the referral user with the new referred user
                 await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .updateOne(
-                        { _id: referralUserId },
-                        {
-                            $set: {
-                                ...referralUserTokenBalanceChanges
-                            },
-                            $push: {
-                                referredUserIds: userId
-                            }
-                        }
+                        { _id: referralUser._id },
+                        { $push: { referredUserIds: userId } }
                     )
-                    .session(mongoSession)
+                    .session(session)
 
+                /************************************************************
+                 * UPDATE USER DATA
+                 ************************************************************/
                 // Update the referred user with their referral information
                 await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .updateOne(
                         { _id: userId },
-                        {
-                            $set: {
-                                ...userTokenBalanceChanges,
-                                referralUserId: referralUserId
-                            }
-                        }
+                        { $set: { referralUserId: referralUserId } }
                     )
-                    .session(mongoSession)
-
-                // No return value needed for void
+                    .session(session)
             })
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging
         } finally {
-            await mongoSession.endSession() // Ensure the session is always ended
+            await session.endSession() // Ensure the session is always ended
         }
     }
 }
