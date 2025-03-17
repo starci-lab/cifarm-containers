@@ -1,7 +1,7 @@
 import { AnimalId } from "@src/databases"
 import { Type } from "class-transformer"
 import { IsString, ValidateNested } from "class-validator"
-import { Position, PositionInput } from "@src/gameplay"
+import { PositionInput } from "@src/gameplay"
 import { Field, InputType } from "@nestjs/graphql"     
 
 @InputType()
@@ -13,5 +13,5 @@ export class BuyAnimalRequest {
     @ValidateNested()
     @Type(() => PositionInput)
     @Field(() => PositionInput, { description: "The position of the animal" })
-        position: Position
+        position: PositionInput
 }

@@ -133,7 +133,7 @@ export class SystemSeeder implements Seeder {
                 thief3: 0.95,
                 isWeedyOrInfested: 1
             },
-            nextGrowthStageAfterHarvest: 1
+            nextGrowthStageAfterHarvest: 3
         }
         const animalInfo: AnimalInfo = {
             randomness: {
@@ -141,7 +141,6 @@ export class SystemSeeder implements Seeder {
                 thief2: 0.8,
                 thief3: 0.95
             },
-            nextGrowthStageAfterHarvest: 1
         }
         const fruitInfo: FruitInfo = {
             randomness: {
@@ -150,7 +149,7 @@ export class SystemSeeder implements Seeder {
                 hasCaterpillar: 1,
                 needFertilizer: 0.5
             },
-            nextGrowthStageAfterHarvest: 1
+            nextGrowthStageAfterHarvest: 3
         }
         const defaultInfo: DefaultInfo = {
             golds: 1000, 

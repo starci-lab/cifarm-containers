@@ -1,19 +1,19 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
-import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
     InjectMongoose,
     PlacedItemSchema,
-    TileSchema,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, StaticService } from "@src/gameplay"
+import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyTileRequest } from "./buy-tile.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+
 @Injectable()
 export class BuyTileService {
     private readonly logger = new Logger(BuyTileService.name)
@@ -29,35 +29,52 @@ export class BuyTileService {
         { id: userId }: UserLike,
         { position, tileId }: BuyTileRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            await mongoSession.withTransaction(async () => {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE TILE
+                 ************************************************************/
                 // Fetch tile details
-                const tile = await this.connection
-                    .model<TileSchema>(TileSchema.name)
-                    .findById(createObjectId(tileId))
-                    .session(mongoSession)
-
-                if (!tile) throw new GraphQLError("Tile not found", {
-                    extensions: {
-                        code: "TILE_NOT_FOUND",
-                    }
-                })
-                if (!tile.availableInShop)
-                    throw new GraphQLError("Tile not available in shop", {
+                const tile = this.staticService.tiles.find(
+                    (tile) => tile.displayId === tileId
+                )
+                if (!tile) {
+                    throw new GraphQLError("Tile not found in static service", {
                         extensions: {
-                            code: "TILE_NOT_AVAILABLE_IN_SHOP",
+                            code: "TILE_NOT_FOUND_IN_STATIC_SERVICE"
                         }
                     })
+                }
+                
+                if (!tile.availableInShop) {
+                    throw new GraphQLError("Tile not available in shop", {
+                        extensions: {
+                            code: "TILE_NOT_AVAILABLE_IN_SHOP"
+                        }
+                    })
+                }
 
                 const { tileLimit } = this.staticService.defaultInfo
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
+
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 // Check sufficient gold
                 this.goldBalanceService.checkSufficient({
@@ -65,17 +82,9 @@ export class BuyTileService {
                     required: tile.price
                 })
 
-                // Deduct gold and update the user's gold balance
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: tile.price
-                })
-
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged })
-                    .session(mongoSession)
-
+                /************************************************************
+                 * CHECK TILE LIMITS
+                 ************************************************************/
                 // Check the number of tiles owned by the user
                 const count = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -83,14 +92,31 @@ export class BuyTileService {
                         user: userId,
                         placedItemType: createObjectId(tileId)
                     })
-                    .session(mongoSession)
+                    .session(session)
 
-                if (count >= tileLimit) throw new GraphQLError("Max ownership reached", {
-                    extensions: {
-                        code: "MAX_OWNERSHIP_REACHED",
-                    }
+                if (count >= tileLimit) {
+                    throw new GraphQLError("Max ownership reached", {
+                        extensions: {
+                            code: "MAX_OWNERSHIP_REACHED"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * VALIDATE AND UPDATE USER GOLD
+                 ************************************************************/
+                // Deduct gold
+                this.goldBalanceService.subtract({
+                    user,
+                    amount: tile.price
                 })
 
+                // Save updated user data
+                await user.save({ session })
+
+                /************************************************************
+                 * PLACE TILE
+                 ************************************************************/
                 // Save the placed item (tile) in the database
                 const [placedItemTileRaw] = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -104,21 +130,26 @@ export class BuyTileService {
                                 tileInfo: {}
                             }
                         ],
-                        { session: mongoSession }
+                        { session }
                     )
-                const placedItemTileId = placedItemTileRaw._id.toString()
+                const placedItemId = placedItemTileRaw._id.toString()
 
+                /************************************************************
+                 * PREPARE ACTION MESSAGE
+                 ************************************************************/
                 // Prepare the action message to emit to Kafka
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItemId,
                     action: ActionName.BuyTile,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             // Send Kafka messages for success
             await Promise.all([
                 this.kafkaProducer.send({
@@ -130,23 +161,23 @@ export class BuyTileService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
             if (actionMessage) {
+                actionMessage.success = false
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
 
-            throw error // Rethrow error to be handled higher up
+            // Rethrow error to be handled higher up
+            throw error
         } finally {
             // End the session after the transaction is complete
-            await mongoSession.endSession()
+            await session.endSession()
         }
     }
 }

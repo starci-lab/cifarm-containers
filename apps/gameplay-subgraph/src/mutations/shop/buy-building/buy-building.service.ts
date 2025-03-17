@@ -2,20 +2,14 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
-import {
-    BuildingSchema,
-    InjectMongoose,
-    PlacedItemSchema,
-    PlacedItemType,
-    PlacedItemTypeSchema,
-    UserSchema
-} from "@src/databases"
+import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
 import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyBuildingRequest } from "./buy-building.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+
 @Injectable()
 export class BuyBuildingService {
     private readonly logger = new Logger(BuyBuildingService.name)
@@ -29,86 +23,117 @@ export class BuyBuildingService {
 
     async buyBuilding(
         { id: userId }: UserLike,
-        {
-            buildingId,
-            position,
-        }: BuyBuildingRequest
+        { buildingId, position }: BuyBuildingRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            await mongoSession.withTransaction(async () => {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE BUILDING
+                 ************************************************************/
                 // Fetch building details
                 const { buildingLimit } = this.staticService.defaultInfo
 
-                const building = await this.connection
-                    .model<BuildingSchema>(BuildingSchema.name)
-                    .findById(createObjectId(buildingId))
-                    .session(mongoSession)
+                const building = this.staticService.buildings.find(
+                    (building) => building.displayId === buildingId
+                )
+                if (!building) {
+                    throw new GraphQLError("Building not found", {
+                        extensions: {
+                            code: "BUILDING_NOT_FOUND"
+                        }
+                    })
+                }
 
-                if (!building) throw new GraphQLError("Building not found", {
-                    extensions: {
-                        code: "BUILDING_NOT_FOUND",
-                    }
-                })
-                if (!building.availableInShop) throw new GraphQLError("Building not available in shop", {
-                    extensions: {
-                        code: "BUILDING_NOT_AVAILABLE_IN_SHOP",
-                    }
-                })
-                
-                // Calculate total cost
-                const totalCost = building.price
+                if (!building.availableInShop) {
+                    throw new GraphQLError("Building not available in shop", {
+                        extensions: {
+                            code: "BUILDING_NOT_AVAILABLE_IN_SHOP"
+                        }
+                    })
+                }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
-                // get users total buildings
-                const placedItemTypes = await this.connection
-                    .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                    .find({ type: PlacedItemType.Building })
-                    .session(mongoSession)
-                const totalBuildings = await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .countDocuments({ user: userId, 
-                        placedItemType: {
-                            $in: placedItemTypes.map(placedItemType => placedItemType.id)
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
                         }
                     })
-                    .session(mongoSession)
+                }
+
+                /************************************************************
+                 * CHECK BUILDING LIMITS
+                 ************************************************************/
+                const totalBuildings = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .countDocuments({
+                        user: userId,
+                        placedItemType: {
+                            $in: this.staticService.placedItemTypes
+                                .filter(
+                                    (placedItemType) =>
+                                        placedItemType.type === PlacedItemType.Building
+                                )
+                                .map((placedItemType) => placedItemType.id)
+                        }
+                    })
+                    .session(session)
+
                 if (totalBuildings >= buildingLimit) {
                     throw new GraphQLError("Max building ownership reached", {
                         extensions: {
-                            code: "MAX_BUILDING_OWNERSHIP_REACHED",
+                            code: "MAX_BUILDING_OWNERSHIP_REACHED"
                         }
                     })
                 }
-                // filter building with the same type
-                const placedItemType = placedItemTypes.find(placedItemType => placedItemType.building.toString() === createObjectId(buildingId))
-                
+
+                // Filter building with the same type
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) =>
+                        placedItemType.building.toString() === createObjectId(buildingId).toString()
+                )
+
                 if (!placedItemType) {
                     throw new GraphQLError("Placed item type not found", {
                         extensions: {
-                            code: "PLACED_ITEM_TYPE_NOT_FOUND",
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
                         }
                     })
                 }
+
                 const placedItemBuildings = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .find({
-                        placedItemType: placedItemType.id,
-                    }).session(mongoSession)
+                        user: userId,
+                        placedItemType: placedItemType.id
+                    })
+                    .session(session)
+
                 if (placedItemBuildings.length >= building.maxOwnership) {
                     throw new GraphQLError("Max building ownership reached", {
                         extensions: {
-                            code: "MAX_BUILDING_OWNERSHIP_REACHED",
+                            code: "MAX_BUILDING_OWNERSHIP_REACHED"
                         }
                     })
                 }
+
+                /************************************************************
+                 * VALIDATE AND UPDATE USER GOLD
+                 ************************************************************/
+                // Calculate total cost
+                const totalCost = building.price
+
                 // Check if the user has enough gold
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
@@ -116,45 +141,54 @@ export class BuyBuildingService {
                 })
 
                 // Deduct gold
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
+                this.goldBalanceService.subtract({
+                    user,
                     amount: totalCost
                 })
 
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged }, { session: mongoSession })
-                    .session(mongoSession)
+                // Save updated user data
+                await user.save({ session })
 
+                /************************************************************
+                 * PLACE BUILDING
+                 ************************************************************/
                 // Place the building
-                const [ placedItemBuildingRaw ] = await this.connection
+                const [placedItemBuildingRaw] = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .create(
                         [
                             {
-                                user: user.id,
+                                user: userId,
                                 x: position.x,
                                 y: position.y,
-                                placedItemType: createObjectId(buildingId),
-                                buildingInfo: {}
+                                placedItemType: placedItemType.id,
+                                buildingInfo: {
+                                    building: building.id,
+                                    currentUpgrade: 1
+                                }
                             }
                         ],
-                        { session: mongoSession }
+                        { session }
                     )
 
                 const placedItemId = placedItemBuildingRaw._id.toString()
 
+                /************************************************************
+                 * PREPARE ACTION MESSAGE
+                 ************************************************************/
                 // Prepare action message
                 actionMessage = {
                     action: ActionName.BuyBuilding,
                     placedItemId,
                     success: true,
-                    userId,
+                    userId
                 }
-
-                // No return value needed for void
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             // Send Kafka messages
             await Promise.all([
                 this.kafkaProducer.send({
@@ -166,23 +200,23 @@ export class BuyBuildingService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
             if (actionMessage) {
+                actionMessage.success = false
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
-            
-            throw error // Rethrow error to be handled higher up
+
+            // Rethrow error to be handled higher up
+            throw error
         } finally {
             // End the session after the transaction is complete
-            await mongoSession.endSession()
+            await session.endSession()
         }
     }
 }

@@ -15,7 +15,6 @@ import { BuySeedsRequest } from "./buy-seeds.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 
-
 @Injectable()
 export class BuySeedsService {
     private readonly logger = new Logger(BuySeedsService.name)
@@ -26,73 +25,102 @@ export class BuySeedsService {
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService
-    ) {
-    }
+    ) {}
 
     async buySeeds(
         { id: userId }: UserLike,
         request: BuySeedsRequest
     ): Promise<void> {
         // Start session
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
         
         try {
-            await mongoSession.withTransaction(async () => {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE CROP
+                 ************************************************************/
                 const crop = await this.connection.model<CropSchema>(CropSchema.name)
                     .findById(createObjectId(request.cropId))
-                    .session(mongoSession)
+                    .session(session)
 
-                if (!crop) throw new GraphQLError("Crop not found", {
-                    extensions: {
-                        code: "CROP_NOT_FOUND",
-                    }
-                })
-                if (!crop.availableInShop) throw new GraphQLError("Crop not available in shop", {
-                    extensions: {
-                        code: "CROP_NOT_AVAILABLE_IN_SHOP",
-                    }
-                })
+                if (!crop) {
+                    throw new GraphQLError("Crop not found", {
+                        extensions: {
+                            code: "CROP_NOT_FOUND"
+                        }
+                    })
+                }
+                
+                if (!crop.availableInShop) {
+                    throw new GraphQLError("Crop not available in shop", {
+                        extensions: {
+                            code: "CROP_NOT_AVAILABLE_IN_SHOP"
+                        }
+                    })
+                }
+                
                 const totalCost = crop.price * request.quantity
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 const user: UserSchema = await this.connection.model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
+
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 //Check sufficient gold
-                this.goldBalanceService.checkSufficient({ current: user.golds, required: totalCost })
-
-                // Subtract gold
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: totalCost
+                this.goldBalanceService.checkSufficient({ 
+                    current: user.golds, 
+                    required: totalCost 
                 })
 
-                //update
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...goldsChanged },
-                    { session: mongoSession }
-                )
-
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY TYPE
+                 ************************************************************/
                 //Get inventory type
-                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).findOne({
-                    type: InventoryType.Seed,
-                    crop: createObjectId(request.cropId)
-                }).session(mongoSession)
+                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                    .findOne({
+                        type: InventoryType.Seed,
+                        crop: createObjectId(request.cropId)
+                    })
+                    .session(session)
 
                 if (!inventoryType) {
                     throw new GraphQLError("Inventory seed type not found", {
                         extensions: {
-                            code: "INVENTORY_SEED_TYPE_NOT_FOUND",
+                            code: "INVENTORY_SEED_TYPE_NOT_FOUND"
                         }
                     })
                 }  
 
+                /************************************************************
+                 * VALIDATE AND UPDATE USER GOLD
+                 ************************************************************/
+                // Subtract gold
+                this.goldBalanceService.subtract({
+                    user,
+                    amount: totalCost
+                })
+
+                // Save updated user data
+                await user.save({ session })
+
+                /************************************************************
+                 * ADD SEEDS TO INVENTORY
+                 ************************************************************/
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session: mongoSession,
+                    session,
                 })
 
                 const { storageCapacity } = this.staticService.defaultInfo
@@ -108,19 +136,27 @@ export class BuySeedsService {
                     kind: InventoryKind.Storage,
                 })
 
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(createdInventories, { session: mongoSession })
-                for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name).updateOne({
-                        _id: inventory._id
-                    }, inventory).session(mongoSession)
+                // Create new inventory items
+                if (createdInventories.length > 0) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name)
+                        .create(createdInventories, { session })
                 }
-                // No return value needed for void
+                
+                // Update existing inventory items
+                for (const inventory of updatedInventories) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name)
+                        .updateOne(
+                            { _id: inventory._id },
+                            inventory
+                        )
+                        .session(session)
+                }
             })
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
-            await mongoSession.endSession()
+            await session.endSession()
         }
     }
 }

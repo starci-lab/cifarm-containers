@@ -19,11 +19,11 @@ export class BuildingSchema extends StaticAbstractSchema<BuildingId> {
       availableInShop: boolean
 
   @Field(() => String, {
-      description: "The type of the building",
+      description: "The type of animal contained in the building",
       nullable: true
   })
   @Prop({ type: String, enum: AnimalType, required: false })
-      type?: AnimalType
+      animalContainedType?: AnimalType
 
   @Field(() => Int, {
       description: "The maximum upgrade of the building"

@@ -1,13 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
 import {
-    DefaultInfo,
     InjectMongoose,
     InventoryKind,
     InventorySchema,
     InventoryType,
-    InventoryTypeSchema,
-    ToolSchema,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, StaticService } from "@src/gameplay"
@@ -15,7 +11,6 @@ import { Connection } from "mongoose"
 import { BuyToolRequest } from "./buy-tool.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-
 
 @Injectable()   
 export class BuyToolService {
@@ -32,37 +27,48 @@ export class BuyToolService {
         { id: userId }: UserLike,
         { toolId }: BuyToolRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
         try {
-            await mongoSession.withTransaction(async (mongoSesion) => {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE TOOL
+                 ************************************************************/
                 const { storageCapacity } = this.staticService.defaultInfo
-                const tool = await this.connection
-                    .model<ToolSchema>(ToolSchema.name)
-                    .findById(createObjectId(toolId))
-                    .session(mongoSesion)
-
-                if (!tool) throw new GraphQLError("Tool not found", {
-                    extensions: {
-                        code: "TOOL_NOT_FOUND",
-                    }
-                })
-                if (!tool.availableInShop)
-                    throw new GraphQLError("Tool not available in shop", {
+                const tool = this.staticService.tools.find(
+                    (tool) => tool.displayId === toolId
+                )
+                if (!tool) {
+                    throw new GraphQLError("Tool not found in static service", {
                         extensions: {
-                            code: "TOOL_NOT_AVAILABLE_IN_SHOP",
+                            code: "TOOL_NOT_FOUND_IN_STATIC_SERVICE"
                         }
                     })
+                }
+                
+                if (!tool.availableInShop) {
+                    throw new GraphQLError("Tool not available in shop", {
+                        extensions: {
+                            code: "TOOL_NOT_AVAILABLE_IN_SHOP"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
-                if (!user) throw new GraphQLError("User not found", {
-                    extensions: {
-                        code: "USER_NOT_FOUND",
-                    }
-                })
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 // Check sufficient gold
                 this.goldBalanceService.checkSufficient({
@@ -70,24 +76,21 @@ export class BuyToolService {
                     required: tool.price
                 })
 
-                // Deduct gold and update the user's gold balance
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: tool.price
-                })
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY TYPE
+                 ************************************************************/
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) => inventoryType.type === InventoryType.Tool
+                )
 
-                // Update user's gold balance
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged }, { session: mongoSesion })
-
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findOne({
-                        type: InventoryType.Tool,
-                        tool: tool.id
+                if (!inventoryType) {
+                    throw new GraphQLError("Inventory type not found in static service", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_FOUND_IN_STATIC_SERVICE"
+                        }
                     })
-                    .session(mongoSesion)
+                }
+
                 // Check if user has the tool already
                 const userHasTool = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -95,24 +98,48 @@ export class BuyToolService {
                         user: userId,
                         inventoryType: inventoryType.id
                     })
-                    .session(mongoSesion)
+                    .session(session)
 
                 if (userHasTool) {
                     throw new GraphQLError("User already has the tool", {
                         extensions: {
-                            code: "USER_ALREADY_HAS_THE_TOOL",
+                            code: "USER_ALREADY_HAS_THE_TOOL"
                         }
                     })
                 }
 
+                /************************************************************
+                 * VALIDATE AND UPDATE USER GOLD
+                 ************************************************************/
+                // Deduct gold
+                this.goldBalanceService.subtract({
+                    user,
+                    amount: tool.price
+                })
+
+                // Save updated user data
+                await user.save({ session })
+
+                /************************************************************
+                 * ADD TOOL TO INVENTORY
+                 ************************************************************/
                 // Get the first unoccupied index
                 const unoccupiedIndexes = await this.inventoryService.getUnoccupiedIndexes({
                     inventoryType,
                     userId,
                     connection: this.connection,
-                    session: mongoSesion,
+                    session,
                     storageCapacity
                 })
+                
+                if (unoccupiedIndexes.length === 0) {
+                    throw new GraphQLError("No available inventory slots", {
+                        extensions: {
+                            code: "NO_AVAILABLE_INVENTORY_SLOTS"
+                        }
+                    })
+                }
+                
                 const firstUnoccupiedIndex = unoccupiedIndexes[0]
 
                 // Create a new inventory
@@ -125,19 +152,16 @@ export class BuyToolService {
                             kind: InventoryKind.Storage
                         }
                     ],
-                    { session: mongoSesion }
+                    { session }
                 )
-
-                // No return value needed for void
             })
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
-            throw error // Rethrow error to be handled higher up
+            // Rethrow error to be handled higher up
+            throw error
         } finally {
             // End the session after the transaction is complete
-            await mongoSession.endSession()
+            await session.endSession()
         }
     }
 }

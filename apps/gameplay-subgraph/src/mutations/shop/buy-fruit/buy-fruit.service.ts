@@ -1,21 +1,20 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
-import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
-    FruitSchema,
     InjectMongoose,
     PlacedItemSchema,
     PlacedItemType,
-    PlacedItemTypeSchema,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, StaticService } from "@src/gameplay"
+import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyFruitRequest } from "./buy-fruit.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+
 @Injectable()
 export class BuyFruitService {
     private readonly logger = new Logger(BuyFruitService.name)
@@ -31,36 +30,52 @@ export class BuyFruitService {
         { id: userId }: UserLike,
         { position, fruitId }: BuyFruitRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            await mongoSession.withTransaction(async () => {
-                // Fetch tile details
-                const fruit = await this.connection
-                    .model<FruitSchema>(FruitSchema.name)
-                    .findById(createObjectId(fruitId))
-                    .session(mongoSession)
-
-                if (!fruit) throw new GraphQLError("Fruit not found", {
-                    extensions: {
-                        code: "FRUIT_NOT_FOUND",
-                    }
-                })
-                if (!fruit.availableInShop)
-                    throw new GraphQLError("Fruit not available in shop", {
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE FRUIT
+                 ************************************************************/
+                // Fetch fruit details
+                const fruit = this.staticService.fruits.find(
+                    (fruit) => fruit.displayId === fruitId
+                )
+                if (!fruit) {
+                    throw new GraphQLError("Fruit not found in static service", {
                         extensions: {
-                            code: "FRUIT_NOT_AVAILABLE_IN_SHOP",
+                            code: "FRUIT_NOT_FOUND_IN_STATIC_SERVICE"
                         }
                     })
+                }
+                
+                if (!fruit.availableInShop) {
+                    throw new GraphQLError("Fruit not available in shop", {
+                        extensions: {
+                            code: "FRUIT_NOT_AVAILABLE_IN_SHOP"
+                        }
+                    })
+                }
 
                 const { fruitLimit } = this.staticService.defaultInfo
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
+
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 // Check sufficient gold
                 this.goldBalanceService.checkSufficient({
@@ -68,22 +83,13 @@ export class BuyFruitService {
                     required: fruit.price
                 })
 
-                // Deduct gold and update the user's gold balance
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: fruit.price
-                })
-
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged })
-                    .session(mongoSession)
-
+                /************************************************************
+                 * CHECK FRUIT LIMITS
+                 ************************************************************/
                 // Check the number of fruits the user has
-                const placedItemTypes = await this.connection
-                    .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                    .find({ type: PlacedItemType.Fruit })
-                    .session(mongoSession)
+                const placedItemTypes = this.staticService.placedItemTypes.filter(
+                    (placedItemType) => placedItemType.type === PlacedItemType.Fruit
+                )
 
                 const count = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -93,13 +99,44 @@ export class BuyFruitService {
                             $in: placedItemTypes.map((placedItemType) => placedItemType.id)
                         }
                     })
-                    .session(mongoSession)
+                    .session(session)
 
-                if (count >= fruitLimit) throw new GraphQLError("Max fruit limit reached", {
-                    extensions: {
-                        code: "MAX_FRUIT_LIMIT_REACHED",
-                    }
+                if (count >= fruitLimit) {
+                    throw new GraphQLError("Max fruit limit reached", {
+                        extensions: {
+                            code: "MAX_FRUIT_LIMIT_REACHED"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * VALIDATE AND UPDATE USER GOLD
+                 ************************************************************/
+                // Deduct gold
+                this.goldBalanceService.subtract({
+                    user,
+                    amount: fruit.price
                 })
+
+                // Save updated user data
+                await user.save({ session })
+
+                /************************************************************
+                 * PLACE FRUIT
+                 ************************************************************/
+                // Find the correct placed item type for this fruit
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) =>
+                        placedItemType.type === PlacedItemType.Fruit &&
+                        placedItemType.fruit.toString() === createObjectId(fruit.id).toString()
+                )
+                if (!placedItemType) {
+                    throw new GraphQLError("Placed item type not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
 
                 // Save the placed item (fruit) in the database
                 const [placedItemFruitRaw] = await this.connection
@@ -110,27 +147,32 @@ export class BuyFruitService {
                                 user: userId,
                                 x: position.x,
                                 y: position.y,
-                                placedItemType: createObjectId(fruit.displayId),
+                                placedItemType: placedItemType.id,
                                 fruitInfo: {
                                     fruit: fruit.id
                                 }
                             }
                         ],
-                        { session: mongoSession }
+                        { session }
                     )
-                const placedItemTileId = placedItemFruitRaw._id.toString()
+                const placedItemId = placedItemFruitRaw._id.toString()
 
+                /************************************************************
+                 * PREPARE ACTION MESSAGE
+                 ************************************************************/
                 // Prepare the action message to emit to Kafka
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItemId,
                     action: ActionName.BuyFruit,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             // Send Kafka messages for success
             await Promise.all([
                 this.kafkaProducer.send({
@@ -142,23 +184,23 @@ export class BuyFruitService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
             if (actionMessage) {
+                actionMessage.success = false
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
 
-            throw error // Rethrow error to be handled higher up
+            // Rethrow error to be handled higher up
+            throw error
         } finally {
             // End the session after the transaction is complete
-            await mongoSession.endSession()
+            await session.endSession()
         }
     }
 }

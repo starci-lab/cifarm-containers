@@ -3,8 +3,6 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
-    AnimalSchema,
-    BuildingSchema,
     InjectMongoose,
     PlacedItemSchema,
     PlacedItemType,
@@ -37,50 +35,60 @@ export class BuyAnimalService {
             position,
         }: BuyAnimalRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession()
+        const session = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
-                const animal = await this.connection
-                    .model<AnimalSchema>(AnimalSchema.name)
-                    .findById(createObjectId(animalId))
-                    .session(mongoSession)
-
+            await session.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE ANIMAL
+                 ************************************************************/
+                const animal = this.staticService.animals.find(
+                    (animal) => animal.displayId === animalId
+                )
                 if (!animal) {
-                    throw new GraphQLError("Animal not found", {
+                    throw new GraphQLError("Animal not found in static service", {
                         extensions: {
-                            code: "ANIMAL_NOT_FOUND"
+                            code: "ANIMAL_NOT_FOUND_IN_STATIC_SERVICE"
                         }
                     })
                 }
+                
                 if (!animal.availableInShop) {
                     throw new GraphQLError("Animal not available in shop", {
                         extensions: {
-                            code: "ANIMAL_NOT_AVAILABLE"
+                            code: "ANIMAL_NOT_AVAILABLE_IN_SHOP"
                         }
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE BUILDING AND PLACED ITEM TYPES
+                 ************************************************************/
                 // Get building for the animal
-                const building = await this.connection
-                    .model<BuildingSchema>(BuildingSchema.name)
-                    .findOne({ type: animal.type })
-                    .session(mongoSession)
+                const building = this.staticService.buildings.find(
+                    (building) => building.animalContainedType === animal.type
+                )
 
-                // Get placed item types
-                const placedItemBuildingType = await this.connection
-                    .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                    .findOne({
-                        type: PlacedItemType.Building,
-                        building: building.id
-                    })
-                    .session(mongoSession)
-    
-                if (!placedItemBuildingType) {
-                    throw new GraphQLError("Building not found", {
+                if (!building) {
+                    throw new GraphQLError("Building not found for animal type", {
                         extensions: {
                             code: "BUILDING_NOT_FOUND"
+                        }
+                    })
+                }
+
+                // Get placed item types
+                const placedItemBuildingType = this.staticService.placedItemTypes.find(
+                    (placedItemType) =>
+                        placedItemType.type === PlacedItemType.Building &&
+                        placedItemType.building.toString() === createObjectId(building.id).toString()
+                )
+    
+                if (!placedItemBuildingType) {
+                    throw new GraphQLError("Building type not found", {
+                        extensions: {
+                            code: "BUILDING_TYPE_NOT_FOUND"
                         }
                     })
                 }
@@ -91,7 +99,7 @@ export class BuyAnimalService {
                         type: PlacedItemType.Animal,
                         animal: animal.id
                     })
-                    .session(mongoSession)
+                    .session(session)
     
                 if (!placedItemAnimalType) {
                     throw new GraphQLError("Animal type not found", {
@@ -101,29 +109,32 @@ export class BuyAnimalService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 // Fetch user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
                 
-                // Deduct gold and update the user's gold balance
-                const goldsChanged = this.goldBalanceService.subtract({
-                    user: user,
-                    amount: animal.price
-                })
-
+                // Check if user has enough gold
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
                     required: animal.price
                 })
 
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged })
-                    .session(mongoSession)
-
+                /************************************************************
+                 * CHECK ANIMAL CAPACITY
+                 ************************************************************/
                 // Get current animal count for the user
                 const animalCount = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -131,7 +142,7 @@ export class BuyAnimalService {
                         user: userId,
                         placedItemType: placedItemAnimalType
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 // Get building placement for capacity calculation
                 let maxCapacity = 0
@@ -141,12 +152,12 @@ export class BuyAnimalService {
                         user: userId,
                         placedItemType: placedItemBuildingType
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 // Calculate max capacity based on upgrades
                 for (const placedItemBuilding of placedItemsBuilding) {
                     maxCapacity +=
-            building.upgrades[placedItemBuilding.buildingInfo.currentUpgrade - 1].capacity
+                        building.upgrades[placedItemBuilding.buildingInfo.currentUpgrade - 1].capacity
                 }
 
                 // Ensure the user hasn't reached the max animal capacity
@@ -158,16 +169,19 @@ export class BuyAnimalService {
                     })
                 }
 
-                // Fetch the placed item type for the animal
-                const placedItemTypeAnimal = await this.connection
-                    .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                    .findOne({
-                        type: PlacedItemType.Animal,
-                        animal: createObjectId(animalId)
-                    })
-                    .session(mongoSession)
+                /************************************************************
+                 * UPDATE USER DATA AND PLACE ANIMAL
+                 ************************************************************/
+                // Deduct gold from user
+                this.goldBalanceService.subtract({
+                    user,
+                    amount: animal.price
+                })
 
-                // Place the animal in the user's inventory (at the specified position)
+                // Save updated user data
+                await user.save({ session })
+
+                // Place the animal in the user's farm (at the specified position)
                 const [placedItemAnimalRaw] = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .create(
@@ -176,17 +190,20 @@ export class BuyAnimalService {
                                 user: userId,
                                 x: position.x,
                                 y: position.y,
-                                placedItemType: placedItemTypeAnimal,
+                                placedItemType: placedItemAnimalType,
                                 animalInfo: {
                                     animal: createObjectId(animalId)
                                 }
                             }
                         ],
-                        { session: mongoSession }
+                        { session }
                     )
 
                 const placedItemAnimalId = placedItemAnimalRaw._id.toString()
 
+                /************************************************************
+                 * PREPARE ACTION MESSAGE
+                 ************************************************************/
                 // Prepare action message for Kafka
                 actionMessage = {
                     action: ActionName.BuyAnimal,
@@ -196,6 +213,10 @@ export class BuyAnimalService {
                 }
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             // Send Kafka messages for success
             await Promise.all([
                 this.kafkaProducer.send({
@@ -212,17 +233,18 @@ export class BuyAnimalService {
 
             // Send failure action message if any error occurs
             if (actionMessage) {
+                actionMessage.success = false
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
 
-            // Rollback transaction automatically handled by withTransaction
-            throw error // Rethrow error to be handled higher up
+            // Rethrow error to be handled higher up
+            throw error
         } finally {
             // End the session after the transaction is complete
-            await mongoSession.endSession()
+            await session.endSession()
         }
     }
 }
