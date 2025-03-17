@@ -29,8 +29,6 @@ export class HealthCheckModule extends ConfigurableModuleClass {
 
         // if http
         const httpDependencies: Array<HealthCheckDependency> = [
-            HealthCheckDependency.RestApiGateway,
-            HealthCheckDependency.GameplayService,
             HealthCheckDependency.GraphQLGateway,
             HealthCheckDependency.GameplaySubgraph,
             HealthCheckDependency.CronScheduler,

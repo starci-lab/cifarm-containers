@@ -1,7 +1,5 @@
 export enum Container {
-    RestApiGateway = "restApiGateway",
     IoGameplay = "ioGameplay",
-    GameplayService = "gameplayService",
     GraphQLGateway = "graphQlGateway",
     GameplaySubgraph = "gameplaySubgraph",
     CronWorker = "cronWorker",

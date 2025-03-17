@@ -29,11 +29,6 @@ export class HealthCheckContainersService {
         )
     }
 
-    // Ping checks for specific services
-    public async pingCheckGameplayService(): Promise<HealthIndicatorResult> {
-        return this.pingCheckContainer(HealthCheckDependency.GameplayService, Container.GameplayService)
-    }
-
     public async pingCheckGameplaySubgraph(): Promise<HealthIndicatorResult> {
         return this.pingCheckContainer(HealthCheckDependency.GameplaySubgraph, Container.GameplaySubgraph)
     }
@@ -44,10 +39,6 @@ export class HealthCheckContainersService {
 
     public async pingCheckGraphQlGateway(): Promise<HealthIndicatorResult> {
         return this.pingCheckContainer(HealthCheckDependency.GraphQLGateway, Container.GraphQLGateway)
-    }
-
-    public async pingCheckRestApiGateway(): Promise<HealthIndicatorResult> {
-        return this.pingCheckContainer(HealthCheckDependency.RestApiGateway, Container.RestApiGateway)
     }
 
     public async pingCheckCronScheduler(): Promise<HealthIndicatorResult> {

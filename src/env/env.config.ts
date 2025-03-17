@@ -40,15 +40,6 @@ export const envConfig = () => ({
                         : process.env.CORS_ORIGIN.split(",")
     },
     containers: {
-        [Container.RestApiGateway]: {
-            host: process.env.REST_API_GATEWAY_HOST ?? LOCALHOST,
-            port: process.env.REST_API_GATEWAY_PORT
-                ? Number.parseInt(process.env.REST_API_GATEWAY_PORT)
-                : DEFAULT_PORT,
-            healthCheckPort: process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT
-                ? Number.parseInt(process.env.REST_API_GATEWAY_HEALTH_CHECK_PORT)
-                : DEFAULT_HEALTH_PORT
-        },
         [Container.IoGameplay]: {
             host: process.env.IO_GAMEPLAY_HOST ?? LOCALHOST,
             port: process.env.IO_GAMEPLAY_PORT
@@ -70,15 +61,6 @@ export const envConfig = () => ({
                     ? Number.parseInt(process.env.IO_GAMEPLAY_CLUSTER_WORKER_PORT)
                     : DEFAULT_PORT + 10
             }
-        },
-        [Container.GameplayService]: {
-            host: process.env.GAMEPLAY_SERVICE_HOST ?? LOCALHOST,
-            port: process.env.GAMEPLAY_SERVICE_PORT
-                ? Number.parseInt(process.env.GAMEPLAY_SERVICE_PORT)
-                : DEFAULT_PORT,
-            healthCheckPort: process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT
-                ? Number.parseInt(process.env.GAMEPLAY_SERVICE_HEALTH_CHECK_PORT)
-                : DEFAULT_HEALTH_PORT
         },
         [Container.GraphQLGateway]: {
             host: process.env.GRAPHQL_GATEWAY_HOST ?? LOCALHOST,

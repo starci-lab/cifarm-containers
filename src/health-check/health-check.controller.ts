@@ -45,9 +45,6 @@ export class HealthCheckController {
         if (this.options.dependencies.includes(HealthCheckDependency.Kafka)) {
             healthIndicators.push(async () => this.healthCheckCoreService.pingCheckKafka())
         }
-        if (this.options.dependencies.includes(HealthCheckDependency.GameplayService)) {
-            healthIndicators.push(async () => this.healthCheckContainersService.pingCheckGameplayService())
-        }
         if (this.options.dependencies.includes(HealthCheckDependency.GameplaySubgraph)) {
             healthIndicators.push(async () => this.healthCheckContainersService.pingCheckGameplaySubgraph())
         }
@@ -56,9 +53,6 @@ export class HealthCheckController {
         }
         if (this.options.dependencies.includes(HealthCheckDependency.GraphQLGateway)) {
             healthIndicators.push(async () => this.healthCheckContainersService.pingCheckGraphQlGateway())
-        }
-        if (this.options.dependencies.includes(HealthCheckDependency.RestApiGateway)) {
-            healthIndicators.push(async () => this.healthCheckContainersService.pingCheckRestApiGateway())
         }
         if (this.options.dependencies.includes(HealthCheckDependency.CronScheduler)) {
             healthIndicators.push(async () => this.healthCheckContainersService.pingCheckCronScheduler())
