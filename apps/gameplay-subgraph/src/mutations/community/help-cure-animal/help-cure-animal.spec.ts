@@ -1,211 +1,392 @@
-// npx jest apps/gameplay-service/src/community/help-cure-animal/help-cure-animal.spec.ts
+// npx jest apps/gameplay-subgraph/src/mutations/community/help-cure-animal/help-cure-animal.spec.ts
 
-import { Test } from "@nestjs/testing"
-import { HelpCureAnimalService } from "./help-cure-animal.service"
-import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
-import {
-    AnimalInfoEntity,
-    AnimalCurrentState,
-    PlacedItemSchema,
+import { Test, TestingModule } from "@nestjs/testing"
+import { createObjectId } from "@src/common"
+import { 
+    AnimalCurrentState, 
+    getMongooseToken, 
+    PlacedItemSchema, 
     UserSchema,
-    SystemEntity,
-    SystemId,
-    Activities,
-    getPostgreSqlToken,
     PlacedItemTypeId,
-    AnimalId
+    InventorySchema,
+    InventoryKind,
+    InventoryTypeId
 } from "@src/databases"
-import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
-import { v4 } from "uuid"
-import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { Connection } from "mongoose"
+import { HelpCureAnimalService } from "./help-cure-animal.service"
+import { GraphQLError } from "graphql"
+import { LevelService, StaticService } from "@src/gameplay"
+import { EnergyNotEnoughException } from "@src/gameplay"
 
 describe("HelpCureAnimalService", () => {
-    let dataSource: DataSource
+    let connection: Connection
     let service: HelpCureAnimalService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
+    let staticService: StaticService
 
     beforeAll(async () => {
-        const moduleRef = await Test.createTestingModule({
+        const module: TestingModule = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
             providers: [HelpCureAnimalService]
         }).compile()
 
-        dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(HelpCureAnimalService)
-        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
-        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        levelService = moduleRef.get(LevelService)
+        staticService = module.get<StaticService>(StaticService)
+        await staticService.onModuleInit()
+        connection = module.get<Connection>(getMongooseToken())
+        service = module.get<HelpCureAnimalService>(HelpCureAnimalService)
+        gameplayConnectionService = module.get<GameplayConnectionService>(GameplayConnectionService)
+        gameplayMockUserService = module.get<GameplayMockUserService>(GameplayMockUserService)
+        levelService = module.get<LevelService>(LevelService)
     })
 
     it("should successfully help cure the sick animal and update user stats", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume, experiencesGain }
-        } = value as Activities
+        // Get activity data from system
+        const { energyConsume, experiencesGain } = staticService.activities.helpCureAnimal
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
         const neighborUser = await gameplayMockUserService.generate()
-    
-        // create placed animal in sick state
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
-            animalInfo: {
-                currentState: AnimalCurrentState.Sick
-            },
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.Chicken,
-            userId: neighborUser.id
-        })
 
-        // Call the service method to cure the animal
-        await service.helpCureAnimal({
-            userId: user.id,
-            placedItemAnimalId: placedItemAnimal.id,
-            neighborUserId: neighborUser.id
-        })
+        // Find an animal in static data
+        const animal = staticService.animals[0]
 
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["energy", "level", "experiences"]
-        })
+        // Create placed item with a sick animal
+        const placedItemAnimal = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                animalInfo: {
+                    animal: animal.id,
+                    currentState: AnimalCurrentState.Sick,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Chicken)
+            })
 
+        // Create animal medicine in user's inventory
+        await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .create({
+                user: user.id,
+                inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
+                kind: InventoryKind.Tool,
+                quantity: 1,
+                index: 0
+            })
+
+        // Call the service method to help cure the animal
+        await service.helpCureAnimal(
+            { id: user.id },
+            {
+                placedItemAnimalId: placedItemAnimal.id
+            }
+        )
+
+        const userAfter = await connection
+            .model<UserSchema>(UserSchema.name)
+            .findById(user.id)
+            .select("energy level experiences")
+
+        // Assert energy and experience changes
         expect(user.energy - userAfter.energy).toBe(energyConsume)
         expect(
             levelService.computeTotalExperienceForLevel(userAfter) -
                 levelService.computeTotalExperienceForLevel(user)
         ).toBe(experiencesGain)
 
-        const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
-            where: { id: placedItemAnimal.animalInfoId }
-        })
+        // Check if the animal's state was updated
+        const updatedPlacedItemAnimal = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .findById(placedItemAnimal.id)
 
-        expect(updatedAnimalInfo.currentState).toBe(AnimalCurrentState.Normal)
+        expect(updatedPlacedItemAnimal.animalInfo.currentState).toBe(AnimalCurrentState.Normal)
     })
 
-    it("should throw GrpcNotFoundException when animal is not found by its ID", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+    it("should throw GraphQLError with code ANIMAL_MEDICINE_NOT_FOUND when user has no animal medicine", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.helpCureAnimal
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const invalidPlacedItemAnimalId = v4()
+        // Find an animal in static data
+        const animal = staticService.animals[0]
 
-        await expect(
-            service.helpCureAnimal({
-                userId: user.id,
-                placedItemAnimalId: invalidPlacedItemAnimalId,
-                neighborUserId: neighborUser.id
+        // Create placed item with a sick animal
+        const placedItemAnimal = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                animalInfo: {
+                    animal: animal.id,
+                    currentState: AnimalCurrentState.Sick,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Chicken)
             })
-        ).rejects.toThrow(GrpcNotFoundException)
+
+        // No animal medicine is created in the user's inventory
+
+        try {
+            await service.helpCureAnimal(
+                { id: user.id },
+                {
+                    placedItemAnimalId: placedItemAnimal.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("ANIMAL_MEDICINE_NOT_FOUND")
+        }
     })
 
-    it("should throw EnergyNotEnoughException when user energy is not enough", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            harvestAnimal: { energyConsume }
-        } = value as Activities
-    
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume - 1
-        })
-        const neighborUser = await gameplayMockUserService.generate()
-    
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
-            animalInfo: {
-                currentState: AnimalCurrentState.Sick
-            },
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.Chicken,
-            userId: neighborUser.id
-        })
-    
-        await expect(
-            service.helpCureAnimal({
-                userId: user.id,
-                placedItemAnimalId: placedItemAnimal.id,
-                neighborUserId: neighborUser.id
-            })
-        ).rejects.toThrow(EnergyNotEnoughException)
-    })
-
-    it("should throw GrpcNotFoundException when animal belongs to yourself", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+    it("should throw GraphQLError with code PLACED_ITEM_ANIMAL_NOT_FOUND when animal is not found", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.helpCureAnimal
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
-            animalInfo: {
-                animalId: AnimalId.Chicken,
-                currentState: AnimalCurrentState.Sick
-            },
-            x: 0,
-            y: 0,
-            userId: user.id
-        })
-
-        await expect(
-            service.helpCureAnimal({
-                userId: user.id,
-                placedItemAnimalId: placedItemAnimal.id,
-                neighborUserId: user.id
+        // Create animal medicine in user's inventory
+        await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .create({
+                user: user.id,
+                inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
+                kind: InventoryKind.Tool,
+                quantity: 1,
+                index: 0
             })
-        ).rejects.toThrow(GrpcInvalidArgumentException)
+
+        const invalidPlacedItemAnimalId = createObjectId()
+
+        try {
+            await service.helpCureAnimal(
+                { id: user.id },
+                {
+                    placedItemAnimalId: invalidPlacedItemAnimalId
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("PLACED_ITEM_ANIMAL_NOT_FOUND")
+        }
     })
 
-    it("should throw GrpcFailedPreconditionException when animal is not sick", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
+    it("should throw GraphQLError with code CANNOT_HELP_CURE_OWN_ANIMAL when animal belongs to yourself", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.helpCureAnimal
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
         })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+
+        // Find an animal in static data
+        const animal = staticService.animals[0]
+
+        // Create placed item with a sick animal
+        const placedItemAnimal = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                animalInfo: {
+                    animal: animal.id,
+                    currentState: AnimalCurrentState.Sick,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false
+                },
+                x: 0,
+                y: 0,
+                user: user.id, // Same user
+                placedItemType: createObjectId(PlacedItemTypeId.Chicken)
+            })
+
+        // Create animal medicine in user's inventory
+        await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .create({
+                user: user.id,
+                inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
+                kind: InventoryKind.Tool,
+                quantity: 1,
+                index: 0
+            })
+
+        try {
+            await service.helpCureAnimal(
+                { id: user.id },
+                {
+                    placedItemAnimalId: placedItemAnimal.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("CANNOT_HELP_CURE_OWN_ANIMAL")
+        }
+    })
+
+    it("should throw GraphQLError with code ANIMAL_IS_NOT_SICK when animal is not sick", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.helpCureAnimal
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
-            animalInfo: {
-                currentState: AnimalCurrentState.Normal // Not sick
-            },
-            x: 0,
-            y: 0,
-            userId: neighborUser.id,
-            placedItemTypeId: PlacedItemTypeId.Chicken
-        })
+        // Find an animal in static data
+        const animal = staticService.animals[0]
 
-        await expect(
-            service.helpCureAnimal({
-                userId: user.id,
-                placedItemAnimalId: placedItemAnimal.id,
-                neighborUserId: neighborUser.id
+        // Create placed item with a healthy animal
+        const placedItemAnimal = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                animalInfo: {
+                    animal: animal.id,
+                    currentState: AnimalCurrentState.Normal, // Not sick
+                    harvestQuantityRemaining: 10,
+                    isQuality: false
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Chicken)
             })
-        ).rejects.toThrow(GrpcFailedPreconditionException)
+
+        // Create animal medicine in user's inventory
+        await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .create({
+                user: user.id,
+                inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
+                kind: InventoryKind.Tool,
+                quantity: 1,
+                index: 0
+            })
+
+        try {
+            await service.helpCureAnimal(
+                { id: user.id },
+                {
+                    placedItemAnimalId: placedItemAnimal.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("ANIMAL_IS_NOT_SICK")
+        }
+    })
+
+    it("should throw GraphQLError with code NO_ANIMAL when placed item has no animal", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.helpCureAnimal
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        const neighborUser = await gameplayMockUserService.generate()
+
+        // Create placed item with no animal info
+        const placedItemAnimal = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
+
+        // Create animal medicine in user's inventory
+        await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .create({
+                user: user.id,
+                inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
+                kind: InventoryKind.Tool,
+                quantity: 1,
+                index: 0
+            })
+
+        try {
+            await service.helpCureAnimal(
+                { id: user.id },
+                {
+                    placedItemAnimalId: placedItemAnimal.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("NO_ANIMAL")
+        }
+    })
+
+    it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.helpCureAnimal
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume - 1 // Not enough energy
+        })
+        const neighborUser = await gameplayMockUserService.generate()
+
+        // Find an animal in static data
+        const animal = staticService.animals[0]
+
+        // Create placed item with a sick animal
+        const placedItemAnimal = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                animalInfo: {
+                    animal: animal.id,
+                    currentState: AnimalCurrentState.Sick,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Chicken)
+            })
+
+        // Create animal medicine in user's inventory
+        await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .create({
+                user: user.id,
+                inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
+                kind: InventoryKind.Tool,
+                quantity: 1,
+                index: 0
+            })
+
+        try {
+            await service.helpCureAnimal(
+                { id: user.id },
+                {
+                    placedItemAnimalId: placedItemAnimal.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(EnergyNotEnoughException)
+        }
     })
 
     afterAll(async () => {

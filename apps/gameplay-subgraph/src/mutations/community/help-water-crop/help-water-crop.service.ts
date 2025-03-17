@@ -6,17 +6,21 @@ import {
     InjectMongoose,
     PlacedItemSchema,
     UserSchema,
+    InventorySchema,
+    InventoryKind,
+    InventoryTypeId
 } from "@src/databases"
 import { EnergyService, LevelService, StaticService } from "@src/gameplay"
-import { HelpWaterRequest } from "./help-water.dto"
+import { HelpWaterCropRequest } from "./help-water-crop.dto"
 import { Connection } from "mongoose"
-import { Producer } from "@nestjs/microservices/external/kafka.interface"
+import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { createObjectId } from "@src/common"
 
 @Injectable()
-export class HelpWaterService {
-    private readonly logger = new Logger(HelpWaterService.name)
+export class HelpWaterCropService {
+    private readonly logger = new Logger(HelpWaterCropService.name)
 
     constructor(
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
@@ -26,9 +30,9 @@ export class HelpWaterService {
         private readonly staticService: StaticService
     ) {}
 
-    async helpWater(
+    async helpWaterCrop(
         { id: userId }: UserLike,
-        { placedItemTileId }: HelpWaterRequest
+        { placedItemTileId }: HelpWaterCropRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         
@@ -37,6 +41,31 @@ export class HelpWaterService {
         try {
             // Using session.withTransaction for MongoDB operations and automatic transaction handling
             await mongoSession.withTransaction(async () => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE WATERING CAN TOOL
+                 ************************************************************/
+                
+                // Check if user has watering can
+                const inventoryWateringCanExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.WateringCan),
+                        kind: InventoryKind.Tool
+                    }).session(mongoSession)
+                
+                // Validate watering can exists in inventory
+                if (!inventoryWateringCanExisted) {
+                    throw new GraphQLError("Watering can not found in toolbar", {
+                        extensions: {
+                            code: "WATERING_CAN_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
@@ -103,6 +132,9 @@ export class HelpWaterService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 // Fetch system activity values
                 const { energyConsume, experiencesGain } = this.staticService.activities.helpWater
 
@@ -125,17 +157,19 @@ export class HelpWaterService {
                     required: energyConsume,
                 })
 
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
                 // Apply energy and experience changes
-                const energyChanges = this.energyService.substract({
+                this.energyService.substract({
                     user,
                     quantity: energyConsume,
                 })
-                const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
+                this.levelService.addExperiences({ user, experiences: experiencesGain })
 
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...energyChanges, ...experienceChanges }
-                ).session(mongoSession)
+                // Update the user
+                await user.save({ session: mongoSession })
 
                 // Update placed item tile state
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
@@ -150,6 +184,10 @@ export class HelpWaterService {
                 }
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             // Send Kafka messages in parallel
             await Promise.all([
                 this.kafkaProducer.send({

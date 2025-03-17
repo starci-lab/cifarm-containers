@@ -2,11 +2,13 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-
     FruitCurrentState,
     InjectMongoose,
     PlacedItemSchema,
-    UserSchema
+    UserSchema,
+    InventorySchema,
+    InventoryKind,
+    InventoryTypeId
 } from "@src/databases"
 import { EnergyService, LevelService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
@@ -14,6 +16,7 @@ import { Connection } from "mongoose"
 import { HelpUseBugNetRequest } from "./help-use-bug-net.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class HelpUseBugNetService {
@@ -27,13 +30,39 @@ export class HelpUseBugNetService {
         private readonly staticService: StaticService
     ) {}
 
-    async helpUseBugNet({ id: userId }: UserLike, { placedItemFruitId }: HelpUseBugNetRequest): Promise<void> {
+    async helpUseBugNet(
+        { id: userId }: UserLike,
+        { placedItemFruitId }: HelpUseBugNetRequest
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         let neighborUserId: string | undefined
         try {
             await mongoSession.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE BUG NET TOOL
+                 ************************************************************/
+                const inventoryBugNet = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.BugNet),
+                        kind: InventoryKind.Tool
+                    })
+                    .session(session)
+
+                if (!inventoryBugNet) {
+                    throw new GraphQLError("Bug net not found", {
+                        extensions: {
+                            code: "BUG_NET_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM FRUIT
+                 ************************************************************/
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
@@ -45,7 +74,7 @@ export class HelpUseBugNetService {
                         action: ActionName.HelpUseBugNet,
                         success: false,
                         userId,
-                        reasonCode: 0,
+                        reasonCode: 0
                     }
                     throw new GraphQLError("Placed item fruit not found", {
                         extensions: {
@@ -54,6 +83,7 @@ export class HelpUseBugNetService {
                     })
                 }
 
+                // Validate ownership (must be someone else's fruit)
                 neighborUserId = placedItemFruit.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
@@ -61,7 +91,7 @@ export class HelpUseBugNetService {
                         action: ActionName.HelpUseBugNet,
                         success: false,
                         userId,
-                        reasonCode: 1,
+                        reasonCode: 1
                     }
                     throw new GraphQLError("Cannot help use bug net on your own tile", {
                         extensions: {
@@ -70,13 +100,17 @@ export class HelpUseBugNetService {
                     })
                 }
 
-                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsInfested) {
+                // Validate fruit is infested
+                if (
+                    !placedItemFruit.fruitInfo ||
+                    placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsInfested
+                ) {
                     actionMessage = {
                         placedItemId: placedItemFruitId,
                         action: ActionName.HelpUseBugNet,
                         success: false,
                         userId,
-                        reasonCode: 3,
+                        reasonCode: 3
                     }
                     throw new GraphQLError("Fruit is not infested", {
                         extensions: {
@@ -85,68 +119,89 @@ export class HelpUseBugNetService {
                     })
                 }
 
-                const { energyConsume, experiencesGain } = this.staticService.activities.helpUseBugNet
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                // Get activity data
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.helpUseBugNet
 
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
+                // Validate user exists
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
-                    required: energyConsume,
+                    required: energyConsume
                 })
 
-                const energyChanges = this.energyService.substract({
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                // Update user energy and experience
+                this.energyService.substract({
                     user,
-                    quantity: energyConsume,
+                    quantity: energyConsume
                 })
-                const experiencesChanges = this.levelService.addExperiences({
+                this.levelService.addExperiences({
                     user,
-                    experiences: experiencesGain,
+                    experiences: experiencesGain
                 })
 
-                // Update the user and placed item fruit in one session
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
-                    .session(session)
+                // Update the user
+                await user.save({
+                    session
+                })
 
+                // Update fruit state after using bug net
                 placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
                 await placedItemFruit.save({
                     session
                 })
 
-                // Kafka producer actions (sending them in parallel)
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemFruitId,
                     action: ActionName.HelpUseBugNet,
                     success: true,
-                    userId,
+                    userId
                 }
-
-                // No return value needed for void
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             // Using Promise.all() to send Kafka messages concurrently
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
-                }),
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
             // withTransaction automatically handles rollback

@@ -7,12 +7,16 @@ import {
     CropCurrentState,
     InjectMongoose,
     PlacedItemSchema,
-    UserSchema
+    UserSchema,
+    InventorySchema,
+    InventoryKind,
+    InventoryTypeId
 } from "@src/databases"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { createObjectId } from "@src/common"
 
 
 @Injectable()
@@ -36,11 +40,34 @@ export class HelpUseHerbicideService {
         let actionMessage: EmitActionPayload | undefined
         let neighborUserId: string | undefined
         try {
-            await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE HERBICIDE TOOL
+                 ************************************************************/
+                const inventoryHerbicide = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Herbicide),
+                        kind: InventoryKind.Tool
+                    })
+                    .session(session)
+                
+                if (!inventoryHerbicide) {
+                    throw new GraphQLError("Herbicide not found", {
+                        extensions: {
+                            code: "HERBICIDE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!placedItemTile) {
                     actionMessage = {
@@ -50,12 +77,14 @@ export class HelpUseHerbicideService {
                         userId,
                         reasonCode: 0
                     }
-                    throw new GraphQLError("Tile is found", {
+                    throw new GraphQLError("Tile not found", {
                         extensions: {
-                            code: "TILE_IS_FOUND",
+                            code: "TILE_NOT_FOUND",
                         }
                     })
                 }
+
+                // Validate ownership (must be someone else's tile)
                 neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
@@ -71,6 +100,8 @@ export class HelpUseHerbicideService {
                         }
                     })
                 }
+
+                // Validate tile has seed growth info
                 if (!placedItemTile.seedGrowthInfo) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
@@ -85,6 +116,8 @@ export class HelpUseHerbicideService {
                         }
                     })
                 }
+
+                // Validate tile needs herbicide
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
@@ -100,45 +133,67 @@ export class HelpUseHerbicideService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                // Get activity data
                 const { energyConsume, experiencesGain } = this.staticService.activities.helpUseHerbicide
 
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
+                // Validate user exists
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                const energyChanges = this.energyService.substract({
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                // Update user energy and experience
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experienceChanges = this.levelService.addExperiences({
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
 
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(mongoSession)
+                // Update the user
+                await user.save({ session })
 
+                // Update crop state after using herbicide
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
-                await placedItemTile.save({ session: mongoSession })
+                await placedItemTile.save({ session })
 
-                // Kafka action message
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.HelpUseHerbicide,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
+
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             // Sending both Kafka messages in parallel using Promise.all()
             await Promise.all([
                 this.kafkaProducer.send({
@@ -150,8 +205,8 @@ export class HelpUseHerbicideService {
                     messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
                 })
             ])
-            // No return value needed for void
         } catch (error) {
+            this.logger.error(error)
             // If there was an error, send the action message with failure status
             if (actionMessage) {
                 await this.kafkaProducer.send({

@@ -15,7 +15,9 @@ import {
     FruitCurrentState,
     FruitId,
     PlacedItemTypeId,
-    InventoryType
+    InventoryType,
+    InventoryTypeId,
+    InventoryKind
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
@@ -51,6 +53,18 @@ describe("HarvestFruitService", () => {
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
+
+        // create crate inventory for the user
+        const crateInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.Crate
+        )
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0,
+            user: user.id
+        })      
 
         const fruitId = FruitId.Apple
         const fruit = staticService.fruits.find(f => f.displayId === fruitId)
@@ -140,6 +154,18 @@ describe("HarvestFruitService", () => {
             energy: energyConsume + 1
         })
 
+        // create crate inventory for the user
+        const crateInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.Crate
+        )
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0,
+            user: user.id
+        })  
+
         const invalidPlacedItemFruitId = createObjectId()
 
         try {
@@ -159,6 +185,18 @@ describe("HarvestFruitService", () => {
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
+        })
+
+        // create crate inventory for the user
+        const crateInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.Crate
+        )
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0,
+            user: user.id
         })
 
         // Create placed item without fruit info
@@ -187,6 +225,18 @@ describe("HarvestFruitService", () => {
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
+        })
+
+        // create crate inventory for the user
+        const crateInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.Crate
+        )
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0,
+            user: user.id
         })
 
         const fruitId = FruitId.Apple
@@ -223,6 +273,18 @@ describe("HarvestFruitService", () => {
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume - 1 // Not enough energy
+        })
+
+        // create crate inventory for the user
+        const crateInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.Crate
+        )
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0,
+            user: user.id
         })
 
         const fruitId = FruitId.Apple

@@ -6,6 +6,9 @@ import { Connection } from "mongoose"
 import {
     AnimalCurrentState,
     InjectMongoose,
+    InventoryKind,
+    InventorySchema,
+    InventoryTypeId,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
@@ -13,7 +16,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class HelpCureAnimalService {
@@ -37,11 +40,35 @@ export class HelpCureAnimalService {
         let neighborUserId: string | undefined
         try {
             await mongoSession.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY ANIMAL MEDICINE
+                 ************************************************************/
+                const inventoryAnimalMedicine = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
+                        kind: InventoryKind.Tool
+                    })
+                if (!inventoryAnimalMedicine) {
+                    throw new GraphQLError("Animal medicine not found", {
+                        extensions: {
+                            code: "ANIMAL_MEDICINE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM ANIMAL
+                 ************************************************************/
+
+                // Get placed item animal
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(session)
 
+                // Validate animal exists
                 if (!placedItemAnimal) {
                     actionMessage = {
                         placedItemId: placedItemAnimalId,
@@ -52,11 +79,12 @@ export class HelpCureAnimalService {
                     }
                     throw new GraphQLError("Placed item animal not found", {
                         extensions: {
-                            code: "PLACED_ITEM_ANIMAL_NOT_FOUND",
+                            code: "PLACED_ITEM_ANIMAL_NOT_FOUND"
                         }
                     })
                 }
 
+                // Validate ownership (must be someone else's animal)
                 neighborUserId = placedItemAnimal.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
@@ -66,13 +94,30 @@ export class HelpCureAnimalService {
                         userId,
                         reasonCode: 1
                     }
-                    throw new GraphQLError("Cannot help cure on your own tile", {
+                    throw new GraphQLError("Cannot help cure your own animal", {
                         extensions: {
-                            code: "CANNOT_HELP_CURE_ON_YOUR_OWN_TILE",
+                            code: "CANNOT_HELP_CURE_OWN_ANIMAL"
                         }
                     })
                 }
 
+                // Validate animal info exists
+                if (!placedItemAnimal.animalInfo) {
+                    actionMessage = {
+                        placedItemId: placedItemAnimalId,
+                        action: ActionName.HelpCureAnimal,
+                        success: false,
+                        userId,
+                        reasonCode: 2
+                    }
+                    throw new GraphQLError("Placed item has no animal", {
+                        extensions: {
+                            code: "NO_ANIMAL"
+                        }
+                    })
+                }
+
+                // Validate animal is sick
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
                     actionMessage = {
                         placedItemId: placedItemAnimalId,
@@ -83,53 +128,77 @@ export class HelpCureAnimalService {
                     }
                     throw new GraphQLError("Animal is not sick", {
                         extensions: {
-                            code: "ANIMAL_IS_NOT_SICK",
+                            code: "ANIMAL_IS_NOT_SICK"
                         }
                     })
                 }
 
-                const { energyConsume, experiencesGain } = this.staticService.activities.helpCureAnimal
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
 
+                // Get activity data
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.helpCureAnimal
+
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
+                // Validate user exists
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                const energyChanges = this.energyService.substract({
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+
+                // Update user energy and experience
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experiencesChanges = this.levelService.addExperiences({
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
 
-                // Update the user and placed item animal in one session
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
-                    .session(session)
+                // Update the user
+                await user.save({ session })
 
+                // Update animal state after curing
                 placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
                 await placedItemAnimal.save({
                     session
                 })
 
-                // Kafka producer actions (sending them in parallel)
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemAnimalId,
                     action: ActionName.HelpCureAnimal,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
+
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
 
             // Using Promise.all() to send Kafka messages concurrently
             await Promise.all([
@@ -142,8 +211,6 @@ export class HelpCureAnimalService {
                     messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {
