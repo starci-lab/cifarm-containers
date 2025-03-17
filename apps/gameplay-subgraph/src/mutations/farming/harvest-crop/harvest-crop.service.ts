@@ -1,27 +1,27 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
-    Activities,
     CropCurrentState,
     DefaultInfo,
     InjectMongoose,
     InventorySchema,
-    InventoryType,
-    InventoryTypeSchema,
     PlacedItemSchema,
     SystemId,
     KeyValueRecord,
     SystemSchema,
     UserSchema,
-    CropSchema
+    CropSchema,
+    InventoryTypeId,
+    InventoryKind
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { CoreService, EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload, HarvestCropData } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class HarvestCropService {
@@ -32,6 +32,8 @@ export class HarvestCropService {
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
+        private readonly staticService: StaticService,
+        private readonly coreService: CoreService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -47,64 +49,177 @@ export class HarvestCropService {
         let actionMessage: EmitActionPayload<HarvestCropData> | undefined
 
         try {
-            // Using withTransaction to handle the transaction lifecycle
             const result = await mongoSession.withTransaction(async (session) => {
-                // Fetch placed item tile
+                /************************************************************
+                 * CHECK IF YOU HAVE CRATE IN TOOLBAR
+                 ************************************************************/
+                const inventoryCrateExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Crate),
+                        kind: InventoryKind.Tool
+                    })
+                if (!inventoryCrateExisted) {
+                    throw new GraphQLError("Crate not found in toolbar", {
+                        extensions: {
+                            code: "CRATE_NOT_FOUND_IN_TOOLBAR"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
+                // Get placed item tile
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
+                
+                // Validate placed item tile exists
+                if (!placedItemTile) {
+                    throw new GraphQLError("Placed item tile not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TILE_NOT_FOUND"
+                        }
+                    })
+                }
+                
+                // Validate tile is planted
+                if (!placedItemTile.seedGrowthInfo) {
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_IS_NOT_PLANTED"
+                        }
+                    })
+                }
+                
+                // Validate crop is fully matured
+                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
+                    throw new GraphQLError("Crop is not fully matured", {
+                        extensions: {
+                            code: "CROP_IS_NOT_FULLY_MATURED"
+                        }
+                    })
+                }
 
-                if (!placedItemTile) throw new NotFoundException("Tile not found")
-                if (!placedItemTile.seedGrowthInfo)
-                    throw new BadRequestException("Tile is not planted")
-                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured)
-                    throw new BadRequestException("Crop is not fully matured")
-
-                // Fetch system settings
-                const {
-                    value: {
-                        harvestCrop: { energyConsume, experiencesGain }
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
-
-                // Fetch user details
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                
+                // Get activity data
+                const { energyConsume, experiencesGain } = this.staticService.activities.harvestCrop
+                
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-
-                if (!user) throw new NotFoundException("User not found")
-
-                // Check if the user has sufficient energy
+                
+                // Validate user exists
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+                
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                // Deduct energy and add experience
-                const energyChanges = this.energyService.substract({
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY TYPE
+                 ************************************************************/
+                
+                // Get inventory type for the harvested crop
+                // const inventoryType = await this.connection
+                //     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                //     .findOne({
+                //         type: InventoryType.Product,
+                //         product: placedItemTile.seedGrowthInfo.crop
+                //     })
+                //     .session(session)
+                const product = this.staticService.products.find(
+                    (product) => product.crop && product.crop.toString() === placedItemTile.seedGrowthInfo.crop.toString()
+                    && product.isQuality === placedItemTile.seedGrowthInfo.isQuality
+                )
+                if (!product) {
+                    throw new GraphQLError("Product not found in static data", {
+                        extensions: {
+                            code: "PRODUCT_NOT_FOUND_IN_STATIC_DATA"
+                        }
+                    })
+                }
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) => inventoryType.product && inventoryType.product.toString() === product.id.toString()
+                )
+                if (!inventoryType) {
+                    throw new GraphQLError("Inventory type not found in static data", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_FOUND_IN_STATIC_DATA"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE STORAGE CAPACITY
+                 ************************************************************/
+                
+                // Get storage capacity setting
+                const systemInfo = await this.connection
+                    .model<SystemSchema>(SystemSchema.name)
+                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                
+                // Validate system info exists
+                if (!systemInfo || !systemInfo.value) {
+                    throw new GraphQLError("System info not found", {
+                        extensions: {
+                            code: "SYSTEM_INFO_NOT_FOUND"
+                        }
+                    })
+                }
+                
+                const { storageCapacity } = systemInfo.value
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE CROP DATA
+                 ************************************************************/
+                
+                // Get crop data
+                const crop = await this.connection
+                    .model<CropSchema>(CropSchema.name)
+                    .findById(placedItemTile.seedGrowthInfo.crop)
+                    .session(session)
+                
+                // Validate crop exists
+                if (!crop) {
+                    throw new GraphQLError("Crop not found", {
+                        extensions: {
+                            code: "CROP_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                
+                // Update user energy and experience
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experienceChanges = this.levelService.addExperiences({
+                
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
-
-                // Fetch inventory type for the harvested crop
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findOne({
-                        type: InventoryType.Product,
-                        product: placedItemTile.seedGrowthInfo.crop
-                    })
-                    .session(session)
-
-                if (!inventoryType) throw new NotFoundException("Inventory type not found")
 
                 // Get parameters for adding inventory
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
@@ -113,19 +228,6 @@ export class HarvestCropService {
                     userId: user.id,
                     session
                 })
-
-                // Fetch storage capacity setting
-                const {
-                    value: { storageCapacity }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-
-                // Update user with energy and experience changes
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(session)
 
                 // Harvest quantity
                 const quantity = placedItemTile.seedGrowthInfo.harvestQuantityRemaining
@@ -140,50 +242,28 @@ export class HarvestCropService {
                     occupiedIndexes
                 })
 
+                // Create new inventories
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .create(createdInventories, { session })
 
+                // Update existing inventories
                 for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne(
-                            {
-                                _id: inventory._id
-                            },
-                            inventory
-                        )
-                        .session(session)
+                    await inventory.save({ session })
                 }
-
-                // Fetch crop details to update perennial count
-                const crop = await this.connection
-                    .model<CropSchema>(CropSchema.name)
-                    .findById(placedItemTile.seedGrowthInfo.crop)
-                    .session(session)
-
-                if (!crop) throw new NotFoundException("Crop not found")
 
                 // Handle perennial crop growth cycle
-                if (placedItemTile.seedGrowthInfo.currentPerennialCount < crop.perennialCount) {
-                    placedItemTile.seedGrowthInfo.currentPerennialCount += 1
-                    placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
-                    placedItemTile.seedGrowthInfo.currentStage = crop.nextGrowthStageAfterHarvest
-                    placedItemTile.seedGrowthInfo.currentStageTimeElapsed = 0
-                } else {
-                    placedItemTile.seedGrowthInfo = null // End of the plant's life cycle
-                }
-
-                // Update the placed item tile with new seed growth information
-                await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .updateOne(
-                        { _id: placedItemTile._id },
-                        {
-                            seedGrowthInfo: placedItemTile.seedGrowthInfo
-                        }
-                    )
-                    .session(session)
+                this.coreService.updatePlacedItemTileAfterHarvest({
+                    placedItemTile,
+                    crop,
+                    cropInfo: this.staticService.cropInfo
+                })
+                
+                // Save user changes
+                await user.save({ session })
+                
+                // Save placed item tile changes
+                await placedItemTile.save({ session })
 
                 // Prepare action message
                 actionMessage = {
@@ -200,7 +280,11 @@ export class HarvestCropService {
                 return { quantity } // Return the quantity of harvested crops
             })
             
-            // Send Kafka messages for success
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+            
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -216,7 +300,6 @@ export class HarvestCropService {
         } catch (error) {
             this.logger.error(error)
 
-            // Send failure action message if any error occurs
             if (actionMessage) {
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -224,10 +307,8 @@ export class HarvestCropService {
                 })
             }
 
-            // withTransaction handles rollback automatically, no need for manual abort
-            throw error // Rethrow error to be handled higher up
+            throw error
         } finally {
-            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

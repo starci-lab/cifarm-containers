@@ -1,22 +1,17 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
 import {
-    Activities,
     AnimalCurrentState,
     InjectMongoose,
     InventorySchema,
     InventoryType,
     InventoryTypeId,
     InventoryTypeSchema,
-    KeyValueRecord,
     PlacedItemSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { FeedAnimalRequest } from "./feed-animal.dto"
@@ -32,6 +27,7 @@ export class FeedAnimalService {
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -43,14 +39,18 @@ export class FeedAnimalService {
         let actionMessage: EmitActionPayload | undefined
 
         try {
-            // Using withTransaction to handle the transaction lifecycle
             await mongoSession.withTransaction(async (session) => {
-                // Fetch placed item animal
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM ANIMAL
+                 ************************************************************/
+                
+                // Get placed item animal
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(session)
 
+                // Validate animal exists
                 if (!placedItemAnimal) {
                     throw new GraphQLError("Placed Item animal not found", {
                         extensions: {
@@ -58,6 +58,8 @@ export class FeedAnimalService {
                         }
                     })
                 }
+                
+                // Validate ownership
                 if (placedItemAnimal.user.toString() !== userId) {
                     throw new GraphQLError("Cannot feed another user's animal", {
                         extensions: {
@@ -65,7 +67,9 @@ export class FeedAnimalService {
                         }
                     })
                 }
-                if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry) {
+                
+                // Validate animal is hungry
+                if (placedItemAnimal.animalInfo?.currentState !== AnimalCurrentState.Hungry) {
                     throw new GraphQLError("Animal is not hungry", {
                         extensions: {
                             code: "ANIMAL_NOT_HUNGRY"
@@ -73,22 +77,23 @@ export class FeedAnimalService {
                     })
                 }
 
-                // Fetch system configuration
-                const {
-                    value: {
-                        feedAnimal: { energyConsume, experiencesGain }
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
-
-                // Fetch user details
+                /************************************************************
+                 * RETRIEVE AND VALIDATE ACTIVITY DATA
+                 ************************************************************/
+                
+                // Get activity data
+                const { energyConsume, experiencesGain } = this.staticService.activities.feedAnimal
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
+                // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
                         extensions: {
@@ -97,28 +102,23 @@ export class FeedAnimalService {
                     })
                 }
 
-                // Check if the user has sufficient energy
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                // Deduct energy and add experience
-                const energyChanges = this.energyService.substract({
-                    user,
-                    quantity: energyConsume
-                })
-                const experiencesChanges = this.levelService.addExperiences({
-                    user,
-                    experiences: experiencesGain
-                })
-
-                // Fetch inventory details
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY SUPPLY
+                 ************************************************************/
+                
+                // Get inventory data
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySupplyId)
                     .session(session)
 
+                // Validate inventory exists
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
                         extensions: {
@@ -127,11 +127,13 @@ export class FeedAnimalService {
                     })
                 }
 
+                // Get inventory type
                 const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findById(inventory.inventoryType)
                     .session(session)
 
+                // Validate inventory type is supply
                 if (!inventoryType || inventoryType.type !== InventoryType.Supply) {
                     throw new GraphQLError("Inventory type is not supply", {
                         extensions: {
@@ -139,6 +141,8 @@ export class FeedAnimalService {
                         }
                     })
                 }
+                
+                // Validate inventory is animal feed
                 if (inventoryType.displayId !== InventoryTypeId.AnimalFeed) {
                     throw new GraphQLError("Inventory supply is not animal feed", {
                         extensions: {
@@ -147,11 +151,24 @@ export class FeedAnimalService {
                     })
                 }
 
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                
+                // Update user energy and experience
+                this.energyService.substract({
+                    user,
+                    quantity: energyConsume
+                })
+                
+                this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
+
                 // Update user with energy and experience changes
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
-                    .session(session)
+                await user.save({ session })
 
                 // Get parameters for removing inventory
                 const { inventories } = await this.inventoryService.getRemoveParams({
@@ -168,7 +185,7 @@ export class FeedAnimalService {
                     quantity: 1
                 })
 
-                // Update or remove inventories in the database
+                // Update existing inventories
                 for (const inventory of updatedInventories) {
                     await this.connection
                         .model<InventorySchema>(InventorySchema.name)
@@ -176,6 +193,7 @@ export class FeedAnimalService {
                         .session(session)
                 }
 
+                // Delete removed inventories
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .deleteMany({
@@ -194,10 +212,13 @@ export class FeedAnimalService {
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+            
             // Send Kafka messages
             await Promise.all([
                 this.kafkaProducer.send({
@@ -209,8 +230,6 @@ export class FeedAnimalService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 
@@ -222,10 +241,8 @@ export class FeedAnimalService {
                 })
             }
 
-            // withTransaction handles rollback automatically, no need for manual abort
             throw error
         } finally {
-            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

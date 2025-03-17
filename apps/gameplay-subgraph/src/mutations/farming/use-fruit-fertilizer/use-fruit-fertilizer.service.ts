@@ -5,7 +5,6 @@ import {
     InventorySchema,
     InventoryType,
     InventoryTypeId,
-    InventoryTypeSchema,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
@@ -35,85 +34,36 @@ export class UseFruitFertilizerService {
         { id: userId }: UserLike,
         { inventorySupplyId, placedItemFruitId }: UseFruitFertilizerRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession() // Create session
-
+        const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
+        
         try {
-            // Using withTransaction to manage transaction lifecycle
             await mongoSession.withTransaction(async (session) => {
-                // Fetch inventory and inventoryType
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY SUPPLY
+                 ************************************************************/
+                
+                // Get inventory supply
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySupplyId)
                     .session(session)
-
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findById(inventory.inventoryType)
-                    .session(session)
-
-                // Fetch the placed item tile and check conditions
-                const placedItemFruit = await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .findById(placedItemFruitId)
-                    .session(session)   
-
-                if (!placedItemFruit) {
-                    throw new GraphQLError("Tile not found", {
+                
+                // Validate inventory exists
+                if (!inventory) {
+                    throw new GraphQLError("Inventory not found", {
                         extensions: {
-                            code: "TILE_NOT_FOUND"
+                            code: "INVENTORY_NOT_FOUND"
                         }
                     })
                 }
-
-                if (placedItemFruit.user.toString() !== userId) {
-                    throw new GraphQLError("Cannot use fruit fertilizer on other's tile", {
-                        extensions: {
-                            code: "UNAUTHORIZED_FRUIT_FERTILIZER"
-                        }
-                    })
-                }
-
-                if (!placedItemFruit.fruitInfo) {
-                    throw new GraphQLError("Tile has no fruit tree", {
-                        extensions: {
-                            code: "NO_FRUIT_TREE"
-                        }
-                    })
-                }
-
-                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.NeedFertilizer) {
-                    throw new GraphQLError("Tile does not need fertilizer", {
-                        extensions: {
-                            code: "TILE_DOES_NOT_NEED_FERTILIZER"
-                        }
-                    })
-                }
-
-                // Fetch system settings for fertilizer action
-                const { energyConsume, experiencesGain } =
-                    this.staticService.activities.useFruitFertilizer
-
-                // Fetch the user and check energy
-                const user = await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .findById(userId)
-                    .session(session)
-
-                if (!user) {
-                    throw new GraphQLError("User not found", {
-                        extensions: {
-                            code: "USER_NOT_FOUND"
-                        }
-                    })
-                }
-
-                this.energyService.checkSufficient({
-                    current: user.energy,
-                    required: energyConsume
-                })
-
-                // Validate inventory type
+                
+                // Get inventory type
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) => inventoryType.id === inventory.inventoryType.toString()
+                )
+                
+                // Validate inventory type exists and is a supply
                 if (!inventoryType || inventoryType.type !== InventoryType.Supply) {
                     throw new GraphQLError("Inventory type is not supply", {
                         extensions: {
@@ -121,7 +71,8 @@ export class UseFruitFertilizerService {
                         }
                     })
                 }
-
+                
+                // Validate inventory type is fruit fertilizer
                 if (inventoryType.displayId !== InventoryTypeId.FruitFertilizer) {
                     throw new GraphQLError("Inventory supply is not Fruit Fertilizer", {
                         extensions: {
@@ -130,21 +81,98 @@ export class UseFruitFertilizerService {
                     })
                 }
 
-                // Deduct energy and add experience
-                const energyChanges = this.energyService.substract({
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM FRUIT
+                 ************************************************************/
+                
+                // Get placed item fruit
+                const placedItemFruit = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .findById(placedItemFruitId)
+                    .session(session)
+                
+                // Validate placed item fruit exists
+                if (!placedItemFruit) {
+                    throw new GraphQLError("Placed item fruit not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_FRUIT_NOT_FOUND"
+                        }
+                    })
+                }
+                
+                // Validate ownership
+                if (placedItemFruit.user.toString() !== userId) {
+                    throw new GraphQLError("Cannot use fruit fertilizer on other's tile", {
+                        extensions: {
+                            code: "UNAUTHORIZED_FRUIT_FERTILIZER"
+                        }
+                    })
+                }
+                
+                // Validate tile has fruit tree
+                if (!placedItemFruit.fruitInfo) {
+                    throw new GraphQLError("Tile has no fruit tree", {
+                        extensions: {
+                            code: "NO_FRUIT_TREE"
+                        }
+                    })
+                }
+                
+                // Validate tile needs fertilizer
+                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.NeedFertilizer) {
+                    throw new GraphQLError("Tile does not need fertilizer", {
+                        extensions: {
+                            code: "TILE_DOES_NOT_NEED_FERTILIZER"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                
+                // Get activity data
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.useFruitFertilizer
+                
+                // Get user data
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(session)
+                
+                // Validate user exists
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+                
+                // Validate energy is sufficient
+                this.energyService.checkSufficient({
+                    current: user.energy,
+                    required: energyConsume
+                })
+
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                
+                // Update user energy and experience
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experienceChanges = this.levelService.addExperiences({
+                
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
-
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(session)
-
+                
+                await user.save({ session })
                 // Remove fertilizer from inventory
                 const { inventories } = await this.inventoryService.getRemoveParams({
                     connection: this.connection,
@@ -179,18 +207,20 @@ export class UseFruitFertilizerService {
                 placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
                 await placedItemFruit.save({ session })
 
-                // Prepare success action message
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemFruitId,
                     action: ActionName.UseFruitFertilizer,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
 
-            // Send Kafka messages for success
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+            
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -201,12 +231,9 @@ export class UseFruitFertilizerService {
                     messages: [{ value: JSON.stringify({ placedItemFruitId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 
-            // Send failure message if the action was started
             if (actionMessage) {
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -214,10 +241,8 @@ export class UseFruitFertilizerService {
                 })
             }
 
-            // Since withTransaction handles rollback, no need for manual abort
-            throw error // Re-throw the error to be handled higher up
+            throw error
         } finally {
-            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

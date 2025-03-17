@@ -6,8 +6,4 @@ export class CureAnimalRequest {
     @IsUUID()
     @Field(() => String, { description: "The ID of the placed item animal" })
         placedItemAnimalId: string
-    
-    @IsUUID()
-    @Field(() => String, { description: "The ID of the inventory supply" })
-        inventorySupplyId: string
 }

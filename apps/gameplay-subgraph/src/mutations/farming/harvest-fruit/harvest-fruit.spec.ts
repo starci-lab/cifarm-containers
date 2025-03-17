@@ -129,7 +129,7 @@ describe("HarvestFruitService", () => {
         expect(updatedPlacedItemFruit.fruitInfo.currentState).toBe(FruitCurrentState.Normal)
         expect(updatedPlacedItemFruit.fruitInfo.harvestQuantityRemaining).toBe(0)
         expect(updatedPlacedItemFruit.fruitInfo.timesHarvested).toBe(initialHarvestCount + 1)
-        expect(updatedPlacedItemFruit.fruitInfo.currentStage).toBe(fruit.nextGrowthStageAfterHarvest)
+        expect(updatedPlacedItemFruit.fruitInfo.currentStage).toBe(staticService.fruitInfo.nextGrowthStageAfterHarvest)
         expect(updatedPlacedItemFruit.fruitInfo.currentStageTimeElapsed).toBe(0)
     })
 

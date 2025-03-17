@@ -1,22 +1,25 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
     AnimalCurrentState,
     InjectMongoose,
+    InventoryKind,
     InventorySchema,
     InventoryType,
+    InventoryTypeId,
     InventoryTypeSchema,
     PlacedItemSchema,
     ProductSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, ProductService, StaticService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, StaticService, CoreService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HarvestAnimalRequest } from "./harvest-animal.dto"
 import { UserLike } from "@src/jwt" 
+import { GraphQLError } from "graphql"
 
 interface HarvestAnimalData {
     productId: string;
@@ -32,7 +35,7 @@ export class HarvestAnimalService {
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
-        private readonly productService: ProductService,
+        private readonly coreService: CoreService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         private readonly staticService: StaticService
     ) {}
@@ -50,59 +53,105 @@ export class HarvestAnimalService {
 
         try {
             await mongoSession.withTransaction(async (session) => {
-                // Fetch placed item animal with its info
+                /************************************************************
+                 * CHECK IF YOU HAVE CRATE IN TOOLBAR
+                 ************************************************************/
+                const inventoryCrateExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Crate),
+                        kind: InventoryKind.Tool
+                    })
+                if (!inventoryCrateExisted) {
+                    throw new GraphQLError("Crate not found in toolbar", {
+                        extensions: {
+                            code: "CRATE_NOT_FOUND_IN_TOOLBAR"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM ANIMAL
+                 ************************************************************/
+                // Get placed item animal
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(session)
 
+                // Validate animal exists
                 if (!placedItemAnimal) {
-                    throw new NotFoundException("Animal not found")
+                    throw new GraphQLError("Animal not found", {
+                        extensions: {
+                            code: "ANIMAL_NOT_FOUND"
+                        }
+                    })
                 }   
 
-                if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
-                    throw new BadRequestException("Animal is not ready to collect product")
+                // Validate animal is ready to harvest
+                if (placedItemAnimal.animalInfo?.currentState !== AnimalCurrentState.Yield) {
+                    throw new GraphQLError("Animal is not ready to collect product", {
+                        extensions: {
+                            code: "ANIMAL_NOT_READY"
+                        }
+                    })
                 }
 
-                // Fetch system settings
-                const {
-                    energyConsume,
-                    experiencesGain
-                } = this.staticService.activities.harvestAnimal
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                
+                // Get activity data
+                const { energyConsume, experiencesGain } = this.staticService.activities.harvestAnimal
 
-                // Fetch user details
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new NotFoundException("User not found")
+                // Validate user exists
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
-                // Check if user has sufficient energy
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                // Deduct energy and add experience
-                const energyChanges = this.energyService.substract({
-                    user,
-                    quantity: energyConsume
-                })
-                const experienceChanges = this.levelService.addExperiences({
-                    user,
-                    experiences: experiencesGain
-                })
-
-                //get product
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PRODUCT DATA
+                 ************************************************************/
+                
+                // Get product data
                 const product = await this.connection
                     .model<ProductSchema>(ProductSchema.name)
                     .findOne({
-                        isQuality: placedItemAnimal.animalInfo.isQuality,
-                        animal: placedItemAnimal.animalInfo.animal
+                        isQuality: placedItemAnimal.animalInfo?.isQuality,
+                        animal: placedItemAnimal.animalInfo?.animal
                     })
                     .session(session)
+                
+                // Validate product exists
+                if (!product) {
+                    throw new GraphQLError("Product not found", {
+                        extensions: {
+                            code: "PRODUCT_NOT_FOUND"
+                        }
+                    })
+                }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY TYPE
+                 ************************************************************/
+                
                 // Get inventory type for animal product
                 const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
@@ -112,7 +161,40 @@ export class HarvestAnimalService {
                     })
                     .session(session)
 
-                if (!inventoryType) throw new NotFoundException("Inventory type not found")
+                // Validate inventory type exists
+                if (!inventoryType) {
+                    throw new GraphQLError("Inventory type not found", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE STORAGE CAPACITY
+                 ************************************************************/
+                
+                // Get storage capacity setting
+                const { storageCapacity } = this.staticService.defaultInfo
+
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                
+                // Update user energy and experience
+                this.energyService.substract({
+                    user,
+                    quantity: energyConsume
+                })
+                
+                this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
+
+                // Update user with energy and experience changes
+                await user.save({ session })
 
                 // Get parameters for adding inventory
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
@@ -122,17 +204,8 @@ export class HarvestAnimalService {
                     session
                 })
 
-                // Fetch storage capacity setting
-                const { storageCapacity } = this.staticService.defaultInfo
-
-                // Update user with energy and experience changes
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(session)
-
                 // Get harvest quantity
-                const quantity = placedItemAnimal.animalInfo.harvestQuantityRemaining
+                const quantity = placedItemAnimal.animalInfo?.harvestQuantityRemaining || 0
 
                 // Add the harvested product to inventory
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
@@ -151,33 +224,27 @@ export class HarvestAnimalService {
 
                 // Update existing inventories
                 for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne(
-                            { _id: inventory._id },
-                            inventory
-                        )
-                        .session(session)
+                    await inventory.save({ session })
                 }
 
-                // Update animal info after collect
-                const animalInfoAfterCollectChanges = this.productService.updateAnimalInfoAfterCollect({
-                    animalInfo: placedItemAnimal.animalInfo
+                const animal = this.staticService.animals.find(
+                    animal => animal.id === placedItemAnimal.animalInfo?.animal.toString()
+                )
+                if (!animal) {
+                    throw new GraphQLError("Animal not found in static data", {
+                        extensions: {
+                            code: "ANIMAL_NOT_FOUND_IN_STATIC_DATA"
+                        }
+                    })
+                }
+
+                this.coreService.updatePlacedItemAnimalAfterHarvest({
+                    placedItemAnimal,
+                    animal,
+                    animalInfo: this.staticService.animalInfo
                 })
 
-                // Update the animal info
-                await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .updateOne(
-                        { _id: placedItemAnimal._id },
-                        {
-                            animalInfo: {
-                                ...placedItemAnimal.animalInfo,
-                                ...animalInfoAfterCollectChanges
-                            }
-                        }
-                    )
-                    .session(session)
+                await placedItemAnimal.save({ session })
 
                 // Prepare action message
                 actionMessage = {
@@ -194,6 +261,11 @@ export class HarvestAnimalService {
                 return { quantity }
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+            
             // Send Kafka messages for success
             await Promise.all([
                 this.kafkaProducer.send({
@@ -224,3 +296,4 @@ export class HarvestAnimalService {
         }
     }
 }
+

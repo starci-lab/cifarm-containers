@@ -137,52 +137,6 @@ describe("PlantSeedService", () => {
         expect(updatedPlacedItemTile.seedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
     })
 
-    it("should throw GraphQLError with code WATERING_CAN_NOT_FOUND when user doesn't have a watering can", async () => {
-        const { energyConsume } = staticService.activities.plantSeed
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-
-        // Get the inventory type for carrot seed from static service
-        const inventoryTypeSeed = staticService.inventoryTypes.find(
-            (inventoryType) => inventoryType.displayId === InventoryTypeId.CarrotSeed
-        )
-
-        const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: inventoryTypeSeed.id,
-            index: 0,
-            quantity: 1,
-            user: user.id,
-            kind: InventoryKind.Storage
-        })
-
-        const placedItemTile = await connection
-            .model<PlacedItemSchema>(PlacedItemSchema.name)
-            .create({
-                x: 0,
-                y: 0,
-                user: user.id,
-                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
-            })
-
-        try {
-            await service.plantSeed(
-                {
-                    id: user.id
-                },
-                {
-                    inventorySeedId: inventorySeed.id,
-                    placedItemTileId: placedItemTile.id
-                }
-            )
-            fail("Expected error to be thrown")
-        } catch (error) {
-            expect(error).toBeInstanceOf(GraphQLError)
-            expect(error.extensions.code).toBe("WATERING_CAN_NOT_FOUND")
-        }
-    })
-
     it("should throw GraphQLError with code INVENTORY_NOT_FOUND when seed is not found in inventory", async () => {
         const { energyConsume } = staticService.activities.plantSeed
 

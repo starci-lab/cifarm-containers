@@ -4,12 +4,11 @@ import {
     InjectMongoose,
     InventorySchema,
     InventoryType,
-    InventoryTypeId,
-    InventoryTypeSchema,
     PlacedItemSchema,
+    SupplyType,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
+import { CoreService, EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { UseFertilizerRequest } from "./use-fertilizer.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -28,6 +27,7 @@ export class UseFertilizerService {
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService,
         private readonly staticService: StaticService,
+        private readonly coreService: CoreService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -35,86 +35,22 @@ export class UseFertilizerService {
         { id: userId }: UserLike,
         { inventorySupplyId, placedItemTileId }: UseFertilizerRequest
     ): Promise<void> {
-
-        const mongoSession = await this.connection.startSession() // Create session
-
+        const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
+        
         try {
-            // Using withTransaction to manage transaction lifecycle
             await mongoSession.withTransaction(async (session) => {
-                // Fetch inventory and inventoryType
-                const inventory = await this.connection.model<InventorySchema>(InventorySchema.name)
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY SUPPLY
+                 ************************************************************/
+                
+                // Get inventory supply
+                const inventory = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySupplyId)
                     .session(session)
-
-                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findById(inventory.inventoryType)
-                    .session(session)
-
-                // Fetch the placed item tile and check conditions
-                const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .findById(placedItemTileId)
-                    .session(session)
-
-                if (!placedItemTile) {
-                    throw new GraphQLError("Placed item tile not found", {
-                        extensions: {
-                            code: "PLACED_ITEM_TILE_NOT_FOUND"
-                        }
-                    })
-                }
-
-                if (placedItemTile.user.toString() !== userId) {
-                    throw new GraphQLError("Cannot use fertilizer on another user's tile", {
-                        extensions: {
-                            code: "CANNOT_USE_ON_OTHERS_TILE"
-                        }
-                    })
-                }
-
-                if (!placedItemTile.seedGrowthInfo) {
-                    throw new GraphQLError("Tile is not planted", {
-                        extensions: {
-                            code: "TILE_NOT_PLANTED"
-                        }
-                    })
-                }
-
-                if (placedItemTile.seedGrowthInfo.currentState === CropCurrentState.FullyMatured) {
-                    throw new GraphQLError("Tile is fully matured", {
-                        extensions: {
-                            code: "TILE_FULLY_MATURED"
-                        }
-                    })
-                }
-
-                if (placedItemTile.seedGrowthInfo.isFertilized) {
-                    throw new GraphQLError("Tile is already fertilized", {
-                        extensions: {
-                            code: "TILE_ALREADY_FERTILIZED"
-                        }
-                    })
-                }
-
-                // Fetch system settings for fertilizer action
-                const { energyConsume, experiencesGain } = this.staticService.activities.useFertilizer
-
-                // Fetch the user and check energy
-                const user = await this.connection.model<UserSchema>(UserSchema.name)
-                    .findById(userId)
-                    .session(session)
-
-                if (!user) {
-                    throw new GraphQLError("User not found", {
-                        extensions: {
-                            code: "USER_NOT_FOUND"
-                        }
-                    })
-                }
-
-                this.energyService.checkSufficient({ current: user.energy, required: energyConsume })
-
-                // Validate inventory type
+                
+                // Validate inventory exists
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
                         extensions: {
@@ -123,29 +59,134 @@ export class UseFertilizerService {
                     })
                 }
 
+                // Get inventory type from static data
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) => inventoryType.id.toString() === inventory.inventoryType.toString()
+                )
+                
+                // Validate inventory type exists and is a supply
                 if (!inventoryType || inventoryType.type !== InventoryType.Supply) {
                     throw new GraphQLError("Inventory type is not supply", {
                         extensions: {
-                            code: "INVALID_INVENTORY_TYPE"
+                            code: "INVENTORY_TYPE_IS_NOT_SUPPLY"
                         }
                     })
                 }
 
-                if (inventoryType.displayId !== InventoryTypeId.BasicFertilizer) {
-                    throw new GraphQLError("Inventory supply is not basic fertilizer", {
+                // Get supply from static data
+                const supply = this.staticService.supplies.find(
+                    (supply) => supply.id.toString() === inventoryType.supply?.toString()
+                )
+                
+                // Validate supply exists
+                if (!supply) {
+                    throw new GraphQLError("Supply not found from static data", {
                         extensions: {
-                            code: "INVALID_SUPPLY_TYPE"
+                            code: "SUPPLY_NOT_FOUND_FROM_STATIC_DATA"
                         }
                     })
                 }
 
-                // Deduct energy and add experience
-                const energyChanges = this.energyService.substract({ user, quantity: energyConsume })
-                const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
+                // Validate supply is a fertilizer
+                if (supply.type !== SupplyType.Fertilizer) {
+                    throw new GraphQLError("Supply is not fertilizer", {
+                        extensions: {
+                            code: "SUPPLY_IS_NOT_FERTILIZER"
+                        }
+                    })
+                }
 
-                await this.connection.model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
+                
+                // Get placed item tile
+                const placedItemTile = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .findById(placedItemTileId)
                     .session(session)
+                
+                // Validate placed item tile exists
+                if (!placedItemTile) {
+                    throw new GraphQLError("Placed item tile not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TILE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                // Validate ownership
+                if (placedItemTile.user.toString() !== userId) {
+                    throw new GraphQLError("Cannot use fertilizer on another user's tile", {
+                        extensions: {
+                            code: "CANNOT_USE_ON_OTHERS_TILE"
+                        }
+                    })
+                }
+
+                // Validate tile is planted
+                if (!placedItemTile.seedGrowthInfo) {
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_NOT_PLANTED"
+                        }
+                    })
+                }
+
+                // Validate tile is not fully matured
+                if (placedItemTile.seedGrowthInfo.currentState === CropCurrentState.FullyMatured) {
+                    throw new GraphQLError("Tile is fully matured", {
+                        extensions: {
+                            code: "TILE_FULLY_MATURED"
+                        }
+                    })
+                }
+
+                // Validate tile is not already fertilized
+                if (placedItemTile.seedGrowthInfo.isFertilized) {
+                    throw new GraphQLError("Tile is already fertilized", {
+                        extensions: {
+                            code: "TILE_ALREADY_FERTILIZED"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                
+                // Get activity data
+                const { energyConsume, experiencesGain } = this.staticService.activities.useFertilizer
+
+                // Get user data
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(session)
+                
+                // Validate user exists
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                // Validate energy is sufficient
+                this.energyService.checkSufficient({ 
+                    current: user.energy, 
+                    required: energyConsume 
+                })
+
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                
+                // Update user energy and experience
+                this.energyService.substract({ user, quantity: energyConsume })
+                this.levelService.addExperiences({ user, experiences: experiencesGain })
 
                 // Remove fertilizer from inventory
                 const { inventories } = await this.inventoryService.getRemoveParams({
@@ -161,34 +202,43 @@ export class UseFertilizerService {
                     quantity: 1,
                 })
 
-                // Update inventories
+                // Save updated inventories
                 for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name)
-                        .updateOne({ _id: inventory._id }, inventory)
-                        .session(session)
+                    await inventory.save({ session })
                 }
 
                 // Delete removed inventories
-                await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
-                    _id: { $in: removedInventories.map(inventory => inventory._id) }
-                }).session(session)
+                await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .deleteMany({
+                        _id: { $in: removedInventories.map(inventory => inventory._id) }
+                    })
+                    .session(session)
+                
+                // Save user changes
+                await user.save({ session })
 
                 // Update placed item tile
-                placedItemTile.seedGrowthInfo.isFertilized = true
+                this.coreService.updatePlacedItemTileAfterUseFertilizer({
+                    placedItemTile,
+                    supply
+                })
                 await placedItemTile.save({ session })
 
-                // Prepare success action message
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.UseFertilizer,
                     success: true,
                     userId,
                 }
-
-                // No return value needed for void
             })
 
-            // Send Kafka messages for success
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+            
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -199,24 +249,19 @@ export class UseFertilizerService {
                     messages: [{ value: JSON.stringify({ placedItemTileId }) }]
                 })
             ])
-
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 
-            // Send failure message if the action was started
             if (actionMessage) {
+                actionMessage.success = false
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
 
-            // Since withTransaction handles rollback, no need for manual abort
-            throw error // Re-throw the error to be handled higher up
+            throw error
         } finally {
-            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

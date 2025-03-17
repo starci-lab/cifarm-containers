@@ -1,5 +1,16 @@
-import { AnimalInfoSchema, AnimalSchema, CropSchema, FruitSchema, PlacedItemSchema, TileInfoSchema } from "@src/databases"
-import { FruitInfoSchema } from "@src/databases/mongoose/gameplay/schemas/fruit-info.schema"
+import {
+    AnimalInfo,
+    AnimalInfoSchema,
+    AnimalSchema,
+    CropInfo,
+    CropSchema,
+    FruitInfo,
+    FruitInfoSchema,
+    FruitSchema,
+    PlacedItemSchema,
+    SupplySchema,
+    TileInfoSchema
+} from "@src/databases"
 
 export interface ComputeAnimalQualityChanceParams {
     animalInfo: AnimalInfoSchema
@@ -22,21 +33,30 @@ export interface ComputeFruitQualityChanceParams {
 export interface UpdatePlacedItemTileAfterHarvestParams {
     placedItemTile: PlacedItemSchema
     crop: CropSchema
-    
+    cropInfo: CropInfo
 }
+
 export type UpdatePlacedItemTileAfterHarvestResult = PlacedItemSchema
 
 export interface UpdatePlacedItemFruitAfterHarvestParams {
-    placedItemFruit: PlacedItemSchema,
+    placedItemFruit: PlacedItemSchema
     fruit: FruitSchema
+    fruitInfo: FruitInfo
 }
 
 export type UpdatePlacedItemFruitAfterHarvestResult = PlacedItemSchema
 
 export interface UpdatePlacedItemAnimalAfterHarvestParams {
-    placedItemAnimal: PlacedItemSchema,
+    placedItemAnimal: PlacedItemSchema
     animal: AnimalSchema
+    animalInfo: AnimalInfo
 }
 
 export type UpdatePlacedItemAnimalAfterHarvestResult = PlacedItemSchema
 
+export interface UpdatePlacedItemTileAfterUseFertilizerParams {
+    placedItemTile: PlacedItemSchema
+    supply: SupplySchema
+}
+
+export type UpdatePlacedItemTileAfterUseFertilizerResult = PlacedItemSchema

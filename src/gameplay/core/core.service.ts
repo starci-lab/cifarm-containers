@@ -8,13 +8,15 @@ import {
     UpdatePlacedItemFruitAfterHarvestParams,
     UpdatePlacedItemFruitAfterHarvestResult,
     UpdatePlacedItemTileAfterHarvestParams,
-    UpdatePlacedItemTileAfterHarvestResult
-} from "./product.types"
+    UpdatePlacedItemTileAfterHarvestResult,
+    UpdatePlacedItemTileAfterUseFertilizerParams,
+    UpdatePlacedItemTileAfterUseFertilizerResult
+} from "./types"
 import { AnimalCurrentState, CropCurrentState, FruitCurrentState } from "@src/databases"
 
-//booster service is to compute the quality,.. of tile, animal after several time of harvest
+//core game logic service
 @Injectable()
-export class ProductService {
+export class CoreService {
     constructor() {}
 
     //compute the quality of animal after several time of harvest
@@ -46,15 +48,15 @@ export class ProductService {
         return Math.min(qualityProductChanceLimit, qualityProductChanceStack * timesHarvested)
     }
 
-
     //update the tile information after harvest
     public updatePlacedItemTileAfterHarvest({
         placedItemTile,
-        crop
+        crop,
+        cropInfo
     }: UpdatePlacedItemTileAfterHarvestParams): UpdatePlacedItemTileAfterHarvestResult {
         // update the tile info times harvested
         placedItemTile.tileInfo.timesHarvested += 1
-        
+
         if (placedItemTile.seedGrowthInfo.harvestCount + 1 >= crop.perennialCount) {
             // remove the seed growth info
             placedItemTile.seedGrowthInfo = undefined
@@ -62,10 +64,10 @@ export class ProductService {
             // update the seed growth info
             placedItemTile.seedGrowthInfo.harvestCount += 1
             placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
-            placedItemTile.seedGrowthInfo.currentStage = crop.nextGrowthStageAfterHarvest
+            placedItemTile.seedGrowthInfo.currentStage = cropInfo.nextGrowthStageAfterHarvest
             placedItemTile.seedGrowthInfo.currentStageTimeElapsed = 0
-            placedItemTile.seedGrowthInfo.harvestQuantityRemaining = crop.maxHarvestQuantity
-            placedItemTile.seedGrowthInfo.isQuality = false 
+            placedItemTile.seedGrowthInfo.harvestQuantityRemaining = 0
+            placedItemTile.seedGrowthInfo.isQuality = false
         }
         return placedItemTile
     }
@@ -73,11 +75,11 @@ export class ProductService {
     //update the animal information after collect
     public updatePlacedItemAnimalAfterHarvest({
         placedItemAnimal,
-        animal
+        animal,
     }: UpdatePlacedItemAnimalAfterHarvestParams): UpdatePlacedItemAnimalAfterHarvestResult {
         // update the animal info times harvested
         placedItemAnimal.animalInfo.timesHarvested += 1
-        
+
         placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
         placedItemAnimal.animalInfo.currentYieldTime = 0
         placedItemAnimal.animalInfo.currentHungryTime = 0
@@ -86,24 +88,36 @@ export class ProductService {
 
         // update the animal info
         placedItemAnimal.animalInfo.animal = animal
-       
+
         return placedItemAnimal
     }
 
     //public method to update the fruit information after harvest
     public updatePlacedItemFruitAfterHarvest({
         placedItemFruit,
-        fruit
+        fruitInfo
     }: UpdatePlacedItemFruitAfterHarvestParams): UpdatePlacedItemFruitAfterHarvestResult {
         // update the fruit info harvest time
         placedItemFruit.fruitInfo.timesHarvested += 1
 
         // update the fruit info
         placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
-        placedItemFruit.fruitInfo.currentStage = fruit.nextGrowthStageAfterHarvest
+        placedItemFruit.fruitInfo.currentStage = fruitInfo.nextGrowthStageAfterHarvest
         placedItemFruit.fruitInfo.currentStageTimeElapsed = 0
         placedItemFruit.fruitInfo.harvestQuantityRemaining = 0
         // return the placed item fruit
         return placedItemFruit
     }
+
+    //update the tile information after use fertilizer
+    public updatePlacedItemTileAfterUseFertilizer({
+        placedItemTile,
+        supply
+    }: UpdatePlacedItemTileAfterUseFertilizerParams): UpdatePlacedItemTileAfterUseFertilizerResult {
+        placedItemTile.seedGrowthInfo.currentStageTimeElapsed += supply.fertilizerEffectTimeReduce
+        placedItemTile.seedGrowthInfo.isFertilized = true
+        // return the placed item tile
+        return placedItemTile
+    }
+
 }

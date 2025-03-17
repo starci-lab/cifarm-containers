@@ -3,7 +3,6 @@ import {
     InjectMongoose,
     InventorySchema,
     InventoryType,
-    InventoryTypeId,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
@@ -41,39 +40,17 @@ export class PlantSeedService {
 
         try {
             await mongoSession.withTransaction(async (session) => {
-                const inventoryTypeWateringCan = this.staticService.inventoryTypes.find(
-                    (inventoryType) => inventoryType.displayId === InventoryTypeId.WateringCan
-                )
-                if (!inventoryTypeWateringCan) {
-                    throw new GraphQLError("Watering can not found from static data", {
-                        extensions: {
-                            code: "WATERING_CAN_NOT_FOUND_FROM_STATIC_DATA"
-                        }
-                    })
-                }
-
-                // check if user own the watering can
-                const hasInventoryWateringCan = await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .exists({
-                        user: userId,
-                        inventoryType: inventoryTypeWateringCan.id
-                    })
-                    .session(session)
-
-                if (!hasInventoryWateringCan) {
-                    throw new GraphQLError("User does not have a watering can", {
-                        extensions: {
-                            code: "WATERING_CAN_NOT_FOUND"
-                        }
-                    })
-                }
-
+                /************************************************************
+                 * RETRIEVE AND VALIDATE SEED INVENTORY
+                 ************************************************************/
+                
+                // Get seed inventory
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySeedId)
                     .session(session)
-
+                
+                // Validate inventory exists
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
                         extensions: {
@@ -81,12 +58,13 @@ export class PlantSeedService {
                         }
                     })
                 }
-
+                
+                // Get inventory type seed from static data
                 const inventoryTypeSeed = this.staticService.inventoryTypes.find(
                     (inventoryType) => inventoryType.id === inventory.inventoryType.toString()
                 )
-
-                // throw the error direct since we know this is an internal server error
+                
+                // Validate inventory type seed exists in static data
                 if (!inventoryTypeSeed) {
                     throw new GraphQLError("Inventory type seed not found from static data", {
                         extensions: {
@@ -95,6 +73,7 @@ export class PlantSeedService {
                     })
                 }
 
+                // Validate inventory type is a seed
                 if (inventoryTypeSeed.type !== InventoryType.Seed) {
                     throw new GraphQLError("Inventory type is not a seed", {
                         extensions: {
@@ -103,11 +82,17 @@ export class PlantSeedService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
+                
+                // Get placed item tile
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
-
+                
+                // Validate tile exists
                 if (!placedItemTile) {
                     throw new GraphQLError("Tile not found", {
                         extensions: {
@@ -115,6 +100,8 @@ export class PlantSeedService {
                         }
                     })
                 }
+                
+                // Validate ownership
                 if (placedItemTile.user.toString() !== userId) {
                     throw new GraphQLError("Cannot plant seed on another user's tile", {
                         extensions: {
@@ -122,6 +109,8 @@ export class PlantSeedService {
                         }
                     })
                 }
+                
+                // Validate tile is not already planted
                 if (placedItemTile.seedGrowthInfo) {
                     throw new GraphQLError("Tile is already planted", {
                         extensions: {
@@ -130,13 +119,17 @@ export class PlantSeedService {
                     })
                 }
 
-                const { energyConsume, experiencesGain } = this.staticService.activities.plantSeed
-
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-
+                
+                // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
                         extensions: {
@@ -145,6 +138,14 @@ export class PlantSeedService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE ACTIVITY DATA
+                 ************************************************************/
+                
+                // Get activity data
+                const { energyConsume, experiencesGain } = this.staticService.activities.plantSeed
+                
+                // Validate energy is sufficient
                 if (user.energy < energyConsume) {
                     throw new GraphQLError("Not enough energy", {
                         extensions: {
@@ -157,19 +158,17 @@ export class PlantSeedService {
                     current: user.energy,
                     required: energyConsume
                 })
-                this.energyService.substract({
-                    user,
-                    quantity: energyConsume
-                })
-                this.levelService.addExperiences({
-                    user,
-                    experiences: experiencesGain
-                })
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE CROP DATA
+                 ************************************************************/
+                
+                // Get crop data
                 const crop = this.staticService.crops.find(
-                    (crop) => crop.id.toString() === inventoryTypeSeed.crop.toString()
+                    (crop) => crop.id.toString() === inventoryTypeSeed.crop?.toString()
                 )
-
+                
+                // Validate crop exists in static data
                 if (!crop) {
                     throw new GraphQLError("Crop not found from static data", {
                         extensions: {
@@ -178,6 +177,23 @@ export class PlantSeedService {
                     })
                 }
 
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                
+                // Update user energy and experience
+                this.energyService.substract({
+                    user,
+                    quantity: energyConsume
+                })
+                
+                this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
+
+                // Remove seed from inventory
                 const { inventories } = await this.inventoryService.getRemoveParams({
                     connection: this.connection,
                     userId: user.id,
@@ -191,10 +207,12 @@ export class PlantSeedService {
                     quantity: 1
                 })
 
+                // Save updated inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
                 }
 
+                // Delete removed inventories
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .deleteMany({
@@ -202,7 +220,10 @@ export class PlantSeedService {
                     })
                     .session(session)
 
+                // Save user changes
                 await user.save({ session })
+                
+                // Update tile with seed info
                 await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .updateOne(
@@ -215,6 +236,7 @@ export class PlantSeedService {
                     )
                     .session(session)
 
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.PlantSeed,
@@ -223,6 +245,11 @@ export class PlantSeedService {
                 }
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+            
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,

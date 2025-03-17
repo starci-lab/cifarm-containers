@@ -1,364 +1,470 @@
-// npx jest apps/gameplay-service/src/farming/harvest-crop/harvest-crop.spec.ts
+// npx jest apps/gameplay-subgraph/src/mutations/farming/harvest-crop/harvest-crop.spec.ts
 
-import { Test } from "@nestjs/testing"
-import { DataSource } from "typeorm"
-import { HarvestCropService } from "./harvest-crop.service"
+import { Test, TestingModule } from "@nestjs/testing"
+import { createObjectId } from "@src/common"
+import {
+    CropCurrentState,
+    getMongooseToken,
+    InventorySchema,
+    InventoryTypeId,
+    PlacedItemSchema,
+    UserSchema,
+    InventoryKind,
+    PlacedItemTypeId
+} from "@src/databases"
 import {
     GameplayConnectionService,
     GameplayMockUserService,
     TestingInfraModule
 } from "@src/testing"
-import {
-    SeedGrowthInfoEntity,
-    CropCurrentState,
-    PlacedItemSchema,
-    UserSchema,
-    InventoryEntity,
-    SystemEntity,
-    SystemId,
-    Activities,
-    getPostgreSqlToken,
-    PlacedItemTypeId,
-    CropId,
-    TileInfoEntity
-} from "@src/databases"
-import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
-import { v4 } from "uuid"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { Connection } from "mongoose"
+import { HarvestCropService } from "./harvest-crop.service"
+import { GraphQLError } from "graphql"
+import { LevelService, StaticService } from "@src/gameplay"
+import { EnergyNotEnoughException } from "@src/gameplay"
 
 describe("HarvestCropService", () => {
-    let dataSource: DataSource
+    let connection: Connection
     let service: HarvestCropService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
+    let staticService: StaticService
 
     beforeAll(async () => {
-        const moduleRef = await Test.createTestingModule({
+        const module: TestingModule = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
             providers: [HarvestCropService]
         }).compile()
 
-        dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(HarvestCropService)
-        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
-        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        levelService = moduleRef.get(LevelService)
+        staticService = module.get<StaticService>(StaticService)
+        await staticService.onModuleInit()
+        connection = module.get<Connection>(getMongooseToken())
+        service = module.get<HarvestCropService>(HarvestCropService)
+        gameplayConnectionService = module.get<GameplayConnectionService>(GameplayConnectionService)
+        gameplayMockUserService = module.get<GameplayMockUserService>(GameplayMockUserService)
+        levelService = module.get<LevelService>(LevelService)
     })
 
-    it("should successfully harvest the one-season crop and update the user's stats and inventory accordingly (not quality)", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            harvestAnimal: { energyConsume, experiencesGain }
-        } = value as Activities
-    
+    it("should successfully harvest the crop and update the user's stats and inventory accordingly (not quality)", async () => {
+        // Get activity data from system
+        const { energyConsume, experiencesGain } = staticService.activities.harvestCrop
+
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        const cropId = CropId.Carrot
+        // Create crate inventory
+        const crateInventoryType = staticService.inventoryTypes.find(
+            (type) => type.displayId === InventoryTypeId.Crate
+        )
 
-        const quantity = 10
-        // Create placed tile with a fully matured crop
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.FullyMatured,
-                currentPerennialCount: 0,
-                cropId,
-                harvestQuantityRemaining: quantity,
-                isQuality: false
-            },
-            tileInfo: {},
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.BasicTile,
-            userId: user.id
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0
         })
+
+        // Find a crop in static data
+        const crop = staticService.crops[0]
+        const quantity = 10
+
+        // Find product for the crop (non-quality) from static data
+        const product = staticService.products.find(
+            (p) => p.crop && p.crop.toString() === crop.id.toString() && p.isQuality === false
+        )
+
+        // Find inventory type for the product from static data
+        const inventoryType = staticService.inventoryTypes.find(
+            (it) => it.product && it.product.toString() === product.id.toString()
+        )
+
+        // Create placed item with a fully matured crop
+        const placedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                seedGrowthInfo: {
+                    crop: crop.id,
+                    currentState: CropCurrentState.FullyMatured,
+                    harvestQuantityRemaining: quantity,
+                    isQuality: false
+                },
+                x: 0,
+                y: 0,
+                tileInfo: {},
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
 
         // Call the service method to harvest the crop
-        await service.harvestCrop({
-            userId: user.id,
-            placedItemTileId: placedItemTile.id
-        })
+        const result = await service.harvestCrop(
+            { id: user.id },
+            {
+                placedItemTileId: placedItemTile.id
+            }
+        )
 
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["energy", "level", "experiences"]
-        })
+        // Check the result
+        expect(result.quantity).toBe(quantity)
+
+        const userAfter = await connection
+            .model<UserSchema>(UserSchema.name)
+            .findById(user.id)
+            .select("energy level experiences")
 
         // Assert energy and experience changes
         expect(user.energy - userAfter.energy).toBe(energyConsume)
         expect(
-            levelService.computeTotalExperienceForLevel(userAfter) - 
+            levelService.computeTotalExperienceForLevel(userAfter) -
                 levelService.computeTotalExperienceForLevel(user)
         ).toBe(experiencesGain)
 
-        // Assert inventory quantity increased by harvested amount
-        const inventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: user.id,
-                inventoryType: {
-                    product: {
-                        cropId
-                    }
-                }
-            },
-            relations: {
-                inventoryType: {
-                    product: true
-                }
-            }
+        // Check if inventory was created with the harvested crop
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).findOne({
+            user: user.id,
+            inventoryType: inventoryType.id
         })
 
+        expect(inventory).not.toBeNull()
         expect(inventory.quantity).toBe(quantity)
-        expect(inventory.inventoryType.product.isQuality).toBe(false)
 
-        // Assert seed growth info is updated or removed
-        const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: { id: placedItemTile.seedGrowthInfo.id }
-        })
+        // Check if the crop's state was updated
+        const updatedPlacedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .findById(placedItemTile.id)
 
-        expect(updatedSeedGrowthInfo).toBeNull()
-
-        const updatedTileInfo = await dataSource.manager.findOne(TileInfoEntity, {
-            where: { id: placedItemTile.tileInfoId },
-        })
-        expect(updatedTileInfo.harvestCount).toBe(placedItemTile.tileInfo.harvestCount + 1)
+        // For one-season crops, seedGrowthInfo should be removed
+        expect(updatedPlacedItemTile.seedGrowthInfo).toBeUndefined()
     })
 
-    it("should successfully harvest the one-season crop and update the user's stats and inventory accordingly (quality)", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            harvestAnimal: { energyConsume, experiencesGain }
-        } = value as Activities
-    
+    it("should successfully harvest the crop and update the user's stats and inventory accordingly (quality)", async () => {
+        // Get activity data from system
+        const { energyConsume, experiencesGain } = staticService.activities.harvestCrop
+
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        const cropId = CropId.Carrot
+        // Create crate inventory
+        const crateInventoryType = staticService.inventoryTypes.find(
+            (type) => type.displayId === InventoryTypeId.Crate
+        )
 
-        const quantity = 10
-        // Create placed tile with a fully matured crop
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.FullyMatured,
-                currentPerennialCount: 0,
-                cropId,
-                harvestQuantityRemaining: quantity,
-                isQuality: true
-            },
-            tileInfo: {},
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.BasicTile,
-            userId: user.id
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0
         })
+
+        // Find a crop in static data
+        const crop = staticService.crops[0]
+        const quantity = 10
+
+        // Find product for the crop (quality) from static data
+        const product = staticService.products.find(
+            (p) => p.crop && p.crop.toString() === crop.id.toString() && p.isQuality === true
+        )
+
+        // Find inventory type for the product from static data
+        const inventoryType = staticService.inventoryTypes.find(
+            (it) =>
+                it.product &&
+                it.product.toString() === product.id.toString()
+        )
+
+
+        // Create placed item with a fully matured crop
+        const placedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                seedGrowthInfo: {
+                    crop: crop.id,
+                    currentState: CropCurrentState.FullyMatured,
+                    harvestQuantityRemaining: quantity,
+                    isQuality: true
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                tileInfo: {},
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
 
         // Call the service method to harvest the crop
-        await service.harvestCrop({
-            userId: user.id,
-            placedItemTileId: placedItemTile.id
-        })
+        const result = await service.harvestCrop(
+            { id: user.id },
+            {
+                placedItemTileId: placedItemTile.id
+            }
+        )
 
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["energy", "level", "experiences"]
-        })
+        // Check the result
+        expect(result.quantity).toBe(quantity)
+
+        const userAfter = await connection
+            .model<UserSchema>(UserSchema.name)
+            .findById(user.id)
+            .select("energy level experiences")
 
         // Assert energy and experience changes
         expect(user.energy - userAfter.energy).toBe(energyConsume)
         expect(
-            levelService.computeTotalExperienceForLevel(userAfter) - 
+            levelService.computeTotalExperienceForLevel(userAfter) -
                 levelService.computeTotalExperienceForLevel(user)
         ).toBe(experiencesGain)
 
-        // Assert inventory quantity increased by harvested amount
-        const inventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: user.id,
-                inventoryType: {
-                    product: {
-                        cropId
-                    }
-                }
-            },
-            relations: {
-                inventoryType: {
-                    product: true
-                }
-            }
+        // Check if inventory was created with the harvested crop
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).findOne({
+            user: user.id,
+            inventoryType: inventoryType.id
         })
 
+        expect(inventory).not.toBeNull()
         expect(inventory.quantity).toBe(quantity)
-        expect(inventory.inventoryType.product.isQuality).toBe(true)
 
-        // Assert seed growth info is updated or removed
-        const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: { id: placedItemTile.seedGrowthInfo.id }
-        })
+        // Check if the crop's state was updated
+        const updatedPlacedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .findById(placedItemTile.id)
 
-        expect(updatedSeedGrowthInfo).toBeNull()
-
-        const updatedTileInfo = await dataSource.manager.findOne(TileInfoEntity, {
-            where: { id: placedItemTile.tileInfoId },
-        })
-        expect(updatedTileInfo.harvestCount).toBe(placedItemTile.tileInfo.harvestCount + 1)
+        // For one-season crops, seedGrowthInfo should be removed
+        expect(updatedPlacedItemTile.seedGrowthInfo).toBeUndefined()
     })
 
-    it("should throw GrpcNotFoundException when tile is not found by its ID", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-        
-        const invalidPlacedItemTileId = v4()
-
-        await expect(
-            service.harvestCrop({
-                userId: user.id,
-                placedItemTileId: invalidPlacedItemTileId
-            })
-        ).rejects.toThrow(GrpcNotFoundException)
-    })
-
-    it("should throw GrpcNotFoundException when tile belongs to a different user", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+    it("should throw GraphQLError with code CRATE_NOT_FOUND_IN_TOOLBAR when crate is not found", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.harvestCrop
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.FullyMatured,
-                cropId: CropId.Carrot,
-                harvestQuantityRemaining: 10,
-            },
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile
-        })
+        // Note: We intentionally do NOT create a crate inventory for this test
 
-        await expect(
-            service.harvestCrop({
-                userId: v4(), // Different user ID
-                placedItemTileId: placedItemTile.id
+        // Find a crop in static data
+        const crop = staticService.crops[0]
+
+        // Create placed item with a fully matured crop
+        const placedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                seedGrowthInfo: {
+                    crop: crop.id,
+                    currentState: CropCurrentState.FullyMatured,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
             })
-        ).rejects.toThrow(GrpcNotFoundException)
+
+        try {
+            await service.harvestCrop(
+                { id: user.id },
+                {
+                    placedItemTileId: placedItemTile.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("CRATE_NOT_FOUND_IN_TOOLBAR")
+        }
     })
 
-    it("should throw GrpcFailedPreconditionException when tile is not planted", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+    it("should throw GraphQLError with code PLACED_ITEM_TILE_NOT_FOUND when tile is not found", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.harvestCrop
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: null, // Not planted
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile
+        // Create crate inventory
+        const crateInventoryType = staticService.inventoryTypes.find(
+            (type) => type.displayId === InventoryTypeId.Crate
+        )
+
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0
         })
 
-        await expect(
-            service.harvestCrop({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id
-            })
-        ).rejects.toThrow(GrpcFailedPreconditionException)
+        const invalidPlacedItemTileId = createObjectId()
+
+        try {
+            await service.harvestCrop(
+                { id: user.id },
+                {
+                    placedItemTileId: invalidPlacedItemTileId
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("PLACED_ITEM_TILE_NOT_FOUND")
+        }
     })
 
-    it("should throw GrpcFailedPreconditionException when crop is not fully matured", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+    it("should throw GraphQLError with code TILE_IS_NOT_PLANTED when tile is not planted", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.harvestCrop
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.Normal, // Not fully matured
-                cropId: CropId.Carrot,
-                harvestQuantityRemaining: 10,
-            },
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile
+        // Create crate inventory
+        const crateInventoryType = staticService.inventoryTypes.find(
+            (type) => type.displayId === InventoryTypeId.Crate
+        )
+
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0
         })
 
-        await expect(
-            service.harvestCrop({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id
+        // Create placed item with no crop
+        const placedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
             })
-        ).rejects.toThrow(GrpcFailedPreconditionException)
+
+        try {
+            await service.harvestCrop(
+                { id: user.id },
+                {
+                    placedItemTileId: placedItemTile.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("TILE_IS_NOT_PLANTED")
+        }
     })
 
-    it("should throw EnergyNotEnoughException when user energy is not enough", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            water: { energyConsume }
-        } = value as Activities
-        
+    it("should throw GraphQLError with code CROP_IS_NOT_FULLY_MATURED when crop is not fully matured", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.harvestCrop
+
         const user = await gameplayMockUserService.generate({
-            energy: energyConsume - 1
+            energy: energyConsume + 1
         })
-        
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.FullyMatured,
-                cropId: CropId.Carrot,
-                harvestQuantityRemaining: 10,
-            },
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile
+
+        // Create crate inventory
+        const crateInventoryType = staticService.inventoryTypes.find(
+            (type) => type.displayId === InventoryTypeId.Crate
+        )
+
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0
         })
-        
-        await expect(
-            service.harvestCrop({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id
+
+        // Find a crop in static data
+        const crop = staticService.crops[0]
+
+        // Create placed item with a crop that is not fully matured
+        const placedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                seedGrowthInfo: {
+                    crop: crop.id,
+                    currentState: CropCurrentState.Normal, // Not fully matured
+                    harvestQuantityRemaining: 10,
+                    isQuality: false
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
             })
-        ).rejects.toThrow(EnergyNotEnoughException)
+
+        try {
+            await service.harvestCrop(
+                { id: user.id },
+                {
+                    placedItemTileId: placedItemTile.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("CROP_IS_NOT_FULLY_MATURED")
+        }
     })
-    
-    afterEach(async () => {
-        jest.clearAllMocks()
+
+    it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.harvestCrop
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume - 1 // Not enough energy
+        })
+
+        // Create crate inventory
+        const crateInventoryType = staticService.inventoryTypes.find(
+            (type) => type.displayId === InventoryTypeId.Crate
+        )
+
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: crateInventoryType.id,
+            quantity: 1,
+            kind: InventoryKind.Tool,
+            index: 0
+        })
+
+        // Find a crop in static data
+        const crop = staticService.crops[0]
+
+        // Create placed item with a fully matured crop
+        const placedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                seedGrowthInfo: {
+                    crop: crop.id,
+                    currentState: CropCurrentState.FullyMatured,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
+
+        try {
+            await service.harvestCrop(
+                { id: user.id },
+                {
+                    placedItemTileId: placedItemTile.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(EnergyNotEnoughException)
+        }
     })
 
     afterAll(async () => {

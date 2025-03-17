@@ -2,10 +2,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     CropCurrentState,
     InjectMongoose,
+    InventoryKind,
+    InventorySchema,
+    InventoryTypeId,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { UsePesticideRequest } from "./use-pesticide.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -13,6 +16,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class UsePesticideService {
@@ -22,7 +26,6 @@ export class UsePesticideService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         @InjectKafkaProducer()
@@ -38,11 +41,39 @@ export class UsePesticideService {
 
         try {
             await mongoSession.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PESTICIDE TOOL
+                 ************************************************************/
+                
+                // Check if user has pesticide
+                const inventoryPesticideExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Pesticide),
+                        kind: InventoryKind.Tool
+                    }).session(session)
+                
+                // Validate pesticide exists in inventory
+                if (!inventoryPesticideExisted) {
+                    throw new GraphQLError("Pesticide not found in toolbar", {
+                        extensions: {
+                            code: "PESTICIDE_NOT_FOUND_IN_TOOLBAR"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
+                
+                // Get placed item tile
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
-
+                
+                // Validate tile exists
                 if (!placedItemTile) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
@@ -58,6 +89,7 @@ export class UsePesticideService {
                     })
                 }
 
+                // Validate ownership
                 if (placedItemTile.user.toString() !== userId) {
                     throw new GraphQLError("Cannot use pesticide on other's tile", {
                         extensions: {
@@ -66,6 +98,7 @@ export class UsePesticideService {
                     })
                 }
 
+                // Validate tile is planted
                 if (!placedItemTile.seedGrowthInfo) {
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
@@ -74,6 +107,7 @@ export class UsePesticideService {
                     })
                 }
 
+                // Validate tile is infested
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested) {
                     throw new GraphQLError("Tile is not infested", {
                         extensions: {
@@ -82,13 +116,17 @@ export class UsePesticideService {
                     })
                 }
 
-                const { energyConsume, experiencesGain } = this.staticService.activities.usePesticide
-
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-
+                
+                // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
                         extensions: {
@@ -97,28 +135,42 @@ export class UsePesticideService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE ACTIVITY DATA
+                 ************************************************************/
+                
+                // Get activity data
+                const { energyConsume, experiencesGain } = this.staticService.activities.usePesticide
+                
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                const energyChanges = this.energyService.substract({
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                
+                // Update user energy and experience
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experienceChanges = this.levelService.addExperiences({
+                
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
 
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(session)
-
+                // Update user data
+                await user.save({ session })
+                // Update tile state
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session })
 
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.UsePesticide,
@@ -127,6 +179,11 @@ export class UsePesticideService {
                 }
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+            
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,

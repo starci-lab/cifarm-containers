@@ -217,11 +217,6 @@ export class AnimalInfo {
         description: "Configuration for animal randomness events"
     })
         randomness: AnimalRandomness
-    
-    @Field(() => Int, {
-        description: "The number of times the animal can be harvested"
-    })
-        nextGrowthStageAfterHarvest: number
 }
 
 @ObjectType({

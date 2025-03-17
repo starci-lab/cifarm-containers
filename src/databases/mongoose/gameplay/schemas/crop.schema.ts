@@ -41,12 +41,6 @@ export class CropSchema extends StaticAbstractSchema<CropId> {
     @Prop({ type: Number, required: true, min: 1 })
         unlockLevel: number
 
-    @Field(() => Int, {
-        description: "The next growth stage after harvest"
-    })
-    @Prop({ type: Number, required: true })
-        nextGrowthStageAfterHarvest: number
-
     @Field(() => Boolean, {
         description: "Whether the crop is available in the shop"
     })

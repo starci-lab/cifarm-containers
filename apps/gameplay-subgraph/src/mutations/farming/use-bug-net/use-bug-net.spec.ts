@@ -62,7 +62,7 @@ describe("UseBugNetService", () => {
             index: 1,
             quantity: 1,
             user: user.id,
-            kind: InventoryKind.Storage
+            kind: InventoryKind.Tool
         })
 
         // Create a fruit with infested state
@@ -166,7 +166,7 @@ describe("UseBugNetService", () => {
             index: 1,
             quantity: 1,
             user: user.id,
-            kind: InventoryKind.Storage
+            kind: InventoryKind.Tool
         })
 
         const invalidPlacedItemFruitId = createObjectId()
@@ -204,8 +204,8 @@ describe("UseBugNetService", () => {
             index: 1,
             quantity: 1,
             user: user.id,
-            kind: InventoryKind.Storage
-        })
+            kind: InventoryKind.Tool
+        })  
 
         // Create a placed item without fruit info
         const placedItemWithoutFruit = await connection
@@ -250,7 +250,7 @@ describe("UseBugNetService", () => {
             index: 1,
             quantity: 1,
             user: user.id,
-            kind: InventoryKind.Storage
+            kind: InventoryKind.Tool
         })
 
         // Create a fruit with normal state (not infested)
@@ -301,7 +301,7 @@ describe("UseBugNetService", () => {
             index: 1,
             quantity: 1,
             user: user.id,
-            kind: InventoryKind.Storage
+            kind: InventoryKind.Tool
         })
 
         // Create a fruit with infested state

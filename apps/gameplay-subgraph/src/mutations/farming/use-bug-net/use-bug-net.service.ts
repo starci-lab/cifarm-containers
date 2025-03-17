@@ -1,15 +1,17 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { createObjectId } from "@src/common"
 import {
     FruitCurrentState,
     InjectMongoose,
+    InventoryKind,
     InventorySchema,
     InventoryTypeId,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { EnergyService, LevelService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
@@ -26,7 +28,6 @@ export class UseBugNetService {
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        private readonly inventoryService: InventoryService,
         private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
@@ -40,37 +41,40 @@ export class UseBugNetService {
 
         try {
             await mongoSession.withTransaction(async (session) => {
-                const inventoryTypeBugNet = this.staticService.inventoryTypes.find(
-                    (inventoryType) => inventoryType.displayId === InventoryTypeId.BugNet
-                )
-                if (!inventoryTypeBugNet) {
-                    throw new GraphQLError("Bug net not found from static data", {
-                        extensions: {
-                            code: "BUG_NET_NOT_FOUND_FROM_STATIC_DATA"
-                        }
-                    })
-                }
+                /************************************************************
+                 * RETRIEVE AND VALIDATE BUG NET TOOL
+                 ************************************************************/
                 
-                const hasInventoryBugNet = await this.connection
+                // Get bug net inventory
+                const inventoryBugNetExisted = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
-                    .exists({
+                    .findOne({
                         user: userId,
-                        inventoryType: inventoryTypeBugNet.id
+                        inventoryType: createObjectId(InventoryTypeId.BugNet),
+                        kind: InventoryKind.Tool
                     })
                     .session(session)
-                if (!hasInventoryBugNet) {
-                    throw new GraphQLError("Bug net not found", {
+                
+                // Validate user has bug net
+                if (!inventoryBugNetExisted) {
+                    throw new GraphQLError("Bug net not found in toolbar", {
                         extensions: {
                             code: "BUG_NET_NOT_FOUND"
                         }
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM FRUIT
+                 ************************************************************/
+                
+                // Get placed item fruit
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
                     .session(session)
-
+                
+                // Validate placed item fruit exists
                 if (!placedItemFruit) {
                     actionMessage = {
                         placedItemId: placedItemFruitId,
@@ -86,14 +90,16 @@ export class UseBugNetService {
                     })
                 }
 
+                // Validate ownership
                 if (placedItemFruit.user.toString() !== userId) {
                     throw new GraphQLError("Cannot use bug net on other's tile", {
                         extensions: {
-                            code: "CANNOT_USE_BUG NET_ON_OTHERS_TILE"
+                            code: "CANNOT_USE_BUG_NET_ON_OTHERS_TILE"
                         }
                     })
                 }
 
+                // Validate fruit is planted
                 if (!placedItemFruit.fruitInfo) {
                     throw new GraphQLError("Fruit is not planted", {
                         extensions: {
@@ -102,21 +108,26 @@ export class UseBugNetService {
                     })
                 }
 
+                // Validate fruit is infested
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsInfested) {
-                    throw new GraphQLError("Fruit is not weedy", {
+                    throw new GraphQLError("Fruit is not infested", {
                         extensions: {
                             code: "FRUIT_NOT_INFESTED"
                         }
                     })
                 }
 
-                const { energyConsume, experiencesGain } = this.staticService.activities.useBugNet
-
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-
+                
+                // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
                         extensions: {
@@ -125,33 +136,56 @@ export class UseBugNetService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE ACTIVITY DATA
+                 ************************************************************/
+                
+                // Get activity data
+                const { energyConsume, experiencesGain } = this.staticService.activities.useBugNet
+                
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                
+                // Update user energy and experience
                 this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
+                
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
 
+                // Update fruit state
                 placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
 
+                // Save changes
+                await placedItemFruit.save({ session })
+                await user.save({ session })
+
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemFruitId,
                     action: ActionName.UseBugNet,
                     success: true,
                     userId
                 }
-
-                await placedItemFruit.save({ session })
-                await user.save({ session })
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+            
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,

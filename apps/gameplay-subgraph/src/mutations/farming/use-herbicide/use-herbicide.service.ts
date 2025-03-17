@@ -2,10 +2,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     CropCurrentState,
     InjectMongoose,
+    InventoryKind,
+    InventorySchema,
+    InventoryTypeId,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { EnergyService, LevelService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { UseHerbicideRequest } from "./use-herbicide.dto"
@@ -14,6 +17,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class UseHerbicideService {
@@ -23,7 +27,6 @@ export class UseHerbicideService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         @InjectKafkaProducer()
@@ -34,19 +37,50 @@ export class UseHerbicideService {
         { id: userId }: UserLike,
         { placedItemTileId }: UseHerbicideRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession() // Create the session
+        const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
 
         try {
-            // Using withTransaction to automatically handle session and transaction
             await mongoSession.withTransaction(async (session) => {
-                // Fetch the placed item tile
+                /************************************************************
+                 * CHECK IF YOU HAVE HERBICIDE IN TOOLBAR
+                 ************************************************************/
+                const inventoryHerbicideExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Herbicide),
+                        kind: InventoryKind.Tool
+                    }).session(session)
+                
+                // Validate herbicide exists
+                if (!inventoryHerbicideExisted) {
+                    throw new GraphQLError("Herbicide not found in toolbar", {
+                        extensions: {
+                            code: "HERBICIDE_NOT_FOUND_IN_TOOLBAR"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
+                
+                // Get placed item tile
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
 
+                // Validate tile exists
                 if (!placedItemTile) {
+                    actionMessage = {
+                        placedItemId: placedItemTileId,
+                        action: ActionName.UseHerbicide,
+                        success: false,
+                        userId,
+                        reasonCode: 0
+                    }
                     throw new GraphQLError("Tile not found", {
                         extensions: {
                             code: "TILE_NOT_FOUND"
@@ -54,6 +88,7 @@ export class UseHerbicideService {
                     })
                 }
 
+                // Validate ownership
                 if (placedItemTile.user.toString() !== userId) {
                     throw new GraphQLError("Cannot use herbicide on other's tile", {
                         extensions: {
@@ -62,6 +97,7 @@ export class UseHerbicideService {
                     })
                 }
 
+                // Validate tile is planted
                 if (!placedItemTile.seedGrowthInfo) {
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
@@ -70,6 +106,7 @@ export class UseHerbicideService {
                     })
                 }
 
+                // Validate tile is weedy
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
                     throw new GraphQLError("Tile is not weedy", {
                         extensions: {
@@ -78,15 +115,17 @@ export class UseHerbicideService {
                     })
                 }
 
-                // Fetch system configuration (activity settings)
-                const { energyConsume, experiencesGain } = this.staticService.activities.useHerbicide
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
 
-                // Fetch user data
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
+                // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
                         extensions: {
@@ -95,44 +134,57 @@ export class UseHerbicideService {
                     })
                 }
 
-                // Check if the user has enough energy
+                /************************************************************
+                 * RETRIEVE AND VALIDATE ACTIVITY DATA
+                 ************************************************************/
+
+                // Get activity data
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.useHerbicide
+
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                // Subtract energy and add experience
-                const energyChanges = this.energyService.substract({
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+
+                // Update user energy and experience
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experienceChanges = this.levelService.addExperiences({
+
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
 
-                // Update the user data
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(session)
+                // Update user data
+                await user.save({ session })
 
-                // Update placed item tile state
+                // Update tile state
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session })
 
-                // Prepare the action message for success
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.UseHerbicide,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
 
-            // Send Kafka messages for both actions
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -143,10 +195,7 @@ export class UseHerbicideService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
-            // Handle error and send the action message even if failure occurs
             this.logger.error(`Transaction failed, reason: ${error.message}`)
 
             if (actionMessage) {
@@ -156,10 +205,8 @@ export class UseHerbicideService {
                 })
             }
 
-            // Since withTransaction automatically handles rollback, no need to manually abort the transaction
-            throw error // Re-throwing the error after logging and handling the action message
+            throw error
         } finally {
-            // End the session after the transaction
             await mongoSession.endSession()
         }
     }

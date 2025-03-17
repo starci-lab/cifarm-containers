@@ -2,6 +2,9 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
     CropCurrentState,
     InjectMongoose,
+    InventoryKind,
+    InventorySchema,
+    InventoryTypeId,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
@@ -13,6 +16,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class WaterCropService {
@@ -29,16 +33,44 @@ export class WaterCropService {
     ) {}
 
     async water({ id: userId }: UserLike, { placedItemTileId }: WaterCropRequest): Promise<void> {
-        let actionMessage: EmitActionPayload | undefined
         const mongoSession = await this.connection.startSession()
+        let actionMessage: EmitActionPayload | undefined
+        
         try {
-            // Using withTransaction to automatically handle session and transaction
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE WATERING CAN TOOL
+                 ************************************************************/
+                
+                // Check if user has watering can
+                const inventoryWateringCanExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.WateringCan),
+                        kind: InventoryKind.Tool
+                    }).session(session)
+                
+                // Validate watering can exists in inventory
+                if (!inventoryWateringCanExisted) {
+                    throw new GraphQLError("Watering can not found in toolbar", {
+                        extensions: {
+                            code: "WATERING_CAN_NOT_FOUND"
+                        }
+                    })
+                }
+                
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
+                
+                // Get placed item tile
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
-                    .session(mongoSession)
-
+                    .session(session)
+                
+                // Validate tile exists
                 if (!placedItemTile) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
@@ -54,6 +86,7 @@ export class WaterCropService {
                     })
                 }
 
+                // Validate ownership
                 if (placedItemTile.user.toString() !== userId) {
                     throw new GraphQLError("Cannot use water on other's tile", {
                         extensions: {
@@ -62,6 +95,7 @@ export class WaterCropService {
                     })
                 }
 
+                // Validate tile is planted
                 if (!placedItemTile.seedGrowthInfo) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
@@ -77,6 +111,7 @@ export class WaterCropService {
                     })
                 }
 
+                // Validate tile needs water
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
@@ -92,13 +127,17 @@ export class WaterCropService {
                     })
                 }
 
-                const { energyConsume, experiencesGain } = this.staticService.activities.waterCrop
-
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                
+                // Get user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
-
+                    .session(session)
+                
+                // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
                         extensions: {
@@ -107,38 +146,55 @@ export class WaterCropService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE ACTIVITY DATA
+                 ************************************************************/
+                
+                // Get activity data
+                const { energyConsume, experiencesGain } = this.staticService.activities.waterCrop
+                
+                // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                const energyChanges = this.energyService.substract({
+                /************************************************************
+                 * DATA MODIFICATION
+                 * Update all data after all validations are complete
+                 ************************************************************/
+                
+                // Update user energy and experience
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experienceChanges = this.levelService.addExperiences({
+                
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
+                
+                await user.save({ session })
 
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(mongoSession)
-
+                // Update tile state
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
-                await placedItemTile.save({ session: mongoSession })
+                await placedItemTile.save({ session })
 
+                // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.WaterCrop,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
+            
             await Promise.all([
                 this.producer.send({
                     topic: KafkaTopic.SyncPlacedItems,
@@ -149,17 +205,17 @@ export class WaterCropService {
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
+            
             if (actionMessage) {
                 await this.producer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
-            throw error // Re-throwing the error after logging and handling the action message
+            
+            throw error
         } finally {
             await mongoSession.endSession()
         }

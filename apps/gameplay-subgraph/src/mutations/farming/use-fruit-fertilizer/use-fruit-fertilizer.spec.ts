@@ -1,299 +1,503 @@
-// npx jest apps/gameplay-service/src/farming/use-fertilizer/use-fertilizer.spec.ts
+// npx jest apps/gameplay-subgraph/src/mutations/farming/use-fruit-fertilizer/use-fruit-fertilizer.spec.ts
 
-import { Test } from "@nestjs/testing"
-import { DataSource } from "typeorm"
-import { UseFertilizerService } from "./use-fertilizer.service"
-import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { Test, TestingModule } from "@nestjs/testing"
+import { UseFruitFertilizerService } from "./use-fruit-fertilizer.service"
 import {
-    SeedGrowthInfoEntity,
-    SystemEntity,
-    SupplyEntity,
-    SupplyId,
-    UserSchema,
-    InventoryEntity,
-    SystemId,
-    Activities,
+    GameplayConnectionService,
+    GameplayMockUserService,
+    TestingInfraModule
+} from "@src/testing"
+import {
+    getMongooseToken,
     PlacedItemSchema,
-    CropId,
+    InventorySchema,
+    UserSchema,
+    FruitCurrentState,
     PlacedItemTypeId,
-    getPostgreSqlToken,
+    InventoryKind,
+    InventoryType,
     InventoryTypeId
 } from "@src/databases"
-import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { v4 } from "uuid"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
+import { GraphQLError } from "graphql"
+import { LevelService, StaticService } from "@src/gameplay"
+import { EnergyNotEnoughException } from "@src/gameplay"
 
-describe("UseFertilizerService", () => {
-    let service: UseFertilizerService
-    let dataSource: DataSource
+describe("UseFruitFertilizerService", () => {
+    let service: UseFruitFertilizerService
+    let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
-    let gameplayConnectionService: GameplayConnectionService
+    let connection: Connection
+    let staticService: StaticService
 
     beforeAll(async () => {
-        const moduleRef = await Test.createTestingModule({
+        const module: TestingModule = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [UseFertilizerService]
+            providers: [UseFruitFertilizerService]
         }).compile()
 
-        dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(UseFertilizerService)
-        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        levelService = moduleRef.get(LevelService)
-        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
+        staticService = module.get<StaticService>(StaticService)
+        await staticService.onModuleInit()
+        service = module.get<UseFruitFertilizerService>(UseFruitFertilizerService)
+        gameplayConnectionService = module.get<GameplayConnectionService>(GameplayConnectionService)
+        gameplayMockUserService = module.get<GameplayMockUserService>(GameplayMockUserService)
+        levelService = module.get<LevelService>(LevelService)
+        connection = module.get<Connection>(getMongooseToken())
     })
 
-    it("should successfully use fertilizer on a tile and update user energy, experience, and tile state", async () => {
-        const cropId = CropId.Carrot
-        const supplyId = SupplyId.BasicFertilizer
-        const quantity = 10
-
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume, experiencesGain }
-        } = value as Activities
+    it("should successfully use fruit fertilizer and update fruit state, energy, and experience", async () => {
+        const { energyConsume, experiencesGain } = staticService.activities.useFruitFertilizer
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            x: 0,
-            y: 0,
-            userId: user.id,
-            seedGrowthInfo: {
-                isFertilized: false,
-                currentStageTimeElapsed: 0,
-                cropId,
-                harvestQuantityRemaining: 10
-            },
-            placedItemTypeId: PlacedItemTypeId.BasicTile
+        // Find fruit fertilizer inventory type
+        const inventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.FruitFertilizer
+        )
+
+        // Create inventory with fruit fertilizer
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: inventoryType.id,
+            quantity: 10,
+            kind: InventoryKind.Tool,
+            index: 0
         })
 
-        const supplyFertilizer = await dataSource.manager.findOne(SupplyEntity, {
-            where: { id: supplyId }
-        })
+        // Create placed item with a fruit that needs fertilizer
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    currentState: FruitCurrentState.NeedFertilizer,
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
 
-        const inventoryFertilizer = await dataSource.manager.save(InventoryEntity, {
-            userId: user.id,
-            quantity,
-            inventoryTypeId: InventoryTypeId.BasicFertilizer
-        })
+        // Call the service method to use fruit fertilizer
+        await service.useFruitFertilizer(
+            { id: user.id },
+            {
+                inventorySupplyId: inventory.id,
+                placedItemFruitId: placedItemFruit.id
+            }
+        )
 
-        // Call the service to use fertilizer
-        await service.useFertilizer({
-            userId: user.id,
-            placedItemTileId: placedItemTile.id,
-            inventoryFertilizerId: inventoryFertilizer.id,
-        })
+        const userAfter = await connection
+            .model<UserSchema>(UserSchema.name)
+            .findById(user.id)
+            .select("energy level experiences")
 
-        // Check if energy and experience were updated correctly
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["energy", "level", "experiences"]
-        })
-
+        // Assert energy and experience changes
         expect(user.energy - userAfter.energy).toBe(energyConsume)
         expect(
             levelService.computeTotalExperienceForLevel(userAfter) -
                 levelService.computeTotalExperienceForLevel(user)
         ).toBe(experiencesGain)
 
-        // Check if the tile's seed growth info was updated
-        const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: { id: placedItemTile.seedGrowthInfo.id }
+        // Check if inventory was updated (fertilizer was consumed)
+        const inventoryAfter = await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .findById(inventory.id)
+
+        expect(inventoryAfter.quantity).toBe(9)
+
+        // Check if the fruit's info was updated
+        const updatedPlacedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .findById(placedItemFruit.id)
+
+        expect(updatedPlacedItemFruit.fruitInfo.currentState).toBe(FruitCurrentState.Normal)
+    })
+
+    it("should throw GraphQLError with code INVENTORY_NOT_FOUND when inventory is not found", async () => {
+        const { energyConsume } = staticService.activities.useFruitFertilizer
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
         })
 
-        expect(updatedSeedGrowthInfo.isFertilized).toBe(true)
-        expect(updatedSeedGrowthInfo.currentStageTimeElapsed).toBe(
-            placedItemTile.seedGrowthInfo.currentStageTimeElapsed +
-                supplyFertilizer.fertilizerEffectTimeReduce
+        // Create placed item with a fruit that needs fertilizer
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    currentState: FruitCurrentState.NeedFertilizer,
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
+
+        const invalidInventoryId = createObjectId()
+
+        try {
+            await service.useFruitFertilizer(
+                { id: user.id },
+                {
+                    inventorySupplyId: invalidInventoryId,
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("INVENTORY_NOT_FOUND")
+        }
+    })
+
+    it("should throw GraphQLError with code PLACED_ITEM_FRUIT_NOT_FOUND when fruit is not found", async () => {
+        const { energyConsume } = staticService.activities.useFruitFertilizer
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Find fruit fertilizer inventory type
+        const inventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.FruitFertilizer
         )
-    })
 
-    it("should throw GrpcNotFoundException when tile is not found by its ID", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-
-        const invalidPlacedItemTileId = v4()
-
-        await expect(
-            service.useFertilizer({
-                userId: user.id,
-                placedItemTileId: invalidPlacedItemTileId,
-                inventoryFertilizerId: v4()
-            })
-        ).rejects.toThrow(GrpcNotFoundException)
-    })
-
-    it("should throw GrpcNotFoundException when seed growth info does not exist on tile", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-
-        const inventoryFertilizer = await dataSource.manager.save(InventoryEntity, {
-            userId: user.id,
+        // Create inventory with fruit fertilizer
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: inventoryType.id,
             quantity: 10,
-            inventoryTypeId: InventoryTypeId.BasicFertilizer
+            kind: InventoryKind.Tool,
+            index: 0
         })
 
+        const invalidPlacedItemFruitId = createObjectId()
 
-        // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile
-        })
-
-        await expect(
-            service.useFertilizer({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id,
-                inventoryFertilizerId: inventoryFertilizer.id
-            })
-        ).rejects.toThrow(GrpcNotFoundException)
+        try {
+            await service.useFruitFertilizer(
+                { id: user.id },
+                {
+                    inventorySupplyId: inventory.id,
+                    placedItemFruitId: invalidPlacedItemFruitId
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("PLACED_ITEM_FRUIT_NOT_FOUND")
+        }
     })
 
-    it("should throw GrpcFailedPreconditionException when tile is already fertilized", async () => {
-        const cropId = CropId.Carrot
-
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+    it("should throw GraphQLError with code NO_FRUIT_TREE when fruit info doesn't exist", async () => {
+        const { energyConsume } = staticService.activities.useFruitFertilizer
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        const inventoryFertilizer = await dataSource.manager.save(InventoryEntity, {
-            userId: user.id,
+        // Find fruit fertilizer inventory type
+        const inventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.FruitFertilizer
+        )
+
+        // Create inventory with fruit fertilizer
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: inventoryType.id,
             quantity: 10,
-            inventoryTypeId: InventoryTypeId.BasicFertilizer
+            kind: InventoryKind.Tool,
+            index: 0
         })
 
-
-        // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            x: 0,
-            y: 0,
-            userId: user.id,
-            seedGrowthInfo: {
-                isFertilized: true,
-                currentStageTimeElapsed: 0,
-                cropId,
-                harvestQuantityRemaining: 10
-            },
-            placedItemTypeId: PlacedItemTypeId.BasicTile
-        })
-
-        await expect(
-            service.useFertilizer({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id,
-                inventoryFertilizerId: inventoryFertilizer.id
+        // Create a placed item without fruit info
+        const placedItemWithoutFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
             })
-        ).rejects.toThrow(GrpcFailedPreconditionException)
+
+        try {
+            await service.useFruitFertilizer(
+                { id: user.id },
+                {
+                    inventorySupplyId: inventory.id,
+                    placedItemFruitId: placedItemWithoutFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("NO_FRUIT_TREE")
+        }
     })
 
-    it("should throw GrpcNotFoundException when fertilizer is not found in inventory", async () => {
-        const cropId = CropId.Carrot
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+    it("should throw GraphQLError with code TILE_DOES_NOT_NEED_FERTILIZER when fruit doesn't need fertilizer", async () => {
+        const { energyConsume } = staticService.activities.useFruitFertilizer
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            x: 0,
-            y: 0,
-            userId: user.id,
-            seedGrowthInfo: {
-                isFertilized: false,
-                currentStageTimeElapsed: 0,
-                cropId,
-                harvestQuantityRemaining: 10
-            },
-            placedItemTypeId: PlacedItemTypeId.BasicTile
+        // Find fruit fertilizer inventory type
+        const inventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.FruitFertilizer
+        )
+
+        // Create inventory with fruit fertilizer
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: inventoryType.id,
+            quantity: 10,
+            kind: InventoryKind.Tool,
+            index: 0
         })
 
-        await expect(
-            service.useFertilizer({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id,
-                inventoryFertilizerId: v4()
+        // Create placed item with a fruit that doesn't need fertilizer
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    currentState: FruitCurrentState.Normal, // Not needing fertilizer
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
             })
-        ).rejects.toThrow(GrpcNotFoundException)
+
+        try {
+            await service.useFruitFertilizer(
+                { id: user.id },
+                {
+                    inventorySupplyId: inventory.id,
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("TILE_DOES_NOT_NEED_FERTILIZER")
+        }
+    })
+
+    it("should throw GraphQLError with code UNAUTHORIZED_FRUIT_FERTILIZER when trying to use fertilizer on another user's fruit", async () => {
+        const { energyConsume } = staticService.activities.useFruitFertilizer
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        const otherUser = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Find fruit fertilizer inventory type
+        const inventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.FruitFertilizer
+        )
+
+        // Create inventory with fruit fertilizer
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: inventoryType.id,
+            quantity: 10,
+            kind: InventoryKind.Tool,
+            index: 0
+        })
+
+        // Create placed item with a fruit owned by another user
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    currentState: FruitCurrentState.NeedFertilizer,
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                },
+                x: 0,
+                y: 0,
+                user: otherUser.id, // Different user
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
+
+        try {
+            await service.useFruitFertilizer(
+                { id: user.id },
+                {
+                    inventorySupplyId: inventory.id,
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("UNAUTHORIZED_FRUIT_FERTILIZER")
+        }
+    })
+
+    it("should throw GraphQLError with code INVALID_INVENTORY_TYPE when inventory type is not a supply", async () => {
+        const { energyConsume } = staticService.activities.useFruitFertilizer
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Find a non-supply inventory type
+        const inventoryType = staticService.inventoryTypes.find(
+            type => type.type !== InventoryType.Supply
+        )
+
+        // Create inventory with invalid type
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: inventoryType.id,
+            quantity: 10,
+            kind: InventoryKind.Tool,
+            index: 0
+        })
+
+        // Create placed item with a fruit that needs fertilizer
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    currentState: FruitCurrentState.NeedFertilizer,
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
+
+        try {
+            await service.useFruitFertilizer(
+                { id: user.id },
+                {
+                    inventorySupplyId: inventory.id,
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("INVALID_INVENTORY_TYPE")
+        }
+    })
+
+    it("should throw GraphQLError with code INVALID_FERTILIZER_TYPE when inventory is not fruit fertilizer", async () => {
+        const { energyConsume } = staticService.activities.useFruitFertilizer
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Find a supply inventory type that is not fruit fertilizer
+        const inventoryType = staticService.inventoryTypes.find(
+            type => type.type === InventoryType.Supply && type.displayId !== InventoryTypeId.FruitFertilizer
+        )
+
+        // Create inventory with wrong fertilizer type
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: inventoryType.id,
+            quantity: 10,
+            kind: InventoryKind.Tool,
+            index: 0
+        })
+
+        // Create placed item with a fruit that needs fertilizer
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    currentState: FruitCurrentState.NeedFertilizer,
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
+
+        try {
+            await service.useFruitFertilizer(
+                { id: user.id },
+                {
+                    inventorySupplyId: inventory.id,
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("INVALID_FERTILIZER_TYPE")
+        }
     })
 
     it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
-        const cropId = CropId.Carrot
-
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+        const { energyConsume } = staticService.activities.useFruitFertilizer
 
         const user = await gameplayMockUserService.generate({
-            energy: energyConsume - 1
+            energy: energyConsume - 1 // Not enough energy
         })
 
-        const inventoryFertilizer = await dataSource.manager.save(InventoryEntity, {
-            userId: user.id,
+        // Find fruit fertilizer inventory type
+        const inventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.FruitFertilizer
+        )
+
+        // Create inventory with fruit fertilizer
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: inventoryType.id,
             quantity: 10,
-            inventoryTypeId: InventoryTypeId.BasicFertilizer
+            kind: InventoryKind.Tool,
+            index: 0
         })
 
-        // Create a tile and seed growth info
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            x: 0,
-            y: 0,
-            userId: user.id,
-            seedGrowthInfo: {
-                isFertilized: false,
-                currentStageTimeElapsed: 0,
-                cropId,
-                harvestQuantityRemaining: 10
-            },
-            placedItemTypeId: PlacedItemTypeId.BasicTile
-        })
-        await expect(
-            service.useFertilizer({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id,
-                inventoryFertilizerId: inventoryFertilizer.id
+        // Create placed item with a fruit that needs fertilizer
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    currentState: FruitCurrentState.NeedFertilizer,
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                },
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
             })
-        ).rejects.toThrow(EnergyNotEnoughException)
+
+        try {
+            await service.useFruitFertilizer(
+                { id: user.id },
+                {
+                    inventorySupplyId: inventory.id,
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(EnergyNotEnoughException)
+        }
     })
 
     afterAll(async () => {
