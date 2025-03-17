@@ -1,92 +1,111 @@
-// npx jest apps/gameplay-service/src/community/thief-animal-product/thief-animal-product.spec.ts
+// npx jest apps/gameplay-subgraph/src/mutations/community/thief-fruit/thief-fruit.spec.ts
 
-import { Test } from "@nestjs/testing"
-import { DataSource } from "typeorm"
-import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
+import { Test, TestingModule } from "@nestjs/testing"
+import { createObjectId } from "@src/common"
 import {
-    AnimalInfoEntity,
-    AnimalCurrentState,
+    FruitCurrentState,
+    getMongooseToken,
     PlacedItemSchema,
-    InventoryEntity,
     UserSchema,
-    getPostgreSqlToken,
-    ProductType,
     PlacedItemTypeId,
-    SystemEntity,
-    SystemId,
-    Activities,
-    InventoryType,
-    AnimalId,
-    AnimalEntity
+    InventorySchema,
+    InventoryKind,
+    InventoryTypeId,
+    ProductType
 } from "@src/databases"
-import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
-import { v4 } from "uuid"
-import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
-import { ThiefAnimalProductService } from "./thief-fruit.service"
+import {
+    GameplayConnectionService,
+    GameplayMockUserService,
+    TestingInfraModule
+} from "@src/testing"
+import { Connection } from "mongoose"
+import { ThiefFruitService } from "./thief-fruit.service"
+import { GraphQLError } from "graphql"
+import { LevelService, StaticService, ThiefService } from "@src/gameplay"
+import { EnergyNotEnoughException } from "@src/gameplay"
 
-describe("ThiefAnimalProductService", () => {
-    let dataSource: DataSource
-    let service: ThiefAnimalProductService
+describe("ThiefFruitService", () => {
+    let connection: Connection
+    let service: ThiefFruitService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
+    let staticService: StaticService
+    let thiefService: ThiefService
 
     beforeAll(async () => {
-        const moduleRef = await Test.createTestingModule({
+        const module: TestingModule = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [ThiefAnimalProductService]
+            providers: [ThiefFruitService]
         }).compile()
 
-        dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(ThiefAnimalProductService)
-        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
-        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        levelService = moduleRef.get(LevelService)
+        staticService = module.get<StaticService>(StaticService)
+        await staticService.onModuleInit()
+        connection = module.get<Connection>(getMongooseToken())
+        service = module.get<ThiefFruitService>(ThiefFruitService)
+        gameplayConnectionService = module.get<GameplayConnectionService>(GameplayConnectionService)
+        gameplayMockUserService = module.get<GameplayMockUserService>(GameplayMockUserService)
+        levelService = module.get<LevelService>(LevelService)
+        thiefService = module.get<ThiefService>(ThiefService)
     })
 
-    it("should successfully thief animal product and update inventory (no quality)", async () => {
-        const animalId = AnimalId.Chicken
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            thiefAnimalProduct: { energyConsume, experiencesGain }
-        } = value as Activities
+    it("should successfully thief fruit and update inventory", async () => {
+        // Get activity data from system
+        const { energyConsume, experiencesGain } = staticService.activities.thiefFruit
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: { id: animalId }
+        // Find a fruit in the static service
+        const fruitId = staticService.fruits[0].id
+
+        // Create placed item with a fully matured fruit
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    fruit: fruitId,
+                    currentState: FruitCurrentState.FullyMatured,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false,
+                    thieves: []
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Apple)
+            })
+
+        // Create crate in user's inventory
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: createObjectId(InventoryTypeId.Crate),
+            kind: InventoryKind.Tool,
+            quantity: 1,
+            index: 0
         })
 
-        // create
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
-            animalInfo: {
-                animalId,
-                currentState: AnimalCurrentState.Yield,
-                harvestQuantityRemaining: animal.maxHarvestQuantity,
-                isQuality: false
-            },
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.Chicken,
-            userId: neighborUser.id
-        })
+        // Mock the thiefService.compute method to return a predictable value
+        jest.spyOn(thiefService, "compute").mockReturnValueOnce({ value: 3 })
 
-        const { quantity: thiefQuantity } = await service.thiefAnimalProduct({
-            userId: user.id,
-            placedItemAnimalId: placedItemAnimal.id,
-            neighborUserId: neighborUser.id
-        })
+        // Call the service method to thief fruit
+        const result = await service.thiefFruit(
+            { id: user.id },
+            {
+                placedItemFruitId: placedItemFruit.id
+            }
+        )
 
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["energy", "level", "experiences"]
-        })
+        // Check the result
+        expect(result.quantity).toBe(3)
+
+        // Check user energy and experience changes
+        const userAfter = await connection
+            .model<UserSchema>(UserSchema.name)
+            .findById(user.id)
+            .select("energy level experiences")
 
         expect(user.energy - userAfter.energy).toBe(energyConsume)
         expect(
@@ -94,244 +113,427 @@ describe("ThiefAnimalProductService", () => {
                 levelService.computeTotalExperienceForLevel(user)
         ).toBe(experiencesGain)
 
-        const inventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: user.id,
-                inventoryType: {
-                    type: InventoryType.Product,
-                    product: {
-                        type: ProductType.Animal,
-                        animalId
-                    }
-                }
-            },
-            relations: {
-                inventoryType: {
-                    product: true
-                }
-            }
-        })
+        // Check if the fruit's harvest quantity was reduced
+        const updatedPlacedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .findById(placedItemFruit.id)
 
-        expect(inventory.quantity).toBeGreaterThanOrEqual(thiefQuantity)
-        expect(inventory.inventoryType.product.isQuality).toBe(false)
-
-        const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
-            where: { id: placedItemAnimal.animalInfoId }
-        })
-
-        expect(updatedAnimalInfo.harvestQuantityRemaining).toBe(animal.maxHarvestQuantity - thiefQuantity)
-    })
-
-    it("should successfully thief animal product and update inventory (quality)", async () => {
-        const animalId = AnimalId.Chicken
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            thiefAnimalProduct: { energyConsume, experiencesGain }
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-        const neighborUser = await gameplayMockUserService.generate()
-
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: { id: animalId }
-        })
-
-        // create
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
-            animalInfo: {
-                animalId,
-                currentState: AnimalCurrentState.Yield,
-                harvestQuantityRemaining: animal.maxHarvestQuantity,
-                isQuality: true
-            },
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.Chicken,
-            userId: neighborUser.id
-        })
-
-        const { quantity: thiefQuantity } = await service.thiefAnimalProduct({
-            userId: user.id,
-            placedItemAnimalId: placedItemAnimal.id,
-            neighborUserId: neighborUser.id
-        })
-
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["energy", "level", "experiences"]
-        })
-
-        expect(user.energy - userAfter.energy).toBe(energyConsume)
+        expect(updatedPlacedItemFruit.fruitInfo.harvestQuantityRemaining).toBe(7) // 10 - 3
         expect(
-            levelService.computeTotalExperienceForLevel(userAfter) -
-                levelService.computeTotalExperienceForLevel(user)
-        ).toBe(experiencesGain)
+            updatedPlacedItemFruit.fruitInfo.thieves.map((thief) => thief.toString())
+        ).toContainEqual(user.id)
 
-        const inventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: user.id,
-                inventoryType: {
-                    type: InventoryType.Product,
-                    product: {
-                        type: ProductType.Animal,
-                        animalId
-                    }
+        // Find the product and inventory type for this fruit
+        const product = staticService.products.find(
+            (product) =>
+                product.type === ProductType.Fruit && product.fruit.toString() === fruitId.toString()
+        )
+        const inventoryType = staticService.inventoryTypes.find(
+            (it) => it.product.toString() === product.id
+        )
+
+        // Check if the product was added to the user's inventory
+        const inventory = await connection.model<InventorySchema>(InventorySchema.name).findOne({
+            user: user.id,
+            inventoryType: inventoryType.id
+        })
+
+        expect(inventory).toBeTruthy()
+        expect(inventory.quantity).toBe(3)
+    })
+
+    it("should throw GraphQLError with code CRATE_NOT_FOUND when user has no crate", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.thiefFruit
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        const neighborUser = await gameplayMockUserService.generate()
+
+        // Find a fruit in the static service
+        const fruitId = staticService.fruits[0].id
+
+        // Create placed item with a fully matured fruit
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    fruit: fruitId,
+                    currentState: FruitCurrentState.FullyMatured,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false,
+                    thieves: []
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Apple)
+            })
+
+        // No crate is created in the user's inventory
+
+        try {
+            await service.thiefFruit(
+                { id: user.id },
+                {
+                    placedItemFruitId: placedItemFruit.id
                 }
-            },
-            relations: {
-                inventoryType: {
-                    product: true
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("CRATE_NOT_FOUND")
+        }
+    })
+
+    it("should throw GraphQLError with code FRUIT_NOT_FOUND when fruit is not found", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.thiefFruit
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Create crate in user's inventory
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: createObjectId(InventoryTypeId.Crate),
+            kind: InventoryKind.Tool,
+            quantity: 1,
+            index: 0
+        })
+
+        const invalidPlacedItemFruitId = createObjectId()
+
+        try {
+            await service.thiefFruit(
+                { id: user.id },
+                {
+                    placedItemFruitId: invalidPlacedItemFruitId
                 }
-            }
-        })
-
-        expect(inventory.quantity).toBeGreaterThanOrEqual(thiefQuantity)
-        expect(inventory.inventoryType.product.isQuality).toBe(true)
-
-        const updatedAnimalInfo = await dataSource.manager.findOne(AnimalInfoEntity, {
-            where: { id: placedItemAnimal.animalInfoId }
-        })
-
-        expect(updatedAnimalInfo.harvestQuantityRemaining).toBe(animal.maxHarvestQuantity - thiefQuantity)
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("FRUIT_NOT_FOUND")
+        }
     })
 
-    it("should throw GrpcNotFoundException when the animal is not found by its ID", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            thiefAnimalProduct: { energyConsume }
-        } = value as Activities
+    it("should throw GraphQLError with code UNAUTHORIZED_THIEF when fruit belongs to yourself", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.thiefFruit
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
-        const neighborUser = await gameplayMockUserService.generate()
-        const invalidPlacedItemAnimalId = v4()
 
-        await expect(
-            service.thiefAnimalProduct({
-                userId: user.id,
-                placedItemAnimalId: invalidPlacedItemAnimalId,
-                neighborUserId: neighborUser.id
+        // Find a fruit in the static service
+        const fruitId = staticService.fruits[0].id
+
+        // Create placed item with a fully matured fruit
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    fruit: fruitId,
+                    currentState: FruitCurrentState.FullyMatured,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false,
+                    thieves: []
+                },
+                x: 0,
+                y: 0,
+                user: user.id, // Same user
+                placedItemType: createObjectId(PlacedItemTypeId.Apple)
             })
-        ).rejects.toThrow(GrpcNotFoundException)
+
+        // Create crate in user's inventory
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: createObjectId(InventoryTypeId.Crate),
+            kind: InventoryKind.Tool,
+            quantity: 1,
+            index: 0
+        })
+
+        try {
+            await service.thiefFruit(
+                { id: user.id },
+                {
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("UNAUTHORIZED_THIEF")
+        }
     })
 
-    it("should throw EnergyNotEnoughException when user energy is not enough", async () => {
-        const animalId = AnimalId.Chicken
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            thiefAnimalProduct: { energyConsume }
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume - 1
-        })
-
-        const neighborUser = await gameplayMockUserService.generate()
-
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: { id: animalId }
-        })
-
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
-            animalInfo: {
-                currentState: AnimalCurrentState.Yield,
-                harvestQuantityRemaining: animal.maxHarvestQuantity
-            },
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.Chicken,
-            userId: neighborUser.id,
-        })
-
-        await expect(
-            service.thiefAnimalProduct({
-                userId: user.id,
-                placedItemAnimalId: placedItemAnimal.id,
-                neighborUserId: neighborUser.id
-            })
-        ).rejects.toThrow(EnergyNotEnoughException)
-    })
-
-    it("should throw GrpcNotFoundException when the animal belongs to yourself", async () => {
-        const animalId = AnimalId.Chicken
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            thiefAnimalProduct: { energyConsume }
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-        
-        const animal = await dataSource.manager.findOne(AnimalEntity, {
-            where: { id: animalId }
-        })
-
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
-            animalInfo: {
-                animalId: AnimalId.Chicken,
-                currentState: AnimalCurrentState.Yield,
-                harvestQuantityRemaining: animal.maxHarvestQuantity
-            },
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.Chicken,
-            userId: user.id
-        })
-
-        await expect(
-            service.thiefAnimalProduct({
-                userId: user.id,
-                placedItemAnimalId: placedItemAnimal.id,
-                neighborUserId: user.id
-            })
-        ).rejects.toThrow(GrpcInvalidArgumentException)
-    })
-
-    it("should throw GrpcFailedPreconditionException when animal is not ready to yield", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            thiefAnimalProduct: { energyConsume }
-        } = value as Activities
+    it("should throw GraphQLError with code FRUIT_NOT_MATURED when fruit is not fully matured", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.thiefFruit
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
         const neighborUser = await gameplayMockUserService.generate()
 
-        const animalId = AnimalId.Chicken
-        // create
-        const placedItemAnimal = await dataSource.manager.save(PlacedItemSchema, {
-            animalInfo: {
-                animalId,
-                currentState: AnimalCurrentState.Normal,
-            },
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.Chicken,
-            userId: neighborUser.id
+        // Find a fruit in the static service
+        const fruitId = staticService.fruits[0].id
+
+        // Create placed item with a non-fully matured fruit
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    fruit: fruitId,
+                    currentState: FruitCurrentState.Normal, // Not fully matured
+                    harvestQuantityRemaining: 10,
+                    isQuality: false,
+                    thieves: []
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Apple)
+            })
+
+        // Create crate in user's inventory
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: createObjectId(InventoryTypeId.Crate),
+            kind: InventoryKind.Tool,
+            quantity: 1,
+            index: 0
         })
 
-        await expect(
-            service.thiefAnimalProduct({
-                userId: user.id,
-                placedItemAnimalId: placedItemAnimal.id,
-                neighborUserId: neighborUser.id
+        try {
+            await service.thiefFruit(
+                { id: user.id },
+                {
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("FRUIT_NOT_MATURED")
+        }
+    })
+
+    it("should throw GraphQLError with code ALREADY_THIEF when user already thief from this fruit", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.thiefFruit
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        const neighborUser = await gameplayMockUserService.generate()
+
+        // Find a fruit in the static service
+        const fruitId = staticService.fruits[0].id
+
+        // Create placed item with a fully matured fruit that user already thief from
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    fruit: fruitId,
+                    currentState: FruitCurrentState.FullyMatured,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false,
+                    thieves: [user.id] // User already in thieves list
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Apple)
             })
-        ).rejects.toThrow(GrpcFailedPreconditionException)
+
+        // Create crate in user's inventory
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: createObjectId(InventoryTypeId.Crate),
+            kind: InventoryKind.Tool,
+            quantity: 1,
+            index: 0
+        })
+
+        try {
+            await service.thiefFruit(
+                { id: user.id },
+                {
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("ALREADY_THIEF")
+        }
+    })
+
+    it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.thiefFruit
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume - 1 // Not enough energy
+        })
+        const neighborUser = await gameplayMockUserService.generate()
+
+        // Find a fruit in the static service
+        const fruitId = staticService.fruits[0].id
+
+        // Create placed item with a fully matured fruit
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    fruit: fruitId,
+                    currentState: FruitCurrentState.FullyMatured,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false,
+                    thieves: []
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Apple)
+            })
+
+        // Create crate in user's inventory
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: createObjectId(InventoryTypeId.Crate),
+            kind: InventoryKind.Tool,
+            quantity: 1,
+            index: 0
+        })
+
+        try {
+            await service.thiefFruit(
+                { id: user.id },
+                {
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(EnergyNotEnoughException)
+        }
+    })
+
+    it("should throw GraphQLError with code THIEF_QUANTITY_LESS_THAN_MINIMUM_YIELD_QUANTITY when computed quantity is 0", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.thiefFruit
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        const neighborUser = await gameplayMockUserService.generate()
+
+        // Find a fruit in the static service
+        const fruitId = staticService.fruits[0].id
+
+        // Create placed item with a fully matured fruit
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    fruit: fruitId,
+                    currentState: FruitCurrentState.FullyMatured,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false,
+                    thieves: []
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Apple)
+            })
+
+        // Create crate in user's inventory
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: createObjectId(InventoryTypeId.Crate),
+            kind: InventoryKind.Tool,
+            quantity: 1,
+            index: 0
+        })
+
+        // Mock the thiefService.compute method to return 0
+        jest.spyOn(thiefService, "compute").mockReturnValueOnce({ value: 0 })
+
+        try {
+            await service.thiefFruit(
+                { id: user.id },
+                {
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("THIEF_QUANTITY_LESS_THAN_MINIMUM_YIELD_QUANTITY")
+        }
+    })
+
+    it("should throw GraphQLError with code PRODUCT_NOT_FOUND when product is not found", async () => {
+        // Get activity data from system
+        const { energyConsume } = staticService.activities.thiefFruit
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+        const neighborUser = await gameplayMockUserService.generate()
+
+        // Create a non-existent fruit ID
+        const nonExistentFruitId = createObjectId()
+
+        // Create placed item with a fully matured fruit but with non-existent fruit ID
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                fruitInfo: {
+                    fruit: nonExistentFruitId, // Non-existent fruit ID
+                    currentState: FruitCurrentState.FullyMatured,
+                    harvestQuantityRemaining: 10,
+                    isQuality: false,
+                    thieves: []
+                },
+                x: 0,
+                y: 0,
+                user: neighborUser.id,
+                placedItemType: createObjectId(PlacedItemTypeId.Apple)
+            })
+
+        // Create crate in user's inventory
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            user: user.id,
+            inventoryType: createObjectId(InventoryTypeId.Crate),
+            kind: InventoryKind.Tool,
+            quantity: 1,
+            index: 0
+        })
+
+        // Mock the thiefService.compute method to return a predictable value
+        jest.spyOn(thiefService, "compute").mockReturnValueOnce({ value: 3 })
+
+        try {
+            await service.thiefFruit(
+                { id: user.id },
+                {
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("PRODUCT_NOT_FOUND")
+        }
     })
 
     afterAll(async () => {

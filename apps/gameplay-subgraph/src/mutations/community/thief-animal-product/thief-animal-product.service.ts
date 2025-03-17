@@ -6,18 +6,25 @@ import {
     InjectMongoose,
     InventorySchema,
     InventoryType,
-    InventoryTypeSchema,
     PlacedItemSchema,
-    ProductSchema,
     ProductType,
-    UserSchema
+    UserSchema,
+    InventoryKind,
+    InventoryTypeId
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, ThiefService, StaticService } from "@src/gameplay"
+import {
+    EnergyService,
+    InventoryService,
+    LevelService,
+    ThiefService,
+    StaticService
+} from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { createObjectId } from "@src/common"
 
 @Injectable()
 export class ThiefAnimalProductService {
@@ -43,6 +50,32 @@ export class ThiefAnimalProductService {
 
         try {
             const result = await mongoSession.withTransaction(async (mongoSession) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE CRATE TOOL
+                 ************************************************************/
+
+                // Check if user has crate
+                const inventoryCrateExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Crate),
+                        kind: InventoryKind.Tool
+                    })
+                    .session(mongoSession)
+
+                // Validate crate exists in inventory
+                if (!inventoryCrateExisted) {
+                    throw new GraphQLError("Crate not found in toolbar", {
+                        extensions: {
+                            code: "CRATE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM ANIMAL
+                 ************************************************************/
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
@@ -89,7 +122,11 @@ export class ThiefAnimalProductService {
                     })
                 }
 
-                const { energyConsume, experiencesGain } = this.staticService.activities.thiefAnimalProduct
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.thiefAnimalProduct
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
@@ -100,17 +137,10 @@ export class ThiefAnimalProductService {
                     required: energyConsume
                 })
 
-                const energyChanges = this.energyService.substract({
-                    user,
-                    quantity: energyConsume
-                })
-
-                const experienceChanges = this.levelService.addExperiences({
-                    user,
-                    experiences: experiencesGain
-                })
-
-                const { thief2, thief3 } = this.staticService.animalRandomness
+                /************************************************************
+                 * COMPUTE THIEF QUANTITY
+                 ************************************************************/
+                const { thief2, thief3 } = this.staticService.animalInfo.randomness
 
                 const { value: computedQuantity } = this.thiefService.compute({
                     thief2,
@@ -130,33 +160,49 @@ export class ThiefAnimalProductService {
                         userId,
                         reasonCode: 2
                     }
-                    throw new GraphQLError(
-                        "Thief quantity is less than minimum yield quantity",
-                        {
-                            extensions: {
-                                code: "THIEF_QUANTITY_LESS_THAN_MINIMUM_YIELD_QUANTITY"
-                            }
+                    throw new GraphQLError("Thief quantity is less than minimum yield quantity", {
+                        extensions: {
+                            code: "THIEF_QUANTITY_LESS_THAN_MINIMUM_YIELD_QUANTITY"
                         }
-                    )
+                    })
                 }
 
-                const product = await this.connection
-                    .model<ProductSchema>(ProductSchema.name)
-                    .findOne({
-                        type: ProductType.Animal,
-                        animal: placedItemAnimal.animalInfo.animal,
-                        isQuality: placedItemAnimal.animalInfo.isQuality
-                    })
-                    .session(mongoSession)
+                /************************************************************
+                 * RETRIEVE PRODUCT AND INVENTORY TYPE
+                 ************************************************************/
+                const product = this.staticService.products.find(
+                    (product) =>
+                        product.type === ProductType.Animal &&
+                        product.animal.toString() ===
+                            placedItemAnimal.animalInfo.animal.toString() &&
+                        product.isQuality === placedItemAnimal.animalInfo.isQuality
+                )
 
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findOne({
-                        type: InventoryType.Product,
-                        product: product.id
+                if (!product) {
+                    throw new GraphQLError("Product not found in static service", {
+                        extensions: {
+                            code: "PRODUCT_NOT_FOUND_IN_STATIC_SERVICE"
+                        }
                     })
-                    .session(mongoSession)
+                }
 
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) =>
+                        inventoryType.type === InventoryType.Product &&
+                        inventoryType.product.toString() === product.id
+                )
+
+                if (!inventoryType) {
+                    throw new GraphQLError("Inventory type not found in static service", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_FOUND_IN_STATIC_SERVICE"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * UPDATE INVENTORY AND USER DATA
+                 ************************************************************/
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
                     inventoryType,
@@ -180,17 +226,24 @@ export class ThiefAnimalProductService {
                     .create(createdInventories, { session: mongoSession })
 
                 for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne({ _id: inventory._id }, inventory)
-                        .session(mongoSession)
+                    await inventory.save({ session: mongoSession })
                 }
 
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(mongoSession)
+                this.energyService.substract({
+                    user,
+                    quantity: energyConsume
+                })
 
+                this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
+
+                await user.save({ session: mongoSession })
+
+                /************************************************************
+                 * UPDATE ANIMAL DATA
+                 ************************************************************/
                 placedItemAnimal.animalInfo.harvestQuantityRemaining -= actualQuantity
                 placedItemAnimal.animalInfo.thieves.push(user.id)
                 await placedItemAnimal.save({ session: mongoSession })
@@ -209,6 +262,10 @@ export class ThiefAnimalProductService {
                 return { quantity: actualQuantity }
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,

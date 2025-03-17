@@ -6,11 +6,15 @@ import {
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    FruitCurrentState, DefaultInfo, InjectMongoose, InventorySchema,
+    FruitCurrentState, 
+    InjectMongoose, 
+    InventorySchema,
     InventoryType,
-    InventoryTypeSchema, KeyValueRecord, PlacedItemSchema, ProductSchema, ProductType, SystemId,
-    SystemSchema,
-    UserSchema
+    PlacedItemSchema, 
+    ProductType,
+    UserSchema,
+    InventoryKind,
+    InventoryTypeId
 } from "@src/databases"
 import {
     EnergyService,
@@ -49,11 +53,37 @@ export class ThiefFruitService {
         let neighborUserId: string | undefined
         
         try {
-            const result = await mongoSession.withTransaction(async (mongoSession) => {
+            const result = await mongoSession.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE CRATE TOOL
+                 ************************************************************/
+
+                // Check if user has crate
+                const inventoryCrateExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Crate),
+                        kind: InventoryKind.Tool
+                    })
+                    .session(session)
+
+                // Validate crate exists in inventory
+                if (!inventoryCrateExisted) {
+                    throw new GraphQLError("Crate not found in toolbar", {
+                        extensions: {
+                            code: "CRATE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM FRUIT
+                 ************************************************************/
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!placedItemFruit) {
                     throw new GraphQLError("Fruit not found", {
@@ -96,29 +126,34 @@ export class ThiefFruitService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 const { energyConsume, experiencesGain } = this.staticService.activities.thiefFruit
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
+
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume,
                 })
 
-                const energyChanges = this.energyService.substract({
-                    user,
-                    quantity: energyConsume,
-                })
-
-                const experienceChanges = this.levelService.addExperiences({
-                    user,
-                    experiences: experiencesGain,
-                })
-
-                const { thief2, thief3 } = this.staticService.fruitRandomness
+                /************************************************************
+                 * COMPUTE THIEF QUANTITY
+                 ************************************************************/
+                // Fruit randomness - using the correct property from staticService
+                const { thief2, thief3 } = this.staticService.fruitInfo.randomness
 
                 const { value: computedQuantity } = this.thiefService.compute({
                     thief2, thief3
@@ -144,33 +179,49 @@ export class ThiefFruitService {
                     })
                 }
 
-                const product = await this.connection
-                    .model<ProductSchema>(ProductSchema.name)
-                    .findOne({
-                        type: ProductType.Fruit,
-                        fruit: placedItemFruit.fruitInfo.fruit,
-                        isQuality: placedItemFruit.fruitInfo.isQuality,
-                    })
-                    .session(mongoSession)
+                /************************************************************
+                 * RETRIEVE PRODUCT AND INVENTORY TYPE
+                 ************************************************************/
+                const product = this.staticService.products.find(
+                    (product) =>
+                        product.type === ProductType.Fruit &&
+                        product.fruit.toString() === placedItemFruit.fruitInfo.fruit.toString() &&
+                        product.isQuality === placedItemFruit.fruitInfo.isQuality
+                )
 
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findOne({
-                        type: InventoryType.Product,
-                        product: product.id,
+                if (!product) {
+                    throw new GraphQLError("Product not found", {
+                        extensions: {
+                            code: "PRODUCT_NOT_FOUND"
+                        }
                     })
-                    .session(mongoSession)
+                }
 
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) =>
+                        inventoryType.type === InventoryType.Product &&
+                        inventoryType.product.toString() === product.id
+                )
+
+                if (!inventoryType) {
+                    throw new GraphQLError("Inventory type not found", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * UPDATE INVENTORY AND USER DATA
+                 ************************************************************/
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session: mongoSession,
+                    session,
                 })
 
-                const { value: { storageCapacity } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                const { storageCapacity } = this.staticService.defaultInfo
 
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
@@ -183,23 +234,33 @@ export class ThiefFruitService {
 
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
-                    .create(createdInventories, { session: mongoSession })
+                    .create(createdInventories, { session })
 
                 for (const inventory of updatedInventories) {
                     await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .updateOne({ _id: inventory._id }, inventory)
-                        .session(mongoSession)
+                        .session(session)
                 }
 
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...energyChanges, ...experienceChanges }
-                ).session(mongoSession)
+                this.energyService.substract({
+                    user,
+                    quantity: energyConsume,
+                })
 
+                this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain,
+                })
+
+                await user.save({ session })
+
+                /************************************************************
+                 * UPDATE FRUIT DATA
+                 ************************************************************/
                 placedItemFruit.fruitInfo.harvestQuantityRemaining -= actualQuantity
                 placedItemFruit.fruitInfo.thieves.push(user.id)
-                await placedItemFruit.save({ session: mongoSession })
+                await placedItemFruit.save({ session })
 
                 actionMessage = {
                     placedItemId: placedItemFruitId,
@@ -215,6 +276,10 @@ export class ThiefFruitService {
                 return { quantity: actualQuantity }
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,

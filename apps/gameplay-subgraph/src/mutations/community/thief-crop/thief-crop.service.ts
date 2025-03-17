@@ -1,30 +1,31 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    CROP,
     CropCurrentState,
-    CropSchema,
-    DefaultInfo,
     InjectMongoose,
     InventorySchema,
     InventoryType,
-    InventoryTypeSchema,
-    KeyValueRecord,
     PlacedItemSchema,
-    ProductSchema,
-    ProductType,
-    SystemId,
-    SystemSchema,
     UserSchema,
+    InventoryKind,
+    InventoryTypeId,
+    ProductType
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, ThiefService, StaticService } from "@src/gameplay"
+import {
+    EnergyService,
+    InventoryService,
+    LevelService,
+    ThiefService,
+    StaticService
+} from "@src/gameplay"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
 import { Connection } from "mongoose"
-import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload, ThiefCropData } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { createObjectId } from "@src/common"
+
 @Injectable()
 export class ThiefCropService {
     private readonly logger = new Logger(ThiefCropService.name)
@@ -48,16 +49,42 @@ export class ThiefCropService {
         let neighborUserId: string | undefined
         try {
             // Use `withTransaction` to handle the MongoDB session and transaction automatically
-            const result = await mongoSession.withTransaction(async (mongoSession) => {
+            const result = await mongoSession.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE CRATE TOOL
+                 ************************************************************/
+
+                // Check if user has crate
+                const inventoryCrateExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Crate),
+                        kind: InventoryKind.Tool
+                    })
+                    .session(session)
+
+                // Validate crate exists in inventory
+                if (!inventoryCrateExisted) {
+                    throw new GraphQLError("Crate not found in toolbar", {
+                        extensions: {
+                            code: "CRATE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!placedItemTile) {
                     throw new GraphQLError("Tile not found", {
                         extensions: {
-                            code: "TILE_NOT_FOUND",
+                            code: "TILE_NOT_FOUND"
                         }
                     })
                 }
@@ -66,81 +93,98 @@ export class ThiefCropService {
                 if (neighborUserId === userId) {
                     throw new GraphQLError("Cannot thief from your own tile", {
                         extensions: {
-                            code: "CANNOT_THIEF_FROM_YOUR_OWN_TILE",
+                            code: "CANNOT_THIEF_FROM_YOUR_OWN_TILE"
                         }
                     })
                 }
                 if (!placedItemTile.seedGrowthInfo) {
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
-                            code: "TILE_IS_NOT_PLANTED",
+                            code: "TILE_IS_NOT_PLANTED"
                         }
                     })
                 }
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
                     throw new GraphQLError("Crop is not fully matured", {
                         extensions: {
-                            code: "CROP_IS_NOT_FULLY_MATURED",
+                            code: "CROP_IS_NOT_FULLY_MATURED"
                         }
                     })
                 }
 
                 // Check if the user has already stolen from this tile
                 const users = placedItemTile.seedGrowthInfo.thieves
-                if (users.map(user => user.toString()).includes(userId)) {
+                if (users.map((user) => user.toString()).includes(userId)) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
                         action: ActionName.ThiefCrop,
                         success: false,
                         userId,
-                        reasonCode: 1,
+                        reasonCode: 1
                     }
                     throw new GraphQLError("User already thief", {
                         extensions: {
-                            code: "USER_ALREADY_THIEF",
+                            code: "USER_ALREADY_THIEF"
                         }
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 const { energyConsume, experiencesGain } = this.staticService.activities.thiefCrop
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
+
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 this.energyService.checkSufficient({
                     current: user.energy,
-                    required: energyConsume,
+                    required: energyConsume
                 })
 
-                const energyChanges = this.energyService.substract({
-                    user,
-                    quantity: energyConsume,
-                })
+                /************************************************************
+                 * COMPUTE THIEF QUANTITY
+                 ************************************************************/
+                // Crop randomness - using the correct property from staticService
+                const { thief2, thief3 } = this.staticService.cropInfo.randomness
 
-                const experienceChanges = this.levelService.addExperiences({
-                    user,
-                    experiences: experiencesGain,
-                })
-
-                // Crop randomness
-                const { thief2, thief3 } = this.staticService.cropRandomness
-
-                const product = await this.connection
-                    .model<ProductSchema>(ProductSchema.name)
-                    .findOne({
-                        type: ProductType.Crop,
-                        crop: placedItemTile.seedGrowthInfo.crop,
+                const product = this.staticService.products.find(
+                    (product) =>
+                        product.type === ProductType.Crop &&
+                        product.crop.toString() === placedItemTile.seedGrowthInfo.crop.toString()
+                )
+                if (!product) {
+                    throw new GraphQLError("Product not found", {
+                        extensions: {
+                            code: "PRODUCT_NOT_FOUND"
+                        }
                     })
-                    .populate(CROP)
-                    .session(mongoSession)
+                }
 
-                const crop = product.crop as CropSchema
+                const crop = this.staticService.crops.find(
+                    (crop) => crop.id.toString() === product.crop.toString()
+                )
+                if (!crop) {
+                    throw new GraphQLError("Crop not found", {
+                        extensions: {
+                            code: "CROP_NOT_FOUND"
+                        }
+                    })
+                }
 
                 const { value: computedQuantity } = this.thiefService.compute({
                     thief2,
-                    thief3,
+                    thief3
                 })
 
                 const actualQuantity = Math.min(
@@ -154,33 +198,39 @@ export class ThiefCropService {
                         action: ActionName.ThiefCrop,
                         success: false,
                         userId,
-                        reasonCode: 2,
+                        reasonCode: 2
                     }
                     throw new GraphQLError("Thief quantity is less than minimum harvest quantity", {
                         extensions: {
-                            code: "THIEF_QUANTITY_IS_LESS_THAN_MINIMUM_HARVEST_QUANTITY",
+                            code: "THIEF_QUANTITY_IS_LESS_THAN_MINIMUM_HARVEST_QUANTITY"
                         }
                     })
                 }
 
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findOne({
-                        type: InventoryType.Product,
-                        product: product.id,
+                /************************************************************
+                 * UPDATE INVENTORY AND USER DATA
+                 ************************************************************/
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) =>
+                        inventoryType.type === InventoryType.Product &&
+                        inventoryType.product.toString() === product.id
+                )
+                if (!inventoryType) {
+                    throw new GraphQLError("Inventory type not found", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_FOUND"
+                        }
                     })
-                    .session(mongoSession)
+                }
 
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session: mongoSession,
+                    session
                 })
 
-                const { value: { storageCapacity } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                const { storageCapacity } = this.staticService.defaultInfo
 
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
@@ -188,51 +238,62 @@ export class ThiefCropService {
                     capacity: storageCapacity,
                     quantity: actualQuantity,
                     userId: user.id,
-                    occupiedIndexes,
+                    occupiedIndexes
                 })
 
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
-                    .create(createdInventories, { session: mongoSession })
+                    .create(createdInventories, { session })
 
                 for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne({ _id: inventory._id }, inventory)
-                        .session(mongoSession)
+                    await inventory.save({ session })
                 }
 
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    { _id: user.id },
-                    { ...energyChanges, ...experienceChanges }
-                ).session(mongoSession)
+                this.energyService.substract({
+                    user,
+                    quantity: energyConsume
+                })
 
-                placedItemTile.seedGrowthInfo.harvestQuantityRemaining = placedItemTile.seedGrowthInfo.harvestQuantityRemaining - actualQuantity
+                this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
+
+                await user.save({ session })
+                /************************************************************
+                 * UPDATE CROP DATA
+                 ************************************************************/
+                placedItemTile.seedGrowthInfo.harvestQuantityRemaining =
+                    placedItemTile.seedGrowthInfo.harvestQuantityRemaining - actualQuantity
                 placedItemTile.seedGrowthInfo.thieves.push(user.id)
-                await placedItemTile.save({ session: mongoSession })
+                await placedItemTile.save({ session })
 
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.ThiefCrop,
                     success: true,
                     userId,
-                    data: { quantity: actualQuantity, cropId: crop.id },
+                    data: { quantity: actualQuantity, cropId: crop.id }
                 }
 
                 // Commit the transaction automatically after all operations are successful
                 return { quantity: actualQuantity }
             })
 
+            /************************************************************
+             * EXTERNAL COMMUNICATION
+             * Send notifications after transaction is complete
+             ************************************************************/
             // Send success action message to Kafka
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
-                }),
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                })
             ])
 
             return result
@@ -243,7 +304,7 @@ export class ThiefCropService {
                 // Send failure action message in case of error
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
 

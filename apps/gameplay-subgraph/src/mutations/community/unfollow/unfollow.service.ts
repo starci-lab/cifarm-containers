@@ -70,7 +70,6 @@ export class UnfollowService {
                     })
                     .session(mongoSession)
             })
-
             // No return value needed for void
         } catch (error) {
             this.logger.error(error)

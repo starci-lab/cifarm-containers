@@ -1,70 +1,44 @@
-// npx jest apps/gameplay-service/src/community/follow/follow.spec.ts
+// npx jest apps/gameplay-subgraph/src/mutations/community/return/return.spec.ts
 
-import { Test } from "@nestjs/testing"
-import { DataSource } from "typeorm"
+import { Test, TestingModule } from "@nestjs/testing"
 import { GameplayMockUserService, GameplayConnectionService, TestingInfraModule } from "@src/testing"
-import { getPostgreSqlToken, UsersFollowingUsersEntity } from "@src/databases"
-import { v4 } from "uuid"
-import { GrpcInvalidArgumentException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { FollowService } from "./return.service"
+import { ReturnService } from "./return.service"
+import { KafkaTopic } from "@src/brokers"
 
-describe("FollowService", () => {
-    let service: FollowService
-    let dataSource: DataSource
+describe("ReturnService", () => {
+    let service: ReturnService
     let gameplayMockUserService: GameplayMockUserService
     let gameplayConnectionService: GameplayConnectionService
 
     beforeAll(async () => {
-        const moduleRef = await Test.createTestingModule({
+        const module: TestingModule = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [FollowService]
+            providers: [ReturnService]
         }).compile()
 
-        dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(FollowService)
-        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
+        service = module.get<ReturnService>(ReturnService)
+        gameplayMockUserService = module.get<GameplayMockUserService>(GameplayMockUserService)
+        gameplayConnectionService = module.get<GameplayConnectionService>(GameplayConnectionService)
     })
 
-    it("should successfully follow user", async () => {
-        const user = await gameplayMockUserService.generate()
-        const targetUser = await gameplayMockUserService.generate()
-        await service.follow({
-            userId: user.id,
-            followeeUserId: targetUser.id
-        })
-        const followed = await dataSource.manager.findOne(UsersFollowingUsersEntity, {
-            where: { followerId: user.id, followeeUserId: targetUser.id }
-        })
-        expect(followed).toBeTruthy()
-    })
-
-    it("should throw error when trying to follow a non-existent user", async () => {
-        const user = await gameplayMockUserService.generate()
-        const nonExistentUserId = v4() // Generate a non-existent user ID (UUID format)
-        
-        try {
-            await service.follow({
-                userId: user.id,
-                followeeUserId: nonExistentUserId
-            })
-        } catch (error) {
-            expect(error).toBeInstanceOf(GrpcNotFoundException)
-        }
-    })
-
-    it("should throw error when trying to follow oneself", async () => {
+    it("should successfully send return message via Kafka", async () => {
+        // Create a user
         const user = await gameplayMockUserService.generate()
         
-        try {
-            await service.follow({
-                userId: user.id,
-                followeeUserId: user.id
-            })
-        } catch (error) {
-            // Ensure that following oneself is not allowed (Assumption)
-            expect(error).toBeInstanceOf(GrpcInvalidArgumentException)
-        }
+        // Spy on the kafkaProducer.send method
+        const kafkaProducerSpy = jest.spyOn(service["kafkaProducer"], "send")
+        
+        // Call the return service
+        await service.return({ id: user.id })
+        
+        // Verify that kafkaProducer.send was called with the correct parameters
+        expect(kafkaProducerSpy).toHaveBeenCalledWith({
+            topic: KafkaTopic.Return,
+            messages: [{ value: JSON.stringify({ userId: user.id }) }]
+        })
+        
+        // Restore the original implementation
+        kafkaProducerSpy.mockRestore()
     })
 
     afterAll(async () => {
