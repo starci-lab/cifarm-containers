@@ -7,7 +7,7 @@ import {
     GameplayMockUserService,
     TestingInfraModule
 } from "@src/testing"
-import { LevelService, StaticService } from "@src/gameplay"
+import { EnergyNotEnoughException, LevelService, StaticService } from "@src/gameplay"
 import {
     getMongooseToken,
     PlacedItemSchema,
@@ -56,6 +56,19 @@ describe("PlantSeedService", () => {
 
         const cropId = CropId.Carrot
         const crop = staticService.crops.find(c => c.displayId === cropId)
+
+        // Create watering can inventory for the user
+        const wateringCanInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.WateringCan
+        )
+        
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: wateringCanInventoryType.id,
+            index: 1,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
+        })
 
         const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
             inventoryType: createObjectId(InventoryTypeId.CarrotSeed),
@@ -115,70 +128,11 @@ describe("PlantSeedService", () => {
         expect(updatedPlacedItemTile.seedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
     })
 
-    it("should throw GraphQLError with code INVENTORY_NOT_FOUND when seed is not found in inventory", async () => {
+    it("should throw GraphQLError with code WATERING_CAN_NOT_FOUND when user doesn't have a watering can", async () => {
         const { energyConsume } = staticService.activities.plantSeed
 
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
-        })
-
-        const invalidInventorySeedId = createObjectId()
-
-        try {
-            await service.plantSeed(
-                {
-                    id: user.id
-                },
-                {
-                    inventorySeedId: invalidInventorySeedId,
-                    placedItemTileId: createObjectId()
-                }
-            )
-            fail("Expected error to be thrown")
-        } catch (error) {
-            expect(error).toBeInstanceOf(GraphQLError)
-            expect(error.extensions.code).toBe("INVENTORY_NOT_FOUND")
-        }
-    })
-
-    it("should throw GraphQLError with code TILE_NOT_FOUND when tile is not found", async () => {
-        const { energyConsume } = staticService.activities.plantSeed
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-
-        const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: createObjectId(InventoryTypeId.CarrotSeed),
-            index: 0,
-            quantity: 1,
-            user: user.id,
-            kind: InventoryKind.Storage
-        })
-        const invalidPlacedItemTileId = createObjectId()
-
-        try {
-            await service.plantSeed(
-                {
-                    id: user.id
-                },
-                {
-                    inventorySeedId: inventorySeed.id,
-                    placedItemTileId: invalidPlacedItemTileId
-                }
-            )
-            fail("Expected error to be thrown")
-        } catch (error) {
-            expect(error).toBeInstanceOf(GraphQLError)
-            expect(error.extensions.code).toBe("TILE_NOT_FOUND")
-        }
-    })
-
-    it("should throw GraphQLError with code ENERGY_NOT_ENOUGH when user does not have enough energy", async () => {
-        const { energyConsume } = staticService.activities.plantSeed
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume - 1
         })
 
         const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
@@ -211,7 +165,145 @@ describe("PlantSeedService", () => {
             fail("Expected error to be thrown")
         } catch (error) {
             expect(error).toBeInstanceOf(GraphQLError)
-            expect(error.extensions.code).toBe("ENERGY_NOT_ENOUGH")
+            expect(error.extensions.code).toBe("WATERING_CAN_NOT_FOUND")
+        }
+    })
+
+    it("should throw GraphQLError with code INVENTORY_NOT_FOUND when seed is not found in inventory", async () => {
+        const { energyConsume } = staticService.activities.plantSeed
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Create watering can inventory for the user
+        const wateringCanInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.WateringCan
+        )
+        
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: wateringCanInventoryType.id,
+            index: 1,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
+        })
+
+        const invalidInventorySeedId = createObjectId()
+
+        try {
+            await service.plantSeed(
+                {
+                    id: user.id
+                },
+                {
+                    inventorySeedId: invalidInventorySeedId,
+                    placedItemTileId: createObjectId()
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("INVENTORY_NOT_FOUND")
+        }
+    })
+
+    it("should throw GraphQLError with code TILE_NOT_FOUND when tile is not found", async () => {
+        const { energyConsume } = staticService.activities.plantSeed
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Create watering can inventory for the user
+        const wateringCanInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.WateringCan
+        )
+        
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: wateringCanInventoryType.id,
+            index: 1,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
+        })
+
+        const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: createObjectId(InventoryTypeId.CarrotSeed),
+            index: 0,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
+        })
+        const invalidPlacedItemTileId = createObjectId()
+
+        try {
+            await service.plantSeed(
+                {
+                    id: user.id
+                },
+                {
+                    inventorySeedId: inventorySeed.id,
+                    placedItemTileId: invalidPlacedItemTileId
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("TILE_NOT_FOUND")
+        }
+    })
+
+    it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
+        const { energyConsume } = staticService.activities.plantSeed
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume - 1
+        })
+
+        // Create watering can inventory for the user
+        const wateringCanInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.WateringCan
+        )
+        
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: wateringCanInventoryType.id,
+            index: 1,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
+        })
+
+        const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: createObjectId(InventoryTypeId.CarrotSeed),
+            index: 0,
+            quantity: 10,
+            user: user.id,
+            kind: InventoryKind.Storage
+        })
+
+        const placedItemTile = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
+
+        try {
+            await service.plantSeed(
+                {
+                    id: user.id
+                },
+                {
+                    inventorySeedId: inventorySeed.id,
+                    placedItemTileId: placedItemTile.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(EnergyNotEnoughException)
         }
     })
 

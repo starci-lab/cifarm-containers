@@ -3,7 +3,8 @@ import {
     CropCurrentState,
     InjectMongoose,
     InventorySchema,
-    InventoryTypeSchema,
+    InventoryType,
+    InventoryTypeId,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
@@ -41,6 +42,34 @@ export class PlantSeedService {
 
         try {
             await mongoSession.withTransaction(async (session) => {
+                const inventoryTypeWateringCan = this.staticService.inventoryTypes.find(
+                    (inventoryType) => inventoryType.displayId === InventoryTypeId.WateringCan
+                )
+                if (!inventoryTypeWateringCan) {
+                    throw new GraphQLError("Watering can not found from static data", {
+                        extensions: {
+                            code: "WATERING_CAN_NOT_FOUND_FROM_STATIC_DATA"
+                        }
+                    })
+                }
+
+                // check if user own the watering can
+                const hasInventoryWateringCan = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .exists({
+                        user: userId,
+                        inventoryType: inventoryTypeWateringCan.id
+                    })
+                    .session(session)
+
+                if (!hasInventoryWateringCan) {
+                    throw new GraphQLError("User does not have a watering can", {
+                        extensions: {
+                            code: "WATERING_CAN_NOT_FOUND"
+                        }
+                    })
+                }
+
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySeedId)
@@ -54,10 +83,26 @@ export class PlantSeedService {
                     })
                 }
 
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findById(inventory.inventoryType)
-                    .session(session)
+                const inventoryTypeSeed = this.staticService.inventoryTypes.find(
+                    (inventoryType) => inventoryType.id.toString() === inventory.inventoryType.toString()
+                )
+
+                // throw the error direct since we know this is an internal server error
+                if (!inventoryTypeSeed) {
+                    throw new GraphQLError("Inventory type seed not found from static data", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_SEED_NOT_FOUND_FROM_STATIC_DATA"
+                        }
+                    })
+                }
+
+                if (inventoryTypeSeed.type !== InventoryType.Seed) {
+                    throw new GraphQLError("Inventory type is not a seed", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_SEED"
+                        }
+                    })
+                }
 
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -100,15 +145,7 @@ export class PlantSeedService {
                         }
                     })
                 }
-
-                if (user.energy < energyConsume) {
-                    throw new GraphQLError("Not enough energy", {
-                        extensions: {
-                            code: "ENERGY_NOT_ENOUGH"
-                        }
-                    })
-                }
-
+                
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -123,12 +160,14 @@ export class PlantSeedService {
                     experiences: experiencesGain
                 })
 
-                const crop = this.staticService.crops.find(c => c.id.toString() === inventoryType.crop.toString())
+                const crop = this.staticService.crops.find(
+                    crop => crop.id.toString() === inventoryTypeSeed.crop.toString()
+                )
 
                 if (!crop) {
-                    throw new GraphQLError("Crop not found", {
+                    throw new GraphQLError("Crop not found from static data", {
                         extensions: {
-                            code: "CROP_NOT_FOUND"
+                            code: "CROP_NOT_FOUND_FROM_STATIC_DATA"
                         }
                     })
                 }
@@ -142,7 +181,7 @@ export class PlantSeedService {
                     connection: this.connection,
                     userId: user.id,
                     session,
-                    inventoryType,
+                    inventoryType: inventoryTypeSeed,
                     kind: inventory.kind
                 })
 
