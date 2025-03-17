@@ -1,13 +1,11 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
+import { createObjectId } from "@src/common"
 import {
     AnimalSchema,
     BuildingSchema,
     CropSchema,
     DefaultInfo,
-    KeyValueRecord,
     PlacedItemTypeSchema,
-    SystemId,
-    SystemSchema,
     InventoryTypeSchema,
     ProductSchema,
     PetSchema,
@@ -23,13 +21,14 @@ import {
     EnergyRegen,
     DailyRewardInfo,
     HoneycombInfo,
-    InjectMongoose
+    InjectMongoose,
+    KeyValueRecord,
+    SystemId,
+    SystemSchema,
 } from "@src/databases"
 import { Connection } from "mongoose"
-import { createObjectId } from "@src/common"
-
 @Injectable()
-export class StaticService implements OnModuleInit {
+export class StaticService {
     private readonly logger = new Logger(StaticService.name)
 
     public defaultInfo: DefaultInfo

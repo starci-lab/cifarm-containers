@@ -9,7 +9,8 @@ import { ProductService } from "./product"
 import { TutorialService } from "./tutorial"
 import { PositionService } from "./position"
 import { NestExport, NestProvider, NestService } from "@src/common"
-// import { StaticService } from "./static"
+import { StaticService } from "./static"
+
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE) : DynamicModule {
@@ -29,7 +30,7 @@ export class GameplayModule extends ConfigurableModuleClass {
         ]
         if (loadStatic) {
             // services that are loaded if static is enabled
-            // services.push(StaticService)
+            services.push(StaticService)
         }
         const providers: Array<NestProvider> = services
         const exports: Array<NestExport> = services

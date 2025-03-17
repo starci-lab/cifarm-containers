@@ -173,8 +173,23 @@ export class HoneycombService {
             project: projectAddress.toString(),
             stakeTokenMint: tokenAddress.toString(), // Token's mint address in string format
             authority: this.authorityKeypairs[network].publicKey.toBase58(), // Authority's pubkey address in string format
-            payer: payerAddress, // Optional, fee payer's pubkey address in string format
-            metadata
+            payer: this.authorityKeypairs[network].publicKey.toBase58(), // Authority's pubkey address in string format
+            metadata,
+            multipliers: [
+                {
+                    // Provide either minAmount or minDuration or both
+                    value: "10",
+                    type: {
+                        minAmount: "1000"
+                    }
+                },
+                {
+                    value: "3",
+                    type: {
+                        minDuration: "60"
+                    }
+                }
+            ]
         })
         const {
             createCreateSplStakingPoolTransaction: {

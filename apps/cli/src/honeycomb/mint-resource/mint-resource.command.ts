@@ -62,6 +62,7 @@ export class MintResourceCommand extends CommandRunner {
     @Option({
         flags: "-ta, --to-address <toAddress>",
         description: "To address",
+        defaultValue: "DvLikuEj25H4K87nMSuL2hrHC876vaAFebaXqHfqjzm1"
     })
     parseToAddress(toAddress: string): string {
         return toAddress

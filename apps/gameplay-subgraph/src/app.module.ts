@@ -2,7 +2,6 @@ import { Module, ValidationPipe } from "@nestjs/common"
 import { EnvModule } from "@src/env"
 import { GraphQLSubgraphModule } from "@src/graphql"
 import { CryptoModule } from "@src/crypto"
-// import { CacheModule } from "@src/cache"
 import { JwtModule } from "@src/jwt"
 import { MongooseModule } from "@src/databases"
 // import { QueriesModule } from "./queries"
@@ -16,6 +15,8 @@ import { HoneycombModule } from "@src/honeycomb"
 import { BlockchainExceptionFilter, GameplayExceptionFilter } from "./filters"
 import { CacheModule } from "@src/cache"
 import { GameplayModule } from "@src/gameplay"
+import { MutationsModule } from "./mutations"
+import { QueriesModule } from "./queries"
 @Module({
     imports: [
         //core modules
@@ -24,32 +25,31 @@ import { GameplayModule } from "@src/gameplay"
         CryptoModule.register({
             isGlobal: true
         }),
-        //MongooseModule.forRoot(),
+        MongooseModule.forRoot(),
         CacheModule.register({
             isGlobal: true
         }),
-        // JwtModule.register({
-        //     isGlobal: true
-        // }),
-        // KafkaModule.register({
-        //     isGlobal: true
-        // }),
-        // BlockchainModule.register({
-        //     isGlobal: true
-        // }),
-        // GameplayModule.register({
-        //     isGlobal: true,
-        //     loadStatic: false
-        // }),
-        // DateModule.register({
-        //     isGlobal: true
-        // }),
-        // HoneycombModule.register({
-        //     isGlobal: true
-        // }),
+        JwtModule.register({
+            isGlobal: true
+        }),
+        KafkaModule.register({
+            isGlobal: true
+        }),
+        BlockchainModule.register({
+            isGlobal: true
+        }),
+        GameplayModule.register({
+            isGlobal: true,
+        }),
+        DateModule.register({
+            isGlobal: true
+        }),
+        HoneycombModule.register({
+            isGlobal: true
+        }),
         //functional modules
-        // QueriesModule,
-        // MutationsModule
+        QueriesModule,
+        MutationsModule
     ],
     providers: [
         {
