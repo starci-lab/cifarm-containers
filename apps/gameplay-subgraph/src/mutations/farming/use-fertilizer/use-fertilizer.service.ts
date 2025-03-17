@@ -1,26 +1,20 @@
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Injectable, Logger, NotFoundException } from "@nestjs/common"
-import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
-    Activities,
     CropCurrentState,
     InjectMongoose,
     InventorySchema,
     InventoryType,
     InventoryTypeId,
     InventoryTypeSchema,
-    KeyValueRecord,
     PlacedItemSchema,
-    SEED_GROWTH_INFO,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { UseFertilizerRequest } from "./use-fertilizer.dto"
-import { Producer } from "kafkajs"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 
@@ -33,6 +27,7 @@ export class UseFertilizerService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -59,7 +54,6 @@ export class UseFertilizerService {
                 // Fetch the placed item tile and check conditions
                 const placedItemTile = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
-                    .populate(SEED_GROWTH_INFO)
                     .session(session)
 
                 if (!placedItemTile) {
@@ -103,17 +97,20 @@ export class UseFertilizerService {
                 }
 
                 // Fetch system settings for fertilizer action
-                const { value: { useFertilizer: { energyConsume, experiencesGain } } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
+                const { energyConsume, experiencesGain } = this.staticService.activities.useFertilizer
 
                 // Fetch the user and check energy
                 const user = await this.connection.model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 this.energyService.checkSufficient({ current: user.energy, required: energyConsume })
 

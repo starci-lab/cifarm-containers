@@ -72,3 +72,8 @@ export enum ActionName {
 export interface EmitActionHarvestCropData{
     quantity: number
 }
+
+export interface PlantSeedData {
+    placedItemTileId: string
+    cropId: string
+}

@@ -1,28 +1,24 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    DefaultInfo,
     InjectMongoose,
     INVENTORY_TYPE,
     InventoryKind,
     InventorySchema,
     InventoryTypeSchema,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema
 } from "@src/databases"
-import { createObjectId } from "@src/common"
-import { Connection } from "mongoose"
 import { MoveInventoryRequest } from "./move-inventory.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-
+import { StaticService } from "@src/gameplay"
+import { Connection } from "mongoose"
 @Injectable()
 export class MoveInventoryService {
     private readonly logger = new Logger(MoveInventoryService.name)
 
     constructor(
         @InjectMongoose()
-        private readonly connection: Connection
+        private readonly connection: Connection,
+        private readonly staticService: StaticService
     ) {}
 
     async moveInventory(
@@ -39,12 +35,7 @@ export class MoveInventoryService {
         try {
             // Using `withTransaction` for automatic transaction handling
             await mongoSession.withTransaction(async () => {
-                const {
-                    value: { storageCapacity, toolCapacity }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                    .session(mongoSession)
+                const { storageCapacity, toolCapacity } = this.staticService.defaultInfo
 
                 const capacity = isTool ? toolCapacity : storageCapacity
                 if (index >= capacity) {

@@ -1,15 +1,10 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    DefaultInfo,
     InjectMongoose,
-    KeyValueRecord,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
-import { createObjectId } from "@src/common"
-import { TokenBalanceService } from "@src/gameplay"
+import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 
 @Injectable()
@@ -19,7 +14,8 @@ export class UpdateFollowXService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly tokenBalanceService: TokenBalanceService
+        private readonly tokenBalanceService: TokenBalanceService,
+        private readonly staticService: StaticService
     ) {}
 
     async updateFollowX({
@@ -31,12 +27,7 @@ export class UpdateFollowXService {
             // Using `withTransaction` for automatic transaction handling
             await mongoSession.withTransaction(async () => {
                 // Get followX reward quantity from system configuration
-                const {
-                    value: { followXRewardQuantity }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                    .session(mongoSession)
+                const { followXRewardQuantity } = this.staticService.defaultInfo
 
                 // Get the user data
                 const user = await this.connection

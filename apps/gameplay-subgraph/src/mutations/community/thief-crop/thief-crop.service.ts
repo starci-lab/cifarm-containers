@@ -1,10 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    Activities,
     CROP,
     CropCurrentState,
-    CropRandomness,
     CropSchema,
     DefaultInfo,
     InjectMongoose,
@@ -19,7 +17,7 @@ import {
     SystemSchema,
     UserSchema,
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, ThiefService, StaticService } from "@src/gameplay"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
@@ -37,7 +35,8 @@ export class ThiefCropService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly thiefService: ThiefService,
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
+        private readonly staticService: StaticService
     ) {}
 
     async thiefCrop(
@@ -103,10 +102,7 @@ export class ThiefCropService {
                     })
                 }
 
-                const { value: { thiefCrop: { energyConsume, experiencesGain } } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(mongoSession)
+                const { energyConsume, experiencesGain } = this.staticService.activities.thiefCrop
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -129,10 +125,7 @@ export class ThiefCropService {
                 })
 
                 // Crop randomness
-                const { value: { thief2, thief3 } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
-                    .session(mongoSession)
+                const { thief2, thief3 } = this.staticService.cropRandomness
 
                 const product = await this.connection
                     .model<ProductSchema>(ProductSchema.name)

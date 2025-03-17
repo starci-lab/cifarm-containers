@@ -1,15 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    DailyRewardInfo,
     DailyRewardId,
     InjectMongoose,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
-import { createObjectId, DeepPartial } from "@src/common"
+import { GoldBalanceService, StaticService, TokenBalanceService } from "@src/gameplay"
+import {  DeepPartial } from "@src/common"
 import { DateUtcService } from "@src/date"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
@@ -24,7 +20,8 @@ export class ClaimDailyRewardService {
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
-        private readonly dateUtcService: DateUtcService
+        private readonly dateUtcService: DateUtcService,
+        private readonly staticService: StaticService
     ) {}
 
     async claimDailyReward({ id: userId }: UserLike): Promise<void> {
@@ -54,12 +51,7 @@ export class ClaimDailyRewardService {
                     )
                 }
 
-                const { value } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<
-                        KeyValueRecord<DailyRewardInfo>
-                    >(createObjectId(SystemId.DailyRewardInfo))
-                    .session(mongoSession)
+                const { dailyRewardInfo } = this.staticService
 
                 const dailyRewardMap: Record<number, DailyRewardId> = {
                     0: DailyRewardId.Day1,
@@ -81,18 +73,18 @@ export class ClaimDailyRewardService {
                     balanceChanges = {
                         ...this.goldBalanceService.add({
                             user,
-                            amount: value[DailyRewardId.Day5].golds
+                            amount: dailyRewardInfo[DailyRewardId.Day5].golds
                         }),
                         ...this.tokenBalanceService.add({
                             user,
-                            amount: value[DailyRewardId.Day5].tokens
+                            amount: dailyRewardInfo[DailyRewardId.Day5].tokens
                         })
                     }
                 } else {
                     balanceChanges = {
                         ...this.goldBalanceService.add({
                             user,
-                            amount: value[dailyRewardMap[user.dailyRewardStreak]].golds
+                            amount: dailyRewardInfo[dailyRewardMap[user.dailyRewardStreak]].golds
                         })
                     }
                 }

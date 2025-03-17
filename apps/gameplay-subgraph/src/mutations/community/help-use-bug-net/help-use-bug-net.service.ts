@@ -1,18 +1,14 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
 import {
-    Activities,
-    FRUIT_INFO,
+
     FruitCurrentState,
     InjectMongoose,
     PlacedItemSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HelpUseBugNetRequest } from "./help-use-bug-net.dto"
@@ -28,6 +24,7 @@ export class HelpUseBugNetService {
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
+        private readonly staticService: StaticService
     ) {}
 
     async helpUseBugNet({ id: userId }: UserLike, { placedItemFruitId }: HelpUseBugNetRequest): Promise<void> {
@@ -40,7 +37,6 @@ export class HelpUseBugNetService {
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
-                    .populate(FRUIT_INFO)
                     .session(session)
 
                 if (!placedItemFruit) {
@@ -89,12 +85,7 @@ export class HelpUseBugNetService {
                     })
                 }
 
-                const { value } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById(createObjectId(SystemId.Activities))
-                    .session(session)
-                
-                const { helpUseBugNet: { energyConsume, experiencesGain } } = value as Activities
+                const { energyConsume, experiencesGain } = this.staticService.activities.helpUseBugNet
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)

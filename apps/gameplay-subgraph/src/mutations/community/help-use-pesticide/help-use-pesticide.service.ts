@@ -1,19 +1,14 @@
 import { Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    Activities,
     CropCurrentState,
     InjectMongoose,
-    KeyValueRecord,
     PlacedItemSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService } from "@src/gameplay"
 import { HelpUsePesticideRequest } from "./help-use-pesticide.dto"
 import { Connection } from "mongoose"
-import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
@@ -27,7 +22,8 @@ export class HelpUsePesticideService {
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        private readonly staticService: StaticService
     ) {}
 
     async helpUsePesticide(
@@ -103,12 +99,7 @@ export class HelpUsePesticideService {
                 }
 
                 // Fetch system activity values
-                const { value } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(mongoSession)
-
-                const { usePesticide: { energyConsume, experiencesGain } } = value as Activities
+                const { energyConsume, experiencesGain } = this.staticService.activities.helpUsePesticide
 
                 // Fetch user details
                 const user = await this.connection

@@ -1,21 +1,16 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common"
-import { createObjectId } from "@src/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
-    Activities,
     CropCurrentState,
     InjectMongoose,
     PlacedItemSchema,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { UsePesticideRequest } from "./use-pesticide.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Producer } from "kafkajs"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 
@@ -27,7 +22,9 @@ export class UsePesticideService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
+        private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -36,13 +33,11 @@ export class UsePesticideService {
         { id: userId }: UserLike,
         { placedItemTileId }: UsePesticideRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession() // Create the session
+        const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
 
         try {
-            // Using withTransaction to handle the transaction automatically
             await mongoSession.withTransaction(async (session) => {
-                // Fetch the placed item tile with session
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
@@ -87,31 +82,26 @@ export class UsePesticideService {
                     })
                 }
 
-                // Fetch system configuration (activity settings)
-                const {
-                    value: {
-                        usePesticide: { energyConsume, experiencesGain }
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
+                const { energyConsume, experiencesGain } = this.staticService.activities.usePesticide
 
-                // Fetch user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
-                // Check if the user has enough energy
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                // Subtract energy and add experience
                 const energyChanges = this.energyService.substract({
                     user,
                     quantity: energyConsume
@@ -121,28 +111,22 @@ export class UsePesticideService {
                     experiences: experiencesGain
                 })
 
-                // Update the user data
                 await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
                     .session(session)
 
-                // Update placed item tile state
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session })
 
-                // Prepare the action message for success
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.UsePesticide,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
 
-            // Send Kafka messages for both actions
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -153,11 +137,8 @@ export class UsePesticideService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
-            // Handle error and send the action message even if failure occurs
-            this.logger.error(error)
+            this.logger.error(`Transaction failed, reason: ${error.message}`)
 
             if (actionMessage) {
                 await this.kafkaProducer.send({
@@ -166,10 +147,8 @@ export class UsePesticideService {
                 })
             }
 
-            // Since withTransaction automatically handles rollback, no need to manually abort the transaction
-            throw error // Re-throwing the error after logging and handling the action message
+            throw error
         } finally {
-            // End the session after the transaction
             await mongoSession.endSession()
         }
     }

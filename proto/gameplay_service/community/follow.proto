@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package gameplay_service;
-
-message FollowRequest {
-    string userId = 1;
-    string followeeUserId = 2;
-}

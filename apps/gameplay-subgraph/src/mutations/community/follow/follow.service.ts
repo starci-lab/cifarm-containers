@@ -1,24 +1,23 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    DefaultInfo,
     InjectMongoose,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
     UserFollowRelationSchema,
     UserSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { FollowRequest } from "./follow.dto"
-import { createObjectId } from "@src/common"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { StaticService } from "@src/gameplay"
 
 @Injectable()
 export class FollowService {
     private readonly logger = new Logger(FollowService.name)
 
-    constructor(@InjectMongoose() private readonly connection: Connection) {}
+    constructor(
+        @InjectMongoose() private readonly connection: Connection,
+        private readonly staticService: StaticService
+    ) {}
 
     async follow({ id: userId }: UserLike, { followeeUserId }: FollowRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
@@ -26,12 +25,7 @@ export class FollowService {
         try {
             // Using withTransaction to handle the transaction lifecycle
             await mongoSession.withTransaction(async (session) => {
-                const {
-                    value: { followeeLimit }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                    .session(session)
+                const { followeeLimit } = this.staticService.defaultInfo
 
                 if (userId === followeeUserId) {
                     throw new GraphQLError("Cannot follow self", {
@@ -88,15 +82,17 @@ export class FollowService {
                 }
 
                 // Create the follow relation
-                await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).create(
-                    [
-                        {
-                            followee: followeeUserId,
-                            follower: userId
-                        }
-                    ],
-                    { session }
-                )
+                await this.connection
+                    .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
+                    .create(
+                        [
+                            {
+                                followee: followeeUserId,
+                                follower: userId
+                            }
+                        ],
+                        { session }
+                    )
             })
         } catch (error) {
             this.logger.error(error)

@@ -1,16 +1,11 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common"
 import {
-    DefaultInfo,
     InjectMongoose,
-    KeyValueRecord,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { UpdateReferralRequest } from "./update-referral.dto"
-import { createObjectId } from "@src/common"
-import { TokenBalanceService } from "@src/gameplay"
+import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 
 @Injectable()
@@ -20,7 +15,8 @@ export class UpdateReferralService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly tokenBalanceService: TokenBalanceService
+        private readonly tokenBalanceService: TokenBalanceService,
+        private readonly staticService: StaticService
     ) {}
 
     async updateReferral(
@@ -35,12 +31,7 @@ export class UpdateReferralService {
         try {
             // Using `withTransaction` for automatic transaction handling
             await mongoSession.withTransaction(async () => {
-                const {
-                    value: { referredLimit, referralRewardQuantity, referredRewardQuantity }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                    .session(mongoSession)
+                const { referredLimit, referralRewardQuantity, referredRewardQuantity } = this.staticService.defaultInfo
 
                 // Retrieve referral and user data
                 const referralUser = await this.connection

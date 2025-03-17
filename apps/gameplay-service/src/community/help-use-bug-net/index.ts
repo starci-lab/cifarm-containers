@@ -1,5 +1,0 @@
-export * from "./help-use-bug-net.dto"
-export * from "./help-use-bug-net.module"
-export * from "./help-use-bug-net.service"
-export * from "./help-use-bug-net.controller"
-//export * from "./claim.spec"

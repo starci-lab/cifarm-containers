@@ -1,10 +1,7 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
 import {
-    Activities,
-    FRUIT_INFO,
     FruitCurrentState,
     InjectMongoose,
     InventorySchema,
@@ -12,11 +9,9 @@ import {
     InventoryTypeId,
     InventoryTypeSchema,
     PlacedItemSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HelpUseFruitFertilizerRequest } from "./help-use-fruit-fertilizer.dto"
@@ -33,6 +28,7 @@ export class HelpUseFruitFertilizerService {
         private readonly inventoryService: InventoryService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
+        private readonly staticService: StaticService
     ) {}
 
     async helpUseFruitFertilizer(
@@ -48,7 +44,6 @@ export class HelpUseFruitFertilizerService {
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
-                    .populate(FRUIT_INFO)
                     .session(session)
 
                 if (!placedItemFruit) {
@@ -97,13 +92,8 @@ export class HelpUseFruitFertilizerService {
                     })
                 }
 
-                const { value } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById(createObjectId(SystemId.Activities))
-                    .session(session)
+                const { energyConsume, experiencesGain } = this.staticService.activities.helpUseFruitFertilizer
                 
-                const { helpUseFruitFertilizer: { energyConsume, experiencesGain } } = value as Activities
-
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)

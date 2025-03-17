@@ -2,17 +2,13 @@ import { BadRequestException, Injectable, Logger } from "@nestjs/common"
 import {
     CropCurrentState,
     CropSchema,
-    DefaultInfo,
     InjectMongoose,
     PlacedItemSchema,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
     TutorialStep,
     UserSchema
 } from "@src/databases"
 import { createObjectId } from "@src/common"
-import { TutorialService } from "@src/gameplay"
+import { TutorialService, StaticService } from "@src/gameplay"
 import { ClientSession, Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 
@@ -23,7 +19,8 @@ export class UpdateTutorialService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly tutorialService: TutorialService
+        private readonly tutorialService: TutorialService,
+        private readonly staticService: StaticService
     ) {}
 
     async updateTutorial(
@@ -33,10 +30,7 @@ export class UpdateTutorialService {
         try {
             // Using `withTransaction` to handle the transaction automatically
             await mongoSession.withTransaction(async () => {
-                const { value: { defaultCropId } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                    .session(mongoSession)
+                const { defaultCropId } = this.staticService.defaultInfo
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)

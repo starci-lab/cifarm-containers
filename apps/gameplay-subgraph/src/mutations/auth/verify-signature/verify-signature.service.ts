@@ -1,13 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 import {
-    DefaultInfo,
     UserSchema,
     InventoryType,
     InjectMongoose,
-    SystemId,
-    SystemSchema,
-    KeyValueRecord,
     InventoryTypeSchema,
     PlacedItemSchema,
     PlacedItemTypeId,
@@ -22,7 +18,7 @@ import {
     defaultChainKey,
     getBlockchainAuthServiceToken
 } from "@src/blockchain"
-import { EnergyService } from "@src/gameplay"
+import { EnergyService, StaticService } from "@src/gameplay"
 import { InjectCache } from "@src/cache"
 import { Network } from "@src/env"
 import { JwtService } from "@src/jwt"
@@ -42,6 +38,7 @@ export class VerifySignatureService {
         private readonly moduleRef: ModuleRef,
         private readonly jwtService: JwtService,
         private readonly energyService: EnergyService,
+        private readonly staticService: StaticService
     ) {}
 
     public async verifySignature({
@@ -75,7 +72,6 @@ export class VerifySignatureService {
                     { strict: false }
                 )
 
-                console.log({ message, publicKey, signature })
                 const verified = authService.verifyMessage({ message, publicKey, signature })
                 if (!verified) {
                     throw new GraphQLError("Signature is invalid", {
@@ -91,16 +87,7 @@ export class VerifySignatureService {
                     .session(mongoSession)
 
                 if (!user) {
-                    const {
-                        value: {
-                            defaultCropId,
-                            defaultSeedQuantity,
-                            golds,
-                            positions,
-                        }
-                    } = await this.connection
-                        .model<SystemSchema>(SystemSchema.name)
-                        .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                    const { defaultCropId, defaultSeedQuantity, golds, positions } = this.staticService.defaultInfo
 
                     const energy = this.energyService.getMaxEnergy()
 

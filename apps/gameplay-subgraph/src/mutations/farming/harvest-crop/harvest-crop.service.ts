@@ -9,7 +9,6 @@ import {
     InventoryType,
     InventoryTypeSchema,
     PlacedItemSchema,
-    SEED_GROWTH_INFO,
     SystemId,
     KeyValueRecord,
     SystemSchema,
@@ -54,7 +53,6 @@ export class HarvestCropService {
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
-                    .populate(SEED_GROWTH_INFO)
                     .session(session)
 
                 if (!placedItemTile) throw new NotFoundException("Tile not found")

@@ -1,18 +1,14 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common"
 import {
     InjectMongoose,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
     UserSchema,
-    HoneycombInfo
 } from "@src/databases"
-import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
 import { HoneycombService } from "@src/honeycomb"
 import { DateUtcService } from "@src/date"
 import { UserLike } from "@src/jwt"
 import { TxResponse } from "../types"
+import { StaticService } from "@src/gameplay"
 
 @Injectable()
 export class ClaimHoneycombDailyRewardService {
@@ -22,7 +18,8 @@ export class ClaimHoneycombDailyRewardService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly honeycombService: HoneycombService,
-        private readonly dateUtcService: DateUtcService
+        private readonly dateUtcService: DateUtcService,
+        private readonly staticService: StaticService
     ) {}
 
     async claimHoneycombDailyReward(
@@ -47,11 +44,8 @@ export class ClaimHoneycombDailyRewardService {
                     )
                 }
 
-                const {
-                    value: { dailyRewardAmount, tokenResourceAddress }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<HoneycombInfo>>(createObjectId(SystemId.HoneycombInfo))
+                const { dailyRewardAmount, tokenResourceAddress } = this.staticService.honeycombInfo
+
                 const { txResponse } = await this.honeycombService.createMintResourceTransaction({
                     amount: dailyRewardAmount,
                     resourceAddress: tokenResourceAddress,

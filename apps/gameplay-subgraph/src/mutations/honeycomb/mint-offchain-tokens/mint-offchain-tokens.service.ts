@@ -1,17 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     InjectMongoose,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
-    UserSchema,
-    HoneycombInfo
+    UserSchema
 } from "@src/databases"
-import { computeRaw, createObjectId } from "@src/common"
+import { computeRaw } from "@src/common"
 import { Connection } from "mongoose"
 import { MintOffchainTokensRequest } from "./mint-offchain-tokens.dto"
 import { HoneycombService } from "@src/honeycomb"
-import { TokenBalanceService } from "@src/gameplay"
+import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 import { TxResponse } from "../types"
 @Injectable()
@@ -22,7 +18,8 @@ export class MintOffchainTokensService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly honeycombService: HoneycombService,
-        private readonly tokenBalanceService: TokenBalanceService
+        private readonly tokenBalanceService: TokenBalanceService,
+        private readonly staticService: StaticService
     ) {}
 
     async mintOffchainTokensService(
@@ -41,11 +38,8 @@ export class MintOffchainTokensService {
                     user,
                     amount
                 })
-                const {
-                    value: { tokenResourceAddress, decimals }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<HoneycombInfo>>(createObjectId(SystemId.HoneycombInfo))
+                const { tokenResourceAddress, decimals } = this.staticService.honeycombInfo
+
                 const { txResponse } = await this.honeycombService.createMintResourceTransaction({
                     amount: computeRaw(amount, decimals).toString(),
                     resourceAddress: tokenResourceAddress,

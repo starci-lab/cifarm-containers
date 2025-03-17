@@ -1,5 +1,0 @@
-export * from "./help-water.dto"
-export * from "./help-water.module"
-export * from "./help-water.service"
-export * from "./help-water.controller"
-//export * from "./claim.spec"

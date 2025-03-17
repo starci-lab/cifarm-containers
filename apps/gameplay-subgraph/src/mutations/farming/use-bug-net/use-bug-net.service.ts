@@ -1,19 +1,14 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
 import {
-    Activities,
-    FRUIT_INFO,
     FruitCurrentState,
     InjectMongoose,
-    KeyValueRecord,
     PlacedItemSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { StaticService } from "@src/gameplay/static"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { UseBugNetRequest } from "./use-bug-net.dto"
@@ -30,6 +25,7 @@ export class UseBugNetService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -37,17 +33,14 @@ export class UseBugNetService {
         { id: userId }: UserLike,
         { placedItemFruitId }: UseBugNetRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession() // Create the session
+        const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
 
         try {
-            // Using withTransaction to automatically handle session and transaction
             await mongoSession.withTransaction(async (session) => {
-                // Fetch the placed item tile
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
-                    .populate(FRUIT_INFO)
                     .session(session)
 
                 if (!placedItemFruit) {
@@ -89,17 +82,8 @@ export class UseBugNetService {
                     })
                 }
 
-                // Fetch system configuration (activity settings)
-                const {
-                    value: {
-                        useBugNet: { energyConsume, experiencesGain }
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
+                const { energyConsume, experiencesGain } = this.staticService.activities.useBugNet
 
-                // Fetch user data
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
@@ -111,13 +95,11 @@ export class UseBugNetService {
                     }
                 })
 
-                // Check if the user has enough energy
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                // Subtract energy and add experience
                 const energyChanges = this.energyService.substract({
                     user,
                     quantity: energyConsume
@@ -127,28 +109,22 @@ export class UseBugNetService {
                     experiences: experiencesGain
                 })
 
-                // Update the user data
                 await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
                     .session(session)
 
-                // Update placed item tile state
                 placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
                 await placedItemFruit.save({ session })
 
-                // Prepare the action message for success
                 actionMessage = {
                     placedItemId: placedItemFruitId,
                     action: ActionName.UseBugNet,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
 
-            // Send Kafka messages for both actions
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -159,10 +135,7 @@ export class UseBugNetService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
-            // Handle error and send the action message even if failure occurs
             this.logger.error(`Transaction failed, reason: ${error.message}`)
 
             if (actionMessage) {
@@ -172,10 +145,8 @@ export class UseBugNetService {
                 })
             }
 
-            // Since withTransaction automatically handles rollback, no need to manually abort the transaction
-            throw error // Re-throwing the error after logging and handling the action message
+            throw error
         } finally {
-            // End the session after the transaction
             await mongoSession.endSession()
         }
     }

@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package entities;
-
-message Position {
-    int32 x = 1;
-    int32 y = 2;
-}

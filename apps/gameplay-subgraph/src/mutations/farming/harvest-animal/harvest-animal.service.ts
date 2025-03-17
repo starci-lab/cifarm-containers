@@ -4,7 +4,6 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
     Activities,
-    ANIMAL_INFO,
     AnimalCurrentState,
     DefaultInfo,
     InjectMongoose,
@@ -59,7 +58,6 @@ export class HarvestAnimalService {
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
-                    .populate(ANIMAL_INFO)
                     .session(session)
 
                 if (!placedItemAnimal) {

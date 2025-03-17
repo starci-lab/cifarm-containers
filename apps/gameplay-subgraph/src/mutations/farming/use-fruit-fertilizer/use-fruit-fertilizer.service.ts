@@ -1,27 +1,22 @@
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
-import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
-    Activities,
-    FRUIT_INFO,
     FruitCurrentState,
     InjectMongoose,
     InventorySchema,
     InventoryType,
     InventoryTypeId,
     InventoryTypeSchema,
-    KeyValueRecord,
     PlacedItemSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
-import { Producer } from "kafkajs"
+import { EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { UseFruitFertilizerRequest } from "./use-fruit-fertilizer.dto"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class UseFruitFertilizerService {
@@ -32,6 +27,7 @@ export class UseFruitFertilizerService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly inventoryService: InventoryService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -39,8 +35,6 @@ export class UseFruitFertilizerService {
         { id: userId }: UserLike,
         { inventorySupplyId, placedItemFruitId }: UseFruitFertilizerRequest
     ): Promise<void> {
-        this.logger.debug(`Applying fruit fertilizer for user ${userId}, tile ID: ${placedItemFruitId}`)
-
         const mongoSession = await this.connection.startSession() // Create session
 
         let actionMessage: EmitActionPayload | undefined
@@ -48,47 +42,106 @@ export class UseFruitFertilizerService {
             // Using withTransaction to manage transaction lifecycle
             await mongoSession.withTransaction(async (session) => {
                 // Fetch inventory and inventoryType
-                const inventory = await this.connection.model<InventorySchema>(InventorySchema.name)
+                const inventory = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySupplyId)
                     .session(session)
 
-                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
+                const inventoryType = await this.connection
+                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findById(inventory.inventoryType)
                     .session(session)
 
                 // Fetch the placed item tile and check conditions
-                const placedItemFruit = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
+                const placedItemFruit = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
-                    .populate(FRUIT_INFO)
-                    .session(session)
+                    .session(session)   
 
-                if (!placedItemFruit) throw new NotFoundException("Fruit not found")
-                if (!placedItemFruit.fruitInfo) throw new NotFoundException("Fruit is not planted")
+                if (!placedItemFruit) {
+                    throw new GraphQLError("Tile not found", {
+                        extensions: {
+                            code: "TILE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                if (placedItemFruit.user.toString() !== userId) {
+                    throw new GraphQLError("Cannot use fruit fertilizer on other's tile", {
+                        extensions: {
+                            code: "UNAUTHORIZED_FRUIT_FERTILIZER"
+                        }
+                    })
+                }
+
+                if (!placedItemFruit.fruitInfo) {
+                    throw new GraphQLError("Tile has no fruit tree", {
+                        extensions: {
+                            code: "NO_FRUIT_TREE"
+                        }
+                    })
+                }
+
+                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.NeedFertilizer) {
+                    throw new GraphQLError("Tile does not need fertilizer", {
+                        extensions: {
+                            code: "TILE_DOES_NOT_NEED_FERTILIZER"
+                        }
+                    })
+                }
 
                 // Fetch system settings for fertilizer action
-                const { value: { useFruitFertilizer: { energyConsume, experiencesGain } } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.useFruitFertilizer
 
                 // Fetch the user and check energy
-                const user = await this.connection.model<UserSchema>(UserSchema.name)
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
-                this.energyService.checkSufficient({ current: user.energy, required: energyConsume })
+                this.energyService.checkSufficient({
+                    current: user.energy,
+                    required: energyConsume
+                })
 
                 // Validate inventory type
-                if (!inventoryType || inventoryType.type !== InventoryType.Supply) throw new BadRequestException("Inventory type is not supply")
-                if (inventoryType.displayId !== InventoryTypeId.FruitFertilizer) throw new BadRequestException("Inventory supply is not Fruit Fertilizer")
+                if (!inventoryType || inventoryType.type !== InventoryType.Supply) {
+                    throw new GraphQLError("Inventory type is not supply", {
+                        extensions: {
+                            code: "INVALID_INVENTORY_TYPE"
+                        }
+                    })
+                }
+
+                if (inventoryType.displayId !== InventoryTypeId.FruitFertilizer) {
+                    throw new GraphQLError("Inventory supply is not Fruit Fertilizer", {
+                        extensions: {
+                            code: "INVALID_FERTILIZER_TYPE"
+                        }
+                    })
+                }
 
                 // Deduct energy and add experience
-                const energyChanges = this.energyService.substract({ user, quantity: energyConsume })
-                const experienceChanges = this.levelService.addExperiences({ user, experiences: experiencesGain })
+                const energyChanges = this.energyService.substract({
+                    user,
+                    quantity: energyConsume
+                })
+                const experienceChanges = this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
 
-                await this.connection.model<UserSchema>(UserSchema.name)
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
                     .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
                     .session(session)
 
@@ -103,20 +156,24 @@ export class UseFruitFertilizerService {
 
                 const { removedInventories, updatedInventories } = this.inventoryService.remove({
                     inventories,
-                    quantity: 1,
+                    quantity: 1
                 })
 
                 // Update inventories
                 for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name)
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
                         .updateOne({ _id: inventory._id }, inventory)
                         .session(session)
                 }
 
                 // Delete removed inventories
-                await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
-                    _id: { $in: removedInventories.map(inventory => inventory._id) }
-                }).session(session)
+                await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .deleteMany({
+                        _id: { $in: removedInventories.map((inventory) => inventory._id) }
+                    })
+                    .session(session)
 
                 // Update placed item tile
                 placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
@@ -127,7 +184,7 @@ export class UseFruitFertilizerService {
                     placedItemId: placedItemFruitId,
                     action: ActionName.UseFruitFertilizer,
                     success: true,
-                    userId,
+                    userId
                 }
 
                 // No return value needed for void
@@ -144,7 +201,6 @@ export class UseFruitFertilizerService {
                     messages: [{ value: JSON.stringify({ placedItemFruitId }) }]
                 })
             ])
-
 
             // No return value needed for void
         } catch (error) {

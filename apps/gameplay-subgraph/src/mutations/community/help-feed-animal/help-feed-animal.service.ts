@@ -1,10 +1,7 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
 import {
-    Activities,
-    ANIMAL_INFO,
     AnimalCurrentState,
     InjectMongoose,
     InventorySchema,
@@ -12,11 +9,9 @@ import {
     InventoryTypeId,
     InventoryTypeSchema,
     PlacedItemSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HelpFeedAnimalRequest } from "./help-feed-animal.dto"
@@ -30,6 +25,7 @@ export class HelpFeedAnimalService {
     constructor(
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         @InjectMongoose() private readonly connection: Connection,
+        private readonly staticService: StaticService,
         private readonly inventoryService: InventoryService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService
@@ -48,7 +44,6 @@ export class HelpFeedAnimalService {
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
-                    .populate(ANIMAL_INFO)
                     .session(session)
 
                 if (!placedItemAnimal) {
@@ -97,14 +92,7 @@ export class HelpFeedAnimalService {
                     })
                 }
 
-                const { value } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById(createObjectId(SystemId.Activities))
-                    .session(session)
-
-                const {
-                    helpFeedAnimal: { energyConsume, experiencesGain }
-                } = value as Activities
+                const { energyConsume, experiencesGain } = this.staticService.activities.helpFeedAnimal
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)

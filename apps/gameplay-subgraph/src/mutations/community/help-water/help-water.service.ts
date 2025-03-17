@@ -2,19 +2,14 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    Activities,
     CropCurrentState,
     InjectMongoose,
-    KeyValueRecord,
     PlacedItemSchema,
-    SystemId,
-    SystemSchema,
     UserSchema,
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService } from "@src/gameplay"
 import { HelpWaterRequest } from "./help-water.dto"
 import { Connection } from "mongoose"
-import { createObjectId } from "@src/common"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
@@ -27,7 +22,8 @@ export class HelpWaterService {
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        private readonly staticService: StaticService
     ) {}
 
     async helpWater(
@@ -108,10 +104,7 @@ export class HelpWaterService {
                 }
 
                 // Fetch system activity values
-                const { value: { helpWater: { energyConsume, experiencesGain } } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(mongoSession)
+                const { energyConsume, experiencesGain } = this.staticService.activities.helpWater
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)

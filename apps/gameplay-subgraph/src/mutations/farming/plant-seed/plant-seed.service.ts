@@ -1,19 +1,15 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
 import {
-    Activities,
     CropCurrentState,
     CropSchema,
     InjectMongoose,
     InventorySchema,
     InventoryTypeSchema,
     PlacedItemSchema,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { PlantSeedRequest } from "./plant-seed.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -31,6 +27,7 @@ export class PlantSeedService {
         private readonly energyService: EnergyService,
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -82,14 +79,7 @@ export class PlantSeedService {
                     })
                 }
 
-                const {
-                    value: {
-                        plantSeed: { energyConsume, experiencesGain }
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
+                const { energyConsume, experiencesGain } = this.staticService.activities.plantSeed
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)

@@ -5,7 +5,6 @@ import { createObjectId } from "@src/common"
 import {
     Activities,
     DefaultInfo,
-    FRUIT_INFO,
     FruitCurrentState,
     FruitSchema,
     InjectMongoose,
@@ -53,7 +52,6 @@ export class HarvestFruitService {
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
-                    .populate(FRUIT_INFO)
                     .session(session)
 
                 if (!placedItemFruit) throw new NotFoundException("Fruit not found")

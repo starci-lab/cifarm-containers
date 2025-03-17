@@ -11,7 +11,7 @@ import {
     PlacedItemTypeSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService } from "@src/gameplay"
+import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyAnimalRequest } from "./buy-animal.dto"
@@ -26,6 +26,7 @@ export class BuyAnimalService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 

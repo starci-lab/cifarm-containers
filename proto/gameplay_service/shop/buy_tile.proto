@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package gameplay_service;
-
-message BuyTileRequest {
-    string userId = 1;
-    Position position = 2;
-    string tileId = 3;
-}

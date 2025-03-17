@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-package gameplay_service;
-
-message HelpUseHerbicideRequest {
-    string userId = 1;
-    string placedItemTileId = 2;
-}

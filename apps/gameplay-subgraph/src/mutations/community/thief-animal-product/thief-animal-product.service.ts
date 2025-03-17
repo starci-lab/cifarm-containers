@@ -2,27 +2,20 @@ import { ActionName, EmitActionPayload, ThiefAnimalProductData } from "@apps/io-
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    Activities,
     AnimalCurrentState,
-    AnimalRandomness,
-    DefaultInfo,
     InjectMongoose,
     InventorySchema,
     InventoryType,
     InventoryTypeSchema,
-    KeyValueRecord,
     PlacedItemSchema,
     ProductSchema,
     ProductType,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, ThiefService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, ThiefService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
-import { createObjectId } from "@src/common"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 
@@ -36,7 +29,8 @@ export class ThiefAnimalProductService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly thiefService: ThiefService,
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
+        private readonly staticService: StaticService
     ) {}
 
     async thiefAnimalProduct(
@@ -95,15 +89,7 @@ export class ThiefAnimalProductService {
                     })
                 }
 
-                const {
-                    value: {
-                        thiefAnimalProduct: { energyConsume, experiencesGain }
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(mongoSession)
-
+                const { energyConsume, experiencesGain } = this.staticService.activities.thiefAnimalProduct
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
@@ -124,14 +110,7 @@ export class ThiefAnimalProductService {
                     experiences: experiencesGain
                 })
 
-                const {
-                    value: { thief2, thief3 }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<
-                        KeyValueRecord<AnimalRandomness>
-                    >(createObjectId(SystemId.AnimalRandomness))
-                    .session(mongoSession)
+                const { thief2, thief3 } = this.staticService.animalRandomness
 
                 const { value: computedQuantity } = this.thiefService.compute({
                     thief2,
@@ -185,11 +164,7 @@ export class ThiefAnimalProductService {
                     session: mongoSession
                 })
 
-                const {
-                    value: { storageCapacity }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                const { storageCapacity } = this.staticService.defaultInfo
 
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,

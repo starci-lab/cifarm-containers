@@ -6,8 +6,7 @@ import {
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    Activities,
-    FruitCurrentState, FruitRandomness, DefaultInfo, InjectMongoose, InventorySchema,
+    FruitCurrentState, DefaultInfo, InjectMongoose, InventorySchema,
     InventoryType,
     InventoryTypeSchema, KeyValueRecord, PlacedItemSchema, ProductSchema, ProductType, SystemId,
     SystemSchema,
@@ -18,6 +17,7 @@ import {
     InventoryService,
     LevelService,
     ThiefService,
+    StaticService
 } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
@@ -36,7 +36,8 @@ export class ThiefFruitService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly thiefService: ThiefService,
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
+        private readonly staticService: StaticService
     ) {}
 
     async thiefFruit(
@@ -95,10 +96,7 @@ export class ThiefFruitService {
                     })
                 }
 
-                const { value: { thiefFruit: { energyConsume, experiencesGain } } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(mongoSession)
+                const { energyConsume, experiencesGain } = this.staticService.activities.thiefFruit
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -120,10 +118,7 @@ export class ThiefFruitService {
                     experiences: experiencesGain,
                 })
 
-                const { value: { thief2, thief3 } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<FruitRandomness>>(createObjectId(SystemId.FruitRandomness))
-                    .session(mongoSession)
+                const { thief2, thief3 } = this.staticService.fruitRandomness
 
                 const { value: computedQuantity } = this.thiefService.compute({
                     thief2, thief3

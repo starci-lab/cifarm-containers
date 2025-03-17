@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package gameplay_service;
-
-message ReturnRequest {
-    string userId = 1;
-}

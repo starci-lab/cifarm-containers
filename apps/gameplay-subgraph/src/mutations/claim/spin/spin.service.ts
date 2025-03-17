@@ -6,7 +6,6 @@ import {
 } from "@nestjs/common"
 import {
     AppearanceChance,
-    DefaultInfo,
     InjectMongoose,
     InventorySchema,
     InventoryType,
@@ -16,15 +15,12 @@ import {
     SpinPrizeSchema,
     SpinPrizeType,
     SpinSlotSchema,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, InventoryService, TokenBalanceService } from "@src/gameplay"
+import { GoldBalanceService, InventoryService, StaticService, TokenBalanceService } from "@src/gameplay"
 import { SpinResponse } from "./spin.dto"
 import { DateUtcService } from "@src/date"
-import { createObjectId, DeepPartial } from "@src/common"
+import { DeepPartial } from "@src/common"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 
@@ -38,7 +34,8 @@ export class SpinService {
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
         private readonly inventoryService: InventoryService,
-        private readonly dateUtcService: DateUtcService
+        private readonly dateUtcService: DateUtcService,
+        private readonly staticService: StaticService       
     ) {}
 
     async spin({ id: userId }: UserLike): Promise<SpinResponse> {
@@ -46,12 +43,7 @@ export class SpinService {
         try {
             const result = await mongoSession.withTransaction(async () => {
                 // Get the default info
-                const {
-                    value: { storageCapacity }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                    .session(mongoSession)
+                const { storageCapacity } = this.staticService.defaultInfo
 
                 // Get latest spin info
                 const user = await this.connection
@@ -76,12 +68,9 @@ export class SpinService {
                 }
 
                 // Get spin info and appearance chance
-                const { value } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
-                    .session(mongoSession)
+                const { spinInfo } = this.staticService
 
-                const chance = this.getAppearanceChance(value)
+                const chance = this.getAppearanceChance(spinInfo)
                 const rewardableSlots = spinSlots.filter(
                     (slot) => (slot.spinPrize as SpinPrizeSchema).appearanceChance === chance
                 )

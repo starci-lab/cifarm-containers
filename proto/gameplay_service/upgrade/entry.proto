@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package gameplay_service;
-
-import  "../../entities/entry.proto";
-import "./upgrade_building.proto";
-
-
-

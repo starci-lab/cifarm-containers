@@ -1,22 +1,19 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
-import { createObjectId } from "@src/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
-    Activities,
     CropCurrentState,
     InjectMongoose,
     PlacedItemSchema,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { UseHerbicideRequest } from "./use-herbicide.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Producer } from "kafkajs"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class UseHerbicideService {
@@ -26,7 +23,9 @@ export class UseHerbicideService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
+        private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -48,37 +47,39 @@ export class UseHerbicideService {
                     .session(session)
 
                 if (!placedItemTile) {
-                    actionMessage = {
-                        placedItemId: placedItemTileId,
-                        action: ActionName.UseHerbicide,
-                        success: false,
-                        userId,
-                        reasonCode: 0
-                    }
-                    throw new NotFoundException("Tile not found")
+                    throw new GraphQLError("Tile not found", {
+                        extensions: {
+                            code: "TILE_NOT_FOUND"
+                        }
+                    })
                 }
 
                 if (placedItemTile.user.toString() !== userId) {
-                    throw new BadRequestException("Cannot use herbicide on other's tile")
+                    throw new GraphQLError("Cannot use herbicide on other's tile", {
+                        extensions: {
+                            code: "UNAUTHORIZED_HERBICIDE"
+                        }
+                    })
                 }
 
                 if (!placedItemTile.seedGrowthInfo) {
-                    throw new BadRequestException("Tile is not planted")
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_NOT_PLANTED"
+                        }
+                    })
                 }
 
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
-                    throw new BadRequestException("Tile is not weedy")
+                    throw new GraphQLError("Tile is not weedy", {
+                        extensions: {
+                            code: "TILE_NOT_WEEDY"
+                        }
+                    })
                 }
 
                 // Fetch system configuration (activity settings)
-                const {
-                    value: {
-                        useHerbicide: { energyConsume, experiencesGain }
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
+                const { energyConsume, experiencesGain } = this.staticService.activities.useHerbicide
 
                 // Fetch user data
                 const user = await this.connection
@@ -86,7 +87,13 @@ export class UseHerbicideService {
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 // Check if the user has enough energy
                 this.energyService.checkSufficient({

@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package gameplay_service;
-
-message BuySuppliesRequest {
-    string supplyId = 1;
-    string userId = 2;
-    int32 quantity = 3;
-}

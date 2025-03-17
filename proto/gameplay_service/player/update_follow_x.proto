@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package gameplay_service;
-
-message UpdateFollowXRequest {
-    string userId = 1;
-}
