@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
@@ -19,9 +19,9 @@ import {
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { CureAnimalRequest } from "./cure-animal.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class CureAnimalService {
@@ -51,12 +51,27 @@ export class CureAnimalService {
                     .findById(placedItemAnimalId)
                     .session(session)
 
-                if (!placedItemAnimal)
-                    throw new GrpcNotFoundException("Placed Item animal not found")
-                if (placedItemAnimal.user.toString() !== userId)
-                    throw new BadRequestException("Cannot cure another user's animal")
-                if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick)
-                    throw new BadRequestException("Animal is not sick")
+                if (!placedItemAnimal) {
+                    throw new GraphQLError("Placed Item animal not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_ANIMAL_NOT_FOUND"
+                        }
+                    })
+                }
+                if (placedItemAnimal.user.toString() !== userId) {
+                    throw new GraphQLError("Cannot cure another user's animal", {
+                        extensions: {
+                            code: "CANNOT_CURE_OTHERS_ANIMAL"
+                        }
+                    })
+                }
+                if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
+                    throw new GraphQLError("Animal is not sick", {
+                        extensions: {
+                            code: "ANIMAL_NOT_SICK"
+                        }
+                    })
+                }
 
                 // Fetch system configuration for cure
                 const {
@@ -74,7 +89,13 @@ export class CureAnimalService {
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 // Check if the user has sufficient energy
                 this.energyService.checkSufficient({
@@ -98,17 +119,34 @@ export class CureAnimalService {
                     .findById(inventorySupplyId)
                     .session(session)
 
-                if (!inventory) throw new NotFoundException("Inventory not found")
+                if (!inventory) {
+                    throw new GraphQLError("Inventory not found", {
+                        extensions: {
+                            code: "INVENTORY_NOT_FOUND"
+                        }
+                    })
+                }
 
                 const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findById(inventory.inventoryType)
                     .session(session)
 
-                if (!inventoryType || inventoryType.type !== InventoryType.Tool)
-                    throw new BadRequestException("Inventory type is not supply")
-                if (inventoryType.displayId !== InventoryTypeId.AnimalMedicine)
-                    throw new BadRequestException("Inventory supply is not medicine")
+                if (!inventoryType || inventoryType.type !== InventoryType.Supply) {
+                    throw new GraphQLError("Inventory type is not supply", {
+                        extensions: {
+                            code: "INVALID_INVENTORY_TYPE"
+                        }
+                    })
+                }
+
+                if (inventoryType.displayId !== InventoryTypeId.AnimalMedicine) {
+                    throw new GraphQLError("Inventory supply is not medicine", {
+                        extensions: {
+                            code: "INVALID_SUPPLY_TYPE"
+                        }
+                    })
+                }
 
                 // Update user with energy and experience changes
                 await this.connection

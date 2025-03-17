@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
@@ -19,7 +19,7 @@ import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyFruitRequest } from "./buy-fruit.dto"
 import { UserLike } from "@src/jwt"
-
+import { GraphQLError } from "graphql"
 @Injectable()
 export class BuyFruitService {
     private readonly logger = new Logger(BuyFruitService.name)
@@ -45,9 +45,17 @@ export class BuyFruitService {
                     .findById(createObjectId(fruitId))
                     .session(mongoSession)
 
-                if (!fruit) throw new NotFoundException("Fruit not found")
+                if (!fruit) throw new GraphQLError("Fruit not found", {
+                    extensions: {
+                        code: "FRUIT_NOT_FOUND",
+                    }
+                })
                 if (!fruit.availableInShop)
-                    throw new BadRequestException("Fruit not available in shop")
+                    throw new GraphQLError("Fruit not available in shop", {
+                        extensions: {
+                            code: "FRUIT_NOT_AVAILABLE_IN_SHOP",
+                        }
+                    })
 
                 const {
                     value: { fruitLimit }
@@ -93,7 +101,11 @@ export class BuyFruitService {
                     })
                     .session(mongoSession)
 
-                if (count >= fruitLimit) throw new BadRequestException("Max fruit limit reached")
+                if (count >= fruitLimit) throw new GraphQLError("Max fruit limit reached", {
+                    extensions: {
+                        code: "MAX_FRUIT_LIMIT_REACHED",
+                    }
+                })
 
                 // Save the placed item (fruit) in the database
                 const [placedItemFruitRaw] = await this.connection

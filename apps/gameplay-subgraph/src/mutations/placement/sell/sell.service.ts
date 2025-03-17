@@ -1,12 +1,13 @@
 import { ActionName, EmitActionPayload, SellData } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { AnimalSchema, BUILDING_INFO, BuildingSchema, InjectMongoose, PlacedItemSchema, PlacedItemType, PlacedItemTypeSchema, TileSchema, UserSchema } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { SellRequest } from "./sell.dto"
-import { UserLike } from "@src/jwt" 
+import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class SellService {
@@ -27,7 +28,6 @@ export class SellService {
         let actionMessage: EmitActionPayload<SellData> | undefined
 
         try {
-            // Using `withTransaction` for automatic transaction handling
             await mongoSession.withTransaction(async () => {
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -35,26 +35,35 @@ export class SellService {
                     .populate(BUILDING_INFO)
                     .session(mongoSession)
 
-                //check user id
-                if (placedItem.user.toString() !== userId) {
-                    throw new NotFoundException("User not match")
+                if (!placedItem) {
+                    throw new GraphQLError("Placed item not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_NOT_FOUND"
+                        }
+                    })
                 }
 
-                // If the placed item is not found, throw an error
-                if (!placedItem) throw new NotFoundException("Placed item not found")
+                if (placedItem.user.toString() !== userId) {
+                    throw new GraphQLError("User not match", {
+                        extensions: {
+                            code: "USER_NOT_MATCH"
+                        }
+                    })
+                }
 
-                //get placed item type
                 const placedItemType = await this.connection
                     .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
                     .findById(placedItem.placedItemType)
                     .session(mongoSession)
 
-                //check sellable
                 if (!placedItemType.sellable) {
-                    throw new BadRequestException("Item not sellable")
+                    throw new GraphQLError("Item not sellable", {
+                        extensions: {
+                            code: "ITEM_NOT_SELLABLE"
+                        }
+                    })
                 }
 
-                //get sell price
                 let sellPrice: number = 0
 
                 switch (placedItemType.type) {
@@ -65,7 +74,11 @@ export class SellService {
                         .session(mongoSession)
 
                     if (!building) {
-                        throw new NotFoundException("Building not found")
+                        throw new GraphQLError("Building not found", {
+                            extensions: {
+                                code: "BUILDING_NOT_FOUND"
+                            }
+                        })
                     }
                     const upgradeLevel = placedItem?.buildingInfo?.currentUpgrade ?? 1
                     const upgradePrice = building.upgrades?.find(upgrade => upgrade.upgradeLevel === upgradeLevel)?.sellPrice ?? 0
@@ -78,7 +91,11 @@ export class SellService {
                         .findById(placedItemType.tile)
                         .session(mongoSession)
                     if (!tile) {
-                        throw new NotFoundException("Tile not found")
+                        throw new GraphQLError("Tile not found", {
+                            extensions: {
+                                code: "TILE_NOT_FOUND"
+                            }
+                        })
                     }
                     sellPrice = tile.sellPrice ?? 0
                     break
@@ -89,7 +106,11 @@ export class SellService {
                         .findById(placedItemType.animal)
                         .session(mongoSession)
                     if (!animal) {
-                        throw new NotFoundException("Animal not found")
+                        throw new GraphQLError("Animal not found", {
+                            extensions: {
+                                code: "ANIMAL_NOT_FOUND"
+                            }
+                        })
                     }
                     sellPrice = animal.sellPrice ?? 0
                     break

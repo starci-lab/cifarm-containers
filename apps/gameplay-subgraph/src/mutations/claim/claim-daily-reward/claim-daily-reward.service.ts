@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     DailyRewardInfo,
     DailyRewardId,
@@ -13,6 +13,7 @@ import { createObjectId, DeepPartial } from "@src/common"
 import { DateUtcService } from "@src/date"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class ClaimDailyRewardService {
@@ -43,7 +44,14 @@ export class ClaimDailyRewardService {
                     user.dailyRewardLastClaimTime &&
                     now.isSame(user.dailyRewardLastClaimTime, "day")
                 ) {
-                    throw new BadRequestException("Daily reward already claimed today")
+                    throw new GraphQLError(
+                        "Daily reward already claimed today",
+                        {
+                            extensions: {
+                                code: "DAILY_REWARD_ALREADY_CLAIMED_TODAY"
+                            }
+                        }
+                    )
                 }
 
                 const { value } = await this.connection

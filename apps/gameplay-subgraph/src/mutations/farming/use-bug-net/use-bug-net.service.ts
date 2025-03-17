@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
@@ -13,11 +13,12 @@ import {
     SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { UseBugNetRequest } from "./use-bug-net.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class UseBugNetService {
@@ -28,8 +29,8 @@ export class UseBugNetService {
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer
+        private readonly inventoryService: InventoryService,
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
     async useBugNet(
@@ -57,19 +58,35 @@ export class UseBugNetService {
                         userId,
                         reasonCode: 0
                     }
-                    throw new NotFoundException("Fruit not found")
+                    throw new GraphQLError("Fruit not found", {
+                        extensions: {
+                            code: "FRUIT_NOT_FOUND"
+                        }
+                    })
                 }
 
                 if (placedItemFruit.user.toString() !== userId) {
-                    throw new BadRequestException("Cannot use bugnet on other's tile")
+                    throw new GraphQLError("Cannot use bugnet on other's tile", {
+                        extensions: {
+                            code: "UNAUTHORIZED_BUGNET"
+                        }
+                    })
                 }
 
                 if (!placedItemFruit.fruitInfo) {
-                    throw new BadRequestException("Fruit is not planted")
+                    throw new GraphQLError("Fruit is not planted", {
+                        extensions: {
+                            code: "FRUIT_NOT_PLANTED"
+                        }
+                    })
                 }
 
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsInfested) {
-                    throw new BadRequestException("Fruit is not weedy")
+                    throw new GraphQLError("Fruit is not weedy", {
+                        extensions: {
+                            code: "FRUIT_NOT_INFESTED"
+                        }
+                    })
                 }
 
                 // Fetch system configuration (activity settings)
@@ -88,7 +105,11 @@ export class UseBugNetService {
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) throw new GraphQLError("User not found", {
+                    extensions: {
+                        code: "USER_NOT_FOUND"
+                    }
+                })
 
                 // Check if the user has enough energy
                 this.energyService.checkSufficient({

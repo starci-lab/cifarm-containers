@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common"
+import { Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
     Activities,
@@ -17,6 +17,7 @@ import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class HelpUsePesticideService {
@@ -64,7 +65,11 @@ export class HelpUsePesticideService {
                         userId,
                         reasonCode: 1
                     }
-                    throw new BadRequestException("Cannot use pesticide on your own tile")
+                    throw new GraphQLError("Cannot use pesticide on your own tile", {
+                        extensions: {
+                            code: "CANNOT_USE_PESTICIDE_ON_YOUR_OWN_TILE",
+                        }
+                    })
                 }
 
                 if (!placedItemTile.seedGrowthInfo) {
@@ -75,7 +80,11 @@ export class HelpUsePesticideService {
                         userId,
                         reasonCode: 2
                     }
-                    throw new BadRequestException("Tile is not planted")
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_IS_NOT_PLANTED",
+                        }
+                    })
                 }
 
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested) {
@@ -86,7 +95,11 @@ export class HelpUsePesticideService {
                         userId,
                         reasonCode: 3
                     }
-                    throw new BadRequestException("Tile is not infested")
+                    throw new GraphQLError("Tile is not infested", {
+                        extensions: {
+                            code: "TILE_IS_NOT_INFECTED",
+                        }
+                    })
                 }
 
                 // Fetch system activity values
@@ -103,7 +116,11 @@ export class HelpUsePesticideService {
                     .findById(userId)
                     .session(mongoSession)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) throw new GraphQLError("User not found", {
+                    extensions: {
+                        code: "USER_NOT_FOUND",
+                    }
+                })
 
                 // Check if user has enough energy
                 this.energyService.checkSufficient({

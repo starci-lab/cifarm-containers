@@ -1,9 +1,10 @@
-import { Injectable, Logger, NotFoundException, UnauthorizedException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { JwtService } from "@src/jwt"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
 import { DateUtcService } from "@src/date"
 import { InjectMongoose, SessionSchema } from "@src/databases"
 import { Connection } from "mongoose"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class RefreshService {
@@ -29,14 +30,22 @@ export class RefreshService {
                     .session(mongoSession)
 
                 if (!session) {
-                    throw new NotFoundException("Session not found")
+                    throw new GraphQLError("Session not found", {
+                        extensions: {
+                            code: "SESSION_NOT_FOUND"
+                        }
+                    })
                 }
 
                 const { expiredAt } = session
 
                 // Check if the refresh token has expired
                 if (this.dateUtcService.getDayjs().isAfter(expiredAt)) {
-                    throw new UnauthorizedException("Refresh token is expired")
+                    throw new GraphQLError("Refresh token is expired", {
+                        extensions: {
+                            code: "REFRESH_TOKEN_EXPIRED"
+                        }
+                    })
                 }
 
                 // Generate new access and refresh tokens

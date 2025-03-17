@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     DefaultInfo,
@@ -17,6 +17,8 @@ import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyToolRequest } from "./buy-tool.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
+
 
 @Injectable()   
 export class BuyToolService {
@@ -46,17 +48,28 @@ export class BuyToolService {
                     .findById(createObjectId(toolId))
                     .session(mongoSesion)
 
-                if (!tool) throw new NotFoundException("Tool not found")
+                if (!tool) throw new GraphQLError("Tool not found", {
+                    extensions: {
+                        code: "TOOL_NOT_FOUND",
+                    }
+                })
                 if (!tool.availableInShop)
-                    throw new BadRequestException("Tool not available in shop")
-
+                    throw new GraphQLError("Tool not available in shop", {
+                        extensions: {
+                            code: "TOOL_NOT_AVAILABLE_IN_SHOP",
+                        }
+                    })
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) throw new GraphQLError("User not found", {
+                    extensions: {
+                        code: "USER_NOT_FOUND",
+                    }
+                })
 
                 // Check sufficient gold
                 this.goldBalanceService.checkSufficient({
@@ -92,7 +105,11 @@ export class BuyToolService {
                     .session(mongoSesion)
 
                 if (userHasTool) {
-                    throw new BadRequestException("User already has the tool")
+                    throw new GraphQLError("User already has the tool", {
+                        extensions: {
+                            code: "USER_ALREADY_HAS_THE_TOOL",
+                        }
+                    })
                 }
 
                 // Get the first unoccupied index

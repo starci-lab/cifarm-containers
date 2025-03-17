@@ -8,6 +8,6 @@ export class BlockchainException extends Error {
 }
 
 export enum BlockchainErrorCode {
-    ChainKeyNotFound,
-    PlatformNotFound
+    ChainKeyNotFound = "CHAIN_KEY_NOT_FOUND",
+    PlatformNotFound = "PLATFORM_NOT_FOUND"
 }

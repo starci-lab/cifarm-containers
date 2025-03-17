@@ -1,10 +1,11 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { VisitRequest, VisitResponse } from "./visit.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class VisitService {
@@ -41,7 +42,11 @@ export class VisitService {
 
                     // If no random user is found, throw an error
                     if (!randomUser.length) {
-                        throw new NotFoundException("No random user found")
+                        throw new GraphQLError("No random user found", {
+                            extensions: {
+                                code: "NO_RANDOM_USER_FOUND",
+                            }
+                        })
                     }
                     neighborUserId = randomUser[0]._id
                 }

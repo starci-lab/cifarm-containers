@@ -1,4 +1,6 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Injectable, Logger } from "@nestjs/common"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
     Activities,
@@ -15,13 +17,11 @@ import {
     UserSchema
 } from "@src/databases"
 import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
-import { Connection } from "mongoose"
-import { GrpcInternalException, GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { FeedAnimalRequest } from "./feed-animal.dto"
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { Connection } from "mongoose"
+import { FeedAnimalRequest } from "./feed-animal.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class FeedAnimalService {
@@ -51,11 +51,27 @@ export class FeedAnimalService {
                     .findById(placedItemAnimalId)
                     .session(session)
 
-                if (!placedItemAnimal) throw new NotFoundException("Placed Item animal not found")
-                if (placedItemAnimal.user.toString() !== userId)
-                    throw new BadRequestException("Cannot feed another user's animal")
-                if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry)
-                    throw new BadRequestException("Animal is not hungry")
+                if (!placedItemAnimal) {
+                    throw new GraphQLError("Placed Item animal not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_ANIMAL_NOT_FOUND"
+                        }
+                    })
+                }
+                if (placedItemAnimal.user.toString() !== userId) {
+                    throw new GraphQLError("Cannot feed another user's animal", {
+                        extensions: {
+                            code: "CANNOT_FEED_OTHERS_ANIMAL"
+                        }
+                    })
+                }
+                if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry) {
+                    throw new GraphQLError("Animal is not hungry", {
+                        extensions: {
+                            code: "ANIMAL_NOT_HUNGRY"
+                        }
+                    })
+                }
 
                 // Fetch system configuration
                 const {
@@ -73,7 +89,13 @@ export class FeedAnimalService {
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new GrpcNotFoundException("User not found")
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 // Check if the user has sufficient energy
                 this.energyService.checkSufficient({
@@ -97,17 +119,33 @@ export class FeedAnimalService {
                     .findById(inventorySupplyId)
                     .session(session)
 
-                if (!inventory) throw new NotFoundException("Inventory not found")
+                if (!inventory) {
+                    throw new GraphQLError("Inventory not found", {
+                        extensions: {
+                            code: "INVENTORY_NOT_FOUND"
+                        }
+                    })
+                }
 
                 const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findById(inventory.inventoryType)
                     .session(session)
 
-                if (!inventoryType || inventoryType.type !== InventoryType.Supply)
-                    throw new BadRequestException("Inventory type is not supply")
-                if (inventoryType.displayId !== InventoryTypeId.AnimalFeed)
-                    throw new BadRequestException("Inventory supply is not animal feed")
+                if (!inventoryType || inventoryType.type !== InventoryType.Supply) {
+                    throw new GraphQLError("Inventory type is not supply", {
+                        extensions: {
+                            code: "INVALID_INVENTORY_TYPE"
+                        }
+                    })
+                }
+                if (inventoryType.displayId !== InventoryTypeId.AnimalFeed) {
+                    throw new GraphQLError("Inventory supply is not animal feed", {
+                        extensions: {
+                            code: "INVALID_SUPPLY_TYPE"
+                        }
+                    })
+                }
 
                 // Update user with energy and experience changes
                 await this.connection
@@ -185,7 +223,7 @@ export class FeedAnimalService {
             }
 
             // withTransaction handles rollback automatically, no need for manual abort
-            throw new GrpcInternalException(error.message)
+            throw error
         } finally {
             // End the session after the transaction is complete
             await mongoSession.endSession()

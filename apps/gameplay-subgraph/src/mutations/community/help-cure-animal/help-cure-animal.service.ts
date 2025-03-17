@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { HelpCureAnimalRequest } from "./help-cure-animal.dto"
@@ -16,6 +16,8 @@ import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
+
 
 @Injectable()
 export class HelpCureAnimalService {
@@ -51,7 +53,11 @@ export class HelpCureAnimalService {
                         userId,
                         reasonCode: 0
                     }
-                    throw new NotFoundException("Placed item animal not found")
+                    throw new GraphQLError("Placed item animal not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_ANIMAL_NOT_FOUND",
+                        }
+                    })
                 }
 
                 neighborUserId = placedItemAnimal.user.toString()
@@ -63,7 +69,11 @@ export class HelpCureAnimalService {
                         userId,
                         reasonCode: 1
                     }
-                    throw new BadRequestException("Cannot help cure on your own tile")
+                    throw new GraphQLError("Cannot help cure on your own tile", {
+                        extensions: {
+                            code: "CANNOT_HELP_CURE_ON_YOUR_OWN_TILE",
+                        }
+                    })
                 }
 
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
@@ -74,7 +84,11 @@ export class HelpCureAnimalService {
                         userId,
                         reasonCode: 3
                     }
-                    throw new BadRequestException("Animal is not sick")
+                    throw new GraphQLError("Animal is not sick", {
+                        extensions: {
+                            code: "ANIMAL_IS_NOT_SICK",
+                        }
+                    })
                 }
 
                 const { value } = await this.connection

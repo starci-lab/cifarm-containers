@@ -1,11 +1,12 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { InjectMongoose, PlacedItemSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { MoveRequest } from "./move.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class MoveService {
@@ -25,20 +26,27 @@ export class MoveService {
         let actionMessage: EmitActionPayload | undefined
 
         try {
-            // Using `withTransaction` for automatic transaction handling
             await mongoSession.withTransaction(async () => {
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
                     .session(mongoSession)
 
-                //check user id
-                if (placedItem.user.toString() !== userId) {
-                    throw new NotFoundException("User not match")
+                if (!placedItem) {
+                    throw new GraphQLError("Placed item not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_NOT_FOUND"
+                        }
+                    })
                 }
 
-                // If the placed item is not found, throw an error
-                if (!placedItem) throw new NotFoundException("Placed item not found")
+                if (placedItem.user.toString() !== userId) {
+                    throw new GraphQLError("User not match", {
+                        extensions: {
+                            code: "USER_NOT_MATCH"
+                        }
+                    })
+                }
 
                 // Update the placed item position in the database
                 await this.connection

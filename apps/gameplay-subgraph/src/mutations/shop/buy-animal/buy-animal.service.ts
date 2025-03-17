@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
@@ -11,20 +12,21 @@ import {
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
+import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyAnimalRequest } from "./buy-animal.dto"
-import { Producer } from "kafkajs"
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class BuyAnimalService {
     private readonly logger = new Logger(BuyAnimalService.name)
 
     constructor(
-    @InjectMongoose() private readonly connection: Connection,
-    private readonly goldBalanceService: GoldBalanceService,
-    @InjectKafkaProducer() private readonly kafkaProducer: Producer
+        @InjectMongoose()
+        private readonly connection: Connection,
+        private readonly goldBalanceService: GoldBalanceService,
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
     async buyAnimal(
@@ -44,9 +46,20 @@ export class BuyAnimalService {
                     .findById(createObjectId(animalId))
                     .session(mongoSession)
 
-                if (!animal) throw new NotFoundException("Animal not found")
-                if (!animal.availableInShop)
-                    throw new BadRequestException("Animal not available in shop")
+                if (!animal) {
+                    throw new GraphQLError("Animal not found", {
+                        extensions: {
+                            code: "ANIMAL_NOT_FOUND"
+                        }
+                    })
+                }
+                if (!animal.availableInShop) {
+                    throw new GraphQLError("Animal not available in shop", {
+                        extensions: {
+                            code: "ANIMAL_NOT_AVAILABLE"
+                        }
+                    })
+                }
 
                 // Get building for the animal
                 const building = await this.connection
@@ -63,7 +76,13 @@ export class BuyAnimalService {
                     })
                     .session(mongoSession)
     
-                if (!placedItemBuildingType) throw new NotFoundException("Building not found")
+                if (!placedItemBuildingType) {
+                    throw new GraphQLError("Building not found", {
+                        extensions: {
+                            code: "BUILDING_NOT_FOUND"
+                        }
+                    })
+                }
                 
                 const placedItemAnimalType = await this.connection
                     .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
@@ -72,6 +91,14 @@ export class BuyAnimalService {
                         animal: animal.id
                     })
                     .session(mongoSession)
+    
+                if (!placedItemAnimalType) {
+                    throw new GraphQLError("Animal type not found", {
+                        extensions: {
+                            code: "ANIMAL_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
 
                 // Fetch user data
                 const user = await this.connection
@@ -123,7 +150,11 @@ export class BuyAnimalService {
 
                 // Ensure the user hasn't reached the max animal capacity
                 if (animalCount >= maxCapacity) {
-                    throw new BadRequestException("Max capacity reached")
+                    throw new GraphQLError("Max capacity reached", {
+                        extensions: {
+                            code: "MAX_CAPACITY_REACHED"
+                        }
+                    })
                 }
 
                 // Fetch the placed item type for the animal

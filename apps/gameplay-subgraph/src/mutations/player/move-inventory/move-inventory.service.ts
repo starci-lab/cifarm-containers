@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     DefaultInfo,
     InjectMongoose,
@@ -14,6 +14,7 @@ import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
 import { MoveInventoryRequest } from "./move-inventory.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class MoveInventoryService {
@@ -47,7 +48,11 @@ export class MoveInventoryService {
 
                 const capacity = isTool ? toolCapacity : storageCapacity
                 if (index >= capacity) {
-                    throw new BadRequestException("Inventory index is out of range")
+                    throw new GraphQLError("Inventory index is out of range", {
+                        extensions: {
+                            code: "INVALID_INVENTORY_INDEX"
+                        }
+                    })
                 }
                 const kind = isTool ? InventoryKind.Tool : InventoryKind.Storage
 
@@ -58,7 +63,11 @@ export class MoveInventoryService {
                     .populate(INVENTORY_TYPE)
                     .session(mongoSession)
                 if (!inventory) {
-                    throw new NotFoundException("Inventory not found")
+                    throw new GraphQLError("Inventory not found", {
+                        extensions: {
+                            code: "INVENTORY_NOT_FOUND"
+                        }
+                    })
                 }
 
                 // Check if there is an inventory at the target index

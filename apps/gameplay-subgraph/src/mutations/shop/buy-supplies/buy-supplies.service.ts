@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     DefaultInfo, InjectMongoose, InventoryKind, InventorySchema,
@@ -9,7 +9,7 @@ import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuySuppliesRequest } from "./buy-supplies.dto"
 import { UserLike } from "@src/jwt"
-
+import { GraphQLError } from "graphql"
 @Injectable()
 export class BuySuppliesService {
     private readonly logger = new Logger(BuySuppliesService.name)
@@ -32,10 +32,17 @@ export class BuySuppliesService {
                     .findById(createObjectId(supplyId))
                     .session(mongoSession)
 
-                if (!supply) throw new NotFoundException("Supply not found")
+                if (!supply) throw new GraphQLError("Supply not found", {
+                    extensions: {
+                        code: "SUPPLY_NOT_FOUND",
+                    }
+                })
                 if (!supply.availableInShop)
-                    throw new BadRequestException("Supply not available in shop")
-
+                    throw new GraphQLError("Supply not available in shop", {
+                        extensions: {
+                            code: "SUPPLY_NOT_AVAILABLE_IN_SHOP",
+                        }
+                    })
                 const totalCost = supply.price * quantity
 
                 const user = await this.connection.model<UserSchema>(UserSchema.name)
@@ -67,7 +74,11 @@ export class BuySuppliesService {
                     .session(mongoSession)
 
                 if (!inventoryType) {
-                    throw new NotFoundException("Inventory type not found")
+                    throw new GraphQLError("Inventory type not found", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_FOUND",
+                        }
+                    })
                 }
 
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({

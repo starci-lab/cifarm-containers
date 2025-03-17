@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
@@ -19,7 +19,7 @@ import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyBuildingRequest } from "./buy-building.dto"
 import { UserLike } from "@src/jwt"
-
+import { GraphQLError } from "graphql"
 @Injectable()
 export class BuyBuildingService {
     private readonly logger = new Logger(BuyBuildingService.name)
@@ -53,8 +53,16 @@ export class BuyBuildingService {
                     .findById(createObjectId(buildingId))
                     .session(mongoSession)
 
-                if (!building) throw new NotFoundException("Building not found")
-                if (!building.availableInShop) throw new BadRequestException("Building not available in shop")
+                if (!building) throw new GraphQLError("Building not found", {
+                    extensions: {
+                        code: "BUILDING_NOT_FOUND",
+                    }
+                })
+                if (!building.availableInShop) throw new GraphQLError("Building not available in shop", {
+                    extensions: {
+                        code: "BUILDING_NOT_AVAILABLE_IN_SHOP",
+                    }
+                })
                 
                 // Calculate total cost
                 const totalCost = building.price
@@ -79,13 +87,21 @@ export class BuyBuildingService {
                     })
                     .session(mongoSession)
                 if (totalBuildings >= buildingLimit) {
-                    throw new BadRequestException("Max building ownership reached")
+                    throw new GraphQLError("Max building ownership reached", {
+                        extensions: {
+                            code: "MAX_BUILDING_OWNERSHIP_REACHED",
+                        }
+                    })
                 }
                 // filter building with the same type
                 const placedItemType = placedItemTypes.find(placedItemType => placedItemType.building.toString() === createObjectId(buildingId))
                 
                 if (!placedItemType) {
-                    throw new NotFoundException("Placed item type not found")
+                    throw new GraphQLError("Placed item type not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND",
+                        }
+                    })
                 }
                 const placedItemBuildings = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -93,7 +109,11 @@ export class BuyBuildingService {
                         placedItemType: placedItemType.id,
                     }).session(mongoSession)
                 if (placedItemBuildings.length >= building.maxOwnership) {
-                    throw new BadRequestException("Max building ownership reached")
+                    throw new GraphQLError("Max building ownership reached", {
+                        extensions: {
+                            code: "MAX_BUILDING_OWNERSHIP_REACHED",
+                        }
+                    })
                 }
                 // Check if the user has enough gold
                 this.goldBalanceService.checkSufficient({

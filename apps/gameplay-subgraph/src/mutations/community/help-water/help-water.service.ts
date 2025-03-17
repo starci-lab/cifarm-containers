@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
     Activities,
@@ -14,9 +15,9 @@ import { EnergyService, LevelService } from "@src/gameplay"
 import { HelpWaterRequest } from "./help-water.dto"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class HelpWaterService {
@@ -53,7 +54,11 @@ export class HelpWaterService {
                         userId,
                         reasonCode: 0,
                     }
-                    throw new NotFoundException("Tile is not found")
+                    throw new GraphQLError("Tile not found", {
+                        extensions: {
+                            code: "TILE_NOT_FOUND"
+                        }
+                    })
                 }
 
                 neighborUserId = placedItemTile.user.toString()
@@ -65,7 +70,11 @@ export class HelpWaterService {
                         userId,
                         reasonCode: 1,
                     }
-                    throw new BadRequestException("Cannot help water on your own tile")
+                    throw new GraphQLError("Cannot help water on your own tile", {
+                        extensions: {
+                            code: "CANNOT_HELP_SELF"
+                        }
+                    })
                 }
 
                 if (!placedItemTile.seedGrowthInfo) {
@@ -76,7 +85,11 @@ export class HelpWaterService {
                         userId,
                         reasonCode: 2,
                     }
-                    throw new BadRequestException("Tile is not planted")
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_NOT_PLANTED"
+                        }
+                    })
                 }
 
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
@@ -87,7 +100,11 @@ export class HelpWaterService {
                         userId,
                         reasonCode: 3,
                     }
-                    throw new BadRequestException("Tile does not need water")
+                    throw new GraphQLError("Tile does not need water", {
+                        extensions: {
+                            code: "TILE_NOT_NEED_WATER"
+                        }
+                    })
                 }
 
                 // Fetch system activity values
@@ -101,7 +118,13 @@ export class HelpWaterService {
                     .findById(userId)
                     .session(mongoSession)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 // Check if user has enough energy
                 this.energyService.checkSufficient({

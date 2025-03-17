@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
@@ -21,6 +21,7 @@ import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HelpFeedAnimalRequest } from "./help-feed-animal.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class HelpFeedAnimalService {
@@ -58,7 +59,11 @@ export class HelpFeedAnimalService {
                         userId,
                         reasonCode: 0
                     }
-                    throw new NotFoundException("Placed item animal not found")
+                    throw new GraphQLError("Placed item animal not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_ANIMAL_NOT_FOUND"
+                        }
+                    })
                 }
 
                 neighborUserId = placedItemAnimal.user.toString()
@@ -70,7 +75,11 @@ export class HelpFeedAnimalService {
                         userId,
                         reasonCode: 1
                     }
-                    throw new BadRequestException("Cannot help use bug net on your own tile")
+                    throw new GraphQLError("Cannot help feed another user's animal", {
+                        extensions: {
+                            code: "CANNOT_HELP_SELF"
+                        }
+                    })
                 }
 
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Hungry) {
@@ -81,7 +90,11 @@ export class HelpFeedAnimalService {
                         userId,
                         reasonCode: 3
                     }
-                    throw new BadRequestException("Animal is not hungry")
+                    throw new GraphQLError("Animal is not hungry", {
+                        extensions: {
+                            code: "ANIMAL_NOT_HUNGRY"
+                        }
+                    })
                 }
 
                 const { value } = await this.connection
@@ -109,17 +122,34 @@ export class HelpFeedAnimalService {
                     .findById(inventorySupplyId)
                     .session(session)
 
-                if (!inventory) throw new NotFoundException("Inventory not found")
+                if (!inventory) {
+                    throw new GraphQLError("Inventory not found", {
+                        extensions: {
+                            code: "INVENTORY_NOT_FOUND"
+                        }
+                    })
+                }
 
                 const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findById(inventory.inventoryType)
                     .session(session)
 
-                if (!inventoryType || inventoryType.type !== InventoryType.Supply)
-                    throw new BadRequestException("Inventory type is not supply")
-                if (inventoryType.displayId !== InventoryTypeId.AnimalFeed)
-                    throw new BadRequestException("Inventory supply is not animal feed")
+                if (!inventoryType || inventoryType.type !== InventoryType.Supply) {
+                    throw new GraphQLError("Inventory type is not supply", {
+                        extensions: {
+                            code: "INVALID_INVENTORY_TYPE"
+                        }
+                    })
+                }
+
+                if (inventoryType.displayId !== InventoryTypeId.AnimalFeed) {
+                    throw new GraphQLError("Inventory supply is not animal feed", {
+                        extensions: {
+                            code: "INVALID_SUPPLY_TYPE"
+                        }
+                    })
+                }
 
                 const energyChanges = this.energyService.substract({
                     user,

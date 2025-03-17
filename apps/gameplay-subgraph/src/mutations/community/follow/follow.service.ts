@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     DefaultInfo,
     InjectMongoose,
@@ -12,6 +12,7 @@ import { Connection } from "mongoose"
 import { FollowRequest } from "./follow.dto"
 import { createObjectId } from "@src/common"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class FollowService {
@@ -33,7 +34,11 @@ export class FollowService {
                     .session(session)
 
                 if (userId === followeeUserId) {
-                    throw new BadRequestException("Cannot follow self")
+                    throw new GraphQLError("Cannot follow self", {
+                        extensions: {
+                            code: "CANNOT_FOLLOW_SELF"
+                        }
+                    })
                 }
 
                 const followee = await this.connection
@@ -42,7 +47,11 @@ export class FollowService {
                     .session(session)
 
                 if (!followee) {
-                    throw new NotFoundException("Followee not found")
+                    throw new GraphQLError("Followee not found", {
+                        extensions: {
+                            code: "FOLLOWEE_NOT_FOUND"
+                        }
+                    })
                 }
 
                 // Check if user is already following the followee
@@ -55,7 +64,11 @@ export class FollowService {
                     .session(session)
 
                 if (following) {
-                    throw new BadRequestException("Already following")
+                    throw new GraphQLError("Already following", {
+                        extensions: {
+                            code: "ALREADY_FOLLOWING"
+                        }
+                    })
                 }
 
                 // Check if the user has reached the followee limit
@@ -67,22 +80,28 @@ export class FollowService {
                     .session(session)
 
                 if (followeeCount >= followeeLimit) {
-                    throw new BadRequestException("Followee limit reached")
+                    throw new GraphQLError("Followee limit reached", {
+                        extensions: {
+                            code: "FOLLOWEE_LIMIT_REACHED"
+                        }
+                    })
                 }
 
                 // Create the follow relation
-                await this.connection
-                    .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                    .create([{ followee: followeeUserId, follower: userId }], { session })
-
-                // No return value needed for void
+                await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).create(
+                    [
+                        {
+                            followee: followeeUserId,
+                            follower: userId
+                        }
+                    ],
+                    { session }
+                )
             })
         } catch (error) {
             this.logger.error(error)
-            // withTransaction automatically handles rollback, no need for manual abort
             throw error
         } finally {
-            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

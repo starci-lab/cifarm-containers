@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
@@ -21,6 +21,7 @@ import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HelpUseFruitFertilizerRequest } from "./help-use-fruit-fertilizer.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class HelpUseFruitFertilizerService {
@@ -58,7 +59,11 @@ export class HelpUseFruitFertilizerService {
                         userId,
                         reasonCode: 0,
                     }
-                    throw new NotFoundException("Placed item fruit not found")
+                    throw new GraphQLError("Placed item fruit not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_FRUIT_NOT_FOUND"
+                        }
+                    })
                 }
 
                 neighborUserId = placedItemFruit.user.toString()
@@ -70,7 +75,11 @@ export class HelpUseFruitFertilizerService {
                         userId,
                         reasonCode: 1,
                     }
-                    throw new BadRequestException("Cannot help use fruit fertilizer on your own tile")
+                    throw new GraphQLError("Cannot help use fruit fertilizer on your own tile", {
+                        extensions: {
+                            code: "CANNOT_HELP_SELF"
+                        }
+                    })
                 }
 
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.NeedFertilizer) {
@@ -81,7 +90,11 @@ export class HelpUseFruitFertilizerService {
                         userId,
                         reasonCode: 3,
                     }
-                    throw new BadRequestException("Fruit is not need fertilizer")
+                    throw new GraphQLError("Fruit does not need fertilizer", {
+                        extensions: {
+                            code: "FRUIT_NOT_NEED_FERTILIZER"
+                        }
+                    })
                 }
 
                 const { value } = await this.connection
@@ -106,14 +119,33 @@ export class HelpUseFruitFertilizerService {
                     .findById(inventorySupplyId)
                     .session(session)
 
-                if (!inventory) throw new NotFoundException("Inventory not found")
+                if (!inventory) {
+                    throw new GraphQLError("Inventory not found", {
+                        extensions: {
+                            code: "INVENTORY_NOT_FOUND"
+                        }
+                    })
+                }
 
                 const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
                     .findById(inventory.inventoryType)
                     .session(session)
 
-                if (!inventoryType || inventoryType.type !== InventoryType.Supply) throw new BadRequestException("Inventory type is not supply")
-                if (inventoryType.displayId !== InventoryTypeId.FruitFertilizer) throw new BadRequestException("Inventory supply is not fruit fertilizer")
+                if (!inventoryType || inventoryType.type !== InventoryType.Supply) {
+                    throw new GraphQLError("Inventory type is not supply", {
+                        extensions: {
+                            code: "INVALID_INVENTORY_TYPE"
+                        }
+                    })
+                }
+
+                if (inventoryType.displayId !== InventoryTypeId.FruitFertilizer) {
+                    throw new GraphQLError("Inventory supply is not fruit fertilizer", {
+                        extensions: {
+                            code: "INVALID_SUPPLY_TYPE"
+                        }
+                    })
+                }
 
                 const energyChanges = this.energyService.substract({
                     user,

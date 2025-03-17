@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     DefaultInfo,
@@ -14,6 +14,7 @@ import { InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { RetainProductRequest } from "./retain-product.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class RetainProductService {
@@ -39,11 +40,19 @@ export class RetainProductService {
                     .session(mongoSession)
 
                 if (!inventory) {
-                    throw new NotFoundException("Delivering product not found")
+                    throw new GraphQLError("Delivering product not found", {
+                        extensions: {
+                            code: "DELIVERING_PRODUCT_NOT_FOUND",
+                        }
+                    })
                 }
 
                 if (inventory.kind !== InventoryKind.Delivery) {
-                    throw new BadRequestException("The inventory kind is not delivering")
+                    throw new GraphQLError("The inventory kind is not delivering", {
+                        extensions: {
+                            code: "INVENTORY_KIND_IS_NOT_DELIVERING",
+                        }
+                    })
                 }
 
                 const inventoryType = await this.connection
@@ -54,7 +63,11 @@ export class RetainProductService {
                     .session(mongoSession)
 
                 if (!inventoryType) {
-                    throw new NotFoundException("Inventory seed type not found")
+                    throw new GraphQLError("Inventory seed type not found", {
+                        extensions: {
+                            code: "INVENTORY_SEED_TYPE_NOT_FOUND",
+                        }
+                    })
                 }
 
                 const {

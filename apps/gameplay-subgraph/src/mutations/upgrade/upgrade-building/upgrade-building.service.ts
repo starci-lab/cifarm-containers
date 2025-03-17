@@ -1,12 +1,11 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose } from "@src/databases"
 import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
 import { UpgradeBuildingRequest } from "./upgrade-building.dto"
 import { PlacedItemSchema, BuildingSchema, UserSchema } from "@src/databases"
-import { GrpcFailedPreconditionException } from "@src/common"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class UpgradeBuildingService {
@@ -31,7 +30,11 @@ export class UpgradeBuildingService {
                     .session(mongoSession)
 
                 if (!placedItemBuilding) {
-                    throw new GrpcNotFoundException("Placed item not found")
+                    throw new GraphQLError("Placed item not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_NOT_FOUND"
+                        }
+                    })
                 }
 
                 const building = await this.connection
@@ -40,15 +43,21 @@ export class UpgradeBuildingService {
                     .session(mongoSession)
 
                 if (!building) {
-                    throw new GrpcNotFoundException("Building type not found")
+                    throw new GraphQLError("Building type not found", {
+                        extensions: {
+                            code: "BUILDING_TYPE_NOT_FOUND"
+                        }
+                    })
                 }
 
                 const currentUpgradeLevel = placedItemBuilding.buildingInfo.currentUpgrade
 
                 if (currentUpgradeLevel > building.maxUpgrade) {
-                    throw new GrpcFailedPreconditionException(
-                        "Building already at max upgrade level"
-                    )
+                    throw new GraphQLError("Building already at max upgrade level", {
+                        extensions: {
+                            code: "BUILDING_MAX_LEVEL"
+                        }
+                    })
                 }
 
                 const nextUpgrade = building.upgrades.find(
@@ -56,18 +65,18 @@ export class UpgradeBuildingService {
                 )
 
                 if (!nextUpgrade) {
-                    throw new BadRequestException("Next upgrade not found")
+                    throw new GraphQLError("Next upgrade not found", {
+                        extensions: {
+                            code: "NEXT_UPGRADE_NOT_FOUND"
+                        }
+                    })
                 }
 
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
-
-                if (!user) {
-                    throw new NotFoundException("User not found")
-                }
-
+                    
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
                     required: nextUpgrade.upgradePrice

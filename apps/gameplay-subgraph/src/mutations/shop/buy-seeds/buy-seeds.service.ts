@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     CropSchema,
@@ -17,6 +17,8 @@ import { GoldBalanceService, InventoryService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuySeedsRequest } from "./buy-seeds.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
+
 
 @Injectable()
 export class BuySeedsService {
@@ -43,9 +45,16 @@ export class BuySeedsService {
                     .findById(createObjectId(request.cropId))
                     .session(mongoSession)
 
-                if (!crop) throw new NotFoundException("Crop not found")
-                if (!crop.availableInShop) throw new BadRequestException("Crop not available in shop")
-
+                if (!crop) throw new GraphQLError("Crop not found", {
+                    extensions: {
+                        code: "CROP_NOT_FOUND",
+                    }
+                })
+                if (!crop.availableInShop) throw new GraphQLError("Crop not available in shop", {
+                    extensions: {
+                        code: "CROP_NOT_AVAILABLE_IN_SHOP",
+                    }
+                })
                 const totalCost = crop.price * request.quantity
 
                 const user: UserSchema = await this.connection.model<UserSchema>(UserSchema.name)
@@ -75,7 +84,11 @@ export class BuySeedsService {
                 }).session(mongoSession)
 
                 if (!inventoryType) {
-                    throw new NotFoundException("Inventory seed type not found")
+                    throw new GraphQLError("Inventory seed type not found", {
+                        extensions: {
+                            code: "INVENTORY_SEED_TYPE_NOT_FOUND",
+                        }
+                    })
                 }  
 
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({

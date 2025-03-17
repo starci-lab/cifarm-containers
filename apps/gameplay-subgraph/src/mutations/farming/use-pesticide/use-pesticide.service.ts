@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     Activities,
@@ -17,6 +17,7 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class UsePesticideService {
@@ -55,21 +56,35 @@ export class UsePesticideService {
                         userId,
                         reasonCode: 0
                     }
-                    throw new NotFoundException("Tile not found")
+                    throw new GraphQLError("Tile not found", {
+                        extensions: {
+                            code: "TILE_NOT_FOUND"
+                        }
+                    })
                 }
 
                 if (placedItemTile.user.toString() !== userId) {
-                    throw new BadRequestException(
-                        "Cannot use pesticide on other's tile"
-                    )
+                    throw new GraphQLError("Cannot use pesticide on other's tile", {
+                        extensions: {
+                            code: "UNAUTHORIZED_PESTICIDE"
+                        }
+                    })
                 }
 
                 if (!placedItemTile.seedGrowthInfo) {
-                    throw new BadRequestException("Tile is not planted")
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_NOT_PLANTED"
+                        }
+                    })
                 }
 
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested) {
-                    throw new BadRequestException("Tile is not infested")
+                    throw new GraphQLError("Tile is not infested", {
+                        extensions: {
+                            code: "TILE_NOT_INFESTED"
+                        }
+                    })
                 }
 
                 // Fetch system configuration (activity settings)

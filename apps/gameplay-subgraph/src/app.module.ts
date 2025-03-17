@@ -6,13 +6,14 @@ import { CacheModule } from "@src/cache"
 import { JwtModule } from "@src/jwt"
 import { MongooseModule } from "@src/databases"
 import { QueriesModule } from "./queries"
-import { APP_PIPE } from "@nestjs/core"
+import { APP_FILTER, APP_PIPE } from "@nestjs/core"
 import { MutationsModule } from "./mutations"
 import { KafkaModule } from "@src/brokers"
 import { BlockchainModule } from "@src/blockchain"
 import { GameplayModule } from "@src/gameplay"
 import { DateModule } from "@src/date"
 import { HoneycombModule } from "@src/honeycomb"
+import { BlockchainExceptionFilter, GameplayExceptionFilter } from "./filters"
 @Module({
     imports: [
         //core modules
@@ -54,6 +55,14 @@ import { HoneycombModule } from "@src/honeycomb"
                 transform: true,
                 whitelist: true
             })
+        },
+        {
+            provide: APP_FILTER,
+            useClass: BlockchainExceptionFilter
+        },
+        {
+            provide: APP_FILTER,
+            useClass: GameplayExceptionFilter
         }
     ]
 }) 

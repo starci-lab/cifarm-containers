@@ -50,7 +50,7 @@ export const retryIfError = async <T>(
     fn: () => Promise<T>,
     options: RetryIfErrorOptions = {}
 ): Promise<T> => {
-    const { retries = 3, interval = 2000 } = options
+    const { retries = 10, interval = 2000 } = options
     let error: Error | null = null
     for (let i = 0; i < retries; i++) {
         try {

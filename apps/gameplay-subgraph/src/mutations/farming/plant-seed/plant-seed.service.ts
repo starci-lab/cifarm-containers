@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     Activities,
@@ -20,6 +20,7 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class PlantSeedService {
@@ -39,13 +40,11 @@ export class PlantSeedService {
     ): Promise<void> {
         this.logger.debug(`Planting seed for user ${userId}, tile ID: ${placedItemTileId}`)
 
-        const mongoSession = await this.connection.startSession() // Create session
+        const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
 
         try {
-            // Using withTransaction to manage the transaction lifecycle
             await mongoSession.withTransaction(async (session) => {
-                // Fetch inventory and inventoryType
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySeedId)
@@ -56,21 +55,33 @@ export class PlantSeedService {
                     .findById(inventory.inventoryType)
                     .session(session)
 
-                // Fetch the placed item tile and check conditions
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
 
-                if (!placedItemTile) throw new NotFoundException("Tile not found")
-                if (placedItemTile.user.toString() !== userId)
-                    throw new BadRequestException(
-                        "Cannot plant seed on another user's tile"
-                    )
-                if (placedItemTile.seedGrowthInfo)
-                    throw new BadRequestException("Tile is already planted")
+                if (!placedItemTile) {
+                    throw new GraphQLError("Tile not found", {
+                        extensions: {
+                            code: "TILE_NOT_FOUND"
+                        }
+                    })
+                }
+                if (placedItemTile.user.toString() !== userId) {
+                    throw new GraphQLError("Cannot plant seed on another user's tile", {
+                        extensions: {
+                            code: "UNAUTHORIZED_PLANTING"
+                        }
+                    })
+                }
+                if (placedItemTile.seedGrowthInfo) {
+                    throw new GraphQLError("Tile is already planted", {
+                        extensions: {
+                            code: "TILE_ALREADY_PLANTED"
+                        }
+                    })
+                }
 
-                // Fetch system settings for planting seed
                 const {
                     value: {
                         plantSeed: { energyConsume, experiencesGain }
@@ -80,21 +91,24 @@ export class PlantSeedService {
                     .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
                     .session(session)
 
-                // Fetch the user
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
-                // Check if the user has sufficient energy
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                // Deduct energy and add experience points
                 const energyChanges = this.energyService.substract({
                     user,
                     quantity: energyConsume
@@ -104,21 +118,24 @@ export class PlantSeedService {
                     experiences: experiencesGain
                 })
 
-                // Fetch the crop for the seed
                 const crop = await this.connection
                     .model<CropSchema>(CropSchema.name)
                     .findById(inventoryType.crop)
                     .session(session)
 
-                if (!crop) throw new NotFoundException("Crop not found")
+                if (!crop) {
+                    throw new GraphQLError("Crop not found", {
+                        extensions: {
+                            code: "CROP_NOT_FOUND"
+                        }
+                    })
+                }
 
-                // Update user with energy and experience changes
                 await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
                     .session(session)
 
-                // Remove the seed from the user's inventory
                 const { inventories } = await this.inventoryService.getRemoveParams({
                     connection: this.connection,
                     userId: user.id,
@@ -132,7 +149,6 @@ export class PlantSeedService {
                     quantity: 1
                 })
 
-                // Update inventories
                 for (const inventory of updatedInventories) {
                     await this.connection
                         .model<InventorySchema>(InventorySchema.name)
@@ -140,7 +156,6 @@ export class PlantSeedService {
                         .session(session)
                 }
 
-                // Delete removed inventories
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .deleteMany({
@@ -148,7 +163,6 @@ export class PlantSeedService {
                     })
                     .session(session)
 
-                // Update the placed item tile with seed growth info
                 await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .updateOne(
@@ -163,18 +177,14 @@ export class PlantSeedService {
                     )
                     .session(session)
 
-                // Prepare success action message
                 actionMessage = {
                     placedItemId: placedItemTileId,
                     action: ActionName.PlantSeed,
                     success: true,
                     userId
                 }
-
-                // No return value needed for void
             })
 
-            // Send Kafka messages for success
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -185,12 +195,9 @@ export class PlantSeedService {
                     messages: [{ value: JSON.stringify({ userId }) }]
                 })
             ])
-
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
 
-            // Send failure message if the action was started
             if (actionMessage) {
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -198,10 +205,8 @@ export class PlantSeedService {
                 })
             }
 
-            // Since withTransaction handles rollback, no need for manual abort
-            throw error // Re-throw the error to be handled higher up
+            throw error
         } finally {
-            // End the session after the transaction is complete
             await mongoSession.endSession()
         }
     }

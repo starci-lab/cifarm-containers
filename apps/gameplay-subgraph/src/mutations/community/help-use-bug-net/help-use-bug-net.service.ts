@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
@@ -17,6 +17,7 @@ import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HelpUseBugNetRequest } from "./help-use-bug-net.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class HelpUseBugNetService {
@@ -50,7 +51,11 @@ export class HelpUseBugNetService {
                         userId,
                         reasonCode: 0,
                     }
-                    throw new NotFoundException("Placed item fruit not found")
+                    throw new GraphQLError("Placed item fruit not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_FRUIT_NOT_FOUND"
+                        }
+                    })
                 }
 
                 neighborUserId = placedItemFruit.user.toString()
@@ -62,7 +67,11 @@ export class HelpUseBugNetService {
                         userId,
                         reasonCode: 1,
                     }
-                    throw new BadRequestException("Cannot help use bug net on your own tile")
+                    throw new GraphQLError("Cannot help use bug net on your own tile", {
+                        extensions: {
+                            code: "CANNOT_HELP_SELF"
+                        }
+                    })
                 }
 
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsInfested) {
@@ -73,7 +82,11 @@ export class HelpUseBugNetService {
                         userId,
                         reasonCode: 3,
                     }
-                    throw new BadRequestException("Fruit is not infested")
+                    throw new GraphQLError("Fruit is not infested", {
+                        extensions: {
+                            code: "FRUIT_NOT_INFESTED"
+                        }
+                    })
                 }
 
                 const { value } = await this.connection

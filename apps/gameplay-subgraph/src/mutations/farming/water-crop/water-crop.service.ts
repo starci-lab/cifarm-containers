@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import { Activities, CropCurrentState, InjectMongoose, PlacedItemSchema, SystemId, KeyValueRecord, SystemSchema, UserSchema } from "@src/databases"
 import { EnergyService, LevelService } from "@src/gameplay"
@@ -8,6 +8,7 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class WaterCropService {
@@ -43,11 +44,19 @@ export class WaterCropService {
                         userId,
                         reasonCode: 0,
                     }
-                    throw new NotFoundException("Tile is found")
+                    throw new GraphQLError("Tile not found", {
+                        extensions: {
+                            code: "TILE_NOT_FOUND"
+                        }
+                    })
                 }
     
                 if (placedItemTile.user.toString() !== userId) {
-                    throw new BadRequestException("Cannot use water on other's tile")
+                    throw new GraphQLError("Cannot use water on other's tile", {
+                        extensions: {
+                            code: "UNAUTHORIZED_WATERING"
+                        }
+                    })
                 }
     
                 if (!placedItemTile.seedGrowthInfo) {
@@ -58,7 +67,11 @@ export class WaterCropService {
                         userId,
                         reasonCode: 1,
                     }
-                    throw new BadRequestException("Tile is not planted")
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_NOT_PLANTED"
+                        }
+                    })
                 }
     
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {

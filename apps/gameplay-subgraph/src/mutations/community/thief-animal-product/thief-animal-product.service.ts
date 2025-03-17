@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload, ThiefAnimalProductData } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
     Activities,
@@ -24,6 +24,7 @@ import { Connection } from "mongoose"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 import { createObjectId } from "@src/common"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class ThiefAnimalProductService {
@@ -54,16 +55,28 @@ export class ThiefAnimalProductService {
                     .session(mongoSession)
 
                 if (!placedItemAnimal) {
-                    throw new NotFoundException("Animal not found")
+                    throw new GraphQLError("Animal not found", {
+                        extensions: {
+                            code: "ANIMAL_NOT_FOUND"
+                        }
+                    })
                 }
 
                 neighborUserId = placedItemAnimal.user.toString()
                 if (neighborUserId === userId) {
-                    throw new BadRequestException("Cannot thief from your own animal")
+                    throw new GraphQLError("Cannot thief from your own animal", {
+                        extensions: {
+                            code: "UNAUTHORIZED_THIEF"
+                        }
+                    })
                 }
 
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Yield) {
-                    throw new BadRequestException("Animal is not yielding")
+                    throw new GraphQLError("Animal is not yielding", {
+                        extensions: {
+                            code: "ANIMAL_NOT_YIELDING"
+                        }
+                    })
                 }
 
                 const users = placedItemAnimal.animalInfo.thieves
@@ -75,7 +88,11 @@ export class ThiefAnimalProductService {
                         userId,
                         reasonCode: 1
                     }
-                    throw new BadRequestException("User already thief")
+                    throw new GraphQLError("User already thief", {
+                        extensions: {
+                            code: "ALREADY_THIEF"
+                        }
+                    })
                 }
 
                 const {
@@ -134,8 +151,13 @@ export class ThiefAnimalProductService {
                         userId,
                         reasonCode: 2
                     }
-                    throw new BadRequestException(
-                        "Thief quantity is less than minimum yield quantity"
+                    throw new GraphQLError(
+                        "Thief quantity is less than minimum yield quantity",
+                        {
+                            extensions: {
+                                code: "THIEF_QUANTITY_LESS_THAN_MINIMUM_YIELD_QUANTITY"
+                            }
+                        }
                     )
                 }
 

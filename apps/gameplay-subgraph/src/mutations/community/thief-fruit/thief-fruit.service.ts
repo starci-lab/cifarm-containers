@@ -3,7 +3,7 @@ import {
     EmitActionPayload,
     ThiefFruitData,
 } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
     Activities,
@@ -23,7 +23,8 @@ import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { ThiefFruitRequest, ThiefFruitResponse } from "./thief-fruit.dto"
 import { createObjectId } from "@src/common"
-import { UserLike } from "@src/jwt" 
+import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class ThiefFruitService {
@@ -54,16 +55,28 @@ export class ThiefFruitService {
                     .session(mongoSession)
 
                 if (!placedItemFruit) {
-                    throw new NotFoundException("Fruit not found")
+                    throw new GraphQLError("Fruit not found", {
+                        extensions: {
+                            code: "FRUIT_NOT_FOUND"
+                        }
+                    })
                 }
 
                 neighborUserId = placedItemFruit.user.toString()
                 if (neighborUserId === userId) {
-                    throw new BadRequestException("Cannot thief from your own fruit")
+                    throw new GraphQLError("Cannot thief from your own fruit", {
+                        extensions: {
+                            code: "UNAUTHORIZED_THIEF"
+                        }
+                    })
                 }
 
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.FullyMatured) {
-                    throw new BadRequestException("Fruit is not FullyMatured")
+                    throw new GraphQLError("Fruit is not FullyMatured", {
+                        extensions: {
+                            code: "FRUIT_NOT_MATURED"
+                        }
+                    })
                 }
 
                 const users = placedItemFruit.fruitInfo.thieves
@@ -75,7 +88,11 @@ export class ThiefFruitService {
                         userId,
                         reasonCode: 1,
                     }
-                    throw new BadRequestException("User already thief")
+                    throw new GraphQLError("User already thief", {
+                        extensions: {
+                            code: "ALREADY_THIEF"
+                        }
+                    })
                 }
 
                 const { value: { thiefFruit: { energyConsume, experiencesGain } } } = await this.connection
@@ -125,7 +142,11 @@ export class ThiefFruitService {
                         userId,
                         reasonCode: 2,
                     }
-                    throw new BadRequestException("Thief quantity is less than minimum yield quantity")
+                    throw new GraphQLError("Thief quantity is less than minimum yield quantity", {
+                        extensions: {
+                            code: "THIEF_QUANTITY_LESS_THAN_MINIMUM_YIELD_QUANTITY"
+                        }
+                    })
                 }
 
                 const product = await this.connection

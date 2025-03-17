@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
     Activities,
@@ -26,6 +26,7 @@ import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload, ThiefCropData } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 @Injectable()
 export class ThiefCropService {
     private readonly logger = new Logger(ThiefCropService.name)
@@ -55,18 +56,34 @@ export class ThiefCropService {
                     .session(mongoSession)
 
                 if (!placedItemTile) {
-                    throw new NotFoundException("Tile not found")
+                    throw new GraphQLError("Tile not found", {
+                        extensions: {
+                            code: "TILE_NOT_FOUND",
+                        }
+                    })
                 }
 
                 neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {
-                    throw new BadRequestException("Cannot thief from your own tile")
+                    throw new GraphQLError("Cannot thief from your own tile", {
+                        extensions: {
+                            code: "CANNOT_THIEF_FROM_YOUR_OWN_TILE",
+                        }
+                    })
                 }
                 if (!placedItemTile.seedGrowthInfo) {
-                    throw new BadRequestException("Tile is not planted")
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_IS_NOT_PLANTED",
+                        }
+                    })
                 }
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
-                    throw new BadRequestException("Crop is not fully matured")
+                    throw new GraphQLError("Crop is not fully matured", {
+                        extensions: {
+                            code: "CROP_IS_NOT_FULLY_MATURED",
+                        }
+                    })
                 }
 
                 // Check if the user has already stolen from this tile
@@ -79,7 +96,11 @@ export class ThiefCropService {
                         userId,
                         reasonCode: 1,
                     }
-                    throw new BadRequestException("User already thief")
+                    throw new GraphQLError("User already thief", {
+                        extensions: {
+                            code: "USER_ALREADY_THIEF",
+                        }
+                    })
                 }
 
                 const { value: { thiefCrop: { energyConsume, experiencesGain } } } = await this.connection
@@ -142,7 +163,11 @@ export class ThiefCropService {
                         userId,
                         reasonCode: 2,
                     }
-                    throw new BadRequestException("Thief quantity is less than minimum harvest quantity")
+                    throw new GraphQLError("Thief quantity is less than minimum harvest quantity", {
+                        extensions: {
+                            code: "THIEF_QUANTITY_IS_LESS_THAN_MINIMUM_HARVEST_QUANTITY",
+                        }
+                    })
                 }
 
                 const inventoryType = await this.connection

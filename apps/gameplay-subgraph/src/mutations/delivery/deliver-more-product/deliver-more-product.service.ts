@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { DeliverMoreProductRequest } from "./deliver-more-product.dto"
 import {
     InjectMongoose,
@@ -9,6 +9,7 @@ import {
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class DeliverMoreProductService {
@@ -40,11 +41,19 @@ export class DeliverMoreProductService {
                     .session(mongoSession)
 
                 if (!deliveryInventory) {
-                    throw new NotFoundException("Delivery product not found")
+                    throw new GraphQLError("Delivery product not found", {
+                        extensions: {
+                            code: "DELIVERY_PRODUCT_NOT_FOUND",
+                        }
+                    })
                 }
 
                 if (deliveryInventory.user.toString() !== userId) {
-                    throw new NotFoundException("Delivery product does not belong to user")
+                    throw new GraphQLError("Delivery product does not belong to user", {
+                        extensions: {
+                            code: "DELIVERY_PRODUCT_DOES_NOT_BELONG_TO_USER",
+                        }
+                    })
                 }
 
                 // Fetch the user's inventory
@@ -55,20 +64,28 @@ export class DeliverMoreProductService {
                     .session(mongoSession)
 
                 if (!inventory) {
-                    throw new NotFoundException("Inventory not found")
-                }
-
-                if (inventory.user.toString() !== userId) {
-                    throw new NotFoundException("Inventory does not belong to user")
+                    throw new GraphQLError("Inventory not found", {
+                        extensions: {
+                            code: "INVENTORY_NOT_FOUND",
+                        }
+                    })
                 }
 
                 if (inventory.quantity < quantity) {
-                    throw new NotFoundException("Not enough quantity to deliver")
+                    throw new GraphQLError("Not enough quantity to deliver", {
+                        extensions: {
+                            code: "NOT_ENOUGH_QUANTITY_TO_DELIVER",
+                        }
+                    })
                 }
 
                 const productId = (inventory.inventoryType as InventoryTypeSchema).product as string
                 if (!productId) {
-                    throw new NotFoundException("The inventory type is not a product")
+                    throw new GraphQLError("The inventory type is not a product", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_IS_NOT_A_PRODUCT",
+                        }
+                    })
                 }
 
                 // Subtract the quantity from the user's inventory

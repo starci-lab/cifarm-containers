@@ -1,8 +1,10 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { UnfollowRequest } from "./unfollow.dto"
 import { InjectMongoose, UserFollowRelationSchema, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
-import { UserLike } from "@src/jwt"  
+import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
+
 @Injectable()
 export class UnfollowService {
     private readonly logger = new Logger(UnfollowService.name)
@@ -24,7 +26,11 @@ export class UnfollowService {
                     .findById(followeeUserId)
                     .session(mongoSession)
                 if (!followee) {
-                    throw new NotFoundException("Followee not found")
+                    throw new GraphQLError("Followee not found", {
+                        extensions: {
+                            code: "FOLLOWEE_NOT_FOUND"
+                        }
+                    })
                 }
 
                 const user = await this.connection
@@ -32,7 +38,11 @@ export class UnfollowService {
                     .findById(userId)
                     .session(mongoSession)
                 if (!user) {
-                    throw new NotFoundException("User not found")
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
                 }
 
                 const following = await this.connection
@@ -44,7 +54,11 @@ export class UnfollowService {
                     .session(mongoSession)
 
                 if (!following) {
-                    throw new BadRequestException("Not following")
+                    throw new GraphQLError("Not following", {
+                        extensions: {
+                            code: "NOT_FOLLOWING"
+                        }
+                    })
                 }
 
                 // delete the follow relation

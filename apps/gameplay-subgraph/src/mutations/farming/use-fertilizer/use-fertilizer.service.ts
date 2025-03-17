@@ -1,9 +1,10 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger, NotFoundException } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
     Activities,
+    CropCurrentState,
     InjectMongoose,
     InventorySchema,
     InventoryType,
@@ -21,6 +22,7 @@ import { Connection } from "mongoose"
 import { UseFertilizerRequest } from "./use-fertilizer.dto"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class UseFertilizerService {
@@ -60,9 +62,45 @@ export class UseFertilizerService {
                     .populate(SEED_GROWTH_INFO)
                     .session(session)
 
-                if (!placedItemTile) throw new NotFoundException("Tile not found")
-                if (!placedItemTile.seedGrowthInfo) throw new NotFoundException("Tile is not planted")
-                if (placedItemTile.seedGrowthInfo.isFertilized) throw new BadRequestException("Tile is already fertilized")
+                if (!placedItemTile) {
+                    throw new GraphQLError("Placed item tile not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TILE_NOT_FOUND"
+                        }
+                    })
+                }
+
+                if (placedItemTile.user.toString() !== userId) {
+                    throw new GraphQLError("Cannot use fertilizer on another user's tile", {
+                        extensions: {
+                            code: "CANNOT_USE_ON_OTHERS_TILE"
+                        }
+                    })
+                }
+
+                if (!placedItemTile.seedGrowthInfo) {
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_NOT_PLANTED"
+                        }
+                    })
+                }
+
+                if (placedItemTile.seedGrowthInfo.currentState === CropCurrentState.FullyMatured) {
+                    throw new GraphQLError("Tile is fully matured", {
+                        extensions: {
+                            code: "TILE_FULLY_MATURED"
+                        }
+                    })
+                }
+
+                if (placedItemTile.seedGrowthInfo.isFertilized) {
+                    throw new GraphQLError("Tile is already fertilized", {
+                        extensions: {
+                            code: "TILE_ALREADY_FERTILIZED"
+                        }
+                    })
+                }
 
                 // Fetch system settings for fertilizer action
                 const { value: { useFertilizer: { energyConsume, experiencesGain } } } = await this.connection
@@ -80,8 +118,29 @@ export class UseFertilizerService {
                 this.energyService.checkSufficient({ current: user.energy, required: energyConsume })
 
                 // Validate inventory type
-                if (!inventoryType || inventoryType.type !== InventoryType.Supply) throw new BadRequestException("Inventory type is not supply")
-                if (inventoryType.displayId !== InventoryTypeId.BasicFertilizer) throw new BadRequestException("Inventory supply is not BasicFertilizer")
+                if (!inventory) {
+                    throw new GraphQLError("Inventory not found", {
+                        extensions: {
+                            code: "INVENTORY_NOT_FOUND"
+                        }
+                    })
+                }
+
+                if (!inventoryType || inventoryType.type !== InventoryType.Supply) {
+                    throw new GraphQLError("Inventory type is not supply", {
+                        extensions: {
+                            code: "INVALID_INVENTORY_TYPE"
+                        }
+                    })
+                }
+
+                if (inventoryType.displayId !== InventoryTypeId.BasicFertilizer) {
+                    throw new GraphQLError("Inventory supply is not basic fertilizer", {
+                        extensions: {
+                            code: "INVALID_SUPPLY_TYPE"
+                        }
+                    })
+                }
 
                 // Deduct energy and add experience
                 const energyChanges = this.energyService.substract({ user, quantity: energyConsume })

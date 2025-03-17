@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
@@ -17,7 +17,7 @@ import { GoldBalanceService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyTileRequest } from "./buy-tile.dto"
 import { UserLike } from "@src/jwt"
-
+import { GraphQLError } from "graphql"
 @Injectable()
 export class BuyTileService {
     private readonly logger = new Logger(BuyTileService.name)
@@ -43,9 +43,17 @@ export class BuyTileService {
                     .findById(createObjectId(tileId))
                     .session(mongoSession)
 
-                if (!tile) throw new NotFoundException("Tile not found")
+                if (!tile) throw new GraphQLError("Tile not found", {
+                    extensions: {
+                        code: "TILE_NOT_FOUND",
+                    }
+                })
                 if (!tile.availableInShop)
-                    throw new BadRequestException("Tile not available in shop")
+                    throw new GraphQLError("Tile not available in shop", {
+                        extensions: {
+                            code: "TILE_NOT_AVAILABLE_IN_SHOP",
+                        }
+                    })
 
                 const {
                     value: { tileLimit }
@@ -84,7 +92,11 @@ export class BuyTileService {
                     })
                     .session(mongoSession)
 
-                if (count >= tileLimit) throw new BadRequestException("Max ownership reached")
+                if (count >= tileLimit) throw new GraphQLError("Max ownership reached", {
+                    extensions: {
+                        code: "MAX_OWNERSHIP_REACHED",
+                    }
+                })
 
                 // Save the placed item (tile) in the database
                 const [placedItemTileRaw] = await this.connection

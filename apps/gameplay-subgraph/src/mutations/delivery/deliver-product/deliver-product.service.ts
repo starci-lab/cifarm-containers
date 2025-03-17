@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { DeliverProductRequest } from "./deliver-product.dto"
 import {
     InjectMongoose,
@@ -9,6 +9,7 @@ import {
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class DeliverProductService {
@@ -38,20 +39,36 @@ export class DeliverProductService {
                     .session(mongoSession)
 
                 if (!inventory) {
-                    throw new NotFoundException("Inventory not found")
+                    throw new GraphQLError("Inventory not found", {
+                        extensions: {
+                            code: "INVENTORY_NOT_FOUND"
+                        }
+                    })
                 }
 
                 if (inventory.user.toString() !== userId) {
-                    throw new BadRequestException("Delivery product does not belong to user")
+                    throw new GraphQLError("Delivery product does not belong to user", {
+                        extensions: {
+                            code: "UNAUTHORIZED_DELIVERY"
+                        }
+                    })
                 }
 
                 if (inventory.quantity < quantity) {
-                    throw new BadRequestException("Not enough quantity to deliver")
+                    throw new GraphQLError("Not enough quantity to deliver", {
+                        extensions: {
+                            code: "INSUFFICIENT_QUANTITY"
+                        }
+                    })
                 }
 
                 const productId = (inventory.inventoryType as InventoryTypeSchema).product as string
                 if (!productId) {
-                    throw new BadRequestException("The inventory type is not a product")
+                    throw new GraphQLError("The inventory type is not a product", {
+                        extensions: {
+                            code: "INVALID_INVENTORY_TYPE"
+                        }
+                    })
                 }
 
                 // Subtract the quantity from the user's inventory

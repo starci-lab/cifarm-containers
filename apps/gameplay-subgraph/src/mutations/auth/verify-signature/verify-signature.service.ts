@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 import {
     DefaultInfo,
@@ -30,6 +30,7 @@ import { Cache } from "cache-manager"
 import { createObjectId, DeepPartial } from "@src/common"
 import { ModuleRef } from "@nestjs/core"
 import { Connection } from "mongoose"
+import { GraphQLError } from "graphql"
 
 @Injectable()
 export class VerifySignatureService {
@@ -55,11 +56,14 @@ export class VerifySignatureService {
         const mongoSession = await this.connection.startSession()
 
         try {
-        // Using `withTransaction` for automatic transaction handling
             const result = await mongoSession.withTransaction(async () => {
                 const valid = await this.cacheManager.get(message)
                 if (!valid) {
-                    throw new NotFoundException("Message not found")
+                    throw new GraphQLError("Message not found", {
+                        extensions: {
+                            code: "MESSAGE_NOT_FOUND"
+                        }
+                    })
                 }
 
                 chainKey = chainKey || defaultChainKey
@@ -74,7 +78,11 @@ export class VerifySignatureService {
                 console.log({ message, publicKey, signature })
                 const verified = authService.verifyMessage({ message, publicKey, signature })
                 if (!verified) {
-                    throw new BadRequestException("Signature is invalid")
+                    throw new GraphQLError("Signature is invalid", {
+                        extensions: {
+                            code: "INVALID_SIGNATURE"
+                        }
+                    })
                 }
 
                 let user = await this.connection
@@ -174,7 +182,11 @@ export class VerifySignatureService {
                         .session(mongoSession)
 
                     if (!inventoryType) {
-                        throw new NotFoundException("Inventory seed type not found")
+                        throw new GraphQLError("Inventory seed type not found", {
+                            extensions: {
+                                code: "INVENTORY_SEED_TYPE_NOT_FOUND"
+                            }
+                        })
                     }
                     
                     await this.connection.model<InventorySchema>(InventorySchema.name).create(

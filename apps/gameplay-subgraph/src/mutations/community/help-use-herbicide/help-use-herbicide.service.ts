@@ -1,4 +1,4 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { EnergyService, LevelService } from "@src/gameplay"
 import { HelpUseHerbicideRequest } from "./help-use-herbicide.dto"
@@ -17,6 +17,8 @@ import { createObjectId } from "@src/common"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
+
 
 @Injectable()
 export class HelpUseHerbicideService {
@@ -52,7 +54,11 @@ export class HelpUseHerbicideService {
                         userId,
                         reasonCode: 0
                     }
-                    throw new BadRequestException("Tile is found")
+                    throw new GraphQLError("Tile is found", {
+                        extensions: {
+                            code: "TILE_IS_FOUND",
+                        }
+                    })
                 }
                 neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {
@@ -63,7 +69,11 @@ export class HelpUseHerbicideService {
                         userId,
                         reasonCode: 1
                     }
-                    throw new BadRequestException("Cannot use herbicide on own tile")
+                    throw new GraphQLError("Cannot use herbicide on own tile", {
+                        extensions: {
+                            code: "CANNOT_USE_HERBICIDE_ON_OWN_TILE",
+                        }
+                    })
                 }
                 if (!placedItemTile.seedGrowthInfo) {
                     actionMessage = {
@@ -73,7 +83,11 @@ export class HelpUseHerbicideService {
                         userId,
                         reasonCode: 2
                     }
-                    throw new BadRequestException("Tile is not planted")
+                    throw new GraphQLError("Tile is not planted", {
+                        extensions: {
+                            code: "TILE_IS_NOT_PLANTED",
+                        }
+                    })
                 }
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
                     actionMessage = {
@@ -83,7 +97,11 @@ export class HelpUseHerbicideService {
                         userId,
                         reasonCode: 3
                     }
-                    throw new BadRequestException("Tile does not need herbicide")
+                    throw new GraphQLError("Tile does not need herbicide", {
+                        extensions: {
+                            code: "TILE_DOES_NOT_NEED_HERBICIDE",
+                        }
+                    })
                 }
 
                 const { value } = await this.connection
@@ -99,8 +117,6 @@ export class HelpUseHerbicideService {
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
-
-                if (!user) throw new NotFoundException("User not found")
 
                 this.energyService.checkSufficient({
                     current: user.energy,
