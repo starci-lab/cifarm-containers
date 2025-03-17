@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
-import { InjectKafka } from "@src/brokers"
-import { ClientKafka } from "@nestjs/microservices"
+import { InjectKafkaProducer } from "@src/brokers"
 import { InjectMongoose } from "@src/databases"
 import { Connection } from "mongoose"
+import { Producer } from "@nestjs/microservices/external/kafka.interface"
 
 @Injectable()
 export class GameplayConnectionService {
@@ -13,8 +13,8 @@ export class GameplayConnectionService {
             private readonly connection: Connection,
             @InjectCache()
             private readonly cacheManager: Cache,
-            @InjectKafka()
-            private readonly clientKafka: ClientKafka
+            @InjectKafkaProducer()
+            private readonly kafkaProducer: Producer
     ) { }
     public async closeAll(): Promise<void> {
         const promises: Array<Promise<void>> = []
@@ -25,7 +25,7 @@ export class GameplayConnectionService {
             await this.cacheManager.disconnect()
         })())
         promises.push((async () => {
-            await this.clientKafka.close()
+            await this.kafkaProducer.disconnect()
         })())
         await Promise.all(promises)
     }

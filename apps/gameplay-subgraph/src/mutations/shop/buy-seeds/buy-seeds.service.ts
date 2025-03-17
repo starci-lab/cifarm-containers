@@ -2,18 +2,14 @@ import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     CropSchema,
-    DefaultInfo,
     InjectMongoose,
     InventoryKind,
     InventorySchema,
     InventoryType,
     InventoryTypeSchema,
-    SystemId,
-    KeyValueRecord,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, InventoryService } from "@src/gameplay"
+import { GoldBalanceService, InventoryService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuySeedsRequest } from "./buy-seeds.dto"
 import { UserLike } from "@src/jwt"
@@ -28,7 +24,8 @@ export class BuySeedsService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly inventoryService: InventoryService,
-        private readonly goldBalanceService: GoldBalanceService
+        private readonly goldBalanceService: GoldBalanceService,
+        private readonly staticService: StaticService
     ) {
     }
 
@@ -98,9 +95,7 @@ export class BuySeedsService {
                     session: mongoSession,
                 })
 
-                const { value: { storageCapacity } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                const { storageCapacity } = this.staticService.defaultInfo
                 
                 //Save inventory
                 const { createdInventories, updatedInventories } = this.inventoryService.add({

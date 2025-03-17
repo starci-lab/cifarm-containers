@@ -4,18 +4,14 @@ import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
-    DefaultInfo,
     FruitSchema,
     InjectMongoose,
-    KeyValueRecord,
     PlacedItemSchema,
     PlacedItemType,
     PlacedItemTypeSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService } from "@src/gameplay"
+import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyFruitRequest } from "./buy-fruit.dto"
 import { UserLike } from "@src/jwt"
@@ -27,7 +23,8 @@ export class BuyFruitService {
     constructor(
         @InjectMongoose() private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
-        @InjectKafkaProducer() private readonly kafkaProducer: Producer
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
+        private readonly staticService: StaticService
     ) {}
 
     async buyFruit(
@@ -57,11 +54,8 @@ export class BuyFruitService {
                         }
                     })
 
-                const {
-                    value: { fruitLimit }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                const { fruitLimit } = this.staticService.defaultInfo
+
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)

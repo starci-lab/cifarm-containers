@@ -1,5 +1,4 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
 import {
     Activities,
     AnimalRandomness,
@@ -7,13 +6,12 @@ import {
     DailyRewardInfo,
     DefaultInfo,
     EnergyRegen,
+    HoneycombInfo,
     InjectMongoose,
-    KeyValueRecord,
     SpinInfo,
-    SystemId,
-    SystemSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
+import { StaticService } from "@src/gameplay"                                           
 
 @Injectable()
 export class SystemsService {
@@ -21,92 +19,39 @@ export class SystemsService {
 
     constructor(
         @InjectMongoose()
-        private readonly connection: Connection
+        private readonly connection: Connection,
+        private readonly staticService: StaticService
     ) {}
 
     async getActivities(): Promise<Activities> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const { value } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-            return value
-        } finally {
-            await mongoSession.endSession()
-        }
+        return this.staticService.activities
     }
 
     async getCropRandomness(): Promise<CropRandomness> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const { value } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
-            return value
-        } finally {
-            await mongoSession.endSession()
-        }
+        return this.staticService.cropRandomness
     }
 
     async getAnimalRandomness(): Promise<AnimalRandomness> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const { value } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<
-                    KeyValueRecord<AnimalRandomness>
-                >(createObjectId(SystemId.AnimalRandomness))
-            return value
-        } finally {
-            await mongoSession.endSession()
-        }
+        return this.staticService.animalRandomness
     }
 
     async getDefaultInfo(): Promise<DefaultInfo> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const { value } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-            return value
-        } finally {
-            await mongoSession.endSession()
-        }
+        return this.staticService.defaultInfo
     }
 
     async getSpinInfo(): Promise<SpinInfo> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const { value } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
-            return value
-        } finally {
-            await mongoSession.endSession()
-        }
+        return this.staticService.spinInfo
     }
 
     async getEnergyRegen(): Promise<EnergyRegen> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const { value } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<EnergyRegen>>(createObjectId(SystemId.EnergyRegen))
-            return value
-        } finally {
-            await mongoSession.endSession()
-        }
+        return this.staticService.energyRegen
     }
 
     async getDailyRewardInfo(): Promise<DailyRewardInfo> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const { value } = await this.connection
-                .model<SystemSchema>(SystemSchema.name)
-                .findById<KeyValueRecord<DailyRewardInfo>>(createObjectId(SystemId.DailyRewardInfo))
-            return value
-        } finally {
-            await mongoSession.endSession()
-        }
+        return this.staticService.dailyRewardInfo
+    }
+
+    async getHoneycombInfo(): Promise<HoneycombInfo> {
+        return this.staticService.honeycombInfo
     }
 }

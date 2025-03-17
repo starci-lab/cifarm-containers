@@ -2,43 +2,40 @@ import { Injectable } from "@nestjs/common"
 import { Socket, Manager } from "socket.io-client"
 import { urlMap } from "./socket-io.utils"
 import { IoService } from "./socket-io.types"
-import { E2EAxiosService } from "../axios"
 
 @Injectable()
 export class E2EGameplaySocketIoService {
     public readonly managerWrapperMap: Record<string, ManagerWrapper>
     private url: string
-    constructor(
-        private e2eAxiosService: E2EAxiosService
-    ) {
+    constructor() {
         this.managerWrapperMap = {}
         this.url = urlMap()[IoService.IoGameplay]
     }
 
     public async create(name: string): Promise<ManagerWrapper> {
-        const accessToken = await this.e2eAxiosService.getToken({ name })
-        if (!accessToken) {
-            throw new Error("Access token not found")
-        }
-        const manager = new Manager(this.url, {
-            autoConnect: false,
-        })
-        const managerWrapper: ManagerWrapper = {
-            manager,
-            createSocket: (socketName: string, [ nsp, options ]: Parameters<Manager["socket"]>) => {
-                const socket = manager.socket(nsp, {
-                    auth: {
-                        token: accessToken
-                    },
-                    ...options
-                })
-                this.managerWrapperMap[name].socketMap[socketName] = socket
-                return socket
-            },
-            socketMap: {}
-        }
-        this.managerWrapperMap[name] = managerWrapper
-        return managerWrapper
+        // const accessToken = await this.e2eAxiosService.getToken({ name })
+        // if (!accessToken) {
+        //     throw new Error("Access token not found")
+        // }
+        // const manager = new Manager(this.url, {
+        //     autoConnect: false,
+        // })
+        // const managerWrapper: ManagerWrapper = {
+        //     manager,
+        //     createSocket: (socketName: string, [ nsp, options ]: Parameters<Manager["socket"]>) => {
+        //         const socket = manager.socket(nsp, {
+        //             auth: {
+        //                 token: accessToken
+        //             },
+        //             ...options
+        //         })
+        //         this.managerWrapperMap[name].socketMap[socketName] = socket
+        //         return socket
+        //     },
+        //     socketMap: {}
+        // }
+        // this.managerWrapperMap[name] = managerWrapper
+        // return managerWrapper
     }
 
     public clear(): void {

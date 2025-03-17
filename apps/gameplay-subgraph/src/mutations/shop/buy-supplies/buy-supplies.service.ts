@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
-    DefaultInfo, InjectMongoose, InventoryKind, InventorySchema,
+    InjectMongoose, InventoryKind, InventorySchema,
     InventoryTypeSchema,
-    SupplySchema, SystemId, KeyValueRecord, SystemSchema, UserSchema
+    SupplySchema, UserSchema
 } from "@src/databases"
-import { GoldBalanceService, InventoryService } from "@src/gameplay"
+import { GoldBalanceService, InventoryService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuySuppliesRequest } from "./buy-supplies.dto"
 import { UserLike } from "@src/jwt"
@@ -18,7 +18,8 @@ export class BuySuppliesService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly inventoryService: InventoryService,
-        private readonly goldBalanceService: GoldBalanceService
+        private readonly goldBalanceService: GoldBalanceService,
+        private readonly staticService: StaticService
     ) {}
 
     async buySupplies(
@@ -64,9 +65,7 @@ export class BuySuppliesService {
                     { session: mongoSession }
                 )
 
-                const { value: { storageCapacity } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                const { storageCapacity } = this.staticService.defaultInfo
 
                 // Get inventory type
                 const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)

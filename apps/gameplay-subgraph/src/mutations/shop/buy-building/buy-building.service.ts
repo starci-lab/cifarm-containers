@@ -4,17 +4,13 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
     BuildingSchema,
-    DefaultInfo,
     InjectMongoose,
-    KeyValueRecord,
     PlacedItemSchema,
     PlacedItemType,
     PlacedItemTypeSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService } from "@src/gameplay"
+import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyBuildingRequest } from "./buy-building.dto"
@@ -25,9 +21,10 @@ export class BuyBuildingService {
     private readonly logger = new Logger(BuyBuildingService.name)
 
     constructor(
-    @InjectMongoose() private readonly connection: Connection,
-    private readonly goldBalanceService: GoldBalanceService,
-    @InjectKafkaProducer() private readonly kafkaProducer: Producer
+        @InjectMongoose() private readonly connection: Connection,
+        private readonly goldBalanceService: GoldBalanceService,
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
+        private readonly staticService: StaticService
     ) {}
 
     async buyBuilding(
@@ -43,10 +40,7 @@ export class BuyBuildingService {
         try {
             await mongoSession.withTransaction(async () => {
                 // Fetch building details
-                const { value: { buildingLimit } } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                    .session(mongoSession)
+                const { buildingLimit } = this.staticService.defaultInfo
 
                 const building = await this.connection
                     .model<BuildingSchema>(BuildingSchema.name)

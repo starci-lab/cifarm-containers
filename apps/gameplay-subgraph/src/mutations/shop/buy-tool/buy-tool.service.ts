@@ -7,13 +7,10 @@ import {
     InventorySchema,
     InventoryType,
     InventoryTypeSchema,
-    KeyValueRecord,
-    SystemId,
-    SystemSchema,
     ToolSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, InventoryService } from "@src/gameplay"
+import { GoldBalanceService, InventoryService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyToolRequest } from "./buy-tool.dto"
 import { UserLike } from "@src/jwt"
@@ -27,7 +24,8 @@ export class BuyToolService {
     constructor(
         @InjectMongoose() private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
+        private readonly staticService: StaticService
     ) {}
 
     async buyTool(
@@ -37,12 +35,7 @@ export class BuyToolService {
         const mongoSession = await this.connection.startSession()
         try {
             await mongoSession.withTransaction(async (mongoSesion) => {
-                const {
-                    value: { storageCapacity }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                    .session(mongoSesion)
+                const { storageCapacity } = this.staticService.defaultInfo
                 const tool = await this.connection
                     .model<ToolSchema>(ToolSchema.name)
                     .findById(createObjectId(toolId))

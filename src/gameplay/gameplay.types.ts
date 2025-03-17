@@ -1,14 +1,20 @@
 import { Field, InputType, Int } from "@nestjs/graphql"
 import { IsInt } from "class-validator"
 
-@InputType()
+@InputType({
+    description: "A position in the game"
+})
 export class PositionInput {
     @IsInt()
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The x coordinate of the position"
+    })
         x: number
 
     @IsInt()
-    @Field(() => Int)
+    @Field(() => Int, {
+        description: "The y coordinate of the position"
+    })
         y: number
 }
 

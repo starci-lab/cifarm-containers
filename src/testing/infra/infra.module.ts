@@ -10,7 +10,7 @@ import { JwtModule } from "@src/jwt"
 import { GameplayModule } from "@src/gameplay"
 import { KafkaModule } from "@src/brokers"
 import { DateModule } from "@src/date"
-import { E2EAxiosModule, E2EConnectionService, E2ESocketIoModule } from "./e2e"
+import { E2EConnectionService, E2ESocketIoModule } from "./e2e"
 import { MongooseModule } from "@src/databases"
 
 @Module({})
@@ -69,10 +69,6 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                     isGlobal: true
                 }),
                 BlockchainModule.register({
-                    isGlobal: true
-                }),
-                E2EAxiosModule.register({
-                    useGlobalImports: true,
                     isGlobal: true
                 }),
                 E2ESocketIoModule.register({

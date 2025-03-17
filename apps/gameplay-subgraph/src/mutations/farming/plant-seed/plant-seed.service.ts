@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     CropCurrentState,
-    CropSchema,
     InjectMongoose,
     InventorySchema,
     InventoryTypeSchema,
@@ -46,6 +45,14 @@ export class PlantSeedService {
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySeedId)
                     .session(session)
+
+                if (!inventory) {
+                    throw new GraphQLError("Inventory not found", {
+                        extensions: {
+                            code: "INVENTORY_NOT_FOUND"
+                        }
+                    })
+                }
 
                 const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
@@ -94,6 +101,14 @@ export class PlantSeedService {
                     })
                 }
 
+                if (user.energy < energyConsume) {
+                    throw new GraphQLError("Not enough energy", {
+                        extensions: {
+                            code: "ENERGY_NOT_ENOUGH"
+                        }
+                    })
+                }
+
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -108,10 +123,7 @@ export class PlantSeedService {
                     experiences: experiencesGain
                 })
 
-                const crop = await this.connection
-                    .model<CropSchema>(CropSchema.name)
-                    .findById(inventoryType.crop)
-                    .session(session)
+                const crop = this.staticService.crops.find(c => c.id.toString() === inventoryType.crop.toString())
 
                 if (!crop) {
                     throw new GraphQLError("Crop not found", {

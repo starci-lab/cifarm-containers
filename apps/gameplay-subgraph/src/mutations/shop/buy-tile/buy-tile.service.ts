@@ -4,16 +4,12 @@ import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
-    DefaultInfo,
     InjectMongoose,
-    KeyValueRecord,
     PlacedItemSchema,
-    SystemId,
-    SystemSchema,
     TileSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService } from "@src/gameplay"
+import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyTileRequest } from "./buy-tile.dto"
 import { UserLike } from "@src/jwt"
@@ -25,7 +21,8 @@ export class BuyTileService {
     constructor(
         @InjectMongoose() private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
-        @InjectKafkaProducer() private readonly kafkaProducer: Producer
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
+        private readonly staticService: StaticService
     ) {}
 
     async buyTile(
@@ -55,11 +52,7 @@ export class BuyTileService {
                         }
                     })
 
-                const {
-                    value: { tileLimit }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                const { tileLimit } = this.staticService.defaultInfo
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)

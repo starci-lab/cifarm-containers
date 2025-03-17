@@ -3,21 +3,16 @@ import { BadRequestException, Injectable, Logger, NotFoundException } from "@nes
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import {
-    Activities,
     AnimalCurrentState,
-    DefaultInfo,
     InjectMongoose,
     InventorySchema,
     InventoryType,
     InventoryTypeSchema,
-    KeyValueRecord,
     PlacedItemSchema,
     ProductSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, ProductService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, ProductService, StaticService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HarvestAnimalRequest } from "./harvest-animal.dto"
@@ -38,7 +33,8 @@ export class HarvestAnimalService {
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly productService: ProductService,
-        @InjectKafkaProducer() private readonly kafkaProducer: Producer
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
+        private readonly staticService: StaticService
     ) {}
 
     async harvestAnimal(
@@ -70,13 +66,9 @@ export class HarvestAnimalService {
 
                 // Fetch system settings
                 const {
-                    value: {
-                        harvestAnimal: { energyConsume, experiencesGain }
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
+                    energyConsume,
+                    experiencesGain
+                } = this.staticService.activities.harvestAnimal
 
                 // Fetch user details
                 const user = await this.connection
@@ -131,11 +123,7 @@ export class HarvestAnimalService {
                 })
 
                 // Fetch storage capacity setting
-                const {
-                    value: { storageCapacity }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
+                const { storageCapacity } = this.staticService.defaultInfo
 
                 // Update user with energy and experience changes
                 await this.connection

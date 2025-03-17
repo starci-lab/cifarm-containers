@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     AnimalSchema,
@@ -28,7 +28,8 @@ import {
 } from "@src/databases"
 import { Connection } from "mongoose"
 @Injectable()
-export class StaticService {
+
+export class StaticService implements OnModuleInit {
     private readonly logger = new Logger(StaticService.name)
 
     public defaultInfo: DefaultInfo
@@ -58,6 +59,10 @@ export class StaticService {
     ) {}
 
     async onModuleInit() {
+        await this.load()
+    }
+
+    private async load() {
         // Load system values
         const defaultInfoDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)
@@ -131,15 +136,15 @@ export class StaticService {
 
         this.tiles = await this.connection.model<TileSchema>(TileSchema.name).find()
 
-        this.logger.log("All static data loaded")
-        this.logger.log("System data: 9") // hardcoded
-        this.logger.log(`Animals: ${this.animals.length}`)
-        this.logger.log(`Crops: ${this.crops.length}`)
-        this.logger.log(`Buildings: ${this.buildings.length}`)
-        this.logger.log(`Inventory types: ${this.inventoryTypes.length}`)
-        this.logger.log(`Products: ${this.products.length}`)
-        this.logger.log(`Pets: ${this.pets.length}`)
-        this.logger.log(`Fruits: ${this.fruits.length}`)
-        this.logger.log(`Supplies: ${this.supplies.length}`)
+        this.logger.verbose("All static data loaded")
+        this.logger.verbose("System data: 9") // hardcoded
+        this.logger.verbose(`Animals: ${this.animals.length}`)
+        this.logger.verbose(`Crops: ${this.crops.length}`)
+        this.logger.verbose(`Buildings: ${this.buildings.length}`)
+        this.logger.verbose(`Inventory types: ${this.inventoryTypes.length}`)
+        this.logger.verbose(`Products: ${this.products.length}`)
+        this.logger.verbose(`Pets: ${this.pets.length}`)
+        this.logger.verbose(`Fruits: ${this.fruits.length}`)
+        this.logger.verbose(`Supplies: ${this.supplies.length}`)
     }
 }
