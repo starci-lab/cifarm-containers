@@ -27,11 +27,11 @@ export class UpdateReferralService {
         {
             referralUserId
         }: UpdateReferralRequest): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         try {
             // Using `withTransaction` for automatic transaction handling
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -43,7 +43,7 @@ export class UpdateReferralService {
                 const referralUser = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(referralUserId)
-                    .session(session)
+                    .session(mongoSession)
                     
                 if (!referralUser) {
                     throw new GraphQLError("Referral user not found", {
@@ -67,7 +67,7 @@ export class UpdateReferralService {
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -123,7 +123,7 @@ export class UpdateReferralService {
                         { _id: referralUser._id },
                         { $push: { referredUserIds: userId } }
                     )
-                    .session(session)
+                    .session(mongoSession)
 
                 /************************************************************
                  * UPDATE USER DATA
@@ -135,13 +135,13 @@ export class UpdateReferralService {
                         { _id: userId },
                         { $set: { referralUserId: referralUserId } }
                     )
-                    .session(session)
+                    .session(mongoSession)
             })
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging
         } finally {
-            await session.endSession() // Ensure the session is always ended
+            await mongoSession.endSession() // Ensure the session is always ended
         }
     }
 }

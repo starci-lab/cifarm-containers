@@ -22,18 +22,18 @@ export class MoveService {
         { id: userId }: UserLike,
         { placedItemId, position }: MoveRequest
     ): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
 
         try {
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM
                  ************************************************************/
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!placedItem) {
                     throw new GraphQLError("Placed item not found", {
@@ -64,7 +64,7 @@ export class MoveService {
                         { _id: placedItemId },
                         { x: position.x, y: position.y }
                     )
-                    .session(session)
+                    .session(mongoSession)
 
                 actionMessage = {
                     placedItemId: placedItemId,
@@ -98,7 +98,7 @@ export class MoveService {
             
             throw error
         } finally {
-            await session.endSession()  // End the session after the transaction
+            await mongoSession.endSession()  // End the session after the transaction
         }
     }
 }

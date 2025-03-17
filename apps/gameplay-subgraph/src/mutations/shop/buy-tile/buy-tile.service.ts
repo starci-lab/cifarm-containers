@@ -29,11 +29,11 @@ export class BuyTileService {
         { id: userId }: UserLike,
         { position, tileId }: BuyTileRequest
     ): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE TILE
                  ************************************************************/
@@ -66,7 +66,7 @@ export class BuyTileService {
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -92,7 +92,7 @@ export class BuyTileService {
                         user: userId,
                         placedItemType: createObjectId(tileId)
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 if (count >= tileLimit) {
                     throw new GraphQLError("Max ownership reached", {
@@ -112,7 +112,7 @@ export class BuyTileService {
                 })
 
                 // Save updated user data
-                await user.save({ session })
+                await user.save({ session: mongoSession })
 
                 /************************************************************
                  * PLACE TILE
@@ -130,7 +130,7 @@ export class BuyTileService {
                                 tileInfo: {}
                             }
                         ],
-                        { session }
+                        { session: mongoSession }
                     )
                 const placedItemId = placedItemTileRaw._id.toString()
 
@@ -177,7 +177,7 @@ export class BuyTileService {
             throw error
         } finally {
             // End the session after the transaction is complete
-            await session.endSession()
+            await mongoSession.endSession()
         }
     }
 }

@@ -18,11 +18,11 @@ export class RefreshService {
     ) {}
 
     public async refresh({ refreshToken }: RefreshRequest): Promise<RefreshResponse> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         try {
             // Using `withTransaction` to handle the transaction automatically
-            const result = await session.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE SESSION
                  ************************************************************/
@@ -85,7 +85,7 @@ export class RefreshService {
             this.logger.error(error)
             throw error
         } finally {
-            await session.endSession()
+            await mongoSession.endSession()
         }
     }
 }

@@ -2,22 +2,15 @@ import { AnimalJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { createObjectId, DeepPartial } from "@src/common"
+import { DeepPartial } from "@src/common"
 import {
-    ANIMAL,
     AnimalCurrentState,
-    AnimalRandomness,
     AnimalSchema,
     InjectMongoose,
-    KeyValueRecord,
     PlacedItemSchema,
-    PlacedItemType,
-    PlacedItemTypeSchema,
-    SystemId,
-    SystemSchema
 } from "@src/databases"
 import { DateUtcService } from "@src/date"
-import { ProductService } from "@src/gameplay"
+import { StaticService, CoreService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { Connection } from "mongoose"
 
@@ -29,7 +22,8 @@ export class AnimalWorker extends WorkerHost {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
-        private readonly productService: ProductService
+        private readonly staticService: StaticService,
+        private readonly coreService: CoreService,
     ) {
         super()
     }
@@ -37,13 +31,10 @@ export class AnimalWorker extends WorkerHost {
     public override async process(job: Job<AnimalJobData>): Promise<void> {
         this.logger.verbose(`Processing job: ${job.id}`)
         const { time, skip, take, utcTime } = job.data
-        const placedItemTypes = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find({
-            type: PlacedItemType.Animal
-        }).populate(ANIMAL)
         const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
                 placedItemType: {
-                    $in: placedItemTypes.map(placedItemType => placedItemType.id)
+                    $in: this.staticService.placedItemTypes.map(placedItemType => placedItemType.id)
                 },
                 "animalInfo.currentState": {
                     $nin: [AnimalCurrentState.Hungry, AnimalCurrentState.Yield]
@@ -52,18 +43,15 @@ export class AnimalWorker extends WorkerHost {
                     $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                 }
             }).skip(skip).limit(take).sort({ createdAt: 1 })
-        const { value: { sickChance } } = await this.connection.model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<AnimalRandomness>>(
-                createObjectId(SystemId.AnimalRandomness)
-            )
+        const { sickChance } = this.staticService.animalInfo.randomness
             
         const promises: Array<Promise<void>> = []
         for (const placedItem of placedItems) {
             const promise = async () => {
-                const session = await this.connection.startSession()
+                const mongoSession = await this.connection.startSession()
                 try {
                     const updatePlacedItem = () => {
-                        const placedItemType = placedItemTypes.find(
+                        const placedItemType = this.staticService.placedItemTypes.find(
                             placedItemType => placedItemType.id === placedItem.placedItemType.toString()
                         )
                         const animal = placedItemType.animal as AnimalSchema
@@ -132,7 +120,7 @@ export class AnimalWorker extends WorkerHost {
                                 return
                             }
 
-                            const chance = this.productService.computeAnimalQualityChance({
+                            const chance = this.coreService.computeAnimalQualityChance({
                                 animalInfo: placedItem.animalInfo,
                                 qualityProductChanceLimit: animal.qualityProductChanceLimit,
                                 qualityProductChanceStack: animal.qualityProductChanceStack
@@ -153,11 +141,11 @@ export class AnimalWorker extends WorkerHost {
                     }
                     updatePlacedItem()
 
-                    await placedItem.save({ session })
+                    await placedItem.save({ session: mongoSession })
                 } catch (error) {
                     this.logger.error(error)
                 } finally {
-                    await session.endSession()
+                    await mongoSession.endSession()
                 }
             }
             promises.push(promise())

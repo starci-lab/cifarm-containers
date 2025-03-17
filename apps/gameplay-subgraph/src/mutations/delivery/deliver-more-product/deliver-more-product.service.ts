@@ -27,10 +27,10 @@ export class DeliverMoreProductService {
             quantity,
             index
         }: DeliverMoreProductRequest): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to manage the transaction
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE DELIVERY INVENTORY
                  ************************************************************/
@@ -41,7 +41,7 @@ export class DeliverMoreProductService {
                         kind: InventoryKind.Delivery,
                         index
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!deliveryInventory) {
                     throw new GraphQLError("Delivery product not found", {
@@ -67,7 +67,7 @@ export class DeliverMoreProductService {
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
                     .populate(INVENTORY_TYPE)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
@@ -108,11 +108,11 @@ export class DeliverMoreProductService {
                         .deleteOne({
                             _id: inventoryId
                         })
-                        .session(session)
+                        .session(mongoSession)
                 } else {
                     // Update the inventory with reduced quantity
                     inventory.quantity -= quantity
-                    await inventory.save({ session })
+                    await inventory.save({ session: mongoSession })
                 }
 
                 /************************************************************
@@ -120,13 +120,13 @@ export class DeliverMoreProductService {
                  ************************************************************/
                 // Add the quantity to the delivery inventory
                 deliveryInventory.quantity += quantity
-                await deliveryInventory.save({ session })
+                await deliveryInventory.save({ session: mongoSession })
             })
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
-            await session.endSession() // Ensure the session is closed
+            await mongoSession.endSession() // Ensure the session is closed
         }
     }
 }

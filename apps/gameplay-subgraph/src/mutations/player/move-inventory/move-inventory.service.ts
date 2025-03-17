@@ -29,11 +29,11 @@ export class MoveInventoryService {
             index,
             inventoryId
         }: MoveInventoryRequest): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         try {
             // Using `withTransaction` for automatic transaction handling
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -60,7 +60,7 @@ export class MoveInventoryService {
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
                     .populate(INVENTORY_TYPE)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
@@ -100,7 +100,7 @@ export class MoveInventoryService {
                         user: userId,
                         _id: { $ne: inventoryId } // Not the same inventory
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 /************************************************************
                  * UPDATE INVENTORY POSITIONS
@@ -108,18 +108,18 @@ export class MoveInventoryService {
                 if (foundInventory) {
                     // Swap positions
                     foundInventory.index = inventory.index
-                    await foundInventory.save({ session })
+                    await foundInventory.save({ session: mongoSession })
                 }
 
                 // Update inventory position
                 inventory.index = index
-                await inventory.save({ session })
+                await inventory.save({ session: mongoSession })
             })
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
-            await session.endSession() // End the session after the transaction
+            await mongoSession.endSession() // End the session after the transaction
         }
     }
 }

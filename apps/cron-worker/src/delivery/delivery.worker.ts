@@ -2,8 +2,8 @@ import { DeliveryJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { InjectMongoose, InventoryKind, InventorySchema, InventoryType, InventoryTypeSchema, ProductSchema, UserSchema } from "@src/databases"
-import { GoldBalanceService, TokenBalanceService } from "@src/gameplay"
+import { InjectMongoose, InventoryKind, InventorySchema, UserSchema } from "@src/databases"
+import { GoldBalanceService, StaticService, TokenBalanceService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { Connection } from "mongoose"
 
@@ -15,7 +15,8 @@ export class DeliveryWorker extends WorkerHost {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly tokenBalanceService: TokenBalanceService
+        private readonly tokenBalanceService: TokenBalanceService,
+        private readonly staticService: StaticService   
     ) {
         super()
     }
@@ -35,17 +36,11 @@ export class DeliveryWorker extends WorkerHost {
             return
         }
 
-        const inventoryTypes = await this.connection
-            .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-            .find({
-                type: InventoryType.Product
-            })
-
         const promises: Array<Promise<void>> = []
         // use for-each to add async function to promises array
         users.forEach((user) => {
             const promise = async () => {
-                const session = await this.connection.startSession()
+                const mongoSession = await this.connection.startSession()
                 try {
                     const deliveringInventories = await this.connection.model<InventorySchema>(InventorySchema.name)
                         .find({
@@ -56,11 +51,11 @@ export class DeliveryWorker extends WorkerHost {
                     let totalGoldAmount = 0
                     let totalTokenAmount = 0
                     for (const inventory of deliveringInventories) {
-                        const inventoryType = inventoryTypes.find((inventoryType) => inventoryType.id === inventory.inventoryType)
+                        const inventoryType = this.staticService.inventoryTypes.find((inventoryType) => inventoryType.id === inventory.inventoryType.toString())
                         if (!inventoryType) {
                             throw new Error(`Inventory type not found: ${inventory.inventoryType}`)
                         }
-                        const product = await this.connection.model<ProductSchema>(ProductSchema.name).findById(inventoryType.product).session(session)
+                        const product = this.staticService.products.find((product) => product.id === inventoryType.product.toString())
                         if (!product) {
                             throw new Error(`Product not found: ${inventoryType.product}`)
                         }
@@ -68,11 +63,11 @@ export class DeliveryWorker extends WorkerHost {
                         totalTokenAmount += product.tokenAmount * inventory.quantity
                     }
                     // Update user balance
-                    const goldChanged = this.goldBalanceService.add({
+                    this.goldBalanceService.add({
                         user,
                         amount: totalGoldAmount
                     })
-                    const tokenChanged = this.tokenBalanceService.add({
+                    this.tokenBalanceService.add({
                         user,
                         amount: totalTokenAmount
                     })
@@ -81,19 +76,14 @@ export class DeliveryWorker extends WorkerHost {
                     await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
                         user: user.id,
                         kind: InventoryKind.Delivery
-                    }).session(session)
+                    }).session(mongoSession)
                     // update user's balance
-                    await this.connection.model<UserSchema>(UserSchema.name).updateOne({
-                        _id: user.id
-                    }, {
-                        ...goldChanged,
-                        ...tokenChanged
-                    }).session(session)
+                    await user.save({ session: mongoSession })
                 } catch (error) {
                     this.logger.error(error)
                     throw error
                 } finally {
-                    session.endSession()
+                    mongoSession.endSession()
                 }
             }
             promises.push(promise())   

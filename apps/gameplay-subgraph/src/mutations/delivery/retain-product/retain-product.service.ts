@@ -24,18 +24,18 @@ export class RetainProductService {
     async retainProduct(
         { id: userId }: UserLike, 
         { inventoryId }: RetainProductRequest): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         try {
             // Using withTransaction to manage the transaction
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE DELIVERY INVENTORY
                  ************************************************************/
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!inventory) {
                     throw new GraphQLError("Delivering product not found", {
@@ -79,7 +79,7 @@ export class RetainProductService {
                     connection: this.connection,
                     inventoryType,
                     userId,
-                    session,
+                    session: mongoSession,
                     kind: InventoryKind.Storage
                 })
 
@@ -100,7 +100,7 @@ export class RetainProductService {
                 if (createdInventories.length > 0) {
                     await this.connection
                         .model<InventorySchema>(InventorySchema.name)
-                        .create(createdInventories, { session })
+                        .create(createdInventories, { session: mongoSession })
                 }
 
                 /************************************************************
@@ -108,7 +108,7 @@ export class RetainProductService {
                  ************************************************************/
                 // Update existing inventories
                 for (const inventory of updatedInventories) {
-                    await inventory.save({ session })
+                    await inventory.save({ session: mongoSession })
                 }
 
                 /************************************************************
@@ -117,13 +117,13 @@ export class RetainProductService {
                 // Delete the original delivery inventory
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
-                    .deleteOne({ _id: inventory._id }, { session })
+                    .deleteOne({ _id: inventory._id }, { session: mongoSession })
             })
         } catch (error) {
             this.logger.error(error)
             throw error // withTransaction will automatically handle the rollback
         } finally {
-            await session.endSession() // Ensure the session is closed
+            await mongoSession.endSession() // Ensure the session is closed
         }
     }
 }

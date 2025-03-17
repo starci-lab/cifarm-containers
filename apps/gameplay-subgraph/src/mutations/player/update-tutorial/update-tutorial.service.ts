@@ -23,17 +23,17 @@ export class UpdateTutorialService {
     ) {}
 
     async updateTutorial({ id: userId }: UserLike): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
         try {
             // Using `withTransaction` to handle the transaction automatically
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -100,13 +100,13 @@ export class UpdateTutorialService {
                             tutorialStep: nextStep
                         }
                     )
-                    .session(session)
+                    .session(mongoSession)
             })
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging
         } finally {
-            await session.endSession() // Ensure the session is always ended
+            await mongoSession.endSession() // Ensure the session is always ended
         }
     }
 

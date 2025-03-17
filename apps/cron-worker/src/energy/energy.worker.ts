@@ -2,12 +2,11 @@ import { EnergyJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { EnergyRegen, InjectMongoose, KeyValueRecord, SystemId, SystemSchema, UserSchema } from "@src/databases"
+import { InjectMongoose, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { Job } from "bullmq"
-import { createObjectId } from "@src/common"
 import { Connection } from "mongoose"
-import { EnergyService } from "@src/gameplay"
+import { EnergyService, StaticService } from "@src/gameplay"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { SyncEnergyPayload } from "@apps/io-gameplay/src/gameplay/energy"
 import { Producer } from "kafkajs"
@@ -22,7 +21,8 @@ export class EnergyWorker extends WorkerHost {
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer,
         private readonly dateUtcService: DateUtcService,
-        private readonly energyService: EnergyService
+        private readonly energyService: EnergyService,
+        private readonly staticService: StaticService,
     ) {
         super()
     }
@@ -43,14 +43,11 @@ export class EnergyWorker extends WorkerHost {
             .limit(take)
             .sort({ createdAt: "desc" })
 
-        const { value: { time: energyRegenTime } } = await this.connection
-            .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<EnergyRegen>>(createObjectId(SystemId.EnergyRegen))
-
+        const { time: energyRegenTime } = this.staticService.energyRegen
         const promises: Array<Promise<void>> = []
         for (const user of users) {
             const promise = async () => {
-                const session = await this.connection.startSession()
+                const mongoSession = await this.connection.startSession()
                 try {
                     let emit = false
                     const updateUser = () => {
@@ -71,7 +68,7 @@ export class EnergyWorker extends WorkerHost {
                         }
                     }
                     updateUser()
-                    await user.save({ session })
+                    await user.save({ session: mongoSession })
                     if (emit) {
                         const payload: SyncEnergyPayload = {
                             userId: user.id,
@@ -87,7 +84,7 @@ export class EnergyWorker extends WorkerHost {
                 } catch (error) {
                     this.logger.error(error)
                 } finally {
-                    await session.endSession()
+                    await mongoSession.endSession()
                 }
             }
             promises.push(promise())

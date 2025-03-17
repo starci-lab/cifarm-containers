@@ -4,23 +4,13 @@ import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
 import {
     CropCurrentState,
-    CropRandomness,
-    CropSchema,
     InjectMongoose,
-    KeyValueRecord,
     PlacedItemSchema,
     PlacedItemType,
-    PlacedItemTypeSchema,
-    SystemId,
-    SystemSchema,
-    TILE,
-    TILE_INFO,
-    TileSchema
 } from "@src/databases"
 import { Job } from "bullmq"
 import { DateUtcService } from "@src/date"
-import { ProductService } from "@src/gameplay"
-import { createObjectId } from "@src/common"
+import { CoreService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 
 @Processor(bullData[BullQueueName.Crop].name)
@@ -31,7 +21,8 @@ export class CropWorker extends WorkerHost {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
-        private readonly productService: ProductService
+        private readonly coreService: CoreService,
+        private readonly staticService: StaticService
     ) {
         super()
     }
@@ -40,11 +31,15 @@ export class CropWorker extends WorkerHost {
         this.logger.verbose(`Processing job: ${job.id}`)
         const { time, skip, take, utcTime } = job.data
 
-        const placedItemTypes = await this.connection
-            .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-            .find({
-                type: PlacedItemType.Tile
-            })
+        // const placedItemTypes = await this.connection
+        //     .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
+        //     .find({
+        //         type: PlacedItemType.Tile
+        //     })
+
+        const placedItemTypes = this.staticService.placedItemTypes.filter(
+            (placedItemType) => placedItemType.type === PlacedItemType.Tile
+        )
         const placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
@@ -61,30 +56,18 @@ export class CropWorker extends WorkerHost {
                     $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                 }
             })
-            .populate(TILE_INFO)
             .skip(skip)
             .limit(take) 
             .sort({ createdAt: "desc" }) 
-        const {
-            value: { needWater, isWeedyOrInfested }
-        } = await this.connection
-            .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
+        const { needWater, isWeedyOrInfested } = this.staticService.cropInfo.randomness
         const promises: Array<Promise<void>> = []
         for (const placedItem of placedItems) {
             const promise = async () => {
-                const session = await this.connection.startSession()
+                const mongoSession = await this.connection.startSession()
                 try {
-                    const placedItemType = await this.connection
-                        .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                        .findById(placedItem.placedItemType)
-                        .populate(TILE)
-                        .session(session)
-                    const crop = await this.connection
-                        .model<CropSchema>(CropSchema.name)
-                        .findById(placedItem.seedGrowthInfo.crop)
-                        .session(session)
-                    const tile = placedItemType.tile as TileSchema
+                    const placedItemType = this.staticService.placedItemTypes.find(placedItemType => placedItem.placedItemType.toString() === placedItemType.id)
+                    const crop = this.staticService.crops.find(crop => crop.id === placedItem.seedGrowthInfo.crop.toString())
+                    const tile = this.staticService.tiles.find(tile => tile.id === placedItem.tileInfo.toString()) 
                     // Add time to the seed growth
                     const updatePlacedItem = () => {
                         // return if the current stage is already max stage
@@ -144,7 +127,7 @@ export class CropWorker extends WorkerHost {
                             placedItem.seedGrowthInfo.harvestQuantityRemaining =
                                     crop.maxHarvestQuantity
                         }
-                        const chance = this.productService.computeTileQualityChance({
+                        const chance = this.coreService.computeTileQualityChance({
                             tileInfo: placedItem.tileInfo,
                             qualityProductChanceLimit: tile.qualityProductChanceLimit,
                             qualityProductChanceStack: tile.qualityProductChanceStack

@@ -7,12 +7,10 @@ import {
     FruitSchema,
     InjectMongoose,
     PlacedItemSchema,
-    PlacedItemType,
-    PlacedItemTypeSchema,
     TILE_INFO
 } from "@src/databases"
 import { DateUtcService } from "@src/date"
-import { ProductService, StaticService } from "@src/gameplay"
+import { CoreService, StaticService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { Connection } from "mongoose"
 
@@ -24,7 +22,7 @@ export class FruitWorker extends WorkerHost {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
-        private readonly productService: ProductService,
+        private readonly coreService: CoreService,
         private readonly staticService: StaticService
     ) {
         super()
@@ -34,16 +32,11 @@ export class FruitWorker extends WorkerHost {
         this.logger.verbose(`Processing job: ${job.id}`)
         const { time, skip, take, utcTime } = job.data
 
-        const placedItemTypes = await this.connection
-            .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-            .find({
-                type: PlacedItemType.Fruit
-            })
         const placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
                 placedItemType: {
-                    $in: placedItemTypes.map((placedItemType) => placedItemType.id),
+                    $in: this.staticService.placedItemTypes.map((placedItemType) => placedItemType.id),
                 },
                 fruitInfo: {
                     $ne: null
@@ -59,16 +52,16 @@ export class FruitWorker extends WorkerHost {
             .skip(skip)
             .limit(take) 
             .sort({ createdAt: "desc" }) 
-        const { hasCaterpillar, needFertilizer } = this.staticService.fruitRandomness
+        const { hasCaterpillar, needFertilizer } = this.staticService.fruitInfo.randomness
         const promises: Array<Promise<void>> = []
         for (const placedItem of placedItems) {
             const promise = async () => {
-                const session = await this.connection.startSession()
+                const mongoSession = await this.connection.startSession()
                 try {
                     const fruit = await this.connection
                         .model<FruitSchema>(FruitSchema.name)
                         .findById(placedItem.fruitInfo.fruit)
-                        .session(session)
+                        .session(mongoSession)
                     // Add time to the seed growth
                     const updatePlacedItem = () => {
                         // return if the current stage is already max stage
@@ -120,7 +113,7 @@ export class FruitWorker extends WorkerHost {
                             placedItem.fruitInfo.harvestQuantityRemaining =
                                     fruit.maxHarvestQuantity
                         }
-                        const chance = this.productService.computeFruitQualityChance({
+                        const chance = this.coreService.computeFruitQualityChance({
                             fruitInfo: placedItem.fruitInfo,
                             qualityProductChanceLimit: fruit.qualityProductChanceLimit,
                             qualityProductChanceStack: fruit.qualityProductChanceStack
@@ -133,11 +126,11 @@ export class FruitWorker extends WorkerHost {
                     }
                     // update the placed item
                     updatePlacedItem()
-                    await placedItem.save({ session })
+                    await placedItem.save({ session: mongoSession })
                 } catch (error) {
                     this.logger.error(error)
                 } finally {
-                    await session.endSession()
+                    await mongoSession.endSession()
                 }
             }
             promises.push(promise())

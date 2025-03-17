@@ -1,9 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose } from "@src/databases"
-import { GoldBalanceService } from "@src/gameplay"
+import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { UpgradeBuildingRequest } from "./upgrade-building.dto"
-import { PlacedItemSchema, BuildingSchema, UserSchema } from "@src/databases"
+import { PlacedItemSchema, UserSchema, InjectMongoose } from "@src/databases"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 
@@ -14,7 +13,8 @@ export class UpgradeBuildingService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly goldBalanceService: GoldBalanceService
+        private readonly goldBalanceService: GoldBalanceService,
+        private readonly staticService: StaticService
     ) {}
 
     async upgradeBuilding(
@@ -24,6 +24,9 @@ export class UpgradeBuildingService {
         const mongoSession = await this.connection.startSession()
         try {
             await mongoSession.withTransaction(async () => {
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM
+                 ************************************************************/
                 const placedItemBuilding = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemBuildingId)
@@ -37,19 +40,23 @@ export class UpgradeBuildingService {
                     })
                 }
 
-                const building = await this.connection
-                    .model<BuildingSchema>(BuildingSchema.name)
-                    .findById(placedItemBuilding.placedItemType)
-                    .session(mongoSession)
-
+                /************************************************************
+                 * RETRIEVE AND VALIDATE BUILDING TYPE
+                 ************************************************************/
+                const building = this.staticService.buildings.find(
+                    (building) => building.id === placedItemBuilding.placedItemType.toString()
+                )   
                 if (!building) {
-                    throw new GraphQLError("Building type not found", {
+                    throw new GraphQLError("Building type not found in static data", {
                         extensions: {
-                            code: "BUILDING_TYPE_NOT_FOUND"
+                            code: "BUILDING_TYPE_NOT_FOUND_IN_STATIC"
                         }
                     })
                 }
 
+                /************************************************************
+                 * CHECK UPGRADE AVAILABILITY
+                 ************************************************************/
                 const currentUpgradeLevel = placedItemBuilding.buildingInfo.currentUpgrade
 
                 if (currentUpgradeLevel > building.maxUpgrade) {
@@ -72,34 +79,46 @@ export class UpgradeBuildingService {
                     })
                 }
 
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
                     
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+
+                /************************************************************
+                 * CHECK SUFFICIENT GOLD
+                 ************************************************************/
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
                     required: nextUpgrade.upgradePrice
                 })
 
-                const goldsChanged = this.goldBalanceService.subtract({
+                /************************************************************
+                 * UPDATE USER GOLD
+                 ************************************************************/
+                this.goldBalanceService.subtract({
                     user: user,
                     amount: nextUpgrade.upgradePrice
                 })
 
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged })
+                await user.save({ session: mongoSession })
 
-                await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .updateOne(
-                        { _id: placedItemBuilding._id },
-                        { "buildingInfo.currentUpgrade": currentUpgradeLevel + 1 }
-                    )
-                // No return value needed for void
+                /************************************************************
+                 * UPDATE BUILDING UPGRADE LEVEL
+                 ************************************************************/
+                placedItemBuilding.buildingInfo.currentUpgrade = currentUpgradeLevel + 1
+                await placedItemBuilding.save({ session: mongoSession })
             })
-            // No return value needed for void
         } catch (error) {
             this.logger.error(error)
             throw error

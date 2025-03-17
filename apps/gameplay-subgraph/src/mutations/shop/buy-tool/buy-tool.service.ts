@@ -27,9 +27,9 @@ export class BuyToolService {
         { id: userId }: UserLike,
         { toolId }: BuyToolRequest
     ): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
         try {
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE TOOL
                  ************************************************************/
@@ -60,7 +60,7 @@ export class BuyToolService {
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -98,7 +98,7 @@ export class BuyToolService {
                         user: userId,
                         inventoryType: inventoryType.id
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 if (userHasTool) {
                     throw new GraphQLError("User already has the tool", {
@@ -118,7 +118,7 @@ export class BuyToolService {
                 })
 
                 // Save updated user data
-                await user.save({ session })
+                await user.save({ session: mongoSession })
 
                 /************************************************************
                  * ADD TOOL TO INVENTORY
@@ -128,7 +128,7 @@ export class BuyToolService {
                     inventoryType,
                     userId,
                     connection: this.connection,
-                    session,
+                    session: mongoSession,
                     storageCapacity
                 })
                 
@@ -152,7 +152,7 @@ export class BuyToolService {
                             kind: InventoryKind.Storage
                         }
                     ],
-                    { session }
+                    { session: mongoSession }
                 )
             })
         } catch (error) {
@@ -161,7 +161,7 @@ export class BuyToolService {
             throw error
         } finally {
             // End the session after the transaction is complete
-            await session.endSession()
+            await mongoSession.endSession()
         }
     }
 }

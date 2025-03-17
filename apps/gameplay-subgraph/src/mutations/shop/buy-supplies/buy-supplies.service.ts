@@ -1,8 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
 import {
     InjectMongoose, InventoryKind, InventorySchema,
-    InventoryTypeSchema,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, StaticService } from "@src/gameplay"
@@ -27,9 +25,9 @@ export class BuySuppliesService {
         { id: userId }: UserLike,
         { quantity, supplyId }: BuySuppliesRequest
     ): Promise<void> { 
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
         try {
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE SUPPLY
                  ************************************************************/
@@ -59,7 +57,7 @@ export class BuySuppliesService {
                  ************************************************************/
                 const user = await this.connection.model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -81,10 +79,9 @@ export class BuySuppliesService {
                 const { storageCapacity } = this.staticService.defaultInfo
 
                 // Get inventory type
-                const inventoryType = await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findById(createObjectId(supplyId))
-                    .session(session)
-
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (type) => type.supply.toString() === supply.id
+                )
                 if (!inventoryType) {
                     throw new GraphQLError("Inventory type not found", {
                         extensions: {
@@ -103,7 +100,7 @@ export class BuySuppliesService {
                 })
 
                 // Save updated user data
-                await user.save({ session })
+                await user.save({ session: mongoSession })
 
                 /************************************************************
                  * ADD SUPPLIES TO INVENTORY
@@ -112,7 +109,7 @@ export class BuySuppliesService {
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session
+                    session: mongoSession,
                 })
                 
                 // Save inventory
@@ -129,7 +126,7 @@ export class BuySuppliesService {
                 // Create new inventory items
                 if (createdInventories.length > 0) {
                     await this.connection.model<InventorySchema>(InventorySchema.name)
-                        .create(createdInventories, { session })
+                        .create(createdInventories, { session: mongoSession })
                 }
                 
                 // Update existing inventory items
@@ -139,14 +136,14 @@ export class BuySuppliesService {
                             { _id: inventory._id },
                             inventory
                         )
-                        .session(session)
+                        .session(mongoSession)
                 }
             })
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
-            await session.endSession()
+            await mongoSession.endSession()
         }
     }
 }

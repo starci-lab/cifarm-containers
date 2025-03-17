@@ -22,11 +22,11 @@ export class UpdateFollowXService {
     async updateFollowX({
         id: userId
     }: UserLike): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         try {
             // Using `withTransaction` for automatic transaction handling
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -40,7 +40,7 @@ export class UpdateFollowXService {
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -82,13 +82,13 @@ export class UpdateFollowXService {
                             },
                         }
                     )
-                    .session(session)
+                    .session(mongoSession)
             })
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
-            await session.endSession() // End the session after the transaction
+            await mongoSession.endSession() // End the session after the transaction
         }
     }
 }

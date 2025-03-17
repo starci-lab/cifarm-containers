@@ -20,10 +20,10 @@ export class DeliverProductService {
         { id: userId }: UserLike,
         { inventoryId, quantity, index }: DeliverProductRequest
     ): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to manage the transaction
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY
                  ************************************************************/
@@ -31,8 +31,7 @@ export class DeliverProductService {
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
-
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
@@ -88,11 +87,11 @@ export class DeliverProductService {
                         .deleteOne({
                             _id: inventoryId
                         })
-                        .session(session)
+                        .session(mongoSession)
                 } else {
                     // Update the inventory with reduced quantity
                     inventory.quantity -= quantity
-                    await inventory.save({ session })
+                    await inventory.save({ session: mongoSession })
                 }
 
                 /************************************************************
@@ -109,14 +108,14 @@ export class DeliverProductService {
                             inventoryType: inventory.inventoryType
                         }
                     ],
-                    { session }
+                    { session: mongoSession }
                 )
             })
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
-            await session.endSession() // Ensure the session is closed
+            await mongoSession.endSession() // Ensure the session is closed
         }
     }
 }

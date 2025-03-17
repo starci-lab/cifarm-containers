@@ -35,11 +35,11 @@ export class BuyAnimalService {
             position,
         }: BuyAnimalRequest
     ): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE ANIMAL
                  ************************************************************/
@@ -244,7 +244,7 @@ export class BuyAnimalService {
             throw error
         } finally {
             // End the session after the transaction is complete
-            await session.endSession()
+            await mongoSession.endSession()
         }
     }
 }

@@ -25,11 +25,11 @@ export class BuyBuildingService {
         { id: userId }: UserLike,
         { buildingId, position }: BuyBuildingRequest
     ): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE BUILDING
                  ************************************************************/
@@ -62,7 +62,7 @@ export class BuyBuildingService {
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -88,7 +88,7 @@ export class BuyBuildingService {
                                 .map((placedItemType) => placedItemType.id)
                         }
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 if (totalBuildings >= buildingLimit) {
                     throw new GraphQLError("Max building ownership reached", {
@@ -118,7 +118,7 @@ export class BuyBuildingService {
                         user: userId,
                         placedItemType: placedItemType.id
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 if (placedItemBuildings.length >= building.maxOwnership) {
                     throw new GraphQLError("Max building ownership reached", {
@@ -147,7 +147,7 @@ export class BuyBuildingService {
                 })
 
                 // Save updated user data
-                await user.save({ session })
+                await user.save({ session: mongoSession })
 
                 /************************************************************
                  * PLACE BUILDING
@@ -168,7 +168,7 @@ export class BuyBuildingService {
                                 }
                             }
                         ],
-                        { session }
+                        { session: mongoSession }
                     )
 
                 const placedItemId = placedItemBuildingRaw._id.toString()
@@ -216,7 +216,7 @@ export class BuyBuildingService {
             throw error
         } finally {
             // End the session after the transaction is complete
-            await session.endSession()
+            await mongoSession.endSession()
         }
     }
 }

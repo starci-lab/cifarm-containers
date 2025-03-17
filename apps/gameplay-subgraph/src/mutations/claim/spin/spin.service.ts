@@ -38,9 +38,9 @@ export class SpinService {
     ) {}
 
     async spin({ id: userId }: UserLike): Promise<SpinResponse> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
         try {
-            const result = await session.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -54,7 +54,7 @@ export class SpinService {
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -85,7 +85,7 @@ export class SpinService {
                     .model<SpinSlotSchema>(SpinSlotSchema.name)
                     .find()
                     .populate(SPIN_PRIZE)
-                    .session(session)
+                    .session(mongoSession)
                 
                 if (spinSlots.length !== 8) {
                     throw new GraphQLError("Spin slots must be equal to 8", {
@@ -130,7 +130,7 @@ export class SpinService {
                     })  
                     
                     // Update user with gold changes
-                    await user.save({ session })
+                    await user.save({ session: mongoSession })
                     break
                 }
                 case SpinPrizeType.Seed: {
@@ -143,7 +143,7 @@ export class SpinService {
                             crop: spinPrize.crop,
                             type: InventoryType.Seed
                         })
-                        .session(session)
+                        .session(mongoSession)
 
                     if (!inventoryType) {
                         throw new GraphQLError("Inventory seed type not found", {
@@ -157,7 +157,7 @@ export class SpinService {
                             await this.inventoryService.getAddParams({
                                 userId,
                                 inventoryType,
-                                session,
+                                session: mongoSession,
                                 connection: this.connection
                             })
 
@@ -172,18 +172,18 @@ export class SpinService {
                             })
 
                     // Update user data
-                    await user.save({ session })
+                    await user.save({ session: mongoSession })
 
                     // Create new inventory items
                     if (createdInventories.length > 0) {
                         await this.connection
                             .model<InventorySchema>(InventorySchema.name)
-                            .create(createdInventories, { session })
+                            .create(createdInventories, { session: mongoSession })
                     }
                     
                     // Update existing inventory items
                     for (const inventory of updatedInventories) {
-                        await inventory.save({ session })
+                        await inventory.save({ session: mongoSession })
                     }
 
                     break
@@ -198,7 +198,7 @@ export class SpinService {
                             supply: spinPrize.supply,
                             type: InventoryType.Supply
                         })
-                        .session(session)
+                        .session(mongoSession)
 
                     if (!inventoryType) {
                         throw new GraphQLError("Inventory supply type not found", {
@@ -212,7 +212,7 @@ export class SpinService {
                             await this.inventoryService.getAddParams({
                                 userId,
                                 inventoryType,
-                                session,
+                                session: mongoSession,
                                 connection: this.connection
                             })
 
@@ -227,18 +227,18 @@ export class SpinService {
                             })
 
                     // Update user data
-                    await user.save({ session })
+                    await user.save({ session: mongoSession })
 
                     // Create new inventory items
                     if (createdInventories.length > 0) {
                         await this.connection
                             .model<InventorySchema>(InventorySchema.name)
-                            .create(createdInventories, { session })
+                            .create(createdInventories, { session: mongoSession })
                     }
                     
                     // Update existing inventory items
                     for (const inventory of updatedInventories) {
-                        await inventory.save({ session })
+                        await inventory.save({ session: mongoSession })
                     }
 
                     break
@@ -253,7 +253,7 @@ export class SpinService {
                     })
                     
                     // Update user with token changes
-                    await user.save({ session })
+                    await user.save({ session: mongoSession })
                     break
                 }
                 }
@@ -265,7 +265,7 @@ export class SpinService {
             this.logger.error(error)
             throw error
         } finally {
-            await session.endSession()
+            await mongoSession.endSession()
         }
     }
 

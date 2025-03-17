@@ -24,17 +24,17 @@ export class ClaimDailyRewardService {
     ) {}
 
     async claimDailyReward({ id: userId }: UserLike): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         try {
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -106,14 +106,14 @@ export class ClaimDailyRewardService {
                  * UPDATE USER DATA
                  ************************************************************/
                 // Update the user with the changes
-                await user.save({ session })
+                await user.save({ session: mongoSession })
             })
         } catch (error) {
             this.logger.error(error)
             throw error
         } finally {
             // End the session after the transaction is complete
-            await session.endSession()
+            await mongoSession.endSession()
         }
     }
 }

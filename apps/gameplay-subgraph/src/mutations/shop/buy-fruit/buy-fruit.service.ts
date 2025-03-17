@@ -30,11 +30,11 @@ export class BuyFruitService {
         { id: userId }: UserLike,
         { position, fruitId }: BuyFruitRequest
     ): Promise<void> {
-        const session = await this.connection.startSession()
+        const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
         try {
-            await session.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE FRUIT
                  ************************************************************/
@@ -67,7 +67,7 @@ export class BuyFruitService {
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -99,7 +99,7 @@ export class BuyFruitService {
                             $in: placedItemTypes.map((placedItemType) => placedItemType.id)
                         }
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 if (count >= fruitLimit) {
                     throw new GraphQLError("Max fruit limit reached", {
@@ -119,7 +119,7 @@ export class BuyFruitService {
                 })
 
                 // Save updated user data
-                await user.save({ session })
+                await user.save({ session: mongoSession })
 
                 /************************************************************
                  * PLACE FRUIT
@@ -153,7 +153,7 @@ export class BuyFruitService {
                                 }
                             }
                         ],
-                        { session }
+                        { session: mongoSession }
                     )
                 const placedItemId = placedItemFruitRaw._id.toString()
 
@@ -200,7 +200,7 @@ export class BuyFruitService {
             throw error
         } finally {
             // End the session after the transaction is complete
-            await session.endSession()
+            await mongoSession.endSession()
         }
     }
 }
