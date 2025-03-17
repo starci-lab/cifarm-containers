@@ -1,4 +1,4 @@
-import { GetPlacedItemsArgs, GetPlacedItemsResponse } from "./placed-items.dto"
+import { GetPlacedItemsRequest, GetPlacedItemsResponse } from "./placed-items.dto"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, PlacedItemSchema } from "@src/databases"
 import { UserLike } from "@src/jwt"
@@ -24,7 +24,7 @@ export class PlacedItemsService {
 
     async getPlacedItems(
         { id }: UserLike,
-        { limit = 10, offset = 0 }: GetPlacedItemsArgs
+        { limit = 10, offset = 0 }: GetPlacedItemsRequest
     ): Promise<GetPlacedItemsResponse> {
         const mongoSession = await this.connection.startSession()
         try {

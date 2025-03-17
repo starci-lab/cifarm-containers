@@ -99,7 +99,7 @@
     "ethers": "6.13.4",
     "google-protobuf": "^3.21.4",
     "graphql": "^16.9.0",
-    "graphql-scalars": "^1.24.1",
+    "graphql-scalars": "1.24.1",
     "graphql-type-json": "^0.3.2",
     "ioredis": "^5.4.2",
     "jks-js": "^1.1.4",

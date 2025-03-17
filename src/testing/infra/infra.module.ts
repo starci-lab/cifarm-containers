@@ -8,7 +8,7 @@ import { CacheModule, CacheType } from "@src/cache"
 import { BlockchainModule } from "@src/blockchain"
 import { JwtModule } from "@src/jwt"
 import { GameplayModule } from "@src/gameplay"
-import { KafkaGroupId, KafkaModule } from "@src/brokers"
+import { KafkaModule } from "@src/brokers"
 import { DateModule } from "@src/date"
 import { E2EAxiosModule, E2EConnectionService, E2ESocketIoModule } from "./e2e"
 import { MongooseModule } from "@src/databases"
@@ -45,8 +45,6 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                 }),
                 KafkaModule.register({
                     isGlobal: true,
-                    groupId: KafkaGroupId.Gameplay,
-                    producerOnlyMode: true
                 }),
                 DateModule.register({
                     isGlobal: true
@@ -54,7 +52,7 @@ export class TestingInfraModule extends ConfigurableModuleClass {
             )
             const services = [GameplayMockUserService, GameplayConnectionService]
             providers.push(...services)
-            exports.push(...services)
+            exports.push(...services, ...imports)
             break
         }
         case TestContext.E2E: {
@@ -64,8 +62,6 @@ export class TestingInfraModule extends ConfigurableModuleClass {
                     isGlobal: true
                 }),
                 KafkaModule.register({
-                    groupId: KafkaGroupId.Gameplay,
-                    producerOnlyMode: true,
                     isGlobal: true,
                 }),
                 MongooseModule.forRoot(),

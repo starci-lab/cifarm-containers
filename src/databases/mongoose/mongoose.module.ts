@@ -80,7 +80,6 @@ export class MongooseModule extends ConfigurableModuleClass {
                     authSource: "admin",
                     dbName,
                     connectionFactory: async (connection: Connection) => {
-                        // eslint-disable-next-line @typescript-eslint/no-require-imports
                         connection.plugin(normalizeMongoose)
                         return connection
                     }, 

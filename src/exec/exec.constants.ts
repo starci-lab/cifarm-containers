@@ -14,10 +14,6 @@ export const containerMap : Record<Container, ContainerInfo> = {
         image: "cifarm/cron-worker",
         dockerfile: "./apps/cron-worker/Dockerfile"
     },
-    [Container.GameplayService]: {
-        image: "cifarm/gameplay-service",
-        dockerfile: "./apps/gameplay-service/Dockerfile"
-    },
     [Container.GraphQLGateway]: {
         image: "cifarm/graphql-gateway",
         dockerfile: "./apps/graphql-gateway/Dockerfile"
@@ -25,10 +21,6 @@ export const containerMap : Record<Container, ContainerInfo> = {
     [Container.IoGameplay]: {
         image: "cifarm/io-gameplay",
         dockerfile: "./apps/io-gameplay/Dockerfile"
-    },
-    [Container.RestApiGateway]: {
-        image: "cifarm/rest-api-gateway",
-        dockerfile: "./apps/rest-api-gateway/Dockerfile"
     },
     [Container.Cli]: {
         image: "cifarm/cli",

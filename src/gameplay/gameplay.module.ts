@@ -9,13 +9,12 @@ import { ProductService } from "./product"
 import { TutorialService } from "./tutorial"
 import { PositionService } from "./position"
 import { NestExport, NestProvider, NestService } from "@src/common"
-
+// import { StaticService } from "./static"
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE) : DynamicModule {
         const dynamicModule = super.register(options)
-
-        const loadStatic = options.loadStatic ?? true
+        const loadStatic = options.loadStatic || true
         // services that are always loaded
         const services: Array<NestService> = [
             LevelService,
@@ -26,7 +25,7 @@ export class GameplayModule extends ConfigurableModuleClass {
             InventoryService,
             ProductService,
             TutorialService,
-            PositionService
+            PositionService,
         ]
         if (loadStatic) {
             // services that are loaded if static is enabled

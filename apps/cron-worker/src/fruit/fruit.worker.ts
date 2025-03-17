@@ -2,22 +2,17 @@ import { FruitJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import { createObjectId } from "@src/common"
 import {
     FruitCurrentState,
-    FruitRandomness,
     FruitSchema,
     InjectMongoose,
-    KeyValueRecord,
     PlacedItemSchema,
     PlacedItemType,
     PlacedItemTypeSchema,
-    SystemId,
-    SystemSchema,
     TILE_INFO
 } from "@src/databases"
 import { DateUtcService } from "@src/date"
-import { ProductService } from "@src/gameplay"
+import { ProductService, StaticService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { Connection } from "mongoose"
 
@@ -29,7 +24,8 @@ export class FruitWorker extends WorkerHost {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
-        private readonly productService: ProductService
+        private readonly productService: ProductService,
+        private readonly staticService: StaticService
     ) {
         super()
     }
@@ -63,11 +59,7 @@ export class FruitWorker extends WorkerHost {
             .skip(skip)
             .limit(take) 
             .sort({ createdAt: "desc" }) 
-        const {
-            value: { hasCaterpillar, needFertilizer }
-        } = await this.connection
-            .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<FruitRandomness>>(createObjectId(SystemId.FruitRandomness))
+        const { hasCaterpillar, needFertilizer } = this.staticService.fruitRandomness
         const promises: Array<Promise<void>> = []
         for (const placedItem of placedItems) {
             const promise = async () => {

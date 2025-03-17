@@ -4,7 +4,6 @@ import {
     BuildingSchema,
     CropSchema,
     DefaultInfo,
-    InjectMongoose,
     KeyValueRecord,
     PlacedItemTypeSchema,
     SystemId,
@@ -23,10 +22,12 @@ import {
     SpinInfo,
     EnergyRegen,
     DailyRewardInfo,
-    HoneycombInfo
+    HoneycombInfo,
+    InjectMongoose
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
+
 @Injectable()
 export class StaticService implements OnModuleInit {
     private readonly logger = new Logger(StaticService.name)

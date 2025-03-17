@@ -1,4 +1,4 @@
-// npx jest apps/gameplay-service/src/auth/request-message/request-message.spec.ts 
+// npx jest apps/gameplay-subgraph/src/mutations/auth/request-message/request-message.spec.ts
 
 import { GameplayConnectionService, TestingInfraModule } from "@src/testing"
 import { Test } from "@nestjs/testing"

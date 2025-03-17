@@ -1,4 +1,4 @@
-import { GetInventoriesArgs, GetInventoriesResponse } from "./inventories.dto"
+import { GetInventoriesRequest, GetInventoriesResponse } from "./inventories.dto"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, InventorySchema } from "@src/databases"
 import { UserLike } from "@src/jwt"
@@ -27,7 +27,7 @@ export class InventoriesService {
 
     async getInventories(
         { id }: UserLike,
-        { limit = 10, offset = 0 }: GetInventoriesArgs
+        { limit = 10, offset = 0 }: GetInventoriesRequest
     ): Promise<GetInventoriesResponse> {
         const mongoSession = await this.connection.startSession()
         try {

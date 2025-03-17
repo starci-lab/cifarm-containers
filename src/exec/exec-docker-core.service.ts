@@ -9,13 +9,13 @@ export class ExecDockerCoreService {
 
     constructor(private readonly execService: ExecService) {}
 
-    async build(container: Container = Container.GameplayService) {
+    async build(container: Container = Container.GameplaySubgraph) {
         this.logger.debug(`Building container: ${container}...`)
         const { dockerfile, image } = containerMap[container]
         await this.execService.exec("docker", ["build", "-t", image, "-f", dockerfile, "."])
     }
 
-    async push(container: Container = Container.GameplayService) {
+    async push(container: Container = Container.GameplaySubgraph) {
         this.logger.debug(`Pushing container: ${container}...`)
         const { image } = containerMap[container]
         await this.execService.exec("docker", ["push", image])
