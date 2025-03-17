@@ -1,28 +1,26 @@
 import { ActionName, EmitActionPayload, HarvestFruitData } from "@apps/io-gameplay"
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
 import {
-    Activities,
-    DefaultInfo,
     FruitCurrentState,
-    FruitSchema,
     InjectMongoose,
     InventorySchema,
-    InventoryType,
-    InventoryTypeSchema,
-    KeyValueRecord,
     PlacedItemSchema,
-    ProductSchema,
-    SystemId,
-    SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, ProductService } from "@src/gameplay"
+import {
+    EnergyService,
+    InventoryService,
+    LevelService,
+    ProductService,
+    StaticService
+} from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HarvestFruitRequest, HarvestFruitResponse } from "./harvest-fruit.dto"
 import { UserLike } from "@src/jwt"
+import { GraphQLError } from "graphql"
+
 @Injectable()
 export class HarvestFruitService {
     private readonly logger = new Logger(HarvestFruitService.name)
@@ -33,6 +31,7 @@ export class HarvestFruitService {
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly productService: ProductService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -40,8 +39,6 @@ export class HarvestFruitService {
         { id: userId }: UserLike,
         { placedItemFruitId }: HarvestFruitRequest
     ): Promise<HarvestFruitResponse> {
-        this.logger.debug(`Harvesting fruit for user ${userId}, tile ID: ${placedItemFruitId}`)
-
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload<HarvestFruitData> | undefined
 
@@ -54,29 +51,42 @@ export class HarvestFruitService {
                     .findById(placedItemFruitId)
                     .session(session)
 
-                if (!placedItemFruit) throw new NotFoundException("Fruit not found")
-                if (!placedItemFruit.fruitInfo)
-                    throw new BadRequestException("Fruit is not planted")
-                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.FullyMatured)
-                    throw new BadRequestException("Fruit is not fully matured")
-
+                if (!placedItemFruit) {
+                    throw new GraphQLError("Fruit not found", {
+                        extensions: {
+                            code: "FRUIT_NOT_FOUND"
+                        }
+                    })
+                }
+                if (!placedItemFruit.fruitInfo) {
+                    throw new GraphQLError("Fruit is not planted", {
+                        extensions: {
+                            code: "FRUIT_NOT_PLANTED"
+                        }
+                    })
+                }
+                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.FullyMatured) {
+                    throw new GraphQLError("Fruit is not fully matured", {
+                        extensions: {
+                            code: "FRUIT_NOT_FULLY_MATURED"
+                        }
+                    })
+                }
                 // Fetch system settings
-                const {
-                    value: {
-                        harvestFruit: { energyConsume, experiencesGain }
-                    }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
-                    .session(session)
-
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.harvestFruit
                 // Fetch user details
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new NotFoundException("User not found")
+                if (!user)
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
 
                 // Check if the user has sufficient energy
                 this.energyService.checkSufficient({
@@ -85,25 +95,43 @@ export class HarvestFruitService {
                 })
 
                 // Deduct energy and add experience
-                const energyChanges = this.energyService.substract({
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experienceChanges = this.levelService.addExperiences({
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
 
-                // Fetch inventory type for the harvested fruit
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findOne({
-                        type: InventoryType.Product,
-                        product: placedItemFruit.fruitInfo.fruit
+                const product = this.staticService.products.find((product) => {
+                    return (
+                        product.fruit &&
+                        product.isQuality !== undefined &&
+                        product.fruit.toString() === placedItemFruit.fruitInfo.fruit.toString() &&
+                        product.isQuality === placedItemFruit.fruitInfo.isQuality
+                    )
+                })
+                
+                if (!product) {
+                    throw new GraphQLError("Product not found from static data", {
+                        extensions: {
+                            code: "PRODUCT_NOT_FOUND_FROM_STATIC_DATA"
+                        }
                     })
-                    .session(session)
+                }
 
-                if (!inventoryType) throw new NotFoundException("Inventory type not found")
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) => inventoryType.product.toString() === product.id.toString()
+                )
+
+                if (!inventoryType) {
+                    throw new GraphQLError("Inventory type not found from static data", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_FOUND_FROM_STATIC_DATA"
+                        }
+                    })
+                }
 
                 // Get parameters for adding inventory
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
@@ -114,17 +142,7 @@ export class HarvestFruitService {
                 })
 
                 // Fetch storage capacity setting
-                const {
-                    value: { storageCapacity }
-                } = await this.connection
-                    .model<SystemSchema>(SystemSchema.name)
-                    .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-
-                // Update user with energy and experience changes
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(session)
+                const { storageCapacity } = this.staticService.defaultInfo
 
                 // Harvest quantity
                 const quantity = placedItemFruit.fruitInfo.harvestQuantityRemaining
@@ -144,55 +162,29 @@ export class HarvestFruitService {
                     .create(createdInventories, { session })
 
                 for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne(
-                            {
-                                _id: inventory._id
-                            },
-                            inventory
-                        )
-                        .session(session)
+                    await inventory.save({ session })
                 }
 
-                // Fetch fruit details to update perennial count
-                const fruit = await this.connection
-                    .model<FruitSchema>(FruitSchema.name)
-                    .findById(placedItemFruit.fruitInfo.fruit)
-                    .session(session)
-
-                if (!fruit) throw new NotFoundException("Fruit not found")
-
-                const product = await this.connection
-                    .model<ProductSchema>(ProductSchema.name)
-                    .findOne({
-                        isQuality: placedItemFruit.fruitInfo.isQuality,
-                        fruit: placedItemFruit.fruitInfo.fruit
-                    })
-                    .session(session)
-
-                // Handle perennial fruit growth cycle
-
-                const fruitInfoAfterCollectChanges =
-                    this.productService.updateFruitInfoAfterHarvest({
-                        fruitInfo: placedItemFruit.fruitInfo,
-                        fruit
-                    })
-
-                // Update the placed item tile with new seed growth information
-                await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .updateOne(
-                        { _id: placedItemFruit._id },
-                        {
-                            fruitInfo: {
-                                ...placedItemFruit.fruitInfo,
-                                ...fruitInfoAfterCollectChanges
-                            }
+                const fruit = this.staticService.fruits.find(
+                    (fruit) => fruit.id.toString() === placedItemFruit.fruitInfo.fruit.toString()
+                )
+                if (!fruit) {
+                    throw new GraphQLError("Fruit not found from static data", {
+                        extensions: {
+                            code: "FRUIT_NOT_FOUND_FROM_STATIC_DATA"
                         }
-                    )
-                    .session(session)
-
+                    })
+                }
+            
+                // Handle perennial fruit growth cycle
+                this.productService.updatePlacedItemFruitAfterHarvest({
+                    placedItemFruit,
+                    fruit
+                })
+                
+                // save the related models
+                await user.save({ session })
+                await placedItemFruit.save({ session })
                 // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemFruitId,

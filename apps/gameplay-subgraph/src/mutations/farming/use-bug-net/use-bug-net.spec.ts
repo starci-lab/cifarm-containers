@@ -1,207 +1,337 @@
-// npx jest apps/gameplay-service/src/farming/use-herbicide/use-herbicide.spec.ts
+// npx jest apps/gameplay-subgraph/src/mutations/farming/use-bug-net/use-bug-net.spec.ts
 
-import { Test } from "@nestjs/testing"
-import { DataSource } from "typeorm"
-import { UseHerbicideService } from "./use-bug-net.service"
+import { Test, TestingModule } from "@nestjs/testing"
+import { UseBugNetService } from "./use-bug-net.service"
 import {
-    SystemEntity,
-    UserSchema,
+    GameplayConnectionService,
+    GameplayMockUserService,
+    TestingInfraModule
+} from "@src/testing"
+import { EnergyNotEnoughException, LevelService, StaticService } from "@src/gameplay"
+import {
+    getMongooseToken,
     PlacedItemSchema,
-    SeedGrowthInfoEntity,
-    CropCurrentState,
-    SystemId,
-    Activities,
-    getPostgreSqlToken,
-    CropId,
+    InventorySchema,
+    UserSchema,
+    FruitCurrentState,
+    InventoryTypeId,
     PlacedItemTypeId,
+    InventoryKind,
 } from "@src/databases"
-import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { v4 } from "uuid"
-import { GrpcFailedPreconditionException } from "@src/common"
-import { GameplayMockUserService, GameplayConnectionService, TestingInfraModule } from "@src/testing"
+import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
+import { GraphQLError } from "graphql"
 
-describe("UseHerbicideService", () => {
-    let service: UseHerbicideService
-    let dataSource: DataSource
-    let levelService: LevelService
-    let gameplayMockUserService: GameplayMockUserService
+describe("UseBugNetService", () => {
+    let service: UseBugNetService
     let gameplayConnectionService: GameplayConnectionService
+    let gameplayMockUserService: GameplayMockUserService
+    let levelService: LevelService
+    let connection: Connection
+    let staticService: StaticService
 
     beforeAll(async () => {
-        const moduleRef = await Test.createTestingModule({
+        const module: TestingModule = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [UseHerbicideService],
+            providers: [UseBugNetService]
         }).compile()
-
-        dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(UseHerbicideService)
-        levelService = moduleRef.get(LevelService)
-        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
+        
+        staticService = module.get<StaticService>(StaticService)
+        await staticService.onModuleInit()
+        service = module.get<UseBugNetService>(UseBugNetService)
+        gameplayConnectionService = module.get<GameplayConnectionService>(GameplayConnectionService)
+        gameplayMockUserService = module.get<GameplayMockUserService>(GameplayMockUserService)
+        levelService = module.get<LevelService>(LevelService)
+        connection = module.get<Connection>(getMongooseToken())
     })
 
-    it("should successfully use herbicide and update tile state, energy, and experience", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities },
-        })
-        const {
-            usePesticide: { energyConsume, experiencesGain },
-        } = value as Activities
+    it("should successfully use bug net and update fruit state, energy, and experience", async () => {
+        const { energyConsume, experiencesGain } = staticService.activities.useBugNet
 
         const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1,
+            energy: energyConsume + 1
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile,
-            seedGrowthInfo: {
-                currentState: CropCurrentState.IsWeedy,
-                currentStageTimeElapsed: 0,
-                cropId: CropId.Carrot,
-                harvestQuantityRemaining: 10,
-            }
+        // Create bug net inventory for the user
+        const bugNetInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.BugNet
+        )
+        
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: bugNetInventoryType.id,
+            index: 1,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
         })
 
-        // Call the service to use herbicide
-        await service.useHerbicide({
-            userId: user.id,
-            placedItemTileId: placedItemTile.id,
-        })
+        // Create a fruit with infested state
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile),
+                fruitInfo: {
+                    currentState: FruitCurrentState.IsInfested,
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                }
+            })
 
-        // Check if energy and experience were updated correctly
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["energy", "level", "experiences"],
-        })
-
-        expect(user.energy - userAfter.energy).toBe(energyConsume)
-        expect(levelService.computeTotalExperienceForLevel(userAfter) - levelService.computeTotalExperienceForLevel(user)).toBe(experiencesGain)
-
-        // Check if the tile's seed growth info was updated
-        const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: { id: placedItemTile.seedGrowthInfo.id },
-        })
-
-        expect(updatedSeedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
-    })
-
-    it("should throw GrpcNotFoundException when tile is not found by its ID", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities },
-        })
-        const {
-            usePesticide: { energyConsume },
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1,
-        })
-
-        const invalidPlacedItemTileId = v4()
-
-        await expect(
-            service.useHerbicide({
-                userId: user.id,
-                placedItemTileId: invalidPlacedItemTileId,
-            }),
-        ).rejects.toThrow(GrpcNotFoundException)
-    })
-
-    it("should throw GrpcFailedPreconditionException when seed growth info does not exist on tile", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities },
-        })
-        const {
-            usePesticide: { energyConsume },
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1,
-        })
-
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile,
-        })
-
-        await expect(
-            service.useHerbicide({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id,
-            }),
-        ).rejects.toThrow(GrpcFailedPreconditionException)
-    })
-
-    it("should throw GrpcFailedPreconditionException when tile is not weedy", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities },
-        })
-        const {
-            usePesticide: { energyConsume },
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1,
-        })
-
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            x: 0,
-            y: 0,
-            userId: user.id,
-            seedGrowthInfo: {
-                currentState: CropCurrentState.Normal, // Not weedy
-                currentStageTimeElapsed: 0,
-                cropId: CropId.Carrot,
-                harvestQuantityRemaining: 10,
+        // Call the service method to use bug net
+        await service.useBugNet(
+            {
+                id: user.id
             },
-            placedItemTypeId: PlacedItemTypeId.BasicTile,
+            {
+                placedItemFruitId: placedItemFruit.id
+            }
+        )
+
+        const userAfter = await connection
+            .model<UserSchema>(UserSchema.name)
+            .findById(user.id)  
+            .select("energy level experiences")
+
+        // Assert energy and experience changes
+        expect(user.energy - userAfter.energy).toBe(energyConsume)
+        expect(
+            levelService.computeTotalExperienceForLevel(userAfter) -
+                levelService.computeTotalExperienceForLevel(user)
+        ).toBe(experiencesGain)
+
+        // Get the updated placedItemFruit
+        const updatedPlacedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .findById(placedItemFruit.id)
+
+        // Check if the fruit state was updated to normal
+        expect(updatedPlacedItemFruit.fruitInfo.currentState).toBe(FruitCurrentState.Normal)
+    })
+
+    it("should throw GraphQLError with code BUG_NET_NOT_FOUND when user doesn't have a bug net", async () => {
+        const { energyConsume } = staticService.activities.useBugNet
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
         })
 
-        await expect(
-            service.useHerbicide({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id,
-            }),
-        ).rejects.toThrow(GrpcFailedPreconditionException)
+        // Create a fruit with infested state
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile),
+                fruitInfo: {
+                    currentState: FruitCurrentState.IsInfested,
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                }
+            })
+
+        try {
+            await service.useBugNet(
+                {
+                    id: user.id
+                },
+                {
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("BUG_NET_NOT_FOUND")
+        }
+    })
+
+    it("should throw GraphQLError with code FRUIT_NOT_FOUND when fruit is not found", async () => {
+        const { energyConsume } = staticService.activities.useBugNet
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Create bug net inventory for the user
+        const bugNetInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.BugNet
+        )
+        
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: bugNetInventoryType.id,
+            index: 1,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
+        })
+
+        const invalidPlacedItemFruitId = createObjectId()
+
+        try {
+            await service.useBugNet(
+                {
+                    id: user.id
+                },
+                {
+                    placedItemFruitId: invalidPlacedItemFruitId
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("FRUIT_NOT_FOUND")
+        }
+    })
+
+    it("should throw GraphQLError with code FRUIT_NOT_PLANTED when fruit info doesn't exist", async () => {
+        const { energyConsume } = staticService.activities.useBugNet
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Create bug net inventory for the user
+        const bugNetInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.BugNet
+        )
+        
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: bugNetInventoryType.id,
+            index: 1,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
+        })
+
+        // Create a placed item without fruit info
+        const placedItemWithoutFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+            })
+
+        try {
+            await service.useBugNet(
+                {
+                    id: user.id
+                },
+                {
+                    placedItemFruitId: placedItemWithoutFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("FRUIT_NOT_PLANTED")
+        }
+    })
+
+    it("should throw GraphQLError with code FRUIT_NOT_INFESTED when fruit is not infested", async () => {
+        const { energyConsume } = staticService.activities.useBugNet
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Create bug net inventory for the user
+        const bugNetInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.BugNet
+        )
+        
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: bugNetInventoryType.id,
+            index: 1,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
+        })
+
+        // Create a fruit with normal state (not infested)
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile),
+                fruitInfo: {
+                    currentState: FruitCurrentState.Normal, // Not infested
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                }
+            })
+
+        try {
+            await service.useBugNet(
+                {
+                    id: user.id
+                },
+                {
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("FRUIT_NOT_INFESTED")
+        }
     })
 
     it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities },
-        })
-        const {
-            usePesticide: { energyConsume },
-        } = value as Activities
+        const { energyConsume } = staticService.activities.useBugNet
 
         const user = await gameplayMockUserService.generate({
-            energy: energyConsume - 1,
+            energy: energyConsume - 1 // Not enough energy
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            x: 0,
-            y: 0,
-            userId: user.id,
-            seedGrowthInfo: {
-                currentState: CropCurrentState.IsWeedy,
-                currentStageTimeElapsed: 0,
-                cropId: CropId.Carrot,
-                harvestQuantityRemaining: 10,
-            },
-            placedItemTypeId: PlacedItemTypeId.BasicTile,
+        // Create bug net inventory for the user
+        const bugNetInventoryType = staticService.inventoryTypes.find(
+            type => type.displayId === InventoryTypeId.BugNet
+        )
+        
+        await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: bugNetInventoryType.id,
+            index: 1,
+            quantity: 1,
+            user: user.id,
+            kind: InventoryKind.Storage
         })
 
-        await expect(
-            service.useHerbicide({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id,
-            }),
-        ).rejects.toThrow(EnergyNotEnoughException)
+        // Create a fruit with infested state
+        const placedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .create({
+                x: 0,
+                y: 0,
+                user: user.id,
+                placedItemType: createObjectId(PlacedItemTypeId.BasicTile),
+                fruitInfo: {
+                    currentState: FruitCurrentState.IsInfested,
+                    fruit: createObjectId(),
+                    harvestQuantityRemaining: 5
+                }
+            })
+
+        try {
+            await service.useBugNet(
+                {
+                    id: user.id
+                },
+                {
+                    placedItemFruitId: placedItemFruit.id
+                }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(EnergyNotEnoughException)
+        }
     })
 
     afterAll(async () => {

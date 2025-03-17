@@ -32,7 +32,7 @@ export class InventoryService {
         occupiedIndexes,
         kind = InventoryKind.Storage
     }: AddParams): AddResult {
-        const updatedInventories: Array<DeepPartial<InventorySchema>> = []
+        const updatedInventories: Array<InventorySchema> = []
         const createdInventories: Array<DeepPartial<InventorySchema>> = []
 
         // sort the quantity in ascending order
@@ -108,8 +108,8 @@ export class InventoryService {
     }
 
     public remove({ inventories, quantity }: RemoveParams): RemoveResult {
-        const updatedInventories: Array<DeepPartial<InventorySchema>> = []
-        const removedInventories: Array<DeepPartial<InventorySchema>> = []
+        const updatedInventories: Array<InventorySchema> = []
+        const removedInventories: Array<InventorySchema> = []
 
         // sort the inventories in ascending order
         const sortedInventories = inventories.sort((prev, next) => prev.quantity - next.quantity)

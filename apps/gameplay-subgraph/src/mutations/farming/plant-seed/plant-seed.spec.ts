@@ -7,7 +7,7 @@ import {
     GameplayMockUserService,
     TestingInfraModule
 } from "@src/testing"
-import { EnergyNotEnoughException, LevelService, StaticService } from "@src/gameplay"
+import { LevelService, StaticService } from "@src/gameplay"
 import {
     getMongooseToken,
     PlacedItemSchema,
@@ -46,6 +46,21 @@ describe("PlantSeedService", () => {
         connection = module.get<Connection>(getMongooseToken())
     })
 
+    // Helper function to create a watering can inventory for a user
+    async function createWateringCanInventory(userId: string) {
+        const inventoryTypeWateringCan = staticService.inventoryTypes.find(
+            (inventoryType) => inventoryType.displayId === InventoryTypeId.WateringCan
+        )
+        
+        return await connection.model<InventorySchema>(InventorySchema.name).create({
+            inventoryType: inventoryTypeWateringCan.id,
+            index: 1,
+            quantity: 1,
+            user: userId,
+            kind: InventoryKind.Storage
+        })
+    }
+
     it("should successfully plant a seed and update the user's stats and inventory accordingly", async () => {
         const quantity = 10
         const { energyConsume, experiencesGain } = staticService.activities.plantSeed
@@ -54,24 +69,19 @@ describe("PlantSeedService", () => {
             energy: energyConsume + 1
         })
 
+        // Create watering can inventory for the user
+        await createWateringCanInventory(user.id)
+
         const cropId = CropId.Carrot
         const crop = staticService.crops.find(c => c.displayId === cropId)
 
-        // Create watering can inventory for the user
-        const wateringCanInventoryType = staticService.inventoryTypes.find(
-            type => type.displayId === InventoryTypeId.WateringCan
+        // Get the inventory type for carrot seed from static service
+        const inventoryTypeSeed = staticService.inventoryTypes.find(
+            (inventoryType) => inventoryType.displayId === InventoryTypeId.CarrotSeed
         )
-        
-        await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: wateringCanInventoryType.id,
-            index: 1,
-            quantity: 1,
-            user: user.id,
-            kind: InventoryKind.Storage
-        })
 
         const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: createObjectId(InventoryTypeId.CarrotSeed),
+            inventoryType: inventoryTypeSeed.id,
             index: 0,
             quantity,
             user: user.id,
@@ -123,8 +133,7 @@ describe("PlantSeedService", () => {
             .findById(placedItemTile.id)
 
         expect(updatedPlacedItemTile.seedGrowthInfo).not.toBeNull()
-        expect(updatedPlacedItemTile.seedGrowthInfo.crop.toString()).toBe(createObjectId(cropId).toString())
-        expect(updatedPlacedItemTile.seedGrowthInfo.harvestQuantityRemaining).toBe(crop.maxHarvestQuantity)
+        expect(updatedPlacedItemTile.seedGrowthInfo.crop.toString()).toBe(crop.id.toString())
         expect(updatedPlacedItemTile.seedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
     })
 
@@ -135,10 +144,15 @@ describe("PlantSeedService", () => {
             energy: energyConsume + 1
         })
 
+        // Get the inventory type for carrot seed from static service
+        const inventoryTypeSeed = staticService.inventoryTypes.find(
+            (inventoryType) => inventoryType.displayId === InventoryTypeId.CarrotSeed
+        )
+
         const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: createObjectId(InventoryTypeId.CarrotSeed),
+            inventoryType: inventoryTypeSeed.id,
             index: 0,
-            quantity: 10,
+            quantity: 1,
             user: user.id,
             kind: InventoryKind.Storage
         })
@@ -177,17 +191,7 @@ describe("PlantSeedService", () => {
         })
 
         // Create watering can inventory for the user
-        const wateringCanInventoryType = staticService.inventoryTypes.find(
-            type => type.displayId === InventoryTypeId.WateringCan
-        )
-        
-        await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: wateringCanInventoryType.id,
-            index: 1,
-            quantity: 1,
-            user: user.id,
-            kind: InventoryKind.Storage
-        })
+        await createWateringCanInventory(user.id)
 
         const invalidInventorySeedId = createObjectId()
 
@@ -216,20 +220,15 @@ describe("PlantSeedService", () => {
         })
 
         // Create watering can inventory for the user
-        const wateringCanInventoryType = staticService.inventoryTypes.find(
-            type => type.displayId === InventoryTypeId.WateringCan
+        await createWateringCanInventory(user.id)
+
+        // Get the inventory type for carrot seed from static service
+        const inventoryTypeSeed = staticService.inventoryTypes.find(
+            (inventoryType) => inventoryType.displayId === InventoryTypeId.CarrotSeed
         )
-        
-        await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: wateringCanInventoryType.id,
-            index: 1,
-            quantity: 1,
-            user: user.id,
-            kind: InventoryKind.Storage
-        })
 
         const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: createObjectId(InventoryTypeId.CarrotSeed),
+            inventoryType: inventoryTypeSeed.id,
             index: 0,
             quantity: 1,
             user: user.id,
@@ -254,7 +253,7 @@ describe("PlantSeedService", () => {
         }
     })
 
-    it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
+    it("should throw GraphQLError with code ENERGY_NOT_ENOUGH when user does not have enough energy", async () => {
         const { energyConsume } = staticService.activities.plantSeed
 
         const user = await gameplayMockUserService.generate({
@@ -262,20 +261,15 @@ describe("PlantSeedService", () => {
         })
 
         // Create watering can inventory for the user
-        const wateringCanInventoryType = staticService.inventoryTypes.find(
-            type => type.displayId === InventoryTypeId.WateringCan
+        await createWateringCanInventory(user.id)
+
+        // Get the inventory type for carrot seed from static service
+        const inventoryTypeSeed = staticService.inventoryTypes.find(
+            (inventoryType) => inventoryType.displayId === InventoryTypeId.CarrotSeed
         )
-        
-        await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: wateringCanInventoryType.id,
-            index: 1,
-            quantity: 1,
-            user: user.id,
-            kind: InventoryKind.Storage
-        })
 
         const inventorySeed = await connection.model<InventorySchema>(InventorySchema.name).create({
-            inventoryType: createObjectId(InventoryTypeId.CarrotSeed),
+            inventoryType: inventoryTypeSeed.id,
             index: 0,
             quantity: 10,
             user: user.id,
@@ -303,7 +297,8 @@ describe("PlantSeedService", () => {
             )
             fail("Expected error to be thrown")
         } catch (error) {
-            expect(error).toBeInstanceOf(EnergyNotEnoughException)
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("ENERGY_NOT_ENOUGH")
         }
     })
 

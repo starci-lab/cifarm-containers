@@ -1,6 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    CropCurrentState,
     InjectMongoose,
     InventorySchema,
     InventoryType,
@@ -84,7 +83,7 @@ export class PlantSeedService {
                 }
 
                 const inventoryTypeSeed = this.staticService.inventoryTypes.find(
-                    (inventoryType) => inventoryType.id.toString() === inventory.inventoryType.toString()
+                    (inventoryType) => inventoryType.id === inventory.inventoryType.toString()
                 )
 
                 // throw the error direct since we know this is an internal server error
@@ -145,23 +144,30 @@ export class PlantSeedService {
                         }
                     })
                 }
-                
+
+                if (user.energy < energyConsume) {
+                    throw new GraphQLError("Not enough energy", {
+                        extensions: {
+                            code: "ENERGY_NOT_ENOUGH"
+                        }
+                    })
+                }
+
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
-
-                const energyChanges = this.energyService.substract({
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experiencesChanges = this.levelService.addExperiences({
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
 
                 const crop = this.staticService.crops.find(
-                    crop => crop.id.toString() === inventoryTypeSeed.crop.toString()
+                    (crop) => crop.id.toString() === inventoryTypeSeed.crop.toString()
                 )
 
                 if (!crop) {
@@ -171,11 +177,6 @@ export class PlantSeedService {
                         }
                     })
                 }
-
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experiencesChanges })
-                    .session(session)
 
                 const { inventories } = await this.inventoryService.getRemoveParams({
                     connection: this.connection,
@@ -191,10 +192,7 @@ export class PlantSeedService {
                 })
 
                 for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne({ _id: inventory._id }, inventory)
-                        .session(session)
+                    await inventory.save({ session })
                 }
 
                 await this.connection
@@ -204,15 +202,14 @@ export class PlantSeedService {
                     })
                     .session(session)
 
+                await user.save({ session })
                 await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .updateOne(
-                        { _id: placedItemTile._id },
+                        { _id: placedItemTileId },
                         {
                             seedGrowthInfo: {
-                                crop: crop.id,
-                                harvestQuantityRemaining: crop.maxHarvestQuantity,
-                                currentState: CropCurrentState.Normal
+                                crop: crop.id.toString(),
                             }
                         }
                     )

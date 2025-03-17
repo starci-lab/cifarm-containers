@@ -2,15 +2,15 @@ import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     Activities,
-    AnimalRandomness,
+    AnimalInfo,
     AppearanceChance,
     CropId,
-    CropRandomness,
+    CropInfo,
     DailyRewardId,
     DailyRewardInfo,
     DefaultInfo,
     EnergyRegen,
-    FruitRandomness,
+    FruitInfo,
     HoneycombInfo,
     InjectMongoose,
     SpinInfo,
@@ -126,22 +126,31 @@ export class SystemSeeder implements Seeder {
                 experiencesGain: 3
             }
         }
-        const cropRandomness: CropRandomness = {
-            needWater: 0.5,
-            thief2: 0.8,
-            thief3: 0.95,
-            isWeedyOrInfested: 1
+        const cropInfo: CropInfo = {
+            randomness: {
+                needWater: 0.5,
+                thief2: 0.8,
+                thief3: 0.95,
+                isWeedyOrInfested: 1
+            },
+            nextGrowthStageAfterHarvest: 1
         }
-        const animalRandomness: AnimalRandomness = {
-            sickChance: 0.5,
-            thief2: 0.8,
-            thief3: 0.95
+        const animalInfo: AnimalInfo = {
+            randomness: {
+                sickChance: 0.5,
+                thief2: 0.8,
+                thief3: 0.95
+            },
+            nextGrowthStageAfterHarvest: 1
         }
-        const fruitRandomness: FruitRandomness = {
-            thief2: 0.8,
-            thief3: 0.95,
-            hasCaterpillar: 1,
-            needFertilizer: 0.5
+        const fruitInfo: FruitInfo = {
+            randomness: {
+                thief2: 0.8,
+                thief3: 0.95,
+                hasCaterpillar: 1,
+                needFertilizer: 0.5
+            },
+            nextGrowthStageAfterHarvest: 1
         }
         const defaultInfo: DefaultInfo = {
             golds: 1000, 
@@ -265,19 +274,19 @@ export class SystemSeeder implements Seeder {
                 value: activities
             },
             {
-                _id: createObjectId(SystemId.CropRandomness),
-                displayId: SystemId.CropRandomness,
-                value: cropRandomness
+                _id: createObjectId(SystemId.CropInfo),
+                displayId: SystemId.CropInfo,
+                value: cropInfo
             },
             {
-                _id: createObjectId(SystemId.AnimalRandomness),
-                displayId: SystemId.AnimalRandomness,
-                value: animalRandomness
+                _id: createObjectId(SystemId.AnimalInfo),
+                displayId: SystemId.AnimalInfo,
+                value: animalInfo
             },
             {
-                _id: createObjectId(SystemId.FruitRandomness),
-                displayId: SystemId.FruitRandomness,
-                value: fruitRandomness
+                _id: createObjectId(SystemId.FruitInfo),
+                displayId: SystemId.FruitInfo,
+                value: fruitInfo
             },
             {
                 _id: createObjectId(SystemId.DefaultInfo),

@@ -3,14 +3,14 @@ import {
     ComputeAnimalQualityChanceParams,
     ComputeFruitQualityChanceParams,
     ComputeTileQualityChanceParams,
-    UpdateAnimalInfoAfterCollectParams,
-    UpdateAnimalInfoAfterCollectResult,
-    UpdateFruitInfoAfterHarvestParams,
-    UpdateFruitInfoAfterHarvestResult,
-    UpdateTileInfoAfterHarvestParams,
-    UpdateTileInfoAfterHarvestResult
+    UpdatePlacedItemAnimalAfterHarvestParams,
+    UpdatePlacedItemAnimalAfterHarvestResult,
+    UpdatePlacedItemFruitAfterHarvestParams,
+    UpdatePlacedItemFruitAfterHarvestResult,
+    UpdatePlacedItemTileAfterHarvestParams,
+    UpdatePlacedItemTileAfterHarvestResult
 } from "./product.types"
-import { AnimalCurrentState, FruitCurrentState } from "@src/databases"
+import { AnimalCurrentState, CropCurrentState, FruitCurrentState } from "@src/databases"
 
 //booster service is to compute the quality,.. of tile, animal after several time of harvest
 @Injectable()
@@ -19,71 +19,91 @@ export class ProductService {
 
     //compute the quality of animal after several time of harvest
     public computeAnimalQualityChance({
-        animalInfo: { yieldCount },
+        animalInfo: { timesHarvested },
         qualityProductChanceLimit,
         qualityProductChanceStack
     }: ComputeAnimalQualityChanceParams): number {
-        yieldCount += 1
-        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * yieldCount)
+        timesHarvested += 1
+        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * timesHarvested)
     }
 
     //compute the quality of tile after several time of harvest
     public computeTileQualityChance({
-        tileInfo: { harvestCount },
+        tileInfo: { timesHarvested },
         qualityProductChanceLimit,
         qualityProductChanceStack
     }: ComputeTileQualityChanceParams): number {
-        harvestCount += 1
-        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * harvestCount)
+        timesHarvested += 1
+        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * timesHarvested)
     }
 
     public computeFruitQualityChance({
-        fruitInfo: { harvestCount },
+        fruitInfo: { timesHarvested },
         qualityProductChanceLimit,
         qualityProductChanceStack
     }: ComputeFruitQualityChanceParams): number {
-        harvestCount += 1
-        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * harvestCount)
+        timesHarvested += 1
+        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * timesHarvested)
     }
 
 
     //update the tile information after harvest
-    public updateTileInfoAfterHarvest({
-        tileInfo
-    }: UpdateTileInfoAfterHarvestParams): UpdateTileInfoAfterHarvestResult {
-        const harvestCount = tileInfo.harvestCount + 1
-        return {
-            harvestCount
+    public updatePlacedItemTileAfterHarvest({
+        placedItemTile,
+        crop
+    }: UpdatePlacedItemTileAfterHarvestParams): UpdatePlacedItemTileAfterHarvestResult {
+        // update the tile info times harvested
+        placedItemTile.tileInfo.timesHarvested += 1
+        
+        if (placedItemTile.seedGrowthInfo.harvestCount + 1 >= crop.perennialCount) {
+            // remove the seed growth info
+            placedItemTile.seedGrowthInfo = undefined
+        } else {
+            // update the seed growth info
+            placedItemTile.seedGrowthInfo.harvestCount += 1
+            placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+            placedItemTile.seedGrowthInfo.currentStage = crop.nextGrowthStageAfterHarvest
+            placedItemTile.seedGrowthInfo.currentStageTimeElapsed = 0
+            placedItemTile.seedGrowthInfo.harvestQuantityRemaining = crop.maxHarvestQuantity
+            placedItemTile.seedGrowthInfo.isQuality = false 
         }
+        return placedItemTile
     }
 
     //update the animal information after collect
-    public updateAnimalInfoAfterCollect({
-        animalInfo
-    }: UpdateAnimalInfoAfterCollectParams): UpdateAnimalInfoAfterCollectResult {
-        const yieldCount = animalInfo.yieldCount + 1
-        return {
-            yieldCount,
-            currentState: AnimalCurrentState.Normal,
-            harvestQuantityRemaining: 0,
-            currentHungryTime: 0,
-            animal: animalInfo.animal
-        }
+    public updatePlacedItemAnimalAfterHarvest({
+        placedItemAnimal,
+        animal
+    }: UpdatePlacedItemAnimalAfterHarvestParams): UpdatePlacedItemAnimalAfterHarvestResult {
+        // update the animal info times harvested
+        placedItemAnimal.animalInfo.timesHarvested += 1
+        
+        placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
+        placedItemAnimal.animalInfo.currentYieldTime = 0
+        placedItemAnimal.animalInfo.currentHungryTime = 0
+        placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Hungry
+        placedItemAnimal.animalInfo.harvestQuantityRemaining = 0
+
+        // update the animal info
+        placedItemAnimal.animalInfo.animal = animal
+       
+        return placedItemAnimal
     }
 
     //public method to update the fruit information after harvest
-    public updateFruitInfoAfterHarvest({
-        fruitInfo,
+    public updatePlacedItemFruitAfterHarvest({
+        placedItemFruit,
         fruit
-    }: UpdateFruitInfoAfterHarvestParams): UpdateFruitInfoAfterHarvestResult {
-        const harvestCount = fruitInfo.harvestCount + 1
-        return {
-            harvestCount,
-            currentState: FruitCurrentState.Normal,
-            currentStage: fruit.nextGrowthStageAfterHarvest,
-            currentStageTimeElapsed: 0,
-            harvestQuantityRemaining: 0,
-            fruit: fruit._id
-        }
+    }: UpdatePlacedItemFruitAfterHarvestParams): UpdatePlacedItemFruitAfterHarvestResult {
+        // update the fruit info harvest time
+        placedItemFruit.fruitInfo.timesHarvested += 1
+
+        // update the fruit info
+        placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
+        placedItemFruit.fruitInfo.currentStage = fruit.nextGrowthStageAfterHarvest
+        placedItemFruit.fruitInfo.currentStageTimeElapsed = 0
+        placedItemFruit.fruitInfo.harvestQuantityRemaining = 0
+        // return the placed item fruit
+        return placedItemFruit
     }
 }

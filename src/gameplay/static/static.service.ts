@@ -14,9 +14,6 @@ import {
     ToolSchema,
     TileSchema,
     Activities,
-    CropRandomness,
-    AnimalRandomness,
-    FruitRandomness,
     SpinInfo,
     EnergyRegen,
     DailyRewardInfo,
@@ -25,6 +22,9 @@ import {
     KeyValueRecord,
     SystemId,
     SystemSchema,
+    FruitInfo,
+    AnimalInfo,
+    CropInfo,
 } from "@src/databases"
 import { Connection } from "mongoose"
 @Injectable()
@@ -34,9 +34,9 @@ export class StaticService implements OnModuleInit {
 
     public defaultInfo: DefaultInfo
     public activities: Activities
-    public cropRandomness: CropRandomness
-    public animalRandomness: AnimalRandomness
-    public fruitRandomness: FruitRandomness
+    public cropInfo: CropInfo
+    public animalInfo: AnimalInfo
+    public fruitInfo: FruitInfo
     public spinInfo: SpinInfo
     public energyRegen: EnergyRegen
     public dailyRewardInfo: DailyRewardInfo
@@ -74,20 +74,20 @@ export class StaticService implements OnModuleInit {
             .findById<KeyValueRecord<Activities>>(createObjectId(SystemId.Activities))
         this.activities = activitiesDoc.value
 
-        const cropRandomnessDoc = await this.connection
+        const cropInfoDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<CropRandomness>>(createObjectId(SystemId.CropRandomness))
-        this.cropRandomness = cropRandomnessDoc.value
+            .findById<KeyValueRecord<CropInfo>>(createObjectId(SystemId.CropInfo))
+        this.cropInfo = cropInfoDoc.value
 
-        const animalRandomnessDoc = await this.connection
+        const animalInfoDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<AnimalRandomness>>(createObjectId(SystemId.AnimalRandomness))
-        this.animalRandomness = animalRandomnessDoc.value
+            .findById<KeyValueRecord<AnimalInfo>>(createObjectId(SystemId.AnimalInfo))
+        this.animalInfo = animalInfoDoc.value
 
-        const fruitRandomnessDoc = await this.connection
+        const fruitInfoDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<FruitRandomness>>(createObjectId(SystemId.FruitRandomness))
-        this.fruitRandomness = fruitRandomnessDoc.value
+            .findById<KeyValueRecord<FruitInfo>>(createObjectId(SystemId.FruitInfo))
+        this.fruitInfo = fruitInfoDoc.value
 
         const spinInfoDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)

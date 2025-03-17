@@ -42,10 +42,10 @@ export class AnimalInfoSchema extends AbstractSchema {
         isQuality: boolean
 
     @Field(() => Int, {
-        description: "The yield count of the animal"
+        description: "Times the animal has been harvested"
     })
     @Prop({ type: Number, default: 0 })
-        yieldCount: number
+        timesHarvested: number
 
     @Field(() => ID, {
         description: "The animal ID"

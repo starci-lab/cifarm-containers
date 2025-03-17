@@ -8,10 +8,10 @@ import { AbstractSchema } from "./abstract"
 @Schema({ timestamps: true, autoCreate: false  })
 export class TileInfoSchema extends AbstractSchema {
     @Field(() => Int, {
-        description: "The number of times the tile has been harvested"
+        description: "Times the tile has been harvested"
     })
     @Prop({ type: Number, default: 0 })
-        harvestCount: number
+        timesHarvested: number
 }
 
 export const TileInfoSchemaClass = SchemaFactory.createForClass(TileInfoSchema)

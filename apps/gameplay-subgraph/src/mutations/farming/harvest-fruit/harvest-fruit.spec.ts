@@ -1,364 +1,256 @@
-// npx jest apps/gameplay-service/src/farming/harvest-crop/harvest-crop.spec.ts
+// npx jest apps/gameplay-subgraph/src/mutations/farming/harvest-fruit/harvest-fruit.spec.ts
 
-import { Test } from "@nestjs/testing"
-import { DataSource } from "typeorm"
-import { HarvestCropService } from "./harvest-fruit.service"
+import { Test, TestingModule } from "@nestjs/testing"
+import { HarvestFruitService } from "./harvest-fruit.service"
 import {
     GameplayConnectionService,
     GameplayMockUserService,
     TestingInfraModule
 } from "@src/testing"
 import {
-    SeedGrowthInfoEntity,
-    CropCurrentState,
+    getMongooseToken,
     PlacedItemSchema,
+    InventorySchema,
     UserSchema,
-    InventoryEntity,
-    SystemEntity,
-    SystemId,
-    Activities,
-    getPostgreSqlToken,
+    FruitCurrentState,
+    FruitId,
     PlacedItemTypeId,
-    CropId,
-    TileInfoEntity
+    InventoryType
 } from "@src/databases"
-import { EnergyNotEnoughException, LevelService } from "@src/gameplay"
-import { v4 } from "uuid"
-import { GrpcNotFoundException } from "nestjs-grpc-exceptions"
-import { GrpcFailedPreconditionException } from "@src/common"
+import { Connection } from "mongoose"
+import { createObjectId } from "@src/common"
+import { GraphQLError } from "graphql"
+import { EnergyNotEnoughException, LevelService, StaticService } from "@src/gameplay"
 
-describe("HarvestCropService", () => {
-    let dataSource: DataSource
-    let service: HarvestCropService
+describe("HarvestFruitService", () => {
+    let service: HarvestFruitService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
+    let connection: Connection
+    let staticService: StaticService
 
     beforeAll(async () => {
-        const moduleRef = await Test.createTestingModule({
+        const module: TestingModule = await Test.createTestingModule({
             imports: [TestingInfraModule.register()],
-            providers: [HarvestCropService]
+            providers: [HarvestFruitService]
         }).compile()
-
-        dataSource = moduleRef.get(getPostgreSqlToken())
-        service = moduleRef.get(HarvestCropService)
-        gameplayConnectionService = moduleRef.get(GameplayConnectionService)
-        gameplayMockUserService = moduleRef.get(GameplayMockUserService)
-        levelService = moduleRef.get(LevelService)
+        
+        staticService = module.get<StaticService>(StaticService)
+        await staticService.onModuleInit()
+        service = module.get<HarvestFruitService>(HarvestFruitService)
+        gameplayConnectionService = module.get<GameplayConnectionService>(GameplayConnectionService)
+        gameplayMockUserService = module.get<GameplayMockUserService>(GameplayMockUserService)
+        levelService = module.get<LevelService>(LevelService)
+        connection = module.get<Connection>(getMongooseToken())
     })
 
-    it("should successfully harvest the one-season crop and update the user's stats and inventory accordingly (not quality)", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            harvestAnimal: { energyConsume, experiencesGain }
-        } = value as Activities
-    
+    it("should successfully harvest a fruit and update the user's stats and inventory accordingly", async () => {
+        const { energyConsume, experiencesGain } = staticService.activities.harvestFruit
+
         const user = await gameplayMockUserService.generate({
             energy: energyConsume + 1
         })
 
-        const cropId = CropId.Carrot
-
+        const fruitId = FruitId.Apple
+        const fruit = staticService.fruits.find(f => f.displayId === fruitId)
         const quantity = 10
-        // Create placed tile with a fully matured crop
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.FullyMatured,
-                currentPerennialCount: 0,
-                cropId,
+        const isQuality = false
+        const initialHarvestCount = 0
+
+        // Find the product for this fruit
+        const product = staticService.products.find(p => 
+            p.fruit && p.fruit.toString() === fruit.id.toString() && p.isQuality === isQuality
+        )
+
+        // Find the inventory type for this product
+        const inventoryType = staticService.inventoryTypes.find(it => 
+            it.type === InventoryType.Product && 
+            it.product && 
+            it.product.toString() === product.id.toString()
+        )
+
+        // Create placed item with a fully matured fruit
+        const placedItemFruit = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
+            fruitInfo: {
+                fruit: fruit.id,
+                currentState: FruitCurrentState.FullyMatured,
                 harvestQuantityRemaining: quantity,
+                isQuality,
+                harvestCount: initialHarvestCount,
+                currentStage: fruit.growthStages - 1, // Fully matured stage
+                currentStageTimeElapsed: fruit.growthStageDuration // Completed time
+            },
+            x: 0,
+            y: 0,
+            user: user.id,
+            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+        })
+
+        // Call the service method to harvest the fruit
+        const result = await service.harvestFruit(
+            { id: user.id },
+            { placedItemFruitId: placedItemFruit.id }
+        )
+
+        // Check the result
+        expect(result).toEqual({ quantity })
+
+        const userAfter = await connection
+            .model<UserSchema>(UserSchema.name)
+            .findById(user.id)
+            .select("energy level experiences")
+
+        // Assert energy and experience changes
+        expect(user.energy - userAfter.energy).toBe(energyConsume)
+        expect(
+            levelService.computeTotalExperienceForLevel(userAfter) -
+                levelService.computeTotalExperienceForLevel(user)
+        ).toBe(experiencesGain)
+
+        // Assert inventory has been created with the harvested fruit
+        const inventory = await connection
+            .model<InventorySchema>(InventorySchema.name)
+            .findOne({
+                user: user.id,
+                inventoryType: inventoryType.id
+            })
+
+        expect(inventory).not.toBeNull()
+        expect(inventory.quantity).toBe(quantity)
+
+        // Get the updated placedItemFruit
+        const updatedPlacedItemFruit = await connection
+            .model<PlacedItemSchema>(PlacedItemSchema.name)
+            .findById(placedItemFruit.id)
+
+        // Check if the fruit info is updated correctly based on the ProductService.updateFruitInfoAfterHarvest implementation
+        expect(updatedPlacedItemFruit.fruitInfo).not.toBeNull()
+        expect(updatedPlacedItemFruit.fruitInfo.currentState).toBe(FruitCurrentState.Normal)
+        expect(updatedPlacedItemFruit.fruitInfo.harvestQuantityRemaining).toBe(0)
+        expect(updatedPlacedItemFruit.fruitInfo.timesHarvested).toBe(initialHarvestCount + 1)
+        expect(updatedPlacedItemFruit.fruitInfo.currentStage).toBe(fruit.nextGrowthStageAfterHarvest)
+        expect(updatedPlacedItemFruit.fruitInfo.currentStageTimeElapsed).toBe(0)
+    })
+
+    it("should throw GraphQLError with code FRUIT_NOT_FOUND when fruit is not found", async () => {
+        const { energyConsume } = staticService.activities.harvestFruit
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        const invalidPlacedItemFruitId = createObjectId()
+
+        try {
+            await service.harvestFruit(
+                { id: user.id },
+                { placedItemFruitId: invalidPlacedItemFruitId }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("FRUIT_NOT_FOUND")
+        }
+    })
+
+    it("should throw GraphQLError with code FRUIT_NOT_PLANTED when fruit is not planted", async () => {
+        const { energyConsume } = staticService.activities.harvestFruit
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        // Create placed item without fruit info
+        const placedItemFruit = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
+            fruitInfo: null, // No fruit planted
+            x: 0,
+            y: 0,
+            user: user.id,
+            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
+        })
+
+        try {
+            await service.harvestFruit(
+                { id: user.id },
+                { placedItemFruitId: placedItemFruit.id }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("FRUIT_NOT_PLANTED")
+        }
+    })
+
+    it("should throw GraphQLError with code FRUIT_NOT_FULLY_MATURED when fruit is not fully matured", async () => {
+        const { energyConsume } = staticService.activities.harvestFruit
+
+        const user = await gameplayMockUserService.generate({
+            energy: energyConsume + 1
+        })
+
+        const fruitId = FruitId.Apple
+        const fruit = staticService.fruits.find(f => f.displayId === fruitId)
+
+        // Create placed item with a fruit that is not fully matured
+        const placedItemFruit = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
+            fruitInfo: {
+                fruit: fruit.id,
+                currentState: FruitCurrentState.Normal, // Not fully matured
+                harvestQuantityRemaining: 10,
                 isQuality: false
             },
-            tileInfo: {},
             x: 0,
             y: 0,
-            placedItemTypeId: PlacedItemTypeId.BasicTile,
-            userId: user.id
+            user: user.id,
+            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
         })
 
-        // Call the service method to harvest the crop
-        await service.harvestCrop({
-            userId: user.id,
-            placedItemTileId: placedItemTile.id
-        })
-
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["energy", "level", "experiences"]
-        })
-
-        // Assert energy and experience changes
-        expect(user.energy - userAfter.energy).toBe(energyConsume)
-        expect(
-            levelService.computeTotalExperienceForLevel(userAfter) - 
-                levelService.computeTotalExperienceForLevel(user)
-        ).toBe(experiencesGain)
-
-        // Assert inventory quantity increased by harvested amount
-        const inventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: user.id,
-                inventoryType: {
-                    product: {
-                        cropId
-                    }
-                }
-            },
-            relations: {
-                inventoryType: {
-                    product: true
-                }
-            }
-        })
-
-        expect(inventory.quantity).toBe(quantity)
-        expect(inventory.inventoryType.product.isQuality).toBe(false)
-
-        // Assert seed growth info is updated or removed
-        const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: { id: placedItemTile.seedGrowthInfo.id }
-        })
-
-        expect(updatedSeedGrowthInfo).toBeNull()
-
-        const updatedTileInfo = await dataSource.manager.findOne(TileInfoEntity, {
-            where: { id: placedItemTile.tileInfoId },
-        })
-        expect(updatedTileInfo.harvestCount).toBe(placedItemTile.tileInfo.harvestCount + 1)
+        try {
+            await service.harvestFruit(
+                { id: user.id },
+                { placedItemFruitId: placedItemFruit.id }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(GraphQLError)
+            expect(error.extensions.code).toBe("FRUIT_NOT_FULLY_MATURED")
+        }
     })
 
-    it("should successfully harvest the one-season crop and update the user's stats and inventory accordingly (quality)", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            harvestAnimal: { energyConsume, experiencesGain }
-        } = value as Activities
-    
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-
-        const cropId = CropId.Carrot
-
-        const quantity = 10
-        // Create placed tile with a fully matured crop
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.FullyMatured,
-                currentPerennialCount: 0,
-                cropId,
-                harvestQuantityRemaining: quantity,
-                isQuality: true
-            },
-            tileInfo: {},
-            x: 0,
-            y: 0,
-            placedItemTypeId: PlacedItemTypeId.BasicTile,
-            userId: user.id
-        })
-
-        // Call the service method to harvest the crop
-        await service.harvestCrop({
-            userId: user.id,
-            placedItemTileId: placedItemTile.id
-        })
-
-        const userAfter = await dataSource.manager.findOne(UserSchema, {
-            where: { id: user.id },
-            select: ["energy", "level", "experiences"]
-        })
-
-        // Assert energy and experience changes
-        expect(user.energy - userAfter.energy).toBe(energyConsume)
-        expect(
-            levelService.computeTotalExperienceForLevel(userAfter) - 
-                levelService.computeTotalExperienceForLevel(user)
-        ).toBe(experiencesGain)
-
-        // Assert inventory quantity increased by harvested amount
-        const inventory = await dataSource.manager.findOne(InventoryEntity, {
-            where: {
-                userId: user.id,
-                inventoryType: {
-                    product: {
-                        cropId
-                    }
-                }
-            },
-            relations: {
-                inventoryType: {
-                    product: true
-                }
-            }
-        })
-
-        expect(inventory.quantity).toBe(quantity)
-        expect(inventory.inventoryType.product.isQuality).toBe(true)
-
-        // Assert seed growth info is updated or removed
-        const updatedSeedGrowthInfo = await dataSource.manager.findOne(SeedGrowthInfoEntity, {
-            where: { id: placedItemTile.seedGrowthInfo.id }
-        })
-
-        expect(updatedSeedGrowthInfo).toBeNull()
-
-        const updatedTileInfo = await dataSource.manager.findOne(TileInfoEntity, {
-            where: { id: placedItemTile.tileInfoId },
-        })
-        expect(updatedTileInfo.harvestCount).toBe(placedItemTile.tileInfo.harvestCount + 1)
-    })
-
-    it("should throw GrpcNotFoundException when tile is not found by its ID", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
+    it("should throw EnergyNotEnoughException when user does not have enough energy", async () => {
+        const { energyConsume } = staticService.activities.harvestFruit
 
         const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-        
-        const invalidPlacedItemTileId = v4()
-
-        await expect(
-            service.harvestCrop({
-                userId: user.id,
-                placedItemTileId: invalidPlacedItemTileId
-            })
-        ).rejects.toThrow(GrpcNotFoundException)
-    })
-
-    it("should throw GrpcNotFoundException when tile belongs to a different user", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
+            energy: energyConsume - 1 // Not enough energy
         })
 
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.FullyMatured,
-                cropId: CropId.Carrot,
+        const fruitId = FruitId.Apple
+        const fruit = staticService.fruits.find(f => f.displayId === fruitId)
+
+        // Create placed item with a fully matured fruit
+        const placedItemFruit = await connection.model<PlacedItemSchema>(PlacedItemSchema.name).create({
+            fruitInfo: {
+                fruit: fruit.id,
+                currentState: FruitCurrentState.FullyMatured,
                 harvestQuantityRemaining: 10,
+                isQuality: false
             },
             x: 0,
             y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile
+            user: user.id,
+            placedItemType: createObjectId(PlacedItemTypeId.BasicTile)
         })
 
-        await expect(
-            service.harvestCrop({
-                userId: v4(), // Different user ID
-                placedItemTileId: placedItemTile.id
-            })
-        ).rejects.toThrow(GrpcNotFoundException)
-    })
-
-    it("should throw GrpcFailedPreconditionException when tile is not planted", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: null, // Not planted
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile
-        })
-
-        await expect(
-            service.harvestCrop({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id
-            })
-        ).rejects.toThrow(GrpcFailedPreconditionException)
-    })
-
-    it("should throw GrpcFailedPreconditionException when crop is not fully matured", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            useFertilizer: { energyConsume }
-        } = value as Activities
-
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume + 1
-        })
-
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.Normal, // Not fully matured
-                cropId: CropId.Carrot,
-                harvestQuantityRemaining: 10,
-            },
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile
-        })
-
-        await expect(
-            service.harvestCrop({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id
-            })
-        ).rejects.toThrow(GrpcFailedPreconditionException)
-    })
-
-    it("should throw EnergyNotEnoughException when user energy is not enough", async () => {
-        const { value } = await dataSource.manager.findOne(SystemEntity, {
-            where: { id: SystemId.Activities }
-        })
-        const {
-            water: { energyConsume }
-        } = value as Activities
-        
-        const user = await gameplayMockUserService.generate({
-            energy: energyConsume - 1
-        })
-        
-        const placedItemTile = await dataSource.manager.save(PlacedItemSchema, {
-            seedGrowthInfo: {
-                currentState: CropCurrentState.FullyMatured,
-                cropId: CropId.Carrot,
-                harvestQuantityRemaining: 10,
-            },
-            x: 0,
-            y: 0,
-            userId: user.id,
-            placedItemTypeId: PlacedItemTypeId.BasicTile
-        })
-        
-        await expect(
-            service.harvestCrop({
-                userId: user.id,
-                placedItemTileId: placedItemTile.id
-            })
-        ).rejects.toThrow(EnergyNotEnoughException)
-    })
-    
-    afterEach(async () => {
-        jest.clearAllMocks()
+        try {
+            await service.harvestFruit(
+                { id: user.id },
+                { placedItemFruitId: placedItemFruit.id }
+            )
+            fail("Expected error to be thrown")
+        } catch (error) {
+            expect(error).toBeInstanceOf(EnergyNotEnoughException)
+        }
     })
 
     afterAll(async () => {

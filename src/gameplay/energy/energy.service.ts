@@ -10,19 +10,16 @@ export class EnergyService {
     public add({ user, quantity }: AddParams): AddResult {
         const maxEnergy = this.getMaxEnergy(user.level)
         const energyFull = user.energy + quantity >= maxEnergy
-        return {
-            energy: energyFull ? maxEnergy : user.energy + quantity,
-            energyFull
-        }
+        user.energy = energyFull ? maxEnergy : user.energy + quantity
+        user.energyFull = energyFull
+        return user
     }
 
-    public substract(request: SubstractParams): SubstractResult {
-        this.checkSufficient({ current: request.user.energy, required: request.quantity })
-        const energyFull = request.user.energyFull
-        return { 
-            energy: request.user.energy - request.quantity,
-            ...energyFull && { energyFull: false }
-        }
+    public substract({ user, quantity }: SubstractParams): SubstractResult {
+        this.checkSufficient({ current: user.energy, required: quantity })
+        user.energy -= quantity
+        user.energyFull = false
+        return user
     }
 
     public getMaxEnergy(level: number = 1): number {

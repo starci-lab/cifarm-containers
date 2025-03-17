@@ -175,6 +175,21 @@ export class CropRandomness {
 }
 
 @ObjectType({
+    description: "Configuration for crop info"
+})
+export class CropInfo {
+    @Field(() => CropRandomness, {
+        description: "Configuration for crop randomness events"
+    })
+        randomness: CropRandomness
+
+    @Field(() => Int, {
+        description: "The number of times the crop can be harvested"
+    })
+        nextGrowthStageAfterHarvest: number
+}
+
+@ObjectType({
     description: "Configuration for animal randomness events"
 })
 export class AnimalRandomness {
@@ -192,6 +207,21 @@ export class AnimalRandomness {
         description: "Chance for an animal product to be stolen by 2 thieves"
     })
         thief2: number
+}
+
+@ObjectType({   
+    description: "Configuration for animal info"
+})
+export class AnimalInfo {
+    @Field(() => AnimalRandomness, {
+        description: "Configuration for animal randomness events"
+    })
+        randomness: AnimalRandomness
+    
+    @Field(() => Int, {
+        description: "The number of times the animal can be harvested"
+    })
+        nextGrowthStageAfterHarvest: number
 }
 
 @ObjectType({
@@ -217,6 +247,21 @@ export class FruitRandomness {
         description: "Chance for a fruit to have caterpillars"
     })
         hasCaterpillar: number
+}
+
+@ObjectType({   
+    description: "Configuration for fruit info"
+})
+export class FruitInfo {
+    @Field(() => FruitRandomness, {
+        description: "Configuration for fruit randomness events"
+    })
+        randomness: FruitRandomness
+
+    @Field(() => Int, {
+        description: "The number of times the fruit can be harvested"
+    })
+        nextGrowthStageAfterHarvest: number
 }
 
 @ObjectType({

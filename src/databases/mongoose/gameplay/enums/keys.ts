@@ -118,9 +118,9 @@ export enum ProductId {
 
 export enum SystemId {
     Activities = "activities",
-    CropRandomness = "cropRandomness",
-    AnimalRandomness = "animalRandomness",
-    FruitRandomness = "fruitRandomness",
+    CropInfo = "cropInfo",
+    AnimalInfo = "animalInfo",
+    FruitInfo = "fruitInfo",
     DefaultInfo = "defaultInfo",
     SpinInfo = "spinInfo",
     EnergyRegen = "energyRegen",

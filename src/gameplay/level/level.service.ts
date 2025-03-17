@@ -41,17 +41,19 @@ export class LevelService {
             level = user.level + 1
             current = user.experiences - quota
         }
-        return {
-            level,
-            experiences: current
-        }
+        user.level = level
+        user.experiences = current
+        return user
     }
 
     public computeTotalExperienceForLevel({
         experiences,
         level
     }: ComputeTotalExperienceForLevelParams): number {
-        const total = [...Array(level)].reduce((acc, _, i) => acc + this.computeExperiencesQuota(i + 1), 0)
+        const total = [...Array(level)].reduce(
+            (acc, _, i) => acc + this.computeExperiencesQuota(i + 1),
+            0
+        )
         return total + experiences
     }
 }

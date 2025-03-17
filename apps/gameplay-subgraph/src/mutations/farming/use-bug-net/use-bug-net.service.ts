@@ -4,6 +4,8 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
     FruitCurrentState,
     InjectMongoose,
+    InventorySchema,
+    InventoryTypeId,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
@@ -38,6 +40,32 @@ export class UseBugNetService {
 
         try {
             await mongoSession.withTransaction(async (session) => {
+                const inventoryTypeBugNet = this.staticService.inventoryTypes.find(
+                    (inventoryType) => inventoryType.displayId === InventoryTypeId.BugNet
+                )
+                if (!inventoryTypeBugNet) {
+                    throw new GraphQLError("Bug net not found from static data", {
+                        extensions: {
+                            code: "BUG_NET_NOT_FOUND_FROM_STATIC_DATA"
+                        }
+                    })
+                }
+                
+                const hasInventoryBugNet = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .exists({
+                        user: userId,
+                        inventoryType: inventoryTypeBugNet.id
+                    })
+                    .session(session)
+                if (!hasInventoryBugNet) {
+                    throw new GraphQLError("Bug net not found", {
+                        extensions: {
+                            code: "BUG_NET_NOT_FOUND"
+                        }
+                    })
+                }
+
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
@@ -59,9 +87,9 @@ export class UseBugNetService {
                 }
 
                 if (placedItemFruit.user.toString() !== userId) {
-                    throw new GraphQLError("Cannot use bugnet on other's tile", {
+                    throw new GraphQLError("Cannot use bug net on other's tile", {
                         extensions: {
-                            code: "UNAUTHORIZED_BUGNET"
+                            code: "CANNOT_USE_BUG NET_ON_OTHERS_TILE"
                         }
                     })
                 }
@@ -89,33 +117,29 @@ export class UseBugNetService {
                     .findById(userId)
                     .session(session)
 
-                if (!user) throw new GraphQLError("User not found", {
-                    extensions: {
-                        code: "USER_NOT_FOUND"
-                    }
-                })
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
 
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
                 })
 
-                const energyChanges = this.energyService.substract({
+                this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                const experienceChanges = this.levelService.addExperiences({
+                this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
 
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...energyChanges, ...experienceChanges })
-                    .session(session)
-
                 placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
-                await placedItemFruit.save({ session })
 
                 actionMessage = {
                     placedItemId: placedItemFruitId,
@@ -123,6 +147,9 @@ export class UseBugNetService {
                     success: true,
                     userId
                 }
+
+                await placedItemFruit.save({ session })
+                await user.save({ session })
             })
 
             await Promise.all([
@@ -136,7 +163,7 @@ export class UseBugNetService {
                 })
             ])
         } catch (error) {
-            this.logger.error(`Transaction failed, reason: ${error.message}`)
+            this.logger.error(error)
 
             if (actionMessage) {
                 await this.kafkaProducer.send({

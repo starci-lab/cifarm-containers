@@ -4,7 +4,7 @@ import { ClientSession, Connection } from "mongoose"
 
 export interface AddParams {
     // inventories with the same type key and same kind
-    inventories: Array<DeepPartial<InventorySchema>>
+    inventories: Array<InventorySchema>
     // inventory type
     inventoryType: DeepPartial<InventoryTypeSchema>
     // quantity to add
@@ -19,20 +19,20 @@ export interface AddParams {
 }
 
 export interface AddResult {
-    updatedInventories: Array<DeepPartial<InventorySchema>>
+    updatedInventories: Array<InventorySchema>
     createdInventories: Array<DeepPartial<InventorySchema>>
 }
 
 export interface RemoveParams {
     // inventories with the same type key
-    inventories: Array<DeepPartial<InventorySchema>>
+    inventories: Array<InventorySchema>
     // quantity to remove
     quantity: number
 }
 
 export interface RemoveResult {
-    updatedInventories: Array<DeepPartial<InventorySchema>>
-    removedInventories: Array<DeepPartial<InventorySchema>>
+    updatedInventories: Array<InventorySchema>
+    removedInventories: Array<InventorySchema>
 }
 
 export interface GetAddParamsParams {
