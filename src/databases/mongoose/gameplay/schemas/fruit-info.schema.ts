@@ -41,7 +41,7 @@ export class FruitInfoSchema extends AbstractSchema {
     @Prop({ type: Boolean, default: false })
         isQuality: boolean
 
-    @Field(() => String, {
+    @Field(() => FruitCurrentState, {
         description: "The current state of the fruit"
     })
     @Prop({ type: String, enum: FruitCurrentState, default: FruitCurrentState.Normal })

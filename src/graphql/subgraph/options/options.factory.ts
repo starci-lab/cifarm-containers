@@ -6,19 +6,27 @@ import { Int } from "@nestjs/graphql"
 import { KeyvService } from "@src/cache"
 import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } from "graphql"
 import { VoidResolver } from "graphql-scalars"
+import { SubgraphOptions } from "../types"
+import _ from "lodash"
 
 @Injectable()
 export class SubgraphOptionsFactory {
     constructor(private readonly keyvService: KeyvService) { }
 
-    createSubgraphOptions(): Omit<ApolloDriverConfig, "driver"> {
+    createSubgraphOptions(options: SubgraphOptions): Omit<ApolloDriverConfig, "driver"> {
         const keyvAdapter = this.keyvService.createKeyvAdapter()
+        const { enumResolvers } = options
+        let combinedEnumResolver = {}
+        for (const enumResolver of enumResolvers) {
+            combinedEnumResolver = _.merge(combinedEnumResolver, enumResolver)
+        }
         return {
             autoSchemaFile: {
                 federation: 2
             },
             resolvers: {
                 Void: VoidResolver,
+                ...combinedEnumResolver
             },
             cache: keyvAdapter,
             plugins: [ApolloServerPluginCacheControl(), responseCachePlugin()],

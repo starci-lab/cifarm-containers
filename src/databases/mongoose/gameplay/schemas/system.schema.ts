@@ -1,18 +1,24 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import JSON from "graphql-type-json"
 import { AppearanceChance, CropId, DailyRewardId, SystemId } from "../enums"
-import { StaticAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Position } from "./types"
 
 @ObjectType({
-    description: "The schema for system configuration"
+    description: "The system schema"
 })
 @Schema({
     timestamps: true,
     collection: "systems"
 })
-export class SystemSchema extends StaticAbstractSchema<SystemId> {
+export class SystemSchema extends AbstractSchema {
+    @Field(() => SystemId, {
+        description: "The display ID of the system"
+    })
+    @Prop({ type: String, enum: SystemId, required: true, unique: true })
+        displayId: SystemId
+
     @Field(() => JSON, {
         description: "The system configuration value"
     })
@@ -288,7 +294,7 @@ export class DefaultInfo {
     })
         positions: Positions
     
-    @Field(() => String, {
+    @Field(() => CropId, {
         description: "Default crop ID given to new users"
     })
         defaultCropId: CropId

@@ -1,17 +1,23 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { ProductId, ProductType } from "../enums"
-import { StaticAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 import { Schema as MongooseSchema } from "mongoose"
 import { CropSchema } from "./crop.schema"
 import { AnimalSchema } from "./animal.schema"
 import { FruitSchema } from "./fruit.schema"
 
 @ObjectType({
-    description: "The schema for products that can be harvested or produced"
+    description: "The product schema"
 })
 @Schema({ timestamps: true, collection: "products" })
-export class ProductSchema extends StaticAbstractSchema<ProductId> {
+export class ProductSchema extends AbstractSchema {
+    @Field(() => ProductId, {
+        description: "The display ID of the product"
+    })
+    @Prop({ type: String, enum: ProductId, required: true, unique: true })
+        displayId: ProductId
+
     @Field(() => Int, {
         description: "The maximum stack size of the product"
     })
@@ -37,8 +43,8 @@ export class ProductSchema extends StaticAbstractSchema<ProductId> {
     @Prop({ type: Number, required: false })
         tokenAmount?: number
 
-    @Field(() => String, {
-        description: "The type of product"
+    @Field(() => ProductType, {
+        description: "The type of the product"
     })
     @Prop({ type: String, enum: ProductType, required: true })
         type: ProductType

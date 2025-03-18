@@ -366,16 +366,6 @@ export class InventoryTypeSeeder implements Seeder {
                 type: InventoryType.Tool
             },
             {
-                _id: createObjectId(InventoryTypeId.ThiefHand),
-                displayId: InventoryTypeId.ThiefHand,
-                stackable: false,
-                asTool: true,
-                deliverable: false,
-                placeable: false,
-                tool: createObjectId(ToolId.ThiefHand),
-                type: InventoryType.Tool
-            },
-            {
                 _id: createObjectId(InventoryTypeId.WateringCan),
                 displayId: InventoryTypeId.WateringCan,
                 stackable: false,

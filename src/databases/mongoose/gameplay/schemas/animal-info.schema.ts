@@ -53,7 +53,7 @@ export class AnimalInfoSchema extends AbstractSchema {
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: AnimalSchema.name })
     [ANIMAL]: AnimalSchema | string
 
-    @Field(() => String, {
+    @Field(() => AnimalCurrentState, {
         description: "The current state of the animal"
     })
     @Prop({ type: String, enum: AnimalCurrentState, default: AnimalCurrentState.Normal })

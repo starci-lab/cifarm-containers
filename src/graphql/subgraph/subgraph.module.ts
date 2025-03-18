@@ -16,7 +16,7 @@ export class GraphQLSubgraphModule extends ConfigurableModuleClass {
                     imports: [SubgraphOptionsModule.register()],
                     inject: [SubgraphOptionsFactory],
                     useFactory: (subgraphOptionsFactory: SubgraphOptionsFactory) =>
-                        subgraphOptionsFactory.createSubgraphOptions()
+                        subgraphOptionsFactory.createSubgraphOptions(options)
                 })
             ]
         }

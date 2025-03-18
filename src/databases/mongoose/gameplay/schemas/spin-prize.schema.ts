@@ -45,7 +45,7 @@ export class SpinPrizeSchema extends AbstractSchema {
     @Prop({ type: Number, required: true })
         quantity: number
 
-    @Field(() => String, {
+    @Field(() => AppearanceChance, {
         description: "The chance of this prize appearing"
     })
     @Prop({ type: String, required: true, enum: AppearanceChance })

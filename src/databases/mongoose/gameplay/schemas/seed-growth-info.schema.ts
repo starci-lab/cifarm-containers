@@ -54,7 +54,7 @@ export class SeedGrowthInfoSchema extends AbstractSchema {
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: CropSchema.name })
     [CROP]: CropSchema | string
 
-    @Field(() => String, {
+    @Field(() => CropCurrentState, {
         description: "The current state of the crop (normal, withered, etc.)"
     })
     @Prop({ type: String, enum: CropCurrentState, default: CropCurrentState.Normal })

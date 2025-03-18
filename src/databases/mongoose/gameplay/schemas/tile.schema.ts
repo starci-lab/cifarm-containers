@@ -1,13 +1,19 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { StaticAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 import { TileId } from "../enums"
 
 @ObjectType({
-    description: "The schema for tile"
+    description: "The tile schema"
 })
 @Schema({ timestamps: true, collection: "tiles" })
-export class TileSchema extends StaticAbstractSchema<TileId> {
+export class TileSchema extends AbstractSchema {
+    @Field(() => TileId, {
+        description: "The display ID of the tile"
+    })
+    @Prop({ type: String, enum: TileId, required: true, unique: true })
+        displayId: TileId
+
     @Field(() => Float, { 
         nullable: true,
         description: "The price of the tile"

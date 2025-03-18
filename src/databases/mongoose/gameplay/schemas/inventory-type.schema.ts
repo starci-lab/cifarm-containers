@@ -1,26 +1,32 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
-import { StaticAbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { AvailableInType, InventoryType, InventoryTypeId } from "../enums"
+import { InventoryType, InventoryTypeId } from "../enums"
 import { CropSchema } from "./crop.schema"
 import { Schema as MongooseSchema } from "mongoose"
 import { ProductSchema } from "./product.schema"
 import { CROP, PRODUCT, SUPPLY, TOOL } from "../constants"
 import { ToolSchema } from "./tool.schema"
 import { SupplySchema } from "./supply.schema"
+import { AbstractSchema } from "./abstract"
 
 @ObjectType({
-    description: "The schema for inventory type"
+    description: "The inventory type schema"
 })
 @Schema({
     timestamps: true,
     collection: "inventory-types"
 })
-export class InventoryTypeSchema extends StaticAbstractSchema<InventoryTypeId> {
-    @Field(() => String, {
-        description: "The type of the inventory"
+export class InventoryTypeSchema extends AbstractSchema {
+    @Field(() => InventoryTypeId, {
+        description: "The display ID of the inventory type"
     })
-    @Prop({ type: String, required: true, enum: InventoryType })
+    @Prop({ type: String, enum: InventoryTypeId, required: true, unique: true })
+        displayId: InventoryTypeId
+
+    @Field(() => InventoryType, {
+        description: "The type of the inventory type"
+    })
+    @Prop({ type: String, enum: InventoryType })
         type: InventoryType
 
     @Field(() => ID, {
@@ -68,13 +74,6 @@ export class InventoryTypeSchema extends StaticAbstractSchema<InventoryTypeId> {
     })
     @Prop({ type: Boolean, required: true })
         asTool: boolean
-
-    @Field(() => String, {
-        description: "The available in type",
-        nullable: true
-    })
-    @Prop({ type: String, required: false, enum: AvailableInType })
-        availableIn?: AvailableInType
 
     @Field(() => Boolean, {
         description: "Whether the inventory is stackable"

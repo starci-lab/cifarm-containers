@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AnimalId, AnimalType } from "../enums"
-import { StaticAbstractSchema } from "./abstract"
+import { AbstractSchema } from "./abstract"
 
 @ObjectType({
     description: "The schema for animal"
@@ -10,7 +10,13 @@ import { StaticAbstractSchema } from "./abstract"
     timestamps: true,
     collection: "animals"
 })
-export class AnimalSchema extends StaticAbstractSchema<AnimalId> {
+export class AnimalSchema extends AbstractSchema {
+    @Field(() => AnimalId, {
+        description: "The display ID of the animal"
+    })
+    @Prop({ type: String, enum: AnimalId, required: true, unique: true })
+        displayId: AnimalId
+
     @Field(() => Int, {
         description: "The yield time of the animal"
     })
@@ -103,10 +109,10 @@ export class AnimalSchema extends StaticAbstractSchema<AnimalId> {
     @Prop({ type: Number, min: 1 })
         unlockLevel: number
 
-    @Field(() => String, {
+    @Field(() => AnimalType, {
         description: "The type of the animal"
     })
-    @Prop({ type: String, enum: AnimalType, default: AnimalType.Poultry }) // Assuming AnimalType is an enum
+    @Prop({ type: String, enum: AnimalType, default: AnimalType.Poultry })
         type: AnimalType
 }
 
