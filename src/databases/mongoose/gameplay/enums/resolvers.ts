@@ -42,3 +42,5 @@ export const gameplayEnumResolvers: Record<string, Record<string, string | numbe
     FruitCurrentState: createResolverFromEnum(FruitCurrentState),
     TutorialStep: createResolverFromEnum(TutorialStep)
 }
+
+console.log(gameplayEnumResolvers)
