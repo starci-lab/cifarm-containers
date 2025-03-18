@@ -47,35 +47,35 @@ export class PlacedItemSchema extends AbstractSchema {
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: PlacedItemTypeSchema.name })
     [PLACED_ITEM_TYPE]: PlacedItemTypeSchema | string
 
-    @Field(() => ID, { 
+    @Field(() => AnimalInfoSchema, { 
         nullable: true,
         description: "The animal info associated with this placed item, if applicable"
     })
     @Prop({ type: AnimalInfoSchemaClass, required: false })
     [ANIMAL_INFO]?: AnimalInfoSchema
 
-    @Field(() => ID, { 
+    @Field(() => BuildingInfoSchema, { 
         nullable: true,
         description: "The building info associated with this placed item, if applicable"
     })
     @Prop({ type: BuildingInfoSchemaClass, required: false })
     [BUILDING_INFO]?: BuildingInfoSchema
 
-    @Field(() => ID, { 
+    @Field(() => SeedGrowthInfoSchema, { 
         nullable: true,
         description: "The seed growth info associated with this placed item, if applicable"
     })
     @Prop({ type: SeedGrowthInfoSchemaClass, required: false })
     [SEED_GROWTH_INFO]?: SeedGrowthInfoSchema
 
-    @Field(() => ID, { 
+    @Field(() => TileInfoSchema, { 
         nullable: true,
         description: "The tile info associated with this placed item, if applicable"
     })
     @Prop({ type: TileInfoSchemaClass, required: false })
     [TILE_INFO]?: TileInfoSchema
 
-    @Field(() => ID, { 
+    @Field(() => FruitInfoSchema, { 
         nullable: true,
         description: "The fruit info associated with this placed item, if applicable"
     })

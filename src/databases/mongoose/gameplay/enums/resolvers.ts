@@ -7,7 +7,7 @@ import {
     placedItemTypeIdResolver,
     inventoryTypeIdResolver,
     supplyIdResolver
-} from "./keys"
+} from "./ids"
 import {
     appearanceChanceResolver,
     animalTypeResolver,
@@ -42,8 +42,8 @@ export const gameplayEnumResolver: Record<string, Record<string, string | number
     PlacedItemType: placedItemTypeResolver,
     ProductType: productTypeResolver,
     SpinPrizeType: spinPrizeTypeResolver,
-    //AnimalCurrentState: animalCurrentStateResolver,
-    //CropCurrentState: cropCurrentStateResolver,
+    AnimalCurrentState: animalCurrentStateResolver,
+    CropCurrentState: cropCurrentStateResolver,
     FruitCurrentState: fruitCurrentStateResolver,
     TutorialStep: tutorialStepResolver,  
 }
