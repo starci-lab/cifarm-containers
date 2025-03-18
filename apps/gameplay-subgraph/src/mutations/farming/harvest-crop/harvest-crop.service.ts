@@ -10,7 +10,6 @@ import {
     KeyValueRecord,
     SystemSchema,
     UserSchema,
-    CropSchema,
     InventoryTypeId,
     InventoryKind
 } from "@src/databases"
@@ -191,16 +190,15 @@ export class HarvestCropService {
                  ************************************************************/
                 
                 // Get crop data
-                const crop = await this.connection
-                    .model<CropSchema>(CropSchema.name)
-                    .findById(placedItemTile.seedGrowthInfo.crop)
-                    .session(session)
-                
-                // Validate crop exists
+                // const crop = await this.connection
+                //     .model<CropSchema>(CropSchema.name)
+                //     .findById(placedItemTile.seedGrowthInfo.crop)
+                //     .session(session)
+                const crop = this.staticService.crops.find(crop => crop.id === placedItemTile.seedGrowthInfo.crop.toString())
                 if (!crop) {
-                    throw new GraphQLError("Crop not found", {
+                    throw new GraphQLError("Crop not found in static data", {
                         extensions: {
-                            code: "CROP_NOT_FOUND"
+                            code: "CROP_NOT_FOUND_IN_STATIC_DATA"
                         }
                     })
                 }

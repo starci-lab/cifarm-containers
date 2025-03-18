@@ -5,7 +5,6 @@ import { bullData, BullQueueName } from "@src/bull"
 import { DeepPartial } from "@src/common"
 import {
     AnimalCurrentState,
-    AnimalSchema,
     InjectMongoose,
     PlacedItemSchema,
     PlacedItemType,
@@ -57,7 +56,10 @@ export class AnimalWorker extends WorkerHost {
                         const placedItemType = this.staticService.placedItemTypes.find(
                             placedItemType => placedItemType.id === placedItem.placedItemType.toString()
                         )
-                        const animal = placedItemType.animal as AnimalSchema
+                        const animal = this.staticService.animals.find(animal => animal.id === placedItemType.animal.toString())
+                        if (!animal) {
+                            throw new Error(`Animal not found: ${placedItemType.animal}`)
+                        }
                         // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
                         const updateAdultAnimalPlacedItem = () => {
                             // If animal is adult, add time to the animal yield

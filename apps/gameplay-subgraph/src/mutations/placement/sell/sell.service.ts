@@ -2,18 +2,8 @@ import { ActionName, EmitActionPayload, SellData } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import {
-    AnimalSchema,
-    BUILDING_INFO,
-    BuildingSchema,
-    InjectMongoose,
-    PlacedItemSchema,
-    PlacedItemType,
-    PlacedItemTypeSchema,
-    TileSchema,
-    UserSchema
-} from "@src/databases"
-import { GoldBalanceService } from "@src/gameplay"
+import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
+import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { SellRequest } from "./sell.dto"
 import { UserLike } from "@src/jwt"
@@ -27,6 +17,7 @@ export class SellService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
+        private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -42,7 +33,6 @@ export class SellService {
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
-                    .populate(BUILDING_INFO)
                     .session(mongoSession)
 
                 if (!placedItem) {
@@ -67,10 +57,16 @@ export class SellService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM TYPE
                  ************************************************************/
-                const placedItemType = await this.connection
-                    .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                    .findById(placedItem.placedItemType)
-                    .session(mongoSession)
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) => placedItemType.id === placedItem.placedItemType.toString()
+                )
+                if (!placedItemType) {
+                    throw new GraphQLError("Placed item type not found in static data", {
+                        extensions: {
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND_IN_STATIC_DATA"
+                        }
+                    })
+                }
 
                 if (!placedItemType.sellable) {
                     throw new GraphQLError("Item not sellable", {
@@ -87,15 +83,13 @@ export class SellService {
 
                 switch (placedItemType.type) {
                 case PlacedItemType.Building: {
-                    const building = await this.connection
-                        .model<BuildingSchema>(BuildingSchema.name)
-                        .findById(placedItemType.building)
-                        .session(mongoSession)
-
+                    const building = this.staticService.buildings.find(
+                        (building) => building.id === placedItemType.building.toString()
+                    )
                     if (!building) {
-                        throw new GraphQLError("Building not found", {
+                        throw new GraphQLError("Building not found in static data", {
                             extensions: {
-                                code: "BUILDING_NOT_FOUND"
+                                code: "BUILDING_NOT_FOUND_IN_STATIC_DATA"
                             }
                         })
                     }
@@ -108,14 +102,13 @@ export class SellService {
                     break
                 }
                 case PlacedItemType.Tile: {
-                    const tile = await this.connection
-                        .model<TileSchema>(TileSchema.name)
-                        .findById(placedItemType.tile)
-                        .session(mongoSession)
+                    const tile = this.staticService.tiles.find(
+                        (tile) => tile.id === placedItemType.tile.toString()
+                    )
                     if (!tile) {
-                        throw new GraphQLError("Tile not found", {
+                        throw new GraphQLError("Tile not found in static data", {
                             extensions: {
-                                code: "TILE_NOT_FOUND"
+                                code: "TILE_NOT_FOUND_IN_STATIC_DATA"
                             }
                         })
                     }
@@ -123,14 +116,17 @@ export class SellService {
                     break
                 }
                 case PlacedItemType.Animal: {
-                    const animal = await this.connection
-                        .model<AnimalSchema>(AnimalSchema.name)
-                        .findById(placedItemType.animal)
-                        .session(mongoSession)
+                    // const animal = await this.connection
+                    //     .model<AnimalSchema>(AnimalSchema.name)
+                    //     .findById(placedItemType.animal)
+                    //     .session(mongoSession)
+                    const animal = this.staticService.animals.find(
+                        (animal) => animal.id === placedItemType.animal.toString()
+                    )
                     if (!animal) {
-                        throw new GraphQLError("Animal not found", {
+                        throw new GraphQLError("Animal not found in static data", {
                             extensions: {
-                                code: "ANIMAL_NOT_FOUND"
+                                code: "ANIMAL_NOT_FOUND_IN_STATIC_DATA"
                             }
                         })
                     }
@@ -156,24 +152,18 @@ export class SellService {
                 }
 
                 // Add gold from selling
-                const goldsChanged = this.goldBalanceService.add({
+                this.goldBalanceService.add({
                     user: user,
                     amount: sellPrice
                 })
 
                 // Update user with gold changes
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne({ _id: user.id }, { ...goldsChanged })
-                    .session(mongoSession)
+                await user.save({ session: mongoSession })
 
                 /************************************************************
                  * REMOVE PLACED ITEM
                  ************************************************************/
-                await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .deleteOne({ _id: placedItemId })
-                    .session(mongoSession)
+                await placedItem.deleteOne({ session: mongoSession })
 
                 /************************************************************
                  * PREPARE ACTION MESSAGE

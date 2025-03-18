@@ -31,12 +31,6 @@ export class CropWorker extends WorkerHost {
         this.logger.verbose(`Processing job: ${job.id}`)
         const { time, skip, take, utcTime } = job.data
 
-        // const placedItemTypes = await this.connection
-        //     .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-        //     .find({
-        //         type: PlacedItemType.Tile
-        //     })
-
         const placedItemTypes = this.staticService.placedItemTypes.filter(
             (placedItemType) => placedItemType.type === PlacedItemType.Tile
         )
