@@ -19,7 +19,7 @@ export type SpinPrizeDocument = HydratedDocument<SpinPrizeSchema>;
     collection: "spin-prizes",
 })
 export class SpinPrizeSchema extends AbstractSchema {
-    @Field(() => String, {
+    @Field(() => SpinPrizeType, {
         description: "The type of prize"
     })
     @Prop({ type: String, required: true, enum: SpinPrizeType })

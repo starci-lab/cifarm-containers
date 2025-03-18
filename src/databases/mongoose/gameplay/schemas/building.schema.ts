@@ -29,7 +29,7 @@ export class BuildingSchema extends AbstractSchema {
         nullable: true
     })
     @Prop({ type: String, enum: AnimalType, required: false })
-        animalType?: AnimalType
+        animalContainedType?: AnimalType
 
     @Field(() => Int, {
         description: "The maximum upgrade of the building"

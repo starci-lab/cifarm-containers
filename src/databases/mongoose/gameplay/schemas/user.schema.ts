@@ -97,7 +97,7 @@ export class UserSchema extends AbstractSchema {
         level: number
 
     // tutorial step
-    @Field(() => Int, {
+    @Field(() => TutorialStep, {
         description: "The current tutorial step of the user"
     })
     @Prop({ type: Number, default: 0 })

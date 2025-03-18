@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common"
 import { Query, Resolver } from "@nestjs/graphql"
-import { Activities, AnimalRandomness, CropRandomness, DailyRewardInfo, DefaultInfo, EnergyRegen, SpinInfo, HoneycombInfo } from "@src/databases"
+import { Activities, AnimalInfo, CropInfo, DailyRewardInfo, DefaultInfo, EnergyRegen, FruitInfo, SpinInfo, HoneycombInfo } from "@src/databases"
 import { SystemsService } from "./systems.service"
 
 @Resolver()
@@ -17,20 +17,28 @@ export class SystemsResolver {
         return this.systemsService.getActivities()
     }
 
-    @Query(() => CropRandomness, {
-        name: "cropRandomness",
-        description: "Get the crop randomness"
+    @Query(() => CropInfo, {
+        name: "cropInfo",
+        description: "Get the crop info"
     })
-    async cropRandomness(): Promise<CropRandomness> {
-        return this.systemsService.getCropRandomness()
+    async cropInfo(): Promise<CropInfo> {
+        return this.systemsService.getCropInfo()
     }
 
-    @Query(() => AnimalRandomness, {
-        name: "animalRandomness",
-        description: "Get the animal randomness"
+    @Query(() => AnimalInfo, {
+        name: "animalInfo",
+        description: "Get the animal info"
     })
-    async animalRandomness(): Promise<AnimalRandomness> {
-        return this.systemsService.getAnimalRandomness()
+    async animalInfo(): Promise<AnimalInfo> {
+        return this.systemsService.getAnimalInfo()
+    }
+
+    @Query(() => FruitInfo, {
+        name: "fruitInfo",
+        description: "Get the fruit info"
+    })
+    async fruitInfo(): Promise<FruitInfo> {
+        return this.systemsService.getFruitInfo()
     }
 
     @Query(() => DefaultInfo, {

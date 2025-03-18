@@ -1,11 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     Activities,
-    AnimalRandomness,
-    CropRandomness,
+    AnimalInfo,
+    CropInfo,
     DailyRewardInfo,
     DefaultInfo,
     EnergyRegen,
+    FruitInfo,
     HoneycombInfo,
     InjectMongoose,
     SpinInfo,
@@ -27,12 +28,16 @@ export class SystemsService {
         return this.staticService.activities
     }
 
-    async getCropRandomness(): Promise<CropRandomness> {
-        return this.staticService.cropRandomness
+    async getCropInfo(): Promise<CropInfo> {
+        return this.staticService.cropInfo
     }
 
-    async getAnimalRandomness(): Promise<AnimalRandomness> {
-        return this.staticService.animalRandomness
+    async getAnimalInfo(): Promise<AnimalInfo> {
+        return this.staticService.animalInfo
+    }
+
+    async getFruitInfo(): Promise<FruitInfo> {
+        return this.staticService.fruitInfo
     }
 
     async getDefaultInfo(): Promise<DefaultInfo> {

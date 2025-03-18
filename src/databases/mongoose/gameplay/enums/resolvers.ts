@@ -1,12 +1,10 @@
 import {
     animalIdResolver,
-    upgradeKeyResolver,
     cropIdResolver,
     fruitIdResolver,
     buildingIdResolver,
     toolIdResolver,
     placedItemTypeIdResolver,
-    dailyRewardIdResolver,
     inventoryTypeIdResolver,
     supplyIdResolver
 } from "./keys"
@@ -30,13 +28,11 @@ import {
 
 export const gameplayEnumResolver: Record<string, Record<string, string | number>> = {
     AnimalId: animalIdResolver,
-    UpgradeKey: upgradeKeyResolver,
     CropId: cropIdResolver,
     FruitId: fruitIdResolver,
     BuildingId: buildingIdResolver,
     ToolId: toolIdResolver,
     PlacedItemTypeId: placedItemTypeIdResolver,
-    DailyRewardId: dailyRewardIdResolver,
     InventoryTypeId: inventoryTypeIdResolver,
     SupplyId: supplyIdResolver,
     AppearanceChance: appearanceChanceResolver,
@@ -46,8 +42,8 @@ export const gameplayEnumResolver: Record<string, Record<string, string | number
     PlacedItemType: placedItemTypeResolver,
     ProductType: productTypeResolver,
     SpinPrizeType: spinPrizeTypeResolver,
-    AnimalCurrentState: animalCurrentStateResolver,
-    CropCurrentState: cropCurrentStateResolver,
+    //AnimalCurrentState: animalCurrentStateResolver,
+    //CropCurrentState: cropCurrentStateResolver,
     FruitCurrentState: fruitCurrentStateResolver,
     TutorialStep: tutorialStepResolver,  
 }

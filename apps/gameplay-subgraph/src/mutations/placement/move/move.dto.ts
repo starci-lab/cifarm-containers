@@ -1,7 +1,7 @@
 // buy-supplies.dto.ts
 
 import { Field, InputType } from "@nestjs/graphql"
-import { Position, PositionInput } from "@src/gameplay"
+import { PositionInput } from "@src/gameplay"
 import { Type } from "class-transformer"
 import { IsMongoId, ValidateNested } from "class-validator"
 
@@ -14,5 +14,5 @@ export class MoveRequest {
     @ValidateNested()
     @Type(() => PositionInput)
     @Field(() => PositionInput, { description: "The new position of the placed item" })
-        position: Position
+        position: PositionInput
 }

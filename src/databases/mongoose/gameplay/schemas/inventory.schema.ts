@@ -34,7 +34,7 @@ export class InventorySchema extends AbstractSchema {
     @Prop({ type: Number, required: true })
         index: number
 
-    @Field(() => String, {
+    @Field(() => InventoryKind, {
         description: "The kind of inventory item"
     })
     @Prop({ type: String, required: true, enum: InventoryKind })

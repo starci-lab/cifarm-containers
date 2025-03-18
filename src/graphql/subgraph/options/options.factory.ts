@@ -20,6 +20,10 @@ export class SubgraphOptionsFactory {
         for (const enumResolver of enumResolvers) {
             combinedEnumResolver = _.merge(combinedEnumResolver, enumResolver)
         }
+        console.log({
+            Void: VoidResolver,
+            ...combinedEnumResolver
+        })
         return {
             autoSchemaFile: {
                 federation: 2

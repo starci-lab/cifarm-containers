@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import { CheckPositionAvailableParams, GetOccupiedPositionsParams } from "./position.types"
 import { PlacedItemSchema } from "@src/databases"
-import { Position } from "../gameplay.types"
+import { Position } from "@src/databases"
 import _ from "lodash"
 
 //service for computing the position of placed items

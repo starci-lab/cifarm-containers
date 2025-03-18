@@ -42,6 +42,12 @@ registerEnumType(BuildingId, {
         Coop: {
             description: "The coop id.",
         },
+        Barn: {
+            description: "The barn id.",
+        },
+        Home: {
+            description: "The home id.",
+        },
     },
 })
 
@@ -49,35 +55,6 @@ export const buildingIdResolver: Record<keyof typeof BuildingId, string> = {
     Coop: BuildingId.Coop,
     Barn: BuildingId.Barn,
     Home: BuildingId.Home
-}
-
-// Upgrade Enum
-export enum UpgradeKey {
-    CoopUpgrade1 = "coopUpgrade1",
-    CoopUpgrade2 = "coopUpgrade2",
-    CoopUpgrade3 = "coopUpgrade3",
-    BarnUpgrade1 = "barnUpgrade1",
-    BarnUpgrade2 = "barnUpgrade2",
-    BarnUpgrade3 = "barnUpgrade3"
-}
-
-registerEnumType(UpgradeKey, {
-    name: "UpgradeKey",
-    description: "The upgrade key.",
-    valuesMap: {
-        CoopUpgrade1: {
-            description: "The coop upgrade 1 key.",
-        },
-    },
-})
-
-export const upgradeKeyResolver: Record<keyof typeof UpgradeKey, string> = {
-    CoopUpgrade1: UpgradeKey.CoopUpgrade1,
-    CoopUpgrade2: UpgradeKey.CoopUpgrade2,
-    CoopUpgrade3: UpgradeKey.CoopUpgrade3,
-    BarnUpgrade1: UpgradeKey.BarnUpgrade1,
-    BarnUpgrade2: UpgradeKey.BarnUpgrade2,
-    BarnUpgrade3: UpgradeKey.BarnUpgrade3
 }
 
 // Crop Enum
@@ -97,6 +74,24 @@ registerEnumType(CropId, {
     valuesMap: {
         Turnip: {
             description: "The turnip id.",
+        },
+        Carrot: {
+            description: "The carrot id.",
+        },
+        Potato: {
+            description: "The potato id.",
+        },
+        Pineapple: {
+            description: "The pineapple id.",
+        },
+        Watermelon: {
+            description: "The watermelon id.",
+        },
+        Cucumber: {
+            description: "The cucumber id.",
+        },
+        BellPepper: {
+            description: "The bell pepper id.",
         },
     },
 })
@@ -124,6 +119,9 @@ registerEnumType(FruitId, {
         Banana: {
             description: "The banana id.",
         },
+        Apple: {
+            description: "The apple id.",
+        },
     },
 })
 
@@ -139,36 +137,6 @@ export enum DailyRewardId {
     Day3 = "day3",
     Day4 = "day4",
     Day5 = "day5"
-}
-
-registerEnumType(DailyRewardId, {
-    name: "DailyRewardId",
-    description: "The daily reward id.",
-    valuesMap: {
-        Day1: {
-            description: "The day 1 reward id.",
-        },
-        Day2: {
-            description: "The day 2 reward id.",
-        },
-        Day3: {
-            description: "The day 3 reward id.",
-        },  
-        Day4: {
-            description: "The day 4 reward id.",
-        },
-        Day5: {
-            description: "The day 5 reward id.",
-        },
-    },
-})
-
-export const dailyRewardIdResolver: Record<keyof typeof DailyRewardId, string> = {
-    Day1: DailyRewardId.Day1,
-    Day2: DailyRewardId.Day2,
-    Day3: DailyRewardId.Day3,
-    Day4: DailyRewardId.Day4,
-    Day5: DailyRewardId.Day5
 }
 
 // Supply Enum
