@@ -1,4 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
+import { createLowerCaseEnumType } from "./utils"
 
 export enum TutorialStep {
     StartWelcome = 0,
@@ -15,44 +16,46 @@ export enum TutorialStep {
     StartGoodbye = 11
 }
 
-registerEnumType(TutorialStep, {
+export const LowerCaseTutorialStep = createLowerCaseEnumType(TutorialStep)
+
+registerEnumType(LowerCaseTutorialStep, {
     name: "TutorialStep",
     description: "The step of the tutorial",
     valuesMap: {
-        StartWelcome: {
+        startWelcome: {
             description: "The welcome step of the tutorial",
         },
-        StartBuySeeds: {
+        startBuySeeds: {
             description: "The buy seeds step of the tutorial",
         },
-        StartOpenInventory: {
+        startOpenInventory: {
             description: "The open inventory step of the tutorial",
         },
-        StartPlantSeed: {
+        startPlantSeed: {
             description: "The plant seed step of the tutorial",
         },
-        StartWaterCropAtStage1: {
+        startWaterCropAtStage1: {
             description: "The water crop at stage 1 step of the tutorial",
         },
-        StartWaterCropAtStage2: {
+        startWaterCropAtStage2: {
             description: "The water crop at stage 2 step of the tutorial",
         },
-        StartToStage3: {
+        startToStage3: {
             description: "The to stage 3 step of the tutorial",
         },
-        StartUsePesticide: {
+        startUsePesticide: {
             description: "The use pesticide step of the tutorial",
         },
-        StartUseHerbicide: {
+        startUseHerbicide: {
             description: "The use herbicide step of the tutorial",
         },
-        StartHarvestCrop: {
+        startHarvestCrop: {
             description: "The harvest crop step of the tutorial",
         },
-        StartDeliverProduct: {
+        startDeliverProduct: {
             description: "The deliver product step of the tutorial",
         },
-        StartGoodbye: {
+        startGoodbye: {
             description: "The goodbye step of the tutorial",
         },
     },

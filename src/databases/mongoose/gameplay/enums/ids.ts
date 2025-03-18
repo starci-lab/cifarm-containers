@@ -1,4 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
+import { createLowerCaseEnumType } from "./utils"
 
 // Animal Enum
 export enum AnimalId {
@@ -8,14 +9,16 @@ export enum AnimalId {
     Sheep = "sheep"
 }
 
-registerEnumType(AnimalId, {
+export const LowerCaseAnimalId = createLowerCaseEnumType(AnimalId)
+
+registerEnumType(LowerCaseAnimalId, {
     name: "AnimalId",
     description: "The animal id.",
     valuesMap: {
-        Chicken: {
+        chicken: {
             description: "The chicken id.",
         },
-        Cow: {
+        cow: {
             description: "The cow id.",
         },
     },
@@ -28,17 +31,19 @@ export enum BuildingId {
     Home = "home"
 }
 
-registerEnumType(BuildingId, {
+export const LowerCaseBuildingId = createLowerCaseEnumType(BuildingId)
+
+registerEnumType(LowerCaseBuildingId, {
     name: "BuildingId",
     description: "The building id.",
     valuesMap: {
-        Coop: {
+        coop: {
             description: "The coop id.",
         },
-        Barn: {
+        barn: {
             description: "The barn id.",
         },
-        Home: {
+        home: {
             description: "The home id.",
         },
     },
@@ -55,29 +60,31 @@ export enum CropId {
     BellPepper = "bellPepper"
 }
 
-registerEnumType(CropId, {
+export const LowerCaseCropId = createLowerCaseEnumType(CropId)
+
+registerEnumType(LowerCaseCropId, {
     name: "CropId",
     description: "The crop id.",
     valuesMap: {
-        Turnip: {
+        turnip: {
             description: "The turnip id.",
         },
-        Carrot: {
+        carrot: {
             description: "The carrot id.",
         },
-        Potato: {
+        potato: {
             description: "The potato id.",
         },
-        Pineapple: {
+        pineapple: {
             description: "The pineapple id.",
         },
-        Watermelon: {
+        watermelon: {
             description: "The watermelon id.",
         },
-        Cucumber: {
+        cucumber: {
             description: "The cucumber id.",
         },
-        BellPepper: {
+        bellPepper: {
             description: "The bell pepper id.",
         },
     },
@@ -89,14 +96,16 @@ export enum FruitId {
     Apple = "apple",
 }
 
-registerEnumType(FruitId, {
+export const LowerCaseFruitId = createLowerCaseEnumType(FruitId)    
+
+registerEnumType(LowerCaseFruitId, {
     name: "FruitId",
     description: "The fruit id.",
     valuesMap: {
-        Banana: {
+        banana: {
             description: "The banana id.",
         },
-        Apple: {
+        apple: {
             description: "The apple id.",
         },
     },
@@ -118,17 +127,19 @@ export enum SupplyId {
     FruitFertilizer = "fruitFertilizer",
 }
 
-registerEnumType(SupplyId, {
+export const LowerCaseSupplyId = createLowerCaseEnumType(SupplyId)
+
+registerEnumType(LowerCaseSupplyId, {
     name: "SupplyId",
     description: "The supply id.",
     valuesMap: {
-        BasicFertilizer: {
+        basicFertilizer: {
             description: "The basic fertilizer id.",
         },
-        AnimalFeed: {
+        animalFeed: {
             description: "The animal feed id.",
         },
-        FruitFertilizer: {
+        fruitFertilizer: {
             description: "The fruit fertilizer id.",
         },
     },
@@ -139,11 +150,13 @@ export enum TileId {
     BasicTile = "basicTile",
 }
 
-registerEnumType(TileId, {
+export const LowerCaseTileId = createLowerCaseEnumType(TileId)
+
+registerEnumType(LowerCaseTileId, {
     name: "TileId",
     description: "The tile id.",
     valuesMap: {
-        BasicTile: {
+        basicTile: {
             description: "The basic tile id.",
         },
     },
@@ -162,35 +175,37 @@ export enum ToolId {
     BugNet = "bugNet",
 }
 
-registerEnumType(ToolId, {
+export const LowerCaseToolId = createLowerCaseEnumType(ToolId)  
+
+registerEnumType(LowerCaseToolId, {
     name: "ToolId",
     description: "The tool id.",
     valuesMap: {
-        Hand: {
+        hand: {
             description: "The hand id.",
         },
-        Crate: {
+        crate: {
             description: "The crate id.",
         },
-        ThiefHand: {
+        thiefHand: {
             description: "The thief hand id.",
         },
-        WateringCan: {
+        wateringCan: {
             description: "The watering can id.",
         },
-        Herbicide: {
+        herbicide: {
             description: "The herbicide id.",
         },
-        Pesticide: {
+        pesticide: {
             description: "The pesticide id.",
         },
-        Hammer: {
+        hammer: {
             description: "The hammer id.",
         },
-        AnimalMedicine: {
+        animalMedicine: {
             description: "The animal medicine id.",
         },
-        BugNet: {
+        bugNet: {
             description: "The bug net id.",
         },
     },
@@ -202,14 +217,16 @@ export enum PetId {
     Cat = "cat",
 }
 
-registerEnumType(PetId, {
+export const LowerCasePetId = createLowerCaseEnumType(PetId)
+
+registerEnumType(LowerCasePetId, {
     name: "PetId",
     description: "The pet id.",
     valuesMap: {
-        Dog: {
+        dog: {
             description: "The dog id.",
         },
-        Cat: {
+        cat: {
             description: "The cat id.",
         },
     },
@@ -241,74 +258,76 @@ export enum ProductId {
     AppleQuality = "appleQuality",
 }
 
-registerEnumType(ProductId, {
+export const LowerCaseProductId = createLowerCaseEnumType(ProductId)    
+
+registerEnumType(LowerCaseProductId, {
     name: "ProductId",
     description: "The product id.",
     valuesMap: {
-        Egg: {
+        egg: {
             description: "The egg id.",
         },
-        EggQuality: {
+        eggQuality: {
             description: "The egg quality id.",
         },
-        Milk: {
+        milk: {
             description: "The milk id.",
         },
-        MilkQuality: {
+        milkQuality: {
             description: "The milk quality id.",
         },
-        Turnip: {
+        turnip: {
             description: "The turnip id.",
         },
-        TurnipQuality: {
+        turnipQuality: {
             description: "The turnip quality id.",
         },
-        Carrot: {
+        carrot: {
             description: "The carrot id.",
         },
-        CarrotQuality: {
+        carrotQuality: {
             description: "The carrot quality id.",
         },
-        Potato: {
+        potato: {
             description: "The potato id.",
         },
-        PotatoQuality: {
+        potatoQuality: {
             description: "The potato quality id.",
         },
-        Pineapple: {
+        pineapple: {
             description: "The pineapple id.",
         },
-        PineappleQuality: {
+        pineappleQuality: {
             description: "The pineapple quality id.",
         },
-        Watermelon: {
+        watermelon: {
             description: "The watermelon id.",
         },
-        WatermelonQuality: {
+        watermelonQuality: {
             description: "The watermelon quality id.",
         },
-        Cucumber: {
+        cucumber: {
             description: "The cucumber id.",
         },
-        CucumberQuality: {
+        cucumberQuality: {
             description: "The cucumber quality id.",
         },
-        BellPepper: {
+        bellPepper: {
             description: "The bell pepper id.",
         },
-        BellPepperQuality: {
+        bellPepperQuality: {
             description: "The bell pepper quality id.",
         },
-        Banana: {
+        banana: {
             description: "The banana id.",
         },
-        BananaQuality: {
+        bananaQuality: {
             description: "The banana quality id.",
         },
-        Apple: {
+        apple: {
             description: "The apple id.",
         },
-        AppleQuality: {
+        appleQuality: {
             description: "The apple quality id.",
         },
     },
@@ -326,35 +345,37 @@ export enum SystemId {
     HoneycombInfo = "honeycombInfo",
 }
 
-registerEnumType(SystemId, {
+export const LowerCaseSystemId = createLowerCaseEnumType(SystemId)
+
+registerEnumType(LowerCaseSystemId, {
     name: "SystemId",
     description: "The system id.",
     valuesMap: {
-        Activities: {
+        activities: {
             description: "The activities id.",
         },
-        CropInfo: {
+        cropInfo: {
             description: "The crop info id.",
         },
-        AnimalInfo: {
+        animalInfo: {
             description: "The animal info id.",
         },
-        FruitInfo: {
+        fruitInfo: {
             description: "The fruit info id.",
         },
-        DefaultInfo: {
+        defaultInfo: {
             description: "The default info id.",
         },
-        SpinInfo: {
+        spinInfo: {
             description: "The spin info id.",
         },
-        EnergyRegen: {
+        energyRegen: {
             description: "The energy regen id.",
         },
-        DailyRewardInfo: {
+        dailyRewardInfo: {
             description: "The daily reward info id.",
         },
-        HoneycombInfo: {
+        honeycombInfo: {
             description: "The honeycomb info id.",
         },
     },
@@ -367,20 +388,22 @@ export enum KeyValueStoreId {
     FruitGrowthLastSchedule = "fruitGrowthLastSchedule",
 }
 
-registerEnumType(KeyValueStoreId, {
+export const LowerCaseKeyValueStoreId = createLowerCaseEnumType(KeyValueStoreId)
+
+registerEnumType(LowerCaseKeyValueStoreId, {
     name: "KeyValueStoreId",
     description: "The key value store id.",
     valuesMap: {
-        CropGrowthLastSchedule: {
+        cropGrowthLastSchedule: {
             description: "The crop growth last schedule id.",
         },
-        AnimalGrowthLastSchedule: {
+        animalGrowthLastSchedule: {
             description: "The animal growth last schedule id.",
         },
-        EnergyRegenerationLastSchedule: {
+        energyRegenerationLastSchedule: {
             description: "The energy regeneration last schedule id.",
         },
-        FruitGrowthLastSchedule: {
+        fruitGrowthLastSchedule: {
             description: "The fruit growth last schedule id.",
         },
     },
@@ -429,128 +452,130 @@ export enum InventoryTypeId {
     BugNet = "bugNet",
 }
 
-registerEnumType(InventoryTypeId, {
+export const LowerCaseInventoryTypeId = createLowerCaseEnumType(InventoryTypeId)
+
+registerEnumType(LowerCaseInventoryTypeId, {
     name: "InventoryTypeId",
     description: "The inventory type id.",
     valuesMap: {
-        TurnipSeed: {
+        turnipSeed: {
             description: "The turnip seed id.",
         },
-        CarrotSeed: {
+        carrotSeed: {
             description: "The carrot seed id.",
         },
-        PotatoSeed: {
+        potatoSeed: {
             description: "The potato seed id.",
         },
-        PineappleSeed: {
+        pineappleSeed: {
             description: "The pineapple seed id.",
         },
-        WatermelonSeed: {
+        watermelonSeed: {
             description: "The watermelon seed id.",
         },
-        CucumberSeed: {
+        cucumberSeed: {
             description: "The cucumber seed id.",
         },
-        BellPepperSeed: {
+        bellPepperSeed: {
             description: "The bell pepper seed id.",
         },
-        BasicFertilizer: {
+        basicFertilizer: {
             description: "The basic fertilizer id.",
         },
-        AnimalFeed: {
+        animalFeed: {
             description: "The animal feed id.",
         },
-        FruitFertilizer: {
+        fruitFertilizer: {
             description: "The fruit fertilizer id.",
         },
-        Egg: {  
+        egg: {  
             description: "The egg id.",
         },
-        EggQuality: {
+        eggQuality: {
             description: "The egg quality id.",
         },
-        Milk: {
+        milk: {
             description: "The milk id.",
         },
-        MilkQuality: {
+        milkQuality: {
             description: "The milk quality id.",
         },
-        Turnip: {
+        turnip: {
             description: "The turnip id.",
         },
-        TurnipQuality: {
+        turnipQuality: {
             description: "The turnip quality id.",
         },
-        Carrot: {
+        carrot: {
             description: "The carrot id.",
         },
-        CarrotQuality: {
+        carrotQuality: {
             description: "The carrot quality id.",
         },
-        Potato: {
+        potato: {
             description: "The potato id.",
         },
-        PotatoQuality: {
+        potatoQuality: {
             description: "The potato quality id.",
         },
-        Pineapple: {
+        pineapple: {
             description: "The pineapple id.",
         },
-        PineappleQuality: {
+        pineappleQuality: {
             description: "The pineapple quality id.",
         },
-        Watermelon: {
+        watermelon: {
             description: "The watermelon id.",
         },
-        WatermelonQuality: {
+        watermelonQuality: {
             description: "The watermelon quality id.",
         },
-        Cucumber: {
+        cucumber: {
             description: "The cucumber id.",
         },
-        CucumberQuality: {
+        cucumberQuality: {
             description: "The cucumber quality id.",
         },
-        BellPepper: {
+        bellPepper: {
             description: "The bell pepper id.",
         },
-        BellPepperQuality: {
+        bellPepperQuality: {
             description: "The bell pepper quality id.",
         },
-        Banana: {
+        banana: {
             description: "The banana id.",
         },
-        BananaQuality: {
+        bananaQuality: {
             description: "The banana quality id.",
         },
-        Apple: {
+        apple: {
             description: "The apple id.",
         },
-        AppleQuality: {
+        appleQuality: {
             description: "The apple quality id.",
         },
-        Hand: {
+        hand: {
             description: "The hand id.",
         },
-        Crate: {
+        crate: {
             description: "The crate id.",
         },
-        WateringCan: {
+        wateringCan: {
             description: "The watering can id.",
         },
-        Hammer: {
+        hammer: {
             description: "The hammer id.",
         },
-        Herbicide: {
+        herbicide: {
             description: "The herbicide id.",
         },
-        Pesticide: {
+        pesticide: {
             description: "The pesticide id.",
         },
-        AnimalMedicine: {
+        animalMedicine: {
             description: "The animal medicine id.",
         },
-        BugNet: {
+        bugNet: {
             description: "The bug net id.",
         },
     },
@@ -569,38 +594,40 @@ export enum PlacedItemTypeId {
     Banana = "banana"
 }
 
-registerEnumType(PlacedItemTypeId, {
+export const LowerCasePlacedItemTypeId = createLowerCaseEnumType(PlacedItemTypeId)
+    
+registerEnumType(LowerCasePlacedItemTypeId, {
     name: "PlacedItemTypeId",
     description: "The placed item type id.",
     valuesMap: {
-        Chicken: {
+        chicken: {
             description: "The chicken id.",
         },
-        Cow: {
+        cow: {
             description: "The cow id.",
         },
-        Pig: {
+        pig: {
             description: "The pig id.",
         },
-        Sheep: {
+        sheep: {
             description: "The sheep id.",
         },
-        Coop: {
+        coop: {
             description: "The coop id.",
         },
-        Barn: {
+        barn: {
             description: "The barn id.",
         },
-        Home: {
+        home: {
             description: "The home id.",
         },
-        BasicTile: {
+        basicTile: {
             description: "The basic tile id.",
         },
-        Apple: {
+        apple: {
             description: "The apple id.",
         },  
-        Banana: {
+        banana: {
             description: "The banana id.",
         },
     },

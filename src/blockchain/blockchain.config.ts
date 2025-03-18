@@ -124,7 +124,7 @@ export const blockchainConfig: BlockchainConfig = {
                     defaultTitlePrefix: DEFAULT_FERTILE_TILE_NFT_TITLE_PREFIX
                 },
                 [Network.Testnet]: {
-                    collectionId: "starci123.testnet",
+                    collectionId: "starci.testnet",
                     defaultImageUrl: DEFAULT_FERTILE_TILE_NFT_IMAGE_URL,
                     defaultTitlePrefix: DEFAULT_FERTILE_TILE_NFT_TITLE_PREFIX
                 }

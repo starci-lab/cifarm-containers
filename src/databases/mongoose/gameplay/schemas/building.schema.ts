@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { AnimalType, BuildingId } from "../enums"
+import { AnimalType, BuildingId, LowerCaseAnimalType, LowerCaseBuildingId } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
 
@@ -12,7 +12,7 @@ import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
     collection: "buildings"
 })
 export class BuildingSchema extends AbstractSchema {
-    @Field(() => BuildingId, {
+    @Field(() => LowerCaseBuildingId, {
         description: "The ID of the building"
     })
     @Prop({ type: String, enum: BuildingId, required: true })
@@ -24,7 +24,7 @@ export class BuildingSchema extends AbstractSchema {
     @Prop({ type: Boolean })
         availableInShop: boolean
 
-    @Field(() => AnimalType, {
+    @Field(() => LowerCaseAnimalType, {
         description: "The type of animal that can be placed in this building",
         nullable: true
     })

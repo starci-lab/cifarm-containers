@@ -55,7 +55,7 @@ export class TelegramAuthorizationGuard implements CanActivate {
             const [mockAuthorization, mockUserId = ""] = authData.split(",")
             if (mockAuthorization === envConfig().secrets.telegram.mockAuthorization) {
                 const telegramData: TelegramData = {
-                    userId: mockUserId ? Number(mockUserId) : 123456789,
+                    userId: mockUserId ? Number(mockUserId) : 456789,
                     username: "test"
                 }
                 request.telegramData = telegramData

@@ -2,7 +2,7 @@ import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Schema as MongooseSchema } from "mongoose"
 import { CROP } from "../constants"
-import { CropCurrentState } from "../enums"
+import { CropCurrentState, LowerCaseCropCurrentState } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { CropSchema } from "./crop.schema"
 
@@ -54,7 +54,7 @@ export class SeedGrowthInfoSchema extends AbstractSchema {
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: CropSchema.name })
     [CROP]: CropSchema | string
 
-    @Field(() => CropCurrentState, {
+    @Field(() => LowerCaseCropCurrentState, {
         description: "The current state of the crop (normal, withered, etc.)"
     })
     @Prop({ type: String, enum: CropCurrentState, default: CropCurrentState.Normal })

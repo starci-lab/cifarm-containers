@@ -1,4 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
+import { createLowerCaseEnumType } from "./utils"
 
 // Product Type Enum
 export enum ProductType {
@@ -7,17 +8,19 @@ export enum ProductType {
     Fruit = "fruit",
 }
 
-registerEnumType(ProductType, {
+export const LowerCaseProductType = createLowerCaseEnumType(ProductType)
+
+registerEnumType(LowerCaseProductType, {
     name: "ProductType",
     description: "The type of product",
     valuesMap: {
-        Animal: {
+        animal: {
             description: "The animal product",
         },
-        Crop: {
+        crop: {
             description: "The crop product",
         },
-        Fruit: {
+        fruit: {
             description: "The fruit product",
         },
     },
@@ -29,14 +32,16 @@ export enum AnimalType {
     Livestock = "livestock"
 }
 
-registerEnumType(AnimalType, {
+export const LowerCaseAnimalType = createLowerCaseEnumType(AnimalType)
+
+registerEnumType(LowerCaseAnimalType, {
     name: "AnimalType",
     description: "The type of animal",
     valuesMap: {
-        Poultry: {
+        poultry: {
             description: "The poultry animal",
         },
-        Livestock: {
+        livestock: {
             description: "The livestock animal",
         },
     },
@@ -50,20 +55,22 @@ export enum SpinPrizeType {
     Token = "token"
 }
 
-registerEnumType(SpinPrizeType, {
+export const LowerCaseSpinPrizeType = createLowerCaseEnumType(SpinPrizeType)
+
+registerEnumType(LowerCaseSpinPrizeType, {
     name: "SpinPrizeType",
     description: "The type of spin prize",
     valuesMap: {
-        Gold: {
+        gold: {
             description: "The gold spin prize",
         },
-        Seed: {
+        seed: {
             description: "The seed spin prize",
         },
-        Supply: {
+        supply: {
             description: "The supply spin prize",
         },
-        Token: {
+        token: {
             description: "The token spin prize",
         },
     },
@@ -77,20 +84,22 @@ export enum InventoryType {
     Tool = "tool",
 }
 
-registerEnumType(InventoryType, {
+export const LowerCaseInventoryType = createLowerCaseEnumType(InventoryType)
+
+registerEnumType(LowerCaseInventoryType, {
     name: "InventoryType",
     description: "The type of inventory",
     valuesMap: {
-        Seed: {
+        seed: {
             description: "The seed inventory",
         },
-        Product: {
+        product: {
             description: "The product inventory",
         },
-        Supply: {
+        supply: {
             description: "The supply inventory",
         },
-        Tool: {
+        tool: {
             description: "The tool inventory",
         },
     },
@@ -104,20 +113,22 @@ export enum PlacedItemType {
     Fruit = "fruit",
 }
 
-registerEnumType(PlacedItemType, {
+export const LowerCasePlacedItemType = createLowerCaseEnumType(PlacedItemType)
+
+registerEnumType(LowerCasePlacedItemType, {
     name: "PlacedItemType",
     description: "The type of placed item",
     valuesMap: {
-        Tile: {
+        tile: {
             description: "The tile placed item",
         },
-        Building: {
+        building: {
             description: "The building placed item",
         },
-        Animal: {
+        animal: {
             description: "The animal placed item",
         },
-        Fruit: {
+        fruit: {
             description: "The fruit placed item",
         },
     },
@@ -131,20 +142,22 @@ export enum AppearanceChance {
     VeryRare = "veryRare",  
 } 
 
-registerEnumType(AppearanceChance, {
+export const LowerCaseAppearanceChance = createLowerCaseEnumType(AppearanceChance)
+
+registerEnumType(LowerCaseAppearanceChance, {
     name: "AppearanceChance",
     description: "The chance of appearance",
     valuesMap: {
-        Common: {
+        common: {
             description: "The common appearance chance",
         },
-        Uncommon: {
+        uncommon: {
             description: "The uncommon appearance chance",
         },
-        Rare: {
+        rare: {
             description: "The rare appearance chance",
         },
-        VeryRare: {
+        veryRare: {
             description: "The very rare appearance chance",
         },
     },
@@ -157,17 +170,19 @@ export enum InventoryKind {
     Delivery = "delivery"
 }
 
-registerEnumType(InventoryKind, {
+export const LowerCaseInventoryKind = createLowerCaseEnumType(InventoryKind)
+
+registerEnumType(LowerCaseInventoryKind, {
     name: "InventoryKind",
     description: "The kind of inventory",
     valuesMap: {
-        Storage: {
+        storage: {
             description: "The storage inventory",
         },
-        Tool: {
+        tool: {
             description: "The tool inventory",
         },
-        Delivery: {
+        delivery: {
             description: "The delivery inventory",
         },
     },
@@ -180,17 +195,19 @@ export enum SupplyType {
     FruitFertilizer = "fruitFertilizer",
 }
 
-registerEnumType(SupplyType, {
+export const LowerCaseSupplyType = createLowerCaseEnumType(SupplyType)
+
+registerEnumType(LowerCaseSupplyType, {
     name: "SupplyType",
     description: "The type of supply",
     valuesMap: {
-        Fertilizer: {
+        fertilizer: {
             description: "The fertilizer supply",
         },
-        AnimalFeed: {
+        animalFeed: {
             description: "The animal feed supply",
         },
-        FruitFertilizer: {
+        fruitFertilizer: {
             description: "The fruit fertilizer supply",
         },
     },

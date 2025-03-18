@@ -1,7 +1,7 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { HydratedDocument } from "mongoose"
-import { AppearanceChance, SpinPrizeType } from "../enums"
+import { AppearanceChance, SpinPrizeType, LowerCaseAppearanceChance, LowerCaseSpinPrizeType } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Schema as MongooseSchema } from "mongoose"
 import { CropSchema } from "./crop.schema"
@@ -19,7 +19,7 @@ export type SpinPrizeDocument = HydratedDocument<SpinPrizeSchema>;
     collection: "spin-prizes",
 })
 export class SpinPrizeSchema extends AbstractSchema {
-    @Field(() => SpinPrizeType, {
+    @Field(() => LowerCaseSpinPrizeType, {
         description: "The type of prize"
     })
     @Prop({ type: String, required: true, enum: SpinPrizeType })
@@ -45,7 +45,7 @@ export class SpinPrizeSchema extends AbstractSchema {
     @Prop({ type: Number, required: true })
         quantity: number
 
-    @Field(() => AppearanceChance, {
+    @Field(() => LowerCaseAppearanceChance, {
         description: "The chance of this prize appearing"
     })
     @Prop({ type: String, required: true, enum: AppearanceChance })

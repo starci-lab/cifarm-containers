@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { SupplyId, SupplyType } from "../enums"
+import { SupplyId, SupplyType, LowerCaseSupplyId, LowerCaseSupplyType } from "../enums"
 
 @ObjectType({
     description: "The supply schema"
@@ -11,13 +11,13 @@ import { SupplyId, SupplyType } from "../enums"
     collection: "supplies",
 })
 export class SupplySchema extends AbstractSchema {
-    @Field(() => SupplyId, {
+    @Field(() => LowerCaseSupplyId, {
         description: "The display ID of the supply"
     })
     @Prop({ type: String, enum: SupplyId, required: true, unique: true })
         displayId: SupplyId
 
-    @Field(() => SupplyType, {
+    @Field(() => LowerCaseSupplyType, {
         description: "The type of supply"
     })
     @Prop({ type: String, enum: SupplyType })

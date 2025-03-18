@@ -1,4 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
+import { createLowerCaseEnumType } from "./utils"
 
 // Crop Current State Enum
 export enum CropCurrentState {
@@ -9,23 +10,25 @@ export enum CropCurrentState {
     FullyMatured = "fullyMatured"
 }
 
-registerEnumType(CropCurrentState, {
+export const LowerCaseCropCurrentState = createLowerCaseEnumType(CropCurrentState)
+
+registerEnumType(LowerCaseCropCurrentState, {
     name: "CropCurrentState",
     description: "The current state of the crop",
     valuesMap: {
-        Normal: {
+        normal: {
             description: "The crop is normal"
         },
-        NeedWater: {
+        needWater: {
             description: "The crop needs water"
         },
-        IsWeedy: {
+        isWeedy: {
             description: "The crop is weedy"
         },
-        IsInfested: {
+        isInfested: {
             description: "The crop is infested"
         },
-        FullyMatured: {
+        fullyMatured: {
             description: "The crop is fully matured"
         }
     }
@@ -39,20 +42,22 @@ export enum AnimalCurrentState {
     Yield = "yield"
 }
 
-registerEnumType(AnimalCurrentState, {
+export const LowerCaseAnimalCurrentState = createLowerCaseEnumType(AnimalCurrentState)
+
+registerEnumType(LowerCaseAnimalCurrentState, {
     name: "AnimalCurrentState",
     description: "The current state of the animal",
     valuesMap: {
-        Normal: {
+        normal: {
             description: "The animal is normal"
         },
-        Hungry: {
+        hungry: {
             description: "The animal is hungry"
         },
-        Sick: {
+        sick: {
             description: "The animal is sick"
         },
-        Yield: {
+        yield: {
             description: "The animal is yielding"
         }
     }
@@ -66,17 +71,19 @@ export enum FruitCurrentState {
     FullyMatured = "fullyMatured"
 }
 
-registerEnumType(FruitCurrentState, {
+export const LowerCaseFruitCurrentState = createLowerCaseEnumType(FruitCurrentState)
+
+registerEnumType(LowerCaseFruitCurrentState, {
     name: "FruitCurrentState",
     description: "The current state of the fruit",
     valuesMap: {
-        Normal: {
+        normal: {
             description: "The fruit is normal"
         },
-        NeedFertilizer: {
+        needFertilizer: {
             description: "The fruit needs fertilizer"
         },
-        IsInfested: {
+        isInfested: {
             description: "The fruit is infested"
         },
         FullyMatured: {
