@@ -79,7 +79,7 @@ export class SellService {
                 /************************************************************
                  * DETERMINE SELL PRICE BASED ON ITEM TYPE
                  ************************************************************/
-                let sellPrice: number = 0
+                let sellPrice = 0
 
                 switch (placedItemType.type) {
                 case PlacedItemType.Building: {
@@ -97,7 +97,14 @@ export class SellService {
                     const upgradePrice =
                             building.upgrades?.find(
                                 (upgrade) => upgrade.upgradeLevel === upgradeLevel
-                            )?.sellPrice ?? 0
+                            )?.sellPrice
+                    if (!upgradePrice) {
+                        throw new GraphQLError("Upgrade price not found", {
+                            extensions: {
+                                code: "UPGRADE_PRICE_NOT_FOUND"
+                            }
+                        })
+                    }
                     sellPrice = upgradePrice
                     break
                 }

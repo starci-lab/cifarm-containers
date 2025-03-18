@@ -62,7 +62,7 @@ export class UpdateFollowXService {
                  * UPDATE TOKEN BALANCE
                  ************************************************************/
                 // Update the token balance for the user
-                const tokenBalanceChanges = this.tokenBalanceService.add({
+                this.tokenBalanceService.add({
                     user,
                     amount: followXRewardQuantity
                 })
@@ -71,18 +71,8 @@ export class UpdateFollowXService {
                  * UPDATE USER DATA
                  ************************************************************/
                 // Update user with the new token balance and mark followXAwarded as true
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne(
-                        { _id: userId },
-                        {
-                            $set: {
-                                ...tokenBalanceChanges,
-                                followXAwarded: true
-                            },
-                        }
-                    )
-                    .session(mongoSession)
+                user.followXAwarded = true
+                await user.save({ session: mongoSession })
             })
         } catch (error) {
             this.logger.error(error)

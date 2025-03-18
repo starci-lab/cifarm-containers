@@ -187,10 +187,7 @@ export class FeedAnimalService {
 
                 // Update existing inventories
                 for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne({ _id: inventory._id }, inventory)
-                        .session(session)
+                    await inventory.save({ session })
                 }
 
                 // Delete removed inventories

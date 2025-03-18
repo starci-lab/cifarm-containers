@@ -3,7 +3,7 @@ import {
     InjectMongoose,
     UserSchema
 } from "@src/databases"
-import { Connection } from "mongoose"
+import { Connection, Schema } from "mongoose"
 import { UpdateReferralRequest } from "./update-referral.dto"
 import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
@@ -117,25 +117,15 @@ export class UpdateReferralService {
                  * UPDATE REFERRAL USER DATA
                  ************************************************************/
                 // Update the referral user with the new referred user
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne(
-                        { _id: referralUser._id },
-                        { $push: { referredUserIds: userId } }
-                    )
-                    .session(mongoSession)
+                referralUser.referredUserIds.push(new Schema.Types.ObjectId(userId))
+                await referralUser.save({ session: mongoSession })
 
                 /************************************************************
                  * UPDATE USER DATA
                  ************************************************************/
                 // Update the referred user with their referral information
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne(
-                        { _id: userId },
-                        { $set: { referralUserId: referralUserId } }
-                    )
-                    .session(mongoSession)
+                user.referralUserId = new Schema.Types.ObjectId(referralUserId)
+                await user.save({ session: mongoSession })
             })
         } catch (error) {
             this.logger.error(error)

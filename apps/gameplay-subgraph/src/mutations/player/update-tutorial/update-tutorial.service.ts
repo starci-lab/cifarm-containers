@@ -92,15 +92,8 @@ export class UpdateTutorialService {
                  * UPDATE USER TUTORIAL PROGRESS
                  ************************************************************/
                 // Update the user with the next tutorial step
-                await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .updateOne(
-                        { _id: user.id },
-                        {
-                            tutorialStep: nextStep
-                        }
-                    )
-                    .session(mongoSession)
+                user.tutorialStep = nextStep
+                await user.save({ session: mongoSession })
             })
         } catch (error) {
             this.logger.error(error)

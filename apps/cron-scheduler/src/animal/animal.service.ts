@@ -117,6 +117,7 @@ export class AnimalService {
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
             const jobs = await this.animalQueue.addBulk(batches)
             this.logger.verbose(`Added ${jobs.at(0).name} jobs to the animal queue. Time: ${time}`)
+            
             await this.connection
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                 .updateOne(

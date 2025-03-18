@@ -58,13 +58,9 @@ export class MoveService {
                  * UPDATE PLACED ITEM POSITION
                  ************************************************************/
                 // Update the placed item position in the database
-                await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .updateOne(
-                        { _id: placedItemId },
-                        { x: position.x, y: position.y }
-                    )
-                    .session(mongoSession)
+                placedItem.x = position.x
+                placedItem.y = position.y
+                await placedItem.save({ session: mongoSession })
 
                 actionMessage = {
                     placedItemId: placedItemId,
