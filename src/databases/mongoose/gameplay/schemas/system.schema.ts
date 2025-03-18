@@ -4,9 +4,9 @@ import {
     AppearanceChance,
     CropId,
     DailyRewardId,
-    LowerCaseCropId,
+    FirstCharLowerCaseCropId,
     SystemId,
-    LowerCaseSystemId,
+    FirstCharLowerCaseSystemId,
 } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
@@ -20,7 +20,7 @@ import { Position } from "./types"
     collection: "systems"
 })
 export class SystemSchema extends AbstractSchema {
-    @Field(() => LowerCaseSystemId, {
+    @Field(() => FirstCharLowerCaseSystemId, {
         description: "The display ID of the system"
     })
     @Prop({ type: String, enum: SystemId, required: true, unique: true })
@@ -301,7 +301,7 @@ export class DefaultInfo {
     })
         positions: Positions
 
-    @Field(() => LowerCaseCropId, {
+    @Field(() => FirstCharLowerCaseCropId, {
         description: "Default crop ID given to new users"
     })
         defaultCropId: CropId

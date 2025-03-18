@@ -1,6 +1,6 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { ProductId, ProductType, LowerCaseProductId, LowerCaseProductType } from "../enums"
+import { ProductId, ProductType, FirstCharLowerCaseProductId, FirstCharLowerCaseProductType } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Schema as MongooseSchema } from "mongoose"
 import { CropSchema } from "./crop.schema"
@@ -12,7 +12,7 @@ import { FruitSchema } from "./fruit.schema"
 })
 @Schema({ timestamps: true, collection: "products" })
 export class ProductSchema extends AbstractSchema {
-    @Field(() => LowerCaseProductId, {
+    @Field(() => FirstCharLowerCaseProductId, {
         description: "The display ID of the product"
     })
     @Prop({ type: String, enum: ProductId, required: true, unique: true })
@@ -43,7 +43,7 @@ export class ProductSchema extends AbstractSchema {
     @Prop({ type: Number, required: false })
         tokenAmount?: number
 
-    @Field(() => LowerCaseProductType, {
+    @Field(() => FirstCharLowerCaseProductType, {
         description: "The type of the product"
     })
     @Prop({ type: String, enum: ProductType, required: true })

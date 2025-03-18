@@ -2,7 +2,7 @@ import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Schema as MongooseSchema } from "mongoose"
 import { FRUIT } from "../constants"
-import { FruitCurrentState, LowerCaseFruitCurrentState } from "../enums"
+import { FruitCurrentState, FirstCharLowerCaseFruitCurrentState } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { FruitSchema } from "./fruit.schema"
 
@@ -41,9 +41,9 @@ export class FruitInfoSchema extends AbstractSchema {
     @Prop({ type: Boolean, default: false })
         isQuality: boolean
 
-    @Field(() => LowerCaseFruitCurrentState, {
+    @Field(() => FirstCharLowerCaseFruitCurrentState, {
         description: "The current state of the fruit",
-        defaultValue: LowerCaseFruitCurrentState.Normal
+        defaultValue: FirstCharLowerCaseFruitCurrentState.Normal
     })
     @Prop({ type: String, enum: FruitCurrentState, default: FruitCurrentState.Normal })
         currentState: FruitCurrentState

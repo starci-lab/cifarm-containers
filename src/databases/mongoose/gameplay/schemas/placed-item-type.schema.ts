@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { PlacedItemType, PlacedItemTypeId, LowerCasePlacedItemTypeId, LowerCasePlacedItemType } from "../enums"
+import { PlacedItemType, PlacedItemTypeId, FirstCharLowerCasePlacedItemTypeId, FirstCharLowerCasePlacedItemType } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { BuildingSchema } from "./building.schema"
 import { AnimalSchema } from "./animal.schema"
@@ -18,13 +18,13 @@ import { FruitSchema } from "./fruit.schema"
     collection: "placed-item-types",
 })
 export class PlacedItemTypeSchema extends AbstractSchema {
-    @Field(() => LowerCasePlacedItemTypeId, {
+    @Field(() => FirstCharLowerCasePlacedItemTypeId, {
         description: "The display ID of the placed item type"
     })
     @Prop({ type: String, enum: PlacedItemTypeId, required: true, unique: true })
         displayId: PlacedItemTypeId
 
-    @Field(() => LowerCasePlacedItemType, {
+    @Field(() => FirstCharLowerCasePlacedItemType, {
         description: "The type of the placed item type"
     })
     @Prop({ type: String, enum: PlacedItemType, required: true })

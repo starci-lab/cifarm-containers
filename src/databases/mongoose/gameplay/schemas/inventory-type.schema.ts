@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { InventoryType, InventoryTypeId, LowerCaseInventoryType, LowerCaseInventoryTypeId } from "../enums"
+import { InventoryType, InventoryTypeId, FirstCharLowerCaseInventoryType, FirstCharLowerCaseInventoryTypeId } from "../enums"
 import { CropSchema } from "./crop.schema"
 import { Schema as MongooseSchema } from "mongoose"
 import { ProductSchema } from "./product.schema"
@@ -17,13 +17,13 @@ import { AbstractSchema } from "./abstract"
     collection: "inventory-types"
 })
 export class InventoryTypeSchema extends AbstractSchema {
-    @Field(() => LowerCaseInventoryTypeId, {
+    @Field(() => FirstCharLowerCaseInventoryTypeId, {
         description: "The display ID of the inventory type"
     })
     @Prop({ type: String, enum: InventoryTypeId, required: true, unique: true })
         displayId: InventoryTypeId
 
-    @Field(() => LowerCaseInventoryType, {
+    @Field(() => FirstCharLowerCaseInventoryType, {
         description: "The type of the inventory type"
     })
     @Prop({ type: String, enum: InventoryType })

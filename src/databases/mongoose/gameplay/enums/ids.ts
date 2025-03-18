@@ -1,5 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
-import { createLowerCaseEnumType } from "./utils"
+import { createFirstCharLowerCaseEnumType } from "./utils"
 
 // Animal Enum
 export enum AnimalId {
@@ -9,9 +9,9 @@ export enum AnimalId {
     Sheep = "sheep"
 }
 
-export const LowerCaseAnimalId = createLowerCaseEnumType(AnimalId)
+export const FirstCharLowerCaseAnimalId = createFirstCharLowerCaseEnumType(AnimalId)
 
-registerEnumType(LowerCaseAnimalId, {
+registerEnumType(FirstCharLowerCaseAnimalId, {
     name: "AnimalId",
     description: "The animal id.",
     valuesMap: {
@@ -31,9 +31,9 @@ export enum BuildingId {
     Home = "home"
 }
 
-export const LowerCaseBuildingId = createLowerCaseEnumType(BuildingId)
+export const FirstCharLowerCaseBuildingId = createFirstCharLowerCaseEnumType(BuildingId)
 
-registerEnumType(LowerCaseBuildingId, {
+registerEnumType(FirstCharLowerCaseBuildingId, {
     name: "BuildingId",
     description: "The building id.",
     valuesMap: {
@@ -60,9 +60,9 @@ export enum CropId {
     BellPepper = "bellPepper"
 }
 
-export const LowerCaseCropId = createLowerCaseEnumType(CropId)
+export const FirstCharLowerCaseCropId = createFirstCharLowerCaseEnumType(CropId)
 
-registerEnumType(LowerCaseCropId, {
+registerEnumType(FirstCharLowerCaseCropId, {
     name: "CropId",
     description: "The crop id.",
     valuesMap: {
@@ -96,9 +96,9 @@ export enum FruitId {
     Apple = "apple",
 }
 
-export const LowerCaseFruitId = createLowerCaseEnumType(FruitId)    
+export const FirstCharLowerCaseFruitId = createFirstCharLowerCaseEnumType(FruitId)    
 
-registerEnumType(LowerCaseFruitId, {
+registerEnumType(FirstCharLowerCaseFruitId, {
     name: "FruitId",
     description: "The fruit id.",
     valuesMap: {
@@ -127,9 +127,9 @@ export enum SupplyId {
     FruitFertilizer = "fruitFertilizer",
 }
 
-export const LowerCaseSupplyId = createLowerCaseEnumType(SupplyId)
+export const FirstCharLowerCaseSupplyId = createFirstCharLowerCaseEnumType(SupplyId)
 
-registerEnumType(LowerCaseSupplyId, {
+registerEnumType(FirstCharLowerCaseSupplyId, {
     name: "SupplyId",
     description: "The supply id.",
     valuesMap: {
@@ -150,9 +150,9 @@ export enum TileId {
     BasicTile = "basicTile",
 }
 
-export const LowerCaseTileId = createLowerCaseEnumType(TileId)
+export const FirstCharLowerCaseTileId = createFirstCharLowerCaseEnumType(TileId)
 
-registerEnumType(LowerCaseTileId, {
+registerEnumType(FirstCharLowerCaseTileId, {
     name: "TileId",
     description: "The tile id.",
     valuesMap: {
@@ -175,9 +175,9 @@ export enum ToolId {
     BugNet = "bugNet",
 }
 
-export const LowerCaseToolId = createLowerCaseEnumType(ToolId)  
+export const FirstCharLowerCaseToolId = createFirstCharLowerCaseEnumType(ToolId)  
 
-registerEnumType(LowerCaseToolId, {
+registerEnumType(FirstCharLowerCaseToolId, {
     name: "ToolId",
     description: "The tool id.",
     valuesMap: {
@@ -217,9 +217,9 @@ export enum PetId {
     Cat = "cat",
 }
 
-export const LowerCasePetId = createLowerCaseEnumType(PetId)
+export const FirstCharLowerCasePetId = createFirstCharLowerCaseEnumType(PetId)
 
-registerEnumType(LowerCasePetId, {
+registerEnumType(FirstCharLowerCasePetId, {
     name: "PetId",
     description: "The pet id.",
     valuesMap: {
@@ -258,9 +258,9 @@ export enum ProductId {
     AppleQuality = "appleQuality",
 }
 
-export const LowerCaseProductId = createLowerCaseEnumType(ProductId)    
+export const FirstCharLowerCaseProductId = createFirstCharLowerCaseEnumType(ProductId)    
 
-registerEnumType(LowerCaseProductId, {
+registerEnumType(FirstCharLowerCaseProductId, {
     name: "ProductId",
     description: "The product id.",
     valuesMap: {
@@ -345,9 +345,9 @@ export enum SystemId {
     HoneycombInfo = "honeycombInfo",
 }
 
-export const LowerCaseSystemId = createLowerCaseEnumType(SystemId)
+export const FirstCharLowerCaseSystemId = createFirstCharLowerCaseEnumType(SystemId)
 
-registerEnumType(LowerCaseSystemId, {
+registerEnumType(FirstCharLowerCaseSystemId, {
     name: "SystemId",
     description: "The system id.",
     valuesMap: {
@@ -388,9 +388,9 @@ export enum KeyValueStoreId {
     FruitGrowthLastSchedule = "fruitGrowthLastSchedule",
 }
 
-export const LowerCaseKeyValueStoreId = createLowerCaseEnumType(KeyValueStoreId)
+export const FirstCharLowerCaseKeyValueStoreId = createFirstCharLowerCaseEnumType(KeyValueStoreId)
 
-registerEnumType(LowerCaseKeyValueStoreId, {
+registerEnumType(FirstCharLowerCaseKeyValueStoreId, {
     name: "KeyValueStoreId",
     description: "The key value store id.",
     valuesMap: {
@@ -452,9 +452,9 @@ export enum InventoryTypeId {
     BugNet = "bugNet",
 }
 
-export const LowerCaseInventoryTypeId = createLowerCaseEnumType(InventoryTypeId)
+export const FirstCharLowerCaseInventoryTypeId = createFirstCharLowerCaseEnumType(InventoryTypeId)
 
-registerEnumType(LowerCaseInventoryTypeId, {
+registerEnumType(FirstCharLowerCaseInventoryTypeId, {
     name: "InventoryTypeId",
     description: "The inventory type id.",
     valuesMap: {
@@ -594,9 +594,9 @@ export enum PlacedItemTypeId {
     Banana = "banana"
 }
 
-export const LowerCasePlacedItemTypeId = createLowerCaseEnumType(PlacedItemTypeId)
+export const FirstCharLowerCasePlacedItemTypeId = createFirstCharLowerCaseEnumType(PlacedItemTypeId)
     
-registerEnumType(LowerCasePlacedItemTypeId, {
+registerEnumType(FirstCharLowerCasePlacedItemTypeId, {
     name: "PlacedItemTypeId",
     description: "The placed item type id.",
     valuesMap: {

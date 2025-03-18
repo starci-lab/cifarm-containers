@@ -1,5 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
-import { createLowerCaseEnumType } from "./utils"
+import { createFirstCharLowerCaseEnumType } from "./utils"
 
 // Crop Current State Enum
 export enum CropCurrentState {
@@ -10,9 +10,9 @@ export enum CropCurrentState {
     FullyMatured = "fullyMatured"
 }
 
-export const LowerCaseCropCurrentState = createLowerCaseEnumType(CropCurrentState)
+export const FirstCharLowerCaseCropCurrentState = createFirstCharLowerCaseEnumType(CropCurrentState)
 
-registerEnumType(LowerCaseCropCurrentState, {
+registerEnumType(FirstCharLowerCaseCropCurrentState, {
     name: "CropCurrentState",
     description: "The current state of the crop",
     valuesMap: {
@@ -42,9 +42,9 @@ export enum AnimalCurrentState {
     Yield = "yield"
 }
 
-export const LowerCaseAnimalCurrentState = createLowerCaseEnumType(AnimalCurrentState)
+export const FirstCharLowerCaseAnimalCurrentState = createFirstCharLowerCaseEnumType(AnimalCurrentState)
 
-registerEnumType(LowerCaseAnimalCurrentState, {
+registerEnumType(FirstCharLowerCaseAnimalCurrentState, {
     name: "AnimalCurrentState",
     description: "The current state of the animal",
     valuesMap: {
@@ -71,9 +71,9 @@ export enum FruitCurrentState {
     FullyMatured = "fullyMatured"
 }
 
-export const LowerCaseFruitCurrentState = createLowerCaseEnumType(FruitCurrentState)
+export const FirstCharLowerCaseFruitCurrentState = createFirstCharLowerCaseEnumType(FruitCurrentState)
 
-registerEnumType(LowerCaseFruitCurrentState, {
+registerEnumType(FirstCharLowerCaseFruitCurrentState, {
     name: "FruitCurrentState",
     description: "The current state of the fruit",
     valuesMap: {
