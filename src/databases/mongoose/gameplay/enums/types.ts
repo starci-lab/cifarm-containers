@@ -23,12 +23,6 @@ registerEnumType(ProductType, {
     },
 })
 
-export const productTypeResolver: Record<keyof typeof ProductType, string> = {
-    Animal: ProductType.Animal,
-    Crop: ProductType.Crop,
-    Fruit: ProductType.Fruit,
-}
-
 // Animal Type Enum
 export enum AnimalType {
     Poultry = "poultry",
@@ -47,11 +41,6 @@ registerEnumType(AnimalType, {
         },
     },
 })
-
-export const animalTypeResolver: Record<keyof typeof AnimalType, string> = {    
-    Poultry: AnimalType.Poultry,
-    Livestock: AnimalType.Livestock,
-}
 
 // Spin Type Enum
 export enum SpinPrizeType {
@@ -80,13 +69,6 @@ registerEnumType(SpinPrizeType, {
     },
 })
 
-export const spinPrizeTypeResolver: Record<keyof typeof SpinPrizeType, string> = {
-    Gold: SpinPrizeType.Gold,
-    Seed: SpinPrizeType.Seed,
-    Supply: SpinPrizeType.Supply,
-    Token: SpinPrizeType.Token,
-}
-
 // Inventory Type Enum
 export enum InventoryType {
     Seed = "seed",
@@ -113,13 +95,6 @@ registerEnumType(InventoryType, {
         },
     },
 })
-
-export const inventoryTypeResolver: Record<keyof typeof InventoryType, string> = {
-    Seed: InventoryType.Seed,
-    Product: InventoryType.Product,
-    Supply: InventoryType.Supply,
-    Tool: InventoryType.Tool,
-}
 
 // Placed Item Type Enum
 export enum PlacedItemType {
@@ -148,13 +123,6 @@ registerEnumType(PlacedItemType, {
     },
 })
 
-export const placedItemTypeResolver: Record<keyof typeof PlacedItemType, string> = {
-    Tile: PlacedItemType.Tile,
-    Building: PlacedItemType.Building,
-    Animal: PlacedItemType.Animal,
-    Fruit: PlacedItemType.Fruit,
-}
-
 // AppearanceChance Enum
 export enum AppearanceChance {
     Common = "common",
@@ -182,13 +150,6 @@ registerEnumType(AppearanceChance, {
     },
 })
 
-export const appearanceChanceResolver: Record<keyof typeof AppearanceChance, string> = {
-    Common: AppearanceChance.Common,
-    Uncommon: AppearanceChance.Uncommon,
-    Rare: AppearanceChance.Rare,
-    VeryRare: AppearanceChance.VeryRare,
-}
-
 // Inventory Kind
 export enum InventoryKind {
     Storage = "storage",
@@ -212,12 +173,6 @@ registerEnumType(InventoryKind, {
     },
 })
 
-export const inventoryKindResolver: Record<keyof typeof InventoryKind, string> = {
-    Storage: InventoryKind.Storage,
-    Tool: InventoryKind.Tool,
-    Delivery: InventoryKind.Delivery,
-}
-
 // Supply Type Enum
 export enum SupplyType {
     Fertilizer = "fertilizer",
@@ -240,10 +195,3 @@ registerEnumType(SupplyType, {
         },
     },
 })
-
-export const supplyTypeResolver: Record<keyof typeof SupplyType, string> = {
-    Fertilizer: SupplyType.Fertilizer,
-    AnimalFeed: SupplyType.AnimalFeed,
-    FruitFertilizer: SupplyType.FruitFertilizer,
-}
-

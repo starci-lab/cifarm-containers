@@ -3,7 +3,7 @@ import { EnvModule } from "@src/env"
 import { GraphQLSubgraphModule } from "@src/graphql"
 import { CryptoModule } from "@src/crypto"
 import { JwtModule } from "@src/jwt"
-import { gameplayEnumResolver, MongooseModule } from "@src/databases"
+import { gameplayEnumResolvers, MongooseModule } from "@src/databases"
 // import { QueriesModule } from "./queries"
 import { APP_FILTER, APP_PIPE } from "@nestjs/core"
 // import { MutationsModule } from "./mutations"
@@ -28,7 +28,7 @@ import { IdModule } from "@src/id"
         EnvModule.forRoot(),
         GraphQLSubgraphModule.forRoot({
             enumResolvers: [
-                gameplayEnumResolver
+                gameplayEnumResolvers
             ]
         }),
         CryptoModule.register({

@@ -21,13 +21,6 @@ registerEnumType(AnimalId, {
     },
 })
 
-export const animalIdResolver: Record<keyof typeof AnimalId, string> = {
-    Chicken: AnimalId.Chicken,
-    Cow: AnimalId.Cow,
-    Pig: AnimalId.Pig,
-    Sheep: AnimalId.Sheep
-}
-
 // Building Enum
 export enum BuildingId {
     Coop = "coop",
@@ -50,12 +43,6 @@ registerEnumType(BuildingId, {
         },
     },
 })
-
-export const buildingIdResolver: Record<keyof typeof BuildingId, string> = {
-    Coop: BuildingId.Coop,
-    Barn: BuildingId.Barn,
-    Home: BuildingId.Home
-}
 
 // Crop Enum
 export enum CropId {
@@ -96,16 +83,6 @@ registerEnumType(CropId, {
     },
 })
 
-export const cropIdResolver: Record<keyof typeof CropId, string> = {
-    Turnip: CropId.Turnip,
-    Carrot: CropId.Carrot,
-    Potato: CropId.Potato,
-    Pineapple: CropId.Pineapple,
-    Watermelon: CropId.Watermelon,
-    Cucumber: CropId.Cucumber,
-    BellPepper: CropId.BellPepper
-}
-
 // Fruit Enum
 export enum FruitId {
     Banana = "banana",
@@ -124,11 +101,6 @@ registerEnumType(FruitId, {
         },
     },
 })
-
-export const fruitIdResolver: Record<keyof typeof FruitId, string> = {
-    Banana: FruitId.Banana,
-    Apple: FruitId.Apple,
-}
 
 // Daily Reward Enum
 export enum DailyRewardId {
@@ -162,12 +134,6 @@ registerEnumType(SupplyId, {
     },
 })
 
-export const supplyIdResolver: Record<keyof typeof SupplyId, string> = {
-    BasicFertilizer: SupplyId.BasicFertilizer,
-    AnimalFeed: SupplyId.AnimalFeed,
-    FruitFertilizer: SupplyId.FruitFertilizer
-}
-
 // Tile Enum
 export enum TileId {
     BasicTile = "basicTile",
@@ -182,10 +148,6 @@ registerEnumType(TileId, {
         },
     },
 })
-
-export const tileIdResolver: Record<keyof typeof TileId, string> = {
-    BasicTile: TileId.BasicTile
-}
 
 // Tool Enum
 export enum ToolId {
@@ -233,18 +195,6 @@ registerEnumType(ToolId, {
         },
     },
 })
-
-export const toolIdResolver: Record<keyof typeof ToolId, string> = {
-    Hand: ToolId.Hand,
-    Crate: ToolId.Crate,
-    ThiefHand: ToolId.ThiefHand,
-    WateringCan: ToolId.WateringCan,
-    Herbicide: ToolId.Herbicide,
-    Pesticide: ToolId.Pesticide,
-    Hammer: ToolId.Hammer,
-    AnimalMedicine: ToolId.AnimalMedicine,
-    BugNet: ToolId.BugNet
-}
 
 // Pet Enum
 export enum PetId {
@@ -410,18 +360,6 @@ registerEnumType(SystemId, {
     },
 })
 
-export const systemIdResolver: Record<keyof typeof SystemId, string> = {
-    Activities: SystemId.Activities,
-    CropInfo: SystemId.CropInfo,
-    AnimalInfo: SystemId.AnimalInfo,
-    FruitInfo: SystemId.FruitInfo,
-    DefaultInfo: SystemId.DefaultInfo,
-    SpinInfo: SystemId.SpinInfo,
-    EnergyRegen: SystemId.EnergyRegen,
-    DailyRewardInfo: SystemId.DailyRewardInfo,
-    HoneycombInfo: SystemId.HoneycombInfo
-}
-
 export enum KeyValueStoreId {
     CropGrowthLastSchedule = "cropGrowthLastSchedule",
     AnimalGrowthLastSchedule = "animalGrowthLastSchedule",
@@ -447,13 +385,6 @@ registerEnumType(KeyValueStoreId, {
         },
     },
 })
-
-export const keyValueStoreIdResolver: Record<keyof typeof KeyValueStoreId, string> = {
-    CropGrowthLastSchedule: KeyValueStoreId.CropGrowthLastSchedule,
-    AnimalGrowthLastSchedule: KeyValueStoreId.AnimalGrowthLastSchedule,
-    EnergyRegenerationLastSchedule: KeyValueStoreId.EnergyRegenerationLastSchedule,
-    FruitGrowthLastSchedule: KeyValueStoreId.FruitGrowthLastSchedule
-}
 
 export enum InventoryTypeId {
     TurnipSeed = "turnipSeed",
@@ -625,49 +556,6 @@ registerEnumType(InventoryTypeId, {
     },
 })
 
-export const inventoryTypeIdResolver: Record<keyof typeof InventoryTypeId, string> = {
-    TurnipSeed: InventoryTypeId.TurnipSeed,
-    CarrotSeed: InventoryTypeId.CarrotSeed,
-    PotatoSeed: InventoryTypeId.PotatoSeed,
-    PineappleSeed: InventoryTypeId.PineappleSeed,
-    WatermelonSeed: InventoryTypeId.WatermelonSeed,
-    CucumberSeed: InventoryTypeId.CucumberSeed,
-    BellPepperSeed: InventoryTypeId.BellPepperSeed,
-    BasicFertilizer: InventoryTypeId.BasicFertilizer,
-    AnimalFeed: InventoryTypeId.AnimalFeed,
-    FruitFertilizer: InventoryTypeId.FruitFertilizer,
-    Egg: InventoryTypeId.Egg,
-    EggQuality: InventoryTypeId.EggQuality,
-    Milk: InventoryTypeId.Milk,
-    MilkQuality: InventoryTypeId.MilkQuality,
-    Turnip: InventoryTypeId.Turnip,
-    TurnipQuality: InventoryTypeId.TurnipQuality,
-    Carrot: InventoryTypeId.Carrot,
-    CarrotQuality: InventoryTypeId.CarrotQuality,
-    Potato: InventoryTypeId.Potato,
-    PotatoQuality: InventoryTypeId.PotatoQuality,
-    Pineapple: InventoryTypeId.Pineapple,
-    PineappleQuality: InventoryTypeId.PineappleQuality,
-    Watermelon: InventoryTypeId.Watermelon,
-    WatermelonQuality: InventoryTypeId.WatermelonQuality,
-    Cucumber: InventoryTypeId.Cucumber,
-    CucumberQuality: InventoryTypeId.CucumberQuality,
-    BellPepper: InventoryTypeId.BellPepper,
-    BellPepperQuality: InventoryTypeId.BellPepperQuality,
-    Banana: InventoryTypeId.Banana,
-    BananaQuality: InventoryTypeId.BananaQuality,
-    Apple: InventoryTypeId.Apple,
-    AppleQuality: InventoryTypeId.AppleQuality,
-    Hand: InventoryTypeId.Hand,
-    Crate: InventoryTypeId.Crate,
-    WateringCan: InventoryTypeId.WateringCan,
-    Hammer: InventoryTypeId.Hammer,
-    Herbicide: InventoryTypeId.Herbicide,
-    Pesticide: InventoryTypeId.Pesticide,
-    AnimalMedicine: InventoryTypeId.AnimalMedicine,
-    BugNet: InventoryTypeId.BugNet
-}
-
 export enum PlacedItemTypeId {
     Chicken = "chicken",
     Cow = "cow",
@@ -717,19 +605,6 @@ registerEnumType(PlacedItemTypeId, {
         },
     },
 })
-
-export const placedItemTypeIdResolver: Record<keyof typeof PlacedItemTypeId, string> = {
-    Chicken: PlacedItemTypeId.Chicken,
-    Cow: PlacedItemTypeId.Cow,
-    Pig: PlacedItemTypeId.Pig,
-    Sheep: PlacedItemTypeId.Sheep,
-    Coop: PlacedItemTypeId.Coop,    
-    Barn: PlacedItemTypeId.Barn,
-    Home: PlacedItemTypeId.Home,
-    BasicTile: PlacedItemTypeId.BasicTile,
-    Apple: PlacedItemTypeId.Apple,
-    Banana: PlacedItemTypeId.Banana
-}
 
 
 

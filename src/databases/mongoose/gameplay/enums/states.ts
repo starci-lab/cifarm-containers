@@ -31,14 +31,6 @@ registerEnumType(CropCurrentState, {
     }
 })
 
-export const cropCurrentStateResolver: Record<keyof typeof CropCurrentState, string> = {
-    Normal: CropCurrentState.Normal,
-    NeedWater: CropCurrentState.NeedWater,
-    IsWeedy: CropCurrentState.IsWeedy,
-    IsInfested: CropCurrentState.IsInfested,
-    FullyMatured: CropCurrentState.FullyMatured
-}
-
 // Animal Current State Enum
 export enum AnimalCurrentState {
     Normal = "normal",
@@ -66,13 +58,6 @@ registerEnumType(AnimalCurrentState, {
     }
 })
 
-export const animalCurrentStateResolver: Record<keyof typeof AnimalCurrentState, string> = {
-    Normal: AnimalCurrentState.Normal,
-    Hungry: AnimalCurrentState.Hungry,
-    Sick: AnimalCurrentState.Sick,
-    Yield: AnimalCurrentState.Yield
-}
-
 // Fruit Current State Enum
 export enum FruitCurrentState {
     Normal = "normal",
@@ -99,10 +84,3 @@ registerEnumType(FruitCurrentState, {
         }
     }
 })
-
-export const fruitCurrentStateResolver: Record<keyof typeof FruitCurrentState, string> = {
-    Normal: FruitCurrentState.Normal,
-    NeedFertilizer: FruitCurrentState.NeedFertilizer,
-    IsInfested: FruitCurrentState.IsInfested,
-    FullyMatured: FruitCurrentState.FullyMatured
-}

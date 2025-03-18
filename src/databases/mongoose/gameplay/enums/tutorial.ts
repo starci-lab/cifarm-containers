@@ -58,19 +58,4 @@ registerEnumType(TutorialStep, {
     },
 })
 
-export const tutorialStepResolver: Record<keyof typeof TutorialStep, number> = {
-    StartWelcome: TutorialStep.StartWelcome,
-    StartBuySeeds: TutorialStep.StartBuySeeds,
-    StartOpenInventory: TutorialStep.StartOpenInventory,
-    StartPlantSeed: TutorialStep.StartPlantSeed,
-    StartWaterCropAtStage1: TutorialStep.StartWaterCropAtStage1,
-    StartWaterCropAtStage2: TutorialStep.StartWaterCropAtStage2,
-    StartToStage3: TutorialStep.StartToStage3,
-    StartUsePesticide: TutorialStep.StartUsePesticide,
-    StartUseHerbicide: TutorialStep.StartUseHerbicide,
-    StartHarvestCrop: TutorialStep.StartHarvestCrop,
-    StartDeliverProduct: TutorialStep.StartDeliverProduct,
-    StartGoodbye: TutorialStep.StartGoodbye,
-}
-
 export const defaultTutorialStep = TutorialStep.StartWelcome
