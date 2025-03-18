@@ -18,6 +18,10 @@ import { GameplayModule } from "@src/gameplay"
 import { IdModule } from "@src/id"
 @Module({
     imports: [
+        IdModule.register({
+            isGlobal: true,
+            name: "Cron Scheduler"
+        }),
         EnvModule.forRoot(),
         ScheduleModule.forRoot(),
         BullModule.forRoot(),
@@ -26,10 +30,6 @@ import { IdModule } from "@src/id"
             global: true
         }),
         GameplayModule.register({
-            isGlobal: true
-        }),
-        IdModule.register({
-            name: "Cron Scheduler",
             isGlobal: true
         }),
         DateModule.register({

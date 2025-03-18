@@ -5,6 +5,10 @@ import { GraphQLGatewayModule } from "@src/graphql"
 import { IdModule } from "@src/id"  
 @Module({
     imports: [
+        IdModule.register({
+            isGlobal: true,
+            name: "GraphQL Gateway"
+        }), 
         EnvModule.forRoot(),
         GraphQLGatewayModule.forRoot({
             subgraphs: [
@@ -18,10 +22,6 @@ import { IdModule } from "@src/id"
                 }
             ]
         }),
-        IdModule.register({
-            isGlobal: true,
-            name: "GraphQL Gateway"
-        }), 
     ],
 })
 export class AppModule {}

@@ -15,6 +15,10 @@ import { IdModule } from "@src/id"
 
 @Module({
     imports: [
+        IdModule.register({
+            isGlobal: true,
+            name: "Cron Worker"
+        }),
         EnvModule.forRoot(),
         BullModule.forRoot(),
         ScheduleModule.forRoot(),
@@ -27,10 +31,6 @@ import { IdModule } from "@src/id"
         }),
         GameplayModule.register({
             isGlobal: true
-        }),
-        IdModule.register({
-            isGlobal: true,
-            name: "Cron Worker"
         }),
         CropModule,
         AnimalModule,

@@ -14,6 +14,10 @@ import { KafkaModule } from "@src/brokers"
 import { IdModule } from "@src/id"
 @Module({
     imports: [
+        IdModule.register({
+            isGlobal: true,
+            name: "IO Gameplay"
+        }),
         EnvModule.forRoot(),
         CacheModule.register({
             isGlobal: true
@@ -31,10 +35,6 @@ import { IdModule } from "@src/id"
         KafkaModule.register({
             isGlobal: true,
             clientId: "io-gameplay",    
-        }),
-        IdModule.register({
-            isGlobal: true,
-            name: "IO Gameplay"
         }),
         MongooseModule.forRoot(),
         EventEmitterModule.forRoot({

@@ -20,6 +20,10 @@ import { QueriesModule } from "./queries"
 import { IdModule } from "@src/id"
 @Module({
     imports: [
+        IdModule.register({
+            name: "Gameplay Subgraph",
+            isGlobal: true
+        }),
         //core modules
         EnvModule.forRoot(),
         GraphQLSubgraphModule.forRoot(),
@@ -39,10 +43,7 @@ import { IdModule } from "@src/id"
         BlockchainModule.register({
             isGlobal: true
         }),
-        IdModule.register({
-            name: "Gameplay Subgraph",
-            isGlobal: true
-        }),
+
         GameplayModule.register({
             isGlobal: true,
         }),
