@@ -65,7 +65,6 @@ export class CropWorker extends WorkerHost {
             const promise = async () => {
                 const mongoSession = await this.connection.startSession()
                 try {
-                    const placedItemType = this.staticService.placedItemTypes.find(placedItemType => placedItem.placedItemType.toString() === placedItemType.id)
                     const crop = this.staticService.crops.find(crop => crop.id === placedItem.seedGrowthInfo.crop.toString())
                     const tile = this.staticService.tiles.find(tile => tile.id === placedItem.tileInfo.toString()) 
                     // Add time to the seed growth
@@ -128,9 +127,8 @@ export class CropWorker extends WorkerHost {
                                     crop.maxHarvestQuantity
                         }
                         const chance = this.coreService.computeTileQualityChance({
-                            tileInfo: placedItem.tileInfo,
-                            qualityProductChanceLimit: tile.qualityProductChanceLimit,
-                            qualityProductChanceStack: tile.qualityProductChanceStack
+                            placedItemTile: placedItem,
+                            tile: tile
                         })
                         if (Math.random() < chance) {
                             placedItem.seedGrowthInfo.isQuality = true
@@ -140,11 +138,11 @@ export class CropWorker extends WorkerHost {
                     }
                     // update the placed item
                     updatePlacedItem()
-                    await placedItem.save({ session })
+                    await placedItem.save({ session: mongoSession })
                 } catch (error) {
                     this.logger.error(error)
                 } finally {
-                    await session.endSession()
+                    await mongoSession.endSession()
                 }
             }
             promises.push(promise())

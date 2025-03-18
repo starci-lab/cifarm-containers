@@ -2,7 +2,7 @@ import { Module } from "@nestjs/common"
 import { getHttpUrl } from "@src/common"
 import { Container, envConfig, EnvModule } from "@src/env"
 import { GraphQLGatewayModule } from "@src/graphql"
-
+import { IdModule } from "@src/id"  
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -18,6 +18,10 @@ import { GraphQLGatewayModule } from "@src/graphql"
                 }
             ]
         }),
+        IdModule.register({
+            isGlobal: true,
+            name: "GraphQL Gateway"
+        }), 
     ],
 })
 export class AppModule {}

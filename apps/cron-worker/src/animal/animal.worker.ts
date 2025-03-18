@@ -8,6 +8,7 @@ import {
     AnimalSchema,
     InjectMongoose,
     PlacedItemSchema,
+    PlacedItemType,
 } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { StaticService, CoreService } from "@src/gameplay"
@@ -34,7 +35,9 @@ export class AnimalWorker extends WorkerHost {
         const placedItems = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
                 placedItemType: {
-                    $in: this.staticService.placedItemTypes.map(placedItemType => placedItemType.id)
+                    $in: this.staticService.placedItemTypes.filter(
+                        placedItemType => placedItemType.type === PlacedItemType.Animal
+                    ).map(placedItemType => placedItemType.id)
                 },
                 "animalInfo.currentState": {
                     $nin: [AnimalCurrentState.Hungry, AnimalCurrentState.Yield]
@@ -121,9 +124,8 @@ export class AnimalWorker extends WorkerHost {
                             }
 
                             const chance = this.coreService.computeAnimalQualityChance({
-                                animalInfo: placedItem.animalInfo,
-                                qualityProductChanceLimit: animal.qualityProductChanceLimit,
-                                qualityProductChanceStack: animal.qualityProductChanceStack
+                                placedItemAnimal: placedItem,
+                                animal: animal
                             })
 
                             if (Math.random() < chance) {
@@ -140,7 +142,6 @@ export class AnimalWorker extends WorkerHost {
                         return updateBabyAnimalPlacedItem() 
                     }
                     updatePlacedItem()
-
                     await placedItem.save({ session: mongoSession })
                 } catch (error) {
                     this.logger.error(error)

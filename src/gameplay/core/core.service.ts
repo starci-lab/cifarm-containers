@@ -21,31 +21,34 @@ export class CoreService {
 
     //compute the quality of animal after several time of harvest
     public computeAnimalQualityChance({
-        animalInfo: { timesHarvested },
-        qualityProductChanceLimit,
-        qualityProductChanceStack
+        placedItemAnimal,
+        animal
     }: ComputeAnimalQualityChanceParams): number {
-        timesHarvested += 1
-        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * timesHarvested)
+        return Math.min(
+            animal.qualityProductChanceLimit,
+            animal.qualityProductChanceStack * placedItemAnimal.animalInfo.timesHarvested
+        )
     }
 
     //compute the quality of tile after several time of harvest
     public computeTileQualityChance({
-        tileInfo: { timesHarvested },
-        qualityProductChanceLimit,
-        qualityProductChanceStack
+        placedItemTile,
+        tile
     }: ComputeTileQualityChanceParams): number {
-        timesHarvested += 1
-        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * timesHarvested)
+        return Math.min(
+            tile.qualityProductChanceLimit,
+            tile.qualityProductChanceStack * placedItemTile.tileInfo.timesHarvested
+        )
     }
 
     public computeFruitQualityChance({
-        fruitInfo: { timesHarvested },
-        qualityProductChanceLimit,
-        qualityProductChanceStack
+        placedItemFruit,
+        fruit
     }: ComputeFruitQualityChanceParams): number {
-        timesHarvested += 1
-        return Math.min(qualityProductChanceLimit, qualityProductChanceStack * timesHarvested)
+        return Math.min(
+            fruit.qualityProductChanceLimit,
+            fruit.qualityProductChanceStack * placedItemFruit.fruitInfo.timesHarvested
+        )
     }
 
     //update the tile information after harvest
@@ -75,7 +78,7 @@ export class CoreService {
     //update the animal information after collect
     public updatePlacedItemAnimalAfterHarvest({
         placedItemAnimal,
-        animal,
+        animal
     }: UpdatePlacedItemAnimalAfterHarvestParams): UpdatePlacedItemAnimalAfterHarvestResult {
         // update the animal info times harvested
         placedItemAnimal.animalInfo.timesHarvested += 1
@@ -119,5 +122,4 @@ export class CoreService {
         // return the placed item tile
         return placedItemTile
     }
-
 }

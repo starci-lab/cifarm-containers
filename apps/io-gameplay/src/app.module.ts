@@ -11,7 +11,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { KafkaModule } from "@src/brokers"
-
+import { IdModule } from "@src/id"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -30,8 +30,11 @@ import { KafkaModule } from "@src/brokers"
         }),
         KafkaModule.register({
             isGlobal: true,
-            clientId: "io-gameplay",
-            
+            clientId: "io-gameplay",    
+        }),
+        IdModule.register({
+            isGlobal: true,
+            name: "IO Gameplay"
         }),
         MongooseModule.forRoot(),
         EventEmitterModule.forRoot({

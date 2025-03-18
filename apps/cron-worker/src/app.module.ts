@@ -11,6 +11,7 @@ import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { KafkaModule } from "@src/brokers"
 import { FruitModule } from "./fruit"
+import { IdModule } from "@src/id"
 
 @Module({
     imports: [
@@ -26,6 +27,10 @@ import { FruitModule } from "./fruit"
         }),
         GameplayModule.register({
             isGlobal: true
+        }),
+        IdModule.register({
+            isGlobal: true,
+            name: "Cron Worker"
         }),
         CropModule,
         AnimalModule,

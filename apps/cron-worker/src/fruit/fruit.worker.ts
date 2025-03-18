@@ -7,7 +7,6 @@ import {
     FruitSchema,
     InjectMongoose,
     PlacedItemSchema,
-    TILE_INFO
 } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { CoreService, StaticService } from "@src/gameplay"
@@ -48,7 +47,6 @@ export class FruitWorker extends WorkerHost {
                     $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                 }
             })
-            .populate(TILE_INFO)
             .skip(skip)
             .limit(take) 
             .sort({ createdAt: "desc" }) 
@@ -114,9 +112,8 @@ export class FruitWorker extends WorkerHost {
                                     fruit.maxHarvestQuantity
                         }
                         const chance = this.coreService.computeFruitQualityChance({
-                            fruitInfo: placedItem.fruitInfo,
-                            qualityProductChanceLimit: fruit.qualityProductChanceLimit,
-                            qualityProductChanceStack: fruit.qualityProductChanceStack
+                            placedItemFruit: placedItem,
+                            fruit: fruit
                         })
                         if (Math.random() < chance) {
                             placedItem.fruitInfo.isQuality = true

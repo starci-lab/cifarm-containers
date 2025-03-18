@@ -7,11 +7,13 @@ import { INestApplication, Logger } from "@nestjs/common"
 import { join } from "path"
 import { ServeStaticModule } from "@nestjs/serve-static"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
+import { IdLogger, IdService } from "@src/id"
 
 const addAdapter = async (app: INestApplication) => {
     const factory = app.get<IoAdapterFactory>(IO_ADAPTER_FACTORY)
     const adapter = factory.createAdapter(app)
     await adapter.connect()
+    app.useLogger(new IdLogger(app.get(IdService)))
     app.useWebSocketAdapter(adapter)
 }
 

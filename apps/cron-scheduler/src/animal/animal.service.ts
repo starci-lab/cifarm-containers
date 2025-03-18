@@ -10,7 +10,6 @@ import {
     PlacedItemSchema,
     KeyValueRecord,
     PlacedItemType,
-    PlacedItemTypeSchema
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
 import { v4 } from "uuid"
@@ -23,7 +22,7 @@ import { e2eEnabled } from "@src/env"
 import { ANIMAL_CACHE_SPEED_UP, AnimalCacheSpeedUpData } from "./animal.e2e"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-
+import { StaticService } from "@src/gameplay"
 @Injectable()
 export class AnimalService {
     private readonly logger = new Logger(AnimalService.name)
@@ -33,7 +32,8 @@ export class AnimalService {
         private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
         @InjectCache()
-        private readonly cacheManager: Cache
+        private readonly cacheManager: Cache,
+        private readonly staticService: StaticService
     ) {}
 
     // Flag to determine if the current instance is the leader
@@ -58,12 +58,7 @@ export class AnimalService {
         const mongoSession = await this.connection.startSession()
         try {
             const utcNow = this.dateUtcService.getDayjs()
-            const placedItemTypes = await this.connection
-                .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                .find({
-                    type: PlacedItemType.Animal
-                })
-                .session(mongoSession)
+            const placedItemTypes = this.staticService.placedItemTypes.filter(placedItemType => placedItemType.type === PlacedItemType.Animal)
             const count = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .countDocuments({

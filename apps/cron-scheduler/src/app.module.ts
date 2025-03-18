@@ -14,6 +14,8 @@ import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { KafkaModule } from "@src/brokers"
 import { FruitModule } from "./fruit"
+import { GameplayModule } from "@src/gameplay"
+import { IdModule } from "@src/id"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -22,6 +24,13 @@ import { FruitModule } from "./fruit"
         MongooseModule.forRoot(),
         EventEmitterModule.forRoot({
             global: true
+        }),
+        GameplayModule.register({
+            isGlobal: true
+        }),
+        IdModule.register({
+            name: "Cron Scheduler",
+            isGlobal: true
         }),
         DateModule.register({
             isGlobal: true

@@ -17,6 +17,7 @@ import { CacheModule } from "@src/cache"
 import { GameplayModule } from "@src/gameplay"
 import { MutationsModule } from "./mutations"
 import { QueriesModule } from "./queries"
+import { IdModule } from "@src/id"
 @Module({
     imports: [
         //core modules
@@ -36,6 +37,10 @@ import { QueriesModule } from "./queries"
             isGlobal: true
         }),
         BlockchainModule.register({
+            isGlobal: true
+        }),
+        IdModule.register({
+            name: "Gameplay Subgraph",
             isGlobal: true
         }),
         GameplayModule.register({

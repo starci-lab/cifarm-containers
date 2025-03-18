@@ -1,33 +1,28 @@
 import {
     AnimalInfo,
-    AnimalInfoSchema,
     AnimalSchema,
     CropInfo,
     CropSchema,
     FruitInfo,
-    FruitInfoSchema,
     FruitSchema,
     PlacedItemSchema,
     SupplySchema,
-    TileInfoSchema
+    TileSchema
 } from "@src/databases"
 
 export interface ComputeAnimalQualityChanceParams {
-    animalInfo: AnimalInfoSchema
-    qualityProductChanceLimit: number
-    qualityProductChanceStack: number
+    placedItemAnimal: PlacedItemSchema
+    animal: AnimalSchema
 }
 
 export interface ComputeTileQualityChanceParams {
-    tileInfo: TileInfoSchema
-    qualityProductChanceLimit: number
-    qualityProductChanceStack: number
+    placedItemTile: PlacedItemSchema
+    tile: TileSchema
 }
 
 export interface ComputeFruitQualityChanceParams {
-    fruitInfo: FruitInfoSchema
-    qualityProductChanceLimit: number
-    qualityProductChanceStack: number
+    placedItemFruit: PlacedItemSchema
+    fruit: FruitSchema
 }
 
 export interface UpdatePlacedItemTileAfterHarvestParams {

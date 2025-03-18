@@ -10,7 +10,6 @@ import {
     KeyValueStoreSchema,
     PlacedItemSchema,
     PlacedItemType,
-    PlacedItemTypeSchema
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
 import { v4 } from "uuid"
@@ -23,6 +22,7 @@ import { FRUIT_CACHE_SPEED_UP, FruitCacheSpeedUpData } from "./fruit.e2e"
 import { e2eEnabled } from "@src/env"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
+import { StaticService } from "@src/gameplay"
 
 @Injectable()
 export class FruitService {
@@ -34,6 +34,7 @@ export class FruitService {
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly dateUtcService: DateUtcService,
+        private readonly staticService: StaticService
     ) {
     }
 
@@ -61,9 +62,7 @@ export class FruitService {
         try {
             const utcNow = this.dateUtcService.getDayjs()
             // Create a query runner
-            const placedItemTypes = await this.connection.model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name).find({
-                type: PlacedItemType.Fruit
-            }).session(mongoSession)
+            const placedItemTypes = this.staticService.placedItemTypes.filter(placedItemType => placedItemType.type === PlacedItemType.Fruit)
             const count = await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).countDocuments({
                 placedItemType: {
                     $in: placedItemTypes.map(placedItemType => placedItemType.id)
