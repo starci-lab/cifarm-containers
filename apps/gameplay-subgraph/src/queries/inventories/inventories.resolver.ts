@@ -21,6 +21,7 @@ export class InventoriesResolver {
         @GraphQLUser() user: UserLike,
         @Args("request") request: GetInventoriesRequest
     ): Promise<GetInventoriesResponse> {
+        console.log(request)
         return await this.inventoriesService.getInventories(user, request)
     }
 

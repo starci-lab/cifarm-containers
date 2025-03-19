@@ -121,22 +121,41 @@ export class UpdateTutorialService {
         const placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
-                user: user.id
+                user: user.id,
+                seedGrowthInfo: {
+                    $ne: null
+                },
+                "seedGrowthInfo.currentStage": 0,
             })
             .sort({ createdAt: -1 })
             .limit(2)
             .session(session)
 
+        console.log(placedItems)
+
         // update the top 2 latested crop to stage 1, and one of them need water
         // the first crop is normal, the second crop is need water
-        placedItems[0].seedGrowthInfo.currentState = CropCurrentState.Normal
-        placedItems[0].seedGrowthInfo.currentStage = 1
-        await placedItems[0].save({ session })
+        const placedItem1 = placedItems.at(0)
+        if (!placedItem1) {
+            throw new GraphQLError("Placed item 1 not found", {
+                extensions: {
+                    code: "PLACED_ITEM_1_NOT_FOUND"
+                }
+            })
+        }
+        placedItem1.seedGrowthInfo.currentState = CropCurrentState.Normal
+        placedItem1.seedGrowthInfo.currentStage = 1
 
         // the second crop is need water
-        placedItems[1].seedGrowthInfo.currentState = CropCurrentState.NeedWater
-        placedItems[1].seedGrowthInfo.currentStage = 1
-        await placedItems[1].save({ session })
+        const placedItem2 = placedItems.at(1)
+        if (!placedItem2) {
+            throw new GraphQLError("Placed item 2 not found", {
+                extensions: {
+                    code: "PLACED_ITEM_2_NOT_FOUND"
+                }
+            })
+        }
+        await placedItem2.save({ session })
     }
 
     // water crop at stage 2
@@ -157,7 +176,11 @@ export class UpdateTutorialService {
         const placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
-                user: user.id
+                user: user.id,
+                seedGrowthInfo: {
+                    $ne: null
+                },
+                "seedGrowthInfo.currentStage": 1,
             })
             .sort({ createdAt: -1 })
             .limit(2)
@@ -165,14 +188,30 @@ export class UpdateTutorialService {
 
         // update the top 2 latested crop to stage 1, and one of them need water
         // the first crop is need water, the second crop is normal
-        placedItems[0].seedGrowthInfo.currentState = CropCurrentState.NeedWater
-        placedItems[0].seedGrowthInfo.currentStage = 2
-        await placedItems[0].save({ session })
+        const placedItem1 = placedItems.at(0)
+        if (!placedItem1) {
+            throw new GraphQLError("Placed item 1 not found", {
+                extensions: {
+                    code: "PLACED_ITEM_1_NOT_FOUND"
+                }
+            })
+        }
+        placedItem1.seedGrowthInfo.currentState = CropCurrentState.NeedWater
+        placedItem1.seedGrowthInfo.currentStage = 2
+        await placedItem1.save({ session })
 
         // the second crop is need water
-        placedItems[1].seedGrowthInfo.currentState = CropCurrentState.Normal
-        placedItems[1].seedGrowthInfo.currentStage = 2
-        await placedItems[1].save({ session })
+        const placedItem2 = placedItems.at(1)
+        if (!placedItem2) {
+            throw new GraphQLError("Placed item 2 not found", {
+                extensions: {
+                    code: "PLACED_ITEM_2_NOT_FOUND"
+                }
+            })
+        }
+        placedItem2.seedGrowthInfo.currentState = CropCurrentState.Normal
+        placedItem2.seedGrowthInfo.currentStage = 2
+        await placedItem2.save({ session })
     }
 
     private async startToStage3({ session, nextStep, user }: StartToStage3Params): Promise<void> {
@@ -188,7 +227,11 @@ export class UpdateTutorialService {
         const placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
-                user: user.id
+                user: user.id,
+                seedGrowthInfo: {
+                    $ne: null
+                },
+                "seedGrowthInfo.currentStage": 2,
             })
             .sort({ createdAt: -1 })
             .limit(2)
@@ -196,14 +239,30 @@ export class UpdateTutorialService {
 
         // update the top 2 latested crop to stage 1, and one of them need water
         // the first crop is need water, the second crop is normal
-        placedItems[0].seedGrowthInfo.currentState = CropCurrentState.IsInfested
-        placedItems[0].seedGrowthInfo.currentStage = 3
-        await placedItems[0].save({ session })
+        const placedItem1 = placedItems.at(0)
+        if (!placedItem1) {
+            throw new GraphQLError("Placed item 1 not found", {
+                extensions: {
+                    code: "PLACED_ITEM_1_NOT_FOUND"
+                }
+            })
+        }
+        placedItem1.seedGrowthInfo.currentState = CropCurrentState.IsInfested
+        placedItem1.seedGrowthInfo.currentStage = 3
+        await placedItem1.save({ session })
 
         // the second crop is need water
-        placedItems[1].seedGrowthInfo.currentState = CropCurrentState.IsWeedy
-        placedItems[1].seedGrowthInfo.currentStage = 3
-        await placedItems[1].save({ session })
+        const placedItem2 = placedItems.at(1)
+        if (!placedItem2) {
+            throw new GraphQLError("Placed item 2 not found", {
+                extensions: {
+                    code: "PLACED_ITEM_2_NOT_FOUND"
+                }
+            })
+        }
+        placedItem2.seedGrowthInfo.currentState = CropCurrentState.IsWeedy
+        placedItem2.seedGrowthInfo.currentStage = 3
+        await placedItem2.save({ session })
     }
 
     private async startHarvestCrop({
@@ -223,21 +282,58 @@ export class UpdateTutorialService {
         const placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
-                user: user.id
+                user: user.id,
+                seedGrowthInfo: {
+                    $ne: null
+                },
+                "seedGrowthInfo.currentStage": 3,
             })
             .sort({ createdAt: -1 })
             .limit(2)
             .session(session)
-
         // update the top 2 latested crop to last stage
-        placedItems[0].seedGrowthInfo.currentState = CropCurrentState.FullyMatured
-        placedItems[0].seedGrowthInfo.currentStage = 4
-        await placedItems[0].save({ session })
+        const crop1 = this.staticService.crops.find((crop) => crop.id.toString() === placedItems[0].seedGrowthInfo.crop.toString())
+        if (!crop1) {
+            throw new GraphQLError("Crop 1 not found", {
+                extensions: {
+                    code: "CROP_1_NOT_FOUND"
+                }
+            })
+        }
+        const placedItem1 = placedItems.at(0)
+        if (!placedItem1) {
+            throw new GraphQLError("Placed item 1 not found", {
+                extensions: {
+                    code: "PLACED_ITEM_1_NOT_FOUND"
+                }
+            })
+        }
+        placedItem1.seedGrowthInfo.currentState = CropCurrentState.FullyMatured
+        placedItem1.seedGrowthInfo.currentStage = 4
+        placedItem1.seedGrowthInfo.harvestQuantityRemaining = crop1.maxHarvestQuantity
+        await placedItem1.save({ session })
 
         // the second crop is need water
-        placedItems[1].seedGrowthInfo.currentState = CropCurrentState.FullyMatured
-        placedItems[1].seedGrowthInfo.currentStage = 4
-        await placedItems[1].save({ session })
+        const crop2 = this.staticService.crops.find((crop) => crop.id.toString() === placedItems[1].seedGrowthInfo.crop.toString())
+        if (!crop2) {
+            throw new GraphQLError("Crop 2 not found", {
+                extensions: {
+                    code: "CROP_2_NOT_FOUND"
+                }
+            })  
+        }
+        const placedItem2 = placedItems.at(1)
+        if (!placedItem2) {
+            throw new GraphQLError("Placed item 2 not found", {
+                extensions: {
+                    code: "PLACED_ITEM_2_NOT_FOUND"
+                }
+            })
+        }
+        placedItem2.seedGrowthInfo.currentState = CropCurrentState.FullyMatured
+        placedItem2.seedGrowthInfo.currentStage = 4
+        placedItem2.seedGrowthInfo.harvestQuantityRemaining = crop2.maxHarvestQuantity 
+        await placedItem2.save({ session })
     }
 }
 

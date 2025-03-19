@@ -7,6 +7,11 @@ export interface EmitActionPayload<TData = undefined> {
     reasonCode?: number
 }
 
+export interface BuyFruitData {
+    price: number
+    placedItemFruitId: string
+}
+
 export interface ThiefCropData {
     quantity: number
     cropId: string
@@ -34,6 +39,15 @@ export interface ThiefAnimalProductData {
 
 export interface SellData {
     quantity: number
+}
+
+export interface BuyTileData {
+    price: number
+    placedItemTileId: string
+}
+
+export interface BuyAnimalData {
+    price: number
 }
 
 export type ActionEmittedMessage<TData = undefined> = Omit<EmitActionPayload<TData>, "userId">

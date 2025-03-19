@@ -36,6 +36,16 @@ export class DeliveryService {
         private readonly dateUtcService: DateUtcService
     ) {}
 
+    @Cron("*/1 * * * * *")
+    showNextDelivery() {
+        const nowUtc = this.dateUtcService.getDayjs().utc()
+        // Define the target time: 00:00 UTC+7, which is equivalent to 17:00 UTC
+        const nextDeliveryUtc = this.dateUtcService.getNextDayMidnightUtc(7) // 00:00 UTC+7, but in UTC 
+        //retreive the next delivery cron and subtract the current time
+        const differentFromNextDelivery = nextDeliveryUtc.diff(nowUtc, "seconds")
+        this.logger.log(`Next delivery is in ${this.dateUtcService.formatTime(differentFromNextDelivery)}`)
+    }
+
     @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     public async process() {
         if (!this.isLeader) {

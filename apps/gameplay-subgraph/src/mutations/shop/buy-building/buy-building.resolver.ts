@@ -4,14 +4,15 @@ import { BuyBuildingRequest } from "./buy-building.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { VoidResolver } from "graphql-scalars"
 import { GraphQLUser } from "@src/decorators"
-import { UserLike } from "@src/jwt"
-
+import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
+import { UseGuards } from "@nestjs/common"
 @Resolver()
 export class BuyBuildingResolver {
     private readonly logger = new Logger(BuyBuildingResolver.name)
 
     constructor(private readonly buyBuildingService: BuyBuildingService) {}
 
+    @UseGuards(GraphQLJwtAuthGuard)
     @Mutation(() => VoidResolver, {
         name: "buyBuilding",
         description: "Buy a building",

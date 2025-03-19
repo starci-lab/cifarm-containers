@@ -1,6 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    InjectMongoose, InventoryKind, InventorySchema,
+    InjectMongoose,
+    InventoryKind,
+    InventorySchema,
+    InventoryType,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, StaticService } from "@src/gameplay"
@@ -24,7 +27,7 @@ export class BuySuppliesService {
     async buySupplies(
         { id: userId }: UserLike,
         { quantity, supplyId }: BuySuppliesRequest
-    ): Promise<void> { 
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
@@ -41,7 +44,7 @@ export class BuySuppliesService {
                         }
                     })
                 }
-                
+
                 if (!supply.availableInShop) {
                     throw new GraphQLError("Supply not available in shop", {
                         extensions: {
@@ -49,13 +52,14 @@ export class BuySuppliesService {
                         }
                     })
                 }
-                
+
                 const totalCost = supply.price * quantity
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                const user = await this.connection.model<UserSchema>(UserSchema.name)
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
 
@@ -68,9 +72,9 @@ export class BuySuppliesService {
                 }
 
                 // Check sufficient gold
-                this.goldBalanceService.checkSufficient({ 
-                    current: user.golds, 
-                    required: totalCost 
+                this.goldBalanceService.checkSufficient({
+                    current: user.golds,
+                    required: totalCost
                 })
 
                 /************************************************************
@@ -80,7 +84,9 @@ export class BuySuppliesService {
 
                 // Get inventory type
                 const inventoryType = this.staticService.inventoryTypes.find(
-                    (type) => type.supply.toString() === supply.id
+                    (inventoryType) =>
+                        inventoryType.type === InventoryType.Supply &&
+                        inventoryType.supply.toString() === supply.id.toString()
                 )
                 if (!inventoryType) {
                     throw new GraphQLError("Inventory type not found", {
@@ -109,9 +115,9 @@ export class BuySuppliesService {
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session: mongoSession,
+                    session: mongoSession
                 })
-                
+
                 // Save inventory
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
@@ -125,17 +131,16 @@ export class BuySuppliesService {
 
                 // Create new inventory items
                 if (createdInventories.length > 0) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name)
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session: mongoSession })
                 }
-                
+
                 // Update existing inventory items
                 for (const inventory of updatedInventories) {
-                    await this.connection.model<InventorySchema>(InventorySchema.name)
-                        .updateOne(
-                            { _id: inventory._id },
-                            inventory
-                        )
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .updateOne({ _id: inventory._id }, inventory)
                         .session(mongoSession)
                 }
             })

@@ -36,8 +36,10 @@ export class BuySeedsService {
                  * RETRIEVE AND VALIDATE CROP
                  ************************************************************/
                 const crop = this.staticService.crops.find(
-                    (crop) => crop.id.toString() === request.cropId
+                    (crop) => crop.displayId.toString() === request.cropId
                 )
+
+                console.log("crop", crop)
 
                 if (!crop) {
                     throw new GraphQLError("Crop not found", {

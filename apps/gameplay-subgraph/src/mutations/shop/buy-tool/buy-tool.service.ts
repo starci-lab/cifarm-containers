@@ -80,7 +80,7 @@ export class BuyToolService {
                  * RETRIEVE AND VALIDATE INVENTORY TYPE
                  ************************************************************/
                 const inventoryType = this.staticService.inventoryTypes.find(
-                    (inventoryType) => inventoryType.type === InventoryType.Tool
+                    (inventoryType) => inventoryType.type === InventoryType.Tool && inventoryType.tool.toString() === tool.id.toString()
                 )
 
                 if (!inventoryType) {
@@ -149,7 +149,7 @@ export class BuyToolService {
                             user: userId,
                             inventoryType: inventoryType.id,
                             index: firstUnoccupiedIndex,
-                            kind: InventoryKind.Storage
+                            kind: InventoryKind.Storage,
                         }
                     ],
                     { session: mongoSession }

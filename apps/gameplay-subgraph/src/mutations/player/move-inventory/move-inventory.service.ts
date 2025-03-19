@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
     InjectMongoose,
-    INVENTORY_TYPE,
     InventoryKind,
     InventorySchema
 } from "@src/databases"
@@ -59,7 +58,6 @@ export class MoveInventoryService {
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
-                    .populate(INVENTORY_TYPE)
                     .session(mongoSession)
 
                 if (!inventory) {
@@ -79,15 +77,6 @@ export class MoveInventoryService {
                     })
                 }
 
-                // Check if the inventory type matches the requested kind
-                if (inventory.kind !== kind) {
-                    throw new GraphQLError(`Invalid inventory kind. Expected ${kind} but got ${inventory.kind}`, {
-                        extensions: {
-                            code: "INVALID_INVENTORY_KIND"
-                        }
-                    })
-                }
-
                 /************************************************************
                  * CHECK IF DESTINATION SLOT IS OCCUPIED
                  ************************************************************/
@@ -95,10 +84,9 @@ export class MoveInventoryService {
                 const foundInventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findOne({
-                        index,
-                        kind,
                         user: userId,
-                        _id: { $ne: inventoryId } // Not the same inventory
+                        index,
+                        kind
                     })
                     .session(mongoSession)
 
@@ -106,14 +94,51 @@ export class MoveInventoryService {
                  * UPDATE INVENTORY POSITIONS
                  ************************************************************/
                 if (foundInventory) {
-                    // Swap positions
-                    foundInventory.index = inventory.index
-                    await foundInventory.save({ session: mongoSession })
-                }
+                    //const inventoryType = inventory.inventoryType as InventoryTypeSchema
+                    const inventoryType = this.staticService.inventoryTypes.find(
+                        (inventoryType) => inventoryType.id.toString() === inventory.inventoryType.toString()
+                    )
+                    // If the found inventory has the same id, just return
+                    if (foundInventory.id === inventoryId) {
+                        return {}
+                    }
 
-                // Update inventory position
-                inventory.index = index
-                await inventory.save({ session: mongoSession })
+                    // If it has the same type, just update the quantity
+                    if (foundInventory.inventoryType.toString() === inventoryType.id) {
+                        if (foundInventory.quantity + inventory.quantity <= inventoryType.maxStack) {
+                            // Delete the old inventory
+                            await this.connection
+                                .model<InventorySchema>(InventorySchema.name)
+                                .deleteOne({ _id: inventory.id })
+                                .session(mongoSession)
+                            // Update the quantity of the found inventory
+                            foundInventory.quantity += inventory.quantity
+                            await foundInventory.save({ session: mongoSession })
+                        } else {
+                            // Reduce the quantity of the inventory
+                            inventory.quantity -= inventoryType.maxStack - foundInventory.quantity
+                            foundInventory.quantity = inventoryType.maxStack
+
+                            await inventory.save({ session: mongoSession })
+                            await foundInventory.save({ session: mongoSession })
+                        }
+                    } else {
+                        // Swap the inventory
+                        const { index: foundIndex, kind: foundKind } = foundInventory
+                        foundInventory.index = inventory.index
+                        foundInventory.kind = inventory.kind
+                        inventory.index = foundIndex
+                        inventory.kind = foundKind
+
+                        await inventory.save({ session: mongoSession })
+                        await foundInventory.save({ session: mongoSession })
+                    }
+                } else {
+                    // If not, just update the index and kind
+                    inventory.index = index
+                    inventory.kind = kind
+                    await inventory.save({ session: mongoSession })
+                }
             })
         } catch (error) {
             this.logger.error(error)

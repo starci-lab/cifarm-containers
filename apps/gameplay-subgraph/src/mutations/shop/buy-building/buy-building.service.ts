@@ -101,6 +101,7 @@ export class BuyBuildingService {
                 // Filter building with the same type
                 const placedItemType = this.staticService.placedItemTypes.find(
                     (placedItemType) =>
+                        placedItemType.type === PlacedItemType.Building &&
                         placedItemType.building.toString() === createObjectId(buildingId).toString()
                 )
 

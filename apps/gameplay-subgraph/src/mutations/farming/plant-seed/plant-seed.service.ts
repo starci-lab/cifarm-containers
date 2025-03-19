@@ -207,6 +207,9 @@ export class PlantSeedService {
                     quantity: 1
                 })
 
+                console.log("updatedInventories", updatedInventories)
+                console.log("removedInventories", removedInventories)
+
                 // Save updated inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })

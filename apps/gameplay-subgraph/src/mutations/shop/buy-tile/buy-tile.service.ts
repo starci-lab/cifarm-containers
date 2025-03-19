@@ -1,4 +1,4 @@
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, BuyTileData, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
@@ -31,7 +31,7 @@ export class BuyTileService {
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
-        let actionMessage: EmitActionPayload | undefined
+        let actionMessage: EmitActionPayload<BuyTileData> | undefined
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -142,7 +142,11 @@ export class BuyTileService {
                     placedItemId,
                     action: ActionName.BuyTile,
                     success: true,
-                    userId
+                    userId,
+                    data: {
+                        price: tile.price,
+                        placedItemTileId: placedItemId
+                    }
                 }
             })
 

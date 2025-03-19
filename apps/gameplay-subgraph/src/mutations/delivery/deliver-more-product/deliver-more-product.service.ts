@@ -2,14 +2,13 @@ import { Injectable, Logger } from "@nestjs/common"
 import { DeliverMoreProductRequest } from "./deliver-more-product.dto"
 import {
     InjectMongoose,
-    INVENTORY_TYPE,
     InventoryKind,
     InventorySchema,
-    InventoryTypeSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { StaticService } from "@src/gameplay"
 
 @Injectable()
 export class DeliverMoreProductService {
@@ -17,7 +16,8 @@ export class DeliverMoreProductService {
 
     constructor(
         @InjectMongoose()
-        private readonly connection: Connection
+        private readonly connection: Connection,
+        private readonly staticService: StaticService
     ) {}
 
     async deliverMoreProduct(
@@ -38,6 +38,7 @@ export class DeliverMoreProductService {
                 const deliveryInventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findOne({
+                        user: userId,
                         kind: InventoryKind.Delivery,
                         index
                     })
@@ -51,14 +52,6 @@ export class DeliverMoreProductService {
                     })
                 }
 
-                if (deliveryInventory.user.toString() !== userId) {
-                    throw new GraphQLError("Delivery product does not belong to user", {
-                        extensions: {
-                            code: "DELIVERY_PRODUCT_DOES_NOT_BELONG_TO_USER"
-                        }
-                    })
-                }
-
                 /************************************************************
                  * RETRIEVE AND VALIDATE SOURCE INVENTORY
                  ************************************************************/
@@ -66,7 +59,6 @@ export class DeliverMoreProductService {
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
-                    .populate(INVENTORY_TYPE)
                     .session(mongoSession)
 
                 if (!inventory) {
@@ -88,8 +80,15 @@ export class DeliverMoreProductService {
                 /************************************************************
                  * VALIDATE PRODUCT TYPE
                  ************************************************************/
-                const productId = (inventory.inventoryType as InventoryTypeSchema).product as string
-                if (!productId) {
+                const inventoryType = this.staticService.inventoryTypes.find(inventoryType => inventory.inventoryType.toString() === inventoryType.id.toString())
+                if (!inventoryType) {
+                    throw new GraphQLError("Inventory type not found", {
+                        extensions: {
+                            code: "INVENTORY_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
+                if (!inventoryType.product) {
                     throw new GraphQLError("The inventory type is not a product", {
                         extensions: {
                             code: "INVENTORY_TYPE_IS_NOT_A_PRODUCT"

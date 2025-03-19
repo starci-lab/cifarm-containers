@@ -1,7 +1,6 @@
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, BuyFruitData, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
 import {
     InjectMongoose,
     PlacedItemSchema,
@@ -32,7 +31,7 @@ export class BuyFruitService {
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
-        let actionMessage: EmitActionPayload | undefined
+        let actionMessage: EmitActionPayload<BuyFruitData> | undefined
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -128,7 +127,7 @@ export class BuyFruitService {
                 const placedItemType = this.staticService.placedItemTypes.find(
                     (placedItemType) =>
                         placedItemType.type === PlacedItemType.Fruit &&
-                        placedItemType.fruit.toString() === createObjectId(fruit.id).toString()
+                        placedItemType.fruit.toString() === fruit.id.toString()
                 )
                 if (!placedItemType) {
                     throw new GraphQLError("Placed item type not found", {
@@ -165,7 +164,11 @@ export class BuyFruitService {
                     placedItemId,
                     action: ActionName.BuyFruit,
                     success: true,
-                    userId
+                    userId,
+                    data: {
+                        price: fruit.price,
+                        placedItemFruitId: placedItemId
+                    }
                 }
             })
 

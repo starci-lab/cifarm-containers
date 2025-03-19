@@ -40,8 +40,9 @@ export class LevelService {
         if (current >= quota) {
             level = user.level + 1
             current = user.experiences - quota
+            user.level = level
         }
-        user.level = level
+     
         user.experiences = current
         return user
     }

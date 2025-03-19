@@ -65,7 +65,7 @@ export class DeliverProductService {
                  * VALIDATE PRODUCT TYPE
                  ************************************************************/
                 const inventoryType = this.staticService.inventoryTypes.find(
-                    (type) => type.id === inventory.inventoryType
+                    (type) => type.id.toString() === inventory.inventoryType.toString()
                 )
                 const productId = inventoryType.product.toString()
                 if (!productId) {

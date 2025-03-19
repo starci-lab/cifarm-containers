@@ -82,7 +82,7 @@ export class BuyAnimalService {
                 const placedItemBuildingType = this.staticService.placedItemTypes.find(
                     (placedItemType) =>
                         placedItemType.type === PlacedItemType.Building &&
-                        placedItemType.building.toString() === createObjectId(building.id).toString()
+                        placedItemType.building.toString() === building.id.toString()
                 )
     
                 if (!placedItemBuildingType) {

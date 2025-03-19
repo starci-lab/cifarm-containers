@@ -1,4 +1,5 @@
 import { InputType, Field, Int, ID, ObjectType } from "@nestjs/graphql"
+import { IsInt, IsOptional, Min } from "class-validator"
 
 @InputType({
     isAbstract: true
@@ -9,24 +10,32 @@ export abstract class IdArgs {
 }
 
 @InputType({
-    isAbstract: true
+    isAbstract: true,
+    description: "Paginated request"
 })
 export abstract class PaginatedRequest {
-    @Field(() => Int, { nullable: true, defaultValue: 10 }) //default 10
-        limit?: number = 10
-    @Field(() => Int, { nullable: true, defaultValue: 0 }) //default 0
-        offset?: number = 0
+    @IsInt()
+    @IsOptional()
+    @Field(() => Int, { defaultValue: 10, description: "Limit of items to return" })
+        limit: number
+    @IsInt()
+    @IsOptional()
+    @Field(() => Int, { defaultValue: 0, description: "Offset of items to return" })
+        offset: number
 }
 
 @ObjectType({
-    isAbstract: true
+    isAbstract: true,
+    description: "Paginated response"
 })
 export abstract class PaginatedResponse {
-    @Field(() => Int)
+    @IsInt()
+    @Min(0)
+    @Field(() => Int, { description: "Total number of items" })
         count: number
 }
 
-export interface IPaginatedResponse<TEntity> {
+export interface IPaginatedResponse<TSchema> {
     count: number
-    data: Array<TEntity>
+    data: Array<TSchema>
 }
