@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
 import {
     InjectMongoose,
@@ -13,6 +13,8 @@ import { Connection } from "mongoose"
 import { BuySeedsRequest } from "./buy-seeds.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { PUB_SUB, SubscriptionTopic } from "../../../constants"
+import { PubSub } from "graphql-subscriptions"
 
 @Injectable()
 export class BuySeedsService {
@@ -23,7 +25,8 @@ export class BuySeedsService {
         private readonly connection: Connection,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @Inject(PUB_SUB) private readonly pubSub: PubSub
     ) {}
 
     async buySeeds({ id: userId }: UserLike, request: BuySeedsRequest): Promise<void> {
@@ -112,7 +115,8 @@ export class BuySeedsService {
 
                 // Save updated user data
                 await user.save({ session: mongoSession })
-
+                await this.pubSub.publish(SubscriptionTopic.UserUpdated, user)
+                
                 /************************************************************
                  * ADD SEEDS TO INVENTORY
                  ************************************************************/

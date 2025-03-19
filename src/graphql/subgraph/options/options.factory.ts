@@ -17,6 +17,14 @@ export class SubgraphOptionsFactory {
             autoSchemaFile: {
                 federation: 2
             },
+            subscriptions: {
+                "graphql-ws": {
+                    path: "/graphql",
+                    onConnect: (connectionParams) => {
+                        console.log("Connected to playground")
+                    }
+                }
+            },
             resolvers: {
                 Void: VoidResolver,
             },

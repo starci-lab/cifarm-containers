@@ -1,6 +1,6 @@
 import { Module, ValidationPipe } from "@nestjs/common"
 import { EnvModule } from "@src/env"
-import { GraphQLSubgraphModule } from "@src/graphql"
+import { GraphQLPubSubModule, GraphQLSubgraphModule } from "@src/graphql"
 import { CryptoModule } from "@src/crypto"
 import { JwtModule } from "@src/jwt"
 import { MongooseModule } from "@src/databases"
@@ -41,7 +41,9 @@ import { IdModule } from "@src/id"
         BlockchainModule.register({
             isGlobal: true
         }),
-
+        GraphQLPubSubModule.register({
+            isGlobal: true
+        }),
         GameplayModule.register({
             isGlobal: true,
         }),
@@ -70,7 +72,7 @@ import { IdModule } from "@src/id"
         {
             provide: APP_FILTER,
             useClass: GameplayExceptionFilter
-        }
+        },
     ]
 }) 
 export class AppModule {}

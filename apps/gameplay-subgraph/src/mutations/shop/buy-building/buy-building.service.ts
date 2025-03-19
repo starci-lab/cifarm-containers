@@ -1,5 +1,5 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Injectable, Logger } from "@nestjs/common"
+import { Inject, Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId } from "@src/common"
 import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
@@ -9,6 +9,8 @@ import { Connection } from "mongoose"
 import { BuyBuildingRequest } from "./buy-building.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { PUB_SUB, SubscriptionTopic } from "../../../constants"
+import { PubSub } from "graphql-subscriptions"
 
 @Injectable()
 export class BuyBuildingService {
@@ -18,7 +20,8 @@ export class BuyBuildingService {
         @InjectMongoose() private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @Inject(PUB_SUB) private readonly pubSub: PubSub
     ) {}
 
     async buyBuilding(
@@ -149,6 +152,8 @@ export class BuyBuildingService {
 
                 // Save updated user data
                 await user.save({ session: mongoSession })
+
+                await this.pubSub.publish(SubscriptionTopic.UserUpdated, user)
 
                 /************************************************************
                  * PLACE BUILDING
