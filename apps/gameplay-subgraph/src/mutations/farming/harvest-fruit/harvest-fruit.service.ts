@@ -138,6 +138,18 @@ export class HarvestFruitService {
                  ************************************************************/
 
                 // Get product data
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) =>
+                        placedItemType.type === PlacedItemType.Fruit &&
+                        placedItemType.id.toString() === placedItemFruit.placedItemType.toString()
+                )
+                if (!placedItemType) {
+                    throw new GraphQLError("Placed item type not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
                 const product = this.staticService.products.find((product) => {
                     return (
                         product.type === ProductType.Fruit &&
@@ -178,18 +190,6 @@ export class HarvestFruitService {
                  ************************************************************/
 
                 // Get fruit data
-                const placedItemType = this.staticService.placedItemTypes.find(
-                    (placedItemType) =>
-                        placedItemType.type === PlacedItemType.Fruit &&
-                        placedItemType.id.toString() === placedItemFruit.placedItemType.toString()
-                )
-                if (!placedItemType) {
-                    throw new GraphQLError("Placed item type not found", {
-                        extensions: {
-                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
-                        }
-                    })
-                }
                 const fruit = this.staticService.fruits.find(
                     (fruit) => fruit.id === placedItemType.fruit.toString()
                 )
