@@ -141,7 +141,7 @@ export class HarvestFruitService {
                 const placedItemType = this.staticService.placedItemTypes.find(
                     (placedItemType) =>
                         placedItemType.type === PlacedItemType.Fruit &&
-                        placedItemType.id.toString() === placedItemFruit.placedItemType.toString()
+                        placedItemType.id === placedItemFruit.placedItemType.toString()
                 )
                 if (!placedItemType) {
                     throw new GraphQLError("Placed item type not found", {
