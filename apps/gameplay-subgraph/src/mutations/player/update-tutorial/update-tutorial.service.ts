@@ -154,7 +154,6 @@ export class UpdateTutorialService {
             },
             "seedGrowthInfo.currentStage": 0
         })
-        console.log(placedItems)
         // update the top 2 latested crop to stage 1, and one of them need water
         // the first crop is normal, the second crop is need water
         const placedItem1 = placedItems.at(0)
@@ -167,7 +166,7 @@ export class UpdateTutorialService {
         }
         placedItem1.seedGrowthInfo.currentState = CropCurrentState.Normal
         placedItem1.seedGrowthInfo.currentStage = 1
-
+        await placedItem1.save({ session })
         // the second crop is need water
         const placedItem2 = placedItems.at(1)
         if (!placedItem2) {
@@ -177,6 +176,8 @@ export class UpdateTutorialService {
                 }
             })
         }
+        placedItem2.seedGrowthInfo.currentState = CropCurrentState.NeedWater
+        placedItem2.seedGrowthInfo.currentStage = 1
         await placedItem2.save({ session })
     }
 
