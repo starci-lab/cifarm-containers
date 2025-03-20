@@ -5,9 +5,9 @@ export interface KafkaOptions {
 export enum KafkaGroupId {
     PlacedItems = "topic-placed-items",
     Action = "topic-action",
-    Energy = "topic-energy",
     Visit = "topic-visit",
     Delivery = "topic-delivery",
+    User = "topic-user",
 }
 
 export enum KafkaTopic {
@@ -16,5 +16,6 @@ export enum KafkaTopic {
     Delivery = "delivery",
     Visit = "visit",
     Return = "return",
-    SyncEnergy = "sync-energy",
+    SyncUser = "sync-user",
+    SyncInventories = "sync-inventories",
 }

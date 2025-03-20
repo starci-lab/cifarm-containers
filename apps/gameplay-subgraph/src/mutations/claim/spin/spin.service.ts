@@ -22,6 +22,8 @@ import { DeepPartial } from "@src/common"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { KafkaTopic, InjectKafkaProducer } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class SpinService {
@@ -34,11 +36,14 @@ export class SpinService {
         private readonly tokenBalanceService: TokenBalanceService,
         private readonly inventoryService: InventoryService,
         private readonly dateUtcService: DateUtcService,
-        private readonly staticService: StaticService       
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async spin({ id: userId }: UserLike): Promise<SpinResponse> {
         const mongoSession = await this.connection.startSession()
+        let user: UserSchema | undefined
         try {
             const result = await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -51,7 +56,7 @@ export class SpinService {
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 // Get latest spin info
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -260,6 +265,12 @@ export class SpinService {
 
                 return { spinSlotId: selectedSlot.id }
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                })
+            ])
             return result
         } catch (error) {
             this.logger.error(error)

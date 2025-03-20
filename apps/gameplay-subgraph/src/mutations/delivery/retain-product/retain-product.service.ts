@@ -9,6 +9,8 @@ import { Connection } from "mongoose"
 import { RetainProductRequest } from "./retain-product.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class RetainProductService {
@@ -18,7 +20,9 @@ export class RetainProductService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly inventoryService: InventoryService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async retainProduct(
@@ -119,6 +123,12 @@ export class RetainProductService {
                     .model<InventorySchema>(InventorySchema.name)
                     .deleteOne({ _id: inventory._id }, { session: mongoSession })
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                })
+            ])
         } catch (error) {
             this.logger.error(error)
             throw error // withTransaction will automatically handle the rollback

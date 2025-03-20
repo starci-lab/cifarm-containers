@@ -11,6 +11,9 @@ import { Connection } from "mongoose"
 import { BuySuppliesRequest } from "./buy-supplies.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
+import { InjectKafkaProducer } from "@src/brokers"
 
 @Injectable()
 export class BuySuppliesService {
@@ -21,7 +24,9 @@ export class BuySuppliesService {
         private readonly connection: Connection,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async buySupplies(
@@ -29,6 +34,7 @@ export class BuySuppliesService {
         { quantity, supplyId }: BuySuppliesRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+        let user: UserSchema | undefined
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -58,7 +64,7 @@ export class BuySuppliesService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -144,6 +150,18 @@ export class BuySuppliesService {
                         .session(mongoSession)
                 }
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [
+                        { value: JSON.stringify({ userId, user: user.toJSON() }) }
+                    ]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                })
+            ])
         } catch (error) {
             this.logger.error(error)
             throw error

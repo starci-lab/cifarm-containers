@@ -23,11 +23,12 @@ export class HelpCureAnimalService {
     private readonly logger = new Logger(HelpCureAnimalService.name)
 
     constructor(
-        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         @InjectMongoose() private readonly connection: Connection,
         private readonly staticService: StaticService,
         private readonly energyService: EnergyService,
-        private readonly levelService: LevelService
+        private readonly levelService: LevelService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async helpCureAnimal(
@@ -35,6 +36,7 @@ export class HelpCureAnimalService {
         { placedItemAnimalId }: HelpCureAnimalRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+        let user: UserSchema | undefined    
 
         let actionMessage: EmitActionPayload | undefined
         let neighborUserId: string | undefined
@@ -209,6 +211,10 @@ export class HelpCureAnimalService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
                 })
             ])
         } catch (error) {

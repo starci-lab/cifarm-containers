@@ -34,7 +34,8 @@ export class HelpUsePesticideService {
         { id: userId }: UserLike,
         { placedItemTileId }: HelpUsePesticideRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession()        
+        const mongoSession = await this.connection.startSession()   
+        let user: UserSchema | undefined     
         let actionMessage: EmitActionPayload | undefined
         let neighborUserId: string | undefined
         try {
@@ -139,7 +140,7 @@ export class HelpUsePesticideService {
                 const { energyConsume, experiencesGain } = this.staticService.activities.helpUsePesticide
 
                 // Get user data
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -202,7 +203,11 @@ export class HelpUsePesticideService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
-                })
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                }),
             ])
         } catch (error) {
             this.logger.error(error)

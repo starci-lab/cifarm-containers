@@ -19,7 +19,7 @@ import {
     StaticService
 } from "@src/gameplay"
 import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
-import { Connection } from "mongoose"
+import { Connection, Schema } from "mongoose"
 import { ActionName, EmitActionPayload, ThiefCropData } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
@@ -47,6 +47,7 @@ export class ThiefCropService {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload<ThiefCropData> | undefined
         let neighborUserId: string | undefined
+        let user: UserSchema | undefined
         try {
             // Use `withTransaction` to handle the MongoDB session and transaction automatically
             const result = await mongoSession.withTransaction(async (session) => {
@@ -134,7 +135,7 @@ export class ThiefCropService {
                  ************************************************************/
                 const { energyConsume, experiencesGain } = this.staticService.activities.thiefCrop
 
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -265,7 +266,7 @@ export class ThiefCropService {
                  ************************************************************/
                 placedItemTile.seedGrowthInfo.harvestQuantityRemaining =
                     placedItemTile.seedGrowthInfo.harvestQuantityRemaining - actualQuantity
-                placedItemTile.seedGrowthInfo.thieves.push(user.id)
+                placedItemTile.seedGrowthInfo.thieves.push(new Schema.Types.ObjectId(userId))
                 await placedItemTile.save({ session })
 
                 actionMessage = {
@@ -293,6 +294,10 @@ export class ThiefCropService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
                 })
             ])
 

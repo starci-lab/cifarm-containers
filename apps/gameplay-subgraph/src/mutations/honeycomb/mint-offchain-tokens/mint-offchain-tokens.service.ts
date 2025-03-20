@@ -1,8 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    InjectMongoose,
-    UserSchema
-} from "@src/databases"
+import { InjectMongoose, UserSchema } from "@src/databases"
 import { computeRaw } from "@src/common"
 import { Connection } from "mongoose"
 import { MintOffchainTokensRequest } from "./mint-offchain-tokens.dto"
@@ -11,6 +8,8 @@ import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 import { TxResponse } from "../types"
 import { GraphQLError } from "graphql"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class MintOffchainTokensService {
@@ -21,7 +20,9 @@ export class MintOffchainTokensService {
         private readonly connection: Connection,
         private readonly honeycombService: HoneycombService,
         private readonly tokenBalanceService: TokenBalanceService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async mintOffchainTokensService(
@@ -29,12 +30,13 @@ export class MintOffchainTokensService {
         { amount }: MintOffchainTokensRequest
     ): Promise<TxResponse> {
         const mongoSession = await this.connection.startSession()
+        let user: UserSchema | undefined
         try {
             const result = await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -90,6 +92,14 @@ export class MintOffchainTokensService {
 
                 return txResponse
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [
+                        { value: JSON.stringify({ userId, user: user.toJSON() }) }
+                    ]
+                })
+            ])
             return result
         } catch (error) {
             this.logger.error(error)

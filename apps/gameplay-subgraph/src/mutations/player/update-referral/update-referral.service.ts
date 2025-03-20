@@ -1,13 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    InjectMongoose,
-    UserSchema
-} from "@src/databases"
+import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection, Schema } from "mongoose"
 import { UpdateReferralRequest } from "./update-referral.dto"
 import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class UpdateReferralService {
@@ -17,25 +16,25 @@ export class UpdateReferralService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly tokenBalanceService: TokenBalanceService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async updateReferral(
-        {
-            id: userId
-        }: UserLike,
-        {
-            referralUserId
-        }: UpdateReferralRequest): Promise<void> {
+        { id: userId }: UserLike,
+        { referralUserId }: UpdateReferralRequest
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
-
+        let user: UserSchema | undefined
         try {
             // Using `withTransaction` for automatic transaction handling
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
-                const { referredLimit, referralRewardQuantity, referredRewardQuantity } = this.staticService.defaultInfo
+                const { referredLimit, referralRewardQuantity, referredRewardQuantity } =
+                    this.staticService.defaultInfo
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE REFERRAL USER
@@ -44,7 +43,7 @@ export class UpdateReferralService {
                     .model<UserSchema>(UserSchema.name)
                     .findById(referralUserId)
                     .session(mongoSession)
-                    
+
                 if (!referralUser) {
                     throw new GraphQLError("Referral user not found", {
                         extensions: {
@@ -64,7 +63,7 @@ export class UpdateReferralService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -95,7 +94,7 @@ export class UpdateReferralService {
                 }
 
                 // Check if the user has already been referred by the same referral user
-                if (referralUser.referredUserIds.includes(user.id)) {
+                if (referralUser.referredUserIds.map((id) => id.toString()).includes(user.id)) {
                     return
                 }
 
@@ -127,6 +126,14 @@ export class UpdateReferralService {
                 user.referralUserId = new Schema.Types.ObjectId(referralUserId)
                 await user.save({ session: mongoSession })
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [
+                        { value: JSON.stringify({ userId, user: user.toJSON() }) }
+                    ]
+                })
+            ])
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging

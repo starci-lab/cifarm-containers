@@ -1,28 +1,33 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
-import { EnergyGateway } from "./energy.gateway"
+import { UserGateway } from "./user.gateway"
 import { KafkaConsumersService, KafkaGroupId, KafkaTopic } from "@src/brokers"
 
 @Injectable()
-export class EnergyConsumer implements OnModuleInit {
-    private readonly logger = new Logger(EnergyConsumer.name)
+export class UserConsumer implements OnModuleInit {
+    private readonly logger = new Logger(UserConsumer.name)
 
     constructor(
         private readonly kafkaConsumersService: KafkaConsumersService,
-        private readonly energyGateway: EnergyGateway
+        private readonly userGateway: UserGateway
     ) {}
 
     async onModuleInit() {
         const consumer = await this.kafkaConsumersService.createConsumer({
-            groupId: KafkaGroupId.Energy,
-            topics: [KafkaTopic.SyncEnergy]
+            groupId: KafkaGroupId.User,
+            topics: [KafkaTopic.SyncUser, KafkaTopic.SyncInventories]
         })
         await consumer.run({
             eachMessage: async ({ topic, message }) => {
                 this.logger.log(`Received message from topic: ${topic}`)
                 switch (topic) {
-                case KafkaTopic.SyncEnergy: {
+                case KafkaTopic.SyncUser: {
                     const payload = JSON.parse(message.value.toString())
-                    this.energyGateway.syncEnergy(payload)
+                    this.userGateway.syncUser(payload)
+                    break
+                }
+                case KafkaTopic.SyncInventories: {
+                    const payload = JSON.parse(message.value.toString())
+                    this.userGateway.syncInventories(payload)
                     break
                 }
                 }

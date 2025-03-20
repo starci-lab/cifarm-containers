@@ -21,7 +21,7 @@ export class FollowService {
 
     async follow({ id: userId }: UserLike, { followeeUserId }: FollowRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
-
+        
         try {
             // Using withTransaction to handle the transaction lifecycle
             await mongoSession.withTransaction(async (session) => {

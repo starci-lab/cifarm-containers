@@ -38,13 +38,14 @@ export class UseBugNetService {
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
+        let user: UserSchema | undefined
 
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE BUG NET TOOL
                  ************************************************************/
-                
+
                 // Get bug net inventory
                 const inventoryBugNetExisted = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -54,7 +55,7 @@ export class UseBugNetService {
                         kind: InventoryKind.Tool
                     })
                     .session(session)
-                
+
                 // Validate user has bug net
                 if (!inventoryBugNetExisted) {
                     throw new GraphQLError("Bug net not found in toolbar", {
@@ -67,13 +68,13 @@ export class UseBugNetService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM FRUIT
                  ************************************************************/
-                
+
                 // Get placed item fruit
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
                     .session(session)
-                
+
                 // Validate placed item fruit exists
                 if (!placedItemFruit) {
                     actionMessage = {
@@ -120,13 +121,13 @@ export class UseBugNetService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                
+
                 // Get user data
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-                
+
                 // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -139,10 +140,10 @@ export class UseBugNetService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE ACTIVITY DATA
                  ************************************************************/
-                
+
                 // Get activity data
                 const { energyConsume, experiencesGain } = this.staticService.activities.useBugNet
-                
+
                 // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
@@ -153,13 +154,13 @@ export class UseBugNetService {
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
                  ************************************************************/
-                
+
                 // Update user energy and experience
                 this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                
+
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -185,7 +186,7 @@ export class UseBugNetService {
              * EXTERNAL COMMUNICATION
              * Send notifications after transaction is complete
              ************************************************************/
-            
+
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -194,6 +195,14 @@ export class UseBugNetService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
                 })
             ])
         } catch (error) {

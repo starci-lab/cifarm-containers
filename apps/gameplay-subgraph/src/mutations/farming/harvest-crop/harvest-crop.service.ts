@@ -40,11 +40,8 @@ export class HarvestCropService {
         { id: userId }: UserLike,
         { placedItemTileId }: HarvestCropRequest
     ): Promise<HarvestCropResponse> {
-        this.logger.debug(
-            `Harvesting crop for user ${userId}, tile ID: ${placedItemTileId}`
-        )
-
         const mongoSession = await this.connection.startSession()
+        let user: UserSchema | undefined
         let actionMessage: EmitActionPayload<HarvestCropData> | undefined
 
         try {
@@ -111,7 +108,7 @@ export class HarvestCropService {
                 const { energyConsume, experiencesGain } = this.staticService.activities.harvestCrop
                 
                 // Get user data
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -291,6 +288,14 @@ export class HarvestCropService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
                 })
             ])
 

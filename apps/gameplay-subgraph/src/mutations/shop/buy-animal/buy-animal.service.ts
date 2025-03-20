@@ -38,6 +38,7 @@ export class BuyAnimalService {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
+        let user: UserSchema | undefined    
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -113,7 +114,7 @@ export class BuyAnimalService {
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 // Fetch user data
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -226,6 +227,10 @@ export class BuyAnimalService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
                 })
             ])
         } catch (error) {

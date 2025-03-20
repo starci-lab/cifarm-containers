@@ -3,9 +3,9 @@ import { PlacedItemsModule } from "./placed-items"
 import { VisitModule } from "./visit"
 import { AuthModule } from "@src/blockchain"
 import { ActionModule } from "./action"
-import { EnergyModule } from "./energy"
+import { UserModule } from "./user"
 
 @Module({
-    imports: [AuthModule, PlacedItemsModule, VisitModule, ActionModule, EnergyModule]
+    imports: [AuthModule, PlacedItemsModule, VisitModule, ActionModule, UserModule]
 })
 export class GameplayModule {}

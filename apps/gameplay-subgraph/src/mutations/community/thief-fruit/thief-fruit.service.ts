@@ -24,7 +24,7 @@ import {
     StaticService
 } from "@src/gameplay"
 import { Producer } from "kafkajs"
-import { Connection } from "mongoose"
+import { Connection, Schema } from "mongoose"
 import { ThiefFruitRequest, ThiefFruitResponse } from "./thief-fruit.dto"
 import { createObjectId } from "@src/common"
 import { UserLike } from "@src/jwt"
@@ -51,7 +51,8 @@ export class ThiefFruitService {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload<ThiefFruitData> | undefined
         let neighborUserId: string | undefined
-        
+        let user: UserSchema | undefined
+
         try {
             const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -131,7 +132,7 @@ export class ThiefFruitService {
                  ************************************************************/
                 const { energyConsume, experiencesGain } = this.staticService.activities.thiefFruit
 
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -256,7 +257,7 @@ export class ThiefFruitService {
                  * UPDATE FRUIT DATA
                  ************************************************************/
                 placedItemFruit.fruitInfo.harvestQuantityRemaining -= actualQuantity
-                placedItemFruit.fruitInfo.thieves.push(user.id)
+                placedItemFruit.fruitInfo.thieves.push(new Schema.Types.ObjectId(userId))
                 await placedItemFruit.save({ session })
 
                 actionMessage = {
@@ -286,6 +287,10 @@ export class ThiefFruitService {
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
                 }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                })
             ])
 
             return result

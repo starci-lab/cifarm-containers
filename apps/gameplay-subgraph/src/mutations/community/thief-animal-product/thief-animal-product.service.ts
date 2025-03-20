@@ -20,7 +20,7 @@ import {
     StaticService
 } from "@src/gameplay"
 import { Producer } from "kafkajs"
-import { Connection } from "mongoose"
+import { Connection, Schema } from "mongoose"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
@@ -45,6 +45,7 @@ export class ThiefAnimalProductService {
         { placedItemAnimalId }: ThiefAnimalProductRequest
     ): Promise<ThiefAnimalProductResponse> {
         const mongoSession = await this.connection.startSession()
+        let user: UserSchema | undefined
         let actionMessage: EmitActionPayload<ThiefAnimalProductData> | undefined
         let neighborUserId: string | undefined
 
@@ -127,7 +128,7 @@ export class ThiefAnimalProductService {
                  ************************************************************/
                 const { energyConsume, experiencesGain } =
                     this.staticService.activities.thiefAnimalProduct
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -245,7 +246,7 @@ export class ThiefAnimalProductService {
                  * UPDATE ANIMAL DATA
                  ************************************************************/
                 placedItemAnimal.animalInfo.harvestQuantityRemaining -= actualQuantity
-                placedItemAnimal.animalInfo.thieves.push(user.id)
+                placedItemAnimal.animalInfo.thieves.push(new Schema.Types.ObjectId(userId))
                 await placedItemAnimal.save({ session: mongoSession })
 
                 actionMessage = {
@@ -274,6 +275,10 @@ export class ThiefAnimalProductService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
                 })
             ])
 

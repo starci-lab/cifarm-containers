@@ -35,7 +35,7 @@ export class HelpWaterCropService {
         { placedItemTileId }: HelpWaterCropRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
-        
+        let user: UserSchema | undefined
         let actionMessage: EmitActionPayload | undefined
         let neighborUserId: string | undefined
         try {
@@ -44,7 +44,7 @@ export class HelpWaterCropService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE WATERING CAN TOOL
                  ************************************************************/
-                
+
                 // Check if user has watering can
                 const inventoryWateringCanExisted = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -52,8 +52,9 @@ export class HelpWaterCropService {
                         user: userId,
                         inventoryType: createObjectId(InventoryTypeId.WateringCan),
                         kind: InventoryKind.Tool
-                    }).session(mongoSession)
-                
+                    })
+                    .session(mongoSession)
+
                 // Validate watering can exists in inventory
                 if (!inventoryWateringCanExisted) {
                     throw new GraphQLError("Watering can not found in toolbar", {
@@ -77,7 +78,7 @@ export class HelpWaterCropService {
                         action: ActionName.HelpWater,
                         success: false,
                         userId,
-                        reasonCode: 0,
+                        reasonCode: 0
                     }
                     throw new GraphQLError("Tile not found", {
                         extensions: {
@@ -93,7 +94,7 @@ export class HelpWaterCropService {
                         action: ActionName.HelpWater,
                         success: false,
                         userId,
-                        reasonCode: 1,
+                        reasonCode: 1
                     }
                     throw new GraphQLError("Cannot help water on your own tile", {
                         extensions: {
@@ -108,7 +109,7 @@ export class HelpWaterCropService {
                         action: ActionName.HelpWater,
                         success: false,
                         userId,
-                        reasonCode: 2,
+                        reasonCode: 2
                     }
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
@@ -123,7 +124,7 @@ export class HelpWaterCropService {
                         action: ActionName.HelpWater,
                         success: false,
                         userId,
-                        reasonCode: 3,
+                        reasonCode: 3
                     }
                     throw new GraphQLError("Tile does not need water", {
                         extensions: {
@@ -138,7 +139,7 @@ export class HelpWaterCropService {
                 // Fetch system activity values
                 const { energyConsume, experiencesGain } = this.staticService.activities.helpWater
 
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -154,7 +155,7 @@ export class HelpWaterCropService {
                 // Check if user has enough energy
                 this.energyService.checkSufficient({
                     current: user.energy,
-                    required: energyConsume,
+                    required: energyConsume
                 })
 
                 /************************************************************
@@ -164,7 +165,7 @@ export class HelpWaterCropService {
                 // Apply energy and experience changes
                 this.energyService.substract({
                     user,
-                    quantity: energyConsume,
+                    quantity: energyConsume
                 })
                 this.levelService.addExperiences({ user, experiences: experiencesGain })
 
@@ -180,7 +181,7 @@ export class HelpWaterCropService {
                     placedItemId: placedItemTileId,
                     action: ActionName.HelpWater,
                     success: true,
-                    userId,
+                    userId
                 }
             })
 
@@ -192,12 +193,16 @@ export class HelpWaterCropService {
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
                 }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                })
             ])
 
             // No return value needed for void
@@ -206,7 +211,7 @@ export class HelpWaterCropService {
             if (actionMessage) {
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
 

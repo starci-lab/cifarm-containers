@@ -10,6 +10,8 @@ import { UserLike } from "@src/jwt"
 import { TxResponse } from "../types"
 import { StaticService } from "@src/gameplay"
 import { GraphQLError } from "graphql"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class ClaimHoneycombDailyRewardService {
@@ -20,18 +22,21 @@ export class ClaimHoneycombDailyRewardService {
         private readonly connection: Connection,
         private readonly honeycombService: HoneycombService,
         private readonly dateUtcService: DateUtcService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async claimHoneycombDailyReward(
         { id: userId }: UserLike,): Promise<TxResponse> {
         const mongoSession = await this.connection.startSession()
+        let user: UserSchema | undefined
         try {
             const result = await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -85,6 +90,12 @@ export class ClaimHoneycombDailyRewardService {
                 await user.save({ session: mongoSession })
                 return txResponse
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                })
+            ])
             return result
         } catch (error) {
             this.logger.error(error)

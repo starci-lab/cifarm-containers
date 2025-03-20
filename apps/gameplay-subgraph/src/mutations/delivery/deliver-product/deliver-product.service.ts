@@ -5,6 +5,8 @@ import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { StaticService } from "@src/gameplay"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class DeliverProductService {
@@ -13,7 +15,9 @@ export class DeliverProductService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async deliverProduct(
@@ -111,6 +115,12 @@ export class DeliverProductService {
                     { session: mongoSession }
                 )
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                })
+            ])
         } catch (error) {
             this.logger.error(error)
             throw error

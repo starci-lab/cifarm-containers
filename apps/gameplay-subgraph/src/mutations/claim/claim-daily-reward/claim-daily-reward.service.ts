@@ -9,6 +9,8 @@ import { DateUtcService } from "@src/date"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class ClaimDailyRewardService {
@@ -20,18 +22,20 @@ export class ClaimDailyRewardService {
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
         private readonly dateUtcService: DateUtcService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async claimDailyReward({ id: userId }: UserLike): Promise<void> {
         const mongoSession = await this.connection.startSession()
-
+        let user: UserSchema | undefined
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -108,6 +112,12 @@ export class ClaimDailyRewardService {
                 // Update the user with the changes
                 await user.save({ session: mongoSession })
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                })
+            ])
         } catch (error) {
             this.logger.error(error)
             throw error

@@ -44,6 +44,7 @@ export class HarvestFruitService {
     ): Promise<HarvestFruitResponse> {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload<HarvestFruitData> | undefined
+        let user: UserSchema | undefined
 
         try {
             const result = await mongoSession.withTransaction(async (session) => {
@@ -110,7 +111,7 @@ export class HarvestFruitService {
                     this.staticService.activities.harvestFruit
                 
                 // Get user data
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -280,6 +281,14 @@ export class HarvestFruitService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
                 })
             ])
 

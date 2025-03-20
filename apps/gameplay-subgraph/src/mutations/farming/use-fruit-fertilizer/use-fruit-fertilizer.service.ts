@@ -36,7 +36,7 @@ export class UseFruitFertilizerService {
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
-        
+        let user: UserSchema | undefined
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -136,7 +136,7 @@ export class UseFruitFertilizerService {
                     this.staticService.activities.useFruitFertilizer
                 
                 // Get user data
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -226,6 +226,14 @@ export class UseFruitFertilizerService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ placedItemFruitId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
                 })
             ])
         } catch (error) {

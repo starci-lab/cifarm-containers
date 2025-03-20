@@ -10,6 +10,8 @@ import { ClientSession, Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { TutorialService, StaticService } from "@src/gameplay"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class UpdateTutorialService {
@@ -19,18 +21,21 @@ export class UpdateTutorialService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly tutorialService: TutorialService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async updateTutorial({ id: userId }: UserLike): Promise<void> {
         const mongoSession = await this.connection.startSession()
+        let user: UserSchema | undefined
         try {
             // Using `withTransaction` to handle the transaction automatically
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -95,6 +100,18 @@ export class UpdateTutorialService {
                 user.tutorialStep = nextStep
                 await user.save({ session: mongoSession })
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [
+                        { value: JSON.stringify({ userId, user: user.toJSON() }) }
+                    ]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncPlacedItems,
+                    messages: [{ value: JSON.stringify({ userId }) }]
+                })
+            ])
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging
@@ -125,7 +142,7 @@ export class UpdateTutorialService {
                 seedGrowthInfo: {
                     $ne: null
                 },
-                "seedGrowthInfo.currentStage": 0,
+                "seedGrowthInfo.currentStage": 0
             })
             .sort({ createdAt: -1 })
             .limit(2)
@@ -180,7 +197,7 @@ export class UpdateTutorialService {
                 seedGrowthInfo: {
                     $ne: null
                 },
-                "seedGrowthInfo.currentStage": 1,
+                "seedGrowthInfo.currentStage": 1
             })
             .sort({ createdAt: -1 })
             .limit(2)
@@ -231,7 +248,7 @@ export class UpdateTutorialService {
                 seedGrowthInfo: {
                     $ne: null
                 },
-                "seedGrowthInfo.currentStage": 2,
+                "seedGrowthInfo.currentStage": 2
             })
             .sort({ createdAt: -1 })
             .limit(2)
@@ -286,13 +303,15 @@ export class UpdateTutorialService {
                 seedGrowthInfo: {
                     $ne: null
                 },
-                "seedGrowthInfo.currentStage": 3,
+                "seedGrowthInfo.currentStage": 3
             })
             .sort({ createdAt: -1 })
             .limit(2)
             .session(session)
         // update the top 2 latested crop to last stage
-        const crop1 = this.staticService.crops.find((crop) => crop.id.toString() === placedItems[0].seedGrowthInfo.crop.toString())
+        const crop1 = this.staticService.crops.find(
+            (crop) => crop.id.toString() === placedItems[0].seedGrowthInfo.crop.toString()
+        )
         if (!crop1) {
             throw new GraphQLError("Crop 1 not found", {
                 extensions: {
@@ -314,13 +333,15 @@ export class UpdateTutorialService {
         await placedItem1.save({ session })
 
         // the second crop is need water
-        const crop2 = this.staticService.crops.find((crop) => crop.id.toString() === placedItems[1].seedGrowthInfo.crop.toString())
+        const crop2 = this.staticService.crops.find(
+            (crop) => crop.id.toString() === placedItems[1].seedGrowthInfo.crop.toString()
+        )
         if (!crop2) {
             throw new GraphQLError("Crop 2 not found", {
                 extensions: {
                     code: "CROP_2_NOT_FOUND"
                 }
-            })  
+            })
         }
         const placedItem2 = placedItems.at(1)
         if (!placedItem2) {
@@ -332,7 +353,7 @@ export class UpdateTutorialService {
         }
         placedItem2.seedGrowthInfo.currentState = CropCurrentState.FullyMatured
         placedItem2.seedGrowthInfo.currentStage = 4
-        placedItem2.seedGrowthInfo.harvestQuantityRemaining = crop2.maxHarvestQuantity 
+        placedItem2.seedGrowthInfo.harvestQuantityRemaining = crop2.maxHarvestQuantity
         await placedItem2.save({ session })
     }
 }

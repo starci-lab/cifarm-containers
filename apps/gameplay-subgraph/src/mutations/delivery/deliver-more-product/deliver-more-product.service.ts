@@ -1,14 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DeliverMoreProductRequest } from "./deliver-more-product.dto"
-import {
-    InjectMongoose,
-    InventoryKind,
-    InventorySchema,
-} from "@src/databases"
+import { InjectMongoose, InventoryKind, InventorySchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { StaticService } from "@src/gameplay"
+import { KafkaTopic, InjectKafkaProducer } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class DeliverMoreProductService {
@@ -17,16 +15,15 @@ export class DeliverMoreProductService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async deliverMoreProduct(
         { id: userId }: UserLike,
-        {
-            inventoryId,
-            quantity,
-            index
-        }: DeliverMoreProductRequest): Promise<void> {
+        { inventoryId, quantity, index }: DeliverMoreProductRequest
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to manage the transaction
@@ -80,7 +77,10 @@ export class DeliverMoreProductService {
                 /************************************************************
                  * VALIDATE PRODUCT TYPE
                  ************************************************************/
-                const inventoryType = this.staticService.inventoryTypes.find(inventoryType => inventory.inventoryType.toString() === inventoryType.id.toString())
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) =>
+                        inventory.inventoryType.toString() === inventoryType.id.toString()
+                )
                 if (!inventoryType) {
                     throw new GraphQLError("Inventory type not found", {
                         extensions: {
@@ -121,6 +121,12 @@ export class DeliverMoreProductService {
                 deliveryInventory.quantity += quantity
                 await deliveryInventory.save({ session: mongoSession })
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                })
+            ])
         } catch (error) {
             this.logger.error(error)
             throw error

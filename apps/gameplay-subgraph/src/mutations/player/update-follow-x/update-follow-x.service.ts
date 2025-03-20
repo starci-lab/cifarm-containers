@@ -7,6 +7,8 @@ import { Connection } from "mongoose"
 import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class UpdateFollowXService {
@@ -16,14 +18,16 @@ export class UpdateFollowXService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly tokenBalanceService: TokenBalanceService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {}
 
     async updateFollowX({
         id: userId
     }: UserLike): Promise<void> {
         const mongoSession = await this.connection.startSession()
-
+        let user: UserSchema | undefined
         try {
             // Using `withTransaction` for automatic transaction handling
             await mongoSession.withTransaction(async (mongoSession) => {
@@ -74,6 +78,12 @@ export class UpdateFollowXService {
                 user.followXAwarded = true
                 await user.save({ session: mongoSession })
             })
+            await Promise.all([
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                })
+            ])
         } catch (error) {
             this.logger.error(error)
             throw error

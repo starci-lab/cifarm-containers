@@ -14,16 +14,22 @@ import {
     ProductSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, StaticService, CoreService } from "@src/gameplay"
+import {
+    EnergyService,
+    InventoryService,
+    LevelService,
+    StaticService,
+    CoreService
+} from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HarvestAnimalRequest } from "./harvest-animal.dto"
-import { UserLike } from "@src/jwt" 
+import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 
 interface HarvestAnimalData {
-    productId: string;
-    quantity: number;
+    productId: string
+    quantity: number
 }
 
 @Injectable()
@@ -44,12 +50,9 @@ export class HarvestAnimalService {
         { id: userId }: UserLike,
         { placedItemAnimalId }: HarvestAnimalRequest
     ): Promise<void> {
-        this.logger.debug(
-            `Harvesting animal for user ${userId}, animal ID: ${placedItemAnimalId}`
-        )
-
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload<HarvestAnimalData> | undefined
+        let user: UserSchema | undefined
 
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -87,7 +90,7 @@ export class HarvestAnimalService {
                             code: "ANIMAL_NOT_FOUND"
                         }
                     })
-                }   
+                }
 
                 // Validate animal is ready to harvest
                 if (placedItemAnimal.animalInfo?.currentState !== AnimalCurrentState.Yield) {
@@ -101,12 +104,13 @@ export class HarvestAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                
+
                 // Get activity data
-                const { energyConsume, experiencesGain } = this.staticService.activities.harvestAnimal
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.harvestAnimal
 
                 // Get user data
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -129,7 +133,7 @@ export class HarvestAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PRODUCT DATA
                  ************************************************************/
-                
+
                 // Get product data
                 const product = await this.connection
                     .model<ProductSchema>(ProductSchema.name)
@@ -138,7 +142,7 @@ export class HarvestAnimalService {
                         animal: placedItemAnimal.animalInfo?.animal
                     })
                     .session(session)
-                
+
                 // Validate product exists
                 if (!product) {
                     throw new GraphQLError("Product not found", {
@@ -151,7 +155,7 @@ export class HarvestAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY TYPE
                  ************************************************************/
-                
+
                 // Get inventory type for animal product
                 const inventoryType = await this.connection
                     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
@@ -173,7 +177,7 @@ export class HarvestAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE STORAGE CAPACITY
                  ************************************************************/
-                
+
                 // Get storage capacity setting
                 const { storageCapacity } = this.staticService.defaultInfo
 
@@ -181,13 +185,13 @@ export class HarvestAnimalService {
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
                  ************************************************************/
-                
+
                 // Update user energy and experience
                 this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                
+
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -228,7 +232,7 @@ export class HarvestAnimalService {
                 }
 
                 const animal = this.staticService.animals.find(
-                    animal => animal.id === placedItemAnimal.animalInfo?.animal.toString()
+                    (animal) => animal.id === placedItemAnimal.animalInfo?.animal.toString()
                 )
                 if (!animal) {
                     throw new GraphQLError("Animal not found in static data", {
@@ -265,7 +269,7 @@ export class HarvestAnimalService {
              * EXTERNAL COMMUNICATION
              * Send notifications after transaction is complete
              ************************************************************/
-            
+
             // Send Kafka messages for success
             await Promise.all([
                 this.kafkaProducer.send({
@@ -275,6 +279,14 @@ export class HarvestAnimalService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
                 })
             ])
 
@@ -296,4 +308,3 @@ export class HarvestAnimalService {
         }
     }
 }
-

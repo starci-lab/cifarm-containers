@@ -30,8 +30,8 @@ export class BuyTileService {
         { position, tileId }: BuyTileRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
-
         let actionMessage: EmitActionPayload<BuyTileData> | undefined
+        let user: UserSchema | undefined
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -63,7 +63,7 @@ export class BuyTileService {
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 // Fetch user details
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -163,7 +163,11 @@ export class BuyTileService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId }) }]
-                })
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                })  
             ])
         } catch (error) {
             this.logger.error(error)

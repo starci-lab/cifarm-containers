@@ -8,7 +8,7 @@ import { Job } from "bullmq"
 import { Connection } from "mongoose"
 import { EnergyService, StaticService } from "@src/gameplay"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { SyncEnergyPayload } from "@apps/io-gameplay/src/gameplay/energy"
+import { SyncUserPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 
 @Processor(bullData[BullQueueName.Energy].name)
@@ -70,12 +70,11 @@ export class EnergyWorker extends WorkerHost {
                     updateUser()
                     await user.save({ session: mongoSession })
                     if (emit) {
-                        const payload: SyncEnergyPayload = {
-                            userId: user.id,
-                            energy: user.energy,
+                        const payload: SyncUserPayload = {
+                            user: user.toJSON(),
                         }
                         await this.kafkaProducer.send({
-                            topic: KafkaTopic.SyncEnergy,
+                            topic: KafkaTopic.SyncUser,
                             messages: [
                                 { value: JSON.stringify(payload) }
                             ]

@@ -15,7 +15,7 @@ import {
     SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { EnergyService, LevelService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { CureAnimalRequest } from "./cure-animal.dto"
@@ -29,7 +29,6 @@ export class CureAnimalService {
     constructor(
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
@@ -40,7 +39,7 @@ export class CureAnimalService {
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
-
+        let user: UserSchema | undefined
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -118,7 +117,7 @@ export class CureAnimalService {
                  ************************************************************/
                 
                 // Get user data
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -183,6 +182,10 @@ export class CureAnimalService {
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
                     messages: [{ value: JSON.stringify({ userId }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
                 })
             ])
         } catch (error) {
