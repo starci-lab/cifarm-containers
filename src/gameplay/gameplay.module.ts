@@ -6,7 +6,6 @@ import { LevelService } from "./level"
 import { ThiefService } from "./thief"
 import { GoldBalanceService, TokenBalanceService } from "./wallet"
 import { CoreService } from "./core"
-import { TutorialService } from "./tutorial"
 import { PositionService } from "./position"
 import { NestExport, NestProvider, NestService } from "@src/common"
 import { StaticService } from "./static"
@@ -25,7 +24,6 @@ export class GameplayModule extends ConfigurableModuleClass {
             TokenBalanceService,
             InventoryService,
             CoreService,
-            TutorialService,
             PositionService,
         ]
         if (loadStatic) {
