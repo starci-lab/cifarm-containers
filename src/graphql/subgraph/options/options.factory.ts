@@ -5,11 +5,11 @@ import { Injectable } from "@nestjs/common"
 import { Int } from "@nestjs/graphql"
 import { KeyvService } from "@src/cache"
 import { DirectiveLocation, GraphQLBoolean, GraphQLDirective, GraphQLEnumType } from "graphql"
-import { VoidResolver } from "graphql-scalars"  
+import { VoidResolver } from "graphql-scalars"
 
 @Injectable()
 export class SubgraphOptionsFactory {
-    constructor(private readonly keyvService: KeyvService) { }
+    constructor(private readonly keyvService: KeyvService) {}
 
     createSubgraphOptions(): Omit<ApolloDriverConfig, "driver"> {
         const keyvAdapter = this.keyvService.createKeyvAdapter()
@@ -17,16 +17,8 @@ export class SubgraphOptionsFactory {
             autoSchemaFile: {
                 federation: 2
             },
-            subscriptions: {
-                "graphql-ws": {
-                    path: "/graphql",
-                    onConnect: (connectionParams) => {
-                        console.log("Connected to playground")
-                    }
-                }
-            },
             resolvers: {
-                Void: VoidResolver,
+                Void: VoidResolver
             },
             cache: keyvAdapter,
             plugins: [ApolloServerPluginCacheControl(), responseCachePlugin()],

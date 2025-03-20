@@ -1,8 +1,8 @@
-import { Controller, Logger, OnModuleInit } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { VisitGateway } from "./visit.gateway"
 import { KafkaConsumersService, KafkaGroupId, KafkaTopic } from "@src/brokers"
 
-@Controller()
+@Injectable()
 export class VisitConsumer implements OnModuleInit {
     private readonly logger = new Logger(VisitConsumer.name)
     constructor(
@@ -20,6 +20,7 @@ export class VisitConsumer implements OnModuleInit {
         })
         await consumer.run({
             eachMessage: async ({ topic, message }) => {
+                console.log(topic, message)
                 this.logger.log(`Received message from topic: ${topic}`)
                 switch (topic) {
                 case KafkaTopic.Visit:

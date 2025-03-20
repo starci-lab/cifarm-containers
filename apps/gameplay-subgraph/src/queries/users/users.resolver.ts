@@ -1,5 +1,5 @@
-import { Inject, Logger, UseGuards } from "@nestjs/common"
-import { Resolver, Query, Args, Subscription } from "@nestjs/graphql"
+import { Logger, UseGuards } from "@nestjs/common"
+import { Resolver, Query, Args } from "@nestjs/graphql"
 import { UsersService } from "./users.service"
 import { UserSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
@@ -10,15 +10,12 @@ import {
     GetNeighborsRequest,
     GetNeighborsResponse
 } from "./users.dto"
-import { PubSub } from "graphql-subscriptions"
-import { PUB_SUB, SubscriptionTopic } from "../../constants"
 
 @Resolver()
 export class UsersResolver {
     private readonly logger = new Logger(UsersResolver.name)
     constructor(
         private readonly usersService: UsersService,
-        @Inject(PUB_SUB) private readonly pubSub: PubSub
     ) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
@@ -52,10 +49,5 @@ export class UsersResolver {
         @Args("request") request: GetFolloweesRequest
     ): Promise<GetFolloweesResponse> {
         return this.usersService.getFollowees(user, request)
-    }
-
-    @Subscription(() => UserSchema)
-    async subscribeUserUpdated() {
-        return this.pubSub.asyncIterableIterator(SubscriptionTopic.UserUpdated)  
     }
 }

@@ -25,50 +25,46 @@ export class VisitService {
         const mongoSession = await this.connection.startSession()
 
         try {
-            const result = await mongoSession.withTransaction(async (mongoSession) => {
-                // If no neighborUserId is provided, select a random user
-                if (!neighborUserId) {
-                    const randomUser = await this.connection
-                        .model<UserSchema>(UserSchema.name)
-                        .aggregate([
-                            {
-                                $match: { _id: { $ne: userId } } // Exclude the current user
-                            },
-                            {
-                                $sample: { size: 1 } // Get one random user
-                            }
-                        ])
-                        .session(mongoSession)
+            // If no neighborUserId is provided, select a random user
+            if (!neighborUserId) {
+                const randomUser = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .aggregate([
+                        {
+                            $match: { _id: { $ne: userId } } // Exclude the current user
+                        },
+                        {
+                            $sample: { size: 1 } // Get one random user
+                        }
+                    ])
+                    .session(mongoSession)
 
-                    // If no random user is found, throw an error
-                    if (!randomUser.length) {
-                        throw new GraphQLError("No random user found", {
-                            extensions: {
-                                code: "NO_RANDOM_USER_FOUND",
-                            }
+                // If no random user is found, throw an error
+                if (!randomUser.length) {
+                    throw new GraphQLError("No random user found", {
+                        extensions: {
+                            code: "NO_RANDOM_USER_FOUND",
+                        }
+                    })
+                }
+                neighborUserId = randomUser[0]._id
+            }
+
+            // Send visit event via Kafka
+            await this.kafkaProducer.send({
+                topic: KafkaTopic.Visit,
+                messages: [
+                    {
+                        value: JSON.stringify({
+                            userId,
+                            neighborUserId
                         })
                     }
-                    neighborUserId = randomUser[0]._id
-                }
-
-                // Send visit event via Kafka
-                await this.kafkaProducer.send({
-                    topic: KafkaTopic.Visit,
-                    messages: [
-                        {
-                            value: JSON.stringify({
-                                userId,
-                                neighborUserId
-                            })
-                        }
-                    ]
-                })
-                // Commit the transaction
-                return { neighborUserId }
+                ]
             })
 
-            // Return the result from the transaction
-            return result
+            // Commit the transaction
+            return { neighborUserId }
         } catch (error) {
             this.logger.error(error)
             // Abort the transaction in case of an error
