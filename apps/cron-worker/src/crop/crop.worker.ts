@@ -43,6 +43,9 @@ export class CropWorker extends WorkerHost {
                 seedGrowthInfo: {
                     $ne: null
                 },
+                "seedGrowthInfo.inTutorial": {
+                    $ne: true
+                },
                 "seedGrowthInfo.currentState": {
                     $nin: [CropCurrentState.NeedWater, CropCurrentState.FullyMatured]
                 },
@@ -59,13 +62,21 @@ export class CropWorker extends WorkerHost {
             const promise = async () => {
                 const mongoSession = await this.connection.startSession()
                 try {
+                    // if the owner is currently on tutorial, skip the crop growth
+                    const { growthStages } = this.staticService.cropInfo
                     const crop = this.staticService.crops.find(crop => crop.id === placedItem.seedGrowthInfo.crop.toString())
-                    const tile = this.staticService.tiles.find(tile => tile.id === placedItem.tileInfo.toString()) 
+                    const placedItemType = this.staticService.placedItemTypes.find(placedItemType => 
+                        placedItem.placedItemType.toString() === placedItemType.id.toString()
+                    )
+                    if (!placedItemType) {
+                        throw new Error("Placed item type not found")
+                    }
+                    const tile = this.staticService.tiles.find(tile => tile.id.toString() === placedItemType.tile.toString()) 
                     // Add time to the seed growth
                     const updatePlacedItem = () => {
                         // return if the current stage is already max stage
                         if (
-                            placedItem.seedGrowthInfo.currentStage >= crop.growthStages - 1
+                            placedItem.seedGrowthInfo.currentStage >= growthStages - 1
                         ) {
                             return
                         }
@@ -86,7 +97,7 @@ export class CropWorker extends WorkerHost {
                         placedItem.seedGrowthInfo.isFertilized = false
 
                         // if the current stage is less than max stage - 3, check if need water
-                        if (placedItem.seedGrowthInfo.currentStage <= crop.growthStages - 3) {
+                        if (placedItem.seedGrowthInfo.currentStage <= growthStages - 3) {
                             if (Math.random() < needWater) {
                                 placedItem.seedGrowthInfo.currentState =
                                         CropCurrentState.NeedWater
@@ -96,7 +107,7 @@ export class CropWorker extends WorkerHost {
                         }
 
                         // if the current stage is max stage - 2, check if weedy or infested
-                        if (placedItem.seedGrowthInfo.currentStage === crop.growthStages - 2) {
+                        if (placedItem.seedGrowthInfo.currentStage === growthStages - 2) {
                             if (Math.random() < isWeedyOrInfested) {
                                 if (Math.random() < 0.5) {
                                     placedItem.seedGrowthInfo.currentState =

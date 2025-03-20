@@ -1,6 +1,6 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 import { FRUIT } from "../constants"
 import { FruitCurrentState, FirstCharLowerCaseFruitCurrentState } from "../enums"
 import { AbstractSchema } from "./abstract"
@@ -52,12 +52,12 @@ export class FruitInfoSchema extends AbstractSchema {
         description: "The thieves of the fruit"
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
-        thieves: Array<MongooseSchema.Types.ObjectId>
+        thieves: Array<Types.ObjectId>
 
     @Field(() => ID, {
         description: "The fruit ID"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: FruitSchema.name })
-    [FRUIT]: FruitSchema | string
+    [FRUIT]: FruitSchema | Types.ObjectId
 }
 export const FruitInfoSchemaClass = SchemaFactory.createForClass(FruitInfoSchema)

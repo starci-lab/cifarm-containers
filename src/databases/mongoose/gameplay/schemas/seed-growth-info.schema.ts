@@ -1,6 +1,6 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 import { CROP } from "../constants"
 import { CropCurrentState, FirstCharLowerCaseCropCurrentState } from "../enums"
 import { AbstractSchema } from "./abstract"
@@ -52,7 +52,7 @@ export class SeedGrowthInfoSchema extends AbstractSchema {
         description: "The crop type being grown"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: CropSchema.name })
-    [CROP]: CropSchema | string
+    [CROP]: CropSchema | Types.ObjectId
 
     @Field(() => FirstCharLowerCaseCropCurrentState, {
         description: "The current state of the crop (normal, withered, etc.)"
@@ -70,7 +70,13 @@ export class SeedGrowthInfoSchema extends AbstractSchema {
         description: "The list of users who have stolen from this crop"
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
-        thieves: Array<MongooseSchema.Types.ObjectId>
+        thieves: Array<Types.ObjectId>
+
+    @Field(() => Boolean, {
+        description: "Whether the crop is in tutorial"
+    })
+    @Prop({ type: Boolean, isRequired: false })
+        inTutorial?: boolean
 }
 export const SeedGrowthInfoSchemaClass = SchemaFactory.createForClass(SeedGrowthInfoSchema)
 

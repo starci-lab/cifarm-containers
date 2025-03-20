@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 import { UserSchema } from "./user.schema"
 
 @ObjectType({
@@ -17,13 +17,13 @@ export class UserFollowRelationSchema extends AbstractSchema {
         description: "The user being followed (followee)"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name, required: true })
-        followee: UserSchema | string
+        followee: UserSchema | Types.ObjectId
     
     @Field(() => ID, {
         description: "The user who is following (follower)"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name, required: true })
-        follower: UserSchema | string
+        follower: UserSchema | Types.ObjectId
 }
 
 export const UserFollowRelationSchemaClass = SchemaFactory.createForClass(UserFollowRelationSchema)

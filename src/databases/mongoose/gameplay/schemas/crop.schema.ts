@@ -24,12 +24,6 @@ export class CropSchema extends AbstractSchema {
         growthStageDuration: number
 
     @Field(() => Int, {
-        description: "The number of growth stages of the crop"
-    })
-    @Prop({ type: Number, required: true })
-        growthStages: number
-
-    @Field(() => Int, {
         description: "The price of the crop"
     })
     @Prop({ type: Number, required: true })

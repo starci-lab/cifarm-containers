@@ -133,7 +133,8 @@ export class SystemSeeder implements Seeder {
                 thief3: 0.95,
                 isWeedyOrInfested: 1
             },
-            nextGrowthStageAfterHarvest: 3
+            nextGrowthStageAfterHarvest: 3,
+            growthStages: 5
         }
         const animalInfo: AnimalInfo = {
             randomness: {

@@ -59,9 +59,7 @@
       "entryFile": "main",
       "sourceRoot": "apps/gameplay-subgraph/src",
       "compilerOptions": {
-        "webpack": true,
-        "tsConfigPath": "apps/gameplay-subgraph/tsconfig.app.json",
-        "webpackConfigPath": "apps/gameplay-subgraph/webpack.config.js"
+        "tsConfigPath": "apps/gameplay-subgraph/tsconfig.app.json"
       }
     },
     "cli": {

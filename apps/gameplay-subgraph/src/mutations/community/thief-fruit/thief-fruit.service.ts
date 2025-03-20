@@ -24,7 +24,7 @@ import {
     StaticService
 } from "@src/gameplay"
 import { Producer } from "kafkajs"
-import { Connection, Schema } from "mongoose"
+import { Connection, Types } from "mongoose"
 import { ThiefFruitRequest, ThiefFruitResponse } from "./thief-fruit.dto"
 import { createObjectId } from "@src/common"
 import { UserLike } from "@src/jwt"
@@ -257,7 +257,7 @@ export class ThiefFruitService {
                  * UPDATE FRUIT DATA
                  ************************************************************/
                 placedItemFruit.fruitInfo.harvestQuantityRemaining -= actualQuantity
-                placedItemFruit.fruitInfo.thieves.push(new Schema.Types.ObjectId(userId))
+                placedItemFruit.fruitInfo.thieves.push(new Types.ObjectId(userId))
                 await placedItemFruit.save({ session })
 
                 actionMessage = {

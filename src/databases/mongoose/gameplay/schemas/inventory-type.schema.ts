@@ -2,7 +2,7 @@ import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { InventoryType, InventoryTypeId, FirstCharLowerCaseInventoryType, FirstCharLowerCaseInventoryTypeId } from "../enums"
 import { CropSchema } from "./crop.schema"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 import { ProductSchema } from "./product.schema"
 import { CROP, PRODUCT, SUPPLY, TOOL } from "../constants"
 import { ToolSchema } from "./tool.schema"
@@ -34,28 +34,28 @@ export class InventoryTypeSchema extends AbstractSchema {
         nullable: true
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: CropSchema.name })
-    [CROP]: CropSchema | string
+    [CROP]: CropSchema | Types.ObjectId
     
     @Field(() => ID, {
         description: "The product ID",
         nullable: true
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: ProductSchema.name })
-    [PRODUCT]: ProductSchema | string
+    [PRODUCT]: ProductSchema | Types.ObjectId
 
     @Field(() => ID, {
         description: "The tool ID",
         nullable: true
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: ToolSchema.name })
-    [TOOL]: ToolSchema | string
+    [TOOL]: ToolSchema | Types.ObjectId
 
     @Field(() => ID, {
         description: "The supply ID",
         nullable: true
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: SupplySchema.name })
-    [SUPPLY]: SupplySchema | string
+    [SUPPLY]: SupplySchema | Types.ObjectId
 
     @Field(() => Boolean, {
         description: "Whether the inventory is placeable"

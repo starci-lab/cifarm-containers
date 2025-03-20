@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, UserSchema } from "@src/databases"
-import { Connection, Schema } from "mongoose"
+import { Connection, Types } from "mongoose"
 import { UpdateReferralRequest } from "./update-referral.dto"
 import { TokenBalanceService, StaticService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
@@ -116,14 +116,14 @@ export class UpdateReferralService {
                  * UPDATE REFERRAL USER DATA
                  ************************************************************/
                 // Update the referral user with the new referred user
-                referralUser.referredUserIds.push(new Schema.Types.ObjectId(userId))
+                referralUser.referredUserIds.push(new Types.ObjectId(userId))
                 await referralUser.save({ session: mongoSession })
 
                 /************************************************************
                  * UPDATE USER DATA
                  ************************************************************/
                 // Update the referred user with their referral information
-                user.referralUserId = new Schema.Types.ObjectId(referralUserId)
+                user.referralUserId = new Types.ObjectId(referralUserId)
                 await user.save({ session: mongoSession })
             })
             await Promise.all([

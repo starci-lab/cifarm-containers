@@ -4,7 +4,7 @@ import { PlacedItemType, PlacedItemTypeId, FirstCharLowerCasePlacedItemTypeId, F
 import { AbstractSchema } from "./abstract"
 import { BuildingSchema } from "./building.schema"
 import { AnimalSchema } from "./animal.schema"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 import { TileSchema } from "./tile.schema"
 import { ANIMAL, BUILDING, FRUIT, PET, TILE } from "../constants"
 import { PetSchema } from "./pet.schema"
@@ -41,35 +41,35 @@ export class PlacedItemTypeSchema extends AbstractSchema {
         description: "The building associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: BuildingSchema.name })
-    [BUILDING]: BuildingSchema | string
+    [BUILDING]: BuildingSchema | Types.ObjectId
             
     @Field(() => ID, { 
         nullable: true,
         description: "The animal associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: AnimalSchema.name })
-    [ANIMAL]: AnimalSchema | string
+    [ANIMAL]: AnimalSchema | Types.ObjectId
 
     @Field(() => ID, { 
         nullable: true,
         description: "The tile associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: TileSchema.name })
-    [TILE]: TileSchema | string
+    [TILE]: TileSchema | Types.ObjectId
 
     @Field(() => ID, { 
         nullable: true,
         description: "The pet associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: PetSchema.name })
-    [PET]: PetSchema | string
+    [PET]: PetSchema | Types.ObjectId
 
     @Field(() => ID, { 
         nullable: true,
         description: "The fruit associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FruitSchema.name })
-    [FRUIT]: FruitSchema | string
+    [FRUIT]: FruitSchema | Types.ObjectId
 
     @Field(() => Int, {
         description: "The width of the placed item in grid cells"

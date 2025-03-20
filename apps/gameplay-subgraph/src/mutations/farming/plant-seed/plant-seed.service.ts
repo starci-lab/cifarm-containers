@@ -6,7 +6,7 @@ import {
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, TutorialService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { PlantSeedRequest } from "./plant-seed.dto"
@@ -26,6 +26,7 @@ export class PlantSeedService {
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
+        private readonly tutorialService: TutorialService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -232,6 +233,7 @@ export class PlantSeedService {
                         {
                             seedGrowthInfo: {
                                 crop: crop.id.toString(),
+                                inTutorial: !this.tutorialService.isLastStep(user.tutorialStep)
                             }
                         }
                     )

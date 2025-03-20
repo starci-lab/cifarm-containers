@@ -2,7 +2,7 @@ import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { SpinPrizeSchema } from "./spin-prize.schema"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 import { SPIN_PRIZE } from "../constants"
 
 @ObjectType({
@@ -17,7 +17,7 @@ export class SpinSlotSchema extends AbstractSchema {
         description: "The prize associated with this spin slot"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: SpinPrizeSchema.name })
-    [SPIN_PRIZE]: SpinPrizeSchema | string
+    [SPIN_PRIZE]: SpinPrizeSchema | Types.ObjectId
 }
 
 export const SpinSlotSchemaClass = SchemaFactory.createForClass(SpinSlotSchema)

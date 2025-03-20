@@ -4,7 +4,7 @@ import { AbstractSchema } from "./abstract"
 import { AnimalCurrentState, FirstCharLowerCaseAnimalCurrentState } from "../enums"
 import { ANIMAL } from "../constants"
 import { AnimalSchema } from "./animal.schema"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 
 @ObjectType({
     description: "The schema for animal info"
@@ -51,7 +51,7 @@ export class AnimalInfoSchema extends AbstractSchema {
         description: "The animal ID"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: AnimalSchema.name })
-    [ANIMAL]: AnimalSchema | string
+    [ANIMAL]: AnimalSchema | Types.ObjectId
 
     @Field(() => FirstCharLowerCaseAnimalCurrentState, {
         description: "The current state of the animal"
@@ -63,7 +63,7 @@ export class AnimalInfoSchema extends AbstractSchema {
         description: "The thieves of the animal"
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
-        thieves: Array<MongooseSchema.Types.ObjectId>
+        thieves: Array<Types.ObjectId>
 
     @Field(() => Int, {
         description: "The harvest quantity remaining of the animal",

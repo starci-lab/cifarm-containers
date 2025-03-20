@@ -4,7 +4,7 @@ import { USER, INVENTORY_TYPE } from "../constants"
 import { AbstractSchema } from "./abstract"
 import { InventoryTypeSchema } from "./inventory-type.schema"
 import { UserSchema } from "./user.schema"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 import { InventoryKind, FirstCharLowerCaseInventoryKind } from "../enums"
 
 @ObjectType({
@@ -26,7 +26,7 @@ export class InventorySchema extends AbstractSchema {
         description: "The user who owns this inventory item"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
-    [USER]: UserSchema | string
+    [USER]: UserSchema | Types.ObjectId
 
     @Field(() => Int, {
         description: "The index position of the inventory item"

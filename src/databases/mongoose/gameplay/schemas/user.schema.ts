@@ -3,7 +3,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { ChainKey, Network } from "@src/env"
 import { TutorialStep } from "../enums"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 
 @ObjectType({
     description: "The schema for user data"
@@ -142,13 +142,13 @@ export class UserSchema extends AbstractSchema {
         description: "The ID of the user who referred this user"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false })
-        referralUserId: MongooseSchema.Types.ObjectId
+        referralUserId?: Types.ObjectId
 
     @Field(() => [ID], {
         description: "The IDs of users referred by this user"
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false })
-        referredUserIds: Array<MongooseSchema.Types.ObjectId>
+        referredUserIds: Array<Types.ObjectId>
     
     @Field(() => Boolean, {
         description: "Whether the user has been awarded for following on X/Twitter"

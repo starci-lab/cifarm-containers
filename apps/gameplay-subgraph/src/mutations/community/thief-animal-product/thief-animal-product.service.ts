@@ -20,7 +20,7 @@ import {
     StaticService
 } from "@src/gameplay"
 import { Producer } from "kafkajs"
-import { Connection, Schema } from "mongoose"
+import { Connection, Types } from "mongoose"
 import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
@@ -246,7 +246,7 @@ export class ThiefAnimalProductService {
                  * UPDATE ANIMAL DATA
                  ************************************************************/
                 placedItemAnimal.animalInfo.harvestQuantityRemaining -= actualQuantity
-                placedItemAnimal.animalInfo.thieves.push(new Schema.Types.ObjectId(userId))
+                placedItemAnimal.animalInfo.thieves.push(new Types.ObjectId(userId))
                 await placedItemAnimal.save({ session: mongoSession })
 
                 actionMessage = {

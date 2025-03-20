@@ -74,6 +74,9 @@ export class CropService {
                         // not null
                         $ne: null
                     },
+                    "seedGrowthInfo.inTutorial": {
+                        $ne: true
+                    },
                     // Compare this snippet from apps/cron-scheduler/src/animal/animal.service.ts:
                     "seedGrowthInfo.currentState": {
                         $nin: [CropCurrentState.NeedWater, CropCurrentState.FullyMatured]
