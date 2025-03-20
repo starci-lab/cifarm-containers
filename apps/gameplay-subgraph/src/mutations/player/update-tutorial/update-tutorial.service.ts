@@ -65,7 +65,7 @@ export class UpdateTutorialService {
                  * PROCESS NEXT TUTORIAL STEP
                  ************************************************************/
                 const nextStep = user.tutorialStep + 1
-
+                console.log(nextStep)
                 switch (nextStep) {
                 case TutorialStep.StartWaterCropAtStage1: {
                     await this.startWaterCropAtStage1({
@@ -147,9 +147,14 @@ export class UpdateTutorialService {
             .sort({ createdAt: -1 })
             .limit(2)
             .session(session)
-
+        console.log({
+            user: user.id,
+            seedGrowthInfo: {
+                $ne: null
+            },
+            "seedGrowthInfo.currentStage": 0
+        })
         console.log(placedItems)
-
         // update the top 2 latested crop to stage 1, and one of them need water
         // the first crop is normal, the second crop is need water
         const placedItem1 = placedItems.at(0)
