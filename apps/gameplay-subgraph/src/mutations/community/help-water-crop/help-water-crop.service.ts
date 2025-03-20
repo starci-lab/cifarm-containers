@@ -75,7 +75,7 @@ export class HelpWaterCropService {
                 if (!placedItemTile) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
-                        action: ActionName.HelpWater,
+                        action: ActionName.HelpWaterCrop,
                         success: false,
                         userId,
                         reasonCode: 0
@@ -91,7 +91,7 @@ export class HelpWaterCropService {
                 if (neighborUserId === userId) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
-                        action: ActionName.HelpWater,
+                        action: ActionName.HelpWaterCrop,
                         success: false,
                         userId,
                         reasonCode: 1
@@ -106,7 +106,7 @@ export class HelpWaterCropService {
                 if (!placedItemTile.seedGrowthInfo) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
-                        action: ActionName.HelpWater,
+                        action: ActionName.HelpWaterCrop,
                         success: false,
                         userId,
                         reasonCode: 2
@@ -121,7 +121,7 @@ export class HelpWaterCropService {
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
                     actionMessage = {
                         placedItemId: placedItemTileId,
-                        action: ActionName.HelpWater,
+                        action: ActionName.HelpWaterCrop,
                         success: false,
                         userId,
                         reasonCode: 3
@@ -137,7 +137,7 @@ export class HelpWaterCropService {
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 // Fetch system activity values
-                const { energyConsume, experiencesGain } = this.staticService.activities.helpWater
+                const { energyConsume, experiencesGain } = this.staticService.activities.helpWaterCrop
 
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -179,7 +179,7 @@ export class HelpWaterCropService {
                 // Prepare action message for Kafka
                 actionMessage = {
                     placedItemId: placedItemTileId,
-                    action: ActionName.HelpWater,
+                    action: ActionName.HelpWaterCrop,
                     success: true,
                     userId
                 }

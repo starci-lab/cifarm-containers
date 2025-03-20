@@ -14,7 +14,7 @@ export class HelpWaterCropResolver {
 
     @UseGuards(GraphQLJwtAuthGuard)
     @Mutation(() => VoidResolver, {
-        name: "helpWater",
+        name: "helpWaterCrop",
         description: "Help water a placed item",
         nullable: true
     })

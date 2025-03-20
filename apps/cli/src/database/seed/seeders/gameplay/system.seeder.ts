@@ -69,7 +69,7 @@ export class SystemSeeder implements Seeder {
                 energyConsume: 1,
                 experiencesGain: 3
             },
-            helpWater: {
+            helpWaterCrop: {
                 energyConsume: 1,
                 experiencesGain: 3
             },

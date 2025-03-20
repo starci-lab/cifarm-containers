@@ -99,7 +99,7 @@ export class Activities {
     @Field(() => ActivityInfo, {
         description: "Configuration for helping others water crops"
     })
-        helpWater: ActivityInfo
+        helpWaterCrop: ActivityInfo
 
     @Field(() => ActivityInfo, {
         description: "Configuration for stealing crops"
