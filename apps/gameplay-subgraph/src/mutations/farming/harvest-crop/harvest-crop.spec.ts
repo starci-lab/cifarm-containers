@@ -176,7 +176,6 @@ describe("HarvestCropService", () => {
                 it.product.toString() === product.id.toString()
         )
 
-
         // Create placed item with a fully matured crop
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)

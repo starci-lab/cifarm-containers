@@ -15,7 +15,7 @@ export class AnimalsResolver {
         description: "Get all animals"
     })
     async animals(): Promise<Array<AnimalSchema>> {
-        return await this.animalsService.getAnimals()
+        return await this.animalsService.animals()
     } 
 
     @Query(() => AnimalSchema, {
@@ -23,6 +23,6 @@ export class AnimalsResolver {
         description: "Get an animal by ID",
     })
     async animal(@Args("id", { type: () => ID, description: "The ID of the animal" }) id: AnimalId): Promise<AnimalSchema> {
-        return await this.animalsService.getAnimal(id)
+        return await this.animalsService.animal(id)
     }
 }

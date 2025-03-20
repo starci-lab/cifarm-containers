@@ -12,7 +12,7 @@ export class PlacedItemTypesService {
         private readonly connection: Connection
     ) {}
 
-    async getPlacedItemTypes(): Promise<Array<PlacedItemTypeSchema>> {
+    async placedItemTypes(): Promise<Array<PlacedItemTypeSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection
@@ -24,7 +24,7 @@ export class PlacedItemTypesService {
         }
     }
 
-    async getPlacedItemType(id: PlacedItemTypeId): Promise<PlacedItemTypeSchema> {
+    async placedItemType(id: PlacedItemTypeId): Promise<PlacedItemTypeSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection

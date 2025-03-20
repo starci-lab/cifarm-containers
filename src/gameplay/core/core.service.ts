@@ -89,9 +89,6 @@ export class CoreService {
         placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Hungry
         placedItemAnimal.animalInfo.harvestQuantityRemaining = 0
 
-        // update the animal info
-        placedItemAnimal.animalInfo.animal = animal
-
         return placedItemAnimal
     }
 

@@ -11,11 +11,11 @@ export class FruitsResolver {
 
     @Query(() => [FruitSchema], { name: "fruits", description: "Get all fruits" })
     async fruits(): Promise<Array<FruitSchema>> {
-        return this.fruitService.getFruits()
-    }
+        return this.fruitService.fruits()
+    }   
     
     @Query(() => FruitSchema, { name: "fruit", description: "Get a fruit by ID" })
     async fruit(@Args("id", { type: () => ID, description: "The ID of the fruit" }) id: FruitId): Promise<FruitSchema> {
-        return this.fruitService.getFruit(id)
+        return this.fruitService.fruit(id)
     }
 }

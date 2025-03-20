@@ -14,7 +14,7 @@ export class TilesResolver {
         description: "Get all tiles"
     })
     async tiles(): Promise<Array<TileSchema>> {
-        return this.tilesService.getTiles()
+        return this.tilesService.tiles()
     }
 
     @Query(() => TileSchema, {
@@ -24,6 +24,6 @@ export class TilesResolver {
     async tile(
         @Args("id", { type: () => ID, description: "The ID of the tile" }) id: TileId
     ): Promise<TileSchema | null> {
-        return this.tilesService.getTile(id)
+        return this.tilesService.tile(id)
     }
 }

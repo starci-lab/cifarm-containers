@@ -10,11 +10,11 @@ export class BuildingsResolver {
 
     @Query(() => [BuildingSchema], { name: "buildings", description: "Get all buildings" })
     async buildings(): Promise<Array<BuildingSchema>> {
-        return this.buildingsService.getBuildings()
+        return this.buildingsService.buildings()
     }
 
     @Query(() => BuildingSchema, { name: "building", description: "Get a building by ID" })
     async building(@Args("id", { type: () => ID, description: "The ID of the building" }) id: BuildingId): Promise<BuildingSchema> {
-        return this.buildingsService.getBuilding(id)
+        return this.buildingsService.building(id)
     }
 }

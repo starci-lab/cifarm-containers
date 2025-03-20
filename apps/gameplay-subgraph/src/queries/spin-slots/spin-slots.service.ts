@@ -11,7 +11,7 @@ export class SpinSlotsService {
         private readonly connection: Connection,
     ) {}
 
-    async getSpinSlots(): Promise<Array<SpinSlotSchema>> {
+    async spinSlots(): Promise<Array<SpinSlotSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model(SpinSlotSchema.name).find()
@@ -20,7 +20,7 @@ export class SpinSlotsService {
         }
     }
 
-    async getSpinSlot(id: string): Promise<SpinSlotSchema> {
+    async spinSlot(id: string): Promise<SpinSlotSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model(SpinSlotSchema.name).findById(id)

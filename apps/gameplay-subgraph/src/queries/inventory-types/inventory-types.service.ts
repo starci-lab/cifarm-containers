@@ -12,7 +12,7 @@ export class InventoryTypesService {
         private readonly connection: Connection
     ) {}
 
-    async getInventoryTypes(): Promise<Array<InventoryTypeSchema>> {
+    async inventoryTypes(): Promise<Array<InventoryTypeSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             const inventoryTypes = await this.connection.model(InventoryTypeSchema.name).find().session(mongoSession)
@@ -22,7 +22,7 @@ export class InventoryTypesService {
         }
     }
 
-    async getInventoryType(id: InventoryTypeId): Promise<InventoryTypeSchema> {
+    async inventoryType(id: InventoryTypeId): Promise<InventoryTypeSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model(InventoryTypeSchema.name).findById(createObjectId(id)).session(mongoSession)

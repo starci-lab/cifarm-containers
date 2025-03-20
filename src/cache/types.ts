@@ -13,3 +13,8 @@ export enum CacheType {
     Memory = "memory",
     Redis = "redis"
 }
+
+export enum CacheKey {
+    PlacedItems = "placed-items",
+    Inventories = "inventories"
+}

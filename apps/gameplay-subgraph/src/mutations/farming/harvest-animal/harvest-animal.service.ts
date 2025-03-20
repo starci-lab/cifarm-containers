@@ -133,13 +133,23 @@ export class HarvestAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PRODUCT DATA
                  ************************************************************/
-
                 // Get product data
+                const animal = this.staticService.animals.find(
+                    (animal) => animal.id === placedItemType.animal.toString()
+                )
+                if (!animal) {
+                    throw new GraphQLError("Animal not found in static data", {
+                        extensions: {
+                            code: "ANIMAL_NOT_FOUND_IN_STATIC_DATA"
+                        }
+                    })
+                }
+                
                 const product = await this.connection
                     .model<ProductSchema>(ProductSchema.name)
                     .findOne({
                         isQuality: placedItemAnimal.animalInfo?.isQuality,
-                        animal: placedItemAnimal.animalInfo?.animal
+                        animal: animal.id
                     })
                     .session(session)
 
@@ -231,13 +241,13 @@ export class HarvestAnimalService {
                     await inventory.save({ session })
                 }
 
-                const animal = this.staticService.animals.find(
-                    (animal) => animal.id === placedItemAnimal.animalInfo?.animal.toString()
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) => placedItemType.id === placedItemAnimal.placedItemType.toString()
                 )
-                if (!animal) {
-                    throw new GraphQLError("Animal not found in static data", {
+                if (!placedItemType) {
+                    throw new GraphQLError("Placed item type not found", {
                         extensions: {
-                            code: "ANIMAL_NOT_FOUND_IN_STATIC_DATA"
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND"      
                         }
                     })
                 }

@@ -1,11 +1,10 @@
 import { Logger, UseGuards } from "@nestjs/common"
 import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { InventorySchema } from "@src/databases"
-import { GetInventoriesRequest, GetInventoriesResponse } from "./inventories.dto"
 import { InventoriesService } from "./inventories.service"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-
+import { InventoriesRequest } from "./inventories.dto"
 @Resolver()
 export class InventoriesResolver {
     private readonly logger = new Logger(InventoriesResolver.name)
@@ -13,15 +12,14 @@ export class InventoriesResolver {
     constructor(private readonly inventoriesService: InventoriesService) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Query(() => GetInventoriesResponse, {
+    @Query(() => [InventorySchema], {
         name: "inventories",
         description: "Get many inventories with pagination"
     })
     async inventories(
         @GraphQLUser() user: UserLike,
-        @Args("request") request: GetInventoriesRequest
-    ): Promise<GetInventoriesResponse> {
-        console.log(request)
+        @Args("request", { type: () => InventoriesRequest, nullable: true }) request: InventoriesRequest
+    ): Promise<Array<InventorySchema>> {
         return await this.inventoriesService.getInventories(user, request)
     }
 

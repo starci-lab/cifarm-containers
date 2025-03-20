@@ -14,14 +14,14 @@ export class SuppliesResolver {
         description: "Get a supply by ID"
     })
     async supply(@Args("id", { type: () => ID, description: "The ID of the supply" }) id: SupplyId): Promise<SupplySchema> {
-        return this.suppliesService.getSupply(id)
+        return this.suppliesService.supply(id)
     }
-    
+
     @Query(() => [SupplySchema], {
         name: "supplies",
         description: "Get all supplies"
     })
     async supplies(): Promise<Array<SupplySchema>> {
-        return this.suppliesService.getSupplies()
+        return this.suppliesService.supplies()
     }
 }

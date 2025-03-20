@@ -24,39 +24,39 @@ export class SystemsService {
         private readonly staticService: StaticService
     ) {}
 
-    async getActivities(): Promise<Activities> {
+    async activities(): Promise<Activities> {
         return this.staticService.activities
     }
 
-    async getCropInfo(): Promise<CropInfo> {
+    async cropInfo(): Promise<CropInfo> {
         return this.staticService.cropInfo
     }
 
-    async getAnimalInfo(): Promise<AnimalInfo> {
+    async animalInfo(): Promise<AnimalInfo> {
         return this.staticService.animalInfo
     }
 
-    async getFruitInfo(): Promise<FruitInfo> {
+    async fruitInfo(): Promise<FruitInfo> {
         return this.staticService.fruitInfo
     }
 
-    async getDefaultInfo(): Promise<DefaultInfo> {
+    async defaultInfo(): Promise<DefaultInfo> {
         return this.staticService.defaultInfo
     }
 
-    async getSpinInfo(): Promise<SpinInfo> {
+    async spinInfo(): Promise<SpinInfo> {
         return this.staticService.spinInfo
     }
 
-    async getEnergyRegen(): Promise<EnergyRegen> {
+    async energyRegen(): Promise<EnergyRegen> {
         return this.staticService.energyRegen
     }
 
-    async getDailyRewardInfo(): Promise<DailyRewardInfo> {
+    async dailyRewardInfo(): Promise<DailyRewardInfo> {
         return this.staticService.dailyRewardInfo
     }
 
-    async getHoneycombInfo(): Promise<HoneycombInfo> {
+    async honeycombInfo(): Promise<HoneycombInfo> {
         return this.staticService.honeycombInfo
     }
 }

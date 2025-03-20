@@ -1,8 +1,10 @@
-import { GetInventoriesRequest, GetInventoriesResponse } from "./inventories.dto"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, InventorySchema } from "@src/databases"
 import { UserLike } from "@src/jwt"
 import { Connection } from "mongoose"
+import { InjectCache, getCacheKey, CacheKey } from "@src/cache"
+import { Cache } from "cache-manager"
+import { InventoriesRequest } from "./inventories.dto"
 
 @Injectable()
 export class InventoriesService {
@@ -10,7 +12,9 @@ export class InventoriesService {
 
     constructor(
         @InjectMongoose()
-        private readonly connection: Connection
+        private readonly connection: Connection,
+        @InjectCache()
+        private readonly cache: Cache
     ) {}
 
     async getInventory(id: string): Promise<InventorySchema> {
@@ -27,30 +31,22 @@ export class InventoriesService {
 
     async getInventories(
         { id }: UserLike,
-        { limit = 10, offset = 0 }: GetInventoriesRequest
-    ): Promise<GetInventoriesResponse> {
+        { storeAsCache }: InventoriesRequest
+    ): Promise<Array<InventorySchema>> {
         const mongoSession = await this.connection.startSession()
         try {
-            const data = await this.connection
+            const inventories = await this.connection
                 .model(InventorySchema.name)
                 .find({
                     user: id
                 })
-                .limit(limit)
-                .skip(offset)
                 .session(mongoSession)
 
-            const count = await this.connection
-                .model<InventorySchema>(InventorySchema.name)
-                .countDocuments({
-                    user: id
-                })
-                .session(mongoSession)
-
-            return {
-                data,
-                count
+            if (storeAsCache) {
+                await this.cache.set(getCacheKey(CacheKey.Inventories, id), inventories)
             }
+
+            return inventories
         } finally {
             await mongoSession.endSession()
         }

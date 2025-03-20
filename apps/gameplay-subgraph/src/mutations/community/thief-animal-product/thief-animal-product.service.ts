@@ -171,11 +171,30 @@ export class ThiefAnimalProductService {
                 /************************************************************
                  * RETRIEVE PRODUCT AND INVENTORY TYPE
                  ************************************************************/
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) => placedItemType.id === placedItemAnimal.placedItemType.toString()
+                )
+                if (!placedItemType) {
+                    throw new GraphQLError("Placed item type not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
+                const animal = this.staticService.animals.find(
+                    (animal) => animal.id === placedItemType.animal.toString()
+                )
+                if (!animal) {
+                    throw new GraphQLError("Animal not found", {
+                        extensions: {
+                            code: "ANIMAL_NOT_FOUND"
+                        }
+                    })
+                }
                 const product = this.staticService.products.find(
                     (product) =>
                         product.type === ProductType.Animal &&
-                        product.animal.toString() ===
-                            placedItemAnimal.animalInfo.animal.toString() &&
+                        product.animal.toString() === animal.id &&
                         product.isQuality === placedItemAnimal.animalInfo.isQuality
                 )
 

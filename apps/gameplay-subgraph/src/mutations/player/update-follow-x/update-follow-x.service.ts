@@ -41,7 +41,7 @@ export class UpdateFollowXService {
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 // Get the user data
-                const user = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)

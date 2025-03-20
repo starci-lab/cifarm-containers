@@ -14,7 +14,8 @@ import {
     ProductType,
     UserSchema,
     InventoryKind,
-    InventoryTypeId
+    InventoryTypeId,
+    PlacedItemType
 } from "@src/databases"
 import {
     EnergyService,
@@ -183,10 +184,15 @@ export class ThiefFruitService {
                 /************************************************************
                  * RETRIEVE PRODUCT AND INVENTORY TYPE
                  ************************************************************/
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) =>
+                        placedItemType.type === PlacedItemType.Fruit &&
+                        placedItemType.id === placedItemFruit.placedItemType.toString()
+                )
                 const product = this.staticService.products.find(
                     (product) =>
                         product.type === ProductType.Fruit &&
-                        product.fruit.toString() === placedItemFruit.fruitInfo.fruit.toString() &&
+                        product.fruit.toString() === placedItemType.fruit.toString() &&
                         product.isQuality === placedItemFruit.fruitInfo.isQuality
                 )
 

@@ -12,7 +12,7 @@ export class PetsService {
         private readonly connection: Connection  // Replace DataSource with Connection
     ) {}
 
-    async getPets(): Promise<Array<PetSchema>> {
+    async pets(): Promise<Array<PetSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<PetSchema>(PetSchema.name).find().session(mongoSession)
@@ -21,7 +21,7 @@ export class PetsService {
         }
     }
 
-    async getPet(id: PetId): Promise<PetSchema> {
+    async pet(id: PetId): Promise<PetSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<PetSchema>(PetSchema.name).findById(createObjectId(id)).session(mongoSession)

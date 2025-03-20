@@ -150,7 +150,8 @@ export class SystemSeeder implements Seeder {
                 hasCaterpillar: 1,
                 needFertilizer: 0.5
             },
-            nextGrowthStageAfterHarvest: 3
+            nextGrowthStageAfterHarvest: 3,
+            growthStages: 5
         }
         const defaultInfo: DefaultInfo = {
             golds: 1000, 

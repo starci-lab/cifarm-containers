@@ -2,7 +2,7 @@ import { DynamicModule, Module } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./cache.module-definition"
 import { KeyvModule } from "./keyv"
 import { createMemoryCacheManagerFactoryProvider, createRedisCacheManagerFactoryProvider } from "./cache.providers"
-import { CacheType } from "./cache.types"
+import { CacheType } from "./types"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 
 @Module({})

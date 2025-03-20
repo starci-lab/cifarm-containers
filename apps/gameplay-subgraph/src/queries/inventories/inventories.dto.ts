@@ -1,15 +1,7 @@
-import { Field, InputType, ObjectType } from "@nestjs/graphql"
-import { InventorySchema } from "@src/databases"
-import { IPaginatedResponse, PaginatedRequest, PaginatedResponse } from "@src/graphql"
+import { Field, InputType } from "@nestjs/graphql"
 
 @InputType()
-export class GetInventoriesRequest extends PaginatedRequest {}
-
-@ObjectType()
-export class GetInventoriesResponse
-    extends PaginatedResponse
-    implements IPaginatedResponse<InventorySchema>
-{
-    @Field(() => [InventorySchema])
-        data: Array<InventorySchema>
-}
+export class InventoriesRequest {
+    @Field(() => Boolean, { description: "Whether to store the result in the cache" })
+        storeAsCache: boolean
+}   

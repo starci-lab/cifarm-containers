@@ -12,7 +12,7 @@ export class SuppliesService {
         private readonly connection: Connection
     ) {}
 
-    async getSupply(id: SupplyId): Promise<SupplySchema> {
+    async supply(id: SupplyId): Promise<SupplySchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<SupplySchema>(SupplySchema.name).findById(createObjectId(id))
@@ -21,7 +21,7 @@ export class SuppliesService {
         }
     }
 
-    async getSupplies(): Promise<Array<SupplySchema>> {
+    async supplies(): Promise<Array<SupplySchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<SupplySchema>(SupplySchema.name).find()

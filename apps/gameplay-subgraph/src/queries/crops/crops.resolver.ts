@@ -11,11 +11,11 @@ export class CropsResolver {
 
     @Query(() => [CropSchema], { name: "crops", description: "Get all crops" })
     async crops(): Promise<Array<CropSchema>> {
-        return this.cropsService.getCrops()
+        return this.cropsService.crops()
     }
     
     @Query(() => CropSchema, { name: "crop", description: "Get a crop by ID" })
     async crop(@Args("id", { type: () => ID, description: "The ID of the crop" }) id: CropId): Promise<CropSchema> {
-        return this.cropsService.getCrop(id)
+        return this.cropsService.crop(id)
     }
 }

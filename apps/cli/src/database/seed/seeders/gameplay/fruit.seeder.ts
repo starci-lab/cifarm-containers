@@ -33,7 +33,6 @@ export class FruitSeeder implements Seeder {
                 qualityProductChanceLimit: 0.1,
                 minHarvestQuantity: 14,
                 maxHarvestQuantity: 20,
-                nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
             },
             {
@@ -49,7 +48,6 @@ export class FruitSeeder implements Seeder {
                 qualityProductChanceLimit: 0.1,
                 minHarvestQuantity: 14,
                 maxHarvestQuantity: 20,
-                nextGrowthStageAfterHarvest: 1,
                 availableInShop: true,
             },
         ]

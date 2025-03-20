@@ -13,17 +13,17 @@ export class ToolsResolver {
         name: "tool",
         description: "Get a tool by ID"
     })
-    async getTool(
+    async tool(
         @Args("id", { type: () => ID, description: "The ID of the tool" }) id: ToolId
     ): Promise<ToolSchema> {
-        return this.toolsService.getTool(id)
+        return this.toolsService.tool(id)
     }
 
     @Query(() => [ToolSchema], {
         name: "tools",
         description: "Get all tools"
     })
-    async getTools(): Promise<Array<ToolSchema>> {
-        return this.toolsService.getTools()
+    async tools(): Promise<Array<ToolSchema>> {
+        return this.toolsService.tools()
     }
 }

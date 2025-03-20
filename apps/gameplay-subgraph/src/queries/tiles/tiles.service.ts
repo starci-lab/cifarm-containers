@@ -12,7 +12,7 @@ export class TilesService {
         private readonly connection: Connection
     ) {}
 
-    async getTiles(): Promise<Array<TileSchema>> {
+    async tiles(): Promise<Array<TileSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model(TileSchema.name).find().session(mongoSession)
@@ -21,7 +21,7 @@ export class TilesService {
         }
     }
 
-    async getTile(id: TileId): Promise<TileSchema> {
+    async tile(id: TileId): Promise<TileSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection

@@ -12,7 +12,7 @@ export class ToolsService {
         private readonly connection: Connection
     ) { }
 
-    async getTool(id: ToolId): Promise<ToolSchema> {
+    async tool(id: ToolId): Promise<ToolSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<ToolSchema>(ToolSchema.name).findById(createObjectId(id))
@@ -21,7 +21,7 @@ export class ToolsService {
         }
     }
 
-    async getTools(): Promise<Array<ToolSchema>> {
+    async tools(): Promise<Array<ToolSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<ToolSchema>(ToolSchema.name).find()

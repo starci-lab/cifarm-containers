@@ -14,7 +14,7 @@ export class SpinSlotsResolver {
         description: "Get all spin slots"
     })
     async spinSlots(): Promise<Array<SpinSlotSchema>> {
-        return this.spinSlotsService.getSpinSlots()
+        return this.spinSlotsService.spinSlots()
     }
 
     @Query(() => SpinSlotSchema, {
@@ -24,6 +24,6 @@ export class SpinSlotsResolver {
     async spinSlot(
         @Args("id", { type: () => ID, description: "The ID of the spin slot" }) id: string
     ): Promise<SpinSlotSchema> {
-        return this.spinSlotsService.getSpinSlot(id)
+        return this.spinSlotsService.spinSlot(id)
     }
 }

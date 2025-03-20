@@ -13,7 +13,7 @@ export class SpinPrizeResolver {
         description: "Get all spin prizes"
     })
     async spinPrizes(): Promise<Array<SpinPrizeSchema>> {
-        return this.spinPrizesService.getSpinPrizes()
+        return this.spinPrizesService.spinPrizes()
     }
 
     @Query(() => SpinPrizeSchema, {
@@ -23,6 +23,6 @@ export class SpinPrizeResolver {
     async spinPrize(
         @Args("id", { type: () => ID, description: "The ID of the spin prize" }) id: string
     ): Promise<SpinPrizeSchema> {
-        return this.spinPrizesService.getSpinPrize(id)
+        return this.spinPrizesService.spinPrize(id)
     }
 }

@@ -11,7 +11,8 @@ import {
     SystemSchema,
     UserSchema,
     InventoryTypeId,
-    InventoryKind
+    InventoryKind,
+    InventoryType
 } from "@src/databases"
 import { CoreService, EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
@@ -152,7 +153,7 @@ export class HarvestCropService {
                     })
                 }
                 const inventoryType = this.staticService.inventoryTypes.find(
-                    (inventoryType) => inventoryType.product && inventoryType.product.toString() === product.id.toString()
+                    (inventoryType) => inventoryType.type === InventoryType.Product && inventoryType.product.toString() === product.id.toString()
                 )
                 if (!inventoryType) {
                     throw new GraphQLError("Inventory type not found in static data", {

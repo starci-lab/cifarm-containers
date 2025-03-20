@@ -5,10 +5,10 @@ import { UserSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import {
-    GetFolloweesRequest,
-    GetFolloweesResponse,
-    GetNeighborsRequest,
-    GetNeighborsResponse
+    FolloweesRequest,
+    FolloweesResponse,
+    NeighborsRequest,
+    NeighborsResponse
 } from "./users.dto"
 
 @Resolver()
@@ -20,34 +20,36 @@ export class UsersResolver {
 
     @UseGuards(GraphQLJwtAuthGuard)
     @Query(() => UserSchema, {
-        name: "user",
+        name: "user",   
         description: "Get a user by ID"
     })
     async user(@GraphQLUser() user: UserLike): Promise<UserSchema> {
-        return await this.usersService.getUser(user.id)
+        return await this.usersService.user(user.id)
     }
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Query(() => GetNeighborsResponse, {
+    @Query(() => NeighborsResponse, {
         name: "neighbors",
         description: "Get neighbors of a user with pagination"
     })
     async neighbors(
         @GraphQLUser() user: UserLike,
-        @Args("request") request: GetNeighborsRequest
-    ): Promise<GetNeighborsResponse> {
-        return this.usersService.getNeighbors(user, request)
+        @Args("request", { type: () => NeighborsRequest, nullable: true })
+            request: NeighborsRequest
+    ): Promise<NeighborsResponse> {
+        return this.usersService.neighbors(user, request)
     }
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Query(() => GetFolloweesResponse, {
+    @Query(() => FolloweesResponse, {
         name: "followees",
         description: "Get followees of a user with pagination"
     })
     async followees(
         @GraphQLUser() user: UserLike,
-        @Args("request") request: GetFolloweesRequest
-    ): Promise<GetFolloweesResponse> {
-        return this.usersService.getFollowees(user, request)
+        @Args("request", { type: () => FolloweesRequest, nullable: true })
+            request: FolloweesRequest
+    ): Promise<FolloweesResponse> {
+        return this.usersService.followees(user, request)
     }
 }

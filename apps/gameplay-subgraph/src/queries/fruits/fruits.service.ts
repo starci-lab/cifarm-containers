@@ -12,7 +12,7 @@ export class FruitsService {
         private readonly connection: Connection // Replace DataSource with Connection
     ) {}
 
-    async getFruits(): Promise<Array<FruitSchema>> {
+    async fruits(): Promise<Array<FruitSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection
@@ -24,7 +24,7 @@ export class FruitsService {
         }
     }
 
-    async getFruit(id: FruitId): Promise<FruitSchema> {
+    async fruit(id: FruitId): Promise<FruitSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection

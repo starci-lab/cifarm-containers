@@ -14,7 +14,7 @@ export class InventoryTypesResolver {
         description: "Get all inventory types"
     })
     async inventoryTypes(): Promise<Array<InventoryTypeSchema>> {
-        return this.inventoryTypesService.getInventoryTypes()
+        return this.inventoryTypesService.inventoryTypes()
     }
 
     @Query(() => InventoryTypeSchema, {
@@ -25,6 +25,6 @@ export class InventoryTypesResolver {
         @Args("id", { type: () => ID, description: "The ID of the inventory type" })
             id: InventoryTypeId
     ): Promise<InventoryTypeSchema> {
-        return this.inventoryTypesService.getInventoryType(id)
+        return this.inventoryTypesService.inventoryType(id)
     }
 }

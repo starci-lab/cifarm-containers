@@ -12,7 +12,7 @@ export class BuildingsService {
         private readonly connection: Connection
     ) {}
 
-    async getBuildings(): Promise<Array<BuildingSchema>> {
+    async buildings(): Promise<Array<BuildingSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<BuildingSchema>(BuildingSchema.name).find().session(mongoSession)
@@ -21,7 +21,7 @@ export class BuildingsService {
         }
     }
 
-    async getBuilding(id: BuildingId): Promise<BuildingSchema> {
+    async building(id: BuildingId): Promise<BuildingSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<BuildingSchema>(BuildingSchema.name).findById(createObjectId(id)).session(mongoSession)

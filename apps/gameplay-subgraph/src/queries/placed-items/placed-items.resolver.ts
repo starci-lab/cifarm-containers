@@ -2,10 +2,9 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { PlacedItemsService } from "./placed-items.service"
 import { PlacedItemSchema } from "@src/databases"
-import { GetPlacedItemsRequest, GetPlacedItemsResponse } from "./placed-items.dto"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-
+import { PlacedItemsRequest } from "./placed-items.dto"
 @Resolver()
 export class PlacedItemsResolver {
     private readonly logger = new Logger(PlacedItemsResolver.name)
@@ -24,14 +23,15 @@ export class PlacedItemsResolver {
     }
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Query(() => GetPlacedItemsResponse, {
+    @Query(() => [PlacedItemSchema], {
         name: "placedItems",
         description: "Get many placed items with pagination"
     })
     async placedItems(
         @GraphQLUser() user: UserLike,
-        @Args("request") request: GetPlacedItemsRequest
-    ): Promise<GetPlacedItemsResponse> {
+        @Args("request", { type: () => PlacedItemsRequest, nullable: true })
+            request: PlacedItemsRequest
+    ): Promise<Array<PlacedItemSchema>> {
         return this.placeditemsService.getPlacedItems(user, request)
     }
 }

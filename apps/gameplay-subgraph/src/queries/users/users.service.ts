@@ -2,10 +2,10 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, UserFollowRelationSchema, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import {
-    GetFolloweesRequest,
-    GetFolloweesResponse,
-    GetNeighborsRequest,
-    GetNeighborsResponse
+    FolloweesRequest,
+    FolloweesResponse,
+    NeighborsRequest,
+    NeighborsResponse
 } from "./users.dto"
 import { UserLike } from "@src/jwt"
 
@@ -18,7 +18,7 @@ export class UsersService {
         private readonly connection: Connection
     ) {}
 
-    async getUser(id: string): Promise<UserSchema> {
+    async user(id: string): Promise<UserSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection
@@ -30,10 +30,10 @@ export class UsersService {
         }
     }
 
-    async getNeighbors(
+    async neighbors(
         { id }: UserLike,
-        { limit, offset, searchString }: GetNeighborsRequest
-    ): Promise<GetNeighborsResponse> {
+        { limit, offset, searchString }: NeighborsRequest
+    ): Promise<NeighborsResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             const data = await this.connection
@@ -77,10 +77,10 @@ export class UsersService {
         }
     }
 
-    async getFollowees(
+    async followees(
         { id }: UserLike,
-        { limit, offset, searchString }: GetFolloweesRequest
-    ): Promise<GetFolloweesResponse> {
+        { limit, offset, searchString }: FolloweesRequest
+    ): Promise<FolloweesResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             const relations = await this.connection

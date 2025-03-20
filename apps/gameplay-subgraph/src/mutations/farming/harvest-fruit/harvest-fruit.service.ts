@@ -8,6 +8,8 @@ import {
     InventorySchema,
     InventoryTypeId,
     PlacedItemSchema,
+    PlacedItemType,
+    ProductType,
     UserSchema
 } from "@src/databases"
 import {
@@ -74,7 +76,7 @@ export class HarvestFruitService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
                     .session(session)
-                
+
                 // Validate fruit exists
                 if (!placedItemFruit) {
                     throw new GraphQLError("Fruit not found", {
@@ -83,7 +85,7 @@ export class HarvestFruitService {
                         }
                     })
                 }
-                
+
                 // Validate fruit is planted
                 if (!placedItemFruit.fruitInfo) {
                     throw new GraphQLError("Fruit is not planted", {
@@ -92,7 +94,7 @@ export class HarvestFruitService {
                         }
                     })
                 }
-                
+
                 // Validate fruit is fully matured
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.FullyMatured) {
                     throw new GraphQLError("Fruit is not fully matured", {
@@ -105,17 +107,17 @@ export class HarvestFruitService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                
+
                 // Get activity data
                 const { energyConsume, experiencesGain } =
                     this.staticService.activities.harvestFruit
-                
+
                 // Get user data
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-                
+
                 // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -124,7 +126,7 @@ export class HarvestFruitService {
                         }
                     })
                 }
-                
+
                 // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
@@ -134,17 +136,16 @@ export class HarvestFruitService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PRODUCT DATA
                  ************************************************************/
-                
+
                 // Get product data
                 const product = this.staticService.products.find((product) => {
                     return (
-                        product.fruit &&
-                        product.isQuality !== undefined &&
-                        product.fruit.toString() === placedItemFruit.fruitInfo.fruit.toString() &&
+                        product.type === ProductType.Fruit &&
+                        product.fruit.toString() === placedItemType.fruit.toString() &&
                         product.isQuality === placedItemFruit.fruitInfo.isQuality
                     )
                 })
-                
+
                 // Validate product exists
                 if (!product) {
                     throw new GraphQLError("Product not found from static data", {
@@ -157,12 +158,12 @@ export class HarvestFruitService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY TYPE
                  ************************************************************/
-                
+
                 // Get inventory type
                 const inventoryType = this.staticService.inventoryTypes.find(
                     (inventoryType) => inventoryType.product?.toString() === product.id.toString()
                 )
-                
+
                 // Validate inventory type exists
                 if (!inventoryType) {
                     throw new GraphQLError("Inventory type not found from static data", {
@@ -175,13 +176,23 @@ export class HarvestFruitService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE FRUIT DATA
                  ************************************************************/
-                
+
                 // Get fruit data
-                const fruit = this.staticService.fruits.find(
-                    (fruit) => fruit.id.toString() === placedItemFruit.fruitInfo.fruit.toString()
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) =>
+                        placedItemType.type === PlacedItemType.Fruit &&
+                        placedItemType.id.toString() === placedItemFruit.placedItemType.toString()
                 )
-                
-                // Validate fruit exists in static data
+                if (!placedItemType) {
+                    throw new GraphQLError("Placed item type not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
+                const fruit = this.staticService.fruits.find(
+                    (fruit) => fruit.id === placedItemType.fruit.toString()
+                )
                 if (!fruit) {
                     throw new GraphQLError("Fruit not found from static data", {
                         extensions: {
@@ -189,18 +200,18 @@ export class HarvestFruitService {
                         }
                     })
                 }
-
+                
                 /************************************************************
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
                  ************************************************************/
-                
+
                 // Update user energy and experience
                 this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                
+
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -239,20 +250,20 @@ export class HarvestFruitService {
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
                 }
-            
+
                 // Handle perennial fruit growth cycle
                 this.coreService.updatePlacedItemFruitAfterHarvest({
                     placedItemFruit,
                     fruit,
                     fruitInfo: this.staticService.fruitInfo
                 })
-                
+
                 // Save user changes
                 await user.save({ session })
-                
+
                 // Save placed item fruit changes
                 await placedItemFruit.save({ session })
-                
+
                 // Prepare action message
                 actionMessage = {
                     placedItemId: placedItemFruitId,
@@ -272,7 +283,7 @@ export class HarvestFruitService {
              * EXTERNAL COMMUNICATION
              * Send notifications after transaction is complete
              ************************************************************/
-            
+
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,

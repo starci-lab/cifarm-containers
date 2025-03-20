@@ -12,7 +12,7 @@ export class CropsService {
         private readonly connection: Connection  // Replace DataSource with Connection
     ) {}
 
-    async getCrops(): Promise<Array<CropSchema>> {
+    async crops(): Promise<Array<CropSchema>> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<CropSchema>(CropSchema.name).find().session(mongoSession)
@@ -21,7 +21,7 @@ export class CropsService {
         }
     }
 
-    async getCrop(id: CropId): Promise<CropSchema> {
+    async crop(id: CropId): Promise<CropSchema> {
         const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<CropSchema>(CropSchema.name).findById(createObjectId(id)).session(mongoSession)

@@ -12,13 +12,6 @@ export class BuildingInfoSchema extends AbstractSchema {
     })
     @Prop({ type: Number, default: 1 })
         currentUpgrade: number
-
-    @Field(() => String, {
-        description: "The building key of the building",
-        nullable: true
-    })
-    @Prop({ type: String, required: false })
-        buildingKey?: string
 }
 
 export const BuildingInfoSchemaClass = SchemaFactory.createForClass(BuildingInfoSchema)

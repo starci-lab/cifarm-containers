@@ -2,8 +2,6 @@ import { ObjectType, Field, Int, Float, ID } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { AnimalCurrentState, FirstCharLowerCaseAnimalCurrentState } from "../enums"
-import { ANIMAL } from "../constants"
-import { AnimalSchema } from "./animal.schema"
 import { Schema as MongooseSchema, Types } from "mongoose"
 
 @ObjectType({
@@ -46,12 +44,6 @@ export class AnimalInfoSchema extends AbstractSchema {
     })
     @Prop({ type: Number, default: 0 })
         timesHarvested: number
-
-    @Field(() => ID, {
-        description: "The animal ID"
-    })
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: AnimalSchema.name })
-    [ANIMAL]: AnimalSchema | Types.ObjectId
 
     @Field(() => FirstCharLowerCaseAnimalCurrentState, {
         description: "The current state of the animal"

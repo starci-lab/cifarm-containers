@@ -12,9 +12,9 @@ export class SystemsResolver {
     @Query(() => Activities, {
         name: "activities",
         description: "Get all activities"
-    })
+    })  
     async activities(): Promise<Activities> {
-        return this.systemsService.getActivities()
+        return this.systemsService.activities()
     }
 
     @Query(() => CropInfo, {
@@ -22,7 +22,7 @@ export class SystemsResolver {
         description: "Get the crop info"
     })
     async cropInfo(): Promise<CropInfo> {
-        return this.systemsService.getCropInfo()
+        return this.systemsService.cropInfo()
     }
 
     @Query(() => AnimalInfo, {
@@ -30,7 +30,7 @@ export class SystemsResolver {
         description: "Get the animal info"
     })
     async animalInfo(): Promise<AnimalInfo> {
-        return this.systemsService.getAnimalInfo()
+        return this.systemsService.animalInfo()
     }
 
     @Query(() => FruitInfo, {
@@ -38,7 +38,7 @@ export class SystemsResolver {
         description: "Get the fruit info"
     })
     async fruitInfo(): Promise<FruitInfo> {
-        return this.systemsService.getFruitInfo()
+        return this.systemsService.fruitInfo()
     }
 
     @Query(() => DefaultInfo, {
@@ -46,7 +46,7 @@ export class SystemsResolver {
         description: "Get the default info"
     })
     async defaultInfo(): Promise<DefaultInfo> {
-        return this.systemsService.getDefaultInfo()
+        return this.systemsService.defaultInfo()
     }
 
     @Query(() => SpinInfo, {
@@ -54,7 +54,7 @@ export class SystemsResolver {
         description: "Get the spin info"
     })
     async spinInfo(): Promise<SpinInfo> {
-        return this.systemsService.getSpinInfo()
+        return this.systemsService.spinInfo()
     }
 
     @Query(() => EnergyRegen, {
@@ -62,7 +62,7 @@ export class SystemsResolver {
         description: "Get the energy regen"
     })
     async energyRegen(): Promise<EnergyRegen> {
-        return this.systemsService.getEnergyRegen()
+        return this.systemsService.energyRegen()
     }
 
     @Query(() => DailyRewardInfo, {
@@ -70,7 +70,7 @@ export class SystemsResolver {
         description: "Get the daily reward info"
     })
     async dailyRewardInfo(): Promise<DailyRewardInfo> {
-        return this.systemsService.getDailyRewardInfo()
+        return this.systemsService.dailyRewardInfo()
     }
 
     @Query(() => HoneycombInfo, {
@@ -78,7 +78,7 @@ export class SystemsResolver {
         description: "Get the honeycomb info"
     })
     async honeycombInfo(): Promise<HoneycombInfo> {
-        return this.systemsService.getHoneycombInfo()
+        return this.systemsService.honeycombInfo()
     }
 }
 

@@ -274,9 +274,16 @@ export class FruitInfo {
         randomness: FruitRandomness
 
     @Field(() => Int, {
-        description: "The number of times the fruit can be harvested"
+        description: "The number of times the fruit can be harvested",
+        defaultValue: 3
     })
         nextGrowthStageAfterHarvest: number
+
+    @Field(() => Int, {
+        description: "The number of growth stages for the fruit",
+        defaultValue: 5
+    })
+        growthStages: number
 }
 
 @ObjectType({
