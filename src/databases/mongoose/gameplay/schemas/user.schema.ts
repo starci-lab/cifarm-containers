@@ -2,7 +2,6 @@ import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { ChainKey, Network } from "@src/env"
-import { TutorialStep } from "../enums"
 import { Schema as MongooseSchema, Types } from "mongoose"
 
 @ObjectType({
@@ -95,13 +94,6 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: Number, default: 1 })
         level: number
-
-    // tutorial step
-    @Field(() => Int, {
-        description: "The current tutorial step of the user"
-    })
-    @Prop({ type: Number, default: 0 })
-        tutorialStep: TutorialStep
 
     @Field(() => Int, {
         description: "The current streak of daily rewards claimed"

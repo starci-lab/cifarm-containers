@@ -233,7 +233,6 @@ export class PlantSeedService {
                         {
                             seedGrowthInfo: {
                                 crop: crop.id.toString(),
-                                inTutorial: !this.tutorialService.isLastStep(user.tutorialStep)
                             }
                         }
                     )

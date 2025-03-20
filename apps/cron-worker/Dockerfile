@@ -1,4 +1,4 @@
-#docker build -t cifarm/cron-worker -f ./apps/cron-worker/Dockerfile . & docker push cifarm/cron-worker
+# docker build -t cifarm/cron-worker -f ./apps/cron-worker/Dockerfile . & docker push cifarm/cron-worker
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0

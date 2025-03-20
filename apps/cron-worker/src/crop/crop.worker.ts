@@ -43,9 +43,6 @@ export class CropWorker extends WorkerHost {
                 seedGrowthInfo: {
                     $ne: null
                 },
-                "seedGrowthInfo.inTutorial": {
-                    $ne: true
-                },
                 "seedGrowthInfo.currentState": {
                     $nin: [CropCurrentState.NeedWater, CropCurrentState.FullyMatured]
                 },

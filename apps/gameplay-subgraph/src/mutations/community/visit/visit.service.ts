@@ -51,17 +51,17 @@ export class VisitService {
             }
 
             // Send visit event via Kafka
-            await this.kafkaProducer.send({
-                topic: KafkaTopic.Visit,
-                messages: [
-                    {
-                        value: JSON.stringify({
-                            userId,
-                            neighborUserId
-                        })
-                    }
-                ]
-            })
+            // await this.kafkaProducer.send({
+            //     topic: KafkaTopic.Visit,
+            //     messages: [
+            //         {
+            //             value: JSON.stringify({
+            //                 userId,
+            //                 neighborUserId
+            //             })
+            //         }
+            //     ]
+            // })
 
             // Commit the transaction
             return { neighborUserId }

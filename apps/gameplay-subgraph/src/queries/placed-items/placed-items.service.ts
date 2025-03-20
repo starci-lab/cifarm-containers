@@ -29,19 +29,21 @@ export class PlacedItemsService {
         }
     }
 
-    async getPlacedItems({ id }: UserLike, { storeAsCache }: PlacedItemsRequest): Promise<Array<PlacedItemSchema>> {
+    async getPlacedItems(
+        { id }: UserLike,
+        { storeAsCache, userId }: PlacedItemsRequest
+    ): Promise<Array<PlacedItemSchema>> {
+        // return the user id if not provided
+        userId = userId || id
         const mongoSession = await this.connection.startSession()
         try {
             const placedItems = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
-                .find({ user: id })
+                .find({ user: userId })
                 .session(mongoSession)
 
             if (storeAsCache) {
-                await this.cache.set(
-                    getCacheKey(CacheKey.PlacedItems, id),
-                    placedItems
-                )
+                await this.cache.set(getCacheKey(CacheKey.PlacedItems, id), placedItems)
             }
 
             return placedItems

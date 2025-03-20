@@ -71,12 +71,6 @@ export class SeedGrowthInfoSchema extends AbstractSchema {
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
         thieves: Array<Types.ObjectId>
-
-    @Field(() => Boolean, {
-        description: "Whether the crop is in tutorial"
-    })
-    @Prop({ type: Boolean, isRequired: false })
-        inTutorial?: boolean
 }
 export const SeedGrowthInfoSchemaClass = SchemaFactory.createForClass(SeedGrowthInfoSchema)
 
