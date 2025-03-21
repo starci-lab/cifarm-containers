@@ -2,17 +2,14 @@ import { CropJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { bullData, BullQueueName } from "@src/bull"
-import {
-    CropCurrentState,
-    InjectMongoose,
-    PlacedItemSchema,
-    PlacedItemType,
-} from "@src/databases"
+import { CropCurrentState, InjectMongoose, PlacedItemSchema, PlacedItemType } from "@src/databases"
 import { Job } from "bullmq"
 import { DateUtcService } from "@src/date"
-import { CoreService, StaticService } from "@src/gameplay"
+import { CoreService, PlacedItemService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
-
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
+import { SchemaStatus, WithStatus } from "@src/common"
 @Processor(bullData[BullQueueName.Crop].name)
 export class CropWorker extends WorkerHost {
     private readonly logger = new Logger(CropWorker.name)
@@ -20,6 +17,9 @@ export class CropWorker extends WorkerHost {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
+        private readonly placedItemService: PlacedItemService,
         private readonly dateUtcService: DateUtcService,
         private readonly coreService: CoreService,
         private readonly staticService: StaticService
@@ -34,11 +34,14 @@ export class CropWorker extends WorkerHost {
         const placedItemTypes = this.staticService.placedItemTypes.filter(
             (placedItemType) => placedItemType.type === PlacedItemType.Tile
         )
+        // if the owner is currently on tutorial, skip the crop growth
+        const { growthStages } = this.staticService.cropInfo
+
         const placedItems = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({
                 placedItemType: {
-                    $in: placedItemTypes.map((placedItemType) => placedItemType.id),
+                    $in: placedItemTypes.map((placedItemType) => placedItemType.id)
                 },
                 seedGrowthInfo: {
                     $ne: null
@@ -51,43 +54,45 @@ export class CropWorker extends WorkerHost {
                 }
             })
             .skip(skip)
-            .limit(take) 
-            .sort({ createdAt: "desc" }) 
+            .limit(take)
+            .sort({ createdAt: "desc" })
         const { needWater, isWeedyOrInfested } = this.staticService.cropInfo.randomness
         const promises: Array<Promise<void>> = []
+        const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
         for (const placedItem of placedItems) {
             const promise = async () => {
-                const mongoSession = await this.connection.startSession()
                 try {
-                    // if the owner is currently on tutorial, skip the crop growth
-                    const { growthStages } = this.staticService.cropInfo
-                    const crop = this.staticService.crops.find(crop => crop.id === placedItem.seedGrowthInfo.crop.toString())
-                    const placedItemType = this.staticService.placedItemTypes.find(placedItemType => 
-                        placedItem.placedItemType.toString() === placedItemType.id.toString()
+                    const crop = this.staticService.crops.find(
+                        (crop) => crop.id === placedItem.seedGrowthInfo.crop.toString()
+                    )
+                    const placedItemType = this.staticService.placedItemTypes.find(
+                        (placedItemType) =>
+                            placedItem.placedItemType.toString() === placedItemType.id.toString()
                     )
                     if (!placedItemType) {
                         throw new Error("Placed item type not found")
                     }
-                    const tile = this.staticService.tiles.find(tile => tile.id.toString() === placedItemType.tile.toString()) 
+                    const tile = this.staticService.tiles.find(
+                        (tile) => tile.id.toString() === placedItemType.tile.toString()
+                    )
                     // Add time to the seed growth
-                    const updatePlacedItem = () => {
+                    // if
+                    const updatePlacedItem = (): CropUpdateResult => {
                         // return if the current stage is already max stage
-                        if (
-                            placedItem.seedGrowthInfo.currentStage >= growthStages - 1
-                        ) {
-                            return
+                        if (placedItem.seedGrowthInfo.currentStage >= growthStages - 1) {
+                            return CropUpdateResult.NoChange
                         }
                         // add time to the seed growth
                         placedItem.seedGrowthInfo.currentStageTimeElapsed += time
                         if (
                             placedItem.seedGrowthInfo.currentStageTimeElapsed <
-                                crop.growthStageDuration
+                            crop.growthStageDuration
                         ) {
-                            return
+                            return CropUpdateResult.GrowthWithinStage
                         }
                         // deduct the time elapsed from the current stage time elapsed
                         placedItem.seedGrowthInfo.currentStageTimeElapsed -=
-                                crop.growthStageDuration
+                            crop.growthStageDuration
                         // increment the current stage
                         placedItem.seedGrowthInfo.currentStage += 1
                         //reset fertilizer after
@@ -96,11 +101,10 @@ export class CropWorker extends WorkerHost {
                         // if the current stage is less than max stage - 3, check if need water
                         if (placedItem.seedGrowthInfo.currentStage <= growthStages - 3) {
                             if (Math.random() < needWater) {
-                                placedItem.seedGrowthInfo.currentState =
-                                        CropCurrentState.NeedWater
+                                placedItem.seedGrowthInfo.currentState = CropCurrentState.NeedWater
                             }
                             placedItem.seedGrowthInfo.currentStageTimeElapsed = 0
-                            return
+                            return CropUpdateResult.GrowthStageUpdate
                         }
 
                         // if the current stage is max stage - 2, check if weedy or infested
@@ -108,25 +112,26 @@ export class CropWorker extends WorkerHost {
                             if (Math.random() < isWeedyOrInfested) {
                                 if (Math.random() < 0.5) {
                                     placedItem.seedGrowthInfo.currentState =
-                                            CropCurrentState.IsWeedy
+                                        CropCurrentState.IsWeedy
                                 } else {
                                     placedItem.seedGrowthInfo.currentState =
-                                            CropCurrentState.IsInfested
+                                        CropCurrentState.IsInfested
                                 }
                             }
-                            return
+                            return CropUpdateResult.GrowthWithinStage
                         }
                         // else, the crop is fully matured
                         if (
                             placedItem.seedGrowthInfo.currentState ===
-                                    CropCurrentState.IsInfested ||
-                                placedItem.seedGrowthInfo.currentState === CropCurrentState.IsWeedy
+                                CropCurrentState.IsInfested ||
+                            placedItem.seedGrowthInfo.currentState === CropCurrentState.IsWeedy
                         ) {
-                            placedItem.seedGrowthInfo.harvestQuantityRemaining =
-                                    Math.floor((crop.minHarvestQuantity + crop.maxHarvestQuantity) / 2)
+                            placedItem.seedGrowthInfo.harvestQuantityRemaining = Math.floor(
+                                (crop.minHarvestQuantity + crop.maxHarvestQuantity) / 2
+                            )
                         } else {
                             placedItem.seedGrowthInfo.harvestQuantityRemaining =
-                                    crop.maxHarvestQuantity
+                                crop.maxHarvestQuantity
                         }
                         const chance = this.coreService.computeTileQualityChance({
                             placedItemTile: placedItem,
@@ -136,19 +141,48 @@ export class CropWorker extends WorkerHost {
                             placedItem.seedGrowthInfo.isQuality = true
                         }
                         placedItem.seedGrowthInfo.currentState = CropCurrentState.FullyMatured
-                        return
+                        return CropUpdateResult.GrowthStageUpdate
                     }
                     // update the placed item
-                    updatePlacedItem()
-                    await placedItem.save({ session: mongoSession })
+                    const result = updatePlacedItem()
+                    await placedItem.save()
+                    switch (result) {
+                    case CropUpdateResult.GrowthStageUpdate: {
+                        const updatedSyncedPlacedItems =
+                                this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                                    placedItems: [placedItem],
+                                    status: SchemaStatus.Updated
+                                })
+                        syncedPlacedItems.push(...updatedSyncedPlacedItems)
+                        this.kafkaProducer.send({
+                            topic: KafkaTopic.SyncPlacedItems,
+                            messages: [
+                                {
+                                    value: JSON.stringify({
+                                        userId: placedItem.user.toString(),
+                                        placedItems: updatedSyncedPlacedItems
+                                    })
+                                }
+                            ]
+                        })
+                        break
+                    }
+
+                    default:
+                        break
+                    }
                 } catch (error) {
                     this.logger.error(error)
-                } finally {
-                    await mongoSession.endSession()
                 }
             }
             promises.push(promise())
         }
         await Promise.all(promises)
     }
+}
+
+export enum CropUpdateResult {
+    NoChange = "no_change",
+    GrowthStageUpdate = "growth_stage_update",
+    GrowthWithinStage = "growth_within_stage"
 }

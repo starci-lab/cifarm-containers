@@ -8,7 +8,7 @@ import {
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService, StaticService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService, PlacedItemService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { UsePesticideRequest } from "./use-pesticide.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -16,7 +16,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { createObjectId } from "@src/common"
+import { createObjectId, DeepPartial, WithStatus, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class UsePesticideService {
@@ -28,6 +28,7 @@ export class UsePesticideService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
+        private readonly placedItemService: PlacedItemService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -37,8 +38,12 @@ export class UsePesticideService {
         { placedItemTileId }: UsePesticideRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+       
+        // synced variables
         let actionMessage: EmitActionPayload | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
 
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -73,11 +78,18 @@ export class UsePesticideService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
+
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }
                 
                 // Validate tile exists
                 if (!placedItemTile) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.UsePesticide,
                         success: false,
                         userId,
@@ -171,9 +183,15 @@ export class UsePesticideService {
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session })
 
+                const updatedSyncedPlacedItem = this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemTile],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(...updatedSyncedPlacedItem)
+
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.UsePesticide,
                     success: true,
                     userId
@@ -192,7 +210,7 @@ export class UsePesticideService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,

@@ -1,0 +1,68 @@
+import { Injectable, Logger } from "@nestjs/common"
+import { PlacedItemSchema } from "@src/databases"
+import { SchemaStatus, WithStatus } from "@src/common"
+import {
+    GetCreatedOrUpdatedSyncedPlacedItemsParams,
+    GetDeletedSyncedPlacedItemsParams
+} from "./types"
+@Injectable()
+export class PlacedItemService {
+    private readonly logger = new Logger(PlacedItemService.name)
+
+    constructor() {}
+
+    public getCreatedOrUpdatedSyncedPlacedItems({
+        placedItems,
+        status = SchemaStatus.Created
+    }: GetCreatedOrUpdatedSyncedPlacedItemsParams): Array<WithStatus<PlacedItemSchema>> {
+        // get field needed, exclude
+        const syncedPlacedItems = placedItems.map((placedItem) => {
+            const placedItemJson = placedItem.toJSON({
+                flattenObjectIds: true,
+            }) as PlacedItemSchema
+            // Remove createdAt and updatedAt fields
+            // id: 1,
+            // x: 1,
+            // y: 1,
+            // placedItemType: 1,
+            // "seedGrowthInfo.currentPerennialCount": 1,
+            // "seedGrowthInfo.crop": 1,
+            // "seedGrowthInfo.currentStage": 1,
+            // "seedGrowthInfo.currentState": 1,
+            // "seedGrowthInfo.harvestQuantityRemaining": 1,
+            // "seedGrowthInfo.isFertilized": 1,
+            // "seedGrowthInfo.isQuality": 1,
+            // "seedGrowthInfo.thieves": 1,
+            // "seedGrowthInfo.currentStageTimeElapsed": 1,
+            // "buildingInfo.currentUpgrade": 1,
+            // "animalInfo.currentGrowthTime": 1,
+            // "animalInfo.currentHungryTime": 1,
+            // "animalInfo.currentYieldTime": 1,
+            // "animalInfo.harvestQuantityRemaining": 1,
+            // "animalInfo.isAdult": 1,
+            // "animalInfo.isQuality": 1,
+            // "animalInfo.thieves": 1,
+            // "fruitInfo.currentStage": 1,
+            // "fruitInfo.currentStageTimeElapsed": 1,
+            // "fruitInfo.currentState": 1,
+            // "fruitInfo.harvestQuantityRemaining": 1,
+            // "fruitInfo.isQuality": 1,
+            // "fruitInfo.thieves": 1
+            return {
+                ...placedItemJson,
+                status
+            }
+        })
+
+        return syncedPlacedItems
+    }
+
+    public getDeletedSyncedPlacedItems({
+        placedItemIds
+    }: GetDeletedSyncedPlacedItemsParams): Array<WithStatus<PlacedItemSchema>> {
+        return placedItemIds.map((placedItemId) => ({
+            id: placedItemId,
+            status: SchemaStatus.Deleted
+        }))
+    }
+}

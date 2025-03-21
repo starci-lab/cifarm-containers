@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
+import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 import {
     CropCurrentState,
     DefaultInfo,
@@ -14,7 +14,14 @@ import {
     InventoryKind,
     InventoryType
 } from "@src/databases"
-import { CoreService, EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
+import {
+    CoreService,
+    EnergyService,
+    InventoryService,
+    LevelService,
+    PlacedItemService,
+    StaticService
+} from "@src/gameplay"
 import { Connection } from "mongoose"
 import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -34,6 +41,7 @@ export class HarvestCropService {
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         private readonly coreService: CoreService,
+        private readonly placedItemService: PlacedItemService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -42,8 +50,13 @@ export class HarvestCropService {
         { placedItemTileId }: HarvestCropRequest
     ): Promise<HarvestCropResponse> {
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined
+
+        // synced variables
         let actionMessage: EmitActionPayload<HarvestCropData> | undefined
+        let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+        const syncedInventories: Array<DeepPartial<WithStatus<InventorySchema>>> = []
 
         try {
             const result = await mongoSession.withTransaction(async (session) => {
@@ -74,6 +87,13 @@ export class HarvestCropService {
                     .findById(placedItemTileId)
                     .session(session)
                 
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }   
+                 
                 // Validate placed item tile exists
                 if (!placedItemTile) {
                     throw new GraphQLError("Placed item tile not found", {
@@ -82,7 +102,7 @@ export class HarvestCropService {
                         }
                     })
                 }
-                
+
                 // Validate tile is planted
                 if (!placedItemTile.seedGrowthInfo) {
                     throw new GraphQLError("Tile is not planted", {
@@ -91,7 +111,7 @@ export class HarvestCropService {
                         }
                     })
                 }
-                
+
                 // Validate crop is fully matured
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
                     throw new GraphQLError("Crop is not fully matured", {
@@ -104,16 +124,16 @@ export class HarvestCropService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                
+
                 // Get activity data
                 const { energyConsume, experiencesGain } = this.staticService.activities.harvestCrop
-                
+
                 // Get user data
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-                
+
                 // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -122,7 +142,7 @@ export class HarvestCropService {
                         }
                     })
                 }
-                
+
                 // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
@@ -132,7 +152,7 @@ export class HarvestCropService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY TYPE
                  ************************************************************/
-                
+
                 // Get inventory type for the harvested crop
                 // const inventoryType = await this.connection
                 //     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
@@ -142,8 +162,10 @@ export class HarvestCropService {
                 //     })
                 //     .session(session)
                 const product = this.staticService.products.find(
-                    (product) => product.crop && product.crop.toString() === placedItemTile.seedGrowthInfo.crop.toString()
-                    && product.isQuality === placedItemTile.seedGrowthInfo.isQuality
+                    (product) =>
+                        product.crop &&
+                        product.crop.toString() === placedItemTile.seedGrowthInfo.crop.toString() &&
+                        product.isQuality === placedItemTile.seedGrowthInfo.isQuality
                 )
                 if (!product) {
                     throw new GraphQLError("Product not found in static data", {
@@ -153,7 +175,9 @@ export class HarvestCropService {
                     })
                 }
                 const inventoryType = this.staticService.inventoryTypes.find(
-                    (inventoryType) => inventoryType.type === InventoryType.Product && inventoryType.product.toString() === product.id.toString()
+                    (inventoryType) =>
+                        inventoryType.type === InventoryType.Product &&
+                        inventoryType.product.toString() === product.id.toString()
                 )
                 if (!inventoryType) {
                     throw new GraphQLError("Inventory type not found in static data", {
@@ -166,12 +190,12 @@ export class HarvestCropService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE STORAGE CAPACITY
                  ************************************************************/
-                
+
                 // Get storage capacity setting
                 const systemInfo = await this.connection
                     .model<SystemSchema>(SystemSchema.name)
                     .findById<KeyValueRecord<DefaultInfo>>(createObjectId(SystemId.DefaultInfo))
-                
+
                 // Validate system info exists
                 if (!systemInfo || !systemInfo.value) {
                     throw new GraphQLError("System info not found", {
@@ -180,19 +204,21 @@ export class HarvestCropService {
                         }
                     })
                 }
-                
+
                 const { storageCapacity } = systemInfo.value
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE CROP DATA
                  ************************************************************/
-                
+
                 // Get crop data
                 // const crop = await this.connection
                 //     .model<CropSchema>(CropSchema.name)
                 //     .findById(placedItemTile.seedGrowthInfo.crop)
                 //     .session(session)
-                const crop = this.staticService.crops.find(crop => crop.id === placedItemTile.seedGrowthInfo.crop.toString())
+                const crop = this.staticService.crops.find(
+                    (crop) => crop.id === placedItemTile.seedGrowthInfo.crop.toString()
+                )
                 if (!crop) {
                     throw new GraphQLError("Crop not found in static data", {
                         extensions: {
@@ -205,13 +231,13 @@ export class HarvestCropService {
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
                  ************************************************************/
-                
+
                 // Update user energy and experience
                 this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                
+
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -239,13 +265,25 @@ export class HarvestCropService {
                 })
 
                 // Create new inventories
-                await this.connection
+                const createdInventoriesRaw = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .create(createdInventories, { session })
+                const createdSyncedInventories =
+                    this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: createdInventoriesRaw,
+                        status: SchemaStatus.Created
+                    })
+                syncedInventories.push(...createdSyncedInventories)
 
                 // Update existing inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
+                    const updatedSyncedInventories =
+                        this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: [inventory],
+                            status: SchemaStatus.Updated
+                        })
+                    syncedInventories.push(...updatedSyncedInventories)
                 }
 
                 // Handle perennial crop growth cycle
@@ -254,16 +292,22 @@ export class HarvestCropService {
                     crop,
                     cropInfo: this.staticService.cropInfo
                 })
-                
+
                 // Save user changes
                 await user.save({ session })
-                
+
                 // Save placed item tile changes
                 await placedItemTile.save({ session })
+                const updatedSyncedPlacedItem =
+                    this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemTile],
+                        status: SchemaStatus.Updated
+                    })
+                syncedPlacedItems.push(...updatedSyncedPlacedItem)
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.HarvestCrop,
                     success: true,
                     userId,
@@ -275,12 +319,12 @@ export class HarvestCropService {
 
                 return { quantity } // Return the quantity of harvested crops
             })
-            
+
             /************************************************************
              * EXTERNAL COMMUNICATION
              * Send notifications after transaction is complete
              ************************************************************/
-            
+
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -288,7 +332,9 @@ export class HarvestCropService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
@@ -296,7 +342,9 @@ export class HarvestCropService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, inventories: syncedInventories }) }
+                    ]
                 })
             ])
 

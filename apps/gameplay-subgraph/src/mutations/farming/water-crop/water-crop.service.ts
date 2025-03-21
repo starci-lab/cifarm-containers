@@ -8,7 +8,7 @@ import {
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService, StaticService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService, PlacedItemService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { WaterCropRequest } from "./water-crop.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -28,25 +28,29 @@ export class WaterCropService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
+        private readonly placedItemService: PlacedItemService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
 
-    async waterCrop({ id: userId }: UserLike, { placedItemTileId }: WaterCropRequest): Promise<void> {
+    async waterCrop(
+        { id: userId }: UserLike,
+        { placedItemTileId }: WaterCropRequest
+    ): Promise<void> {
         const mongoSession = await this.connection.startSession()
-        let actionMessage: EmitActionPayload | undefined
-        
+
         // synced variables
+        let actionMessage: EmitActionPayload | undefined
         let user: UserSchema | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
-        let syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
 
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE WATERING CAN TOOL
                  ************************************************************/
-                
+
                 // Check if user has watering can
                 const inventoryWateringCanExisted = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -54,8 +58,9 @@ export class WaterCropService {
                         user: userId,
                         inventoryType: createObjectId(InventoryTypeId.WateringCan),
                         kind: InventoryKind.Tool
-                    }).session(session)
-                
+                    })
+                    .session(session)
+
                 // Validate watering can exists in inventory
                 if (!inventoryWateringCanExisted) {
                     throw new GraphQLError("Watering can not found in toolbar", {
@@ -64,11 +69,11 @@ export class WaterCropService {
                         }
                     })
                 }
-                
+
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM TILE
                  ************************************************************/
-                
+
                 // Get placed item tile
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -78,9 +83,10 @@ export class WaterCropService {
                 syncedPlacedItemAction = {
                     x: placedItemTile.x,
                     y: placedItemTile.y,
-                    id: placedItemTile._id.toString()
+                    id: placedItemTile._id.toString(),
+                    placedItemType: placedItemTile.placedItemType
                 }
-                
+
                 // Validate tile exists
                 if (!placedItemTile) {
                     actionMessage = {
@@ -141,13 +147,13 @@ export class WaterCropService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                
+
                 // Get user data
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-                
+
                 // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -160,10 +166,10 @@ export class WaterCropService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE ACTIVITY DATA
                  ************************************************************/
-                
+
                 // Get activity data
                 const { energyConsume, experiencesGain } = this.staticService.activities.waterCrop
-                
+
                 // Validate energy is sufficient
                 this.energyService.checkSufficient({
                     current: user.energy,
@@ -174,29 +180,30 @@ export class WaterCropService {
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
                  ************************************************************/
-                
+
                 // Update user energy and experience
                 this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                
+
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
-                
+
                 await user.save({ session })
 
                 // Update tile state
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session })
-                syncedPlacedItems = [
-                    {
-                        ...placedItemTile.toJSON(),
-                        status: SchemaStatus.Updated
-                    }
-                ]
+                const updatedSyncedPlacedItem = this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemTile],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(
+                    ...updatedSyncedPlacedItem
+                )
 
                 // Prepare action message
                 actionMessage = {
@@ -214,7 +221,9 @@ export class WaterCropService {
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -227,14 +236,14 @@ export class WaterCropService {
             ])
         } catch (error) {
             this.logger.error(error)
-            
+
             if (actionMessage) {
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
-            
+
             throw error
         } finally {
             await mongoSession.endSession()

@@ -35,7 +35,7 @@ export class BuySeedsService {
     async buySeeds({ id: userId }: UserLike, request: BuySeedsRequest): Promise<void> {
         // Start session
         const mongoSession = await this.connection.startSession()
-
+        
         let user: UserSchema | undefined = undefined
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
@@ -147,27 +147,22 @@ export class BuySeedsService {
                     const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session: mongoSession })
-                    syncedInventories.push(
-                        ...createdInventoryRaws
-                            .map((inventoryRaw) =>
-                                inventoryRaw.toJSON({
-                                    flattenObjectIds: true
-                                })
-                            )
-                            .map((inventory) => ({
-                                ...inventory,
-                                status: SchemaStatus.Created
-                            }))
-                    )
+                    const createdSyncedInventories = this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: createdInventoryRaws,
+                        status: SchemaStatus.Created
+                    })
+                    syncedInventories.push(...createdSyncedInventories)
                 }
 
                 // Update existing inventory items
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session: mongoSession })
-                    syncedInventories.push({
-                        ...inventory.toJSON(),
+                    // get synced inventory then add to syncedInventories
+                    const updatedSyncedInventory = this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: [inventory],
                         status: SchemaStatus.Updated
                     })
+                    syncedInventories.push(...updatedSyncedInventory)
                 }
             })
 

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InventoryKind, InventorySchema } from "@src/databases"
-import { DeepPartial } from "@src/common"
+import { DeepPartial, SchemaStatus, WithStatus } from "@src/common"
 import {
     AddParams,
     AddResult,
@@ -8,10 +8,12 @@ import {
     GetAddParamsResult,
     GetRemoveParamsParams,
     GetRemoveParamsResult,
+    GetDeletedSyncedInventoriesParams,
+    GetCreatedOrUpdatedSyncedInventoriesParams,
     GetUnoccupiedIndexesParams,
     RemoveParams,
     RemoveResult
-} from "./inventory.types"
+} from "./types"
 import {
     InventoryCapacityExceededException,
     InventoryQuantityNotSufficientException
@@ -66,7 +68,7 @@ export class InventoryService {
             }
             return { updatedInventories, createdInventories }
         }
-        
+
         // loop through the inventories and add the quantity to the inventory
         for (const inventory of sortedInventories) {
             const spaceInCurrentStack = inventoryType.maxStack - inventory.quantity
@@ -200,5 +202,33 @@ export class InventoryService {
             }
         }
         return unoccupiedIndexes
+    }
+
+    public getCreatedOrUpdatedSyncedInventories({
+        inventories,
+        status = SchemaStatus.Created
+    }: GetCreatedOrUpdatedSyncedInventoriesParams): Array<WithStatus<InventorySchema>> {
+        // get field needed, exclude
+        const syncedInventories = inventories.map((inventory) => {
+            const inventoryJson = inventory.toJSON({
+                flattenObjectIds: true
+            }) as InventorySchema
+            // Remove createdAt and updatedAt fields
+            return {
+                ...inventoryJson,
+                status
+            }
+        })
+
+        return syncedInventories
+    }
+
+    public getDeletedSyncedInventories({
+        inventoryIds
+    }: GetDeletedSyncedInventoriesParams): Array<WithStatus<InventorySchema>> {
+        return inventoryIds.map((inventoryId) => ({
+            id: inventoryId,
+            status: SchemaStatus.Deleted
+        }))
     }
 }

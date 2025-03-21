@@ -6,7 +6,7 @@ import {
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, PlacedItemService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { PlantSeedRequest } from "./plant-seed.dto"
@@ -15,6 +15,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { DeepPartial, SchemaStatus, WithStatus } from "@src/common"
 
 @Injectable()
 export class PlantSeedService {
@@ -26,6 +27,7 @@ export class PlantSeedService {
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
+        private readonly placedItemService: PlacedItemService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -36,8 +38,13 @@ export class PlantSeedService {
         this.logger.debug(`Planting seed for user ${userId}, tile ID: ${placedItemTileId}`)
 
         const mongoSession = await this.connection.startSession()
+        
+        // synced variables
         let actionMessage: EmitActionPayload | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+        const syncedInventories: Array<DeepPartial<WithStatus<InventorySchema>>> = []
 
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -93,6 +100,14 @@ export class PlantSeedService {
                     .findById(placedItemTileId)
                     .session(session)
                 
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }
+                
+
                 // Validate tile exists
                 if (!placedItemTile) {
                     throw new GraphQLError("Tile not found", {
@@ -208,9 +223,17 @@ export class PlantSeedService {
                     quantity: 1
                 })
 
+                console.log(updatedInventories, removedInventories)
+
                 // Save updated inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
+                    // add synced inventory to syncedInventories
+                    const updatedSyncedInventories = this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: [inventory],
+                        status: SchemaStatus.Updated
+                    })
+                    syncedInventories.push(...updatedSyncedInventories)
                 }
 
                 // Delete removed inventories
@@ -220,6 +243,12 @@ export class PlantSeedService {
                         _id: { $in: removedInventories.map((inventory) => inventory._id) }
                     })
                     .session(session)
+
+                // add synced inventory to syncedInventories
+                const deletedSyncedInventories = this.inventoryService.getDeletedSyncedInventories({
+                    inventoryIds: removedInventories.map((inventory) => inventory.id)
+                })
+                syncedInventories.push(...deletedSyncedInventories)
 
                 // Save user changes
                 await user.save({ session })
@@ -236,10 +265,21 @@ export class PlantSeedService {
                         }
                     )
                     .session(session)
+                const updatedPlacedItemTile = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .findById(placedItemTileId)
+                    .session(session)
+                // add synced placed item to syncedPlacedItems
+                const updatedSyncedPlacedItems = this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [updatedPlacedItemTile],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(...updatedSyncedPlacedItems)
+
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.PlantSeed,
                     success: true,
                     userId
@@ -258,7 +298,7 @@ export class PlantSeedService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
@@ -266,7 +306,7 @@ export class PlantSeedService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
                 })
             ])
         } catch (error) {

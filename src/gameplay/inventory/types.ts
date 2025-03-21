@@ -1,5 +1,5 @@
 import { InventoryKind, InventorySchema, InventoryTypeSchema } from "@src/databases"
-import { DeepPartial } from "@src/common"
+import { DeepPartial, SchemaStatus } from "@src/common"
 import { ClientSession, Connection } from "mongoose"
 
 export interface AddParams {
@@ -33,6 +33,7 @@ export interface RemoveParams {
 export interface RemoveResult {
     updatedInventories: Array<InventorySchema>
     removedInventories: Array<InventorySchema>
+
 }
 
 export interface GetAddParamsParams {
@@ -70,3 +71,13 @@ export interface GetUnoccupiedIndexesParams {
 export interface GetRemoveParamsResult {
     inventories: Array<InventorySchema>
 }
+
+export interface GetCreatedOrUpdatedSyncedInventoriesParams {
+    inventories: Array<InventorySchema>
+    status?: SchemaStatus.Created | SchemaStatus.Updated
+}
+
+export interface GetDeletedSyncedInventoriesParams {
+    inventoryIds: Array<string>
+}
+
