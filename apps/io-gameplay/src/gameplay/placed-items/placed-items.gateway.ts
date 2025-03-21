@@ -1,20 +1,21 @@
 import { Logger } from "@nestjs/common"
 import {
-    ConnectedSocket,
+    MessageBody,
     OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
-    WsResponse
+    ConnectedSocket
 } from "@nestjs/websockets"
-import { Namespace, Socket } from "socket.io"
-import { PlacedItemsSyncedMessage, SyncPlacedItemsParams } from "./placed-items.types"
+import { Namespace } from "socket.io"
 import { NAMESPACE } from "../gameplay.constants"
 import { PlacedItemsService } from "./placed-items.service"
-import { PLACED_ITEMS_SYNCED_EVENT, SYNC_PLACED_ITEMS_EVENT } from "./placed-items.constants"
-import { OnEvent } from "@nestjs/event-emitter"
+import { PLACED_ITEMS_SYNCED_EVENT, SYNC_PLACED_ITEMS_EVENT } from "./constants"
 import { AuthGateway, RoomType } from "../auth"
-import { VISITED_EMITTER2_EVENT, VisitedEmitter2Payload } from "../visit"
+import { PlacedItemsSyncedMessage, SyncPlacedItemsMessageBody, SyncPlacedItemsPayload } from "./types"
+import { TypedSocket } from "@src/io"
+import { SocketData } from "../auth"
+import { SchemaStatus } from "@src/common"
 
 @WebSocketGateway({
     cors: {
@@ -41,13 +42,9 @@ export class PlacedItemsGateway implements OnGatewayInit {
     }
 
     //sync placed items for all socket visting userId
-    public async syncPlacedItems({ userId }: SyncPlacedItemsParams) {
-        // emit placed items to all clients
-        const placedItems = await this.placedItemsService.getPlacedItems({
-            userId
-        })
-        const data: PlacedItemsSyncedMessage = {
-            placedItems
+    public async syncPlacedItems({ placedItems, userId }: SyncPlacedItemsPayload) {
+        const messageResponse: PlacedItemsSyncedMessage = {
+            data: placedItems
         }
         this.namespace
             .to(
@@ -56,34 +53,25 @@ export class PlacedItemsGateway implements OnGatewayInit {
                     type: RoomType.Watcher
                 })
             )
-            .emit(PLACED_ITEMS_SYNCED_EVENT, data)
+            .emit(PLACED_ITEMS_SYNCED_EVENT, messageResponse)
     }
 
     // force sync placed items
     @SubscribeMessage(SYNC_PLACED_ITEMS_EVENT)
     public async handleSyncPlacedItems(
-        @ConnectedSocket() client: Socket
-    ): Promise<WsResponse<PlacedItemsSyncedMessage>> {
-        const userId = this.authGateway.getWatchingUserId(client)
-        const placedItems = await this.placedItemsService.getPlacedItems({
-            userId
+        @ConnectedSocket() socket: TypedSocket<SocketData>,
+        @MessageBody() { placedItemIds }: SyncPlacedItemsMessageBody
+    ) {
+        const placedItems = await this.placedItemsService.getPlacedItemsByIds({
+            placedItemIds
         })
-        return {
-            event: PLACED_ITEMS_SYNCED_EVENT,
-            data: {
-                placedItems
-            }
-        }
-    }
 
-    @OnEvent(VISITED_EMITTER2_EVENT)
-    public async handleVisitedEmitter2(payload: VisitedEmitter2Payload) {
-        const placedItems = await this.placedItemsService.getPlacedItems({
-            userId: payload.userId
-        })
-        const data: PlacedItemsSyncedMessage = {
-            placedItems
+        const messageResponse: PlacedItemsSyncedMessage = {
+            data: placedItems.map((placedItem) => ({
+                ...placedItem,
+                status: SchemaStatus.Updated
+            }))
         }
-        this.namespace.to(payload.socketId).emit(PLACED_ITEMS_SYNCED_EVENT, data)
+        socket.emit(PLACED_ITEMS_SYNCED_EVENT, messageResponse)
     }
 }

@@ -6,7 +6,6 @@ import { ProductsModule } from "./products"
 import { InventoriesModule } from "./inventories"
 import { InventoryTypesModule } from "./inventory-types"
 import { PlacedItemTypesModule } from "./placed-item-types"
-import { PlacedItemsModule } from "./placed-items"
 import { SpinPrizesModule } from "./spin-prizes"
 import { SpinSlotsModule } from "./spin-slots"
 import { SuppliesModule } from "./supplies"
@@ -16,6 +15,7 @@ import { ToolsModule } from "./tools"
 import { UsersModule } from "./users"
 import { PetsModule } from "./pets"
 import { FruitsModule } from "./fruits"
+import { PlacedItemsModule } from "./placed-items"
 
 @Module({
     imports: [
@@ -26,11 +26,11 @@ import { FruitsModule } from "./fruits"
         InventoriesModule,
         InventoryTypesModule,
         PlacedItemTypesModule,
-        PlacedItemsModule,
         SpinPrizesModule,
         SpinSlotsModule,
         SuppliesModule,
         SystemsModule,
+        PlacedItemsModule,
         TilesModule,
         ToolsModule,
         UsersModule,

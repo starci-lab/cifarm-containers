@@ -1,23 +1,22 @@
 import { UserSchema, InventorySchema } from "@src/databases"
+import { DeepPartial, WithStatus } from "@src/common"
 
 export interface SyncUserPayload {
-    user?: UserSchema
-    userId?: string
-    requireQuery?: boolean
+    user: DeepPartial<UserSchema>
+    userId: string
 }
 
 export interface SyncInventoriesPayload {
-    inventories?: Array<InventorySchema>
-    userId?: string
-    requireQuery?: boolean
+    inventories: Array<WithStatus<DeepPartial<InventorySchema>>>
+    userId: string
 }
 
-export interface InventorySyncedMessage {
-    inventories: Array<InventorySchema>
+export interface InventoriesSyncedMessage {
+    data: Array<WithStatus<InventorySchema>>
 }
 
 export interface UserSyncedMessage {
-    user: UserSchema
+    data: DeepPartial<UserSchema>
 }
 
 

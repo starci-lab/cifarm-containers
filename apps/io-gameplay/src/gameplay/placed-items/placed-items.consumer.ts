@@ -16,7 +16,8 @@ export class PlacedItemsConsumer implements OnModuleInit {
             groupId: KafkaGroupId.PlacedItems,
             topics: [
                 KafkaTopic.SyncPlacedItems,
-            ]
+            ],
+            fromBeginning: false
         })
         await consumer.run({
             eachMessage: async ({ topic, message }) => {

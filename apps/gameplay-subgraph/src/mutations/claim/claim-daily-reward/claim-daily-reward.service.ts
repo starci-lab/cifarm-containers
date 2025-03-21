@@ -1,9 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import {
-    DailyRewardId,
-    InjectMongoose,
-    UserSchema
-} from "@src/databases"
+import { DailyRewardId, InjectMongoose, UserSchema } from "@src/databases"
 import { GoldBalanceService, StaticService, TokenBalanceService } from "@src/gameplay"
 import { DateUtcService } from "@src/date"
 import { Connection } from "mongoose"
@@ -58,14 +54,11 @@ export class ClaimDailyRewardService {
                     user.dailyRewardLastClaimTime &&
                     now.isSame(user.dailyRewardLastClaimTime, "day")
                 ) {
-                    throw new GraphQLError(
-                        "Daily reward already claimed today",
-                        {
-                            extensions: {
-                                code: "DAILY_REWARD_ALREADY_CLAIMED_TODAY"
-                            }
+                    throw new GraphQLError("Daily reward already claimed today", {
+                        extensions: {
+                            code: "DAILY_REWARD_ALREADY_CLAIMED_TODAY"
                         }
-                    )
+                    })
                 }
 
                 /************************************************************
@@ -115,7 +108,19 @@ export class ClaimDailyRewardService {
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: {
+                                    dailyRewardLastClaimTime: user.dailyRewardLastClaimTime,
+                                    dailyRewardStreak: user.dailyRewardStreak,
+                                    golds: user.golds,
+                                    tokens: user.tokens
+                                }
+                            })
+                        }
+                    ]
                 })
             ])
         } catch (error) {

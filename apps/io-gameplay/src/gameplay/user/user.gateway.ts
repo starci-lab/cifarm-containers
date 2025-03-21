@@ -1,18 +1,13 @@
 import { Logger } from "@nestjs/common"
-import { OnGatewayInit, WebSocketGateway, WebSocketServer, WsResponse } from "@nestjs/websockets"
+import { OnGatewayInit, WebSocketGateway, WebSocketServer } from "@nestjs/websockets"
 import { NAMESPACE } from "../gameplay.constants"
 import { AuthGateway, SocketData } from "../auth"
-import { TypedNamespace, TypedSocket } from "@src/io"
+import { TypedNamespace } from "@src/io"
 import {
-    SYNC_USER_EVENT,
     USER_SYNCED_EVENT,
-    SYNC_INVENTORIES_EVENT,
     INVENTORIES_SYNCED_EVENT
 } from "./user.constants"
-import { SubscribeMessage, ConnectedSocket } from "@nestjs/websockets"
-import { Socket } from "socket.io"
-import { SyncInventoriesPayload, SyncUserPayload, UserSyncedMessage, InventorySyncedMessage } from "./user.types"
-import { UserService } from "./user.service"
+import { InventoriesSyncedMessage, SyncInventoriesPayload, SyncUserPayload, UserSyncedMessage } from "./user.types"
 @WebSocketGateway({
     cors: {
         origin: "*",
@@ -24,8 +19,7 @@ export class UserGateway implements OnGatewayInit {
     private readonly logger = new Logger(UserGateway.name)
 
     constructor(
-        private readonly authGateway: AuthGateway,
-        private readonly userService: UserService
+        private readonly authGateway: AuthGateway
     ) {}
 
     @WebSocketServer()
@@ -39,69 +33,23 @@ export class UserGateway implements OnGatewayInit {
 
     public async syncInventories({
         inventories,
-        requireQuery,
         userId
     }: SyncInventoriesPayload) {
         const socket = await this.authGateway.getSocket(this.namespace, userId)
-        console.log(inventories, requireQuery, userId)
-        if (requireQuery) {
-            if (!userId) {
-                throw new Error("User ID not found")
-            }
-            inventories = await this.userService.getInventories(userId)
+        const messageResponse: InventoriesSyncedMessage = {
+            data: inventories
         }
-        const data: InventorySyncedMessage = {
-            inventories
-        }
-        socket.emit(INVENTORIES_SYNCED_EVENT, data)
+        socket.emit(INVENTORIES_SYNCED_EVENT, messageResponse)
     }
 
     public async syncUser({
         user,
-        requireQuery,
         userId
     }: SyncUserPayload) {
         const socket = await this.authGateway.getSocket(this.namespace, userId)
-        if (requireQuery) {
-            if (!userId) {
-                throw new Error("User ID not found")
-            }
-            user = await this.userService.getUser(userId)
+        const messageResponse: UserSyncedMessage = {
+            data: user
         }
-        const data: UserSyncedMessage = {
-            user
-        }
-        socket.emit(USER_SYNCED_EVENT, data)
+        socket.emit(USER_SYNCED_EVENT, messageResponse)
     }   
-
-    // force sync placed items
-    @SubscribeMessage(SYNC_USER_EVENT)
-    public async handleSyncUser(
-        @ConnectedSocket() client: TypedSocket<SocketData>
-    ): Promise<WsResponse<UserSyncedMessage>> {
-        const userId = client.data.user.id
-        const user = await this.userService.getUser(userId)
-        const data: UserSyncedMessage = {
-            user
-        }
-        return {
-            event: USER_SYNCED_EVENT,
-            data
-        }
-    }
-
-    @SubscribeMessage(SYNC_INVENTORIES_EVENT)
-    public async handleSyncInventories(
-        @ConnectedSocket() client: Socket
-    ): Promise<WsResponse<InventorySyncedMessage>> {
-        const userId = client.data.user.id
-        const inventories = await this.userService.getInventories(userId)
-        const data: InventorySyncedMessage = {
-            inventories
-        }
-        return {
-            event: INVENTORIES_SYNCED_EVENT,
-            data
-        }
-    }
 }

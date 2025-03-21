@@ -52,11 +52,7 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         return Array.from(this.namespace.sockets.values())
     }
 
-    public joinRoom({
-        socket,
-        userId,
-        type = RoomType.Player
-    }: JoinRoomNameParams) {
+    public joinRoom({ socket, userId, type = RoomType.Player }: JoinRoomNameParams) {
         socket.join(this.getRoomName({ userId, type }))
     }
 
@@ -92,10 +88,14 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         namespace: TypedSocket<SocketData>,
         userId: string
     ): Promise<SocketLike<SocketData>> {
-        const sockets = await namespace.in(this.getRoomName({
-            userId,
-            type: RoomType.Player
-        })).fetchSockets()
+        const sockets = await namespace
+            .in(
+                this.getRoomName({
+                    userId,
+                    type: RoomType.Player
+                })
+            )
+            .fetchSockets()
         return sockets[0]
     }
 }

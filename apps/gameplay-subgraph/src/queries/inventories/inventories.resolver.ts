@@ -4,7 +4,7 @@ import { InventorySchema } from "@src/databases"
 import { InventoriesService } from "./inventories.service"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { InventoriesRequest } from "./inventories.dto"
+
 @Resolver()
 export class InventoriesResolver {
     private readonly logger = new Logger(InventoriesResolver.name)
@@ -17,10 +17,9 @@ export class InventoriesResolver {
         description: "Get many inventories with pagination"
     })
     async inventories(
-        @GraphQLUser() user: UserLike,
-        @Args("request", { type: () => InventoriesRequest, nullable: true }) request: InventoriesRequest
+        @GraphQLUser() user: UserLike
     ): Promise<Array<InventorySchema>> {
-        return await this.inventoriesService.getInventories(user, request)
+        return await this.inventoriesService.getInventories(user)
     }
 
     @UseGuards(GraphQLJwtAuthGuard)

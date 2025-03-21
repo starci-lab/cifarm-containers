@@ -18,6 +18,6 @@ export class WaterCropResolver {
         @GraphQLUser() user: UserLike,
         @Args("request") request: WaterCropRequest
     ): Promise<void> {
-        return this.waterService.water(user, request)
+        return this.waterService.waterCrop(user, request)
     }
 }

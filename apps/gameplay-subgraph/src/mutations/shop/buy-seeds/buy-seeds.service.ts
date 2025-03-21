@@ -16,6 +16,7 @@ import { GraphQLError } from "graphql"
 import { KafkaTopic } from "@src/brokers"
 import { InjectKafkaProducer } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { WithStatus, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class BuySeedsService {
@@ -34,7 +35,9 @@ export class BuySeedsService {
     async buySeeds({ id: userId }: UserLike, request: BuySeedsRequest): Promise<void> {
         // Start session
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined
+
+        let user: UserSchema | undefined = undefined
+        const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -141,16 +144,33 @@ export class BuySeedsService {
 
                 // Create new inventory items
                 if (createdInventories.length > 0) {
-                    await this.connection
+                    const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session: mongoSession })
+                    syncedInventories.push(
+                        ...createdInventoryRaws
+                            .map((inventoryRaw) =>
+                                inventoryRaw.toJSON({
+                                    flattenObjectIds: true
+                                })
+                            )
+                            .map((inventory) => ({
+                                ...inventory,
+                                status: SchemaStatus.Created
+                            }))
+                    )
                 }
 
                 // Update existing inventory items
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session: mongoSession })
+                    syncedInventories.push({
+                        ...inventory.toJSON(),
+                        status: SchemaStatus.Updated
+                    })
                 }
             })
+
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
@@ -158,7 +178,7 @@ export class BuySeedsService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
                 })
             ])
         } catch (error) {

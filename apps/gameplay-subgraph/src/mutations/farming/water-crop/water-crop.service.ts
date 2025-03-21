@@ -16,7 +16,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { createObjectId } from "@src/common"
+import { createObjectId, DeepPartial, WithStatus, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class WaterCropService {
@@ -32,10 +32,14 @@ export class WaterCropService {
         private readonly kafkaProducer: Producer
     ) {}
 
-    async water({ id: userId }: UserLike, { placedItemTileId }: WaterCropRequest): Promise<void> {
+    async waterCrop({ id: userId }: UserLike, { placedItemTileId }: WaterCropRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
         let actionMessage: EmitActionPayload | undefined
+        
+        // synced variables
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        let syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> | undefined
 
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -70,11 +74,17 @@ export class WaterCropService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
+
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile._id.toString()
+                }
                 
                 // Validate tile exists
                 if (!placedItemTile) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.WaterCrop,
                         success: false,
                         userId,
@@ -99,7 +109,7 @@ export class WaterCropService {
                 // Validate tile is planted
                 if (!placedItemTile.seedGrowthInfo) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.WaterCrop,
                         success: false,
                         userId,
@@ -115,7 +125,7 @@ export class WaterCropService {
                 // Validate tile needs water
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.WaterCrop,
                         success: false,
                         userId,
@@ -181,10 +191,16 @@ export class WaterCropService {
                 // Update tile state
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session })
+                syncedPlacedItems = [
+                    {
+                        ...placedItemTile.toJSON(),
+                        status: SchemaStatus.Updated
+                    }
+                ]
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.WaterCrop,
                     success: true,
                     userId
@@ -195,11 +211,10 @@ export class WaterCropService {
              * EXTERNAL COMMUNICATION
              * Send notifications after transaction is complete
              ************************************************************/
-            
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,

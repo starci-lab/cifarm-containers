@@ -5,7 +5,7 @@ import _ from "lodash"
 export class ObjectService {
     constructor() {}
 
-    private getDifferenceBetweenObjects<TObject extends object>(
+    public getDifferenceBetweenObjects<TObject extends object>(
         object1: TObject,
         object2: TObject,
         options: ObjectDifferenceOptions = {},

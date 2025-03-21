@@ -35,3 +35,12 @@ export type DeepPartial<T> = T | (T extends Array<infer U> ? DeepPartial<U>[] : 
 export interface InterceptorResponse<T> {
     data: T;
 }
+
+export enum SchemaStatus {
+    Created = "created",    
+    Updated = "updated",
+    Deleted = "deleted"
+}
+export type WithStatus<TSchema> = DeepPartial<TSchema> & {
+    status: SchemaStatus
+}

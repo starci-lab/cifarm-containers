@@ -5,6 +5,7 @@ import { PlacedItemSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { PlacedItemsRequest } from "./placed-items.dto"
+
 @Resolver()
 export class PlacedItemsResolver {
     private readonly logger = new Logger(PlacedItemsResolver.name)

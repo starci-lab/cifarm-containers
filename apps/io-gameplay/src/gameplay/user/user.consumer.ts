@@ -14,7 +14,8 @@ export class UserConsumer implements OnModuleInit {
     async onModuleInit() {
         const consumer = await this.kafkaConsumersService.createConsumer({
             groupId: KafkaGroupId.User,
-            topics: [KafkaTopic.SyncUser, KafkaTopic.SyncInventories]
+            topics: [KafkaTopic.SyncUser, KafkaTopic.SyncInventories],
+            fromBeginning: false
         })
         await consumer.run({
             eachMessage: async ({ topic, message }) => {

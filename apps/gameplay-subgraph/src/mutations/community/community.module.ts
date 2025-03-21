@@ -1,8 +1,6 @@
 import { Module } from "@nestjs/common"
 import { FollowModule } from "./follow"
 import { UnfollowModule } from "./unfollow"
-import { VisitModule } from "./visit"
-import { ReturnModule } from "./return"
 import { HelpUseHerbicideModule } from "./help-use-herbicide"
 import { HelpUsePesticideModule } from "./help-use-pesticide"
 import { HelpWaterCropModule } from "./help-water-crop"
@@ -16,8 +14,6 @@ import { ThiefFruitModule } from "./thief-fruit"
     imports: [
         FollowModule,
         UnfollowModule,
-        VisitModule,
-        ReturnModule,
         HelpCureAnimalModule,
         HelpWaterCropModule,
         HelpUsePesticideModule,

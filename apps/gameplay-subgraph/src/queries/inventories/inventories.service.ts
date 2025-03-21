@@ -2,9 +2,8 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, InventorySchema } from "@src/databases"
 import { UserLike } from "@src/jwt"
 import { Connection } from "mongoose"
-import { InjectCache, getCacheKey, CacheKey } from "@src/cache"
+import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
-import { InventoriesRequest } from "./inventories.dto"
 
 @Injectable()
 export class InventoriesService {
@@ -31,7 +30,6 @@ export class InventoriesService {
 
     async getInventories(
         { id }: UserLike,
-        { storeAsCache }: InventoriesRequest
     ): Promise<Array<InventorySchema>> {
         const mongoSession = await this.connection.startSession()
         try {
@@ -41,11 +39,6 @@ export class InventoriesService {
                     user: id
                 })
                 .session(mongoSession)
-
-            if (storeAsCache) {
-                await this.cache.set(getCacheKey(CacheKey.Inventories, id), inventories)
-            }
-
             return inventories
         } finally {
             await mongoSession.endSession()

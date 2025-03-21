@@ -16,7 +16,8 @@ export class ActionConsumer implements OnModuleInit {
             groupId: KafkaGroupId.Action,
             topics: [
                 KafkaTopic.EmitAction,
-            ]
+            ],
+            fromBeginning: false
         }) 
         await consumer.run({
             eachMessage: async ({ topic, message }) => {

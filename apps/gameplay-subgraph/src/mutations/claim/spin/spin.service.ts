@@ -1,7 +1,4 @@
-import {
-    Injectable,
-    Logger
-} from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import {
     AppearanceChance,
     InjectMongoose,
@@ -15,7 +12,12 @@ import {
     SpinSlotSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, InventoryService, StaticService, TokenBalanceService } from "@src/gameplay"
+import {
+    GoldBalanceService,
+    InventoryService,
+    StaticService,
+    TokenBalanceService
+} from "@src/gameplay"
 import { SpinResponse } from "./spin.dto"
 import { DateUtcService } from "@src/date"
 import { DeepPartial } from "@src/common"
@@ -44,6 +46,7 @@ export class SpinService {
     async spin({ id: userId }: UserLike): Promise<SpinResponse> {
         const mongoSession = await this.connection.startSession()
         let user: UserSchema | undefined
+        const inventories: Array<InventorySchema> = []
         try {
             const result = await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -91,7 +94,7 @@ export class SpinService {
                     .find()
                     .populate(SPIN_PRIZE)
                     .session(mongoSession)
-                
+
                 if (spinSlots.length !== 8) {
                     throw new GraphQLError("Spin slots must be equal to 8", {
                         extensions: {
@@ -127,21 +130,21 @@ export class SpinService {
                 switch (spinPrize.type) {
                 case SpinPrizeType.Gold: {
                     /************************************************************
-                     * PROCESS GOLD PRIZE
-                     ************************************************************/
+                         * PROCESS GOLD PRIZE
+                         ************************************************************/
                     this.goldBalanceService.add({
                         user,
                         amount: spinPrize.quantity
-                    })  
-                    
+                    })
+
                     // Update user with gold changes
                     await user.save({ session: mongoSession })
                     break
                 }
                 case SpinPrizeType.Seed: {
                     /************************************************************
-                     * PROCESS SEED PRIZE
-                     ************************************************************/
+                         * PROCESS SEED PRIZE
+                         ************************************************************/
                     const inventoryType = await this.connection
                         .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                         .findOne({
@@ -181,22 +184,30 @@ export class SpinService {
 
                     // Create new inventory items
                     if (createdInventories.length > 0) {
-                        await this.connection
+                        const createdInventoryRaws = await this.connection
                             .model<InventorySchema>(InventorySchema.name)
                             .create(createdInventories, { session: mongoSession })
+                        inventories.push(
+                            ...createdInventoryRaws.map(inventoryRaw => inventoryRaw.toJSON({
+                                flattenObjectIds: true
+                            }))
+                        )
                     }
-                    
+
                     // Update existing inventory items
                     for (const inventory of updatedInventories) {
                         await inventory.save({ session: mongoSession })
+                        inventories.push(
+                            inventory.toObject()
+                        )
                     }
 
                     break
                 }
                 case SpinPrizeType.Supply: {
                     /************************************************************
-                     * PROCESS SUPPLY PRIZE
-                     ************************************************************/
+                         * PROCESS SUPPLY PRIZE
+                         ************************************************************/
                     const inventoryType = await this.connection
                         .model<InventoryTypeSchema>(InventoryTypeSchema.name)
                         .findOne({
@@ -240,7 +251,7 @@ export class SpinService {
                             .model<InventorySchema>(InventorySchema.name)
                             .create(createdInventories, { session: mongoSession })
                     }
-                    
+
                     // Update existing inventory items
                     for (const inventory of updatedInventories) {
                         await inventory.save({ session: mongoSession })
@@ -250,13 +261,13 @@ export class SpinService {
                 }
                 case SpinPrizeType.Token: {
                     /************************************************************
-                     * PROCESS TOKEN PRIZE
-                     ************************************************************/
+                         * PROCESS TOKEN PRIZE
+                         ************************************************************/
                     this.tokenBalanceService.add({
                         user,
                         amount: spinPrize.quantity
                     })
-                    
+
                     // Update user with token changes
                     await user.save({ session: mongoSession })
                     break
@@ -268,7 +279,30 @@ export class SpinService {
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: {
+                                    spinLastTime: user.spinLastTime,
+                                    spinCount: user.spinCount,
+                                    golds: user.golds,
+                                    tokens: user.tokens
+                                }
+                            })
+                        }
+                    ]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                inventories,
+                                userId
+                            })
+                        }
+                    ]
                 })
             ])
             return result

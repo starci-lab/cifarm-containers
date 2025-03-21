@@ -1,14 +1,16 @@
 import { Logger } from "@nestjs/common"
 import {
+    MessageBody,
+    SubscribeMessage,
     WebSocketGateway,
-    WebSocketServer
+    WebSocketServer,
+    ConnectedSocket
 } from "@nestjs/websockets"
 import { NAMESPACE } from "../gameplay.constants"
-import { ReturnPayload, ShowFadeMessage, VisitedEmitter2Payload, VisitPayload } from "./visit.types"
-import { SHOW_FADE_EVENT, VISITED_EMITTER2_EVENT } from "./visit.constants"
-import { EventEmitter2 } from "@nestjs/event-emitter"
+import { ReturnPayload, VisitMessageBody } from "./types"
+import { VISIT_EVENT, RETURN_EVENT  } from "./constants"
 import { AuthGateway, RoomType, SocketData } from "../auth"
-import { TypedNamespace } from "@src/io"
+import { TypedNamespace, TypedSocket } from "@src/io"
 
 @WebSocketGateway({
     cors: {
@@ -22,8 +24,7 @@ export class VisitGateway {
     private readonly logger = new Logger(VisitGateway.name)
 
     constructor(
-        private readonly authGateway: AuthGateway,
-        private eventEmitter: EventEmitter2
+        private readonly authGateway: AuthGateway
     ) {}
 
     @WebSocketServer()
@@ -35,11 +36,11 @@ export class VisitGateway {
         )
     }
 
-    public async visit(
-        { neighborUserId, userId }: VisitPayload
+    @SubscribeMessage(VISIT_EVENT)
+    public async handleVisit(
+        @ConnectedSocket() socket: TypedSocket<SocketData>,
+        @MessageBody() { neighborUserId }: VisitMessageBody
     ): Promise<void> {
-        // get the corresponding socket for the user
-        const socket = await this.authGateway.getSocket(this.namespace, userId)
         // stop watching the original player
         this.authGateway.leaveWatchingRoom(socket)
         // start watching the player
@@ -48,24 +49,13 @@ export class VisitGateway {
             userId: neighborUserId,
             type: RoomType.Watcher
         })
-        // emit the event to show the backdrop
-        const showFadeMessage: ShowFadeMessage = {
-            toNeighbor: true
-        }
-        socket.emit(SHOW_FADE_EVENT, showFadeMessage)
-        // emit the event to the other player
-        const emitter2Payload: VisitedEmitter2Payload = {
-            userId: neighborUserId,
-            socketId: socket.id
-        }
-        this.eventEmitter.emit(VISITED_EMITTER2_EVENT, emitter2Payload)
     }
 
-    public async return(
-        { userId }: ReturnPayload
+    @SubscribeMessage(RETURN_EVENT)
+    public async handleReturn(
+        @ConnectedSocket() socket: TypedSocket<SocketData>,
+        @MessageBody() { userId }: ReturnPayload
     ): Promise<void> {
-        // get the corresponding socket for the user
-        const socket = await this.authGateway.getSocket(this.namespace, userId)
         // stop watching the original player
         this.authGateway.leaveWatchingRoom(socket)
         // start watching the original player
@@ -74,16 +64,5 @@ export class VisitGateway {
             userId,
             type: RoomType.Watcher
         })
-        // emit the event to show the backdrop
-        const showFadeMessage: ShowFadeMessage = {
-            toNeighbor: false
-        }
-        socket.emit(SHOW_FADE_EVENT, showFadeMessage)
-        // emit the event to the other player
-        const emitter2Payload: VisitedEmitter2Payload = {
-            userId,
-            socketId: socket.id
-        }
-        this.eventEmitter.emit(VISITED_EMITTER2_EVENT, emitter2Payload)
     }
 }

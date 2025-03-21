@@ -1,6 +1,9 @@
+import { DeepPartial } from "@src/common"
+import { PlacedItemSchema } from "@src/databases"
+
 export interface EmitActionPayload<TData = undefined> {
     userId: string
-    placedItemId: string
+    placedItem: DeepPartial<PlacedItemSchema>
     action?: ActionName
     success?: boolean
     data?: TData

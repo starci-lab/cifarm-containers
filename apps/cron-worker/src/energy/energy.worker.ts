@@ -71,7 +71,10 @@ export class EnergyWorker extends WorkerHost {
                     await user.save({ session: mongoSession })
                     if (emit) {
                         const payload: SyncUserPayload = {
-                            user: user.toJSON(),
+                            userId: user.id,
+                            user: {
+                                energy: user.energy,
+                            },
                         }
                         await this.kafkaProducer.send({
                             topic: KafkaTopic.SyncUser,
