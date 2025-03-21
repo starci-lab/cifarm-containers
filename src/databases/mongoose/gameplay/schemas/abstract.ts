@@ -16,6 +16,7 @@ export abstract class AbstractSchema extends Document {
     @Prop()
     @Field(() => Date, {
         description: "The date the object was created"
+
     })
         createdAt: Date
 

@@ -47,8 +47,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
             userId
         })
         const data: PlacedItemsSyncedMessage = {
-            placedItems,
-            userId
+            placedItems
         }
         this.namespace
             .to(
@@ -69,13 +68,11 @@ export class PlacedItemsGateway implements OnGatewayInit {
         const placedItems = await this.placedItemsService.getPlacedItems({
             userId
         })
-        const data: PlacedItemsSyncedMessage = {
-            placedItems,
-            userId
-        }
         return {
             event: PLACED_ITEMS_SYNCED_EVENT,
-            data
+            data: {
+                placedItems
+            }
         }
     }
 
@@ -85,13 +82,8 @@ export class PlacedItemsGateway implements OnGatewayInit {
             userId: payload.userId
         })
         const data: PlacedItemsSyncedMessage = {
-            placedItems,
-            userId: payload.userId
+            placedItems
         }
-        this.namespace
-            .to(
-                payload.socketId
-            )
-            .emit(PLACED_ITEMS_SYNCED_EVENT, data)
+        this.namespace.to(payload.socketId).emit(PLACED_ITEMS_SYNCED_EVENT, data)
     }
 }

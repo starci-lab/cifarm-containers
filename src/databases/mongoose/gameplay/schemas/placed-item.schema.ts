@@ -34,7 +34,7 @@ export class PlacedItemSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: true })
         y: number
-
+    
     @Field(() => ID, {
         description: "The user who owns this placed item"
     })

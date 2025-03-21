@@ -1,20 +1,10 @@
+import { DeepPartial } from "@src/common"
 import { PlacedItemSchema } from "@src/databases"
 
 export interface PlacedItemsSyncedMessage {
     //placed items
-    placedItems: Array<PlacedItemSchema>
+    placedItems: Array<DeepPartial<PlacedItemSchema>>
     //current user id, beneficial for debugging
-    userId: string
-    // response
-    // response: {
-    //     userId: string
-    //     placedItemId: string
-    //     action: "Water"
-    //     status: "Success" | "Failed"
-    //     data: {
-    //         quantity:
-    //     }
-    // }
 }
 
 export interface SyncPlacedItemsPayload {

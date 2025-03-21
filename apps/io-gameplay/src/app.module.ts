@@ -12,6 +12,7 @@ import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { KafkaModule } from "@src/brokers"
 import { IdModule } from "@src/id"
+import { ObjectModule } from "@src/object"
 @Module({
     imports: [
         IdModule.register({
@@ -19,6 +20,9 @@ import { IdModule } from "@src/id"
             name: "IO Gameplay"
         }),
         EnvModule.forRoot(),
+        ObjectModule.register({
+            isGlobal: true
+        }),
         CacheModule.register({
             isGlobal: true
         }),
