@@ -29,7 +29,7 @@ export class UpdateReferralService {
         let user: UserSchema | undefined
         try {
             // Using `withTransaction` for automatic transaction handling
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -42,7 +42,7 @@ export class UpdateReferralService {
                 const referralUser = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(referralUserId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!referralUser) {
                     throw new GraphQLError("Referral user not found", {
@@ -66,7 +66,7 @@ export class UpdateReferralService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -117,14 +117,14 @@ export class UpdateReferralService {
                  ************************************************************/
                 // Update the referral user with the new referred user
                 referralUser.referredUserIds.push(new Types.ObjectId(userId))
-                await referralUser.save({ session: mongoSession })
+                await referralUser.save({ session })
 
                 /************************************************************
                  * UPDATE USER DATA
                  ************************************************************/
                 // Update the referred user with their referral information
                 user.referralUserId = new Types.ObjectId(referralUserId)
-                await user.save({ session: mongoSession })
+                await user.save({ session })
             })
             await Promise.all([
                 this.kafkaProducer.send({

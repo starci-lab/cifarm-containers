@@ -32,7 +32,7 @@ export class MoveInventoryService {
         const mongoSession = await this.connection.startSession()
         try {
             // Using `withTransaction` for automatic transaction handling
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -58,7 +58,7 @@ export class MoveInventoryService {
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
@@ -88,7 +88,7 @@ export class MoveInventoryService {
                         index,
                         kind
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 /************************************************************
                  * UPDATE INVENTORY POSITIONS
@@ -110,17 +110,17 @@ export class MoveInventoryService {
                             await this.connection
                                 .model<InventorySchema>(InventorySchema.name)
                                 .deleteOne({ _id: inventory.id })
-                                .session(mongoSession)
+                                .session(session)
                             // Update the quantity of the found inventory
                             foundInventory.quantity += inventory.quantity
-                            await foundInventory.save({ session: mongoSession })
+                            await foundInventory.save({ session })
                         } else {
                             // Reduce the quantity of the inventory
                             inventory.quantity -= inventoryType.maxStack - foundInventory.quantity
                             foundInventory.quantity = inventoryType.maxStack
 
-                            await inventory.save({ session: mongoSession })
-                            await foundInventory.save({ session: mongoSession })
+                            await inventory.save({ session })
+                            await foundInventory.save({ session })
                         }
                     } else {
                         // Swap the inventory
@@ -130,14 +130,14 @@ export class MoveInventoryService {
                         inventory.index = foundIndex
                         inventory.kind = foundKind
 
-                        await inventory.save({ session: mongoSession })
-                        await foundInventory.save({ session: mongoSession })
+                        await inventory.save({ session })
+                        await foundInventory.save({ session })
                     }
                 } else {
                     // If not, just update the index and kind
                     inventory.index = index
                     inventory.kind = kind
-                    await inventory.save({ session: mongoSession })
+                    await inventory.save({ session })
                 }
             })
         } catch (error) {

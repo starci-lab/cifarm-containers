@@ -35,7 +35,7 @@ export class BuyBuildingService {
         const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
 
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE BUILDING
                  ************************************************************/
@@ -68,7 +68,7 @@ export class BuyBuildingService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -94,7 +94,7 @@ export class BuyBuildingService {
                                 .map((placedItemType) => placedItemType.id)
                         }
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 if (totalBuildings >= buildingLimit) {
                     throw new GraphQLError("Max building ownership reached", {
@@ -125,7 +125,7 @@ export class BuyBuildingService {
                         user: userId,
                         placedItemType: placedItemType.id
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 if (placedItemBuildings.length >= building.maxOwnership) {
                     throw new GraphQLError("Max building ownership reached", {
@@ -154,7 +154,7 @@ export class BuyBuildingService {
                 })
 
                 // Save updated user data
-                await user.save({ session: mongoSession })
+                await user.save({ session })
 
                 /************************************************************
                  * PLACE BUILDING
@@ -175,7 +175,7 @@ export class BuyBuildingService {
                                 }
                             }
                         ],
-                        { session: mongoSession }
+                        { session }
                     )
 
                 syncedPlacedItemAction = {

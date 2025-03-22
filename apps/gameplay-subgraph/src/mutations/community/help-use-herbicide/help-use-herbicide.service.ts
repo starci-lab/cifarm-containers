@@ -156,7 +156,6 @@ export class HelpUseHerbicideService {
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-
                 // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {

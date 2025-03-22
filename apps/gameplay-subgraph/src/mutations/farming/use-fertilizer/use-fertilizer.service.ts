@@ -13,7 +13,8 @@ import {
     EnergyService,
     InventoryService,
     LevelService,
-    StaticService
+    StaticService,
+    SyncService
 } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { UseFertilizerRequest } from "./use-fertilizer.dto"
@@ -22,6 +23,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { DeepPartial, SchemaStatus, WithStatus } from "@src/common"
 
 @Injectable()
 export class UseFertilizerService {
@@ -34,6 +36,7 @@ export class UseFertilizerService {
         private readonly inventoryService: InventoryService,
         private readonly staticService: StaticService,
         private readonly coreService: CoreService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -42,8 +45,13 @@ export class UseFertilizerService {
         { inventorySupplyId, placedItemTileId }: UseFertilizerRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+
         let actionMessage: EmitActionPayload | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+        const syncedInventories: Array<DeepPartial<WithStatus<InventorySchema>>> = []
+
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -112,6 +120,12 @@ export class UseFertilizerService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
+                syncedPlacedItemAction = {
+                    id: placedItemTileId,
+                    placedItemType: placedItemTile.placedItemType,
+                    x: placedItemTile.x,
+                    y: placedItemTile.y
+                }
 
                 // Validate placed item tile exists
                 if (!placedItemTile) {
@@ -213,15 +227,27 @@ export class UseFertilizerService {
                 // Save updated inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
+                    const updatedSyncedInventories =
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: [inventory],
+                            status: SchemaStatus.Updated
+                        })
+                    syncedInventories.push(...updatedSyncedInventories)
                 }
 
-                // Delete removed inventories
-                await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .deleteMany({
-                        _id: { $in: removedInventories.map((inventory) => inventory._id) }
+                if (removedInventories.length > 0) {
+                    // Delete removed inventories
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .deleteMany({
+                            _id: { $in: removedInventories.map((inventory) => inventory._id) }
+                        })
+                        .session(session)
+                    const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
+                        inventoryIds: removedInventories.map((inventory) => inventory.id)
                     })
-                    .session(session)
+                    syncedInventories.push(...deletedSyncedInventories)
+                }
 
                 // Save user changes
                 await user.save({ session })
@@ -232,10 +258,16 @@ export class UseFertilizerService {
                     supply
                 })
                 await placedItemTile.save({ session })
+                const updatedSyncedPlacedItems =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemTile],
+                        status: SchemaStatus.Updated
+                    })
+                syncedPlacedItems.push(...updatedSyncedPlacedItems)
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.UseFertilizer,
                     success: true,
                     userId
@@ -254,15 +286,26 @@ export class UseFertilizerService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ placedItemTileId }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, inventories: syncedInventories }) }
+                    ]
                 })
             ])
         } catch (error) {

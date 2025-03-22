@@ -40,7 +40,7 @@ export class BuyFruitService {
         const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
 
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE FRUIT
                  ************************************************************/
@@ -73,7 +73,7 @@ export class BuyFruitService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -105,7 +105,7 @@ export class BuyFruitService {
                             $in: placedItemTypes.map((placedItemType) => placedItemType.id)
                         }
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 if (count >= fruitLimit) {
                     throw new GraphQLError("Max fruit limit reached", {
@@ -125,7 +125,7 @@ export class BuyFruitService {
                 })
 
                 // Save updated user data
-                await user.save({ session: mongoSession })
+                await user.save({ session })
 
                 /************************************************************
                  * PLACE FRUIT
@@ -159,7 +159,7 @@ export class BuyFruitService {
                                 }
                             }
                         ],
-                        { session: mongoSession }
+                        { session }
                     )
                 syncedPlacedItemAction = {
                     id: placedItemFruitRaw._id.toString(),

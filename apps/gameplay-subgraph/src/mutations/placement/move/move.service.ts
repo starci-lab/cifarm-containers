@@ -7,6 +7,9 @@ import { Connection } from "mongoose"
 import { MoveRequest } from "./move.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { DeepPartial, SchemaStatus } from "@src/common"
+import { WithStatus } from "@src/common"
+import { SyncService } from "@src/gameplay"
 
 @Injectable()
 export class MoveService {
@@ -15,7 +18,8 @@ export class MoveService {
     constructor(
         @InjectMongoose() 
         private readonly connection: Connection,
-        @InjectKafkaProducer() private readonly kafkaProducer: Producer
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
+        private readonly syncService: SyncService
     ) {}
 
     async move(
@@ -23,17 +27,27 @@ export class MoveService {
         { placedItemId, position }: MoveRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
-        let actionMessage: EmitActionPayload | undefined
 
+        let actionMessage: EmitActionPayload | undefined    
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined        
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+    
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM
                  ************************************************************/
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
-                    .session(mongoSession)
+                    .session(session)
+
+                syncedPlacedItemAction = {
+                    id: placedItem._id.toString(),
+                    x: placedItem.x,
+                    y: placedItem.y,
+                    placedItemType: placedItem.placedItemType
+                }
 
                 if (!placedItem) {
                     throw new GraphQLError("Placed item not found", {
@@ -60,10 +74,15 @@ export class MoveService {
                 // Update the placed item position in the database
                 placedItem.x = position.x
                 placedItem.y = position.y
-                await placedItem.save({ session: mongoSession })
+                await placedItem.save({ session })
+                const updatedSyncedPlacedItem = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItem],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(...updatedSyncedPlacedItem)  
 
                 actionMessage = {
-                    placedItemId: placedItemId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.Move,
                     success: true,
                     userId
@@ -80,7 +99,7 @@ export class MoveService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
                 })
             ])
         } catch (error) {

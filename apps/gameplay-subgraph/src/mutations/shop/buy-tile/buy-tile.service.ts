@@ -39,7 +39,7 @@ export class BuyTileService {
         const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
             
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE TILE
                  ************************************************************/
@@ -72,7 +72,7 @@ export class BuyTileService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -98,7 +98,7 @@ export class BuyTileService {
                         user: userId,
                         placedItemType: createObjectId(tileId)
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 if (count >= tileLimit) {
                     throw new GraphQLError("Max ownership reached", {
@@ -118,7 +118,7 @@ export class BuyTileService {
                 })
 
                 // Save updated user data
-                await user.save({ session: mongoSession })
+                await user.save({ session })
 
                 /************************************************************
                  * PLACE TILE
@@ -136,7 +136,7 @@ export class BuyTileService {
                                 tileInfo: {}
                             }
                         ],
-                        { session: mongoSession }
+                        { session }
                     )
                 syncedPlacedItemAction = {
                     id: placedItemTileRaw._id.toString(),

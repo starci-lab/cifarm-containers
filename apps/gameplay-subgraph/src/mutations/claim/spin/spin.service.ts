@@ -16,6 +16,7 @@ import {
     GoldBalanceService,
     InventoryService,
     StaticService,
+    SyncService,
     TokenBalanceService
 } from "@src/gameplay"
 import { SpinResponse } from "./spin.dto"
@@ -39,6 +40,7 @@ export class SpinService {
         private readonly inventoryService: InventoryService,
         private readonly dateUtcService: DateUtcService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -283,12 +285,7 @@ export class SpinService {
                         {
                             value: JSON.stringify({
                                 userId,
-                                user: {
-                                    spinLastTime: user.spinLastTime,
-                                    spinCount: user.spinCount,
-                                    golds: user.golds,
-                                    tokens: user.tokens
-                                }
+                                user: this.syncService.getSyncedUser(user)
                             })
                         }
                     ]

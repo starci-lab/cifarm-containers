@@ -10,13 +10,13 @@ import {
     InventoryKind,
     InventoryTypeId
 } from "@src/databases"
-import { EnergyService, LevelService, StaticService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService, SyncService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HelpUseBugNetRequest } from "./help-use-bug-net.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { createObjectId } from "@src/common"
+import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class HelpUseBugNetService {
@@ -27,7 +27,8 @@ export class HelpUseBugNetService {
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService
     ) {}
 
     async helpUseBugNet(
@@ -37,10 +38,13 @@ export class HelpUseBugNetService {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload | undefined
-        let neighborUserId: string | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+        let neighborUserId: string | undefined
+        
         try {
-            await mongoSession.withTransaction(async (session) => {
+            await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE BUG NET TOOL
                  ************************************************************/
@@ -51,7 +55,7 @@ export class HelpUseBugNetService {
                         inventoryType: createObjectId(InventoryTypeId.BugNet),
                         kind: InventoryKind.Tool
                     })
-                    .session(session)
+                    .session(mongoSession)
 
                 if (!inventoryBugNet) {
                     throw new GraphQLError("Bug net not found", {
@@ -67,11 +71,16 @@ export class HelpUseBugNetService {
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
-                    .session(session)
-
+                    .session(mongoSession)
+                syncedPlacedItemAction = {
+                    id: placedItemFruitId,
+                    placedItemType: placedItemFruit.placedItemType,
+                    x: placedItemFruit.x,
+                    y: placedItemFruit.y
+                }
                 if (!placedItemFruit) {
                     actionMessage = {
-                        placedItemId: placedItemFruitId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUseBugNet,
                         success: false,
                         userId,
@@ -88,7 +97,7 @@ export class HelpUseBugNetService {
                 neighborUserId = placedItemFruit.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
-                        placedItemId: placedItemFruitId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUseBugNet,
                         success: false,
                         userId,
@@ -107,7 +116,7 @@ export class HelpUseBugNetService {
                     placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsInfested
                 ) {
                     actionMessage = {
-                        placedItemId: placedItemFruitId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUseBugNet,
                         success: false,
                         userId,
@@ -131,7 +140,7 @@ export class HelpUseBugNetService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(session)
+                    .session(mongoSession)
 
                 // Validate user exists
                 if (!user) {
@@ -164,18 +173,24 @@ export class HelpUseBugNetService {
 
                 // Update the user
                 await user.save({
-                    session
+                    session: mongoSession
                 })
 
                 // Update fruit state after using bug net
                 placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
                 await placedItemFruit.save({
-                    session
+                    session: mongoSession
                 })
+                const createdSyncedPlacedItems =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemFruit],
+                        status: SchemaStatus.Created
+                    })
+                syncedPlacedItems.push(...createdSyncedPlacedItems)
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemFruitId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.HelpUseBugNet,
                     success: true,
                     userId
@@ -194,11 +209,25 @@ export class HelpUseBugNetService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId: neighborUserId,
+                                placedItems: syncedPlacedItems
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 })
             ])
         } catch (error) {

@@ -30,7 +30,7 @@ export class UpdateFollowXService {
         let user: UserSchema | undefined
         try {
             // Using `withTransaction` for automatic transaction handling
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -44,7 +44,7 @@ export class UpdateFollowXService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -76,7 +76,7 @@ export class UpdateFollowXService {
                  ************************************************************/
                 // Update user with the new token balance and mark followXAwarded as true
                 user.followXAwarded = true
-                await user.save({ session: mongoSession })
+                await user.save({ session })
             })
             await Promise.all([
                 this.kafkaProducer.send({

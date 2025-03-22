@@ -40,7 +40,7 @@ export class BuySuppliesService {
         let user: UserSchema | undefined
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE SUPPLY
                  ************************************************************/
@@ -71,7 +71,7 @@ export class BuySuppliesService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -116,7 +116,7 @@ export class BuySuppliesService {
                 })
 
                 // Save updated user data
-                await user.save({ session: mongoSession })
+                await user.save({ session })
 
                 /************************************************************
                  * ADD SUPPLIES TO INVENTORY
@@ -125,7 +125,7 @@ export class BuySuppliesService {
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session: mongoSession
+                    session
                 })
 
                 // Save inventory
@@ -143,7 +143,7 @@ export class BuySuppliesService {
                 if (createdInventories.length > 0) {
                     const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
-                        .create(createdInventories, { session: mongoSession })
+                        .create(createdInventories, { session })
                     const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
                         inventories: createdInventoryRaws,
                         status: SchemaStatus.Created
@@ -153,7 +153,7 @@ export class BuySuppliesService {
 
                 // Update existing inventory items
                 for (const inventory of updatedInventories) {
-                    await inventory.save({ session: mongoSession })
+                    await inventory.save({ session })
                     const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
                         status: SchemaStatus.Created,
                         inventories: [inventory]

@@ -1,7 +1,7 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
+import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 import {
     FruitCurrentState,
     InjectMongoose,
@@ -11,8 +11,7 @@ import {
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
-import { StaticService } from "@src/gameplay/static"
+import { EnergyService, LevelService, StaticService, SyncService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { UseBugNetRequest } from "./use-bug-net.dto"
@@ -29,6 +28,7 @@ export class UseBugNetService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -37,8 +37,12 @@ export class UseBugNetService {
         { placedItemFruitId }: UseBugNetRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+
+        // synced variables 
         let actionMessage: EmitActionPayload | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
 
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -74,11 +78,17 @@ export class UseBugNetService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
                     .session(session)
+                syncedPlacedItemAction = {
+                    id: placedItemFruitId,
+                    placedItemType: placedItemFruit.placedItemType,
+                    x: placedItemFruit.x,
+                    y: placedItemFruit.y
+                }
 
                 // Validate placed item fruit exists
                 if (!placedItemFruit) {
                     actionMessage = {
-                        placedItemId: placedItemFruitId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.UseBugNet,
                         success: false,
                         userId,
@@ -171,11 +181,18 @@ export class UseBugNetService {
 
                 // Save changes
                 await placedItemFruit.save({ session })
+                const updatedSyncedPlacedItems =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemFruit],
+                        status: SchemaStatus.Updated
+                    })
+                syncedPlacedItems.push(...updatedSyncedPlacedItems)
+
                 await user.save({ session })
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemFruitId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.UseBugNet,
                     success: true,
                     userId
@@ -194,16 +211,12 @@ export class UseBugNetService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 }),
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
-                })
             ])
         } catch (error) {
             this.logger.error(error)

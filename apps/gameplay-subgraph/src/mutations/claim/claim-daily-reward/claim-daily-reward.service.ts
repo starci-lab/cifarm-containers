@@ -7,6 +7,7 @@ import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { SyncService } from "@src/gameplay"
 
 @Injectable()
 export class ClaimDailyRewardService {
@@ -19,6 +20,7 @@ export class ClaimDailyRewardService {
         private readonly tokenBalanceService: TokenBalanceService,
         private readonly dateUtcService: DateUtcService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -27,15 +29,14 @@ export class ClaimDailyRewardService {
         const mongoSession = await this.connection.startSession()
         let user: UserSchema | undefined
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
-
+                    .session(session)
                 if (!user) {
                     throw new GraphQLError("User not found", {
                         extensions: {
@@ -103,7 +104,7 @@ export class ClaimDailyRewardService {
                  * UPDATE USER DATA
                  ************************************************************/
                 // Update the user with the changes
-                await user.save({ session: mongoSession })
+                await user.save({ session })
             })
             await Promise.all([
                 this.kafkaProducer.send({
@@ -112,12 +113,7 @@ export class ClaimDailyRewardService {
                         {
                             value: JSON.stringify({
                                 userId,
-                                user: {
-                                    dailyRewardLastClaimTime: user.dailyRewardLastClaimTime,
-                                    dailyRewardStreak: user.dailyRewardStreak,
-                                    golds: user.golds,
-                                    tokens: user.tokens
-                                }
+                                user: this.syncService.getSyncedUser(user)
                             })
                         }
                     ]

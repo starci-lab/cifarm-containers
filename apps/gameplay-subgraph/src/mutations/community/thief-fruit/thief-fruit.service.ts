@@ -1,16 +1,12 @@
-import {
-    ActionName,
-    EmitActionPayload,
-    ThiefFruitData,
-} from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload, ThiefFruitData } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    FruitCurrentState, 
-    InjectMongoose, 
+    FruitCurrentState,
+    InjectMongoose,
     InventorySchema,
     InventoryType,
-    PlacedItemSchema, 
+    PlacedItemSchema,
     ProductType,
     UserSchema,
     InventoryKind,
@@ -22,12 +18,13 @@ import {
     InventoryService,
     LevelService,
     ThiefService,
-    StaticService
+    StaticService,
+    SyncService
 } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection, Types } from "mongoose"
 import { ThiefFruitRequest, ThiefFruitResponse } from "./thief-fruit.dto"
-import { createObjectId } from "@src/common"
+import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 
@@ -42,7 +39,8 @@ export class ThiefFruitService {
         private readonly levelService: LevelService,
         private readonly thiefService: ThiefService,
         private readonly inventoryService: InventoryService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService
     ) {}
 
     async thiefFruit(
@@ -50,9 +48,13 @@ export class ThiefFruitService {
         { placedItemFruitId }: ThiefFruitRequest
     ): Promise<ThiefFruitResponse> {
         const mongoSession = await this.connection.startSession()
+        // synced variables
         let actionMessage: EmitActionPayload<ThiefFruitData> | undefined
-        let neighborUserId: string | undefined
         let user: UserSchema | undefined
+        let neighborUserId: string | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+        const syncedInventories: Array<DeepPartial<WithStatus<InventorySchema>>> = []
 
         try {
             const result = await mongoSession.withTransaction(async (session) => {
@@ -86,6 +88,12 @@ export class ThiefFruitService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
                     .session(session)
+                syncedPlacedItemAction = {
+                    id: placedItemFruitId,
+                    placedItemType: placedItemFruit.placedItemType,
+                    x: placedItemFruit.x,
+                    y: placedItemFruit.y
+                }
 
                 if (!placedItemFruit) {
                     throw new GraphQLError("Fruit not found", {
@@ -113,13 +121,13 @@ export class ThiefFruitService {
                 }
 
                 const users = placedItemFruit.fruitInfo.thieves
-                if (users.map(user => user.toString()).includes(userId)) {
+                if (users.map((user) => user.toString()).includes(userId)) {
                     actionMessage = {
-                        placedItemId: placedItemFruitId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.ThiefFruit,
                         success: false,
                         userId,
-                        reasonCode: 1,
+                        reasonCode: 1
                     }
                     throw new GraphQLError("User already thief", {
                         extensions: {
@@ -148,7 +156,7 @@ export class ThiefFruitService {
 
                 this.energyService.checkSufficient({
                     current: user.energy,
-                    required: energyConsume,
+                    required: energyConsume
                 })
 
                 /************************************************************
@@ -158,7 +166,8 @@ export class ThiefFruitService {
                 const { thief2, thief3 } = this.staticService.fruitInfo.randomness
 
                 const { value: computedQuantity } = this.thiefService.compute({
-                    thief2, thief3
+                    thief2,
+                    thief3
                 })
 
                 const actualQuantity = Math.min(
@@ -168,11 +177,11 @@ export class ThiefFruitService {
 
                 if (actualQuantity <= 0) {
                     actionMessage = {
-                        placedItemId: placedItemFruitId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.ThiefFruit,
                         success: false,
                         userId,
-                        reasonCode: 2,
+                        reasonCode: 2
                     }
                     throw new GraphQLError("Thief quantity is less than minimum yield quantity", {
                         extensions: {
@@ -225,7 +234,7 @@ export class ThiefFruitService {
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session,
+                    session
                 })
 
                 const { storageCapacity } = this.staticService.defaultInfo
@@ -236,25 +245,39 @@ export class ThiefFruitService {
                     capacity: storageCapacity,
                     quantity: actualQuantity,
                     userId: user.id,
-                    occupiedIndexes,
+                    occupiedIndexes
                 })
 
-                await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .create(createdInventories, { session })
+                if (createdInventories.length > 0) {
+                    const createdInventoryRaws = await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .create(createdInventories, { session })
+                    const createdSyncedInventories =
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: createdInventoryRaws,
+                            status: SchemaStatus.Created
+                        })
+                    syncedInventories.push(...createdSyncedInventories)
+                }
 
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
+                    const updatedSyncedInventory =
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: [inventory],
+                            status: SchemaStatus.Updated
+                        })
+                    syncedInventories.push(...updatedSyncedInventory)
                 }
 
                 this.energyService.substract({
                     user,
-                    quantity: energyConsume,
+                    quantity: energyConsume
                 })
 
                 this.levelService.addExperiences({
                     user,
-                    experiences: experiencesGain,
+                    experiences: experiencesGain
                 })
 
                 await user.save({ session })
@@ -265,16 +288,21 @@ export class ThiefFruitService {
                 placedItemFruit.fruitInfo.harvestQuantityRemaining -= actualQuantity
                 placedItemFruit.fruitInfo.thieves.push(new Types.ObjectId(userId))
                 await placedItemFruit.save({ session })
+                const updatedSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemFruit],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(...updatedSyncedPlacedItems)
 
                 actionMessage = {
-                    placedItemId: placedItemFruitId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.ThiefFruit,
                     success: true,
                     userId,
-                    data: { 
+                    data: {
                         quantity: actualQuantity,
-                        productId: product?.displayId,
-                    },
+                        productId: product?.displayId
+                    }
                 }
 
                 return { quantity: actualQuantity }
@@ -287,15 +315,33 @@ export class ThiefFruitService {
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }],
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId: neighborUserId,
+                                placedItems: syncedPlacedItems
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories })}]
+                }), 
+                this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 })
             ])
 
@@ -306,7 +352,7 @@ export class ThiefFruitService {
                 // Send failure action message in case of error
                 await this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }],
+                    messages: [{ value: JSON.stringify(actionMessage) }]
                 })
             }
             throw error

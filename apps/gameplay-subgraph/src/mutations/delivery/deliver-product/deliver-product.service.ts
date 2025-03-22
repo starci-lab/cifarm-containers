@@ -4,9 +4,10 @@ import { InjectMongoose, InventoryKind, InventorySchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { StaticService } from "@src/gameplay"
+import { StaticService, SyncService } from "@src/gameplay"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class DeliverProductService {
@@ -17,7 +18,8 @@ export class DeliverProductService {
         private readonly connection: Connection,
         private readonly staticService: StaticService,
         @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer
+        private readonly kafkaProducer: Producer,
+        private readonly syncService: SyncService
     ) {}
 
     async deliverProduct(
@@ -25,9 +27,11 @@ export class DeliverProductService {
         { inventoryId, quantity, index }: DeliverProductRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+
+        const syncedInventories: Array<DeepPartial<WithStatus<InventorySchema>>> = []
         try {
             // Using withTransaction to manage the transaction
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY
                  ************************************************************/
@@ -35,7 +39,7 @@ export class DeliverProductService {
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
@@ -91,18 +95,28 @@ export class DeliverProductService {
                         .deleteOne({
                             _id: inventoryId
                         })
-                        .session(mongoSession)
+                        .session(session)
+
+                    const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
+                        inventoryIds: [inventory.id]
+                    })
+                    syncedInventories.push(...deletedSyncedInventories)
                 } else {
                     // Update the inventory with reduced quantity
                     inventory.quantity -= quantity
-                    await inventory.save({ session: mongoSession })
+                    await inventory.save({ session })
+                    const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: [inventory],
+                        status: SchemaStatus.Updated
+                    })
+                    syncedInventories.push(...updatedSyncedInventories)
                 }
 
                 /************************************************************
                  * CREATE DELIVERY INVENTORY
                  ************************************************************/
                 // Create a new inventory kind for Delivery
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(
+                const createdInventoryRaws = await this.connection.model<InventorySchema>(InventorySchema.name).create(
                     [
                         {
                             quantity,
@@ -112,13 +126,18 @@ export class DeliverProductService {
                             inventoryType: inventory.inventoryType
                         }
                     ],
-                    { session: mongoSession }
+                    { session }
                 )
+                const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                    inventories: createdInventoryRaws,
+                    status: SchemaStatus.Created
+                })
+                syncedInventories.push(...createdSyncedInventories)
             })
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories })}]
                 })
             ])
         } catch (error) {

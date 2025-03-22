@@ -40,7 +40,7 @@ export class BuySeedsService {
         let user: UserSchema | undefined
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE CROP
                  ************************************************************/
@@ -72,7 +72,7 @@ export class BuySeedsService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -98,7 +98,7 @@ export class BuySeedsService {
                         type: InventoryType.Seed,
                         crop: createObjectId(request.cropId)
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!inventoryType) {
                     throw new GraphQLError("Inventory seed type not found", {
@@ -118,7 +118,7 @@ export class BuySeedsService {
                 })
 
                 // Save updated user data
-                await user.save({ session: mongoSession })
+                await user.save({ session })
 
                 /************************************************************
                  * ADD SEEDS TO INVENTORY
@@ -127,7 +127,7 @@ export class BuySeedsService {
                     connection: this.connection,
                     inventoryType,
                     userId: user.id,
-                    session: mongoSession
+                    session
                 })
 
                 const { storageCapacity } = this.staticService.defaultInfo
@@ -147,7 +147,7 @@ export class BuySeedsService {
                 if (createdInventories.length > 0) {
                     const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
-                        .create(createdInventories, { session: mongoSession })
+                        .create(createdInventories, { session })
                     const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
                         inventories: createdInventoryRaws,
                         status: SchemaStatus.Created
@@ -157,7 +157,7 @@ export class BuySeedsService {
 
                 // Update existing inventory items
                 for (const inventory of updatedInventories) {
-                    await inventory.save({ session: mongoSession })
+                    await inventory.save({ session })
                     // get synced inventory then add to syncedInventories
                     const updatedSyncedInventory = this.syncService.getCreatedOrUpdatedSyncedInventories({
                         inventories: [inventory],

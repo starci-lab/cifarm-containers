@@ -4,13 +4,14 @@ import {
     InventoryKind,
     InventorySchema,
 } from "@src/databases"
-import { InventoryService, StaticService } from "@src/gameplay"
+import { InventoryService, StaticService, SyncService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { RetainProductRequest } from "./retain-product.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class RetainProductService {
@@ -21,6 +22,7 @@ export class RetainProductService {
         private readonly connection: Connection,
         private readonly inventoryService: InventoryService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -29,17 +31,18 @@ export class RetainProductService {
         { id: userId }: UserLike, 
         { inventoryId }: RetainProductRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
-
+        
+        const syncedInventories: Array<DeepPartial<WithStatus<InventorySchema>>> = []
         try {
             // Using withTransaction to manage the transaction
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE DELIVERY INVENTORY
                  ************************************************************/
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventoryId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!inventory) {
                     throw new GraphQLError("Delivering product not found", {
@@ -102,9 +105,14 @@ export class RetainProductService {
                  ************************************************************/
                 // Create new inventory records for Storage
                 if (createdInventories.length > 0) {
-                    await this.connection
+                    const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
-                        .create(createdInventories, { session: mongoSession })
+                        .create(createdInventories, { session })
+                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: createdInventoryRaws,
+                        status: SchemaStatus.Created
+                    })
+                    syncedInventories.push(...createdSyncedInventories)
                 }
 
                 /************************************************************
@@ -112,7 +120,12 @@ export class RetainProductService {
                  ************************************************************/
                 // Update existing inventories
                 for (const inventory of updatedInventories) {
-                    await inventory.save({ session: mongoSession })
+                    await inventory.save({ session })
+                    const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: [inventory],
+                        status: SchemaStatus.Updated
+                    })
+                    syncedInventories.push(...updatedSyncedInventories)
                 }
 
                 /************************************************************
@@ -121,12 +134,16 @@ export class RetainProductService {
                 // Delete the original delivery inventory
                 await this.connection
                     .model<InventorySchema>(InventorySchema.name)
-                    .deleteOne({ _id: inventory._id }, { session: mongoSession })
+                    .deleteOne({ _id: inventory._id }, { session })
+                const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
+                    inventoryIds: [inventory.id]
+                })
+                syncedInventories.push(...deletedSyncedInventories)
             })
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories })}]
                 })
             ])
         } catch (error) {

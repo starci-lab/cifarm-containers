@@ -3,11 +3,12 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
-import { GoldBalanceService, StaticService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { SellRequest } from "./sell.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { DeepPartial, WithStatus } from "@src/common"
 
 @Injectable()
 export class SellService {
@@ -18,22 +19,33 @@ export class SellService {
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
-        @InjectKafkaProducer() private readonly kafkaProducer: Producer
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
+        private readonly syncService: SyncService
     ) {}
 
     async sell({ id: userId }: UserLike, { placedItemId }: SellRequest): Promise<void> {
         const mongoSession = await this.connection.startSession()
-        let actionMessage: EmitActionPayload<SellData> | undefined
 
+        let actionMessage: EmitActionPayload<SellData> | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        let user: UserSchema | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM
                  ************************************************************/
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
-                    .session(mongoSession)
+                    .session(session)
+
+                syncedPlacedItemAction = {
+                    id: placedItem.id,
+                    x: placedItem.x,
+                    y: placedItem.y,
+                    placedItemType: placedItem.placedItemType
+                }
 
                 if (!placedItem) {
                     throw new GraphQLError("Placed item not found", {
@@ -94,10 +106,9 @@ export class SellService {
                         })
                     }
                     const upgradeLevel = placedItem?.buildingInfo?.currentUpgrade ?? 1
-                    const upgradePrice =
-                            building.upgrades?.find(
-                                (upgrade) => upgrade.upgradeLevel === upgradeLevel
-                            )?.sellPrice
+                    const upgradePrice = building.upgrades?.find(
+                        (upgrade) => upgrade.upgradeLevel === upgradeLevel
+                    )?.sellPrice
                     if (!upgradePrice) {
                         throw new GraphQLError("Upgrade price not found", {
                             extensions: {
@@ -145,10 +156,10 @@ export class SellService {
                 /************************************************************
                  * RETRIEVE AND UPDATE USER DATA
                  ************************************************************/
-                const user: UserSchema = await this.connection
+                user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -165,18 +176,22 @@ export class SellService {
                 })
 
                 // Update user with gold changes
-                await user.save({ session: mongoSession })
+                await user.save({ session })
 
                 /************************************************************
                  * REMOVE PLACED ITEM
                  ************************************************************/
-                await placedItem.deleteOne({ session: mongoSession })
+                await placedItem.deleteOne({ session })
+                const deletedSyncedPlacedItems = this.syncService.getDeletedSyncedPlacedItems({
+                    placedItemIds: [placedItem.id]
+                })
+                syncedPlacedItems.push(...deletedSyncedPlacedItems)
 
                 /************************************************************
                  * PREPARE ACTION MESSAGE
                  ************************************************************/
                 actionMessage = {
-                    placedItemId: placedItemId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.Sell,
                     success: true,
                     userId,
@@ -195,8 +210,21 @@ export class SellService {
                     messages: [{ value: JSON.stringify(actionMessage) }]
                 }),
                 this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
+                }),
+                this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 })
             ])
         } catch (error) {

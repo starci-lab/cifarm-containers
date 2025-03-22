@@ -46,7 +46,7 @@ export class HelpUsePesticideService {
 
         try {
             // Using session.withTransaction for MongoDB operations and automatic transaction handling
-            await mongoSession.withTransaction(async () => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PESTICIDE TOOL
                  ************************************************************/
@@ -57,7 +57,7 @@ export class HelpUsePesticideService {
                         inventoryType: createObjectId(InventoryTypeId.Pesticide),
                         kind: InventoryKind.Tool
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!inventoryPesticide) {
                     throw new GraphQLError("Pesticide not found", {
@@ -73,7 +73,7 @@ export class HelpUsePesticideService {
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
-                    .session(mongoSession)
+                    .session(session)
                 // Update synced placed item
                 syncedPlacedItemAction = {
                     x: placedItemTile.x,
@@ -157,7 +157,7 @@ export class HelpUsePesticideService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 // Validate user exists
                 if (!user) {
@@ -189,11 +189,11 @@ export class HelpUsePesticideService {
                 })
 
                 // Update the user
-                await user.save({ session: mongoSession })
+                await user.save({ session })
 
                 // Update crop state after using pesticide
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
-                await placedItemTile.save({ session: mongoSession })
+                await placedItemTile.save({ session })
                 // Update synced placed item
                 const updatedSyncedPlacedItem =
                     this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
