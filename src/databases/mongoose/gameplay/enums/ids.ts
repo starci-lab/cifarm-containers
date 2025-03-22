@@ -30,7 +30,7 @@ export enum BuildingId {
     Barn = "barn",
     Home = "home"
 }
-
+ 
 export const FirstCharLowerCaseBuildingId = createFirstCharLowerCaseEnumType(BuildingId)
 
 registerEnumType(FirstCharLowerCaseBuildingId, {
