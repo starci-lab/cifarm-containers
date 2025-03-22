@@ -6,7 +6,7 @@ import {
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, PlacedItemService } from "@src/gameplay"
+import { EnergyService, InventoryService, LevelService, SyncService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { PlantSeedRequest } from "./plant-seed.dto"
@@ -27,7 +27,7 @@ export class PlantSeedService {
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
-        private readonly placedItemService: PlacedItemService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -229,7 +229,7 @@ export class PlantSeedService {
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
                     // add synced inventory to syncedInventories
-                    const updatedSyncedInventories = this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                    const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
                         inventories: [inventory],
                         status: SchemaStatus.Updated
                     })
@@ -245,7 +245,7 @@ export class PlantSeedService {
                     .session(session)
 
                 // add synced inventory to syncedInventories
-                const deletedSyncedInventories = this.inventoryService.getDeletedSyncedInventories({
+                const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
                     inventoryIds: removedInventories.map((inventory) => inventory.id)
                 })
                 syncedInventories.push(...deletedSyncedInventories)
@@ -270,7 +270,7 @@ export class PlantSeedService {
                     .findById(placedItemTileId)
                     .session(session)
                 // add synced placed item to syncedPlacedItems
-                const updatedSyncedPlacedItems = this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                const updatedSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
                     placedItems: [updatedPlacedItemTile],
                     status: SchemaStatus.Updated
                 })
@@ -302,7 +302,7 @@ export class PlantSeedService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,

@@ -10,7 +10,7 @@ export class UserService {
     ) {}
 
     async getUser(userId: string) {
-        const mongoSession = await this.connection.startSession()   
+        const mongoSession = await this.connection.startSession()
         try {
             return await this.connection.model<UserSchema>(UserSchema.name).findById(userId)
         } finally {
@@ -21,10 +21,11 @@ export class UserService {
     async getInventories(userId: string) {
         const mongoSession = await this.connection.startSession()
         try {
-            return await this.connection.model<InventorySchema>(InventorySchema.name).find({ user: userId })
+            return await this.connection
+                .model<InventorySchema>(InventorySchema.name)
+                .find({ user: userId })
         } finally {
             await mongoSession.endSession()
         }
-    }   
+    }
 }
-    

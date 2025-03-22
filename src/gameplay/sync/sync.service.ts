@@ -1,15 +1,45 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { PlacedItemSchema } from "@src/databases"
+import { InventorySchema, PlacedItemSchema, UserSchema } from "@src/databases"
 import { SchemaStatus, WithStatus } from "@src/common"
 import {
+    GetDeletedSyncedInventoriesParams,
+    GetCreatedOrUpdatedSyncedInventoriesParams,
+    GetDeletedSyncedPlacedItemsParams,
     GetCreatedOrUpdatedSyncedPlacedItemsParams,
-    GetDeletedSyncedPlacedItemsParams
 } from "./types"
 @Injectable()
-export class PlacedItemService {
-    private readonly logger = new Logger(PlacedItemService.name)
+export class SyncService {
+    private readonly logger = new Logger(SyncService.name)
 
     constructor() {}
+
+    public getCreatedOrUpdatedSyncedInventories({
+        inventories,
+        status = SchemaStatus.Created
+    }: GetCreatedOrUpdatedSyncedInventoriesParams): Array<WithStatus<InventorySchema>> {
+        // get field needed, exclude
+        const syncedInventories = inventories.map((inventory) => {
+            const inventoryJson = inventory.toJSON({
+                flattenObjectIds: true
+            }) as InventorySchema
+            // Remove createdAt and updatedAt fields
+            return {
+                ...inventoryJson,
+                status
+            }
+        })
+
+        return syncedInventories
+    }
+
+    public getDeletedSyncedInventories({
+        inventoryIds
+    }: GetDeletedSyncedInventoriesParams): Array<WithStatus<InventorySchema>> {
+        return inventoryIds.map((inventoryId) => ({
+            id: inventoryId,
+            status: SchemaStatus.Deleted
+        }))
+    }
 
     public getCreatedOrUpdatedSyncedPlacedItems({
         placedItems,
@@ -64,5 +94,13 @@ export class PlacedItemService {
             id: placedItemId,
             status: SchemaStatus.Deleted
         }))
+    }
+
+    public getSyncedUser(
+        user: UserSchema
+    ): UserSchema {
+        return user.toObject({
+            flattenObjectIds: true
+        })
     }
 }

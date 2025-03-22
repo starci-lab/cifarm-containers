@@ -8,7 +8,7 @@ import {
     InventoryTypeSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, InventoryService, StaticService } from "@src/gameplay"
+import { GoldBalanceService, InventoryService, SyncService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuySeedsRequest } from "./buy-seeds.dto"
 import { UserLike } from "@src/jwt"
@@ -25,6 +25,7 @@ export class BuySeedsService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
+        private readonly syncService: SyncService,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
@@ -147,7 +148,7 @@ export class BuySeedsService {
                     const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session: mongoSession })
-                    const createdSyncedInventories = this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
                         inventories: createdInventoryRaws,
                         status: SchemaStatus.Created
                     })
@@ -158,7 +159,7 @@ export class BuySeedsService {
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session: mongoSession })
                     // get synced inventory then add to syncedInventories
-                    const updatedSyncedInventory = this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                    const updatedSyncedInventory = this.syncService.getCreatedOrUpdatedSyncedInventories({
                         inventories: [inventory],
                         status: SchemaStatus.Updated
                     })
@@ -169,7 +170,7 @@ export class BuySeedsService {
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,

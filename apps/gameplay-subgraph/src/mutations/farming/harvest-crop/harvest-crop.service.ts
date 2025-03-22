@@ -19,7 +19,7 @@ import {
     EnergyService,
     InventoryService,
     LevelService,
-    PlacedItemService,
+    SyncService,
     StaticService
 } from "@src/gameplay"
 import { Connection } from "mongoose"
@@ -41,7 +41,7 @@ export class HarvestCropService {
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         private readonly coreService: CoreService,
-        private readonly placedItemService: PlacedItemService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -269,7 +269,7 @@ export class HarvestCropService {
                     .model<InventorySchema>(InventorySchema.name)
                     .create(createdInventories, { session })
                 const createdSyncedInventories =
-                    this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                    this.syncService.getCreatedOrUpdatedSyncedInventories({
                         inventories: createdInventoriesRaw,
                         status: SchemaStatus.Created
                     })
@@ -279,7 +279,7 @@ export class HarvestCropService {
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
                     const updatedSyncedInventories =
-                        this.inventoryService.getCreatedOrUpdatedSyncedInventories({
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
                             inventories: [inventory],
                             status: SchemaStatus.Updated
                         })
@@ -299,7 +299,7 @@ export class HarvestCropService {
                 // Save placed item tile changes
                 await placedItemTile.save({ session })
                 const updatedSyncedPlacedItem =
-                    this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
                         placedItems: [placedItemTile],
                         status: SchemaStatus.Updated
                     })
@@ -338,7 +338,7 @@ export class HarvestCropService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,

@@ -9,8 +9,6 @@ import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { Producer } from "kafkajs"
 
 @Injectable()
 export class MoveInventoryService {
@@ -20,8 +18,6 @@ export class MoveInventoryService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly staticService: StaticService,
-        @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer
     ) {}
 
     async moveInventory(
@@ -144,12 +140,6 @@ export class MoveInventoryService {
                     await inventory.save({ session: mongoSession })
                 }
             })
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
-                })
-            ])
         } catch (error) {
             this.logger.error(error)
             throw error

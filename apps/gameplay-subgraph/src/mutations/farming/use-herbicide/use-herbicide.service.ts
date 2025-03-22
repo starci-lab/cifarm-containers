@@ -8,7 +8,7 @@ import {
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService, PlacedItemService } from "@src/gameplay"
+import { EnergyService, LevelService, SyncService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { UseHerbicideRequest } from "./use-herbicide.dto"
@@ -30,7 +30,7 @@ export class UseHerbicideService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
-        private readonly placedItemService: PlacedItemService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -184,7 +184,7 @@ export class UseHerbicideService {
                 // Update tile state
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session })
-                const updatedSyncedPlacedItem = this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                const updatedSyncedPlacedItem = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
                     placedItems: [placedItemTile],
                     status: SchemaStatus.Updated
                 })
@@ -211,11 +211,11 @@ export class UseHerbicideService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId, placedItem: syncedPlacedItems }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 })
             ])
         } catch (error) {

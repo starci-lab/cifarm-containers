@@ -8,7 +8,7 @@ import {
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService, StaticService, PlacedItemService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService, SyncService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { UsePesticideRequest } from "./use-pesticide.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -28,7 +28,7 @@ export class UsePesticideService {
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
-        private readonly placedItemService: PlacedItemService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -183,7 +183,7 @@ export class UsePesticideService {
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session })
 
-                const updatedSyncedPlacedItem = this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                const updatedSyncedPlacedItem = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
                     placedItems: [placedItemTile],
                     status: SchemaStatus.Updated
                 })
@@ -214,7 +214,7 @@ export class UsePesticideService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 })
             ])
         } catch (error) {

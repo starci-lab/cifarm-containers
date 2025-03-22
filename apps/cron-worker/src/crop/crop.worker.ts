@@ -5,7 +5,7 @@ import { bullData, BullQueueName } from "@src/bull"
 import { CropCurrentState, InjectMongoose, PlacedItemSchema, PlacedItemType } from "@src/databases"
 import { Job } from "bullmq"
 import { DateUtcService } from "@src/date"
-import { CoreService, PlacedItemService, StaticService } from "@src/gameplay"
+import { CoreService, SyncService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
@@ -19,7 +19,7 @@ export class CropWorker extends WorkerHost {
         private readonly connection: Connection,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer,
-        private readonly placedItemService: PlacedItemService,
+        private readonly syncService: SyncService,
         private readonly dateUtcService: DateUtcService,
         private readonly coreService: CoreService,
         private readonly staticService: StaticService
@@ -149,7 +149,7 @@ export class CropWorker extends WorkerHost {
                     switch (result) {
                     case CropUpdateResult.GrowthStageUpdate: {
                         const updatedSyncedPlacedItems =
-                                this.placedItemService.getCreatedOrUpdatedSyncedPlacedItems({
+                                this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
                                     placedItems: [placedItem],
                                     status: SchemaStatus.Updated
                                 })

@@ -9,7 +9,7 @@ import { CoreService } from "./core"
 import { PositionService } from "./position"
 import { NestExport, NestProvider, NestService } from "@src/common"
 import { StaticService } from "./static"
-import { PlacedItemService } from "./placed-items" 
+import { SyncService } from "./sync"
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE) : DynamicModule {
@@ -25,7 +25,7 @@ export class GameplayModule extends ConfigurableModuleClass {
             InventoryService,
             CoreService,
             PositionService,
-            PlacedItemService,
+            SyncService,
         ]
         if (loadStatic) {
             // services that are loaded if static is enabled
