@@ -7,12 +7,14 @@ import {
     PlacedItemType,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, StaticService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyFruitRequest } from "./buy-fruit.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { SchemaStatus, WithStatus } from "@src/common"
+import { DeepPartial } from "@src/common"
 
 @Injectable()
 export class BuyFruitService {
@@ -22,7 +24,8 @@ export class BuyFruitService {
         @InjectMongoose() private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService
     ) {}
 
     async buyFruit(
@@ -30,9 +33,12 @@ export class BuyFruitService {
         { position, fruitId }: BuyFruitRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
-
+        // synced variables
         let actionMessage: EmitActionPayload<BuyFruitData> | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -155,20 +161,30 @@ export class BuyFruitService {
                         ],
                         { session: mongoSession }
                     )
-                const placedItemId = placedItemFruitRaw._id.toString()
+                syncedPlacedItemAction = {
+                    id: placedItemFruitRaw._id.toString(),
+                    x: placedItemFruitRaw.x,
+                    y: placedItemFruitRaw.y,
+                    placedItemType: placedItemFruitRaw.placedItemType,    
+                }
+
+                const createdSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemFruitRaw],
+                    status: SchemaStatus.Created
+                })
+                syncedPlacedItems.push(...createdSyncedPlacedItems)
 
                 /************************************************************
                  * PREPARE ACTION MESSAGE
                  ************************************************************/
                 // Prepare the action message to emit to Kafka
                 actionMessage = {
-                    placedItemId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.BuyFruit,
                     success: true,
                     userId,
                     data: {
                         price: fruit.price,
-                        placedItemFruitId: placedItemId
                     }
                 }
             })
@@ -185,11 +201,11 @@ export class BuyFruitService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems })}]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 })
             ])
         } catch (error) {

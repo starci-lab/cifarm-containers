@@ -1,3 +1,6 @@
+import { Types } from "mongoose"
+import { v4 } from "uuid"
+
 export const waitFor = (observeVariable: boolean, delay: number = 100): Promise<void> => {
     return new Promise((resolve) => {
         const interval = setInterval(() => {
@@ -101,4 +104,14 @@ export const getDifferenceAndValues = <TObject extends object>(obj1: TObject, ob
     }
 
     return diff
+}
+
+export const createObjectId = (id: string = v4()): Types.ObjectId => {
+    let hex = Buffer.from(id, "utf-8").toString("hex")
+    if (hex.length < 24) {
+        hex = hex.padStart(24, "0")
+    } else if (hex.length > 24) {
+        hex = hex.slice(0, 24)
+    }
+    return new Types.ObjectId(hex)
 }

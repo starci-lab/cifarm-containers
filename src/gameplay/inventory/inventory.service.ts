@@ -39,34 +39,28 @@ export class InventoryService {
         const sortedInventories = inventories.sort((prev, next) => next.quantity - prev.quantity)
 
         // if inventory not stackable, create a new inventory for each quantity
-        if (!inventoryType.stackable) {
-            while (quantity > 0) {
-                const quantityToAdd = Math.min(inventoryType.maxStack, quantity)
-                // find the first available index
-                let foundAvailableIndex = false
-                for (let index = 0; index < capacity; index++) {
-                    if (!occupiedIndexes.includes(index)) {
-                        createdInventories.push({
-                            quantity: quantityToAdd,
-                            inventoryType: inventoryType.id,
-                            user: userId,
-                            index,
-                            kind
-                        })
-                        occupiedIndexes.push(index)
-                        foundAvailableIndex = true
-                        break
-                    }
+        if (inventoryType.stackable === false) {
+            // find the first available index
+            let foundAvailableIndex = false
+            for (let index = 0; index < capacity; index++) {
+                if (!occupiedIndexes.includes(index)) {
+                    createdInventories.push({
+                        inventoryType: inventoryType.id,
+                        user: userId,
+                        index,
+                        kind
+                    })
+                    occupiedIndexes.push(index)
+                    foundAvailableIndex = true
+                    break
                 }
-                // if no available index is found, throw an exception
-                if (!foundAvailableIndex) {
-                    throw new InventoryCapacityExceededException()
-                }
-                quantity -= quantityToAdd
+            }
+            // if no available index is found, throw an exception
+            if (!foundAvailableIndex) {
+                throw new InventoryCapacityExceededException()
             }
             return { updatedInventories, createdInventories }
         }
-
         // loop through the inventories and add the quantity to the inventory
         for (const inventory of sortedInventories) {
             const spaceInCurrentStack = inventoryType.maxStack - inventory.quantity

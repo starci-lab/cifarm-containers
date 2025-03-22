@@ -264,17 +264,19 @@ export class HarvestCropService {
                     occupiedIndexes
                 })
 
+
                 // Create new inventories
-                const createdInventoriesRaw = await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .create(createdInventories, { session })
-                const createdSyncedInventories =
+                if (createdInventories.length > 0) {
+                    const createdInventoryRaws = await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .create(createdInventories, { session })
+                    const createdSyncedInventories =
                     this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: createdInventoriesRaw,
+                        inventories: createdInventoryRaws,
                         status: SchemaStatus.Created
                     })
-                syncedInventories.push(...createdSyncedInventories)
-
+                    syncedInventories.push(...createdSyncedInventories)
+                }
                 // Update existing inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })

@@ -118,7 +118,7 @@ export class CropWorker extends WorkerHost {
                                         CropCurrentState.IsInfested
                                 }
                             }
-                            return CropUpdateResult.GrowthWithinStage
+                            return CropUpdateResult.GrowthStageUpdate
                         }
                         // else, the crop is fully matured
                         if (
@@ -182,7 +182,7 @@ export class CropWorker extends WorkerHost {
 }
 
 export enum CropUpdateResult {
-    NoChange = "no_change",
-    GrowthStageUpdate = "growth_stage_update",
-    GrowthWithinStage = "growth_within_stage"
+    NoChange = "no-change",
+    GrowthStageUpdate = "growth-stage-update",
+    GrowthWithinStage = "growth-within-stage"
 }

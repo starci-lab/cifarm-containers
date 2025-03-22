@@ -9,14 +9,14 @@ import {
     InventoryKind,
     InventoryTypeId
 } from "@src/databases"
-import { EnergyService, LevelService, StaticService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService, SyncService } from "@src/gameplay"
 import { HelpUsePesticideRequest } from "./help-use-pesticide.dto"
 import { Connection } from "mongoose"
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { createObjectId } from "@src/common"
+import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class HelpUsePesticideService {
@@ -27,17 +27,23 @@ export class HelpUsePesticideService {
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService
     ) {}
 
     async helpUsePesticide(
         { id: userId }: UserLike,
         { placedItemTileId }: HelpUsePesticideRequest
     ): Promise<void> {
-        const mongoSession = await this.connection.startSession()   
-        let user: UserSchema | undefined     
+        const mongoSession = await this.connection.startSession()
+
+        // synced variables
         let actionMessage: EmitActionPayload | undefined
+        let user: UserSchema | undefined
         let neighborUserId: string | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+
         try {
             // Using session.withTransaction for MongoDB operations and automatic transaction handling
             await mongoSession.withTransaction(async () => {
@@ -52,7 +58,7 @@ export class HelpUsePesticideService {
                         kind: InventoryKind.Tool
                     })
                     .session(mongoSession)
-                
+
                 if (!inventoryPesticide) {
                     throw new GraphQLError("Pesticide not found", {
                         extensions: {
@@ -68,10 +74,17 @@ export class HelpUsePesticideService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(mongoSession)
+                // Update synced placed item
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }
 
                 if (!placedItemTile) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUsePesticide,
                         success: false,
                         userId,
@@ -88,7 +101,7 @@ export class HelpUsePesticideService {
                 neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUsePesticide,
                         success: false,
                         userId,
@@ -96,7 +109,7 @@ export class HelpUsePesticideService {
                     }
                     throw new GraphQLError("Cannot use pesticide on your own tile", {
                         extensions: {
-                            code: "CANNOT_USE_PESTICIDE_ON_YOUR_OWN_TILE",
+                            code: "CANNOT_USE_PESTICIDE_ON_YOUR_OWN_TILE"
                         }
                     })
                 }
@@ -104,7 +117,7 @@ export class HelpUsePesticideService {
                 // Validate tile has seed growth info
                 if (!placedItemTile.seedGrowthInfo) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUsePesticide,
                         success: false,
                         userId,
@@ -112,7 +125,7 @@ export class HelpUsePesticideService {
                     }
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
-                            code: "TILE_IS_NOT_PLANTED",
+                            code: "TILE_IS_NOT_PLANTED"
                         }
                     })
                 }
@@ -120,7 +133,7 @@ export class HelpUsePesticideService {
                 // Validate tile needs pesticide
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUsePesticide,
                         success: false,
                         userId,
@@ -128,7 +141,7 @@ export class HelpUsePesticideService {
                     }
                     throw new GraphQLError("Tile is not infested", {
                         extensions: {
-                            code: "TILE_IS_NOT_INFESTED",
+                            code: "TILE_IS_NOT_INFESTED"
                         }
                     })
                 }
@@ -137,7 +150,8 @@ export class HelpUsePesticideService {
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 // Get activity data
-                const { energyConsume, experiencesGain } = this.staticService.activities.helpUsePesticide
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.helpUsePesticide
 
                 // Get user data
                 user = await this.connection
@@ -149,7 +163,7 @@ export class HelpUsePesticideService {
                 if (!user) {
                     throw new GraphQLError("User not found", {
                         extensions: {
-                            code: "USER_NOT_FOUND",
+                            code: "USER_NOT_FOUND"
                         }
                     })
                 }
@@ -180,10 +194,17 @@ export class HelpUsePesticideService {
                 // Update crop state after using pesticide
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session: mongoSession })
+                // Update synced placed item
+                const updatedSyncedPlacedItem =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemTile],
+                        status: SchemaStatus.Updated
+                    })
+                syncedPlacedItems.push(...updatedSyncedPlacedItem)
 
                 // Prepare action message for Kafka
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.HelpUsePesticide,
                     success: true,
                     userId
@@ -202,12 +223,26 @@ export class HelpUsePesticideService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId: neighborUserId,
+                                placedItems: syncedPlacedItems
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
-                }),
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
+                })
             ])
         } catch (error) {
             this.logger.error(error)

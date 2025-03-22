@@ -1,7 +1,7 @@
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, BuyAnimalData, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
+import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 import {
     InjectMongoose,
     PlacedItemSchema,
@@ -9,7 +9,7 @@ import {
     PlacedItemTypeSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, StaticService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyAnimalRequest } from "./buy-animal.dto"
@@ -25,7 +25,8 @@ export class BuyAnimalService {
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
-        @InjectKafkaProducer() private readonly kafkaProducer: Producer
+        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
+        private readonly syncService: SyncService
     ) {}
 
     async buyAnimal(
@@ -37,8 +38,12 @@ export class BuyAnimalService {
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
-        let actionMessage: EmitActionPayload | undefined
-        let user: UserSchema | undefined    
+        // synced variables
+        let actionMessage: EmitActionPayload<BuyAnimalData> | undefined
+        let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+        
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -191,7 +196,7 @@ export class BuyAnimalService {
                                 user: userId,
                                 x: position.x,
                                 y: position.y,
-                                placedItemType: placedItemAnimalType,
+                                placedItemType: placedItemAnimalType.id,
                                 animalInfo: {
                                     animal: createObjectId(animalId)
                                 }
@@ -200,8 +205,19 @@ export class BuyAnimalService {
                         { session }
                     )
 
-                const placedItemAnimalId = placedItemAnimalRaw._id.toString()
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalRaw._id.toString(),
+                    x: placedItemAnimalRaw.x,
+                    y: placedItemAnimalRaw.y,
+                    placedItemType: placedItemAnimalRaw.placedItemType,
+                }
 
+                const createdSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemAnimalRaw],
+                    status: SchemaStatus.Created
+                })
+                syncedPlacedItems.push(...createdSyncedPlacedItems) 
+                
                 /************************************************************
                  * PREPARE ACTION MESSAGE
                  ************************************************************/
@@ -209,8 +225,11 @@ export class BuyAnimalService {
                 actionMessage = {
                     action: ActionName.BuyAnimal,
                     success: true,
-                    placedItemId: placedItemAnimalId,
+                    placedItem: syncedPlacedItemAction,
                     userId,
+                    data: {
+                        price: animal.price
+                    }
                 }
             })
 
@@ -226,11 +245,11 @@ export class BuyAnimalService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems })}]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 })
             ])
         } catch (error) {

@@ -37,7 +37,7 @@ export class BuySeedsService {
         // Start session
         const mongoSession = await this.connection.startSession()
         
-        let user: UserSchema | undefined = undefined
+        let user: UserSchema | undefined
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
             await mongoSession.withTransaction(async (mongoSession) => {

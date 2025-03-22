@@ -6,7 +6,7 @@ import {
     InventoryType,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, InventoryService, StaticService } from "@src/gameplay"
+import { GoldBalanceService, InventoryService, StaticService, SyncService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyToolRequest } from "./buy-tool.dto"
 import { UserLike } from "@src/jwt"
@@ -14,6 +14,7 @@ import { GraphQLError } from "graphql"
 import { KafkaTopic } from "@src/brokers"
 import { InjectKafkaProducer } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { SchemaStatus, WithStatus } from "@src/common"
 
 @Injectable()   
 export class BuyToolService {
@@ -24,6 +25,7 @@ export class BuyToolService {
         private readonly goldBalanceService: GoldBalanceService,
         private readonly inventoryService: InventoryService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -33,13 +35,14 @@ export class BuyToolService {
         { toolId }: BuyToolRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+        
         let user: UserSchema | undefined
+        const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE TOOL
                  ************************************************************/
-                const { storageCapacity } = this.staticService.defaultInfo
                 const tool = this.staticService.tools.find(
                     (tool) => tool.displayId === toolId
                 )
@@ -129,37 +132,49 @@ export class BuyToolService {
                 /************************************************************
                  * ADD TOOL TO INVENTORY
                  ************************************************************/
-                // Get the first unoccupied index
-                const unoccupiedIndexes = await this.inventoryService.getUnoccupiedIndexes({
-                    inventoryType,
-                    userId,
+                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
-                    session: mongoSession,
-                    storageCapacity
+                    inventoryType,
+                    userId: user.id,
+                    session: mongoSession
                 })
-                
-                if (unoccupiedIndexes.length === 0) {
-                    throw new GraphQLError("No available inventory slots", {
-                        extensions: {
-                            code: "NO_AVAILABLE_INVENTORY_SLOTS"
-                        }
-                    })
-                }
-                
-                const firstUnoccupiedIndex = unoccupiedIndexes[0]
 
-                // Create a new inventory
-                await this.connection.model<InventorySchema>(InventorySchema.name).create(
-                    [
-                        {
-                            user: userId,
-                            inventoryType: inventoryType.id,
-                            index: firstUnoccupiedIndex,
-                            kind: InventoryKind.Storage,
-                        }
-                    ],
-                    { session: mongoSession }
-                )
+                const { storageCapacity } = this.staticService.defaultInfo
+
+                //Save inventory
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventoryType,
+                    inventories,
+                    capacity: storageCapacity,
+                    userId: user.id,
+                    occupiedIndexes,
+                    kind: InventoryKind.Storage
+                })
+                console.log(createdInventories)
+                console.log(updatedInventories)
+
+                // Create new inventory items
+                if (createdInventories.length > 0) {
+                    const createdInventoryRaws = await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .create(createdInventories, { session: mongoSession })
+                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: createdInventoryRaws,
+                        status: SchemaStatus.Created
+                    })
+                    syncedInventories.push(...createdSyncedInventories)
+                }
+
+                // Update existing inventory items
+                for (const inventory of updatedInventories) {
+                    await inventory.save({ session: mongoSession })
+                    // get synced inventory then add to syncedInventories
+                    const updatedSyncedInventory = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: [inventory],
+                        status: SchemaStatus.Updated
+                    })
+                    syncedInventories.push(...updatedSyncedInventory)
+                }
             })
             await Promise.all([
                 this.kafkaProducer.send({
@@ -168,7 +183,7 @@ export class BuyToolService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories })}]
                 })
             ])
         } catch (error) {

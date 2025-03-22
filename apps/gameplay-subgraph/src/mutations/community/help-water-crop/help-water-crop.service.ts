@@ -10,13 +10,13 @@ import {
     InventoryKind,
     InventoryTypeId
 } from "@src/databases"
-import { EnergyService, LevelService, StaticService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService, SyncService } from "@src/gameplay"
 import { HelpWaterCropRequest } from "./help-water-crop.dto"
 import { Connection } from "mongoose"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { createObjectId } from "@src/common"
+import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class HelpWaterCropService {
@@ -27,7 +27,8 @@ export class HelpWaterCropService {
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService
     ) {}
 
     async helpWaterCrop(
@@ -35,9 +36,13 @@ export class HelpWaterCropService {
         { placedItemTileId }: HelpWaterCropRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined
+        // synced variables
         let actionMessage: EmitActionPayload | undefined
+        let user: UserSchema | undefined
         let neighborUserId: string | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+
         try {
             // Using session.withTransaction for MongoDB operations and automatic transaction handling
             await mongoSession.withTransaction(async () => {
@@ -71,10 +76,17 @@ export class HelpWaterCropService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(mongoSession)
+                // Update synced placed item
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }
 
                 if (!placedItemTile) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpWaterCrop,
                         success: false,
                         userId,
@@ -90,7 +102,7 @@ export class HelpWaterCropService {
                 neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpWaterCrop,
                         success: false,
                         userId,
@@ -105,7 +117,7 @@ export class HelpWaterCropService {
 
                 if (!placedItemTile.seedGrowthInfo) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpWaterCrop,
                         success: false,
                         userId,
@@ -120,7 +132,7 @@ export class HelpWaterCropService {
 
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpWaterCrop,
                         success: false,
                         userId,
@@ -137,7 +149,8 @@ export class HelpWaterCropService {
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 // Fetch system activity values
-                const { energyConsume, experiencesGain } = this.staticService.activities.helpWaterCrop
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.helpWaterCrop
 
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -175,10 +188,17 @@ export class HelpWaterCropService {
                 // Update placed item tile state
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session: mongoSession })
+                // Update synced placed item
+                const updatedSyncedPlacedItem =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemTile],
+                        status: SchemaStatus.Updated
+                    })
+                syncedPlacedItems.push(...updatedSyncedPlacedItem)
 
                 // Prepare action message for Kafka
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.HelpWaterCrop,
                     success: true,
                     userId
@@ -197,11 +217,25 @@ export class HelpWaterCropService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId: neighborUserId,
+                                placedItems: syncedPlacedItems
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 })
             ])
 

@@ -14,6 +14,8 @@ import { GraphQLError } from "graphql"
 import { KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
 import { InjectKafkaProducer } from "@src/brokers"
+import { WithStatus, SchemaStatus } from "@src/common"
+import { SyncService } from "@src/gameplay"
 
 @Injectable()
 export class BuySuppliesService {
@@ -26,7 +28,8 @@ export class BuySuppliesService {
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
         @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer
+        private readonly kafkaProducer: Producer,
+        private readonly syncService: SyncService
     ) {}
 
     async buySupplies(
@@ -35,6 +38,7 @@ export class BuySuppliesService {
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         let user: UserSchema | undefined
+        const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -137,29 +141,36 @@ export class BuySuppliesService {
 
                 // Create new inventory items
                 if (createdInventories.length > 0) {
-                    await this.connection
+                    const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session: mongoSession })
+                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: createdInventoryRaws,
+                        status: SchemaStatus.Created
+                    })
+                    syncedInventories.push(...createdSyncedInventories)
                 }
 
                 // Update existing inventory items
                 for (const inventory of updatedInventories) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .updateOne({ _id: inventory._id }, inventory)
-                        .session(mongoSession)
+                    await inventory.save({ session: mongoSession })
+                    const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        status: SchemaStatus.Created,
+                        inventories: [inventory]
+                    })
+                    syncedInventories.push(...updatedSyncedInventories)
                 }
             })
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
                     messages: [
-                        { value: JSON.stringify({ userId, user: user.toJSON() }) }
+                        { value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }
                     ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
                 })
             ])
         } catch (error) {

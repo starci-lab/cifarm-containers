@@ -8,7 +8,7 @@ export interface AddParams {
     // inventory type
     inventoryType: DeepPartial<InventoryTypeSchema>
     // quantity to add
-    quantity: number
+    quantity?: number
     // user id
     userId: string
     // max capacity

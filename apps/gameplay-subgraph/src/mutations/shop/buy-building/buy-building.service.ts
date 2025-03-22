@@ -1,16 +1,14 @@
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
-import { Inject, Injectable, Logger } from "@nestjs/common"
+import { ActionName, BuyBuildingData, EmitActionPayload } from "@apps/io-gameplay"
+import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
+import { createObjectId, DeepPartial, SchemaStatus, WithStatus } from "@src/common"
 import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
-import { GoldBalanceService, StaticService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyBuildingRequest } from "./buy-building.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { PUB_SUB, SubscriptionTopic } from "../../../constants"
-import { PubSub } from "graphql-subscriptions"
 
 @Injectable()
 export class BuyBuildingService {
@@ -21,7 +19,7 @@ export class BuyBuildingService {
         private readonly goldBalanceService: GoldBalanceService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         private readonly staticService: StaticService,
-        @Inject(PUB_SUB) private readonly pubSub: PubSub
+        private readonly syncService: SyncService
     ) {}
 
     async buyBuilding(
@@ -30,8 +28,12 @@ export class BuyBuildingService {
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
+        // synced variables
+        let actionMessage: EmitActionPayload<BuyBuildingData> | undefined
         let user: UserSchema | undefined
-        let actionMessage: EmitActionPayload | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -154,8 +156,6 @@ export class BuyBuildingService {
                 // Save updated user data
                 await user.save({ session: mongoSession })
 
-                await this.pubSub.publish(SubscriptionTopic.UserUpdated, user)
-
                 /************************************************************
                  * PLACE BUILDING
                  ************************************************************/
@@ -178,7 +178,18 @@ export class BuyBuildingService {
                         { session: mongoSession }
                     )
 
-                const placedItemId = placedItemBuildingRaw._id.toString()
+                syncedPlacedItemAction = {
+                    id: placedItemBuildingRaw._id.toString(),
+                    x: placedItemBuildingRaw.x,
+                    y: placedItemBuildingRaw.y,
+                    placedItemType: placedItemBuildingRaw.placedItemType,
+                }   
+
+                const createdSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemBuildingRaw],
+                    status: SchemaStatus.Created
+                })
+                syncedPlacedItems.push(...createdSyncedPlacedItems)
 
                 /************************************************************
                  * PREPARE ACTION MESSAGE
@@ -186,9 +197,12 @@ export class BuyBuildingService {
                 // Prepare action message
                 actionMessage = {
                     action: ActionName.BuyBuilding,
-                    placedItemId,
+                    placedItem: syncedPlacedItemAction,
                     success: true,
-                    userId
+                    userId,
+                    data: {
+                        price: building.price
+                    }
                 }
             })
 
@@ -204,11 +218,11 @@ export class BuyBuildingService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems })}]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 })
             ])
         } catch (error) {

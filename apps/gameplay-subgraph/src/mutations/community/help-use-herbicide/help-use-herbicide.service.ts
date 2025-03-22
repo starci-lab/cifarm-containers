@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { EnergyService, LevelService, StaticService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService, SyncService } from "@src/gameplay"
 import { HelpUseHerbicideRequest } from "./help-use-herbicide.dto"
 import { Connection } from "mongoose"
 import {
@@ -16,8 +16,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { createObjectId } from "@src/common"
-
+import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class HelpUseHerbicideService {
@@ -28,7 +27,8 @@ export class HelpUseHerbicideService {
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService
     ) {}
 
     async helpUseHerbicide(
@@ -36,9 +36,14 @@ export class HelpUseHerbicideService {
         { placedItemTileId }: HelpUseHerbicideRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined
+
+        // synced variables
         let actionMessage: EmitActionPayload | undefined
+        let user: UserSchema | undefined
         let neighborUserId: string | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -52,7 +57,7 @@ export class HelpUseHerbicideService {
                         kind: InventoryKind.Tool
                     })
                     .session(session)
-                
+
                 if (!inventoryHerbicide) {
                     throw new GraphQLError("Herbicide not found", {
                         extensions: {
@@ -68,10 +73,16 @@ export class HelpUseHerbicideService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }
 
                 if (!placedItemTile) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUseHerbicide,
                         success: false,
                         userId,
@@ -79,7 +90,7 @@ export class HelpUseHerbicideService {
                     }
                     throw new GraphQLError("Tile not found", {
                         extensions: {
-                            code: "TILE_NOT_FOUND",
+                            code: "TILE_NOT_FOUND"
                         }
                     })
                 }
@@ -88,7 +99,7 @@ export class HelpUseHerbicideService {
                 neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUseHerbicide,
                         success: false,
                         userId,
@@ -96,7 +107,7 @@ export class HelpUseHerbicideService {
                     }
                     throw new GraphQLError("Cannot use herbicide on own tile", {
                         extensions: {
-                            code: "CANNOT_USE_HERBICIDE_ON_OWN_TILE",
+                            code: "CANNOT_USE_HERBICIDE_ON_OWN_TILE"
                         }
                     })
                 }
@@ -104,7 +115,7 @@ export class HelpUseHerbicideService {
                 // Validate tile has seed growth info
                 if (!placedItemTile.seedGrowthInfo) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUseHerbicide,
                         success: false,
                         userId,
@@ -112,7 +123,7 @@ export class HelpUseHerbicideService {
                     }
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
-                            code: "TILE_IS_NOT_PLANTED",
+                            code: "TILE_IS_NOT_PLANTED"
                         }
                     })
                 }
@@ -120,7 +131,7 @@ export class HelpUseHerbicideService {
                 // Validate tile needs herbicide
                 if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
                     actionMessage = {
-                        placedItemId: placedItemTileId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUseHerbicide,
                         success: false,
                         userId,
@@ -128,7 +139,7 @@ export class HelpUseHerbicideService {
                     }
                     throw new GraphQLError("Tile does not need herbicide", {
                         extensions: {
-                            code: "TILE_DOES_NOT_NEED_HERBICIDE",
+                            code: "TILE_DOES_NOT_NEED_HERBICIDE"
                         }
                     })
                 }
@@ -137,7 +148,8 @@ export class HelpUseHerbicideService {
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 // Get activity data
-                const { energyConsume, experiencesGain } = this.staticService.activities.helpUseHerbicide
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.helpUseHerbicide
 
                 // Get user data
                 user = await this.connection
@@ -180,10 +192,17 @@ export class HelpUseHerbicideService {
                 // Update crop state after using herbicide
                 placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
                 await placedItemTile.save({ session })
+                // Update synced placed item
+                const updatedSyncedPlacedItem =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemTile],
+                        status: SchemaStatus.Updated
+                    })
+                syncedPlacedItems.push(...updatedSyncedPlacedItem)
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemTileId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.HelpUseHerbicide,
                     success: true,
                     userId
@@ -202,11 +221,25 @@ export class HelpUseHerbicideService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId: neighborUserId,
+                                placedItems: syncedPlacedItems
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 })
             ])
         } catch (error) {

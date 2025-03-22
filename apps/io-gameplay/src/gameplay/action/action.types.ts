@@ -12,7 +12,14 @@ export interface EmitActionPayload<TData = undefined> {
 
 export interface BuyFruitData {
     price: number
-    placedItemFruitId: string
+}
+
+export interface BuyBuildingData {
+    price: number
+}
+
+export interface BuyTileData {
+    price: number
 }
 
 export interface ThiefCropData {
@@ -46,7 +53,6 @@ export interface SellData {
 
 export interface BuyTileData {
     price: number
-    placedItemTileId: string
 }
 
 export interface BuyAnimalData {

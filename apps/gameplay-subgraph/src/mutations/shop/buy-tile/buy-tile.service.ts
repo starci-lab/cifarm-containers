@@ -1,19 +1,19 @@
-import { ActionName, BuyTileData, EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload, BuyTileData } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
+import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import {
     InjectMongoose,
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, StaticService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyTileRequest } from "./buy-tile.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-
+import { SchemaStatus } from "@src/common"      
 @Injectable()
 export class BuyTileService {
     private readonly logger = new Logger(BuyTileService.name)
@@ -22,7 +22,8 @@ export class BuyTileService {
         @InjectMongoose() private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService
     ) {}
 
     async buyTile(
@@ -30,8 +31,13 @@ export class BuyTileService {
         { position, tileId }: BuyTileRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+        
+        // synced variables
         let actionMessage: EmitActionPayload<BuyTileData> | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+            
         try {
             await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
@@ -132,20 +138,28 @@ export class BuyTileService {
                         ],
                         { session: mongoSession }
                     )
-                const placedItemId = placedItemTileRaw._id.toString()
-
+                syncedPlacedItemAction = {
+                    id: placedItemTileRaw._id.toString(),
+                    x: placedItemTileRaw.x,
+                    y: placedItemTileRaw.y,
+                    placedItemType: placedItemTileRaw.placedItemType,
+                }
+                const createdSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemTileRaw],
+                    status: SchemaStatus.Created
+                })
+                syncedPlacedItems.push(...createdSyncedPlacedItems)
                 /************************************************************
                  * PREPARE ACTION MESSAGE
                  ************************************************************/
                 // Prepare the action message to emit to Kafka
                 actionMessage = {
-                    placedItemId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.BuyTile,
                     success: true,
                     userId,
                     data: {
                         price: tile.price,
-                        placedItemTileId: placedItemId
                     }
                 }
             })
@@ -162,11 +176,11 @@ export class BuyTileService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems })}]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 })  
             ])
         } catch (error) {
