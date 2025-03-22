@@ -1,11 +1,14 @@
 import { FruitJobData } from "@apps/cron-scheduler"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { bullData, BullQueueName } from "@src/bull"
+import { SchemaStatus, WithStatus } from "@src/common"
 import { FruitCurrentState, InjectMongoose, PlacedItemSchema, PlacedItemType } from "@src/databases"
 import { DateUtcService } from "@src/date"
-import { CoreService, StaticService } from "@src/gameplay"
+import { CoreService, StaticService, SyncService } from "@src/gameplay"
 import { Job } from "bullmq"
+import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 
 @Processor(bullData[BullQueueName.Fruit].name)
@@ -17,7 +20,10 @@ export class FruitWorker extends WorkerHost {
         private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
         private readonly coreService: CoreService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer
     ) {
         super()
     }
@@ -25,34 +31,39 @@ export class FruitWorker extends WorkerHost {
     public override async process(job: Job<FruitJobData>): Promise<void> {
         this.logger.verbose(`Processing job: ${job.id}`)
         const { time, skip, take, utcTime } = job.data
-
-        const placedItems = await this.connection
-            .model<PlacedItemSchema>(PlacedItemSchema.name)
-            .find({
-                placedItemType: {
-                    $in: this.staticService.placedItemTypes.map(
-                        (placedItemType) => placedItemType.id
-                    )
+        try {
+            const placedItems = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .find({
+                    placedItemType: {
+                        $in: this.staticService.placedItemTypes.map(
+                            (placedItemType) => placedItemType.id
+                        )
+                    },
+                    fruitInfo: {
+                        $ne: null
+                    },
+                    "fruitInfo.currentState": {
+                        $nin: [FruitCurrentState.NeedFertilizer, FruitCurrentState.FullyMatured]
+                    },
+                    createdAt: {
+                        $lte: this.dateUtcService.getDayjs(utcTime).toDate()
+                    }
+                })
+                .skip(skip)
+                .limit(take)
+                .sort({ createdAt: "desc" })
+            const {
+                randomness: {
+                    hasCaterpillar,
                 },
-                fruitInfo: {
-                    $ne: null
-                },
-                "fruitInfo.currentState": {
-                    $nin: [FruitCurrentState.NeedFertilizer, FruitCurrentState.FullyMatured]
-                },
-                createdAt: {
-                    $lte: this.dateUtcService.getDayjs(utcTime).toDate()
-                }
-            })
-            .skip(skip)
-            .limit(take)
-            .sort({ createdAt: "desc" })
-        const { hasCaterpillar, needFertilizer } = this.staticService.fruitInfo.randomness
-        const promises: Array<Promise<void>> = []
-        for (const placedItem of placedItems) {
-            const promise = async () => {
-                const mongoSession = await this.connection.startSession()
-                try {
+                matureGrowthStage,
+                growthStages
+            } = this.staticService.fruitInfo
+            const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
+            const promises: Array<Promise<void>> = []
+            for (const placedItem of placedItems) {
+                const promise = async () => {
                     const placedItemType = this.staticService.placedItemTypes.find(
                         (placedItemType) =>
                             placedItemType.id === placedItem.placedItemType.toString()
@@ -65,73 +76,123 @@ export class FruitWorker extends WorkerHost {
                             placedItemType.type === PlacedItemType.Fruit &&
                             fruit.id === placedItemType.fruit.toString()
                     )
-                    const { growthStages } = this.staticService.fruitInfo
                     if (!fruit) {
                         throw new Error("Fruit not found")
                     }
-                    // Add time to the seed growth
-                    const updatePlacedItem = () => {
-                        // return if the current stage is already max stage
+                    // Add time to the fruit
+                    const updatePlacedItem = (): boolean => {
+                    // return if the current stage is already max stage
                         if (placedItem.fruitInfo.currentStage >= growthStages - 1) {
-                            return
+                            return false
                         }
+
+                        // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
+                        const updateMatureFruitPlacedItem = (): boolean => {
+                            console.log(placedItem.fruitInfo)
+                            // If fruit is mature
+                            placedItem.fruitInfo.currentStageTimeElapsed += time
+                            if (
+                                placedItem.fruitInfo.currentStageTimeElapsed <
+                                fruit.matureGrowthStageDuration
+                            ) {
+                                return false
+                            }
+                            placedItem.fruitInfo.currentStage += 1
+                            if (
+                                placedItem.fruitInfo.currentStage === growthStages - 2
+                            ) {
+                            // become has caterpillar
+                                if (Math.random() < hasCaterpillar) {
+                                    placedItem.fruitInfo.currentState = FruitCurrentState.HasCaterpillar
+                                }
+                                placedItem.fruitInfo.currentStageTimeElapsed -= fruit.matureGrowthStageDuration
+                                return true
+                            }
+                            if (placedItem.fruitInfo.currentStage === growthStages - 1) {
+                                placedItem.fruitInfo.currentStageTimeElapsed = 0
+                                //if sick, the harvest quantity is the average of min and max harvest quantity
+                                if (
+                                    placedItem.fruitInfo.currentState === FruitCurrentState.HasCaterpillar
+                                ) {
+                                    placedItem.fruitInfo.harvestQuantityRemaining = Math.floor(
+                                        (fruit.minHarvestQuantity + fruit.maxHarvestQuantity) / 2
+                                    )
+                                } else {
+                                // if not sick, the harvest quantity is the max harvest quantity
+                                    placedItem.fruitInfo.harvestQuantityRemaining =
+                                    fruit.maxHarvestQuantity
+                                }
+                                placedItem.fruitInfo.currentState = FruitCurrentState.FullyMatured
+                                const chance = this.coreService.computeFruitQualityChance({
+                                    placedItemFruit: placedItem,
+                                    fruit
+                                })
+                                if (Math.random() < chance) {
+                                    placedItem.fruitInfo.isQuality = true
+                                }
+                                return true
+                            }
+                            return false
+                        }
+
+                        const updateYoungFruitPlacedItem = (): boolean => {
+                        // check if 
                         // add time to the seed growth
-                        placedItem.fruitInfo.currentStageTimeElapsed += time
-                        if (
-                            placedItem.fruitInfo.currentStageTimeElapsed < fruit.growthStageDuration
-                        ) {
-                            return
-                        }
-                        // deduct the time elapsed from the current stage time elapsed
-                        placedItem.fruitInfo.currentStageTimeElapsed -= fruit.growthStageDuration
-                        // increment the current stage
-                        placedItem.fruitInfo.currentStage += 1
+                            placedItem.fruitInfo.currentStageTimeElapsed += time
+                            placedItem.fruitInfo.currentFertilizerTime += time
 
-                        // if the current stage is less than max stage - 3, check if need water
-                        if (placedItem.fruitInfo.currentStage <= growthStages - 3) {
-                            if (Math.random() < needFertilizer) {
+                            // check if need fertilizer
+                            if (placedItem.fruitInfo.currentFertilizerTime >= fruit.fertilizerTime) {
                                 placedItem.fruitInfo.currentState = FruitCurrentState.NeedFertilizer
+                                placedItem.fruitInfo.currentFertilizerTime = 0
+                                return true
                             }
-                            placedItem.fruitInfo.currentStageTimeElapsed = 0
-                            return
+                            
+                            // check if grow to next stage
+                            if (placedItem.fruitInfo.currentStageTimeElapsed >= fruit.youngGrowthStageDuration) {
+                                placedItem.fruitInfo.currentStage += 1
+                                placedItem.fruitInfo.currentStageTimeElapsed = 0
+                                placedItem.fruitInfo.currentFertilizerTime = 0
+                                placedItem.fruitInfo.currentState = FruitCurrentState.NeedFertilizer
+                                return true
+                            }
+                            return false
                         }
 
-                        // if the current stage is max stage - 2, check if weedy or infested
-                        if (placedItem.fruitInfo.currentStage === growthStages - 2) {
-                            if (Math.random() < hasCaterpillar) {
-                                placedItem.fruitInfo.currentState = FruitCurrentState.IsInfested
-                            }
-                            return
+                        const isMature = placedItem.fruitInfo.currentStage >= matureGrowthStage - 1
+                        if (isMature) {
+                            return updateMatureFruitPlacedItem()
                         }
-                        // else, the fruit is fully matured
-                        if (placedItem.fruitInfo.currentState === FruitCurrentState.IsInfested) {
-                            placedItem.fruitInfo.harvestQuantityRemaining = Math.floor(
-                                (fruit.minHarvestQuantity + fruit.maxHarvestQuantity) / 2
-                            )
-                        } else {
-                            placedItem.fruitInfo.harvestQuantityRemaining = fruit.maxHarvestQuantity
-                        }
-                        const chance = this.coreService.computeFruitQualityChance({
-                            placedItemFruit: placedItem,
-                            fruit: fruit
-                        })
-                        if (Math.random() < chance) {
-                            placedItem.fruitInfo.isQuality = true
-                        }
-                        placedItem.fruitInfo.currentState = FruitCurrentState.FullyMatured
-                        return
+                        return updateYoungFruitPlacedItem()
                     }
                     // update the placed item
-                    updatePlacedItem()
-                    await placedItem.save({ session: mongoSession })
-                } catch (error) {
-                    this.logger.error(error)
-                } finally {
-                    await mongoSession.endSession()
+                    const synced = updatePlacedItem()
+                    await placedItem.save()
+                    if (synced) {
+                        const updatedSyncedPlacedItems =
+                            this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                                placedItems: [placedItem],
+                                status: SchemaStatus.Updated
+                            })
+                        syncedPlacedItems.push(...updatedSyncedPlacedItems)
+                        await this.kafkaProducer.send({
+                            topic: KafkaTopic.SyncPlacedItems,
+                            messages: [
+                                {
+                                    value: JSON.stringify({
+                                        userId: placedItem.user.toString(),
+                                        placedItems: updatedSyncedPlacedItems
+                                    })
+                                }
+                            ]
+                        })
+                    }
                 }
+                promises.push(promise())
             }
-            promises.push(promise())
+            await Promise.all(promises)
+        } catch (error) {
+            this.logger.error(error)
         }
-        await Promise.all(promises)
     }
 }

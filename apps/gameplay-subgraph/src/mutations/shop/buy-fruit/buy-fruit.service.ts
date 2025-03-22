@@ -1,13 +1,8 @@
 import { ActionName, BuyFruitData, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import {
-    InjectMongoose,
-    PlacedItemSchema,
-    PlacedItemType,
-    UserSchema
-} from "@src/databases"
-import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
+import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
+import { GoldBalanceService, StaticService, SyncService, PositionService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyFruitRequest } from "./buy-fruit.dto"
@@ -25,7 +20,8 @@ export class BuyFruitService {
         private readonly goldBalanceService: GoldBalanceService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         private readonly staticService: StaticService,
-        private readonly syncService: SyncService
+        private readonly syncService: SyncService,
+        private readonly positionService: PositionService
     ) {}
 
     async buyFruit(
@@ -45,9 +41,7 @@ export class BuyFruitService {
                  * RETRIEVE AND VALIDATE FRUIT
                  ************************************************************/
                 // Fetch fruit details
-                const fruit = this.staticService.fruits.find(
-                    (fruit) => fruit.displayId === fruitId
-                )
+                const fruit = this.staticService.fruits.find((fruit) => fruit.displayId === fruitId)
                 if (!fruit) {
                     throw new GraphQLError("Fruit not found in static service", {
                         extensions: {
@@ -55,7 +49,7 @@ export class BuyFruitService {
                         }
                     })
                 }
-                
+
                 if (!fruit.availableInShop) {
                     throw new GraphQLError("Fruit not available in shop", {
                         extensions: {
@@ -144,6 +138,19 @@ export class BuyFruitService {
                     })
                 }
 
+                /************************************************************
+                 * CHECK IF POSITION IS AVAILABLE
+                 ************************************************************/
+                const occupiedPositions = await this.positionService.getOccupiedPositions({
+                    connection: this.connection,
+                    userId
+                })
+                this.positionService.checkPositionAvailable({
+                    position,
+                    placedItemType,
+                    occupiedPositions
+                })
+
                 // Save the placed item (fruit) in the database
                 const [placedItemFruitRaw] = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -154,9 +161,7 @@ export class BuyFruitService {
                                 x: position.x,
                                 y: position.y,
                                 placedItemType: placedItemType.id,
-                                fruitInfo: {
-                                    fruit: fruit.id
-                                }
+                                fruitInfo: {}
                             }
                         ],
                         { session }
@@ -165,13 +170,14 @@ export class BuyFruitService {
                     id: placedItemFruitRaw._id.toString(),
                     x: placedItemFruitRaw.x,
                     y: placedItemFruitRaw.y,
-                    placedItemType: placedItemFruitRaw.placedItemType,    
+                    placedItemType: placedItemFruitRaw.placedItemType
                 }
 
-                const createdSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
-                    placedItems: [placedItemFruitRaw],
-                    status: SchemaStatus.Created
-                })
+                const createdSyncedPlacedItems =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemFruitRaw],
+                        status: SchemaStatus.Created
+                    })
                 syncedPlacedItems.push(...createdSyncedPlacedItems)
 
                 /************************************************************
@@ -184,7 +190,7 @@ export class BuyFruitService {
                     success: true,
                     userId,
                     data: {
-                        price: fruit.price,
+                        price: fruit.price
                     }
                 }
             })
@@ -201,11 +207,20 @@ export class BuyFruitService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems })}]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 })
             ])
         } catch (error) {

@@ -78,12 +78,6 @@ export class UseBugNetService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
                     .session(session)
-                syncedPlacedItemAction = {
-                    id: placedItemFruitId,
-                    placedItemType: placedItemFruit.placedItemType,
-                    x: placedItemFruit.x,
-                    y: placedItemFruit.y
-                }
 
                 // Validate placed item fruit exists
                 if (!placedItemFruit) {
@@ -99,6 +93,13 @@ export class UseBugNetService {
                             code: "FRUIT_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    id: placedItemFruitId,
+                    placedItemType: placedItemFruit.placedItemType,
+                    x: placedItemFruit.x,
+                    y: placedItemFruit.y
                 }
 
                 // Validate ownership
@@ -120,7 +121,7 @@ export class UseBugNetService {
                 }
 
                 // Validate fruit is infested
-                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsInfested) {
+                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.HasCaterpillar) {
                     throw new GraphQLError("Fruit is not infested", {
                         extensions: {
                             code: "FRUIT_NOT_INFESTED"

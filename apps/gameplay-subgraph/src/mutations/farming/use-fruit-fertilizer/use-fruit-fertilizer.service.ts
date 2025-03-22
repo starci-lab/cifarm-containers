@@ -262,7 +262,7 @@ export class UseFruitFertilizerService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ placedItemFruitId, placedItems: syncedPlacedItems }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,

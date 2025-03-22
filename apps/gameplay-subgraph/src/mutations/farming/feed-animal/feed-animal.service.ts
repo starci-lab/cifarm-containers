@@ -64,13 +64,6 @@ export class FeedAnimalService {
                     .findById(placedItemAnimalId)
                     .session(session)
 
-                syncedPlacedItemAction = {
-                    id: placedItemAnimalId,
-                    placedItemType: placedItemAnimal.placedItemType,
-                    x: placedItemAnimal.x,
-                    y: placedItemAnimal.y
-                }
-
                 // Validate animal exists
                 if (!placedItemAnimal) {
                     throw new GraphQLError("Placed Item animal not found", {
@@ -78,6 +71,13 @@ export class FeedAnimalService {
                             code: "PLACED_ITEM_ANIMAL_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalId,
+                    placedItemType: placedItemAnimal.placedItemType,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y
                 }
 
                 // Validate ownership

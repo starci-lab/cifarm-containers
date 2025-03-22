@@ -155,7 +155,7 @@ export class BuySuppliesService {
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
                     const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        status: SchemaStatus.Created,
+                        status: SchemaStatus.Updated,
                         inventories: [inventory]
                     })
                     syncedInventories.push(...updatedSyncedInventories)

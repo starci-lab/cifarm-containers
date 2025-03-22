@@ -1,13 +1,13 @@
 // buy-seed.dto.ts
 
-import { CropId } from "@src/databases"
+import { CropId, FirstCharLowerCaseCropId } from "@src/databases"
 import { IsInt, IsString, Min } from "class-validator"
 import { Field, InputType } from "@nestjs/graphql"
 
 @InputType()
 export class BuySeedsRequest {
     @IsString()
-    @Field(() => String, { description: "The id of the seed to purchase" })
+    @Field(() => FirstCharLowerCaseCropId, { description: "The id of the seed to purchase" })
         cropId: CropId
 
     @IsInt()

@@ -252,12 +252,7 @@ export class FruitRandomness {
         description: "Chance for a fruit to be stolen by 2 thieves"
     })
         thief2: number
-
-    @Field(() => Float, {
-        description: "Chance for a fruit to need fertilizer"
-    })
-        needFertilizer: number
-
+        
     @Field(() => Float, {
         description: "Chance for a fruit to have caterpillars"
     })
@@ -284,6 +279,12 @@ export class FruitInfo {
         defaultValue: 5
     })
         growthStages: number
+
+    @Field(() => Int, {
+        description: "The growth stage of the fruit when it is mature",
+        defaultValue: 3
+    })
+        matureGrowthStage: number
 }
 
 @ObjectType({

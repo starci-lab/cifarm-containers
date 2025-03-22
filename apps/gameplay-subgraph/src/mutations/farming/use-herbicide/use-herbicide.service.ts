@@ -79,13 +79,6 @@ export class UseHerbicideService {
                     .findById(placedItemTileId)
                     .session(session)
 
-                syncedPlacedItemAction = {
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    id: placedItemTile.id,
-                    placedItemType: placedItemTile.placedItemType
-                }
-
                 // Validate tile exists
                 if (!placedItemTile) {
                     actionMessage = {
@@ -100,6 +93,13 @@ export class UseHerbicideService {
                             code: "TILE_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
                 }
 
                 // Validate ownership

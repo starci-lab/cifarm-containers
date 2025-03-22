@@ -76,13 +76,6 @@ export class HelpWaterCropService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(mongoSession)
-                // Update synced placed item
-                syncedPlacedItemAction = {
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    id: placedItemTile.id,
-                    placedItemType: placedItemTile.placedItemType
-                }
 
                 if (!placedItemTile) {
                     actionMessage = {
@@ -97,6 +90,14 @@ export class HelpWaterCropService {
                             code: "TILE_NOT_FOUND"
                         }
                     })
+                }
+
+                // Update synced placed item
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
                 }
 
                 neighborUserId = placedItemTile.user.toString()

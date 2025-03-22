@@ -40,19 +40,19 @@ export class SellService {
                     .findById(placedItemId)
                     .session(session)
 
-                syncedPlacedItemAction = {
-                    id: placedItem.id,
-                    x: placedItem.x,
-                    y: placedItem.y,
-                    placedItemType: placedItem.placedItemType
-                }
-
                 if (!placedItem) {
                     throw new GraphQLError("Placed item not found", {
                         extensions: {
                             code: "PLACED_ITEM_NOT_FOUND"
                         }
                     })
+                }
+                
+                syncedPlacedItemAction = {
+                    id: placedItem.id,
+                    x: placedItem.x,
+                    y: placedItem.y,
+                    placedItemType: placedItem.placedItemType
                 }
 
                 /************************************************************

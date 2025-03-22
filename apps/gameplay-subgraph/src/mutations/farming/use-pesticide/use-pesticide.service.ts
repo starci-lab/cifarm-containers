@@ -78,13 +78,6 @@ export class UsePesticideService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
-
-                syncedPlacedItemAction = {
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    id: placedItemTile.id,
-                    placedItemType: placedItemTile.placedItemType
-                }
                 
                 // Validate tile exists
                 if (!placedItemTile) {
@@ -100,6 +93,13 @@ export class UsePesticideService {
                             code: "TILE_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
                 }
 
                 // Validate ownership

@@ -145,7 +145,6 @@ export class CropService {
                 .session(mongoSession)
         } catch (error) {
             this.logger.error(error)
-            throw error
         } finally {
             await mongoSession.endSession()
         }

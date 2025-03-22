@@ -42,9 +42,9 @@ export class HelpUseBugNetService {
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
         let neighborUserId: string | undefined
-        
+
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE BUG NET TOOL
                  ************************************************************/
@@ -55,7 +55,7 @@ export class HelpUseBugNetService {
                         inventoryType: createObjectId(InventoryTypeId.BugNet),
                         kind: InventoryKind.Tool
                     })
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!inventoryBugNet) {
                     throw new GraphQLError("Bug net not found", {
@@ -71,7 +71,7 @@ export class HelpUseBugNetService {
                 const placedItemFruit = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
-                    .session(mongoSession)
+                    .session(session)
                 syncedPlacedItemAction = {
                     id: placedItemFruitId,
                     placedItemType: placedItemFruit.placedItemType,
@@ -110,10 +110,10 @@ export class HelpUseBugNetService {
                     })
                 }
 
-                // Validate fruit is infested
+                // Validate fruit has caterpillar
                 if (
                     !placedItemFruit.fruitInfo ||
-                    placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsInfested
+                    placedItemFruit.fruitInfo.currentState !== FruitCurrentState.HasCaterpillar
                 ) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
@@ -140,7 +140,7 @@ export class HelpUseBugNetService {
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
 
                 // Validate user exists
                 if (!user) {
@@ -173,13 +173,13 @@ export class HelpUseBugNetService {
 
                 // Update the user
                 await user.save({
-                    session: mongoSession
+                    session
                 })
 
                 // Update fruit state after using bug net
                 placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
                 await placedItemFruit.save({
-                    session: mongoSession
+                    session
                 })
                 const createdSyncedPlacedItems =
                     this.syncService.getCreatedOrUpdatedSyncedPlacedItems({

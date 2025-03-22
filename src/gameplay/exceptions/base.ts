@@ -8,6 +8,7 @@ export enum GameplayErrorCode {
     ExperienceCannotBeZeroOrNegative = "EXPERIENCE_CANNOT_BE_ZERO_OR_NEGATIVE",
     EnergyNotEnough = "ENERGY_NOT_ENOUGH",
     PhaseNotFound = "PHASE_NOT_FOUND",
+    PositionNotAvailable = "POSITION_NOT_AVAILABLE",
 }
 
 export class GameplayException extends Error {

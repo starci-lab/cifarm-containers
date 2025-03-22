@@ -72,12 +72,6 @@ export class HelpCureAnimalService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(session)
-                syncedPlacedItemAction = {
-                    id: placedItemAnimalId,
-                    placedItemType: placedItemAnimal.placedItemType,
-                    x: placedItemAnimal.x,
-                    y: placedItemAnimal.y
-                }   
 
                 // Validate animal exists
                 if (!placedItemAnimal) {
@@ -94,6 +88,13 @@ export class HelpCureAnimalService {
                         }
                     })
                 }
+
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalId,
+                    placedItemType: placedItemAnimal.placedItemType,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y
+                }   
 
                 // Validate ownership (must be someone else's animal)
                 neighborUserId = placedItemAnimal.user.toString()

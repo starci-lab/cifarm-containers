@@ -87,12 +87,6 @@ export class ThiefAnimalService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(mongoSession)
-                syncedPlacedItemAction = {
-                    id: placedItemAnimalId,
-                    placedItemType: placedItemAnimal.placedItemType,
-                    x: placedItemAnimal.x,
-                    y: placedItemAnimal.y
-                }   
 
                 if (!placedItemAnimal) {
                     throw new GraphQLError("Animal not found", {
@@ -101,6 +95,13 @@ export class ThiefAnimalService {
                         }
                     })
                 }
+
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalId,
+                    placedItemType: placedItemAnimal.placedItemType,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y
+                }   
 
                 neighborUserId = placedItemAnimal.user.toString()
                 if (neighborUserId === userId) {

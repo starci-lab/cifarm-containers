@@ -88,19 +88,20 @@ export class ThiefFruitService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemFruitId)
                     .session(session)
-                syncedPlacedItemAction = {
-                    id: placedItemFruitId,
-                    placedItemType: placedItemFruit.placedItemType,
-                    x: placedItemFruit.x,
-                    y: placedItemFruit.y
-                }
-
+      
                 if (!placedItemFruit) {
                     throw new GraphQLError("Fruit not found", {
                         extensions: {
                             code: "FRUIT_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    id: placedItemFruitId,
+                    placedItemType: placedItemFruit.placedItemType,
+                    x: placedItemFruit.x,
+                    y: placedItemFruit.y
                 }
 
                 neighborUserId = placedItemFruit.user.toString()

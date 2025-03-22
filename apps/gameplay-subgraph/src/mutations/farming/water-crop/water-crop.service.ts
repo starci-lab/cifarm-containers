@@ -80,13 +80,6 @@ export class WaterCropService {
                     .findById(placedItemTileId)
                     .session(session)
 
-                syncedPlacedItemAction = {
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    id: placedItemTile._id.toString(),
-                    placedItemType: placedItemTile.placedItemType
-                }
-
                 // Validate tile exists
                 if (!placedItemTile) {
                     actionMessage = {
@@ -101,6 +94,13 @@ export class WaterCropService {
                             code: "TILE_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile._id.toString(),
+                    placedItemType: placedItemTile.placedItemType
                 }
 
                 // Validate ownership

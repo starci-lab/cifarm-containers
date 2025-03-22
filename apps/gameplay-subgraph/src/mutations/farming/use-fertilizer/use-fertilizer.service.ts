@@ -120,12 +120,6 @@ export class UseFertilizerService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
-                syncedPlacedItemAction = {
-                    id: placedItemTileId,
-                    placedItemType: placedItemTile.placedItemType,
-                    x: placedItemTile.x,
-                    y: placedItemTile.y
-                }
 
                 // Validate placed item tile exists
                 if (!placedItemTile) {
@@ -134,6 +128,13 @@ export class UseFertilizerService {
                             code: "PLACED_ITEM_TILE_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType,
+                    x: placedItemTile.x,
+                    y: placedItemTile.y
                 }
 
                 // Validate ownership

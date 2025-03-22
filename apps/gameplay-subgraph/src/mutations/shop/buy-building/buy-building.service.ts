@@ -3,7 +3,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, DeepPartial, SchemaStatus, WithStatus } from "@src/common"
 import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
-import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService, PositionService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyBuildingRequest } from "./buy-building.dto"
@@ -19,7 +19,8 @@ export class BuyBuildingService {
         private readonly goldBalanceService: GoldBalanceService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         private readonly staticService: StaticService,
-        private readonly syncService: SyncService
+        private readonly syncService: SyncService,
+        private readonly positionService: PositionService
     ) {}
 
     async buyBuilding(
@@ -118,6 +119,18 @@ export class BuyBuildingService {
                         }
                     })
                 }
+                /************************************************************
+                 * CHECK IF POSITION IS AVAILABLE
+                 ************************************************************/
+                const occupiedPositions = await this.positionService.getOccupiedPositions({
+                    connection: this.connection,
+                    userId
+                })
+                this.positionService.checkPositionAvailable({
+                    position,
+                    placedItemType,
+                    occupiedPositions
+                })
 
                 const placedItemBuildings = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -182,13 +195,14 @@ export class BuyBuildingService {
                     id: placedItemBuildingRaw._id.toString(),
                     x: placedItemBuildingRaw.x,
                     y: placedItemBuildingRaw.y,
-                    placedItemType: placedItemBuildingRaw.placedItemType,
-                }   
+                    placedItemType: placedItemBuildingRaw.placedItemType
+                }
 
-                const createdSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
-                    placedItems: [placedItemBuildingRaw],
-                    status: SchemaStatus.Created
-                })
+                const createdSyncedPlacedItems =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemBuildingRaw],
+                        status: SchemaStatus.Created
+                    })
                 syncedPlacedItems.push(...createdSyncedPlacedItems)
 
                 /************************************************************
@@ -218,11 +232,20 @@ export class BuyBuildingService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems })}]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 })
             ])
         } catch (error) {

@@ -9,7 +9,7 @@ import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { DeepPartial, SchemaStatus } from "@src/common"
 import { WithStatus } from "@src/common"
-import { SyncService } from "@src/gameplay"
+import { PositionService, SyncService, StaticService } from "@src/gameplay"
 
 @Injectable()
 export class MoveService {
@@ -19,7 +19,9 @@ export class MoveService {
         @InjectMongoose() 
         private readonly connection: Connection,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
-        private readonly syncService: SyncService
+        private readonly syncService: SyncService,
+        private readonly staticService: StaticService,
+        private readonly positionService: PositionService
     ) {}
 
     async move(
@@ -42,12 +44,45 @@ export class MoveService {
                     .findById(placedItemId)
                     .session(session)
 
+                if (!placedItem) {
+                    throw new GraphQLError("Placed item not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_NOT_FOUND"
+                        }
+                    })
+                }
+
                 syncedPlacedItemAction = {
-                    id: placedItem._id.toString(),
+                    id: placedItem.id,
                     x: placedItem.x,
                     y: placedItem.y,
                     placedItemType: placedItem.placedItemType
                 }
+
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) => placedItemType.id === placedItem.placedItemType
+                )
+
+                if (!placedItemType) {
+                    throw new GraphQLError("Placed item type not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
+                /************************************************************
+                 * CHECK IF POSITION IS AVAILABLE
+                 ************************************************************/
+                const occupiedPositions = await this.positionService.getOccupiedPositions({
+                    connection: this.connection,
+                    userId
+                })
+                this.positionService.checkPositionAvailable({
+                    position,
+                    placedItemType,
+                    occupiedPositions
+                })
+                
 
                 if (!placedItem) {
                     throw new GraphQLError("Placed item not found", {

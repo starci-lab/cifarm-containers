@@ -9,7 +9,7 @@ import {
     PlacedItemTypeSchema,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService, PositionService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { BuyAnimalRequest } from "./buy-animal.dto"
@@ -26,15 +26,13 @@ export class BuyAnimalService {
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
-        private readonly syncService: SyncService
+        private readonly syncService: SyncService,
+        private readonly positionService: PositionService
     ) {}
 
     async buyAnimal(
         { id: userId }: UserLike,
-        {
-            animalId,
-            position,
-        }: BuyAnimalRequest
+        { animalId, position }: BuyAnimalRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
 
@@ -43,7 +41,7 @@ export class BuyAnimalService {
         let user: UserSchema | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
-        
+
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -59,7 +57,7 @@ export class BuyAnimalService {
                         }
                     })
                 }
-                
+
                 if (!animal.availableInShop) {
                     throw new GraphQLError("Animal not available in shop", {
                         extensions: {
@@ -90,7 +88,7 @@ export class BuyAnimalService {
                         placedItemType.type === PlacedItemType.Building &&
                         placedItemType.building.toString() === building.id.toString()
                 )
-    
+
                 if (!placedItemBuildingType) {
                     throw new GraphQLError("Building type not found", {
                         extensions: {
@@ -98,23 +96,34 @@ export class BuyAnimalService {
                         }
                     })
                 }
-                
-                const placedItemAnimalType = await this.connection
+
+                const placedItemType = await this.connection
                     .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
                     .findOne({
                         type: PlacedItemType.Animal,
                         animal: animal.id
                     })
                     .session(session)
-    
-                if (!placedItemAnimalType) {
+
+                if (!placedItemType) {
                     throw new GraphQLError("Animal type not found", {
                         extensions: {
                             code: "ANIMAL_TYPE_NOT_FOUND"
                         }
                     })
                 }
-
+                /************************************************************
+                 * CHECK IF POSITION IS AVAILABLE
+                 ************************************************************/
+                const occupiedPositions = await this.positionService.getOccupiedPositions({
+                    connection: this.connection,
+                    userId
+                })
+                this.positionService.checkPositionAvailable({
+                    position,
+                    placedItemType,
+                    occupiedPositions
+                })
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
@@ -131,7 +140,7 @@ export class BuyAnimalService {
                         }
                     })
                 }
-                
+
                 // Check if user has enough gold
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
@@ -146,7 +155,7 @@ export class BuyAnimalService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .countDocuments({
                         user: userId,
-                        placedItemType: placedItemAnimalType
+                        placedItemType
                     })
                     .session(session)
 
@@ -163,7 +172,8 @@ export class BuyAnimalService {
                 // Calculate max capacity based on upgrades
                 for (const placedItemBuilding of placedItemsBuilding) {
                     maxCapacity +=
-                        building.upgrades[placedItemBuilding.buildingInfo.currentUpgrade - 1].capacity
+                        building.upgrades[placedItemBuilding.buildingInfo.currentUpgrade - 1]
+                            .capacity
                 }
 
                 // Ensure the user hasn't reached the max animal capacity
@@ -196,7 +206,7 @@ export class BuyAnimalService {
                                 user: userId,
                                 x: position.x,
                                 y: position.y,
-                                placedItemType: placedItemAnimalType.id,
+                                placedItemType: placedItemType.id,
                                 animalInfo: {
                                     animal: createObjectId(animalId)
                                 }
@@ -209,15 +219,16 @@ export class BuyAnimalService {
                     id: placedItemAnimalRaw._id.toString(),
                     x: placedItemAnimalRaw.x,
                     y: placedItemAnimalRaw.y,
-                    placedItemType: placedItemAnimalRaw.placedItemType,
+                    placedItemType: placedItemAnimalRaw.placedItemType
                 }
 
-                const createdSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
-                    placedItems: [placedItemAnimalRaw],
-                    status: SchemaStatus.Created
-                })
-                syncedPlacedItems.push(...createdSyncedPlacedItems) 
-                
+                const createdSyncedPlacedItems =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemAnimalRaw],
+                        status: SchemaStatus.Created
+                    })
+                syncedPlacedItems.push(...createdSyncedPlacedItems)
+
                 /************************************************************
                  * PREPARE ACTION MESSAGE
                  ************************************************************/
@@ -245,11 +256,20 @@ export class BuyAnimalService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems })}]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 })
             ])
         } catch (error) {

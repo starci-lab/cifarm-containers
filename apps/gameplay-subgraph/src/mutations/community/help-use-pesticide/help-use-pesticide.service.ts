@@ -74,14 +74,7 @@ export class HelpUsePesticideService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
-                // Update synced placed item
-                syncedPlacedItemAction = {
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    id: placedItemTile.id,
-                    placedItemType: placedItemTile.placedItemType
-                }
-
+                
                 if (!placedItemTile) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
@@ -96,6 +89,15 @@ export class HelpUsePesticideService {
                         }
                     })
                 }
+
+                // Update synced placed item
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }
+
 
                 // Validate ownership (must be someone else's tile)
                 neighborUserId = placedItemTile.user.toString()

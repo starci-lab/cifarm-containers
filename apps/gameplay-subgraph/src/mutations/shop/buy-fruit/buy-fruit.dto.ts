@@ -1,4 +1,4 @@
-import { FruitId } from "@src/databases"
+import { FirstCharLowerCaseFruitId, FruitId } from "@src/databases"
 import { PositionInput } from "@src/gameplay"
 import { Type } from "class-transformer"
 import { ValidateNested, IsString } from "class-validator"
@@ -12,6 +12,6 @@ export class BuyFruitRequest {
         position: PositionInput
     
     @IsString()
-    @Field(() => String, { description: "The ID of the fruit" })
+    @Field(() => FirstCharLowerCaseFruitId, { description: "The ID of the fruit" })
         fruitId: FruitId
 }

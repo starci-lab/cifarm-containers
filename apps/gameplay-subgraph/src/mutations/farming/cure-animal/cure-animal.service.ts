@@ -74,12 +74,6 @@ export class CureAnimalService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(session)
-                syncedPlacedItemAction = {
-                    id: placedItemAnimalId,
-                    placedItemType: placedItemAnimal.placedItemType,
-                    x: placedItemAnimal.x,
-                    y: placedItemAnimal.y
-                }
 
                 // Validate animal exists
                 if (!placedItemAnimal) {
@@ -88,6 +82,13 @@ export class CureAnimalService {
                             code: "PLACED_ITEM_ANIMAL_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalId,
+                    placedItemType: placedItemAnimal.placedItemType,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y
                 }
 
                 // Validate ownership

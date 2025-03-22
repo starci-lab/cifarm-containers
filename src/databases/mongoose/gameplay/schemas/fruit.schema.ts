@@ -18,10 +18,22 @@ export class FruitSchema extends AbstractSchema {
         displayId: FruitId
 
     @Field(() => Int, {
-        description: "The growth stage duration of the fruit"
+        description: "The growth stage duration of young fruit"
     })
     @Prop({ type: Number, required: true })
-        growthStageDuration: number
+        youngGrowthStageDuration: number
+
+    @Field(() => Int, {
+        description: "The growth stage duration of mature fruit"
+    })
+    @Prop({ type: Number, required: true })
+        matureGrowthStageDuration: number
+
+    @Field(() => Int, {
+        description: "The time that the fruit tree require fertilizer"
+    })
+    @Prop({ type: Number, required: true })
+        fertilizerTime: number
 
     @Field(() => Int, {
         description: "The price of the fruit"

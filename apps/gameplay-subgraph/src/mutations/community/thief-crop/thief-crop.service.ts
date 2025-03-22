@@ -88,12 +88,6 @@ export class ThiefCropService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
-                syncedPlacedItemAction = {
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    id: placedItemTile.id,
-                    placedItemType: placedItemTile.placedItemType
-                }
 
                 if (!placedItemTile) {
                     throw new GraphQLError("Tile not found", {
@@ -102,6 +96,14 @@ export class ThiefCropService {
                         }
                     })
                 }
+
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }
+
 
                 neighborUserId = placedItemTile.user.toString()
                 if (neighborUserId === userId) {

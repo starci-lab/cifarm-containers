@@ -1,4 +1,4 @@
-import { TileId } from "@src/databases"
+import { FirstCharLowerCaseTileId, TileId } from "@src/databases"
 import { PositionInput } from "@src/gameplay"
 import { Type } from "class-transformer"
 import { IsString, ValidateNested } from "class-validator"
@@ -12,6 +12,6 @@ export class BuyTileRequest {
         position: PositionInput
     
     @IsString()
-    @Field(() => String, { description: "The id of the tile" })
+    @Field(() => FirstCharLowerCaseTileId, { description: "The id of the tile" })
         tileId: TileId
 }

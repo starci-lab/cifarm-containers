@@ -7,6 +7,7 @@ export interface GetOccupiedPositionsParams {
 }
 
 export interface CheckPositionAvailableParams {
+    position: Position,
     placedItemType: PlacedItemTypeSchema,
     occupiedPositions: Array<Position>
 }

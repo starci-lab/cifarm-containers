@@ -16,77 +16,101 @@ export class DeliveryWorker extends WorkerHost {
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly tokenBalanceService: TokenBalanceService,
-        private readonly staticService: StaticService   
+        private readonly staticService: StaticService
     ) {
         super()
     }
 
     public override async process(job: Job<DeliveryJobData>): Promise<void> {
-        this.logger.verbose(`Processing delivery job: ${job.id}`)
+        try {
+            this.logger.verbose(`Processing delivery job: ${job.id}`)
 
-        const { skip, take } = job.data
+            const { skip, take } = job.data
 
-        const users = await this.connection
-            .model<UserSchema>(UserSchema.name)
-            .find()
-            .skip(skip)
-            .limit(take)
+            const users = await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .find()
+                .skip(skip)
+                .limit(take)
 
-        if (!users.length) {
-            return
-        }
-
-        const promises: Array<Promise<void>> = []
-        // use for-each to add async function to promises array
-        users.forEach((user) => {
-            const promise = async () => {
-                const mongoSession = await this.connection.startSession()
-                try {
-                    const deliveringInventories = await this.connection.model<InventorySchema>(InventorySchema.name)
-                        .find({
-                            user: user.id,
-                            kind: InventoryKind.Delivery
-                        })
-
-                    let totalGoldAmount = 0
-                    let totalTokenAmount = 0
-                    for (const inventory of deliveringInventories) {
-                        const inventoryType = this.staticService.inventoryTypes.find((inventoryType) => inventoryType.id === inventory.inventoryType.toString())
-                        if (!inventoryType) {
-                            throw new Error(`Inventory type not found: ${inventory.inventoryType}`)
-                        }
-                        const product = this.staticService.products.find((product) => product.id === inventoryType.product.toString())
-                        if (!product) {
-                            throw new Error(`Product not found: ${inventoryType.product}`)
-                        }
-                        totalGoldAmount += product.goldAmount * inventory.quantity
-                        totalTokenAmount += product.tokenAmount * inventory.quantity
-                    }
-                    // Update user balance
-                    this.goldBalanceService.add({
-                        user,
-                        amount: totalGoldAmount
-                    })
-                    this.tokenBalanceService.add({
-                        user,
-                        amount: totalTokenAmount
-                    })
-
-                    // delete delivering products
-                    await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
-                        user: user.id,
-                        kind: InventoryKind.Delivery
-                    }).session(mongoSession)
-                    // update user's balance
-                    await user.save({ session: mongoSession })
-                } catch (error) {
-                    this.logger.error(error)
-                    throw error
-                } finally {
-                    mongoSession.endSession()
-                }
+            if (!users.length) {
+                return
             }
-            promises.push(promise())   
-        })
+
+            const promises: Array<Promise<void>> = []
+            // use for-each to add async function to promises array
+            users.forEach((user) => {
+                const promise = async () => {
+                    const mongoSession = await this.connection.startSession()
+                    try {
+                        await mongoSession.withTransaction(async (session) => {
+                        // Get delivering inventories
+                            const deliveringInventories = await this.connection
+                                .model<InventorySchema>(InventorySchema.name)
+                                .find({
+                                    user: user.id,
+                                    kind: InventoryKind.Delivery
+                                })
+                                .session(session)
+
+                            let totalGoldAmount = 0
+                            let totalTokenAmount = 0
+                            for (const inventory of deliveringInventories) {
+                                const inventoryType = this.staticService.inventoryTypes.find(
+                                    (inventoryType) =>
+                                        inventoryType.id === inventory.inventoryType.toString()
+                                )
+                                if (!inventoryType) {
+                                    throw new Error(
+                                        `Inventory type not found: ${inventory.inventoryType}`
+                                    )
+                                }
+                                const product = this.staticService.products.find(
+                                    (product) => product.id === inventoryType.product.toString()
+                                )
+                                if (!product) {
+                                    throw new Error(`Product not found: ${inventoryType.product}`)
+                                }
+                                totalGoldAmount += product.goldAmount * inventory.quantity
+                                totalTokenAmount += product.tokenAmount * inventory.quantity
+                            }
+
+                            // Update user balance
+                            this.goldBalanceService.add({
+                                user,
+                                amount: totalGoldAmount
+                            })
+                            this.tokenBalanceService.add({
+                                user,
+                                amount: totalTokenAmount
+                            })
+
+                            // delete delivering products
+                            await this.connection
+                                .model<InventorySchema>(InventorySchema.name)
+                                .deleteMany({
+                                    user: user.id,
+                                    kind: InventoryKind.Delivery
+                                })
+                                .session(session)
+
+                            // update user's balance
+                            await user.save({ session })
+                        })
+                    } catch (error) {
+                        this.logger.error(error)
+                        throw error
+                    } finally {
+                        await mongoSession.endSession()
+                    }
+                }
+                promises.push(promise())
+            })
+
+            // Wait for all promises to complete
+            await Promise.all(promises)
+        } catch (error) {
+            this.logger.error(error)
+        }
     }
 }

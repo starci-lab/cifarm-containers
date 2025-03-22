@@ -67,7 +67,7 @@ export class CoreService {
             // update the seed growth info
             placedItemTile.seedGrowthInfo.harvestCount += 1
             placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
-            placedItemTile.seedGrowthInfo.currentStage = cropInfo.nextGrowthStageAfterHarvest
+            placedItemTile.seedGrowthInfo.currentStage = cropInfo.nextGrowthStageAfterHarvest - 1
             placedItemTile.seedGrowthInfo.currentStageTimeElapsed = 0
             placedItemTile.seedGrowthInfo.harvestQuantityRemaining = 0
             placedItemTile.seedGrowthInfo.isQuality = false
@@ -78,7 +78,6 @@ export class CoreService {
     //update the animal information after collect
     public updatePlacedItemAnimalAfterHarvest({
         placedItemAnimal,
-        animal
     }: UpdatePlacedItemAnimalAfterHarvestParams): UpdatePlacedItemAnimalAfterHarvestResult {
         // update the animal info times harvested
         placedItemAnimal.animalInfo.timesHarvested += 1
@@ -102,7 +101,7 @@ export class CoreService {
 
         // update the fruit info
         placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
-        placedItemFruit.fruitInfo.currentStage = fruitInfo.nextGrowthStageAfterHarvest
+        placedItemFruit.fruitInfo.currentStage = fruitInfo.nextGrowthStageAfterHarvest - 1
         placedItemFruit.fruitInfo.currentStageTimeElapsed = 0
         placedItemFruit.fruitInfo.harvestQuantityRemaining = 0
         // return the placed item fruit

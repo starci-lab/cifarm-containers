@@ -27,6 +27,12 @@ export class FruitInfoSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0 })
         harvestQuantityRemaining: number
 
+    @Field(() => Float, {
+        description: "The current fertilizer time of the fruit"
+    })
+    @Prop({ type: Number, default: 0 })
+        currentFertilizerTime: number
+
     @Field(() => Int, {
         description: "Times the fruit has been harvested"
     })

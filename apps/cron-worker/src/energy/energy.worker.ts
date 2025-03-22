@@ -8,7 +8,6 @@ import { Job } from "bullmq"
 import { Connection } from "mongoose"
 import { EnergyService, StaticService, SyncService } from "@src/gameplay"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { SyncUserPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 
 @Processor(bullData[BullQueueName.Energy].name)
@@ -48,44 +47,36 @@ export class EnergyWorker extends WorkerHost {
         const promises: Array<Promise<void>> = []
         for (const user of users) {
             const promise = async () => {
-                const mongoSession = await this.connection.startSession()
-                try {
-                    let emit = false
-                    const updateUser = () => {
-                        // skip if the user's energy is full
-                        if (user.energyFull) {
-                            return
-                        }
-                        // Add time to the user's energy
-                        user.energyRegenTime += time
-                        if (user.energyRegenTime >= energyRegenTime) {
-                            //console.log("Energy regen time", user.energyRegenTime)
-                            user.energy += 1
-                            // Reset the timer
-                            user.energyRegenTime = 0
-                            // Check if the user's energy is full
-                            user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
-                            emit = true
-                        }
+                const updateUser = () => {
+                    // skip if the user's energy is full
+                    if (user.energyFull) {
+                        return false
                     }
-                    updateUser()
-                    await user.save({ session: mongoSession })
-                    if (emit) {
-                        const payload: SyncUserPayload = {
-                            userId: user.id,
-                            user: this.syncService.getSyncedUser(user)
-                        }
-                        await this.kafkaProducer.send({
-                            topic: KafkaTopic.SyncUser,
-                            messages: [
-                                { value: JSON.stringify(payload) }
-                            ]
-                        })
+                    // Add time to the user's energy
+                    user.energyRegenTime += time
+                    if (user.energyRegenTime >= energyRegenTime) {
+                        //console.log("Energy regen time", user.energyRegenTime)
+                        user.energy += 1
+                        // Reset the timer
+                        user.energyRegenTime = 0
+                        // Check if the user's energy is full
+                        user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
+                        return true 
                     }
-                } catch (error) {
-                    this.logger.error(error)
-                } finally {
-                    await mongoSession.endSession()
+                    return false
+                }
+                const synced = updateUser()
+                await user.save()
+                if (synced) {
+                    await this.kafkaProducer.send({
+                        topic: KafkaTopic.SyncUser,
+                        messages: [
+                            { value: JSON.stringify({
+                                userId: user.id,
+                                user: this.syncService.getSyncedUser(user)
+                            }) }
+                        ]
+                    })
                 }
             }
             promises.push(promise())

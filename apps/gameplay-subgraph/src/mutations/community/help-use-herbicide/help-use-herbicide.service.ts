@@ -73,13 +73,7 @@ export class HelpUseHerbicideService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
-                syncedPlacedItemAction = {
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    id: placedItemTile.id,
-                    placedItemType: placedItemTile.placedItemType
-                }
-
+              
                 if (!placedItemTile) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
@@ -94,6 +88,14 @@ export class HelpUseHerbicideService {
                         }
                     })
                 }
+
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }
+
 
                 // Validate ownership (must be someone else's tile)
                 neighborUserId = placedItemTile.user.toString()

@@ -86,13 +86,6 @@ export class HarvestCropService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
-                
-                syncedPlacedItemAction = {
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    id: placedItemTile.id,
-                    placedItemType: placedItemTile.placedItemType
-                }   
                  
                 // Validate placed item tile exists
                 if (!placedItemTile) {
@@ -102,6 +95,13 @@ export class HarvestCropService {
                         }
                     })
                 }
+
+                syncedPlacedItemAction = {
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    id: placedItemTile.id,
+                    placedItemType: placedItemTile.placedItemType
+                }   
 
                 // Validate tile is planted
                 if (!placedItemTile.seedGrowthInfo) {

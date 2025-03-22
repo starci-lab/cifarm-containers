@@ -90,13 +90,6 @@ export class HarvestAnimalService {
                     .findById(placedItemAnimalId)
                     .session(session)
 
-                syncedPlacedItemAction = {
-                    id: placedItemAnimalId,
-                    placedItemType: placedItemAnimal.placedItemType,
-                    x: placedItemAnimal.x,
-                    y: placedItemAnimal.y,
-                }
-
                 // Validate animal exists
                 if (!placedItemAnimal) {
                     throw new GraphQLError("Animal not found", {
@@ -104,6 +97,13 @@ export class HarvestAnimalService {
                             code: "ANIMAL_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalId,
+                    placedItemType: placedItemAnimal.placedItemType,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y,
                 }
 
                 // Validate animal is ready to harvest

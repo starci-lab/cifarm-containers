@@ -17,14 +17,15 @@ import {
     EnergyService,
     InventoryService,
     LevelService,
-    StaticService
+    StaticService,
+    SyncService
 } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { HarvestFruitRequest, HarvestFruitResponse } from "./harvest-fruit.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { createObjectId } from "@src/common"
+import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 
 @Injectable()
 export class HarvestFruitService {
@@ -37,6 +38,7 @@ export class HarvestFruitService {
         private readonly levelService: LevelService,
         private readonly coreService: CoreService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -45,8 +47,13 @@ export class HarvestFruitService {
         { placedItemFruitId }: HarvestFruitRequest
     ): Promise<HarvestFruitResponse> {
         const mongoSession = await this.connection.startSession()
+
+        // synced variables
         let actionMessage: EmitActionPayload<HarvestFruitData> | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+        const syncedInventories: Array<DeepPartial<WithStatus<InventorySchema>>> = []
 
         try {
             const result = await mongoSession.withTransaction(async (session) => {
@@ -84,6 +91,13 @@ export class HarvestFruitService {
                             code: "FRUIT_NOT_FOUND"
                         }
                     })
+                }
+
+                syncedPlacedItemAction = {
+                    id: placedItemFruitId,
+                    placedItemType: placedItemFruit.placedItemType,
+                    x: placedItemFruit.x,
+                    y: placedItemFruit.y
                 }
 
                 // Validate fruit is planted
@@ -242,13 +256,25 @@ export class HarvestFruitService {
                 })
 
                 // Create new inventories
-                await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .create(createdInventories, { session })
+                if (createdInventories.length > 0) {
+                    const createdInventoryRaws = await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .create(createdInventories, { session })
+                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: createdInventoryRaws,
+                        status: SchemaStatus.Created
+                    })
+                    syncedInventories.push(...createdSyncedInventories)
+                }
 
                 // Update existing inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
+                    const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: [inventory],
+                        status: SchemaStatus.Updated
+                    })
+                    syncedInventories.push(...updatedSyncedInventories)
                 }
 
                 // Handle perennial fruit growth cycle
@@ -263,10 +289,15 @@ export class HarvestFruitService {
 
                 // Save placed item fruit changes
                 await placedItemFruit.save({ session })
+                const updatedSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemFruit],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(...updatedSyncedPlacedItems)
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemFruitId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.HarvestFruit,
                     success: true,
                     userId,
@@ -291,15 +322,15 @@ export class HarvestFruitService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, requireQuery: true }) }]
+                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
                 })
             ])
 

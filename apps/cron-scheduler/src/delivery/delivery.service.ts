@@ -92,7 +92,6 @@ export class DeliveryService {
             await this.deliveryQueue.addBulk(batches)
         } catch (error) {
             this.logger.error(error)
-            throw error
         } finally {
             await mongoSession.endSession()
         }
