@@ -107,9 +107,9 @@ export class Activities {
         thiefCrop: ActivityInfo
 
     @Field(() => ActivityInfo, {
-        description: "Configuration for stealing animal products"
+        description: "Configuration for thief animal"
     })
-        thiefAnimalProduct: ActivityInfo
+        thiefAnimal: ActivityInfo
 
     @Field(() => ActivityInfo, {
         description: "Configuration for curing sick animals"

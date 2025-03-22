@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { EnergyService, LevelService, StaticService } from "@src/gameplay"
+import { EnergyService, LevelService, StaticService, SyncService } from "@src/gameplay"
 import { HelpCureAnimalRequest } from "./help-cure-animal.dto"
 import { Connection } from "mongoose"
 import {
@@ -16,7 +16,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { createObjectId } from "@src/common"
+import { createObjectId, SchemaStatus, WithStatus, DeepPartial } from "@src/common"
 
 @Injectable()
 export class HelpCureAnimalService {
@@ -27,6 +27,7 @@ export class HelpCureAnimalService {
         private readonly staticService: StaticService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -36,9 +37,11 @@ export class HelpCureAnimalService {
         { placedItemAnimalId }: HelpCureAnimalRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined    
-
+        // synced variables
         let actionMessage: EmitActionPayload | undefined
+        let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []      
         let neighborUserId: string | undefined
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -69,11 +72,17 @@ export class HelpCureAnimalService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(session)
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalId,
+                    placedItemType: placedItemAnimal.placedItemType,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y
+                }   
 
                 // Validate animal exists
                 if (!placedItemAnimal) {
                     actionMessage = {
-                        placedItemId: placedItemAnimalId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpCureAnimal,
                         success: false,
                         userId,
@@ -90,7 +99,7 @@ export class HelpCureAnimalService {
                 neighborUserId = placedItemAnimal.user.toString()
                 if (neighborUserId === userId) {
                     actionMessage = {
-                        placedItemId: placedItemAnimalId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpCureAnimal,
                         success: false,
                         userId,
@@ -106,7 +115,7 @@ export class HelpCureAnimalService {
                 // Validate animal info exists
                 if (!placedItemAnimal.animalInfo) {
                     actionMessage = {
-                        placedItemId: placedItemAnimalId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpCureAnimal,
                         success: false,
                         userId,
@@ -122,7 +131,7 @@ export class HelpCureAnimalService {
                 // Validate animal is sick
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
                     actionMessage = {
-                        placedItemId: placedItemAnimalId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpCureAnimal,
                         success: false,
                         userId,
@@ -187,10 +196,15 @@ export class HelpCureAnimalService {
                 await placedItemAnimal.save({
                     session
                 })
+                const syncedPlacedItem = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemAnimal],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(...syncedPlacedItem)
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemAnimalId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.HelpCureAnimal,
                     success: true,
                     userId
@@ -210,11 +224,11 @@ export class HelpCureAnimalService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId, placedItems: syncedPlacedItems }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
                 })
             ])
         } catch (error) {

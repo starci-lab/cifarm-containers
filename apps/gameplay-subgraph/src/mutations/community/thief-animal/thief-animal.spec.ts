@@ -19,7 +19,7 @@ import {
     TestingInfraModule
 } from "@src/testing"
 import { Connection } from "mongoose"
-import { ThiefAnimalProductService } from "./thief-animal-product.service"
+import { ThiefAnimalProductService } from "./thief-animal.service"
 import { GraphQLError } from "graphql"
 import { LevelService, StaticService, ThiefService } from "@src/gameplay"
 import { EnergyNotEnoughException } from "@src/gameplay"

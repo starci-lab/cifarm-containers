@@ -17,18 +17,18 @@ import {
     InventoryService,
     LevelService,
     ThiefService,
-    StaticService
+    StaticService,
+    SyncService
 } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection, Types } from "mongoose"
-import { ThiefAnimalProductRequest, ThiefAnimalProductResponse } from "./thief-animal-product.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { createObjectId } from "@src/common"
-
+import { createObjectId, SchemaStatus, WithStatus, DeepPartial } from "@src/common"
+import { ThiefAnimalRequest, ThiefAnimalResponse } from "./thief-animal.dto"
 @Injectable()
-export class ThiefAnimalProductService {
-    private readonly logger = new Logger(ThiefAnimalProductService.name)
+export class ThiefAnimalService {
+    private readonly logger = new Logger(ThiefAnimalService.name)
 
     constructor(
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
@@ -37,17 +37,23 @@ export class ThiefAnimalProductService {
         private readonly levelService: LevelService,
         private readonly thiefService: ThiefService,
         private readonly inventoryService: InventoryService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService
     ) {}
 
-    async thiefAnimalProduct(
+    async thiefAnimal(
         { id: userId }: UserLike,
-        { placedItemAnimalId }: ThiefAnimalProductRequest
-    ): Promise<ThiefAnimalProductResponse> {
+        { placedItemAnimalId }: ThiefAnimalRequest
+    ): Promise<ThiefAnimalResponse> {
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined
+       
+        // synced variables
         let actionMessage: EmitActionPayload<ThiefAnimalProductData> | undefined
+        let user: UserSchema | undefined
         let neighborUserId: string | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []     
+        const syncedInventories: Array<DeepPartial<WithStatus<InventorySchema>>> = []
 
         try {
             const result = await mongoSession.withTransaction(async (mongoSession) => {
@@ -81,6 +87,12 @@ export class ThiefAnimalProductService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(mongoSession)
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalId,
+                    placedItemType: placedItemAnimal.placedItemType,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y
+                }   
 
                 if (!placedItemAnimal) {
                     throw new GraphQLError("Animal not found", {
@@ -110,7 +122,7 @@ export class ThiefAnimalProductService {
                 const users = placedItemAnimal.animalInfo.thieves
                 if (users.map((user) => user.toString()).includes(userId)) {
                     actionMessage = {
-                        placedItemId: placedItemAnimalId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.ThiefAnimalProduct,
                         success: false,
                         userId,
@@ -127,7 +139,7 @@ export class ThiefAnimalProductService {
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
                 const { energyConsume, experiencesGain } =
-                    this.staticService.activities.thiefAnimalProduct
+                    this.staticService.activities.thiefAnimal
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
@@ -155,7 +167,7 @@ export class ThiefAnimalProductService {
 
                 if (actualQuantity <= 0) {
                     actionMessage = {
-                        placedItemId: placedItemAnimalId,
+                        placedItem: syncedPlacedItemAction,
                         action: ActionName.ThiefAnimalProduct,
                         success: false,
                         userId,
@@ -241,12 +253,24 @@ export class ThiefAnimalProductService {
                     occupiedIndexes
                 })
 
-                await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .create(createdInventories, { session: mongoSession })
+                if (createdInventories.length > 0) {
+                    const createdInventoryRaws = await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .create(createdInventories, { session: mongoSession })
+                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: createdInventoryRaws,
+                        status: SchemaStatus.Created
+                    })
+                    syncedInventories.push(...createdSyncedInventories)
+                }   
 
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session: mongoSession })
+                    const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
+                        inventories: [inventory],
+                        status: SchemaStatus.Created
+                    })
+                    syncedInventories.push(...updatedSyncedInventories)
                 }
 
                 this.energyService.substract({
@@ -268,8 +292,14 @@ export class ThiefAnimalProductService {
                 placedItemAnimal.animalInfo.thieves.push(new Types.ObjectId(userId))
                 await placedItemAnimal.save({ session: mongoSession })
 
+                const syncedPlacedItem = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemAnimal],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(...syncedPlacedItem)
+
                 actionMessage = {
-                    placedItemId: placedItemAnimalId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.ThiefAnimalProduct,
                     success: true,
                     userId,
@@ -293,11 +323,15 @@ export class ThiefAnimalProductService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId: neighborUserId }) }]
+                    messages: [{ value: JSON.stringify({ userId: neighborUserId, placedItems: syncedPlacedItems }) }]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
                 })
             ])
 

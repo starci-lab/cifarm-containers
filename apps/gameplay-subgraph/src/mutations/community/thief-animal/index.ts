@@ -1,0 +1,5 @@
+export * from "./thief-animal.dto"
+export * from "./thief-animal.module"
+export * from "./thief-animal.service"
+export * from "./thief-animal.resolver"
+//export * from "./claim.spec"

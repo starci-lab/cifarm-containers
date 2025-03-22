@@ -1,7 +1,7 @@
 import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { createObjectId } from "@src/common"
+import { createObjectId, DeepPartial, SchemaStatus, WithStatus } from "@src/common"
 import {
     Activities,
     AnimalCurrentState,
@@ -15,7 +15,7 @@ import {
     SystemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService } from "@src/gameplay"
+import { EnergyService, LevelService, SyncService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { CureAnimalRequest } from "./cure-animal.dto"
@@ -30,6 +30,7 @@ export class CureAnimalService {
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -38,8 +39,11 @@ export class CureAnimalService {
         { placedItemAnimalId }: CureAnimalRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+        // synced variables
         let actionMessage: EmitActionPayload | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -51,7 +55,7 @@ export class CureAnimalService {
                         user: userId,
                         inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
                         kind: InventoryKind.Tool
-                    })  
+                    })
 
                 if (!inventoryAnimalMedicine) {
                     throw new GraphQLError("Inventory animal medicine not found", {
@@ -64,12 +68,18 @@ export class CureAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM ANIMAL
                  ************************************************************/
-                
+
                 // Get placed item animal
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(session)
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalId,
+                    placedItemType: placedItemAnimal.placedItemType,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y
+                }
 
                 // Validate animal exists
                 if (!placedItemAnimal) {
@@ -79,7 +89,7 @@ export class CureAnimalService {
                         }
                     })
                 }
-                
+
                 // Validate ownership
                 if (placedItemAnimal.user.toString() !== userId) {
                     throw new GraphQLError("Cannot cure another user's animal", {
@@ -88,7 +98,7 @@ export class CureAnimalService {
                         }
                     })
                 }
-                
+
                 // Validate animal is sick
                 if (placedItemAnimal.animalInfo?.currentState !== AnimalCurrentState.Sick) {
                     throw new GraphQLError("Animal is not sick", {
@@ -101,7 +111,7 @@ export class CureAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE ACTIVITY DATA
                  ************************************************************/
-                
+
                 // Get activity data
                 const {
                     value: {
@@ -115,7 +125,7 @@ export class CureAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                
+
                 // Get user data
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -140,13 +150,13 @@ export class CureAnimalService {
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
                  ************************************************************/
-                
+
                 // Update user energy and experience
                 this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                
+
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -159,9 +169,15 @@ export class CureAnimalService {
                 placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
                 await placedItemAnimal.save({ session })
 
+                const syncedPlacedItem = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemAnimal],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(...syncedPlacedItem)
+
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemAnimalId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.CureAnimal,
                     success: true,
                     userId
@@ -172,7 +188,7 @@ export class CureAnimalService {
              * EXTERNAL COMMUNICATION
              * Send notifications after transaction is complete
              ************************************************************/
-            
+
             // Send Kafka messages
             await Promise.all([
                 this.kafkaProducer.send({
@@ -181,11 +197,20 @@ export class CureAnimalService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 })
             ])
         } catch (error) {

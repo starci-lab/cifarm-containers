@@ -5,7 +5,7 @@ import { HelpUseHerbicideModule } from "./help-use-herbicide"
 import { HelpUsePesticideModule } from "./help-use-pesticide"
 import { HelpWaterCropModule } from "./help-water-crop"
 import { ThiefCropModule } from "./thief-crop"
-import { ThiefAnimalProductModule } from "./thief-animal-product"
+import { ThiefAnimalModule } from "./thief-animal"
 import { HelpCureAnimalModule } from "./help-cure-animal"
 import { HelpUseBugNetModule } from "./help-use-bug-net"
 import { ThiefFruitModule } from "./thief-fruit"
@@ -19,7 +19,7 @@ import { ThiefFruitModule } from "./thief-fruit"
         HelpUsePesticideModule,
         HelpUseHerbicideModule,
         ThiefCropModule,
-        ThiefAnimalProductModule,
+        ThiefAnimalModule,
         HelpUseBugNetModule,    
         ThiefFruitModule
     ]

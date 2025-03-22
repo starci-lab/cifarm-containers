@@ -21,14 +21,18 @@ export class PlacedItemsConsumer implements OnModuleInit {
         })
         await consumer.run({
             eachMessage: async ({ topic, message }) => {
-                this.logger.log(`Received message from topic: ${topic}`)
-                switch (topic) {
-                case KafkaTopic.SyncPlacedItems:
-                {
-                    const payload = JSON.parse(message.value.toString())
-                    await this.placedItemsGateway.syncPlacedItems(payload)
-                    break
-                }
+                try {
+                    this.logger.log(`Received message from topic: ${topic}`)
+                    switch (topic) {
+                    case KafkaTopic.SyncPlacedItems:
+                    {
+                        const payload = JSON.parse(message.value.toString())
+                        await this.placedItemsGateway.syncPlacedItems(payload)
+                        break
+                    }
+                    }
+                } catch (error) {
+                    this.logger.error(`Error processing message from topic: ${topic}`, error)
                 }
             }
         })

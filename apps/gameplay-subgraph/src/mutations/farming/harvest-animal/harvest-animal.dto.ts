@@ -1,5 +1,5 @@
-import { IsMongoId } from "class-validator"
-import { InputType, Field } from "@nestjs/graphql"
+import { IsInt, IsMongoId } from "class-validator"
+import { InputType, Field, Int, ObjectType } from "@nestjs/graphql"
 
 @InputType()
 export class HarvestAnimalRequest {
@@ -7,3 +7,11 @@ export class HarvestAnimalRequest {
     @Field(() => String, { description: "The ID of the placed item animal" })
         placedItemAnimalId: string
 }
+
+@ObjectType()
+export class HarvestAnimalResponse {
+    @IsInt()
+    @Field(() => Int, { description: "The quantity of the animal harvested" })
+        quantity: number
+}
+

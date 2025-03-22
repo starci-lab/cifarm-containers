@@ -11,12 +11,20 @@ import {
     PlacedItemSchema,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, StaticService } from "@src/gameplay"
+import {
+    EnergyService,
+    InventoryService,
+    LevelService,
+    StaticService,
+    SyncService
+} from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
 import { FeedAnimalRequest } from "./feed-animal.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { SchemaStatus, WithStatus } from "@src/common"
+import { DeepPartial } from "@src/common"
 
 @Injectable()
 export class FeedAnimalService {
@@ -28,6 +36,7 @@ export class FeedAnimalService {
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
@@ -36,19 +45,31 @@ export class FeedAnimalService {
         { placedItemAnimalId, inventorySupplyId }: FeedAnimalRequest
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
+
         let actionMessage: EmitActionPayload | undefined
         let user: UserSchema | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+        const syncedInventories: Array<DeepPartial<WithStatus<InventorySchema>>> = []
+
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM ANIMAL
                  ************************************************************/
-                
+
                 // Get placed item animal
                 const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemAnimalId)
                     .session(session)
+
+                syncedPlacedItemAction = {
+                    id: placedItemAnimalId,
+                    placedItemType: placedItemAnimal.placedItemType,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y
+                }
 
                 // Validate animal exists
                 if (!placedItemAnimal) {
@@ -58,7 +79,7 @@ export class FeedAnimalService {
                         }
                     })
                 }
-                
+
                 // Validate ownership
                 if (placedItemAnimal.user.toString() !== userId) {
                     throw new GraphQLError("Cannot feed another user's animal", {
@@ -67,7 +88,7 @@ export class FeedAnimalService {
                         }
                     })
                 }
-                
+
                 // Validate animal is hungry
                 if (placedItemAnimal.animalInfo?.currentState !== AnimalCurrentState.Hungry) {
                     throw new GraphQLError("Animal is not hungry", {
@@ -80,13 +101,13 @@ export class FeedAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE ACTIVITY DATA
                  ************************************************************/
-                
+
                 // Get activity data
                 const { energyConsume, experiencesGain } = this.staticService.activities.feedAnimal
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                
+
                 // Get user data
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
@@ -111,7 +132,7 @@ export class FeedAnimalService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY SUPPLY
                  ************************************************************/
-                
+
                 // Get inventory data
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
@@ -141,7 +162,7 @@ export class FeedAnimalService {
                         }
                     })
                 }
-                
+
                 // Validate inventory is animal feed
                 if (inventoryType.displayId !== InventoryTypeId.AnimalFeed) {
                     throw new GraphQLError("Inventory supply is not animal feed", {
@@ -155,13 +176,13 @@ export class FeedAnimalService {
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
                  ************************************************************/
-                
+
                 // Update user energy and experience
                 this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                
+
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -188,23 +209,40 @@ export class FeedAnimalService {
                 // Update existing inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
+                    const updatedSyncedInventories =
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: [inventory],
+                            status: SchemaStatus.Created
+                        })
+                    syncedInventories.push(...updatedSyncedInventories)
                 }
 
-                // Delete removed inventories
-                await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .deleteMany({
-                        _id: { $in: removedInventories.map((inventory) => inventory._id) }
+                if (removedInventories.length > 0) {
+                    // Delete removed inventories
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .deleteMany({
+                            _id: { $in: removedInventories.map((inventory) => inventory._id) }
+                        })
+                        .session(session)
+                    const removedSyncedInventories = this.syncService.getDeletedSyncedInventories({
+                        inventoryIds: removedInventories.map((inventory) => inventory.id)
                     })
-                    .session(session)
+                    syncedInventories.push(...removedSyncedInventories)
+                }
 
                 // Update animal state after feeding
                 placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
                 await placedItemAnimal.save({ session })
+                const syncedPlacedItem = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                    placedItems: [placedItemAnimal],
+                    status: SchemaStatus.Updated
+                })
+                syncedPlacedItems.push(...syncedPlacedItem)
 
                 // Prepare action message
                 actionMessage = {
-                    placedItemId: placedItemAnimalId,
+                    placedItem: syncedPlacedItemAction,
                     action: ActionName.FeedAnimal,
                     success: true,
                     userId
@@ -215,7 +253,7 @@ export class FeedAnimalService {
              * EXTERNAL COMMUNICATION
              * Send notifications after transaction is complete
              ************************************************************/
-            
+
             // Send Kafka messages
             await Promise.all([
                 this.kafkaProducer.send({
@@ -224,11 +262,19 @@ export class FeedAnimalService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
+                }),
+                this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncInventories,
+                    messages: [
+                        { value: JSON.stringify({ userId, inventories: syncedInventories }) }
+                    ]
                 })
             ])
         } catch (error) {

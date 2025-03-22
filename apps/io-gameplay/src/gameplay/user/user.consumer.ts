@@ -19,18 +19,22 @@ export class UserConsumer implements OnModuleInit {
         })
         await consumer.run({
             eachMessage: async ({ topic, message }) => {
-                this.logger.log(`Received message from topic: ${topic}`)
-                switch (topic) {
-                case KafkaTopic.SyncUser: {
-                    const payload = JSON.parse(message.value.toString())
-                    this.userGateway.syncUser(payload)
-                    break
-                }
-                case KafkaTopic.SyncInventories: {
-                    const payload = JSON.parse(message.value.toString())
-                    this.userGateway.syncInventories(payload)
-                    break
-                }
+                try {
+                    this.logger.log(`Received message from topic: ${topic}`)
+                    switch (topic) {
+                    case KafkaTopic.SyncUser: {
+                        const payload = JSON.parse(message.value.toString())
+                        this.userGateway.syncUser(payload)
+                        break
+                    }
+                    case KafkaTopic.SyncInventories: {
+                        const payload = JSON.parse(message.value.toString())
+                        this.userGateway.syncInventories(payload)
+                        break
+                    }
+                    }
+                } catch (error) {
+                    this.logger.error(`Error processing message from topic: ${topic}`, error)
                 }
             }
         })
