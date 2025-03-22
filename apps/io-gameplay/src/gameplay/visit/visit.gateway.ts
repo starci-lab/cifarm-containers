@@ -41,7 +41,6 @@ export class VisitGateway {
         @ConnectedSocket() socket: TypedSocket<SocketData>,
         @MessageBody() { neighborUserId }: VisitMessageBody
     ): Promise<void> {
-        console.log("handleVisit", neighborUserId)
         // stop watching the original player
         this.authGateway.leaveWatchingRoom(socket)
         // start watching the player

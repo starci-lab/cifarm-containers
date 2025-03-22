@@ -8,7 +8,7 @@ import {
     WebSocketServer
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
-import { SocketCoreService, SocketLike, TypedSocket } from "@src/io"
+import { SocketCoreService, SocketLike } from "@src/io"
 import { NAMESPACE } from "../gameplay.constants"
 import { SocketData } from "./auth.types"
 
@@ -81,22 +81,6 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
 
     public getUserIdFromRoomName(roomName: string): string {
         return roomName.substring(roomName.indexOf("_") + 1)
-    }
-
-    // get socket by user id
-    public async getSocket(
-        namespace: TypedSocket<SocketData>,
-        userId: string
-    ): Promise<SocketLike<SocketData>> {
-        const sockets = await namespace
-            .in(
-                this.getRoomName({
-                    userId,
-                    type: RoomType.Player
-                })
-            )
-            .fetchSockets()
-        return sockets[0]
     }
 }
 

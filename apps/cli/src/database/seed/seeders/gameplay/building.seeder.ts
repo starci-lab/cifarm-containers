@@ -92,6 +92,36 @@ export class BuildingSeeder implements Seeder {
                     }
                 ],
             },
+            {
+                _id: createObjectId(BuildingId.Barn),
+                displayId: BuildingId.Barn,
+                availableInShop: true,
+                animalContainedType: AnimalType.Livestock,
+                maxUpgrade: 3,
+                price: 2000,
+                unlockLevel: 10,
+                upgradable: false,
+                maxOwnership: 3,
+                upgrades: [
+                    {
+                        capacity: 3,
+                        upgradeLevel: 1,
+                        sellPrice: 1000
+                    },
+                    {
+                        upgradePrice: 1000,
+                        capacity: 5,
+                        upgradeLevel: 2,
+                        sellPrice: 1500
+                    },
+                    {
+                        upgradePrice: 2000,
+                        capacity: 10,
+                        upgradeLevel: 3,
+                        sellPrice: 2000
+                    }
+                ],
+            },
         ]
         
         await this.connection.model<BuildingSchema>(BuildingSchema.name).insertMany(data)

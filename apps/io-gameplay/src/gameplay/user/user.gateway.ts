@@ -1,13 +1,15 @@
 import { Logger } from "@nestjs/common"
 import { OnGatewayInit, WebSocketGateway, WebSocketServer } from "@nestjs/websockets"
 import { NAMESPACE } from "../gameplay.constants"
-import { AuthGateway, SocketData } from "../auth"
+import { AuthGateway, RoomType, SocketData } from "../auth"
 import { TypedNamespace } from "@src/io"
+import { USER_SYNCED_EVENT, INVENTORIES_SYNCED_EVENT } from "./user.constants"
 import {
-    USER_SYNCED_EVENT,
-    INVENTORIES_SYNCED_EVENT
-} from "./user.constants"
-import { InventoriesSyncedMessage, SyncInventoriesPayload, SyncUserPayload, UserSyncedMessage } from "./user.types"
+    InventoriesSyncedMessage,
+    SyncInventoriesPayload,
+    SyncUserPayload,
+    UserSyncedMessage
+} from "./user.types"
 @WebSocketGateway({
     cors: {
         origin: "*",
@@ -18,9 +20,7 @@ import { InventoriesSyncedMessage, SyncInventoriesPayload, SyncUserPayload, User
 export class UserGateway implements OnGatewayInit {
     private readonly logger = new Logger(UserGateway.name)
 
-    constructor(
-        private readonly authGateway: AuthGateway
-    ) {}
+    constructor(private readonly authGateway: AuthGateway) {}
 
     @WebSocketServer()
     private readonly namespace: TypedNamespace<SocketData>
@@ -31,25 +31,27 @@ export class UserGateway implements OnGatewayInit {
         )
     }
 
-    public async syncInventories({
-        inventories,
-        userId
-    }: SyncInventoriesPayload) {
-        const socket = await this.authGateway.getSocket(this.namespace, userId)
+    public syncInventories({ inventories, userId }: SyncInventoriesPayload) {
         const messageResponse: InventoriesSyncedMessage = {
             data: inventories
         }
-        socket.emit(INVENTORIES_SYNCED_EVENT, messageResponse)
+        this.namespace.to(
+            this.authGateway.getRoomName({
+                userId,
+                type: RoomType.Player  
+            })
+        ).emit(INVENTORIES_SYNCED_EVENT, messageResponse)
     }
 
-    public async syncUser({
-        user,
-        userId
-    }: SyncUserPayload) {
-        const socket = await this.authGateway.getSocket(this.namespace, userId)
+    public syncUser({ user, userId }: SyncUserPayload) {
         const messageResponse: UserSyncedMessage = {
             data: user
         }
-        socket.emit(USER_SYNCED_EVENT, messageResponse)
-    }   
+        this.namespace.to(
+            this.authGateway.getRoomName({
+                userId,
+                type: RoomType.Player
+            })
+        ).emit(USER_SYNCED_EVENT, messageResponse)
+    }
 }

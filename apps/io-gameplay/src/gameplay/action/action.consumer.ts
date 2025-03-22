@@ -21,18 +21,14 @@ export class ActionConsumer implements OnModuleInit {
         }) 
         await consumer.run({
             eachMessage: async ({ topic, message }) => {
-                try {
-                    this.logger.log(`Received message from topic: ${topic}`)
-                    switch (topic) {
-                    case KafkaTopic.EmitAction:
-                    {
-                        const payload = JSON.parse(message.value.toString())
-                        await this.actionGateway.emitAction(payload)
-                        break
-                    }
-                    }
-                } catch (error) {
-                    this.logger.error(`Error processing message from topic: ${topic}`, error)
+                this.logger.log(`Received message from topic: ${topic}`)
+                switch (topic) {
+                case KafkaTopic.EmitAction:
+                {
+                    const payload = JSON.parse(message.value.toString())
+                    await this.actionGateway.emitAction(payload)
+                    break
+                }
                 }
             }
         })
