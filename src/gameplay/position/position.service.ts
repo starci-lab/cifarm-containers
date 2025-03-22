@@ -45,20 +45,14 @@ export class PositionService {
                 positions.push({ x, y })
             }
         }
-        console.log(occupiedPositions)
-        console.log(positions)
 
         // use lodash to check if the positions are available
         // Use lodash _.every and _.some to check if the positions are available
         const isValid = _.every(positions, position => {
             return !_.some(occupiedPositions, occupiedPosition => {
-                console.log(occupiedPosition, position)
                 return _.isEqual(occupiedPosition, position) // Use _.isEqual for deep comparison
             })
         })    
-
-        console.log(isValid)
-
         if (!isValid) {
             throw new PositionNotAvailableException()
         }

@@ -86,7 +86,6 @@ export class FruitService {
             //         id: KeyValueStoreId.FruitGrowthLastSchedule
             //     }
             // })
-            console.log(count)
             const {
                 value: { date }
             } = await this.connection

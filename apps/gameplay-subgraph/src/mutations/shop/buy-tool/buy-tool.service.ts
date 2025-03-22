@@ -150,8 +150,6 @@ export class BuyToolService {
                     occupiedIndexes,
                     kind: InventoryKind.Storage
                 })
-                console.log(createdInventories)
-                console.log(updatedInventories)
 
                 // Create new inventory items
                 if (createdInventories.length > 0) {

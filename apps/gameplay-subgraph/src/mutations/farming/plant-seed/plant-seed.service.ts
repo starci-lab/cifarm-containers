@@ -222,9 +222,6 @@ export class PlantSeedService {
                     inventories,
                     quantity: 1
                 })
-
-                console.log(updatedInventories, removedInventories)
-
                 // Save updated inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })

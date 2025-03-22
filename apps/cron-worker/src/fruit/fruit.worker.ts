@@ -88,7 +88,6 @@ export class FruitWorker extends WorkerHost {
 
                         // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
                         const updateMatureFruitPlacedItem = (): boolean => {
-                            console.log(placedItem.fruitInfo)
                             // If fruit is mature
                             placedItem.fruitInfo.currentStageTimeElapsed += time
                             if (
