@@ -6,7 +6,7 @@ import { InjectMongoose, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
 import { Job } from "bullmq"
 import { Connection } from "mongoose"
-import { EnergyService, StaticService } from "@src/gameplay"
+import { EnergyService, StaticService, SyncService } from "@src/gameplay"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { SyncUserPayload } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
@@ -20,6 +20,7 @@ export class EnergyWorker extends WorkerHost {
         private readonly connection: Connection,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer,
+        private readonly syncService: SyncService,
         private readonly dateUtcService: DateUtcService,
         private readonly energyService: EnergyService,
         private readonly staticService: StaticService,
@@ -72,9 +73,7 @@ export class EnergyWorker extends WorkerHost {
                     if (emit) {
                         const payload: SyncUserPayload = {
                             userId: user.id,
-                            user: {
-                                energy: user.energy,
-                            },
+                            user: this.syncService.getSyncedUser(user)
                         }
                         await this.kafkaProducer.send({
                             topic: KafkaTopic.SyncUser,
