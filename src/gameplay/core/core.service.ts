@@ -66,7 +66,7 @@ export class CoreService {
         } else {
             // update the seed growth info
             placedItemTile.seedGrowthInfo.harvestCount += 1
-            placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+            placedItemTile.seedGrowthInfo.currentState = CropCurrentState.NeedWater
             placedItemTile.seedGrowthInfo.currentStage = cropInfo.nextGrowthStageAfterHarvest - 1
             placedItemTile.seedGrowthInfo.currentStageTimeElapsed = 0
             placedItemTile.seedGrowthInfo.harvestQuantityRemaining = 0
@@ -82,7 +82,6 @@ export class CoreService {
         // update the animal info times harvested
         placedItemAnimal.animalInfo.timesHarvested += 1
 
-        placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
         placedItemAnimal.animalInfo.currentYieldTime = 0
         placedItemAnimal.animalInfo.currentHungryTime = 0
         placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Hungry
@@ -100,7 +99,7 @@ export class CoreService {
         placedItemFruit.fruitInfo.timesHarvested += 1
 
         // update the fruit info
-        placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
+        placedItemFruit.fruitInfo.currentState = FruitCurrentState.NeedFertilizer
         placedItemFruit.fruitInfo.currentStage = fruitInfo.nextGrowthStageAfterHarvest - 1
         placedItemFruit.fruitInfo.currentStageTimeElapsed = 0
         placedItemFruit.fruitInfo.harvestQuantityRemaining = 0
