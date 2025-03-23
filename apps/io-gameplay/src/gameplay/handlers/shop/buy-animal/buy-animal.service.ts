@@ -10,7 +10,7 @@ import { Connection } from "mongoose"
 import { BuyAnimalMessage } from "./buy-animal.dto"
 import { UserLike } from "@src/jwt"
 import { DeepPartial, WithStatus, createObjectId } from "@src/common"
-import { EmitActionPayload, ActionName } from "../../../emitter"
+import { EmitActionPayload, ActionName, BuyAnimalData } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
@@ -29,10 +29,10 @@ export class BuyAnimalService {
     async buyAnimal(
         { id: userId }: UserLike,
         { position, animalId }: BuyAnimalMessage
-    ): Promise<SyncedResponse> {
+    ): Promise<SyncedResponse<BuyAnimalData>> {
         const mongoSession = await this.connection.startSession()
         // synced variables
-        let actionPayload: EmitActionPayload | undefined
+        let actionPayload: EmitActionPayload<BuyAnimalData> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
@@ -214,6 +214,9 @@ export class BuyAnimalService {
                     success: true,
                     placedItem: syncedPlacedItemAction,
                     userId,
+                    data: {
+                        animalId
+                    }
                 }
             })
 
@@ -227,7 +230,7 @@ export class BuyAnimalService {
             // Send failure action message if any error occurs
             if (actionPayload) {
                 return {
-                    action: actionPayload,
+                    action: actionPayload
                 }
             }
 

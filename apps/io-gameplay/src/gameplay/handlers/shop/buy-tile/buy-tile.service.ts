@@ -5,7 +5,7 @@ import { Connection } from "mongoose"
 import { BuyTileMessage } from "./buy-tile.dto"
 import { UserLike } from "@src/jwt"
 import { DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName } from "../../../emitter"
+import { EmitActionPayload, ActionName, BuyTileData } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
@@ -24,10 +24,10 @@ export class BuyTileService {
     async buyTile(
         { id: userId }: UserLike,
         { position, tileId }: BuyTileMessage
-    ): Promise<SyncedResponse> {
+    ): Promise<SyncedResponse<BuyTileData>> {
         const mongoSession = await this.connection.startSession()
         // synced variables
-        let actionPayload: EmitActionPayload | undefined
+        let actionPayload: EmitActionPayload<BuyTileData> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
@@ -157,7 +157,10 @@ export class BuyTileService {
                     placedItem: syncedPlacedItemAction,
                     action: ActionName.BuyTile,
                     success: true,
-                    userId
+                    userId,
+                    data: {
+                        tileId
+                    }
                 }
             })
 

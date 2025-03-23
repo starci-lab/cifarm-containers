@@ -44,6 +44,22 @@ export interface SellData {
     quantity: number
 }
 
+export interface BuyTileData {
+    tileId: string
+}
+
+export interface BuyAnimalData {
+    animalId: string
+}
+
+export interface BuyBuildingData {
+    buildingId: string
+}
+
+export interface BuyFruitData {
+    fruitId: string
+}
+
 export type ActionEmittedMessage<TData = undefined> = Omit<EmitActionPayload<TData>, "userId">
 
 export enum ActionName {

@@ -5,7 +5,7 @@ import { Connection } from "mongoose"
 import { BuyFruitMessage } from "./buy-fruit.dto"
 import { UserLike } from "@src/jwt"
 import { DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName } from "../../../emitter"
+import { EmitActionPayload, ActionName, BuyFruitData } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
@@ -24,10 +24,10 @@ export class BuyFruitService {
     async buyFruit(
         { id: userId }: UserLike,
         { position, fruitId }: BuyFruitMessage
-    ): Promise<SyncedResponse> {
+    ): Promise<SyncedResponse<BuyFruitData>> {
         const mongoSession = await this.connection.startSession()
         // synced variables
-        let actionPayload: EmitActionPayload | undefined
+        let actionPayload: EmitActionPayload<BuyFruitData> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
@@ -170,6 +170,9 @@ export class BuyFruitService {
                     action: ActionName.BuyFruit,
                     success: true,
                     userId,
+                    data: {
+                        fruitId
+                    }
                 }
             })
 
@@ -183,7 +186,7 @@ export class BuyFruitService {
             // Send failure action message if any error occurs
             if (actionPayload) {
                 return {
-                    action: actionPayload,
+                    action: actionPayload
                 }
             }
 

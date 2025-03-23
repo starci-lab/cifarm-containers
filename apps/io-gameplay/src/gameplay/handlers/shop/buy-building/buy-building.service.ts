@@ -11,7 +11,7 @@ import { Connection } from "mongoose"
 import { BuyBuildingMessage } from "./buy-building.dto"
 import { UserLike } from "@src/jwt"
 import { DeepPartial, WithStatus, createObjectId } from "@src/common"
-import { EmitActionPayload, ActionName } from "../../../emitter"
+import { EmitActionPayload, ActionName, BuyBuildingData } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
@@ -30,10 +30,10 @@ export class BuyBuildingService {
     async buyBuilding(
         { id: userId }: UserLike,
         { position, buildingId }: BuyBuildingMessage
-    ): Promise<SyncedResponse> {
+    ): Promise<SyncedResponse<BuyBuildingData>> {
         const mongoSession = await this.connection.startSession()
         // synced variables
-        let actionPayload: EmitActionPayload | undefined
+        let actionPayload: EmitActionPayload<BuyBuildingData> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
@@ -202,6 +202,9 @@ export class BuyBuildingService {
                     placedItem: syncedPlacedItemAction,
                     success: true,
                     userId,
+                    data: {
+                        buildingId
+                    }
                 }
             })
 

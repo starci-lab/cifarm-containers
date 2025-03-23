@@ -15,7 +15,7 @@ export class EmitterService {
         private readonly actionGateway: ActionGateway
     ) {}
 
-    public syncResponse(
+    public syncResponse<TData = undefined>(
         {
             userId,
             syncedResponse: {
@@ -24,7 +24,7 @@ export class EmitterService {
                 inventories,
                 action
             }
-        }: SyncResponseParams) {
+        }: SyncResponseParams<TData>) {
         if (placedItems) {  
             this.placedItemsGateway.syncPlacedItems({
                 data: placedItems,
@@ -49,7 +49,7 @@ export class EmitterService {
     }
 }
 
-export interface SyncResponseParams {
+export interface SyncResponseParams<TData = undefined> {
     userId: string
-    syncedResponse: SyncedResponse
+    syncedResponse: SyncedResponse<TData>
 }

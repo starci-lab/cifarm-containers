@@ -34,10 +34,10 @@ export class ActionGateway implements OnGatewayInit {
     }
 
     //sync placed items for all socket visting 
-    public async emitAction(payload: EmitActionPayload) {
+    public async emitAction<TData = undefined>(payload: EmitActionPayload<TData>) {
         // remove userId from payload
         const { userId, ...rest } = payload
-        const message: ActionEmittedMessage = rest
+        const message: ActionEmittedMessage<TData> = rest
         this.namespace
             .to(
                 this.authGateway.getRoomName({

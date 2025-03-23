@@ -46,6 +46,7 @@ export class BuyFruitGateway implements OnGatewayInit {
         @WsUser() user: UserLike
     ) {
         const syncedResponse = await this.buyFruitService.buyFruit(user, payload)
+        console.log(syncedResponse)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse
