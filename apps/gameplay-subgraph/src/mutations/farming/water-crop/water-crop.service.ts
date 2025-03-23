@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    CropCurrentState,
+    PlantCurrentState,
     InjectMongoose,
     InventoryKind,
     InventorySchema,
@@ -113,7 +113,7 @@ export class WaterCropService {
                 }
 
                 // Validate tile is planted
-                if (!placedItemTile.seedGrowthInfo) {
+                if (!placedItemTile.plantInfo) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
                         action: ActionName.WaterCrop,
@@ -129,7 +129,7 @@ export class WaterCropService {
                 }
 
                 // Validate tile needs water
-                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.NeedWater) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
                         action: ActionName.WaterCrop,
@@ -195,7 +195,7 @@ export class WaterCropService {
                 await user.save({ session })
 
                 // Update tile state
-                placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+                placedItemTile.plantInfo.currentState = PlantCurrentState.Normal
                 await placedItemTile.save({ session })
                 const updatedSyncedPlacedItem = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
                     placedItems: [placedItemTile],

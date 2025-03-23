@@ -1,6 +1,6 @@
 export enum CacheKey {
     DeliverInstantly = "DeliverInstantly",
-    CropGrowthLastSchedule = "CropGrowthLastSchedule",
+    PlantLastSchedule = "PlantLastSchedule",
     AnimalGrowthLastSchedule = "AnimalGrowthLastSchedule",
     EnergyRegenerationLastSchedule = "EnergyRegenerationLastSchedule"
 }

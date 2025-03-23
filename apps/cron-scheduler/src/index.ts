@@ -1,5 +1,6 @@
 export * from "./animal"
-export * from "./crop"
 export * from "./delivery"
 export * from "./energy"
 export * from "./fruit"
+export * from "./bee-house"
+export * from "./plant"

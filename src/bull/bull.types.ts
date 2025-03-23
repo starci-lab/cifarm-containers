@@ -1,11 +1,12 @@
 import { BulkJobOptions } from "bullmq"
 
 export enum BullQueueName {
-    Crop = "crop",
     Animal = "animal",
     Delivery = "delivery",
     Energy = "energy",
     Fruit = "fruit",
+    BeeHouse = "beeHouse",
+    Plant = "plant"
 }
 
 export interface BullQueueData {

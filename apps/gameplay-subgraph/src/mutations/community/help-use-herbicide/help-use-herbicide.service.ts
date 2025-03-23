@@ -4,7 +4,7 @@ import { EnergyService, LevelService, StaticService, SyncService } from "@src/ga
 import { HelpUseHerbicideRequest } from "./help-use-herbicide.dto"
 import { Connection } from "mongoose"
 import {
-    CropCurrentState,
+    PlantCurrentState,
     InjectMongoose,
     PlacedItemSchema,
     UserSchema,
@@ -115,7 +115,7 @@ export class HelpUseHerbicideService {
                 }
 
                 // Validate tile has seed growth info
-                if (!placedItemTile.seedGrowthInfo) {
+                if (!placedItemTile.plantInfo) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUseHerbicide,
@@ -131,7 +131,7 @@ export class HelpUseHerbicideService {
                 }
 
                 // Validate tile needs herbicide
-                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsWeedy) {
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsWeedy) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUseHerbicide,
@@ -191,7 +191,7 @@ export class HelpUseHerbicideService {
                 await user.save({ session })
 
                 // Update crop state after using herbicide
-                placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+                placedItemTile.plantInfo.currentState = PlantCurrentState.Normal
                 await placedItemTile.save({ session })
                 // Update synced placed item
                 const updatedSyncedPlacedItem =

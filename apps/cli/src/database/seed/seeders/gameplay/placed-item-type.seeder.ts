@@ -83,6 +83,25 @@ export class PlacedItemTypeSeeder implements Seeder {
                 sizeX: 3,
                 sizeY: 3
             },
+
+            {
+                _id: createObjectId(PlacedItemTypeId.PetHouse),
+                displayId: PlacedItemTypeId.PetHouse,
+                type: PlacedItemType.Building,
+                building: createObjectId(BuildingId.PetHouse),
+                sellable: true,
+                sizeX: 3,
+                sizeY: 3
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.BeeHouse),
+                displayId: PlacedItemTypeId.BeeHouse,
+                type: PlacedItemType.Building,
+                building: createObjectId(BuildingId.BeeHouse),
+                sellable: true,
+                sizeX: 2,
+                sizeY: 2
+            },
             {
                 _id: createObjectId(PlacedItemTypeId.Apple),
                 displayId: PlacedItemTypeId.Apple,

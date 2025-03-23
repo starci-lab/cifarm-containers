@@ -13,13 +13,6 @@ export class BuildingInfoSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: false })
         currentUpgrade?: number
-
-    @Field(() => Int, {
-        description: "Times the building has been harvested",
-        nullable: true
-    })
-    @Prop({ type: Number, required: false })
-        timesHarvested?: number
 }
 
 export const BuildingInfoSchemaClass = SchemaFactory.createForClass(BuildingInfoSchema)

@@ -2,7 +2,7 @@ import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    CropCurrentState,
+    PlantCurrentState,
     InjectMongoose,
     PlacedItemSchema,
     UserSchema,
@@ -116,7 +116,7 @@ export class HelpWaterCropService {
                     })
                 }
 
-                if (!placedItemTile.seedGrowthInfo) {
+                if (!placedItemTile.plantInfo) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpWaterCrop,
@@ -131,7 +131,7 @@ export class HelpWaterCropService {
                     })
                 }
 
-                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.NeedWater) {
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.NeedWater) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpWaterCrop,
@@ -187,7 +187,7 @@ export class HelpWaterCropService {
                 await user.save({ session: mongoSession })
 
                 // Update placed item tile state
-                placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+                placedItemTile.plantInfo.currentState = PlantCurrentState.Normal
                 await placedItemTile.save({ session: mongoSession })
                 // Update synced placed item
                 const updatedSyncedPlacedItem =

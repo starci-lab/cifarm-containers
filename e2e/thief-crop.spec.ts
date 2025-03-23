@@ -210,15 +210,15 @@ describe("Thief crop flow", () => {
                         id: placedItemStarterTile.id
                     },
                     relations: {
-                        seedGrowthInfo: true
+                        cropInfo: true
                     }
                 }
             )
-            expect(placedItemStarterTileAfterFirstGrow.seedGrowthInfo.currentStage).toBe(1)
+            expect(placedItemStarterTileAfterFirstGrow.cropInfo.currentStage).toBe(1)
 
             // check whether the crop is need watered
             if (
-                placedItemStarterTileAfterFirstGrow.seedGrowthInfo.currentState ===
+                placedItemStarterTileAfterFirstGrow.cropInfo.currentState ===
                 CropCurrentState.NeedWater
             ) {
                 // Water the crop
@@ -262,15 +262,15 @@ describe("Thief crop flow", () => {
                         id: placedItemStarterTile.id
                     },
                     relations: {
-                        seedGrowthInfo: true
+                        cropInfo: true
                     }
                 }
             )
-            expect(placedItemStarterTileAfterSecondGrow.seedGrowthInfo.currentStage).toBe(2)
+            expect(placedItemStarterTileAfterSecondGrow.cropInfo.currentStage).toBe(2)
 
             // check whether the crop is need watered
             if (
-                placedItemStarterTileAfterSecondGrow.seedGrowthInfo.currentState ===
+                placedItemStarterTileAfterSecondGrow.cropInfo.currentState ===
                 CropCurrentState.NeedWater
             ) {
                 // Water the crop
@@ -314,15 +314,15 @@ describe("Thief crop flow", () => {
                         id: placedItemStarterTile.id
                     },
                     relations: {
-                        seedGrowthInfo: true
+                        cropInfo: true
                     }
                 }
             )
-            expect(placedItemStarterTileAfterThirdGrow.seedGrowthInfo.currentStage).toBe(3)
+            expect(placedItemStarterTileAfterThirdGrow.cropInfo.currentStage).toBe(3)
 
             // check whether the crop is weedy or infested
             if (
-                placedItemStarterTileAfterThirdGrow.seedGrowthInfo.currentState ===
+                placedItemStarterTileAfterThirdGrow.cropInfo.currentState ===
                 CropCurrentState.IsWeedy
             ) {
                 // use herbicide on the crop
@@ -355,7 +355,7 @@ describe("Thief crop flow", () => {
             }
 
             if (
-                placedItemStarterTileAfterThirdGrow.seedGrowthInfo.currentState ===
+                placedItemStarterTileAfterThirdGrow.cropInfo.currentState ===
                 CropCurrentState.IsInfested
             ) {
                 // use pesticide on the crop
@@ -399,13 +399,13 @@ describe("Thief crop flow", () => {
                         id: placedItemStarterTile.id
                     },
                     relations: {
-                        seedGrowthInfo: true
+                        cropInfo: true
                     }
                 }
             )
 
-            expect(placedItemStarterTileFullyHarvest.seedGrowthInfo.currentStage).toBe(4)
-            expect(placedItemStarterTileFullyHarvest.seedGrowthInfo.currentState).toBe(
+            expect(placedItemStarterTileFullyHarvest.cropInfo.currentStage).toBe(4)
+            expect(placedItemStarterTileFullyHarvest.cropInfo.currentState).toBe(
                 CropCurrentState.FullyMatured
             )
 

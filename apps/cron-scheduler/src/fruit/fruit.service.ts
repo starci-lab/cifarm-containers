@@ -3,13 +3,13 @@ import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
     FruitCurrentState,
-    FruitGrowthLastSchedule,
     InjectMongoose,
     KeyValueRecord,
     KeyValueStoreId,
     KeyValueStoreSchema,
     PlacedItemSchema,
-    PlacedItemType
+    PlacedItemType,
+    FruitLastSchedule
 } from "@src/databases"
 import { BulkJobOptions, Queue } from "bullmq"
 import { v4 } from "uuid"
@@ -91,8 +91,8 @@ export class FruitService {
             } = await this.connection
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                 .findById<
-                    KeyValueRecord<FruitGrowthLastSchedule>
-                >(createObjectId(KeyValueStoreId.FruitGrowthLastSchedule))
+                    KeyValueRecord<FruitLastSchedule>
+                >(createObjectId(KeyValueStoreId.FruitLastSchedule))
 
             // this.logger.debug(`Found ${count} fruits that need to be grown`)
             if (count !== 0) {
@@ -137,7 +137,7 @@ export class FruitService {
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                 .updateOne(
                     {
-                        _id: createObjectId(KeyValueStoreId.FruitGrowthLastSchedule)
+                        _id: createObjectId(KeyValueStoreId.FruitLastSchedule)
                     },
                     {
                         value: {

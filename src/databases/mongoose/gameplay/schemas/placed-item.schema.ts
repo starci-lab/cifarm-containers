@@ -4,19 +4,21 @@ import { Schema as MongooseSchema } from "mongoose"
 import { AbstractSchema } from "./abstract"
 import { AnimalInfoSchema, AnimalInfoSchemaClass } from "./animal-info.schema"
 import { BuildingInfoSchema, BuildingInfoSchemaClass } from "./building-info.schema"
-import { SeedGrowthInfoSchema, SeedGrowthInfoSchemaClass } from "./seed-growth-info.schema"
+import { PlantInfoSchema, PlantInfoSchemaClass } from "./plant-info.schema"
 import { TileInfoSchema, TileInfoSchemaClass } from "./tile-info.schema"
 import { UserSchema } from "./user.schema"
 import { PlacedItemTypeSchema } from "./placed-item-type.schema"
 import {
     ANIMAL_INFO,
+    BEE_HOUSE_INFO,
     BUILDING_INFO,
     FRUIT_INFO,
     PLACED_ITEM_TYPE,
-    SEED_GROWTH_INFO,
-    TILE_INFO
+    TILE_INFO,
+    PLANT_INFO
 } from "../constants"
 import { FruitInfoSchema, FruitInfoSchemaClass } from "./fruit-info.schema"
+import { BeeHouseInfoSchema, BeeHouseInfoSchemaClass } from "./bee-house-info.schema"
 
 @ObjectType({
     description: "The schema for items placed on the farm"
@@ -61,12 +63,12 @@ export class PlacedItemSchema extends AbstractSchema {
     @Prop({ type: BuildingInfoSchemaClass, required: false })
     [BUILDING_INFO]?: BuildingInfoSchema
 
-    @Field(() => SeedGrowthInfoSchema, { 
+    @Field(() => PlantInfoSchema, { 
         nullable: true,
-        description: "The seed growth info associated with this placed item, if applicable"
+        description: "The crop info associated with this placed item, if applicable"
     })
-    @Prop({ type: SeedGrowthInfoSchemaClass, required: false })
-    [SEED_GROWTH_INFO]?: SeedGrowthInfoSchema
+    @Prop({ type: PlantInfoSchemaClass, required: false })
+    [PLANT_INFO]?: PlantInfoSchema
 
     @Field(() => TileInfoSchema, { 
         nullable: true,
@@ -81,6 +83,13 @@ export class PlacedItemSchema extends AbstractSchema {
     })
     @Prop({ type: FruitInfoSchemaClass, required: false })
     [FRUIT_INFO]?: FruitInfoSchema
+
+    @Field(() => BeeHouseInfoSchema, { 
+        nullable: true,
+        description: "The bee house info associated with this placed item, if applicable"
+    })
+    @Prop({ type: BeeHouseInfoSchemaClass, required: false })
+    [BEE_HOUSE_INFO]?: BeeHouseInfoSchema
 }
 
 // Generate Mongoose Schema

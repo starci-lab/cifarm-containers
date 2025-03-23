@@ -51,9 +51,9 @@ export class BuyAnimalService {
                     (animal) => animal.displayId === animalId
                 )
                 if (!animal) {
-                    throw new GraphQLError("Animal not found in static service", {
+                    throw new GraphQLError("Animal not found", {
                         extensions: {
-                            code: "ANIMAL_NOT_FOUND_IN_STATIC_SERVICE"
+                            code: "ANIMAL_NOT_FOUND"
                         }
                     })
                 }

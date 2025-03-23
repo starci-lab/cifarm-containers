@@ -20,13 +20,6 @@ export class KeyValueStoreSeeder implements Seeder {
         this.logger.debug("Seeding key value store...")
         const data: Array<DeepPartial<KeyValueStoreSchema>> = [
             {
-                _id: createObjectId(KeyValueStoreId.CropGrowthLastSchedule),
-                displayId: KeyValueStoreId.CropGrowthLastSchedule,
-                value: {
-                    date: dayjs().utc().toDate()
-                }
-            },
-            {
                 _id: createObjectId(KeyValueStoreId.EnergyRegenerationLastSchedule),
                 displayId: KeyValueStoreId.EnergyRegenerationLastSchedule,
                 value: {
@@ -34,16 +27,23 @@ export class KeyValueStoreSeeder implements Seeder {
                 }
             },
             {
-                _id: createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule),
-                displayId: KeyValueStoreId.AnimalGrowthLastSchedule,
+                _id: createObjectId(KeyValueStoreId.AnimalLastSchedule),
+                displayId: KeyValueStoreId.AnimalLastSchedule,
                 value: {
                     date: dayjs().utc().toDate()
                 }
             },
             {
-                _id: createObjectId(KeyValueStoreId.FruitGrowthLastSchedule),
-                displayId: KeyValueStoreId.FruitGrowthLastSchedule,
+                _id: createObjectId(KeyValueStoreId.FruitLastSchedule),
+                displayId: KeyValueStoreId.FruitLastSchedule,
                 value: {
+                    date: dayjs().utc().toDate()
+                }
+            },
+            {
+                _id: createObjectId(KeyValueStoreId.PlantLastSchedule),
+                displayId: KeyValueStoreId.PlantLastSchedule,
+                value: {    
                     date: dayjs().utc().toDate()
                 }
             }

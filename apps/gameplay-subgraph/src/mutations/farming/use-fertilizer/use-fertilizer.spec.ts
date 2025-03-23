@@ -79,7 +79,7 @@ describe("UseFertilizerService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.Normal,
                     isFertilized: false,
                     currentStageTimeElapsed: 0,
@@ -124,7 +124,7 @@ describe("UseFertilizerService", () => {
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .findById(placedItemTile.id)
 
-        expect(updatedPlacedItemTile.seedGrowthInfo.isFertilized).toBe(true)
+        expect(updatedPlacedItemTile.plantInfo.isFertilized).toBe(true)
     })
 
     it("should throw GraphQLError with code PLACED_ITEM_TILE_NOT_FOUND when tile is not found", async () => {
@@ -204,7 +204,7 @@ describe("UseFertilizerService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: null, // No crop planted
+                cropInfo: null, // No crop planted
                 x: 0,
                 y: 0,
                 user: user.id,
@@ -258,7 +258,7 @@ describe("UseFertilizerService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.FullyMatured, // Fully matured
                     isFertilized: false,
                     currentStageTimeElapsed: 0,
@@ -317,7 +317,7 @@ describe("UseFertilizerService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.Normal,
                     isFertilized: true, // Already fertilized
                     currentStageTimeElapsed: 0,
@@ -355,7 +355,7 @@ describe("UseFertilizerService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.Normal,
                     isFertilized: false,
                     currentStageTimeElapsed: 0,
@@ -416,7 +416,7 @@ describe("UseFertilizerService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.Normal,
                     isFertilized: false,
                     currentStageTimeElapsed: 0,
@@ -478,7 +478,7 @@ describe("UseFertilizerService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.Normal,
                     isFertilized: false,
                     currentStageTimeElapsed: 0,

@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { HarvestCropModule } from "./harvest-crop"
+import { HarvestPlantModule } from "./harvest-plant"
 import { PlantSeedModule } from "./plant-seed"
 import { UseHerbicideModule } from "./use-herbicide"
 import { UsePesticideModule } from "./use-pesticide"
@@ -17,7 +17,7 @@ import { UseFruitFertilizerModule } from "./use-fruit-fertilizer"
         HarvestAnimalModule,
         CureAnimalModule,
         FeedAnimalModule,
-        HarvestCropModule,
+        HarvestPlantModule,
         PlantSeedModule,
         UseFertilizerModule,
         UseHerbicideModule,

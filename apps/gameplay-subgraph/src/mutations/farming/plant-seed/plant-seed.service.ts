@@ -1,9 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
+    AbstractPlantSchema,
     InjectMongoose,
     InventorySchema,
     InventoryType,
     PlacedItemSchema,
+    PlantType,
     UserSchema
 } from "@src/databases"
 import { EnergyService, InventoryService, LevelService, SyncService } from "@src/gameplay"
@@ -38,7 +40,7 @@ export class PlantSeedService {
         this.logger.debug(`Planting seed for user ${userId}, tile ID: ${placedItemTileId}`)
 
         const mongoSession = await this.connection.startSession()
-        
+
         // synced variables
         let actionMessage: EmitActionPayload | undefined
         let user: UserSchema | undefined
@@ -51,13 +53,13 @@ export class PlantSeedService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE SEED INVENTORY
                  ************************************************************/
-                
+
                 // Get seed inventory
                 const inventory = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findById(inventorySeedId)
                     .session(session)
-                
+
                 // Validate inventory exists
                 if (!inventory) {
                     throw new GraphQLError("Inventory not found", {
@@ -66,12 +68,12 @@ export class PlantSeedService {
                         }
                     })
                 }
-                
+
                 // Get inventory type seed from static data
                 const inventoryTypeSeed = this.staticService.inventoryTypes.find(
                     (inventoryType) => inventoryType.id === inventory.inventoryType.toString()
                 )
-                
+
                 // Validate inventory type seed exists in static data
                 if (!inventoryTypeSeed) {
                     throw new GraphQLError("Inventory type seed not found from static data", {
@@ -93,7 +95,7 @@ export class PlantSeedService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM TILE
                  ************************************************************/
-                
+
                 // Get placed item tile
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -109,14 +111,13 @@ export class PlantSeedService {
                     })
                 }
 
-                           
                 syncedPlacedItemAction = {
                     x: placedItemTile.x,
                     y: placedItemTile.y,
                     id: placedItemTile.id,
                     placedItemType: placedItemTile.placedItemType
                 }
-                
+
                 // Validate ownership
                 if (placedItemTile.user.toString() !== userId) {
                     throw new GraphQLError("Cannot plant seed on another user's tile", {
@@ -125,9 +126,9 @@ export class PlantSeedService {
                         }
                     })
                 }
-                
+
                 // Validate tile is not already planted
-                if (placedItemTile.seedGrowthInfo) {
+                if (placedItemTile.plantInfo) {
                     throw new GraphQLError("Tile is already planted", {
                         extensions: {
                             code: "TILE_ALREADY_PLANTED"
@@ -138,13 +139,13 @@ export class PlantSeedService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                
+
                 // Get user data
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-                
+
                 // Validate user exists
                 if (!user) {
                     throw new GraphQLError("User not found", {
@@ -157,10 +158,10 @@ export class PlantSeedService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE ACTIVITY DATA
                  ************************************************************/
-                
+
                 // Get activity data
                 const { energyConsume, experiencesGain } = this.staticService.activities.plantSeed
-                
+
                 // Validate energy is sufficient
                 if (user.energy < energyConsume) {
                     throw new GraphQLError("Not enough energy", {
@@ -178,14 +179,43 @@ export class PlantSeedService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE CROP DATA
                  ************************************************************/
-                
-                // Get crop data
-                const crop = this.staticService.crops.find(
-                    (crop) => crop.id.toString() === inventoryTypeSeed.crop?.toString()
-                )
-                
+
+                let plant: AbstractPlantSchema
+                switch (inventoryTypeSeed.plantType) {
+                case PlantType.Crop: {
+                    // Get crop data
+                    const crop = this.staticService.crops.find(
+                        (crop) => crop.id.toString() === inventoryTypeSeed.crop.toString()
+                    )
+                    if (!crop) {
+                        throw new GraphQLError("Crop not found from static data", {
+                            extensions: {
+                                code: "CROP_NOT_FOUND_FROM_STATIC_DATA"
+                            }
+                        })
+                    }
+                    plant = crop
+                    break
+                }
+                case PlantType.Flower: {
+                    // Get flower data
+                    const flower = this.staticService.flowers.find(
+                        (flower) => flower.id.toString() === inventoryTypeSeed.flower.toString()
+                    )
+                    if (!flower) {
+                        throw new GraphQLError("Flower not found from static data", {
+                            extensions: {
+                                code: "FLOWER_NOT_FOUND_FROM_STATIC_DATA"
+                            }
+                        })
+                    }
+                    plant = flower
+                    break
+                }
+                }
+
                 // Validate crop exists in static data
-                if (!crop) {
+                if (!plant) {
                     throw new GraphQLError("Crop not found from static data", {
                         extensions: {
                             code: "CROP_NOT_FOUND_FROM_STATIC_DATA"
@@ -197,13 +227,13 @@ export class PlantSeedService {
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
                  ************************************************************/
-                
+
                 // Update user energy and experience
                 this.energyService.substract({
                     user,
                     quantity: energyConsume
                 })
-                
+
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -226,10 +256,11 @@ export class PlantSeedService {
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
                     // add synced inventory to syncedInventories
-                    const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: [inventory],
-                        status: SchemaStatus.Updated
-                    })
+                    const updatedSyncedInventories =
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: [inventory],
+                            status: SchemaStatus.Updated
+                        })
                     syncedInventories.push(...updatedSyncedInventories)
                 }
 
@@ -249,15 +280,23 @@ export class PlantSeedService {
 
                 // Save user changes
                 await user.save({ session })
-                
+
                 // Update tile with seed info
                 await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .updateOne(
                         { _id: placedItemTileId },
                         {
-                            seedGrowthInfo: {
-                                crop: crop.id.toString(),
+                            plantInfo: {
+                                plantType: inventoryTypeSeed.plantType,
+                                crop:
+                                    inventoryTypeSeed.plantType === PlantType.Crop
+                                        ? plant.id.toString()
+                                        : undefined,
+                                flower:
+                                    inventoryTypeSeed.plantType === PlantType.Flower
+                                        ? plant.id.toString()
+                                        : undefined
                             }
                         }
                     )
@@ -267,12 +306,12 @@ export class PlantSeedService {
                     .findById(placedItemTileId)
                     .session(session)
                 // add synced placed item to syncedPlacedItems
-                const updatedSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
-                    placedItems: [updatedPlacedItemTile],
-                    status: SchemaStatus.Updated
-                })
+                const updatedSyncedPlacedItems =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [updatedPlacedItemTile],
+                        status: SchemaStatus.Updated
+                    })
                 syncedPlacedItems.push(...updatedSyncedPlacedItems)
-
 
                 // Prepare action message
                 actionMessage = {
@@ -287,7 +326,7 @@ export class PlantSeedService {
              * EXTERNAL COMMUNICATION
              * Send notifications after transaction is complete
              ************************************************************/
-            
+
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.EmitAction,
@@ -295,15 +334,26 @@ export class PlantSeedService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, inventories: syncedInventories }) }
+                    ]
                 })
             ])
         } catch (error) {

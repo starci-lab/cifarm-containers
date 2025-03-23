@@ -212,9 +212,9 @@ export class ThiefAnimalService {
                 )
 
                 if (!product) {
-                    throw new GraphQLError("Product not found in static service", {
+                    throw new GraphQLError("Product not found", {
                         extensions: {
-                            code: "PRODUCT_NOT_FOUND_IN_STATIC_SERVICE"
+                            code: "PRODUCT_NOT_FOUND"
                         }
                     })
                 }
@@ -226,9 +226,9 @@ export class ThiefAnimalService {
                 )
 
                 if (!inventoryType) {
-                    throw new GraphQLError("Inventory type not found in static service", {
+                    throw new GraphQLError("Inventory type not found", {
                         extensions: {
-                            code: "INVENTORY_TYPE_NOT_FOUND_IN_STATIC_SERVICE"
+                            code: "INVENTORY_TYPE_NOT_FOUND"
                         }
                     })
                 }

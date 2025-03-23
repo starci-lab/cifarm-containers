@@ -39,10 +39,10 @@ export class UpgradeSchema extends AbstractSchema {
 
     @Field(() => Float, {
         nullable: true,
-        description: "The yield coefficient of this upgrade"
+        description: "The honey multiplier of this upgrade"
     })
     @Prop({ type: Number, required: false })
-        yieldCoefficient?: number
+        honeyMultiplier?: number
 }
 
 // Generate Mongoose Schema

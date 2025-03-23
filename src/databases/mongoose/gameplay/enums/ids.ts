@@ -98,6 +98,23 @@ registerEnumType(FirstCharLowerCaseCropId, {
     },
 })
 
+// Flower Enum
+export enum FlowerId {
+    Daisy = "daisy",
+}
+
+export const FirstCharLowerCaseFlowerId = createFirstCharLowerCaseEnumType(FlowerId)
+
+registerEnumType(FirstCharLowerCaseFlowerId, {
+    name: "FlowerId",
+    description: "The flower id.",
+    valuesMap: {
+        daisy: {
+            description: "The daisy id.",
+        },
+    },
+})
+
 // Fruit Enum
 export enum FruitId {
     Banana = "banana",
@@ -351,6 +368,7 @@ export enum SystemId {
     EnergyRegen = "energyRegen",
     DailyRewardInfo = "dailyRewardInfo",
     HoneycombInfo = "honeycombInfo",
+    FlowerInfo = "flowerInfo",
 }
 
 export const FirstCharLowerCaseSystemId = createFirstCharLowerCaseEnumType(SystemId)
@@ -390,10 +408,11 @@ registerEnumType(FirstCharLowerCaseSystemId, {
 })
 
 export enum KeyValueStoreId {
-    CropGrowthLastSchedule = "cropGrowthLastSchedule",
-    AnimalGrowthLastSchedule = "animalGrowthLastSchedule",
+    AnimalLastSchedule = "animalLastSchedule",
     EnergyRegenerationLastSchedule = "energyRegenerationLastSchedule",
-    FruitGrowthLastSchedule = "fruitGrowthLastSchedule",
+    FruitLastSchedule = "fruitLastSchedule",
+    BeeHouseLastSchedule = "beeHouseLastSchedule",
+    PlantLastSchedule = "plantLastSchedule",
 }
 
 export const FirstCharLowerCaseKeyValueStoreId = createFirstCharLowerCaseEnumType(KeyValueStoreId)
@@ -402,17 +421,20 @@ registerEnumType(FirstCharLowerCaseKeyValueStoreId, {
     name: "KeyValueStoreId",
     description: "The key value store id.",
     valuesMap: {
-        cropGrowthLastSchedule: {
-            description: "The crop growth last schedule id.",
-        },
-        animalGrowthLastSchedule: {
+        animalLastSchedule: {
             description: "The animal growth last schedule id.",
         },
         energyRegenerationLastSchedule: {
             description: "The energy regeneration last schedule id.",
         },
-        fruitGrowthLastSchedule: {
-            description: "The fruit growth last schedule id.",
+        fruitLastSchedule: {
+            description: "The fruit last schedule id.",
+        },
+        beeHouseLastSchedule: {
+            description: "The bee house last schedule id.",
+        },
+        plantLastSchedule: {
+            description: "The plant last schedule id.",
         },
     },
 })
@@ -596,6 +618,8 @@ export enum PlacedItemTypeId {
     Sheep = "sheep",
     Coop = "coop",
     Barn = "barn",
+    PetHouse = "petHouse",
+    BeeHouse = "beeHouse",
     Home = "home",
     BasicTile = "basicTile",
     Apple = "apple",

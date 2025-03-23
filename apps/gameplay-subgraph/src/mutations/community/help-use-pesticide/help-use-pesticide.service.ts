@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    CropCurrentState,
+    PlantCurrentState,
     InjectMongoose,
     PlacedItemSchema,
     UserSchema,
@@ -117,7 +117,7 @@ export class HelpUsePesticideService {
                 }
 
                 // Validate tile has seed growth info
-                if (!placedItemTile.seedGrowthInfo) {
+                if (!placedItemTile.plantInfo) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUsePesticide,
@@ -133,7 +133,7 @@ export class HelpUsePesticideService {
                 }
 
                 // Validate tile needs pesticide
-                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested) {
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsInfested) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
                         action: ActionName.HelpUsePesticide,
@@ -194,7 +194,7 @@ export class HelpUsePesticideService {
                 await user.save({ session })
 
                 // Update crop state after using pesticide
-                placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+                placedItemTile.plantInfo.currentState = PlantCurrentState.Normal
                 await placedItemTile.save({ session })
                 // Update synced placed item
                 const updatedSyncedPlacedItem =

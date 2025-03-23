@@ -212,3 +212,25 @@ registerEnumType(FirstCharLowerCaseSupplyType, {
         },
     },
 })
+
+// Plant Type Enum
+export enum PlantType {
+    Crop = "crop",
+    Flower = "flower"
+}
+
+export const FirstCharLowerCasePlantType = createFirstCharLowerCaseEnumType(PlantType)
+
+registerEnumType(FirstCharLowerCasePlantType, {
+    name: "PlantType",
+    description: "The type of plant",
+    valuesMap: {
+        crop: {
+            description: "The crop plant",
+        },
+        flower: {
+            description: "The flower plant",
+        },
+    },
+})
+

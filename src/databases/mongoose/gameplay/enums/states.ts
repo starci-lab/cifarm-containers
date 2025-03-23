@@ -1,8 +1,8 @@
 import { registerEnumType } from "@nestjs/graphql"
 import { createFirstCharLowerCaseEnumType } from "./utils"
 
-// Crop Current State Enum
-export enum CropCurrentState {
+// Plant Current State Enum
+export enum PlantCurrentState {
     Normal = "normal",
     NeedWater = "needWater",
     IsWeedy = "isWeedy",
@@ -10,26 +10,26 @@ export enum CropCurrentState {
     FullyMatured = "fullyMatured"
 }
 
-export const FirstCharLowerCaseCropCurrentState = createFirstCharLowerCaseEnumType(CropCurrentState)
+export const FirstCharLowerCasePlantCurrentState = createFirstCharLowerCaseEnumType(PlantCurrentState)
 
-registerEnumType(FirstCharLowerCaseCropCurrentState, {
-    name: "CropCurrentState",
-    description: "The current state of the crop",
+registerEnumType(FirstCharLowerCasePlantCurrentState, {
+    name: "PlantCurrentState",
+    description: "The current state of the plant",
     valuesMap: {
         normal: {
-            description: "The crop is normal"
+            description: "The plant is normal"
         },
         needWater: {
-            description: "The crop needs water"
+            description: "The plant needs water"
         },
         isWeedy: {
-            description: "The crop is weedy"
+            description: "The plant is weedy"
         },
         isInfested: {
-            description: "The crop is infested"
+            description: "The plant is infested"
         },
         fullyMatured: {
-            description: "The crop is fully matured"
+            description: "The plant is fully matured"
         }
     }
 })
@@ -88,6 +88,28 @@ registerEnumType(FirstCharLowerCaseFruitCurrentState, {
         },
         fullyMatured: {
             description: "The fruit is fully matured"
+        }
+    }
+})
+
+
+// Fruit Current State Enum
+export enum BeeHouseCurrentState {
+    Normal = "normal",
+    Yield = "yield"
+}
+
+export const FirstCharLowerCaseBeeHouseCurrentState = createFirstCharLowerCaseEnumType(BeeHouseCurrentState)
+
+registerEnumType(FirstCharLowerCaseBeeHouseCurrentState, {
+    name: "BeeHouseCurrentState",
+    description: "The current state of the bee house",
+    valuesMap: {    
+        normal: {
+            description: "The bee house is normal"
+        },
+        yield: {
+            description: "The bee house is yielding"
         }
     }
 })

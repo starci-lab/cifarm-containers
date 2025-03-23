@@ -66,7 +66,7 @@ describe("UsePesticideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.IsInfested,
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10
@@ -102,7 +102,7 @@ describe("UsePesticideService", () => {
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .findById(placedItemTile.id)
 
-        expect(updatedPlacedItemTile.seedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
+        expect(updatedPlacedItemTile.plantInfo.currentState).toBe(CropCurrentState.Normal)
     })
 
     it("should throw GraphQLError with code PESTICIDE_NOT_FOUND_IN_TOOLBAR when user doesn't have pesticide", async () => {
@@ -116,7 +116,7 @@ describe("UsePesticideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.IsInfested,
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10
@@ -233,7 +233,7 @@ describe("UsePesticideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.Normal, // Not infested
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10
@@ -282,7 +282,7 @@ describe("UsePesticideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.IsInfested,
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10
@@ -327,7 +327,7 @@ describe("UsePesticideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.IsInfested,
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10

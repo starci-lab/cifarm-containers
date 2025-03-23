@@ -1,18 +1,23 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Schema as MongooseSchema, Types } from "mongoose"
-import { CROP } from "../constants"
-import { CropCurrentState, FirstCharLowerCaseCropCurrentState } from "../enums"
+import { CROP, FLOWER } from "../constants"
+import {
+    PlantCurrentState,
+    FirstCharLowerCasePlantCurrentState,
+    FirstCharLowerCasePlantType,
+    PlantType
+} from "../enums"
 import { AbstractSchema } from "./abstract"
 import { CropSchema } from "./crop.schema"
+import { FlowerSchema } from "./flower.schema"
 
 @ObjectType({
-    description: "The schema for tracking seed growth information"
+    description: "The schema for tracking plant growth information"
 })
-@Schema({ timestamps: true, autoCreate: false  })
-export class SeedGrowthInfoSchema extends AbstractSchema {
-    
-    @Field(() => Int, {
+@Schema({ timestamps: true, autoCreate: false })
+export class PlantInfoSchema extends AbstractSchema {
+    @Field(() => Int, { 
         description: "The current growth stage of the seed"
     })
     @Prop({ type: Number, default: 0 })
@@ -54,23 +59,34 @@ export class SeedGrowthInfoSchema extends AbstractSchema {
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: CropSchema.name })
     [CROP]: CropSchema | Types.ObjectId
 
-    @Field(() => FirstCharLowerCaseCropCurrentState, {
-        description: "The current state of the crop (normal, withered, etc.)"
+    @Field(() => ID, {
+        description: "The flower type being grown"
     })
-    @Prop({ type: String, enum: CropCurrentState, default: CropCurrentState.Normal })
-        currentState: CropCurrentState
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: FlowerSchema.name })
+    [FLOWER]: FlowerSchema | Types.ObjectId
+
+    @Field(() => FirstCharLowerCasePlantCurrentState, {
+        description: "The current state of the plant (normal, withered, etc.)"
+    })
+    @Prop({ type: String, enum: PlantCurrentState, default: PlantCurrentState.Normal })
+        currentState: PlantCurrentState
 
     @Field(() => Boolean, {
         description: "Whether the crop has been fertilized"
     })
     @Prop({ type: Boolean, default: false })
         isFertilized: boolean
-    
+
     @Field(() => [ID], {
         description: "The list of users who have stolen from this crop"
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
         thieves: Array<Types.ObjectId>
-}
-export const SeedGrowthInfoSchemaClass = SchemaFactory.createForClass(SeedGrowthInfoSchema)
 
+    @Field(() => FirstCharLowerCasePlantType, {
+        description: "The type of plant"
+    })
+    @Prop({ type: String, enum: PlantType, default: PlantType.Crop })
+        plantType: PlantType
+}
+export const PlantInfoSchemaClass = SchemaFactory.createForClass(PlantInfoSchema)

@@ -11,3 +11,9 @@ export interface CheckPositionAvailableParams {
     placedItemType: PlacedItemTypeSchema,
     occupiedPositions: Array<Position>
 }
+
+export interface GetAdjacentPositionsParams {
+    position: Position,
+    placedItemType: PlacedItemTypeSchema,
+}
+

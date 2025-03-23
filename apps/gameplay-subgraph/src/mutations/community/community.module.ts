@@ -4,7 +4,7 @@ import { UnfollowModule } from "./unfollow"
 import { HelpUseHerbicideModule } from "./help-use-herbicide"
 import { HelpUsePesticideModule } from "./help-use-pesticide"
 import { HelpWaterCropModule } from "./help-water-crop"
-import { ThiefCropModule } from "./thief-crop"
+import { ThiefPlantModule } from "./thief-plant"
 import { ThiefAnimalModule } from "./thief-animal"
 import { HelpCureAnimalModule } from "./help-cure-animal"
 import { HelpUseBugNetModule } from "./help-use-bug-net"
@@ -18,7 +18,7 @@ import { ThiefFruitModule } from "./thief-fruit"
         HelpWaterCropModule,
         HelpUsePesticideModule,
         HelpUseHerbicideModule,
-        ThiefCropModule,
+        ThiefPlantModule,
         ThiefAnimalModule,
         HelpUseBugNetModule,    
         ThiefFruitModule

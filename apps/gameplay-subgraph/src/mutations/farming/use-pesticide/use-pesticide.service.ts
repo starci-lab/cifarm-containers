@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    CropCurrentState,
+    PlantCurrentState,
     InjectMongoose,
     InventoryKind,
     InventorySchema,
@@ -112,7 +112,7 @@ export class UsePesticideService {
                 }
 
                 // Validate tile is planted
-                if (!placedItemTile.seedGrowthInfo) {
+                if (!placedItemTile.plantInfo) {
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
                             code: "TILE_NOT_PLANTED"
@@ -121,7 +121,7 @@ export class UsePesticideService {
                 }
 
                 // Validate tile is infested
-                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.IsInfested) {
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsInfested) {
                     throw new GraphQLError("Tile is not infested", {
                         extensions: {
                             code: "TILE_NOT_INFESTED"
@@ -180,7 +180,7 @@ export class UsePesticideService {
                 // Update user data
                 await user.save({ session })
                 // Update tile state
-                placedItemTile.seedGrowthInfo.currentState = CropCurrentState.Normal
+                placedItemTile.plantInfo.currentState = PlantCurrentState.Normal
                 await placedItemTile.save({ session })
 
                 const updatedSyncedPlacedItem = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({

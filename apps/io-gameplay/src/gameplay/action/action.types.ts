@@ -22,12 +22,12 @@ export interface BuyTileData {
     price: number
 }
 
-export interface ThiefCropData {
+export interface ThiefPlantData {
     quantity: number
     cropId: string
 }
 
-export interface HarvestCropData {
+export interface HarvestPlantData {
     quantity: number
     cropId: string
 }

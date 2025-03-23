@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, WithStatus, DeepPartial, SchemaStatus } from "@src/common"
 import {
-    CropCurrentState,
+    PlantCurrentState,
     DefaultInfo,
     InjectMongoose,
     InventorySchema,
@@ -23,16 +23,16 @@ import {
     StaticService
 } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { HarvestCropRequest, HarvestCropResponse } from "./harvest-crop.dto"
+import { HarvestPlantRequest, HarvestPlantResponse } from "./harvest-plant.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { ActionName, EmitActionPayload, HarvestCropData } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload, HarvestPlantData } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 
 @Injectable()
-export class HarvestCropService {
-    private readonly logger = new Logger(HarvestCropService.name)
+export class HarvestPlantService {
+    private readonly logger = new Logger(HarvestPlantService.name)
 
     constructor(
         @InjectMongoose() private readonly connection: Connection,
@@ -45,14 +45,14 @@ export class HarvestCropService {
         @InjectKafkaProducer() private readonly kafkaProducer: Producer
     ) {}
 
-    async harvestCrop(
+    async harvestPlant(
         { id: userId }: UserLike,
-        { placedItemTileId }: HarvestCropRequest
-    ): Promise<HarvestCropResponse> {
+        { placedItemTileId }: HarvestPlantRequest
+    ): Promise<HarvestPlantResponse> {
         const mongoSession = await this.connection.startSession()
 
         // synced variables
-        let actionMessage: EmitActionPayload<HarvestCropData> | undefined
+        let actionMessage: EmitActionPayload<HarvestPlantData> | undefined
         let user: UserSchema | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
@@ -86,7 +86,7 @@ export class HarvestCropService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemTileId)
                     .session(session)
-                 
+
                 // Validate placed item tile exists
                 if (!placedItemTile) {
                     throw new GraphQLError("Placed item tile not found", {
@@ -101,10 +101,10 @@ export class HarvestCropService {
                     y: placedItemTile.y,
                     id: placedItemTile.id,
                     placedItemType: placedItemTile.placedItemType
-                }   
+                }
 
                 // Validate tile is planted
-                if (!placedItemTile.seedGrowthInfo) {
+                if (!placedItemTile.plantInfo) {
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
                             code: "TILE_IS_NOT_PLANTED"
@@ -113,7 +113,7 @@ export class HarvestCropService {
                 }
 
                 // Validate crop is fully matured
-                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.FullyMatured) {
                     throw new GraphQLError("Crop is not fully matured", {
                         extensions: {
                             code: "CROP_IS_NOT_FULLY_MATURED"
@@ -126,7 +126,7 @@ export class HarvestCropService {
                  ************************************************************/
 
                 // Get activity data
-                const { energyConsume, experiencesGain } = this.staticService.activities.harvestCrop
+                const { energyConsume } = this.staticService.activities.harvestCrop
 
                 // Get user data
                 user = await this.connection
@@ -152,25 +152,16 @@ export class HarvestCropService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY TYPE
                  ************************************************************/
-
-                // Get inventory type for the harvested crop
-                // const inventoryType = await this.connection
-                //     .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                //     .findOne({
-                //         type: InventoryType.Product,
-                //         product: placedItemTile.seedGrowthInfo.crop
-                //     })
-                //     .session(session)
                 const product = this.staticService.products.find(
                     (product) =>
                         product.crop &&
-                        product.crop.toString() === placedItemTile.seedGrowthInfo.crop.toString() &&
-                        product.isQuality === placedItemTile.seedGrowthInfo.isQuality
+                        product.crop.toString() === placedItemTile.plantInfo.crop.toString() &&
+                        product.isQuality === placedItemTile.plantInfo.isQuality
                 )
                 if (!product) {
-                    throw new GraphQLError("Product not found in static data", {
+                    throw new GraphQLError("Product not found", {
                         extensions: {
-                            code: "PRODUCT_NOT_FOUND_IN_STATIC_DATA"
+                            code: "PRODUCT_NOT_FOUND"
                         }
                     })
                 }
@@ -180,9 +171,9 @@ export class HarvestCropService {
                         inventoryType.product.toString() === product.id.toString()
                 )
                 if (!inventoryType) {
-                    throw new GraphQLError("Inventory type not found in static data", {
+                    throw new GraphQLError("Inventory type not found", {
                         extensions: {
-                            code: "INVENTORY_TYPE_NOT_FOUND_IN_STATIC_DATA"
+                            code: "INVENTORY_TYPE_NOT_FOUND"
                         }
                     })
                 }
@@ -214,15 +205,15 @@ export class HarvestCropService {
                 // Get crop data
                 // const crop = await this.connection
                 //     .model<CropSchema>(CropSchema.name)
-                //     .findById(placedItemTile.seedGrowthInfo.crop)
+                //     .findById(placedItemTile.plantInfo.crop)
                 //     .session(session)
                 const crop = this.staticService.crops.find(
-                    (crop) => crop.id === placedItemTile.seedGrowthInfo.crop.toString()
+                    (crop) => crop.id === placedItemTile.plantInfo.crop.toString()
                 )
                 if (!crop) {
-                    throw new GraphQLError("Crop not found in static data", {
+                    throw new GraphQLError("Crop not found", {
                         extensions: {
-                            code: "CROP_NOT_FOUND_IN_STATIC_DATA"
+                            code: "CROP_NOT_FOUND"
                         }
                     })
                 }
@@ -238,6 +229,10 @@ export class HarvestCropService {
                     quantity: energyConsume
                 })
 
+                const experiencesGain = placedItemTile.plantInfo.isQuality
+                    ? crop.qualityHarvestExperiences
+                    : crop.basicHarvestExperiences
+
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -251,19 +246,15 @@ export class HarvestCropService {
                     session
                 })
 
-                // Harvest quantity
-                const quantity = placedItemTile.seedGrowthInfo.harvestQuantityRemaining
-
                 // Add the harvested crop to the inventory
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventoryType,
                     inventories,
                     capacity: storageCapacity,
-                    quantity,
+                    quantity: placedItemTile.plantInfo.harvestQuantityRemaining,
                     userId: user.id,
                     occupiedIndexes
                 })
-
 
                 // Create new inventories
                 if (createdInventories.length > 0) {
@@ -271,10 +262,10 @@ export class HarvestCropService {
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session })
                     const createdSyncedInventories =
-                    this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: createdInventoryRaws,
-                        status: SchemaStatus.Created
-                    })
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: createdInventoryRaws,
+                            status: SchemaStatus.Created
+                        })
                     syncedInventories.push(...createdSyncedInventories)
                 }
                 // Update existing inventories
@@ -315,11 +306,11 @@ export class HarvestCropService {
                     userId,
                     data: {
                         cropId: crop.id,
-                        quantity
+                        quantity: placedItemTile.plantInfo.harvestQuantityRemaining
                     }
                 }
 
-                return { quantity } // Return the quantity of harvested crops
+                return { quantity: placedItemTile.plantInfo.harvestQuantityRemaining } // Return the quantity of harvested crops
             })
 
             /************************************************************
@@ -340,7 +331,14 @@ export class HarvestCropService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,

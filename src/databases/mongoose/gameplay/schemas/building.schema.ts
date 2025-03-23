@@ -1,6 +1,11 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { AnimalType, BuildingId, FirstCharLowerCaseAnimalType, FirstCharLowerCaseBuildingId } from "../enums"
+import {
+    AnimalType,
+    BuildingId,
+    FirstCharLowerCaseAnimalType,
+    FirstCharLowerCaseBuildingId
+} from "../enums"
 import { AbstractSchema } from "./abstract"
 import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
 
@@ -56,6 +61,7 @@ export class BuildingSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: true })
         unlockLevel: number
+
     @Field(() => Boolean, {
         description: "Whether the building is upgradable"
     })
@@ -68,6 +74,34 @@ export class BuildingSchema extends AbstractSchema {
     })
     @Prop({ type: [UpgradeSchemaClass], required: false })
         upgrades?: Array<UpgradeSchema>
+
+    @Field(() => Int, {
+        description: "Bee house yield time",
+        nullable: true
+    })
+    @Prop({ type: Number, required: false })
+        beeHouseYieldTime?: number
+
+    @Field(() => Int, {
+        description: "The basic harvest experiences of the bee house",
+        nullable: true
+    })
+    @Prop({ type: Number, required: false })
+        beeHouseBasicHarvestExperiences?: number
+
+    @Field(() => Int, {
+        description: "The quality harvest experiences of the bee house",
+        nullable: true
+    })
+    @Prop({ type: Number, required: false })
+        beeHouseQualityHarvestExperiences?: number
+
+    @Field(() => Float, {
+        description: "Base honey yield coefficient of the bee house",
+        nullable: true
+    })
+    @Prop({ type: Number, required: false })
+        baseHoneyYieldCoefficient?: number
 }
 
 // Generate the Mongoose schema class

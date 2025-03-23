@@ -12,7 +12,7 @@ import {
     UpdatePlacedItemTileAfterUseFertilizerParams,
     UpdatePlacedItemTileAfterUseFertilizerResult
 } from "./types"
-import { AnimalCurrentState, CropCurrentState, FruitCurrentState } from "@src/databases"
+import { AnimalCurrentState, FruitCurrentState, PlantCurrentState, PlantType } from "@src/databases"
 
 //core game logic service
 @Injectable()
@@ -60,24 +60,28 @@ export class CoreService {
         // update the tile info times harvested
         placedItemTile.tileInfo.timesHarvested += 1
 
-        if (placedItemTile.seedGrowthInfo.harvestCount + 1 >= crop.perennialCount) {
+        // perental only work for crop,
+        const isPerennial =
+            placedItemTile.plantInfo.plantType === PlantType.Crop && crop.perennialCount > 1
+            
+        if (isPerennial && placedItemTile.plantInfo.harvestCount + 1 >= crop.perennialCount) {
             // remove the seed growth info
-            placedItemTile.seedGrowthInfo = undefined
+            placedItemTile.plantInfo = undefined
         } else {
             // update the seed growth info
-            placedItemTile.seedGrowthInfo.harvestCount += 1
-            placedItemTile.seedGrowthInfo.currentState = CropCurrentState.NeedWater
-            placedItemTile.seedGrowthInfo.currentStage = cropInfo.nextGrowthStageAfterHarvest - 1
-            placedItemTile.seedGrowthInfo.currentStageTimeElapsed = 0
-            placedItemTile.seedGrowthInfo.harvestQuantityRemaining = 0
-            placedItemTile.seedGrowthInfo.isQuality = false
+            placedItemTile.plantInfo.harvestCount += 1
+            placedItemTile.plantInfo.currentState = PlantCurrentState.NeedWater
+            placedItemTile.plantInfo.currentStage = cropInfo.nextGrowthStageAfterHarvest - 1
+            placedItemTile.plantInfo.currentStageTimeElapsed = 0
+            placedItemTile.plantInfo.harvestQuantityRemaining = 0
+            placedItemTile.plantInfo.isQuality = false
         }
         return placedItemTile
     }
 
     //update the animal information after collect
     public updatePlacedItemAnimalAfterHarvest({
-        placedItemAnimal,
+        placedItemAnimal
     }: UpdatePlacedItemAnimalAfterHarvestParams): UpdatePlacedItemAnimalAfterHarvestResult {
         // update the animal info times harvested
         placedItemAnimal.animalInfo.timesHarvested += 1
@@ -112,8 +116,8 @@ export class CoreService {
         placedItemTile,
         supply
     }: UpdatePlacedItemTileAfterUseFertilizerParams): UpdatePlacedItemTileAfterUseFertilizerResult {
-        placedItemTile.seedGrowthInfo.currentStageTimeElapsed += supply.fertilizerEffectTimeReduce
-        placedItemTile.seedGrowthInfo.isFertilized = true
+        placedItemTile.plantInfo.currentStageTimeElapsed += supply.fertilizerEffectTimeReduce
+        placedItemTile.plantInfo.isFertilized = true
         // return the placed item tile
         return placedItemTile
     }

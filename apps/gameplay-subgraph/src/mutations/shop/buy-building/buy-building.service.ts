@@ -2,7 +2,7 @@ import { ActionName, BuyBuildingData, EmitActionPayload } from "@apps/io-gamepla
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, DeepPartial, SchemaStatus, WithStatus } from "@src/common"
-import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
+import { BuildingId, InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
 import { GoldBalanceService, StaticService, SyncService, PositionService } from "@src/gameplay"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
@@ -173,23 +173,57 @@ export class BuyBuildingService {
                  * PLACE BUILDING
                  ************************************************************/
                 // Place the building
-                const [placedItemBuildingRaw] = await this.connection
-                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .create(
-                        [
+                // If the building is a bee house, we need to create a bee house info
+
+                let placedItemBuildingRaw: PlacedItemSchema
+                switch (
+                    placedItemType.building.toString()  
+                ) {
+                case createObjectId(BuildingId.BeeHouse).toString():
+                {
+                    const [_placedItemBuildingRaw] = await this.connection
+                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                        .create(
                             {
                                 user: userId,
                                 x: position.x,
                                 y: position.y,
                                 placedItemType: placedItemType.id,
                                 buildingInfo: {
-                                    building: building.id,
                                     currentUpgrade: 1
+                                },
+                                beeHouseInfo: {
                                 }
-                            }
-                        ],
-                        { session }
-                    )
+                            },
+                            { session }
+                        )
+                    placedItemBuildingRaw = _placedItemBuildingRaw
+                    break
+                }
+                default:
+                {
+                    if (placedItemType.building.toString() === createObjectId(BuildingId.BeeHouse).toString()) {
+                        const [_placedItemBuildingRaw] = await this.connection
+                            .model<PlacedItemSchema>(PlacedItemSchema.name)
+                            .create(
+                                [
+                                    {
+                                        user: userId,
+                                        x: position.x,
+                                        y: position.y,
+                                        placedItemType: placedItemType.id,
+                                        buildingInfo: {
+                                            currentUpgrade: 1
+                                        }
+                                    }
+                                ],
+                                { session }
+                            )
+                        placedItemBuildingRaw = _placedItemBuildingRaw
+                    }
+                    break
+                }
+                }
 
                 syncedPlacedItemAction = {
                     id: placedItemBuildingRaw._id.toString(),

@@ -6,7 +6,7 @@ import { BullModule } from "@src/bull"
 import { EnvModule } from "@src/env"
 import { EnergyModule } from "./energy"
 import { AnimalModule } from "./animal"
-import { CropModule } from "./crop"
+import { PlantModule } from "./plant"
 import { DeliveryModule } from "./delivery"
 import { CacheModule } from "@src/cache"
 import { KubernetesModule } from "@src/kubernetes"
@@ -16,6 +16,8 @@ import { KafkaModule } from "@src/brokers"
 import { FruitModule } from "./fruit"
 import { GameplayModule } from "@src/gameplay"
 import { IdModule } from "@src/id"
+import { BeeHouseModule } from "./bee-house"
+
 @Module({
     imports: [
         IdModule.register({
@@ -51,11 +53,12 @@ import { IdModule } from "@src/id"
                 useMinikubeForDevelopment: true,
             }
         }),
-        CropModule,
         AnimalModule,
         DeliveryModule,
         EnergyModule,
-        FruitModule
+        FruitModule,
+        BeeHouseModule,
+        PlantModule
     ]
 })
 export class AppModule {}

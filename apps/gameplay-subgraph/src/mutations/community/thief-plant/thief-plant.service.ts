@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import {
-    CropCurrentState,
+    PlantCurrentState,
     InjectMongoose,
     InventorySchema,
     InventoryType,
@@ -19,17 +19,17 @@ import {
     StaticService,
     SyncService
 } from "@src/gameplay"
-import { ThiefCropRequest, ThiefCropResponse } from "./thief-crop.dto"
+import { ThiefPlantRequest, ThiefPlantResponse } from "./thief-plant.dto"
 import { Connection, Types } from "mongoose"
-import { ActionName, EmitActionPayload, ThiefCropData } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload, ThiefPlantData } from "@apps/io-gameplay"
 import { Producer } from "kafkajs"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { createObjectId, DeepPartial, WithStatus, SchemaStatus } from "@src/common"
 
 @Injectable()
-export class ThiefCropService {
-    private readonly logger = new Logger(ThiefCropService.name)
+export class ThiefPlantService {
+    private readonly logger = new Logger(ThiefPlantService.name)
 
     constructor(
         @InjectKafkaProducer() private readonly kafkaProducer: Producer,
@@ -42,13 +42,13 @@ export class ThiefCropService {
         private readonly syncService: SyncService
     ) {}
 
-    async thiefCrop(
+    async thiefPlant(
         { id: userId }: UserLike,
-        { placedItemTileId }: ThiefCropRequest
-    ): Promise<ThiefCropResponse> {
+        { placedItemTileId }: ThiefPlantRequest
+    ): Promise<ThiefPlantResponse> {
         const mongoSession = await this.connection.startSession()
         // synced variables
-        let actionMessage: EmitActionPayload<ThiefCropData> | undefined
+        let actionMessage: EmitActionPayload<ThiefPlantData> | undefined
         let user: UserSchema | undefined
         let neighborUserId: string | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
@@ -113,14 +113,14 @@ export class ThiefCropService {
                         }
                     })
                 }
-                if (!placedItemTile.seedGrowthInfo) {
+                if (!placedItemTile.plantInfo) {
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
                             code: "TILE_IS_NOT_PLANTED"
                         }
                     })
                 }
-                if (placedItemTile.seedGrowthInfo.currentState !== CropCurrentState.FullyMatured) {
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.FullyMatured) {
                     throw new GraphQLError("Crop is not fully matured", {
                         extensions: {
                             code: "CROP_IS_NOT_FULLY_MATURED"
@@ -129,7 +129,7 @@ export class ThiefCropService {
                 }
 
                 // Check if the user has already stolen from this tile
-                const users = placedItemTile.seedGrowthInfo.thieves
+                const users = placedItemTile.plantInfo.thieves
                 if (users.map((user) => user.toString()).includes(userId)) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
@@ -177,7 +177,7 @@ export class ThiefCropService {
                 const product = this.staticService.products.find(
                     (product) =>
                         product.type === ProductType.Crop &&
-                        product.crop.toString() === placedItemTile.seedGrowthInfo.crop.toString()
+                        product.crop.toString() === placedItemTile.plantInfo.crop.toString()
                 )
                 if (!product) {
                     throw new GraphQLError("Product not found", {
@@ -205,7 +205,7 @@ export class ThiefCropService {
 
                 const actualQuantity = Math.min(
                     computedQuantity,
-                    placedItemTile.seedGrowthInfo.harvestQuantityRemaining - crop.minHarvestQuantity
+                    placedItemTile.plantInfo.harvestQuantityRemaining - crop.minHarvestQuantity
                 )
 
                 if (actualQuantity <= 0) {
@@ -291,9 +291,9 @@ export class ThiefCropService {
                 /************************************************************
                  * UPDATE CROP DATA
                  ************************************************************/
-                placedItemTile.seedGrowthInfo.harvestQuantityRemaining =
-                    placedItemTile.seedGrowthInfo.harvestQuantityRemaining - actualQuantity
-                placedItemTile.seedGrowthInfo.thieves.push(new Types.ObjectId(userId))
+                placedItemTile.plantInfo.harvestQuantityRemaining =
+                    placedItemTile.plantInfo.harvestQuantityRemaining - actualQuantity
+                placedItemTile.plantInfo.thieves.push(new Types.ObjectId(userId))
                 await placedItemTile.save({ session })
                 const updatedSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
                     placedItems: [placedItemTile],

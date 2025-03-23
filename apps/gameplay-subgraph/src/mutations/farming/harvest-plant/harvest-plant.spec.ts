@@ -3,7 +3,7 @@
 import { Test, TestingModule } from "@nestjs/testing"
 import { createObjectId } from "@src/common"
 import {
-    CropCurrentState,
+    PlantCurrentState,
     getMongooseToken,
     InventorySchema,
     InventoryTypeId,
@@ -18,14 +18,14 @@ import {
     TestingInfraModule
 } from "@src/testing"
 import { Connection } from "mongoose"
-import { HarvestCropService } from "./harvest-crop.service"
+import { HarvestPlantService } from "./harvest-plant.service"
 import { GraphQLError } from "graphql"
 import { LevelService, StaticService } from "@src/gameplay"
 import { EnergyNotEnoughException } from "@src/gameplay"
 
 describe("HarvestCropService", () => {
     let connection: Connection
-    let service: HarvestCropService
+    let service: HarvestPlantService
     let gameplayConnectionService: GameplayConnectionService
     let gameplayMockUserService: GameplayMockUserService
     let levelService: LevelService
@@ -85,9 +85,9 @@ describe("HarvestCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: crop.id,
-                    currentState: CropCurrentState.FullyMatured,
+                    currentState: PlantCurrentState.FullyMatured,
                     harvestQuantityRemaining: quantity,
                     isQuality: false
                 },
@@ -135,8 +135,8 @@ describe("HarvestCropService", () => {
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .findById(placedItemTile.id)
 
-        // For one-season crops, seedGrowthInfo should be removed
-        expect(updatedPlacedItemTile.seedGrowthInfo).toBeUndefined()
+        // For one-season crops, cropInfo should be removed
+        expect(updatedPlacedItemTile.plantInfo).toBeUndefined()
     })
 
     it("should successfully harvest the crop and update the user's stats and inventory accordingly (quality)", async () => {
@@ -180,7 +180,7 @@ describe("HarvestCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: crop.id,
                     currentState: CropCurrentState.FullyMatured,
                     harvestQuantityRemaining: quantity,
@@ -230,8 +230,8 @@ describe("HarvestCropService", () => {
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .findById(placedItemTile.id)
 
-        // For one-season crops, seedGrowthInfo should be removed
-        expect(updatedPlacedItemTile.seedGrowthInfo).toBeUndefined()
+        // For one-season crops, cropInfo should be removed
+        expect(updatedPlacedItemTile.plantInfo).toBeUndefined()
     })
 
     it("should throw GraphQLError with code CRATE_NOT_FOUND_IN_TOOLBAR when crate is not found", async () => {
@@ -251,7 +251,7 @@ describe("HarvestCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: crop.id,
                     currentState: CropCurrentState.FullyMatured,
                     harvestQuantityRemaining: 10,
@@ -387,7 +387,7 @@ describe("HarvestCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: crop.id,
                     currentState: CropCurrentState.Normal, // Not fully matured
                     harvestQuantityRemaining: 10,
@@ -441,7 +441,7 @@ describe("HarvestCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: crop.id,
                     currentState: CropCurrentState.FullyMatured,
                     harvestQuantityRemaining: 10,

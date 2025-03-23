@@ -73,9 +73,9 @@ export class SellService {
                     (placedItemType) => placedItemType.id === placedItem.placedItemType.toString()
                 )
                 if (!placedItemType) {
-                    throw new GraphQLError("Placed item type not found in static data", {
+                    throw new GraphQLError("Placed item type not found", {
                         extensions: {
-                            code: "PLACED_ITEM_TYPE_NOT_FOUND_IN_STATIC_DATA"
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
                         }
                     })
                 }
@@ -99,9 +99,9 @@ export class SellService {
                         (building) => building.id === placedItemType.building.toString()
                     )
                     if (!building) {
-                        throw new GraphQLError("Building not found in static data", {
+                        throw new GraphQLError("Building not found", {
                             extensions: {
-                                code: "BUILDING_NOT_FOUND_IN_STATIC_DATA"
+                                code: "BUILDING_NOT_FOUND"
                             }
                         })
                     }
@@ -124,9 +124,9 @@ export class SellService {
                         (tile) => tile.id === placedItemType.tile.toString()
                     )
                     if (!tile) {
-                        throw new GraphQLError("Tile not found in static data", {
+                        throw new GraphQLError("Tile not found", {
                             extensions: {
-                                code: "TILE_NOT_FOUND_IN_STATIC_DATA"
+                                code: "TILE_NOT_FOUND"
                             }
                         })
                     }
@@ -142,9 +142,9 @@ export class SellService {
                         (animal) => animal.id === placedItemType.animal.toString()
                     )
                     if (!animal) {
-                        throw new GraphQLError("Animal not found in static data", {
+                        throw new GraphQLError("Animal not found", {
                             extensions: {
-                                code: "ANIMAL_NOT_FOUND_IN_STATIC_DATA"
+                                code: "ANIMAL_NOT_FOUND"
                             }
                         })
                     }

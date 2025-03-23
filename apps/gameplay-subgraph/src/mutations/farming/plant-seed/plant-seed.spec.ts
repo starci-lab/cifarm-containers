@@ -132,9 +132,9 @@ describe("PlantSeedService", () => {
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .findById(placedItemTile.id)
 
-        expect(updatedPlacedItemTile.seedGrowthInfo).not.toBeNull()
-        expect(updatedPlacedItemTile.seedGrowthInfo.crop.toString()).toBe(crop.id.toString())
-        expect(updatedPlacedItemTile.seedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
+        expect(updatedPlacedItemTile.plantInfo).not.toBeNull()
+        expect(updatedPlacedItemTile.plantInfo.crop.toString()).toBe(crop.id.toString())
+        expect(updatedPlacedItemTile.plantInfo.currentState).toBe(CropCurrentState.Normal)
     })
 
     it("should throw GraphQLError with code INVENTORY_NOT_FOUND when seed is not found in inventory", async () => {

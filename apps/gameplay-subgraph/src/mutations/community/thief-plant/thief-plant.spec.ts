@@ -19,7 +19,7 @@ import {
     TestingInfraModule
 } from "@src/testing"
 import { Connection } from "mongoose"
-import { ThiefCropService } from "./thief-crop.service"
+import { ThiefCropService } from "./thief-plant.service"
 import { GraphQLError } from "graphql"
 import { LevelService, StaticService, ThiefService } from "@src/gameplay"
 import { EnergyNotEnoughException } from "@src/gameplay"
@@ -65,7 +65,7 @@ describe("ThiefCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: cropId,
                     currentState: CropCurrentState.FullyMatured,
                     harvestQuantityRemaining: 20,
@@ -118,9 +118,9 @@ describe("ThiefCropService", () => {
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .findById(placedItemTile.id)
 
-        expect(updatedPlacedItemTile.seedGrowthInfo.harvestQuantityRemaining).toBe(17) // 20 - 3
+        expect(updatedPlacedItemTile.plantInfo.harvestQuantityRemaining).toBe(17) // 20 - 3
         expect(
-            updatedPlacedItemTile.seedGrowthInfo.thieves.map((thief) => thief.toString())
+            updatedPlacedItemTile.plantInfo.thieves.map((thief) => thief.toString())
         ).toContainEqual(user.id)
 
         // Find the product and inventory type for this crop
@@ -158,7 +158,7 @@ describe("ThiefCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: cropId,
                     currentState: CropCurrentState.FullyMatured,
                     harvestQuantityRemaining: 10,
@@ -235,7 +235,7 @@ describe("ThiefCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: cropId,
                     currentState: CropCurrentState.FullyMatured,
                     harvestQuantityRemaining: 10,
@@ -329,7 +329,7 @@ describe("ThiefCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: cropId,
                     currentState: CropCurrentState.Normal, // Not fully matured
                     harvestQuantityRemaining: 10,
@@ -381,7 +381,7 @@ describe("ThiefCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: cropId,
                     currentState: CropCurrentState.FullyMatured,
                     harvestQuantityRemaining: 10,
@@ -433,7 +433,7 @@ describe("ThiefCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: cropId,
                     currentState: CropCurrentState.FullyMatured,
                     harvestQuantityRemaining: 10,
@@ -484,7 +484,7 @@ describe("ThiefCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: cropId,
                     currentState: CropCurrentState.FullyMatured,
                     harvestQuantityRemaining: 10,

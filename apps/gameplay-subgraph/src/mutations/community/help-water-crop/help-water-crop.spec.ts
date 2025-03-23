@@ -55,7 +55,7 @@ describe("HelpWaterCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: createObjectId(),
                     currentState: CropCurrentState.NeedWater,
                     harvestQuantityRemaining: 10,
@@ -103,7 +103,7 @@ describe("HelpWaterCropService", () => {
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .findById(placedItemTile.id)
 
-        expect(updatedPlacedItemTile.seedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
+        expect(updatedPlacedItemTile.plantInfo.currentState).toBe(CropCurrentState.Normal)
     })
 
     it("should throw GraphQLError with code WATERING_CAN_NOT_FOUND when user has no watering can", async () => {
@@ -119,7 +119,7 @@ describe("HelpWaterCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: createObjectId(),
                     currentState: CropCurrentState.NeedWater,
                     harvestQuantityRemaining: 10,
@@ -194,7 +194,7 @@ describe("HelpWaterCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: createObjectId(),
                     currentState: CropCurrentState.NeedWater,
                     harvestQuantityRemaining: 10,
@@ -288,7 +288,7 @@ describe("HelpWaterCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: createObjectId(),
                     currentState: CropCurrentState.Normal, // Not needing water
                     harvestQuantityRemaining: 10,
@@ -338,7 +338,7 @@ describe("HelpWaterCropService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     crop: createObjectId(),
                     currentState: CropCurrentState.NeedWater,
                     harvestQuantityRemaining: 10,

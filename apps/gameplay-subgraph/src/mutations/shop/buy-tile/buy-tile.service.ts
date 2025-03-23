@@ -48,9 +48,9 @@ export class BuyTileService {
                     (tile) => tile.displayId === tileId
                 )
                 if (!tile) {
-                    throw new GraphQLError("Tile not found in static service", {
+                    throw new GraphQLError("Tile not found", {
                         extensions: {
-                            code: "TILE_NOT_FOUND_IN_STATIC_SERVICE"
+                            code: "TILE_NOT_FOUND"
                         }
                     })
                 }

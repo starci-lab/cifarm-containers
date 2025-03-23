@@ -3,7 +3,6 @@ import { ScheduleModule } from "@nestjs/schedule"
 import { BullModule } from "@src/bull"
 import { EnvModule } from "@src/env"
 import { AnimalModule } from "./animal"
-import { CropModule } from "./crop"
 import { DeliveryModule } from "./delivery"
 import { EnergyModule } from "./energy"
 import { GameplayModule } from "@src/gameplay"
@@ -12,6 +11,7 @@ import { MongooseModule } from "@src/databases"
 import { KafkaModule } from "@src/brokers"
 import { FruitModule } from "./fruit"
 import { IdModule } from "@src/id"
+import { PlantModule } from "./plant"
 
 @Module({
     imports: [
@@ -32,11 +32,11 @@ import { IdModule } from "@src/id"
         GameplayModule.register({
             isGlobal: true
         }),
-        CropModule,
+        PlantModule,
         AnimalModule,
         DeliveryModule,
         EnergyModule,
-        FruitModule
+        FruitModule,
     ]
 })
 export class AppModule {}

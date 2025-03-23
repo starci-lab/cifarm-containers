@@ -28,8 +28,8 @@ import {
     PlacedItemSchemaClass,
     SessionSchema,
     SessionSchemaClass,
-    SeedGrowthInfoSchemaClass,
-    SeedGrowthInfoSchema,
+    PlantInfoSchema,
+    PlantInfoSchemaClass,
     TileInfoSchema, 
     TileInfoSchemaClass,
     AnimalInfoSchema,
@@ -53,7 +53,9 @@ import {
     PetSchema,
     PetSchemaClass,
     FruitSchemaClass,
-    FruitSchema
+    FruitSchema,
+    BeeHouseInfoSchema,
+    BeeHouseInfoSchemaClass,
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -183,6 +185,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                             }
                         },
                         {
+                            name: BeeHouseInfoSchema.name,
+                            useFactory: () => BeeHouseInfoSchemaClass
+                        },
+                        {
                             name: SessionSchema.name,
                             useFactory: () => SessionSchemaClass
                         },
@@ -195,8 +201,8 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => PlacedItemTypeSchemaClass
                         },
                         {
-                            name: SeedGrowthInfoSchema.name,
-                            useFactory: () => SeedGrowthInfoSchemaClass
+                            name: PlantInfoSchema.name,
+                            useFactory: () => PlantInfoSchemaClass
                         },
                         {
                             name: TileInfoSchema.name,

@@ -15,6 +15,7 @@ import { Job } from "bullmq"
 import { Connection } from "mongoose"
 import { Producer } from "kafkajs"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+
 @Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost {
     private readonly logger = new Logger(AnimalWorker.name)

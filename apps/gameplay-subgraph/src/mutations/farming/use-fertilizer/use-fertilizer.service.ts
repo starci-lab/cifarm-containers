@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    CropCurrentState,
+    PlantCurrentState,
     InjectMongoose,
     InventorySchema,
     InventoryType,
@@ -147,7 +147,7 @@ export class UseFertilizerService {
                 }
 
                 // Validate tile is planted
-                if (!placedItemTile.seedGrowthInfo) {
+                if (!placedItemTile.plantInfo) {
                     throw new GraphQLError("Tile is not planted", {
                         extensions: {
                             code: "TILE_NOT_PLANTED"
@@ -156,7 +156,7 @@ export class UseFertilizerService {
                 }
 
                 // Validate tile is not fully matured
-                if (placedItemTile.seedGrowthInfo.currentState === CropCurrentState.FullyMatured) {
+                if (placedItemTile.plantInfo.currentState === PlantCurrentState.FullyMatured) {
                     throw new GraphQLError("Tile is fully matured", {
                         extensions: {
                             code: "TILE_FULLY_MATURED"
@@ -165,7 +165,7 @@ export class UseFertilizerService {
                 }
 
                 // Validate tile is not already fertilized
-                if (placedItemTile.seedGrowthInfo.isFertilized) {
+                if (placedItemTile.plantInfo.isFertilized) {
                     throw new GraphQLError("Tile is already fertilized", {
                         extensions: {
                             code: "TILE_ALREADY_FERTILIZED"

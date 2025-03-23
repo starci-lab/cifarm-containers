@@ -66,7 +66,7 @@ describe("UseHerbicideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.IsWeedy,
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10
@@ -102,7 +102,7 @@ describe("UseHerbicideService", () => {
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .findById(placedItemTile.id)
 
-        expect(updatedPlacedItemTile.seedGrowthInfo.currentState).toBe(CropCurrentState.Normal)
+        expect(updatedPlacedItemTile.plantInfo.currentState).toBe(CropCurrentState.Normal)
     })
 
     it("should throw GraphQLError with code HERBICIDE_NOT_FOUND when user doesn't have herbicide", async () => {
@@ -116,7 +116,7 @@ describe("UseHerbicideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.IsWeedy,
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10
@@ -233,7 +233,7 @@ describe("UseHerbicideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.Normal, // Not weedy
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10
@@ -282,7 +282,7 @@ describe("UseHerbicideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.IsWeedy,
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10
@@ -327,7 +327,7 @@ describe("UseHerbicideService", () => {
         const placedItemTile = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .create({
-                seedGrowthInfo: {
+                cropInfo: {
                     currentState: CropCurrentState.IsWeedy,
                     currentStageTimeElapsed: 0,
                     harvestQuantityRemaining: 10

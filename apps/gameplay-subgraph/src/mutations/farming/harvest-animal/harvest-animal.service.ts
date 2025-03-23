@@ -163,9 +163,9 @@ export class HarvestAnimalService {
                     (animal) => animal.id === placedItemType.animal.toString()
                 )
                 if (!animal) {
-                    throw new GraphQLError("Animal not found in static data", {
+                    throw new GraphQLError("Animal not found", {
                         extensions: {
-                            code: "ANIMAL_NOT_FOUND_IN_STATIC_DATA"
+                            code: "ANIMAL_NOT_FOUND"
                         }
                     })
                 }

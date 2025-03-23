@@ -68,9 +68,9 @@ export class RetainProductService {
                 )
 
                 if (!inventoryType) {
-                    throw new GraphQLError("Inventory type not found in static service", {
+                    throw new GraphQLError("Inventory type not found", {
                         extensions: {
-                            code: "INVENTORY_TYPE_NOT_FOUND_IN_STATIC_SERVICE"
+                            code: "INVENTORY_TYPE_NOT_FOUND"
                         }
                     })
                 }

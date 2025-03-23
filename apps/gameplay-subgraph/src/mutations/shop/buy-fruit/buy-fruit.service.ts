@@ -43,9 +43,9 @@ export class BuyFruitService {
                 // Fetch fruit details
                 const fruit = this.staticService.fruits.find((fruit) => fruit.displayId === fruitId)
                 if (!fruit) {
-                    throw new GraphQLError("Fruit not found in static service", {
+                    throw new GraphQLError("Fruit not found", {
                         extensions: {
-                            code: "FRUIT_NOT_FOUND_IN_STATIC_SERVICE"
+                            code: "FRUIT_NOT_FOUND"
                         }
                     })
                 }

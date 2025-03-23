@@ -48,10 +48,10 @@ export class BuySuppliesService {
                     (supply) => supply.displayId === supplyId
                 )
                 if (!supply) {
-                    throw new GraphQLError("Supply not found in static service", {
+                    throw new GraphQLError("Supply not found", {
                         extensions: {
-                            code: "SUPPLY_NOT_FOUND_IN_STATIC_SERVICE"
-                        }
+                            code: "SUPPLY_NOT_FOUND"
+                        }   
                     })
                 }
 

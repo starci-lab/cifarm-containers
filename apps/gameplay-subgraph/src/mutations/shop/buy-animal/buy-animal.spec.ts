@@ -161,7 +161,7 @@ describe("BuyAnimalService", () => {
         ).rejects.toThrow(UserInsufficientGoldException)
     })
 
-    it("should throw GraphQLError with code ANIMAL_NOT_FOUND_IN_STATIC_SERVICE when animal does not exist", async () => {
+    it("should throw GraphQLError with code ANIMAL_NOT_FOUND when animal does not exist", async () => {
         // Create user
         const user = await gameplayMockUserService.generate({ golds: 1000 })
         
@@ -180,7 +180,7 @@ describe("BuyAnimalService", () => {
             fail("Expected error to be thrown")
         } catch (error) {
             expect(error).toBeInstanceOf(GraphQLError)
-            expect(error.extensions.code).toBe("ANIMAL_NOT_FOUND_IN_STATIC_SERVICE")
+            expect(error.extensions.code).toBe("ANIMAL_NOT_FOUND")
         }
     })
 

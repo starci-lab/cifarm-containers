@@ -3,7 +3,7 @@ import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
     AnimalCurrentState,
-    AnimalGrowthLastSchedule,
+    AnimalLastSchedule,
     InjectMongoose,
     KeyValueStoreId,
     KeyValueStoreSchema,
@@ -76,8 +76,8 @@ export class AnimalService {
             } = await this.connection
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                 .findById<
-                    KeyValueRecord<AnimalGrowthLastSchedule>
-                >(createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule))
+                    KeyValueRecord<AnimalLastSchedule>
+                >(createObjectId(KeyValueStoreId.AnimalLastSchedule))
                 .session(mongoSession)
             if (count === 0) {
                 // this.logger.verbose("No animals to grow")
@@ -85,7 +85,7 @@ export class AnimalService {
             }
 
             //split into 10000 per batch
-            const batchSize = bullData[BullQueueName.Crop].batchSize
+            const batchSize = bullData[BullQueueName.Animal].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
             let time = date ? utcNow.diff(date, "milliseconds") / 1000.0 : 1
@@ -122,7 +122,7 @@ export class AnimalService {
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                 .updateOne(
                     {
-                        _id: createObjectId(KeyValueStoreId.AnimalGrowthLastSchedule)
+                        _id: createObjectId(KeyValueStoreId.AnimalLastSchedule)
                     },
                     {
                         value: {

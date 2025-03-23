@@ -38,9 +38,10 @@ export class SystemSchema extends AbstractSchema {
 })
 export class ActivityInfo {
     @Field(() => Int, {
+        nullable: true,
         description: "The amount of experience gained from the activity"
     })
-        experiencesGain: number
+        experiencesGain?: number
     @Field(() => Int, {
         description: "The amount of energy consumed by the activity"
     })
@@ -207,6 +208,53 @@ export class CropInfo {
         defaultValue: 5
     })
         growthStages: number
+}
+
+@ObjectType({
+    description: "Configuration for flower randomness events"
+})
+export class FlowerRandomness {
+    @Field(() => Float, {
+        description: "Chance for a flower to be stolen by 3 thieves"
+    })
+        thief3: number
+
+    @Field(() => Float, {
+        description: "Chance for a crop to be stolen by 2 thieves"
+    })
+        thief2: number
+
+    @Field(() => Float, {
+        description: "Chance for a crop to need water"
+    })
+        needWater: number
+
+    @Field(() => Float, {
+        description: "Chance for a crop to become weedy or infested"
+    })
+        isWeedyOrInfested: number
+}
+
+@ObjectType({
+    description: "Configuration for flower info"
+})
+export class FlowerInfo {
+    @Field(() => FlowerRandomness, {
+        description: "Configuration for flower randomness events"
+    })
+        randomness: FlowerRandomness
+
+    @Field(() => Int, {
+        description: "The number of times the flower can be harvested",
+        defaultValue: 3
+    })
+        nextGrowthStageAfterHarvest: number
+
+    @Field(() => Int, {
+        description: "The number of growth stages for the flower",
+        defaultValue: 5
+    })
+        growthStages: number    
 }
 
 @ObjectType({

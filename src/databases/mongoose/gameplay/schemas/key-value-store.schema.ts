@@ -31,7 +31,7 @@ export const KeyValueStoreSchemaClass = SchemaFactory.createForClass(KeyValueSto
 @ObjectType({
     description: "Schedule information for animal growth"
 })
-export class AnimalGrowthLastSchedule {
+export class AnimalLastSchedule {
     @Field(() => Date, {
         description: "The date of the last animal growth schedule"
     })
@@ -39,19 +39,9 @@ export class AnimalGrowthLastSchedule {
 }
 
 @ObjectType({
-    description: "Schedule information for crop growth"
-})
-export class CropGrowthLastSchedule {
-    @Field(() => Date, {
-        description: "The date of the last crop growth schedule"
-    })
-        date: Date
-}
-
-@ObjectType({
     description: "Schedule information for fruit growth"
 })
-export class FruitGrowthLastSchedule {
+export class FruitLastSchedule {
     @Field(() => Date, {
         description: "The date of the last fruit growth schedule"
     })
@@ -67,3 +57,24 @@ export class EnergyRegenerationLastSchedule {
     })
         date: Date
 }
+
+@ObjectType({
+    description: "Schedule information for bee house growth"
+})
+export class BeeHouseLastSchedule {
+    @Field(() => Date, {
+        description: "The date of the last bee house growth schedule"
+    })
+        date: Date
+}
+
+@ObjectType({
+    description: "Schedule information for plant growth"
+})
+export class PlantLastSchedule {
+    @Field(() => Date, {
+        description: "The date of the last plant growth schedule"
+    })
+        date: Date
+}
+
