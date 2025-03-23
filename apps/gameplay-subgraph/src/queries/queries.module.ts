@@ -16,7 +16,7 @@ import { UsersModule } from "./users"
 import { PetsModule } from "./pets"
 import { FruitsModule } from "./fruits"
 import { PlacedItemsModule } from "./placed-items"
-
+import { FlowersModule } from "./flowers"
 @Module({
     imports: [
         AnimalsModule,
@@ -36,6 +36,7 @@ import { PlacedItemsModule } from "./placed-items"
         UsersModule,
         PetsModule,
         ProductsModule,
+        FlowersModule,
     ]
 })
 export class QueriesModule {}

@@ -12,20 +12,10 @@ export class SpinPrizesService {
     ) {}
 
     async spinPrizes(): Promise<Array<SpinPrizeSchema>> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model(SpinPrizeSchema.name).find()
-        } finally {
-            await mongoSession.endSession()
-        }
+        return await this.connection.model(SpinPrizeSchema.name).find()
     }
 
     async spinPrize(id: string): Promise<SpinPrizeSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model(SpinPrizeSchema.name).findById(id)
-        } finally {
-            await mongoSession.endSession()
-        }
+        return await this.connection.model(SpinPrizeSchema.name).findById(id)
     }
 }

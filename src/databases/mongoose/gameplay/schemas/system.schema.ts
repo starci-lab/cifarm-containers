@@ -60,12 +60,12 @@ export class Activities {
     @Field(() => ActivityInfo, {
         description: "Configuration for watering crops"
     })
-        waterCrop: ActivityInfo
+        useWateringCan: ActivityInfo
 
     @Field(() => ActivityInfo, {
         description: "Configuration for feeding animals"
     })
-        feedAnimal: ActivityInfo
+        useAnimalFeed: ActivityInfo
 
     @Field(() => ActivityInfo, {
         description: "Configuration for harvesting animal products"
@@ -100,12 +100,12 @@ export class Activities {
     @Field(() => ActivityInfo, {
         description: "Configuration for helping others water crops"
     })
-        helpWaterCrop: ActivityInfo
+        helpUseWateringCan: ActivityInfo
 
     @Field(() => ActivityInfo, {
         description: "Configuration for stealing crops"
     })
-        thiefCrop: ActivityInfo
+        thiefPlant: ActivityInfo
 
     @Field(() => ActivityInfo, {
         description: "Configuration for thief animal"
@@ -113,14 +113,14 @@ export class Activities {
         thiefAnimal: ActivityInfo
 
     @Field(() => ActivityInfo, {
-        description: "Configuration for curing sick animals"
+        description: "Configuration for using animal medicine"
     })
-        cureAnimal: ActivityInfo
+        useAnimalMedicine: ActivityInfo
 
     @Field(() => ActivityInfo, {
-        description: "Configuration for helping others cure animals"
+        description: "Configuration for helping others use animal medicine"
     })
-        helpCureAnimal: ActivityInfo
+        helpUseAnimalMedicine: ActivityInfo
 
     @Field(() => ActivityInfo, {
         description: "Configuration for harvesting crops"
@@ -130,7 +130,7 @@ export class Activities {
     @Field(() => ActivityInfo, {
         description: "Configuration for helping others feed animals"
     })
-        helpFeedAnimal: ActivityInfo
+        helpUseAnimalFeed: ActivityInfo
 
     @Field(() => ActivityInfo, {
         description: "Configuration for using fruit fertilizer"

@@ -19,61 +19,43 @@ export class UsersService {
     ) {}
 
     async user(id: string): Promise<UserSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .findById(id)
-                .session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
+        return await this.connection.model<UserSchema>(UserSchema.name).findById(id)
     }
 
     async neighbors(
         { id }: UserLike,
         { limit, offset, searchString }: NeighborsRequest
     ): Promise<NeighborsResponse> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const data = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .find({
-                    _id: { $ne: id },
-                    username: { $regex: new RegExp(searchString, "i") }
-                })
-                .session(mongoSession)
-                .skip(offset)
-                .limit(limit)
-
-            // transform data to determine if user is following or not
-            const userIds = data.map(({ id }) => id)
-            // get all relations
-            const relations = await this.connection
-                .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                .find({
-                    follower: id,
-                    followee: { $in: userIds }
-                })
-                .session(mongoSession)
-            // map relations to object
-            data.map((user) => {
-                user.followed = !!relations.find(({ followee }) => followee.toString() === user.id)
-                return user
+        const data = await this.connection
+            .model<UserSchema>(UserSchema.name)
+            .find({
+                _id: { $ne: id },
+                username: { $regex: new RegExp(searchString, "i") }
             })
-            const count = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .countDocuments({
-                    _id: { $ne: id }
-                })
-                .session(mongoSession)
+            .skip(offset)
+            .limit(limit)
 
-            return {
-                data,
-                count
-            }
-        } finally {
-            await mongoSession.endSession()
+        // transform data to determine if user is following or not
+        const userIds = data.map(({ id }) => id)
+        // get all relations
+        const relations = await this.connection
+            .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
+            .find({
+                follower: id,
+                followee: { $in: userIds }
+            })
+        // map relations to object
+        data.map((user) => {
+            user.followed = !!relations.find(({ followee }) => followee.toString() === user.id)
+            return user
+        })
+        const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
+            _id: { $ne: id }
+        })
+
+        return {
+            data,
+            count
         }
     }
 
@@ -81,38 +63,28 @@ export class UsersService {
         { id }: UserLike,
         { limit, offset, searchString }: FolloweesRequest
     ): Promise<FolloweesResponse> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const relations = await this.connection
-                .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                .find({
-                    follower: id
-                })
-                .session(mongoSession)
-            const followeeIds = relations.map(({ followee }) => followee)
-            const data = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .find({
-                    _id: { $in: followeeIds },
-                    username: { $regex: new RegExp(searchString, "i") }
-                })
-                .session(mongoSession)
-                .skip(offset)
-                .limit(limit)
+        const relations = await this.connection
+            .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
+            .find({
+                follower: id
+            })
+        const followeeIds = relations.map(({ followee }) => followee)
+        const data = await this.connection
+            .model<UserSchema>(UserSchema.name)
+            .find({
+                _id: { $in: followeeIds },
+                username: { $regex: new RegExp(searchString, "i") }
+            })
+            .skip(offset)
+            .limit(limit)
 
-            const count = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .countDocuments({
-                    _id: { $in: followeeIds }
-                })
-                .session(mongoSession)
+        const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
+            _id: { $in: followeeIds }
+        })
 
-            return {
-                data,
-                count
-            }
-        } finally {
-            await mongoSession.endSession()
+        return {
+            data,
+            count
         }
     }
 }

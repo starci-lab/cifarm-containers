@@ -1,38 +1,20 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
-import { InjectMongoose, PlacedItemTypeId, PlacedItemTypeSchema } from "@src/databases"
-import { Connection } from "mongoose"
+import { PlacedItemTypeId, PlacedItemTypeSchema } from "@src/databases"
+import { StaticService } from "@src/gameplay"
 
 @Injectable()
 export class PlacedItemTypesService {
     private readonly logger = new Logger(PlacedItemTypesService.name)
 
-    constructor(
-        @InjectMongoose()
-        private readonly connection: Connection
-    ) {}
+    constructor(private readonly staticService: StaticService) {}
 
-    async placedItemTypes(): Promise<Array<PlacedItemTypeSchema>> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection
-                .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                .find()
-                .session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
+    placedItemTypes(): Array<PlacedItemTypeSchema> {
+        return this.staticService.placedItemTypes
     }
 
-    async placedItemType(id: PlacedItemTypeId): Promise<PlacedItemTypeSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection
-                .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
-                .findById(createObjectId(id))
-                .session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
+    placedItemType(id: PlacedItemTypeId): PlacedItemTypeSchema {
+        return this.staticService.placedItemTypes.find(
+            (placedItemType) => placedItemType.displayId === id
+        )
     }
 }

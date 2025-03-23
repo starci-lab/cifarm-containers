@@ -1,32 +1,18 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
-import { InjectMongoose, ToolId, ToolSchema } from "@src/databases"
-import { Connection } from "mongoose"
+import { ToolId, ToolSchema } from "@src/databases"
+import { StaticService } from "@src/gameplay"
 
 @Injectable()
 export class ToolsService {
     private readonly logger = new Logger(ToolsService.name)
 
-    constructor(
-       @InjectMongoose()
-        private readonly connection: Connection
-    ) { }
+    constructor(private readonly staticService: StaticService) {}
 
-    async tool(id: ToolId): Promise<ToolSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model<ToolSchema>(ToolSchema.name).findById(createObjectId(id))
-        } finally {
-            await mongoSession.endSession()
-        }
+    tool(id: ToolId): ToolSchema {
+        return this.staticService.tools.find((tool) => tool.displayId === id)
     }
 
-    async tools(): Promise<Array<ToolSchema>> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model<ToolSchema>(ToolSchema.name).find()
-        } finally {
-            await mongoSession.endSession()
-        }
+    tools(): Array<ToolSchema> {
+        return this.staticService.tools
     }
 }

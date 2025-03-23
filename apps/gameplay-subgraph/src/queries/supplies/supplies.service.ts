@@ -1,32 +1,20 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
-import { InjectMongoose, SupplyId, SupplySchema } from "@src/databases"
-import { Connection } from "mongoose"
+import { SupplyId, SupplySchema } from "@src/databases"
+import { StaticService } from "@src/gameplay"
 
 @Injectable()
 export class SuppliesService {
     private readonly logger = new Logger(SuppliesService.name)
 
     constructor(
-        @InjectMongoose()
-        private readonly connection: Connection
+        private readonly staticService: StaticService
     ) {}
 
-    async supply(id: SupplyId): Promise<SupplySchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model<SupplySchema>(SupplySchema.name).findById(createObjectId(id))
-        } finally {
-            await mongoSession.endSession()
-        }
+    supply(id: SupplyId): SupplySchema {
+        return this.staticService.supplies.find((supply) => supply.displayId === id)
     }
 
-    async supplies(): Promise<Array<SupplySchema>> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model<SupplySchema>(SupplySchema.name).find()
-        } finally {
-            await mongoSession.endSession()
-        }
+    supplies(): Array<SupplySchema> {
+        return this.staticService.supplies
     }
 }

@@ -43,23 +43,22 @@ export class SystemSeeder implements Seeder {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
-                cureAnimal: {
+                useAnimalMedicine: {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
                 harvestAnimal: {
                     energyConsume: 1,
-                    experiencesGain: 3
                 },
-                feedAnimal: {
+                useAnimalFeed: {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
-                helpFeedAnimal: {
+                helpUseAnimalMedicine: {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
-                helpCureAnimal: {
+                helpUseAnimalFeed: {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
@@ -71,15 +70,15 @@ export class SystemSeeder implements Seeder {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
-                helpWaterCrop: {
+                helpUseWateringCan: {
+                    energyConsume: 1,
+                    experiencesGain: 3
+                },
+                thiefPlant: {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
                 thiefAnimal: {
-                    energyConsume: 1,
-                    experiencesGain: 3
-                },
-                thiefCrop: {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
@@ -95,7 +94,7 @@ export class SystemSeeder implements Seeder {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
-                waterCrop: {
+                useWateringCan: {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
@@ -120,7 +119,6 @@ export class SystemSeeder implements Seeder {
                 },
                 harvestFruit: {
                     energyConsume: 1,
-                    experiencesGain: 3
                 },
                 thiefFruit: {
                     energyConsume: 1,

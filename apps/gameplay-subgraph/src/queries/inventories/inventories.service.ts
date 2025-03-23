@@ -17,31 +17,12 @@ export class InventoriesService {
     ) {}
 
     async getInventory(id: string): Promise<InventorySchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection
-                .model(InventorySchema.name)
-                .findById(id)
-                .session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
+        return await this.connection.model(InventorySchema.name).findById(id)
     }
 
-    async getInventories(
-        { id }: UserLike,
-    ): Promise<Array<InventorySchema>> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const inventories = await this.connection
-                .model(InventorySchema.name)
-                .find({
-                    user: id
-                })
-                .session(mongoSession)
-            return inventories
-        } finally {
-            await mongoSession.endSession()
-        }
+    async getInventories({ id }: UserLike): Promise<Array<InventorySchema>> {
+        return await this.connection.model(InventorySchema.name).find({
+            user: id
+        })
     }
 }

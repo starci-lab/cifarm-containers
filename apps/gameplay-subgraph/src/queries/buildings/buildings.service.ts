@@ -1,32 +1,20 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
-import { BuildingId, BuildingSchema, InjectMongoose } from "@src/databases"
-import { Connection } from "mongoose"
+import { BuildingId, BuildingSchema } from "@src/databases"
+import { StaticService } from "@src/gameplay/static"
 
 @Injectable()
 export class BuildingsService {
     private readonly logger = new Logger(BuildingsService.name)
 
     constructor(
-        @InjectMongoose()
-        private readonly connection: Connection
+        private readonly staticService: StaticService
     ) {}
 
-    async buildings(): Promise<Array<BuildingSchema>> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model<BuildingSchema>(BuildingSchema.name).find().session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
+    buildings(): Array<BuildingSchema> {
+        return this.staticService.buildings
     }
 
-    async building(id: BuildingId): Promise<BuildingSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model<BuildingSchema>(BuildingSchema.name).findById(createObjectId(id)).session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
+    building(id: BuildingId): BuildingSchema {
+        return this.staticService.buildings.find((building) => building.displayId === id)
     }
 }

@@ -1,35 +1,18 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
-import { InjectMongoose, TileId, TileSchema } from "@src/databases"
-import { Connection } from "mongoose"
+import { TileId, TileSchema } from "@src/databases"
+import { StaticService } from "@src/gameplay"
 
 @Injectable()
 export class TilesService {
     private readonly logger = new Logger(TilesService.name)
 
-    constructor(
-        @InjectMongoose()
-        private readonly connection: Connection
-    ) {}
+    constructor(private readonly staticService: StaticService) {}
 
-    async tiles(): Promise<Array<TileSchema>> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model(TileSchema.name).find().session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
+    tiles(): Array<TileSchema> {
+        return this.staticService.tiles
     }
 
-    async tile(id: TileId): Promise<TileSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection
-                .model(TileSchema.name)
-                .findById(createObjectId(id))
-                .session(mongoSession)
-        } finally {
-            await mongoSession.endSession()
-        }
+    tile(id: TileId): TileSchema {
+        return this.staticService.tiles.find((tile) => tile.displayId === id)
     }
 }

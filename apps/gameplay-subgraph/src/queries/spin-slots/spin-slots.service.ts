@@ -8,24 +8,14 @@ export class SpinSlotsService {
 
     constructor(
         @InjectMongoose()
-        private readonly connection: Connection,
+        private readonly connection: Connection
     ) {}
 
     async spinSlots(): Promise<Array<SpinSlotSchema>> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model(SpinSlotSchema.name).find()
-        } finally {
-            await mongoSession.endSession()
-        }
+        return await this.connection.model(SpinSlotSchema.name).find()
     }
 
     async spinSlot(id: string): Promise<SpinSlotSchema> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            return await this.connection.model(SpinSlotSchema.name).findById(id)
-        } finally {
-            await mongoSession.endSession()
-        }
+        return await this.connection.model(SpinSlotSchema.name).findById(id)
     }
 }
