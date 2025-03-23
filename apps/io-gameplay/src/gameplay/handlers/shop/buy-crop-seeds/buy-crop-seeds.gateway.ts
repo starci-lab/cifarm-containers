@@ -11,7 +11,7 @@ import { Namespace, Socket } from "socket.io"
 import { NAMESPACE } from "../../../gameplay.constants"
 import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
-import { BuyCropSeedsRequest } from "./buy-crop-seeds.dto"
+import { BuyCropSeedsMessage } from "./buy-crop-seeds.dto"
 import { BuyCropSeedsService } from "./buy-crop-seeds.service"
 import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
@@ -43,7 +43,7 @@ export class BuyCropSeedsGateway implements OnGatewayInit {
     @SubscribeMessage(ReceiverEventName.BuyCropSeeds)
     public async buyCropSeeds(
         @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: BuyCropSeedsRequest,
+        @MessageBody() payload: BuyCropSeedsMessage,
         @WsUser() user: UserLike
     ) {
         const syncedResponse = await this.buyCropSeedsService.buyCropSeeds(user, payload)

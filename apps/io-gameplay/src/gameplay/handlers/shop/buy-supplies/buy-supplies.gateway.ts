@@ -11,10 +11,10 @@ import { Namespace, Socket } from "socket.io"
 import { NAMESPACE } from "../../../gameplay.constants"
 import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
-import { BuyFlowerSeedsService } from "./buy-flower-seeds.service"
+import { BuySuppliesMessage } from "./buy-supplies.dto"
+import { BuySuppliesService } from "./buy-supplies.service"
 import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
-import { BuyFlowerSeedsMessage } from "./buy-flower-seeds.dto"
 
 @WebSocketGateway({
     cors: {
@@ -23,11 +23,11 @@ import { BuyFlowerSeedsMessage } from "./buy-flower-seeds.dto"
     },
     namespace: NAMESPACE
 })
-export class BuyFlowerSeedsGateway implements OnGatewayInit {
-    private readonly logger = new Logger(BuyFlowerSeedsGateway.name)
+export class BuySuppliesGateway implements OnGatewayInit {
+    private readonly logger = new Logger(BuySuppliesGateway.name)
 
     constructor(
-        private readonly buyFlowerSeedsService: BuyFlowerSeedsService,
+        private readonly buySuppliesService: BuySuppliesService,
         private readonly emitterService: EmitterService
     ) {}
 
@@ -36,20 +36,20 @@ export class BuyFlowerSeedsGateway implements OnGatewayInit {
 
     afterInit() {
         this.logger.verbose(
-            `Initialized gateway with name: ${BuyFlowerSeedsGateway.name}, namespace: ${NAMESPACE}`
+            `Initialized gateway with name: ${BuySuppliesGateway.name}, namespace: ${NAMESPACE}`
         )
     }
 
-    @SubscribeMessage(ReceiverEventName.BuyFlowerSeeds)
-    public async buyFlowerSeeds(
+    @SubscribeMessage(ReceiverEventName.BuySupplies)
+    public async buySupplies(
         @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: BuyFlowerSeedsMessage,
+        @MessageBody() payload: BuySuppliesMessage,
         @WsUser() user: UserLike
     ) {
-        const syncedResponse = await this.buyFlowerSeedsService.buyFlowerSeeds(user, payload)
+        const syncedResponse = await this.buySuppliesService.buySupplies(user, payload)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse
         })
     }
-}
+} 

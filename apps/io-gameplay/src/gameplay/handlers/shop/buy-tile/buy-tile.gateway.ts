@@ -11,10 +11,10 @@ import { Namespace, Socket } from "socket.io"
 import { NAMESPACE } from "../../../gameplay.constants"
 import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
-import { BuyFlowerSeedsService } from "./buy-flower-seeds.service"
 import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
-import { BuyFlowerSeedsMessage } from "./buy-flower-seeds.dto"
+import { BuyTileMessage } from "./buy-tile.dto"
+import { BuyTileService } from "./buy-tile.service"
 
 @WebSocketGateway({
     cors: {
@@ -23,11 +23,11 @@ import { BuyFlowerSeedsMessage } from "./buy-flower-seeds.dto"
     },
     namespace: NAMESPACE
 })
-export class BuyFlowerSeedsGateway implements OnGatewayInit {
-    private readonly logger = new Logger(BuyFlowerSeedsGateway.name)
+export class BuyTileGateway implements OnGatewayInit {
+    private readonly logger = new Logger(BuyTileGateway.name)
 
     constructor(
-        private readonly buyFlowerSeedsService: BuyFlowerSeedsService,
+        private readonly buyTileService: BuyTileService,
         private readonly emitterService: EmitterService
     ) {}
 
@@ -36,20 +36,20 @@ export class BuyFlowerSeedsGateway implements OnGatewayInit {
 
     afterInit() {
         this.logger.verbose(
-            `Initialized gateway with name: ${BuyFlowerSeedsGateway.name}, namespace: ${NAMESPACE}`
+            `Initialized gateway with name: ${BuyTileGateway.name}, namespace: ${NAMESPACE}`
         )
     }
 
-    @SubscribeMessage(ReceiverEventName.BuyFlowerSeeds)
-    public async buyFlowerSeeds(
+    @SubscribeMessage(ReceiverEventName.BuyTile)
+    public async buyTile(
         @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: BuyFlowerSeedsMessage,
+        @MessageBody() payload: BuyTileMessage,
         @WsUser() user: UserLike
     ) {
-        const syncedResponse = await this.buyFlowerSeedsService.buyFlowerSeeds(user, payload)
+        const syncedResponse = await this.buyTileService.buyTile(user, payload)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse
         })
     }
-}
+} 

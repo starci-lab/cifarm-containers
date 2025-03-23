@@ -10,18 +10,6 @@ export interface EmitActionPayload<TData = undefined> {
     reasonCode?: number
 }
 
-export interface BuyFruitData {
-    price: number
-}
-
-export interface BuyBuildingData {
-    price: number
-}
-
-export interface BuyTileData {
-    price: number
-}
-
 export interface ThiefPlantData {
     quantity: number
     productId: string
@@ -56,14 +44,6 @@ export interface SellData {
     quantity: number
 }
 
-export interface BuyTileData {
-    price: number
-}
-
-export interface BuyAnimalData {
-    price: number
-}
-
 export type ActionEmittedMessage<TData = undefined> = Omit<EmitActionPayload<TData>, "userId">
 
 export enum ActionName {
@@ -95,13 +75,3 @@ export enum ActionName {
     HarvestFruit = "harvest_fruit",
     ThiefFruit = "thief_fruit",
 }
-
-export interface EmitActionHarvestCropData{
-    quantity: number
-}
-
-export interface PlantSeedData {
-    placedItemTileId: string
-    cropId: string
-}
-

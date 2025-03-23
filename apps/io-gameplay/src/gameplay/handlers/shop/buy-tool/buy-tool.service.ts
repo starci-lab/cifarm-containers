@@ -4,19 +4,19 @@ import {
     InventoryKind,
     InventorySchema,
     InventoryType,
-    PlantType,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, SyncService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { BuyFlowerSeedsMessage } from "./buy-flower-seeds.dto"
+import { BuyToolMessage } from "./buy-tool.dto"
 import { UserLike } from "@src/jwt"
 import { WithStatus } from "@src/common"
 import { SyncedResponse } from "../../types"
 import { WsException } from "@nestjs/websockets"
+
 @Injectable()
-export class BuyFlowerSeedsService {
-    private readonly logger = new Logger(BuyFlowerSeedsService.name)
+export class BuyToolService {
+    private readonly logger = new Logger(BuyToolService.name)
 
     constructor(
         @InjectMongoose()
@@ -24,10 +24,10 @@ export class BuyFlowerSeedsService {
         private readonly syncService: SyncService,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly staticService: StaticService,
+        private readonly staticService: StaticService
     ) {}
 
-    async buyFlowerSeeds({ id: userId }: UserLike, request: BuyFlowerSeedsMessage): Promise<SyncedResponse> {
+    async buyTool({ id: userId }: UserLike, request: BuyToolMessage): Promise<SyncedResponse> {
         // Start session
         const mongoSession = await this.connection.startSession()
 
@@ -36,21 +36,19 @@ export class BuyFlowerSeedsService {
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
-                 * RETRIEVE AND VALIDATE FLOWER
+                 * RETRIEVE AND VALIDATE TOOL
                  ************************************************************/
-                const flower = this.staticService.flowers.find(
-                    (flower) => flower.displayId.toString() === request.flowerId
+                const tool = this.staticService.tools.find(
+                    (tool) => tool.displayId === request.toolId
                 )
 
-                if (!flower) {
-                    throw new WsException("Flower not found")
+                if (!tool) {
+                    throw new WsException("Tool not found")
                 }
 
-                if (!flower.availableInShop) {
-                    throw new WsException("Flower not available in shop")
+                if (!tool.availableInShop) {
+                    throw new WsException("Tool not available in shop")
                 }
-
-                const totalCost = flower.price * request.quantity
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
@@ -59,30 +57,43 @@ export class BuyFlowerSeedsService {
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
+      
                 if (!user) {
                     throw new WsException("User not found")
                 }
+                // snapshot the user to keep tracks on user changes
                 const userSnapshot = user.$clone()
 
-                //Check sufficient gold
+                // Check sufficient gold
                 this.goldBalanceService.checkSufficient({
                     current: user.golds,
-                    required: totalCost
+                    required: tool.price
                 })
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY TYPE
                  ************************************************************/
-                //Get inventory type
                 const inventoryType = this.staticService.inventoryTypes.find(
-                    (inventoryType) =>
-                        inventoryType.type === InventoryType.Seed &&
-                        inventoryType.seedType === PlantType.Flower &&
-                        inventoryType.flower.toString() === flower.id.toString()
-                )   
+                    (inventoryType) => 
+                        inventoryType.type === InventoryType.Tool && 
+                        inventoryType.tool.toString() === tool.id.toString()
+                )
 
                 if (!inventoryType) {
-                    throw new WsException("Inventory flower type not found")
+                    throw new WsException("Inventory tool type not found")
+                }
+
+                // Check if user has the tool already
+                const userHasTool = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .exists({
+                        user: userId,
+                        inventoryType: inventoryType.id
+                    })
+                    .session(session)
+
+                if (userHasTool) {
+                    throw new WsException("User already has the tool")
                 }
 
                 /************************************************************
@@ -91,7 +102,7 @@ export class BuyFlowerSeedsService {
                 // Subtract gold
                 this.goldBalanceService.subtract({
                     user,
-                    amount: totalCost
+                    amount: tool.price
                 })
 
                 // Save updated user data
@@ -100,8 +111,9 @@ export class BuyFlowerSeedsService {
                     userSnapshot,
                     userUpdated: user
                 })
+
                 /************************************************************
-                 * ADD SEEDS TO INVENTORY
+                 * ADD TOOL TO INVENTORY
                  ************************************************************/
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
@@ -117,7 +129,6 @@ export class BuyFlowerSeedsService {
                     inventoryType,
                     inventories,
                     capacity: storageCapacity,
-                    quantity: request.quantity,
                     userId: user.id,
                     occupiedIndexes,
                     kind: InventoryKind.Storage
@@ -136,19 +147,18 @@ export class BuyFlowerSeedsService {
 
                 // Update existing inventory items
                 for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
+                    // save inventory
                     await inventoryUpdated.save({ session })
-                    // get synced inventory then add to syncedInventories
-                    const updatedSyncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                    const syncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
                         inventorySnapshot,
                         inventoryUpdated
                     })
-                    syncedInventories.push(updatedSyncedInventory)
+                    syncedInventories.push(syncedInventory)
                 }
             })
-
             return {
-                user: syncedUser,
-                inventories: syncedInventories
+                inventories: syncedInventories,
+                user: syncedUser
             }
         } catch (error) {
             this.logger.error(error)
@@ -157,4 +167,4 @@ export class BuyFlowerSeedsService {
             await mongoSession.endSession()
         }
     }
-}
+} 

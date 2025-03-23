@@ -4,19 +4,19 @@ import {
     InventoryKind,
     InventorySchema,
     InventoryType,
-    PlantType,
-    UserSchema
+    UserSchema,
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, SyncService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { BuyFlowerSeedsMessage } from "./buy-flower-seeds.dto"
+import { BuySuppliesMessage } from "./buy-supplies.dto"
 import { UserLike } from "@src/jwt"
 import { WithStatus } from "@src/common"
 import { SyncedResponse } from "../../types"
 import { WsException } from "@nestjs/websockets"
+
 @Injectable()
-export class BuyFlowerSeedsService {
-    private readonly logger = new Logger(BuyFlowerSeedsService.name)
+export class BuySuppliesService {
+    private readonly logger = new Logger(BuySuppliesService.name)
 
     constructor(
         @InjectMongoose()
@@ -24,10 +24,10 @@ export class BuyFlowerSeedsService {
         private readonly syncService: SyncService,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly staticService: StaticService,
+        private readonly staticService: StaticService
     ) {}
 
-    async buyFlowerSeeds({ id: userId }: UserLike, request: BuyFlowerSeedsMessage): Promise<SyncedResponse> {
+    async buySupplies({ id: userId }: UserLike, request: BuySuppliesMessage): Promise<SyncedResponse> {
         // Start session
         const mongoSession = await this.connection.startSession()
 
@@ -36,21 +36,21 @@ export class BuyFlowerSeedsService {
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
-                 * RETRIEVE AND VALIDATE FLOWER
+                 * RETRIEVE AND VALIDATE SUPPLY
                  ************************************************************/
-                const flower = this.staticService.flowers.find(
-                    (flower) => flower.displayId.toString() === request.flowerId
+                const supply = this.staticService.supplies.find(
+                    (supply) => supply.displayId === request.supplyId
                 )
 
-                if (!flower) {
-                    throw new WsException("Flower not found")
+                if (!supply) {
+                    throw new WsException("Supply not found")
                 }
 
-                if (!flower.availableInShop) {
-                    throw new WsException("Flower not available in shop")
+                if (!supply.availableInShop) {
+                    throw new WsException("Supply not available in shop")
                 }
 
-                const totalCost = flower.price * request.quantity
+                const totalCost = supply.price * request.quantity
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
@@ -59,9 +59,11 @@ export class BuyFlowerSeedsService {
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
+      
                 if (!user) {
                     throw new WsException("User not found")
                 }
+                // snapshot the user to keep tracks on user changes
                 const userSnapshot = user.$clone()
 
                 //Check sufficient gold
@@ -76,13 +78,12 @@ export class BuyFlowerSeedsService {
                 //Get inventory type
                 const inventoryType = this.staticService.inventoryTypes.find(
                     (inventoryType) =>
-                        inventoryType.type === InventoryType.Seed &&
-                        inventoryType.seedType === PlantType.Flower &&
-                        inventoryType.flower.toString() === flower.id.toString()
-                )   
+                        inventoryType.type === InventoryType.Supply &&
+                        inventoryType.supply.toString() === supply.id.toString()
+                )
 
                 if (!inventoryType) {
-                    throw new WsException("Inventory flower type not found")
+                    throw new WsException("Inventory supply type not found")
                 }
 
                 /************************************************************
@@ -100,8 +101,9 @@ export class BuyFlowerSeedsService {
                     userSnapshot,
                     userUpdated: user
                 })
+
                 /************************************************************
-                 * ADD SEEDS TO INVENTORY
+                 * ADD SUPPLIES TO INVENTORY
                  ************************************************************/
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
@@ -136,19 +138,18 @@ export class BuyFlowerSeedsService {
 
                 // Update existing inventory items
                 for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
+                    // save inventory
                     await inventoryUpdated.save({ session })
-                    // get synced inventory then add to syncedInventories
-                    const updatedSyncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                    const syncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
                         inventorySnapshot,
                         inventoryUpdated
                     })
-                    syncedInventories.push(updatedSyncedInventory)
+                    syncedInventories.push(syncedInventory)
                 }
             })
-
             return {
-                user: syncedUser,
-                inventories: syncedInventories
+                inventories: syncedInventories,
+                user: syncedUser
             }
         } catch (error) {
             this.logger.error(error)
@@ -157,4 +158,4 @@ export class BuyFlowerSeedsService {
             await mongoSession.endSession()
         }
     }
-}
+} 

@@ -9,7 +9,7 @@ import {
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, SyncService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { BuyCropSeedsRequest } from "./buy-crop-seeds.dto"
+import { BuyCropSeedsMessage } from "./buy-crop-seeds.dto"
 import { UserLike } from "@src/jwt"
 import { WithStatus } from "@src/common"
 import { SyncedResponse } from "../../types"
@@ -28,7 +28,7 @@ export class BuyCropSeedsService {
         private readonly staticService: StaticService
     ) {}
 
-    async buyCropSeeds({ id: userId }: UserLike, request: BuyCropSeedsRequest): Promise<SyncedResponse> {
+    async buyCropSeeds({ id: userId }: UserLike, request: BuyCropSeedsMessage): Promise<SyncedResponse> {
         // Start session
         const mongoSession = await this.connection.startSession()
 

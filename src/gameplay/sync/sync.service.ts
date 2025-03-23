@@ -5,11 +5,10 @@ import {
     GetDeletedSyncedInventoriesParams,
     GetCreatedSyncedInventoriesParams,
     GetDeletedSyncedPlacedItemsParams,
-    GetCreatedOrUpdatedSyncedPlacedItemsParams,
     GetPartialUpdatedSyncedInventoryParams,
-    GetPartialUpdatedSyncedUserParams
+    GetPartialUpdatedSyncedUserParams,
+    GetCreatedSyncedPlacedItemsParams
 } from "./types"
-import {  } from "../inventory"
 import { ObjectService } from "@src/object"
 @Injectable()
 export class SyncService {
@@ -79,46 +78,17 @@ export class SyncService {
         }))
     }
 
-    public getCreatedOrUpdatedSyncedPlacedItems({
+    public getCreatedSyncedPlacedItems({
         placedItems,
-        status = SchemaStatus.Created
-    }: GetCreatedOrUpdatedSyncedPlacedItemsParams): Array<WithStatus<PlacedItemSchema>> {
+    }: GetCreatedSyncedPlacedItemsParams): Array<WithStatus<PlacedItemSchema>> {
         // get field needed, exclude
         const syncedPlacedItems = placedItems.map((placedItem) => {
             const placedItemJson = placedItem.toJSON({
                 flattenObjectIds: true
             }) as PlacedItemSchema
-            // Remove createdAt and updatedAt fields
-            // id: 1,
-            // x: 1,
-            // y: 1,
-            // placedItemType: 1,
-            // "cropInfo.currentPerennialCount": 1,
-            // "cropInfo.crop": 1,
-            // "cropInfo.currentStage": 1,
-            // "cropInfo.currentState": 1,
-            // "cropInfo.harvestQuantityRemaining": 1,
-            // "cropInfo.isFertilized": 1,
-            // "cropInfo.isQuality": 1,
-            // "cropInfo.thieves": 1,
-            // "cropInfo.currentStageTimeElapsed": 1,
-            // "buildingInfo.currentUpgrade": 1,
-            // "animalInfo.currentGrowthTime": 1,
-            // "animalInfo.currentHungryTime": 1,
-            // "animalInfo.currentYieldTime": 1,
-            // "animalInfo.harvestQuantityRemaining": 1,
-            // "animalInfo.isAdult": 1,
-            // "animalInfo.isQuality": 1,
-            // "animalInfo.thieves": 1,
-            // "fruitInfo.currentStage": 1,
-            // "fruitInfo.currentStageTimeElapsed": 1,
-            // "fruitInfo.currentState": 1,
-            // "fruitInfo.harvestQuantityRemaining": 1,
-            // "fruitInfo.isQuality": 1,
-            // "fruitInfo.thieves": 1
             return {
                 ...placedItemJson,
-                status
+                status: SchemaStatus.Created
             }
         })
 
