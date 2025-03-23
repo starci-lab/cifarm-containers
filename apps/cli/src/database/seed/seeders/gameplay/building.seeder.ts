@@ -29,7 +29,6 @@ export class BuildingSeeder implements Seeder {
                 price: 0,
                 upgradable: false,
                 unlockLevel: 0, 
-                upgrades: [],
                 maxOwnership: 1
             },
             {
@@ -40,7 +39,7 @@ export class BuildingSeeder implements Seeder {
                 maxUpgrade: 3,
                 price: 2000,
                 unlockLevel: 5,
-                upgradable: false,
+                upgradable: true,
                 maxOwnership: 3,
                 upgrades: [
                     {
@@ -70,7 +69,7 @@ export class BuildingSeeder implements Seeder {
                 maxUpgrade: 3,
                 price: 2000,
                 unlockLevel: 10,
-                upgradable: false,
+                upgradable: true,
                 maxOwnership: 3,
                 upgrades: [
                     {
@@ -93,10 +92,9 @@ export class BuildingSeeder implements Seeder {
                 ],
             },
             {
-                _id: createObjectId(BuildingId.Barn),
-                displayId: BuildingId.Barn,
+                _id: createObjectId(BuildingId.BeeHouse),
+                displayId: BuildingId.BeeHouse,
                 availableInShop: true,
-                animalContainedType: AnimalType.Livestock,
                 maxUpgrade: 3,
                 price: 2000,
                 unlockLevel: 10,
@@ -105,22 +103,31 @@ export class BuildingSeeder implements Seeder {
                 upgrades: [
                     {
                         capacity: 3,
-                        upgradeLevel: 1,
-                        sellPrice: 1000
+                        sellPrice: 1000,
+                        yieldCoefficient: 1,
                     },
                     {
                         upgradePrice: 1000,
-                        capacity: 5,
-                        upgradeLevel: 2,
-                        sellPrice: 1500
+                        sellPrice: 1500,
+                        yieldCoefficient: 1.25
                     },
                     {
                         upgradePrice: 2000,
                         capacity: 10,
                         upgradeLevel: 3,
-                        sellPrice: 2000
+                        sellPrice: 2000,
+                        yieldCoefficient: 1.5
                     }
                 ],
+            },
+            {
+                _id: createObjectId(BuildingId.PetHouse),
+                displayId: BuildingId.PetHouse,
+                availableInShop: true,
+                price: 2000,
+                unlockLevel: 10,
+                upgradable: false,
+                maxOwnership: 1,
             },
         ]
         

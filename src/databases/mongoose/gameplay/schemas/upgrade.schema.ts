@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int } from "@nestjs/graphql"
+import { ObjectType, Field, Int, Float } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 
@@ -18,10 +18,11 @@ export class UpgradeSchema extends AbstractSchema {
         upgradePrice?: number
     
     @Field(() => Int, {
-        description: "The capacity provided by this upgrade level"
+        description: "The capacity provided by this upgrade level",
+        nullable: true
     })
-    @Prop({ type: Number, required: true })
-        capacity: number
+    @Prop({ type: Number, required: false })
+        capacity?: number
     
     @Field(() => Int, {
         description: "The current upgrade level"
@@ -35,6 +36,13 @@ export class UpgradeSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: false, default: 0 })
         sellPrice?: number
+
+    @Field(() => Float, {
+        nullable: true,
+        description: "The yield coefficient of this upgrade"
+    })
+    @Prop({ type: Number, required: false })
+        yieldCoefficient?: number
 }
 
 // Generate Mongoose Schema

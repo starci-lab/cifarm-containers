@@ -63,10 +63,11 @@ export class BuildingSchema extends AbstractSchema {
         upgradable: boolean
 
     @Field(() => [UpgradeSchema], {
-        description: "The upgrades of the building"
+        description: "The upgrades of the building",
+        nullable: true
     })
-    @Prop({ type: [UpgradeSchemaClass] })
-        upgrades: Array<UpgradeSchema>
+    @Prop({ type: [UpgradeSchemaClass], required: false })
+        upgrades?: Array<UpgradeSchema>
 }
 
 // Generate the Mongoose schema class

@@ -29,8 +29,8 @@ export enum BuildingId {
     Coop = "coop",
     Barn = "barn",
     Home = "home",
-    // BeeHouse = "beeHouse",
-    // PetHouse = "petHouse",
+    BeeHouse = "beeHouse",
+    PetHouse = "petHouse",
 }
  
 export const FirstCharLowerCaseBuildingId = createFirstCharLowerCaseEnumType(BuildingId)
@@ -47,6 +47,12 @@ registerEnumType(FirstCharLowerCaseBuildingId, {
         },
         home: {
             description: "The home id.",
+        },
+        beeHouse: {
+            description: "The bee house id.",
+        },
+        petHouse: {
+            description: "The pet house id.",
         },
     },
 })
