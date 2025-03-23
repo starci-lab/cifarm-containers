@@ -265,18 +265,20 @@ export class PlantSeedService {
                 }
 
                 // Delete removed inventories
-                await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .deleteMany({
-                        _id: { $in: removedInventories.map((inventory) => inventory._id) }
+                if (removedInventories.length > 0) {
+                    await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .deleteMany({
+                            _id: { $in: removedInventories.map((inventory) => inventory._id) }
+                        })
+                        .session(session)
+                    
+                    // add synced inventory to syncedInventories
+                    const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
+                        inventoryIds: removedInventories.map((inventory) => inventory.id)
                     })
-                    .session(session)
-
-                // add synced inventory to syncedInventories
-                const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
-                    inventoryIds: removedInventories.map((inventory) => inventory.id)
-                })
-                syncedInventories.push(...deletedSyncedInventories)
+                    syncedInventories.push(...deletedSyncedInventories)
+                }
 
                 // Save user changes
                 await user.save({ session })
@@ -288,7 +290,7 @@ export class PlantSeedService {
                         { _id: placedItemTileId },
                         {
                             plantInfo: {
-                                seedType: inventoryTypeSeed.seedType,
+                                plantType: inventoryTypeSeed.seedType,
                                 crop:
                                     inventoryTypeSeed.seedType === PlantType.Crop
                                         ? plant.id.toString()

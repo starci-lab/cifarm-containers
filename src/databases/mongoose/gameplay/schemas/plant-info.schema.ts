@@ -54,15 +54,17 @@ export class PlantInfoSchema extends AbstractSchema {
         isQuality: boolean
 
     @Field(() => ID, {
-        description: "The crop type being grown"
+        description: "The crop type being grown",
+        nullable: true
     })
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: CropSchema.name })
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: CropSchema.name, required: false })
     [CROP]: CropSchema | Types.ObjectId
 
     @Field(() => ID, {
-        description: "The flower type being grown"
+        description: "The flower type being grown",
+        nullable: true
     })
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: FlowerSchema.name })
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: FlowerSchema.name, required: false })
     [FLOWER]: FlowerSchema | Types.ObjectId
 
     @Field(() => FirstCharLowerCasePlantCurrentState, {

@@ -56,28 +56,28 @@ export class ProductSchema extends AbstractSchema {
         description: "The crop associated with this product, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: CropSchema.name })
-        [CROP]: CropSchema | Types.ObjectId
+    [CROP]: CropSchema | Types.ObjectId
         
     @Field(() => ID, { 
         nullable: true,
         description: "The animal associated with this product, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: AnimalSchema.name })
-        [ANIMAL]: AnimalSchema | Types.ObjectId
+    [ANIMAL]: AnimalSchema | Types.ObjectId
 
     @Field(() => ID, { 
         nullable: true,
         description: "The fruit associated with this product, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FruitSchema.name })
-        [FRUIT]: FruitSchema | Types.ObjectId
+    [FRUIT]: FruitSchema | Types.ObjectId
 
     @Field(() => ID, { 
         nullable: true,
         description: "The fruit associated with this product, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FlowerSchema.name })
-        [FLOWER]: FlowerSchema | Types.ObjectId
+    [FLOWER]: FlowerSchema | Types.ObjectId
 }
 
 // Generate Mongoose Schema
