@@ -2,10 +2,12 @@ import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId, DeepPartial } from "@src/common"
 import {
     CropId,
+    FlowerId,
     InjectMongoose,
     InventoryType,
     InventoryTypeId,
     InventoryTypeSchema,
+    PlantType,
     ProductId,
     SupplyId,
     ToolId,
@@ -252,6 +254,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
+                plantType: PlantType.Crop,
                 crop: createObjectId(CropId.Turnip),
                 type: InventoryType.Seed
             },
@@ -262,6 +265,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
+                plantType: PlantType.Crop,
                 crop: createObjectId(CropId.Carrot),
                 type: InventoryType.Seed
             },
@@ -272,6 +276,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
+                plantType: PlantType.Crop,
                 crop: createObjectId(CropId.Potato),
                 type: InventoryType.Seed
             },
@@ -282,6 +287,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
+                plantType: PlantType.Crop,
                 crop: createObjectId(CropId.Pineapple),
                 type: InventoryType.Seed
             },
@@ -292,6 +298,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
+                plantType: PlantType.Crop,
                 crop: createObjectId(CropId.Watermelon),
                 type: InventoryType.Seed
             },
@@ -302,6 +309,7 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
+                plantType: PlantType.Crop,
                 crop: createObjectId(CropId.Cucumber),
                 type: InventoryType.Seed
             },
@@ -312,7 +320,19 @@ export class InventoryTypeSeeder implements Seeder {
                 deliverable: false,
                 maxStack: 64,
                 placeable: false,
+                plantType: PlantType.Crop,
                 crop: createObjectId(CropId.BellPepper),
+                type: InventoryType.Seed
+            },
+            {
+                _id: createObjectId(InventoryTypeId.DaisySeed),
+                displayId: InventoryTypeId.DaisySeed,
+                asTool: false,
+                deliverable: false,
+                maxStack: 64,
+                placeable: false,
+                plantType: PlantType.Flower,
+                flower: createObjectId(FlowerId.Daisy),
                 type: InventoryType.Seed
             },
             {

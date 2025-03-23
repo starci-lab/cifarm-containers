@@ -16,7 +16,8 @@ import {
     ProductSeeder,
     KeyValueStoreSeeder,
     PetSeeder,
-    FruitSeeder
+    FruitSeeder,
+    FlowerSeeder
 } from "./gameplay"
 import { MODULE_OPTIONS_TOKEN } from "./seeders.module-definition"
 import { SeederOptions } from "./types"
@@ -40,6 +41,7 @@ export class SeedersService {
             SpinPrizeSeeder,
             ToolSeeder,
             TileSeeder,
+            FlowerSeeder,
             SupplySeeder,
             PlacedItemTypeSeeder,
             ProductSeeder,
