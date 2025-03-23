@@ -9,6 +9,7 @@ import {
     GetRemoveParamsParams,
     GetRemoveParamsResult,
     GetUnoccupiedIndexesParams,
+    InventoryUpdate,
     RemoveParams,
     RemoveResult
 } from "./types"
@@ -32,7 +33,7 @@ export class InventoryService {
         occupiedIndexes,
         kind = InventoryKind.Storage
     }: AddParams): AddResult {
-        const updatedInventories: Array<InventorySchema> = []
+        const updatedInventories: Array<InventoryUpdate> = []
         const createdInventories: Array<DeepPartial<InventorySchema>> = []
 
         // sort the quantity in ascending order
@@ -63,13 +64,21 @@ export class InventoryService {
         }
         // loop through the inventories and add the quantity to the inventory
         for (const inventory of sortedInventories) {
+            // clone the inventory
+            const inventorySnapshot = inventory.$clone()
+            // get the space in the current stack
             const spaceInCurrentStack = inventoryType.maxStack - inventory.quantity
+            // if there is space in the current stack, add the quantity to the inventory
             if (spaceInCurrentStack > 0) {
                 const quantityToAdd = Math.min(spaceInCurrentStack, quantity)
                 inventory.quantity += quantityToAdd
                 quantity -= quantityToAdd
             }
-            updatedInventories.push(inventory)
+            // push the updated inventory to the updated inventories array
+            updatedInventories.push({
+                inventorySnapshot,
+                inventoryUpdated: inventory
+            })
         }
 
         // if quantity is still remaining, create a new inventory, and add the quantity to it

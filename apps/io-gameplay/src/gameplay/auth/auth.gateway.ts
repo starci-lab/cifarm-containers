@@ -66,15 +66,6 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         socket.leave(roomName)
     }
 
-    // get player watching user id
-    public getWatchingUserId(socket: SocketLike<SocketData>): string | undefined {
-        const roomName = Array.from(socket.rooms).find((room) => room.startsWith(RoomType.Watcher))
-        if (!roomName) {
-            return
-        }
-        return this.getUserIdFromRoomName(roomName)
-    }
-
     public getRoomName({ userId, type = RoomType.Player }: GetRoomNameParams): string {
         return `${type}_${userId}`
     }

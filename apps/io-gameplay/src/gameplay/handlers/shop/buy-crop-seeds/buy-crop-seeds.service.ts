@@ -9,15 +9,15 @@ import {
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, SyncService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { BuyFlowerSeedsRequest } from "./buy-flower-seeds.dto"
+import { BuyCropSeedsRequest } from "./buy-crop-seeds.dto"
 import { UserLike } from "@src/jwt"
-import { GraphQLError } from "graphql"
-import { KafkaTopic } from "@src/brokers"
-import { WithStatus, SchemaStatus } from "@src/common"
+import { WithStatus } from "@src/common"
+import { SyncedResponse } from "../../types"
+import { WsException } from "@nestjs/websockets"
 
 @Injectable()
-export class BuyFlowerSeedsService {
-    private readonly logger = new Logger(BuyFlowerSeedsService.name)
+export class BuyCropSeedsService {
+    private readonly logger = new Logger(BuyCropSeedsService.name)
 
     constructor(
         @InjectMongoose()
@@ -25,57 +25,47 @@ export class BuyFlowerSeedsService {
         private readonly syncService: SyncService,
         private readonly inventoryService: InventoryService,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly staticService: StaticService,
+        private readonly staticService: StaticService
     ) {}
 
-    async buyFlowerSeeds({ id: userId }: UserLike, request: BuyFlowerSeedsRequest): Promise<SyncedResponse> {
+    async buyCropSeeds({ id: userId }: UserLike, request: BuyCropSeedsRequest): Promise<SyncedResponse> {
         // Start session
         const mongoSession = await this.connection.startSession()
 
-        let user: UserSchema | undefined
+        let syncedUser: WithStatus<UserSchema> | undefined
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
-                 * RETRIEVE AND VALIDATE FLOWER
+                 * RETRIEVE AND VALIDATE CROP
                  ************************************************************/
-                const flower = this.staticService.flowers.find(
-                    (flower) => flower.displayId.toString() === request.flowerId
+                const crop = this.staticService.crops.find(
+                    (crop) => crop.displayId.toString() === request.cropId
                 )
 
-                if (!flower) {
-                    throw new GraphQLError("Flower not found", {
-                        extensions: {
-                            code: "FLOWER_NOT_FOUND"
-                        }
-                    })
+                if (!crop) {
+                    throw new WsException("Crop not found")
                 }
 
-                if (!flower.availableInShop) {
-                    throw new GraphQLError("Flower not available in shop", {
-                        extensions: {
-                            code: "FLOWER_NOT_AVAILABLE_IN_SHOP"
-                        }
-                    })
+                if (!crop.availableInShop) {
+                    throw new WsException("Crop not available in shop")
                 }
 
-                const totalCost = flower.price * request.quantity
+                const totalCost = crop.price * request.quantity
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                user = await this.connection
+                const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-
+      
                 if (!user) {
-                    throw new GraphQLError("User not found", {
-                        extensions: {
-                            code: "USER_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("User not found")
                 }
+                // snapshot the user to keep tracks on user changes
+                const userSnapshot = user.$clone()
 
                 //Check sufficient gold
                 this.goldBalanceService.checkSufficient({
@@ -90,16 +80,12 @@ export class BuyFlowerSeedsService {
                 const inventoryType = this.staticService.inventoryTypes.find(
                     (inventoryType) =>
                         inventoryType.type === InventoryType.Seed &&
-                        inventoryType.seedType === PlantType.Flower &&
-                        inventoryType.flower.toString() === flower.id.toString()
-                )   
+                        inventoryType.seedType === PlantType.Crop &&
+                        inventoryType.crop.toString() === crop.id.toString()
+                )
 
                 if (!inventoryType) {
-                    throw new GraphQLError("Inventory flower type not found", {
-                        extensions: {
-                            code: "INVENTORY_FLOWER_TYPE_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("Inventory crop seed type not found")
                 }
 
                 /************************************************************
@@ -113,6 +99,10 @@ export class BuyFlowerSeedsService {
 
                 // Save updated user data
                 await user.save({ session })
+                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
 
                 /************************************************************
                  * ADD SEEDS TO INVENTORY
@@ -142,35 +132,27 @@ export class BuyFlowerSeedsService {
                     const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session })
-                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: createdInventoryRaws,
-                        status: SchemaStatus.Created
+                    const createdSyncedInventories = this.syncService.getCreatedSyncedInventories({
+                        inventories: createdInventoryRaws
                     })
                     syncedInventories.push(...createdSyncedInventories)
                 }
 
                 // Update existing inventory items
-                for (const inventory of updatedInventories) {
-                    await inventory.save({ session })
-                    // get synced inventory then add to syncedInventories
-                    const updatedSyncedInventory = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: [inventory],
-                        status: SchemaStatus.Updated
+                for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
+                    // save inventory
+                    await inventoryUpdated.save({ session })
+                    const syncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                        inventorySnapshot,
+                        inventoryUpdated
                     })
-                    syncedInventories.push(...updatedSyncedInventory)
+                    syncedInventories.push(syncedInventory)
                 }
             })
-
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
-                }),
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
-                })
-            ])
+            return {
+                inventories: syncedInventories,
+                user: syncedUser
+            }
         } catch (error) {
             this.logger.error(error)
             throw error

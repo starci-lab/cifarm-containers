@@ -5,10 +5,10 @@ import {
     WebSocketServer
 } from "@nestjs/websockets"
 import { Namespace } from "socket.io"
-import { AuthGateway, RoomType } from "../auth"
-import { NAMESPACE } from "../gameplay.constants"
-import { ACTION_EMITTED_EVENT } from "./action.constants"
-import { ActionEmittedMessage, EmitActionPayload } from "./action.types"
+import { AuthGateway, RoomType } from "../../auth"
+import { NAMESPACE } from "../../gameplay.constants"
+import { ActionEmittedMessage, EmitActionPayload } from "./types"
+import { EmitterEventName } from "../../events"
 
 @WebSocketGateway({
     cors: {
@@ -45,6 +45,6 @@ export class ActionGateway implements OnGatewayInit {
                     type: RoomType.Player
                 })
             )
-            .emit(ACTION_EMITTED_EVENT, message)
+            .emit(EmitterEventName.ActionEmitted, message)
     }
 }

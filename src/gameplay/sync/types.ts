@@ -1,9 +1,8 @@
-import { InventorySchema, PlacedItemSchema } from "@src/databases"
+import { InventorySchema, PlacedItemSchema, UserSchema } from "@src/databases"
 import { SchemaStatus } from "@src/common"
 
-export interface GetCreatedOrUpdatedSyncedInventoriesParams {
+export interface GetCreatedSyncedInventoriesParams {
     inventories: Array<InventorySchema>
-    status?: SchemaStatus.Created | SchemaStatus.Updated
 }
 
 export interface GetDeletedSyncedInventoriesParams {
@@ -17,5 +16,15 @@ export interface GetCreatedOrUpdatedSyncedPlacedItemsParams {
 
 export interface GetDeletedSyncedPlacedItemsParams {
     placedItemIds: Array<string>
+}
+
+export interface GetPartialUpdatedSyncedInventoryParams {
+    inventorySnapshot: InventorySchema
+    inventoryUpdated: InventorySchema
+}
+
+export interface GetPartialUpdatedSyncedUserParams {
+    userSnapshot: UserSchema
+    userUpdated: UserSchema
 }
 

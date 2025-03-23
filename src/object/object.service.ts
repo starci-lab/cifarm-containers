@@ -5,7 +5,7 @@ import _ from "lodash"
 export class ObjectService {
     constructor() {}
 
-    public getDifferenceBetweenObjects<TObject extends object>(
+    private _getDifferenceBetweenObjects<TObject extends object>(
         object1: TObject,
         object2: TObject,
         options: ObjectDifferenceOptions = {},
@@ -18,7 +18,7 @@ export class ObjectService {
                 diffObj[key] = null
             } else if (_.isPlainObject(object1[key]) && _.isPlainObject(object2[key])) {
                 // If both values are objects, recurse
-                const nestedDiff = this.getDifferenceBetweenObjects(object1[key], object2[key], options, false)
+                const nestedDiff = this._getDifferenceBetweenObjects(object1[key], object2[key], options, false)
                 if (!_.isEmpty(nestedDiff)) {
                     diffObj[key] = nestedDiff
                 }
@@ -44,6 +44,14 @@ export class ObjectService {
         return object
     }
 
+    public getDifferenceBetweenObjects<TObject extends object>(
+        object1: TObject,
+        object2: TObject,
+        options: ObjectDifferenceOptions = {}
+    ): Partial<TObject> {
+        return this._getDifferenceBetweenObjects(object1, object2, options)
+    }
+
     /**
      * Get the differences between two arrays of objects, with deep comparison.
      * If an object in array1 doesn't exist in array2, it returns `undefined`.
@@ -65,7 +73,7 @@ export class ObjectService {
                 if (!obj2) throw new Error("Object 2 is missing")
 
                 // Use getDifferenceBetweenObjects to compare objects at the same index
-                const diff = this.getDifferenceBetweenObjects(obj1, obj2, options)
+                const diff = this._getDifferenceBetweenObjects(obj1, obj2, options)
                 if (Object.keys(diff).length > 0) {
                     return diff
                 }

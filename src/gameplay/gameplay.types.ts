@@ -1,5 +1,6 @@
 import { Field, InputType, Int } from "@nestjs/graphql"
 import { IsInt } from "class-validator"
+import { BaseOptions } from "@src/common"
 
 @InputType({
     description: "A position in the game"
@@ -18,7 +19,7 @@ export class PositionInput {
         y: number
 }
 
-export interface GameplayOptions {
+export interface GameplayOptions extends BaseOptions {
     theif?: TheifOptions
     loadStatic?: boolean
 }

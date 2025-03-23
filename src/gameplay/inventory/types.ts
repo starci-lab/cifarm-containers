@@ -18,8 +18,13 @@ export interface AddParams {
     kind?: InventoryKind
 }
 
+export interface InventoryUpdate {
+    inventorySnapshot: InventorySchema;
+    inventoryUpdated: InventorySchema;
+}
+
 export interface AddResult {
-    updatedInventories: Array<InventorySchema>
+    updatedInventories: Array<InventoryUpdate>
     createdInventories: Array<DeepPartial<InventorySchema>>
 }
 
@@ -71,3 +76,4 @@ export interface GetUnoccupiedIndexesParams {
 export interface GetRemoveParamsResult {
     inventories: Array<InventorySchema>
 }
+

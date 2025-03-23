@@ -11,10 +11,9 @@ import { GoldBalanceService, InventoryService, SyncService, StaticService } from
 import { Connection } from "mongoose"
 import { BuyFlowerSeedsRequest } from "./buy-flower-seeds.dto"
 import { UserLike } from "@src/jwt"
-import { GraphQLError } from "graphql"
-import { KafkaTopic } from "@src/brokers"
-import { WithStatus, SchemaStatus } from "@src/common"
-
+import { WithStatus } from "@src/common"
+import { SyncedResponse } from "../../types"
+import { WsException } from "@nestjs/websockets"
 @Injectable()
 export class BuyFlowerSeedsService {
     private readonly logger = new Logger(BuyFlowerSeedsService.name)
@@ -32,7 +31,7 @@ export class BuyFlowerSeedsService {
         // Start session
         const mongoSession = await this.connection.startSession()
 
-        let user: UserSchema | undefined
+        let syncedUser: WithStatus<UserSchema> | undefined
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -44,19 +43,11 @@ export class BuyFlowerSeedsService {
                 )
 
                 if (!flower) {
-                    throw new GraphQLError("Flower not found", {
-                        extensions: {
-                            code: "FLOWER_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("Flower not found")
                 }
 
                 if (!flower.availableInShop) {
-                    throw new GraphQLError("Flower not available in shop", {
-                        extensions: {
-                            code: "FLOWER_NOT_AVAILABLE_IN_SHOP"
-                        }
-                    })
+                    throw new WsException("Flower not available in shop")
                 }
 
                 const totalCost = flower.price * request.quantity
@@ -64,18 +55,14 @@ export class BuyFlowerSeedsService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                user = await this.connection
+                const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
-
                 if (!user) {
-                    throw new GraphQLError("User not found", {
-                        extensions: {
-                            code: "USER_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("User not found")
                 }
+                const userSnapshot = user.$clone()
 
                 //Check sufficient gold
                 this.goldBalanceService.checkSufficient({
@@ -95,11 +82,7 @@ export class BuyFlowerSeedsService {
                 )   
 
                 if (!inventoryType) {
-                    throw new GraphQLError("Inventory flower type not found", {
-                        extensions: {
-                            code: "INVENTORY_FLOWER_TYPE_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("Inventory flower type not found")
                 }
 
                 /************************************************************
@@ -113,7 +96,10 @@ export class BuyFlowerSeedsService {
 
                 // Save updated user data
                 await user.save({ session })
-
+                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
                 /************************************************************
                  * ADD SEEDS TO INVENTORY
                  ************************************************************/
@@ -142,35 +128,28 @@ export class BuyFlowerSeedsService {
                     const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session })
-                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: createdInventoryRaws,
-                        status: SchemaStatus.Created
+                    const createdSyncedInventories = this.syncService.getCreatedSyncedInventories({
+                        inventories: createdInventoryRaws
                     })
                     syncedInventories.push(...createdSyncedInventories)
                 }
 
                 // Update existing inventory items
-                for (const inventory of updatedInventories) {
-                    await inventory.save({ session })
+                for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
+                    await inventoryUpdated.save({ session })
                     // get synced inventory then add to syncedInventories
-                    const updatedSyncedInventory = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: [inventory],
-                        status: SchemaStatus.Updated
+                    const updatedSyncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                        inventorySnapshot,
+                        inventoryUpdated
                     })
-                    syncedInventories.push(...updatedSyncedInventory)
+                    syncedInventories.push(updatedSyncedInventory)
                 }
             })
 
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
-                }),
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
-                })
-            ])
+            return {
+                user: syncedUser,
+                inventories: syncedInventories
+            }
         } catch (error) {
             this.logger.error(error)
             throw error

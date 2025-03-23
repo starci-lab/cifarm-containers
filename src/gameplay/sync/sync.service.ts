@@ -3,20 +3,23 @@ import { InventorySchema, PlacedItemSchema, UserSchema } from "@src/databases"
 import { SchemaStatus, WithStatus } from "@src/common"
 import {
     GetDeletedSyncedInventoriesParams,
-    GetCreatedOrUpdatedSyncedInventoriesParams,
+    GetCreatedSyncedInventoriesParams,
     GetDeletedSyncedPlacedItemsParams,
     GetCreatedOrUpdatedSyncedPlacedItemsParams,
+    GetPartialUpdatedSyncedInventoryParams,
+    GetPartialUpdatedSyncedUserParams
 } from "./types"
+import {  } from "../inventory"
+import { ObjectService } from "@src/object"
 @Injectable()
 export class SyncService {
     private readonly logger = new Logger(SyncService.name)
 
-    constructor() {}
+    constructor(private readonly objectService: ObjectService) {}
 
-    public getCreatedOrUpdatedSyncedInventories({
+    public getCreatedSyncedInventories({
         inventories,
-        status = SchemaStatus.Created
-    }: GetCreatedOrUpdatedSyncedInventoriesParams): Array<WithStatus<InventorySchema>> {
+    }: GetCreatedSyncedInventoriesParams): Array<WithStatus<InventorySchema>> {
         // get field needed, exclude
         const syncedInventories = inventories.map((inventory) => {
             const inventoryJson = inventory.toJSON({
@@ -25,11 +28,46 @@ export class SyncService {
             // Remove createdAt and updatedAt fields
             return {
                 ...inventoryJson,
-                status
+                status: SchemaStatus.Created
             }
         })
 
         return syncedInventories
+    }
+
+    public getPartialUpdatedSyncedInventory({
+        inventorySnapshot,
+        inventoryUpdated
+    }: GetPartialUpdatedSyncedInventoryParams): WithStatus<InventorySchema> {
+        const inventory = this.objectService.getDifferenceBetweenObjects(
+            inventorySnapshot.toJSON({
+                flattenObjectIds: true
+            }),
+            inventoryUpdated.toJSON({
+                flattenObjectIds: true
+            }),
+            {
+                excludeKey: "id"
+            }
+        )
+        return {
+            ...inventory,
+            status: SchemaStatus.Updated
+        }
+    }
+
+    public getPartialUpdatedSyncedUser({
+        userSnapshot,
+        userUpdated
+    }: GetPartialUpdatedSyncedUserParams): WithStatus<UserSchema> {
+        const user = this.objectService.getDifferenceBetweenObjects(userSnapshot.toJSON({
+            flattenObjectIds: true
+        }), userUpdated.toJSON({
+            flattenObjectIds: true
+        }), {
+            excludeKey: "id"
+        })
+        return { ...user, status: SchemaStatus.Updated }
     }
 
     public getDeletedSyncedInventories({
@@ -48,7 +86,7 @@ export class SyncService {
         // get field needed, exclude
         const syncedPlacedItems = placedItems.map((placedItem) => {
             const placedItemJson = placedItem.toJSON({
-                flattenObjectIds: true,
+                flattenObjectIds: true
             }) as PlacedItemSchema
             // Remove createdAt and updatedAt fields
             // id: 1,
@@ -96,9 +134,7 @@ export class SyncService {
         }))
     }
 
-    public getSyncedUser(
-        user: UserSchema
-    ): UserSchema {
+    public getSyncedUser(user: UserSchema): UserSchema {
         return user.toObject({
             flattenObjectIds: true
         })

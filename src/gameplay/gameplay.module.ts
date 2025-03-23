@@ -7,9 +7,10 @@ import { ThiefService } from "./thief"
 import { GoldBalanceService, TokenBalanceService } from "./wallet"
 import { CoreService } from "./core"
 import { PositionService } from "./position"
-import { NestExport, NestProvider, NestService } from "@src/common"
+import { NestExport, NestImport, NestProvider, NestService } from "@src/common"
 import { StaticService } from "./static"
 import { SyncService } from "./sync"
+import { ObjectModule } from "@src/object"
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE) : DynamicModule {
@@ -31,13 +32,40 @@ export class GameplayModule extends ConfigurableModuleClass {
             // services that are loaded if static is enabled
             services.push(StaticService)
         }
+
+        const imports: Array<NestImport> = []
         const providers: Array<NestProvider> = services
         const exports: Array<NestExport> = services
 
+        if (!options.useGlobalImports) {
+            imports.push(ObjectModule.register({}))
+        }
+
         return {
             ...dynamicModule,
+            imports,
             providers: [...dynamicModule.providers, ...providers],
             exports
         }
     }
 }
+
+// const dynamicModule = super.register(options)
+
+// const imports: Array<NestImport> = []
+// const providers: Array<NestProvider> = []
+// const exports: Array<NestExport> = []
+
+// if (!options.useGlobalImports) {
+//     imports.push(BlockchainModule.register())
+// }
+
+// providers.push(HoneycombService)
+// exports.push(HoneycombService)
+
+// return {
+//     ...dynamicModule,
+//     providers: [...dynamicModule.providers, ...providers],
+//     imports,
+//     exports
+// }
