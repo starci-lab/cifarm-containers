@@ -1,4 +1,4 @@
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload, HarvestAnimalData } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { createObjectId, DeepPartial, SchemaStatus, WithStatus } from "@src/common"
@@ -27,11 +27,6 @@ import { Connection } from "mongoose"
 import { HarvestAnimalRequest, HarvestAnimalResponse } from "./harvest-animal.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-
-interface HarvestAnimalData {
-    productId: string
-    quantity: number
-}
 
 @Injectable()
 export class HarvestAnimalService {

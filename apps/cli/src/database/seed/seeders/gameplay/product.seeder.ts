@@ -4,6 +4,7 @@ import {
     AnimalId,
     CropId,
     FruitId,
+    FlowerId,
     InjectMongoose,
     ProductId,
     ProductSchema,
@@ -234,6 +235,26 @@ export class ProductSeeder implements Seeder {
                 type: ProductType.Fruit,
                 fruit: createObjectId(FruitId.Apple),
             },
+            {
+                _id: createObjectId(ProductId.Daisy),
+                displayId: ProductId.Daisy,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 10,
+                type: ProductType.Flower,
+                flower: createObjectId(FlowerId.Daisy),
+            },
+            {
+                _id: createObjectId(ProductId.DaisyQuality),
+                displayId: ProductId.DaisyQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 10,
+                tokenAmount: 1,
+                type: ProductType.Flower,
+                flower: createObjectId(FlowerId.Daisy),
+            },
+
         ]
         
         await this.connection.model<ProductSchema>(ProductSchema.name).insertMany(data)

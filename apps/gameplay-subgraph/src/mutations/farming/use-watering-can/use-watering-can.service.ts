@@ -84,7 +84,7 @@ export class UseWateringCanService {
                 if (!placedItemTile) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.WaterCrop,
+                        action: ActionName.UseWateringCan,
                         success: false,
                         userId,
                         reasonCode: 0
@@ -116,7 +116,7 @@ export class UseWateringCanService {
                 if (!placedItemTile.plantInfo) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.WaterCrop,
+                        action: ActionName.UseWateringCan,
                         success: false,
                         userId,
                         reasonCode: 1
@@ -132,7 +132,7 @@ export class UseWateringCanService {
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.NeedWater) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.WaterCrop,
+                        action: ActionName.UseWateringCan,
                         success: false,
                         userId,
                         reasonCode: 2
@@ -208,7 +208,7 @@ export class UseWateringCanService {
                 // Prepare action message
                 actionMessage = {
                     placedItem: syncedPlacedItemAction,
-                    action: ActionName.WaterCrop,
+                    action: ActionName.UseWateringCan,
                     success: true,
                     userId
                 }

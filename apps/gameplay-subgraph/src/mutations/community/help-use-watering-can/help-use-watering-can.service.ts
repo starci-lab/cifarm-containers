@@ -80,7 +80,7 @@ export class HelpUseWateringCanService {
                 if (!placedItemTile) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.HelpWaterCrop,
+                        action: ActionName.HelpUseWateringCan,
                         success: false,
                         userId,
                         reasonCode: 0
@@ -104,7 +104,7 @@ export class HelpUseWateringCanService {
                 if (neighborUserId === userId) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.HelpWaterCrop,
+                        action: ActionName.HelpUseWateringCan,
                         success: false,
                         userId,
                         reasonCode: 1
@@ -119,7 +119,7 @@ export class HelpUseWateringCanService {
                 if (!placedItemTile.plantInfo) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.HelpWaterCrop,
+                        action: ActionName.HelpUseWateringCan,
                         success: false,
                         userId,
                         reasonCode: 2
@@ -134,7 +134,7 @@ export class HelpUseWateringCanService {
                 if (placedItemTile.plantInfo.currentState !== PlantCurrentState.NeedWater) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.HelpWaterCrop,
+                        action: ActionName.HelpUseWateringCan,
                         success: false,
                         userId,
                         reasonCode: 3
@@ -200,7 +200,7 @@ export class HelpUseWateringCanService {
                 // Prepare action message for Kafka
                 actionMessage = {
                     placedItem: syncedPlacedItemAction,
-                    action: ActionName.HelpWaterCrop,
+                    action: ActionName.HelpUseWateringCan,
                     success: true,
                     userId
                 }

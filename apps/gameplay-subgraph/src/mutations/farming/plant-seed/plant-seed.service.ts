@@ -181,7 +181,7 @@ export class PlantSeedService {
                  ************************************************************/
 
                 let plant: AbstractPlantSchema
-                switch (inventoryTypeSeed.plantType) {
+                switch (inventoryTypeSeed.seedType) {
                 case PlantType.Crop: {
                     // Get crop data
                     const crop = this.staticService.crops.find(
@@ -288,13 +288,13 @@ export class PlantSeedService {
                         { _id: placedItemTileId },
                         {
                             plantInfo: {
-                                plantType: inventoryTypeSeed.plantType,
+                                seedType: inventoryTypeSeed.seedType,
                                 crop:
-                                    inventoryTypeSeed.plantType === PlantType.Crop
+                                    inventoryTypeSeed.seedType === PlantType.Crop
                                         ? plant.id.toString()
                                         : undefined,
                                 flower:
-                                    inventoryTypeSeed.plantType === PlantType.Flower
+                                    inventoryTypeSeed.seedType === PlantType.Flower
                                         ? plant.id.toString()
                                         : undefined
                             }

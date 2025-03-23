@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common"
-import { BuySeedsModule } from "./buy-seeds"
+import { BuyCropSeedsModule } from "./buy-crop-seeds"
+import { BuyFlowerSeedsModule } from "./buy-flower-seeds"
 import { BuySuppliesModule } from "./buy-supplies"
 import { BuyBuildingModule } from "./buy-building"
 import { BuyAnimalModule } from "./buy-animal"
@@ -11,7 +12,8 @@ import { BuyFruitModule } from "./buy-fruit"
     imports: [
         BuyBuildingModule,
         BuyFruitModule,
-        BuySeedsModule,
+        BuyCropSeedsModule,
+        BuyFlowerSeedsModule,
         BuySuppliesModule,
         BuyAnimalModule,
         BuyTileModule,

@@ -37,10 +37,11 @@ export class BuildingSchema extends AbstractSchema {
         animalContainedType?: AnimalType
 
     @Field(() => Int, {
-        description: "The maximum upgrade of the building"
+        description: "The maximum upgrade of the building",
+        nullable: true
     })
-    @Prop({ type: Number })
-        maxUpgrade: number
+    @Prop({ type: Number, required: false })
+        maxUpgrade?: number
 
     @Field(() => Int, {
         description: "The maximum ownership of the building",

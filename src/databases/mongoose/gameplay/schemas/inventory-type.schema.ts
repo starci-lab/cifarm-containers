@@ -52,11 +52,11 @@ export class InventoryTypeSchema extends AbstractSchema {
     [FLOWER]: FlowerSchema | Types.ObjectId
 
     @Field(() => FirstCharLowerCasePlantType, {
-        description: "The plant type",
+        description: "The seed type",
         nullable: true
     })
     @Prop({ type: String, enum: PlantType, required: false })
-        plantType?: PlantType
+        seedType?: PlantType
 
     @Field(() => ID, {
         description: "The product ID",

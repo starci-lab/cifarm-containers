@@ -1,16 +1,15 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { createObjectId } from "@src/common"
 import {
     InjectMongoose,
     InventoryKind,
     InventorySchema,
     InventoryType,
-    InventoryTypeSchema,
+    PlantType,
     UserSchema
 } from "@src/databases"
 import { GoldBalanceService, InventoryService, SyncService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { BuySeedsRequest } from "./buy-seeds.dto"
+import { BuyCropSeedsRequest } from "./buy-crop-seeds.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { KafkaTopic } from "@src/brokers"
@@ -19,8 +18,8 @@ import { Producer } from "kafkajs"
 import { WithStatus, SchemaStatus } from "@src/common"
 
 @Injectable()
-export class BuySeedsService {
-    private readonly logger = new Logger(BuySeedsService.name)
+export class BuyCropSeedsService {
+    private readonly logger = new Logger(BuyCropSeedsService.name)
 
     constructor(
         @InjectMongoose()
@@ -33,10 +32,10 @@ export class BuySeedsService {
         private readonly kafkaProducer: Producer
     ) {}
 
-    async buySeeds({ id: userId }: UserLike, request: BuySeedsRequest): Promise<void> {
+    async buyCropSeeds({ id: userId }: UserLike, request: BuyCropSeedsRequest): Promise<void> {
         // Start session
         const mongoSession = await this.connection.startSession()
-        
+
         let user: UserSchema | undefined
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
@@ -92,18 +91,17 @@ export class BuySeedsService {
                  * RETRIEVE AND VALIDATE INVENTORY TYPE
                  ************************************************************/
                 //Get inventory type
-                const inventoryType = await this.connection
-                    .model<InventoryTypeSchema>(InventoryTypeSchema.name)
-                    .findOne({
-                        type: InventoryType.Seed,
-                        crop: createObjectId(request.cropId)
-                    })
-                    .session(session)
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) =>
+                        inventoryType.type === InventoryType.Seed &&
+                        inventoryType.seedType === PlantType.Crop &&
+                        inventoryType.crop.toString() === crop.id.toString()
+                )
 
                 if (!inventoryType) {
-                    throw new GraphQLError("Inventory seed type not found", {
+                    throw new GraphQLError("Inventory crop seed type not found", {
                         extensions: {
-                            code: "INVENTORY_SEED_TYPE_NOT_FOUND"
+                            code: "INVENTORY_CROP_SEED_TYPE_NOT_FOUND"
                         }
                     })
                 }
@@ -148,10 +146,11 @@ export class BuySeedsService {
                     const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session })
-                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: createdInventoryRaws,
-                        status: SchemaStatus.Created
-                    })
+                    const createdSyncedInventories =
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: createdInventoryRaws,
+                            status: SchemaStatus.Created
+                        })
                     syncedInventories.push(...createdSyncedInventories)
                 }
 
@@ -159,10 +158,11 @@ export class BuySeedsService {
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
                     // get synced inventory then add to syncedInventories
-                    const updatedSyncedInventory = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: [inventory],
-                        status: SchemaStatus.Updated
-                    })
+                    const updatedSyncedInventory =
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: [inventory],
+                            status: SchemaStatus.Updated
+                        })
                     syncedInventories.push(...updatedSyncedInventory)
                 }
             })
@@ -170,11 +170,20 @@ export class BuySeedsService {
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, inventories: syncedInventories }) }
+                    ]
                 })
             ])
         } catch (error) {

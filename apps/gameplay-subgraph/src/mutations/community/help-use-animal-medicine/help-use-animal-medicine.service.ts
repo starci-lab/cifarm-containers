@@ -77,7 +77,7 @@ export class HelpUseAnimalMedicineService {
                 if (!placedItemAnimal) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.HelpCureAnimal,
+                        action: ActionName.HelpUseAnimalMedicine,
                         success: false,
                         userId,
                         reasonCode: 0
@@ -101,7 +101,7 @@ export class HelpUseAnimalMedicineService {
                 if (neighborUserId === userId) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.HelpCureAnimal,
+                        action: ActionName.HelpUseAnimalMedicine,
                         success: false,
                         userId,
                         reasonCode: 1
@@ -117,7 +117,7 @@ export class HelpUseAnimalMedicineService {
                 if (!placedItemAnimal.animalInfo) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.HelpCureAnimal,
+                        action: ActionName.HelpUseAnimalMedicine,
                         success: false,
                         userId,
                         reasonCode: 2
@@ -133,7 +133,7 @@ export class HelpUseAnimalMedicineService {
                 if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.HelpCureAnimal,
+                        action: ActionName.HelpUseAnimalMedicine,
                         success: false,
                         userId,
                         reasonCode: 3
@@ -206,7 +206,7 @@ export class HelpUseAnimalMedicineService {
                 // Prepare action message
                 actionMessage = {
                     placedItem: syncedPlacedItemAction,
-                    action: ActionName.HelpCureAnimal,
+                    action: ActionName.HelpUseAnimalMedicine,
                     success: true,
                     userId
                 }

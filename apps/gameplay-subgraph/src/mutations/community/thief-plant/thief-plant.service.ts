@@ -133,7 +133,7 @@ export class ThiefPlantService {
                 if (users.map((user) => user.toString()).includes(userId)) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.ThiefCrop,
+                        action: ActionName.ThiefPlant,
                         success: false,
                         userId,
                         reasonCode: 1
@@ -211,7 +211,7 @@ export class ThiefPlantService {
                 if (actualQuantity <= 0) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,
-                        action: ActionName.ThiefCrop,
+                        action: ActionName.ThiefPlant,
                         success: false,
                         userId,
                         reasonCode: 2
@@ -303,10 +303,10 @@ export class ThiefPlantService {
 
                 actionMessage = {
                     placedItem: syncedPlacedItemAction,
-                    action: ActionName.ThiefCrop,
+                    action: ActionName.ThiefPlant,
                     success: true,
                     userId,
-                    data: { quantity: actualQuantity, cropId: crop.id }
+                    data: { quantity: actualQuantity, productId: product.id }
                 }
 
                 // Commit the transaction automatically after all operations are successful

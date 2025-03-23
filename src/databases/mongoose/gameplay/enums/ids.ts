@@ -281,6 +281,8 @@ export enum ProductId {
     BananaQuality = "bananaQuality",
     Apple = "apple",
     AppleQuality = "appleQuality",
+    Daisy = "daisy",
+    DaisyQuality = "daisyQuality",
 }
 
 export const FirstCharLowerCaseProductId = createFirstCharLowerCaseEnumType(ProductId)    

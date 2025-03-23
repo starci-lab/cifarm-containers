@@ -2,10 +2,12 @@ import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { ProductId, ProductType, FirstCharLowerCaseProductId, FirstCharLowerCaseProductType } from "../enums"
 import { AbstractSchema } from "./abstract"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 import { CropSchema } from "./crop.schema"
 import { AnimalSchema } from "./animal.schema"
 import { FruitSchema } from "./fruit.schema"
+import { CROP, ANIMAL, FRUIT, FLOWER } from "../constants"
+import { FlowerSchema } from "./flower.schema"
 
 @ObjectType({
     description: "The product schema"
@@ -54,21 +56,28 @@ export class ProductSchema extends AbstractSchema {
         description: "The crop associated with this product, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: CropSchema.name })
-        crop: CropSchema | string
+        [CROP]: CropSchema | Types.ObjectId
         
     @Field(() => ID, { 
         nullable: true,
         description: "The animal associated with this product, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: AnimalSchema.name })
-        animal: AnimalSchema | string
+        [ANIMAL]: AnimalSchema | Types.ObjectId
 
     @Field(() => ID, { 
         nullable: true,
         description: "The fruit associated with this product, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FruitSchema.name })
-        fruit: FruitSchema | string
+        [FRUIT]: FruitSchema | Types.ObjectId
+
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The fruit associated with this product, if applicable"
+    })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FlowerSchema.name })
+        [FLOWER]: FlowerSchema | Types.ObjectId
 }
 
 // Generate Mongoose Schema

@@ -1,14 +1,14 @@
 // buy-seed.dto.ts
 
-import { CropId, FirstCharLowerCaseCropId } from "@src/databases"
+import { FlowerId, FirstCharLowerCaseFlowerId } from "@src/databases"
 import { IsInt, IsString, Min } from "class-validator"
 import { Field, InputType } from "@nestjs/graphql"
 
 @InputType()
-export class BuySeedsRequest {
+export class BuyFlowerSeedsRequest {
     @IsString()
-    @Field(() => FirstCharLowerCaseCropId, { description: "The id of the seed to purchase" })
-        cropId: CropId
+    @Field(() => FirstCharLowerCaseFlowerId, { description: "The id of the seed to purchase" })
+        flowerId: FlowerId
 
     @IsInt()
     @Min(1)

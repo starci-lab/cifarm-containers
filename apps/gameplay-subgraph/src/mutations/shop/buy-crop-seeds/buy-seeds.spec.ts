@@ -6,7 +6,7 @@ import { CropId, CropSchema, getMongooseToken, InventorySchema, InventoryTypeId,
 import { UserInsufficientGoldException } from "@src/gameplay"
 import { GameplayConnectionService, GameplayMockUserService, TestingInfraModule } from "@src/testing"
 import { Connection } from "mongoose"
-import { BuySeedsService } from "./buy-seeds.service"
+import { BuySeedsService } from "./buy-crop-seeds.service"
 
 describe("BuySeedsService", () => {
     let service: BuySeedsService

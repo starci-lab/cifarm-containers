@@ -179,7 +179,7 @@ export class UseAnimalMedicineService {
                 // Prepare action message
                 actionMessage = {
                     placedItem: syncedPlacedItemAction,
-                    action: ActionName.CureAnimal,
+                    action: ActionName.UseAnimalMedicine,
                     success: true,
                     userId
                 }

@@ -301,11 +301,11 @@ export class HarvestPlantService {
                 // Prepare action message
                 actionMessage = {
                     placedItem: syncedPlacedItemAction,
-                    action: ActionName.HarvestCrop,
+                    action: ActionName.HarvestPlant,
                     success: true,
                     userId,
                     data: {
-                        cropId: crop.id,
+                        productId: product.id,
                         quantity: placedItemTile.plantInfo.harvestQuantityRemaining
                     }
                 }

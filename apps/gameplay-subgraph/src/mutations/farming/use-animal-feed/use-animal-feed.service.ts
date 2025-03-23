@@ -243,7 +243,7 @@ export class UseAnimalFeedService {
                 // Prepare action message
                 actionMessage = {
                     placedItem: syncedPlacedItemAction,
-                    action: ActionName.FeedAnimal,
+                    action: ActionName.UseAnimalFeed,
                     success: true,
                     userId
                 }
