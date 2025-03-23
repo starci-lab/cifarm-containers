@@ -8,10 +8,10 @@ export const queueOptions = {
 }
 
 export const bullData: Record<BullQueueName, BullQueueData>  = {
-    [BullQueueName.Crop]: {
-        name: "CROP_QUEUE",
+    [BullQueueName.Plant]: {
+        name: "PLANT_QUEUE",
         batchSize: 10000,
-        prefix: formatWithBraces("crop"),
+        prefix: formatWithBraces("plant"),
         opts: {
             removeOnComplete: {
                 age: queueOptions.JOB_AGE,
@@ -72,6 +72,21 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         name: "FRUIT_QUEUE",
         batchSize: 10000,
         prefix: formatWithBraces("fruit"),
+        opts: {
+            removeOnComplete: {
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.COMPLETE_JOB_COUNT
+            },
+            removeOnFail: {
+                age: queueOptions.JOB_AGE,
+                count: queueOptions.FAILED_JOB_COUNT
+            },
+        }
+    },
+    [BullQueueName.BeeHouse]: {
+        name: "BEE_HOUSE_QUEUE",
+        batchSize: 10000,
+        prefix: formatWithBraces("beehouse"),
         opts: {
             removeOnComplete: {
                 age: queueOptions.JOB_AGE,
