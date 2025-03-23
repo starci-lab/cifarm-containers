@@ -153,7 +153,7 @@ export class UseAnimalMedicineService {
                  ************************************************************/
 
                 // Update user energy and experience
-                this.energyService.substract({
+                this.energyService.subtract({
                     user,
                     quantity: energyConsume
                 })

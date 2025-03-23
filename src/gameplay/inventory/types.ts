@@ -36,7 +36,7 @@ export interface RemoveParams {
 }
 
 export interface RemoveResult {
-    updatedInventories: Array<InventorySchema>
+    updatedInventories: Array<InventoryUpdate>
     removedInventories: Array<InventorySchema>
 
 }

@@ -162,7 +162,7 @@ export class HelpUseBugNetService {
                  * Update all data after all validations are complete
                  ************************************************************/
                 // Update user energy and experience
-                this.energyService.substract({
+                this.energyService.subtract({
                     user,
                     quantity: energyConsume
                 })

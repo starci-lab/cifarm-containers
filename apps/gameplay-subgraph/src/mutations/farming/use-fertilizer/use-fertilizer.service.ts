@@ -208,7 +208,7 @@ export class UseFertilizerService {
                  ************************************************************/
 
                 // Update user energy and experience
-                this.energyService.substract({ user, quantity: energyConsume })
+                this.energyService.subtract({ user, quantity: energyConsume })
                 this.levelService.addExperiences({ user, experiences: experiencesGain })
 
                 // Remove fertilizer from inventory

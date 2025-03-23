@@ -1,0 +1,265 @@
+import { Injectable, Logger } from "@nestjs/common"
+import {
+    InjectMongoose,
+    InventorySchema,
+    PlacedItemSchema,
+    PlantType,
+    UserSchema,
+    PlantInfoSchema,
+    AbstractPlantSchema,
+    InventoryKind
+} from "@src/databases"
+import { EnergyService, InventoryService, LevelService, SyncService } from "@src/gameplay"
+import { StaticService } from "@src/gameplay/static"
+import { Connection } from "mongoose"
+import { PlantSeedMessage } from "./plant-seed.dto"
+import { UserLike } from "@src/jwt"
+import { DeepPartial, WithStatus } from "@src/common"
+import { EmitActionPayload, ActionName } from "../../../emitter"
+import { WsException } from "@nestjs/websockets"
+import { SyncedResponse } from "../../types"
+
+@Injectable()
+export class PlantSeedService {
+    private readonly logger = new Logger(PlantSeedService.name)
+
+    constructor(
+        @InjectMongoose() private readonly connection: Connection,
+        private readonly energyService: EnergyService,
+        private readonly inventoryService: InventoryService,
+        private readonly levelService: LevelService,
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService
+    ) {}
+
+    async plantSeed(
+        { id: userId }: UserLike,
+        { inventorySeedId, placedItemTileId }: PlantSeedMessage
+    ): Promise<SyncedResponse> {
+        const mongoSession = await this.connection.startSession()
+
+        // synced variables
+        let actionPayload: EmitActionPayload | undefined
+        let syncedUser: DeepPartial<UserSchema> | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
+        const syncedInventories: Array<WithStatus<InventorySchema>> = []
+
+        try {
+            await mongoSession.withTransaction(async (session) => {
+                /************************************************************
+                 * RETRIEVE USER DATA
+                 ************************************************************/
+                // Fetch user
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(session)
+
+                if (!user) {
+                    throw new WsException("User not found")
+                }
+
+                // Save user snapshot for sync later
+                const userSnapshot = user.$clone()
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE TILE DATA
+                 ************************************************************/
+                // Fetch placed item (tile)
+                const placedItemTile = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .findOne({
+                        _id: placedItemTileId,
+                        user: userId
+                    })
+                    .session(session)
+
+                if (!placedItemTile) {
+                    throw new WsException("Tile not found")
+                }
+                const placedItemTileSnapshot = placedItemTile.$clone()
+                // Add to synced placed items
+                syncedPlacedItemAction = {
+                    id: placedItemTile.id,
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    placedItemType: placedItemTile.placedItemType,
+                }
+
+                // Check if the tile already has a plant
+                if (placedItemTile.plantInfo) {
+                    throw new WsException("Tile already has a plant")
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE INVENTORY SEED
+                 ************************************************************/
+                // Fetch inventory seed
+                const inventorySeed = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        _id: inventorySeedId,
+                        user: userId,
+                    })
+                    .session(session)
+
+                if (!inventorySeed) {
+                    throw new WsException("Seed not found in inventory")
+                }
+
+                if (inventorySeed.kind !== InventoryKind.Tool) {
+                    throw new WsException("Seed is not in toolbar")
+                }
+
+                if (inventorySeed.quantity < 1) {
+                    throw new WsException("Not enough seeds")
+                }
+
+                /************************************************************
+                 * VALIDATE ENERGY
+                 ************************************************************/
+                // Check if the user has enough energy
+                const { energyConsume } = this.staticService.activities.plantSeed
+                this.energyService.checkSufficient({
+                    current: user.energy,
+                    required: energyConsume
+                })
+
+                /************************************************************
+                 * UPDATE USER ENERGY
+                 ************************************************************/
+                // Deduct energy
+                this.energyService.subtract({
+                    user,
+                    quantity: energyConsume
+                })
+
+                // Save user
+                await user.save({ session })
+
+                // Add to synced user
+                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
+
+                /************************************************************
+                 * UPDATE INVENTORY
+                 ************************************************************/
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) =>
+                        inventoryType.id.toString() === inventorySeed.inventoryType.toString()
+                )
+
+                const { inventories } = await this.inventoryService.getRemoveParams({
+                    session,
+                    userId,
+                    inventoryType,
+                    connection: this.connection,
+                    kind: InventoryKind.Tool
+                })
+
+                const { removedInventories, updatedInventories } = this.inventoryService.remove({
+                    inventories,
+                    quantity: 1
+                })
+
+                if (removedInventories.length > 0) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
+                        _id: { $in: removedInventories.map((inventory) => inventory._id) }
+                    })
+                    const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
+                        inventoryIds: removedInventories.map((inventory) =>
+                            inventory._id.toString()
+                        )
+                    })
+                    syncedInventories.push(...deletedSyncedInventories)
+                }
+
+                if (updatedInventories.length > 0) {
+                    for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
+                        const syncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                            inventorySnapshot,
+                            inventoryUpdated
+                        })
+                        syncedInventories.push(syncedInventory)
+                    }
+                }
+
+                /************************************************************
+                 * UPDATE PLACED ITEM TILE
+                 ************************************************************/
+                // Update tile with plant info
+                let plant: AbstractPlantSchema
+                let plantType: PlantType
+                switch (inventoryType.seedType) {
+                case PlantType.Crop: {
+                    plant = this.staticService.crops.find(
+                        (crop) => crop.id.toString() === inventoryType.crop.toString()
+                    )
+                    plantType = PlantType.Crop
+                    break
+                }
+                case PlantType.Flower: {
+                    plant = this.staticService.flowers.find(
+                        (flower) => flower.id.toString() === inventoryType.flower.toString()
+                    )
+                    plantType = PlantType.Flower
+                    break
+                }
+                }
+
+                // use as to avoid type error
+                const plantInfo: DeepPartial<PlantInfoSchema> = {
+                    plantType,
+                    crop: plantType === PlantType.Crop ? plant.id : undefined,
+                    flower: plantType === PlantType.Flower ? plant.id : undefined
+                }
+                placedItemTile.plantInfo = plantInfo as PlantInfoSchema
+                // Save placed item tile
+                const savedPlacedItemTile = await placedItemTile.save({ session })
+                const syncedUpdatedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem(
+                    {
+                        placedItemSnapshot: placedItemTileSnapshot,
+                        placedItemUpdated: savedPlacedItemTile
+                    }
+                )
+                syncedPlacedItems.push(syncedUpdatedPlacedItems)
+
+                /************************************************************
+                 * PREPARE ACTION MESSAGE
+                 ************************************************************/
+                // Prepare the action payload
+                actionPayload = {
+                    action: ActionName.PlantSeed,
+                    placedItem: syncedPlacedItemAction,
+                    success: true,
+                    userId,
+                }
+            })
+
+            return {
+                user: syncedUser,
+                placedItems: syncedPlacedItems,
+                inventories: syncedInventories,
+                action: actionPayload
+            }
+        } catch (error) {
+            this.logger.error(error)
+
+            // Send failure action message if any error occurs
+            if (actionPayload) {
+                return {
+                    action: actionPayload
+                }
+            }
+
+            // Rethrow error to be handled higher up
+            throw error
+        } finally {
+            // End the session after the transaction is complete
+            await mongoSession.endSession()
+        }
+    }
+}

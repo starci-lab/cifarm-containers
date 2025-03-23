@@ -18,7 +18,19 @@ export enum ReceiverEventName {
     BuyFruit = "buy_fruit",
     BuyAnimal = "buy_animal",
     BuyBuilding = "buy_building",
-    BuyTile = "buy_tile"
+    BuyTile = "buy_tile",
+    PlantSeed = "plant_seed",
+    HarvestPlant = "harvest_plant",
+    UseHerbicide = "use_herbicide",
+    UsePesticide = "use_pesticide",
+    HarvestAnimal = "harvest_animal",
+    UseAnimalFeed = "use_animal_feed",
+    UseAnimalMedicine = "use_animal_medicine",
+    UseFertilizer = "use_fertilizer",
+    UseWateringCan = "use_watering_can",
+    HarvestFruit = "harvest_fruit",
+    UseBugNet = "use_bug_net",
+    UseFruitFertilizer = "use_fruit_fertilizer"
 }
 
 // sync placed items

@@ -159,14 +159,15 @@ export class BuyTileService {
                     success: true,
                     userId,
                     data: {
-                        tileId
+                        tileId: tile.id
                     }
                 }
             })
 
             return {
                 user: syncedUser,
-                placedItems: syncedPlacedItems
+                placedItems: syncedPlacedItems,
+                action: actionPayload
             }
         } catch (error) {
             this.logger.error(error)

@@ -7,7 +7,8 @@ import {
     GetDeletedSyncedPlacedItemsParams,
     GetPartialUpdatedSyncedInventoryParams,
     GetPartialUpdatedSyncedUserParams,
-    GetCreatedSyncedPlacedItemsParams
+    GetCreatedSyncedPlacedItemsParams,
+    GetPartialUpdatedSyncedPlacedItemParams
 } from "./types"
 import { ObjectService } from "@src/object"
 @Injectable()
@@ -53,6 +54,20 @@ export class SyncService {
             ...inventory,
             status: SchemaStatus.Updated
         }
+    }
+
+    public getPartialUpdatedSyncedPlacedItem({
+        placedItemSnapshot,
+        placedItemUpdated
+    }: GetPartialUpdatedSyncedPlacedItemParams): WithStatus<PlacedItemSchema> {
+        const placedItem = this.objectService.getDifferenceBetweenObjects(placedItemSnapshot.toJSON({
+            flattenObjectIds: true
+        }), placedItemUpdated.toJSON({
+            flattenObjectIds: true
+        }), {
+            excludeKey: "id"
+        })
+        return { ...placedItem, status: SchemaStatus.Updated }
     }
 
     public getPartialUpdatedSyncedUser({

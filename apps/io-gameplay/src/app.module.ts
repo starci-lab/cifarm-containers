@@ -14,6 +14,7 @@ import { IdModule } from "@src/id"
 import { APP_PIPE } from "@nestjs/core"
 import { GameplayModule } from "@src/gameplay"
 import { EmitterModule } from "./gameplay/emitter"
+import { ObjectModule } from "@src/object"
 @Module({
     imports: [
         IdModule.register({
@@ -39,8 +40,13 @@ import { EmitterModule } from "./gameplay/emitter"
             clientId: "io-gameplay",    
         }),
         MongooseModule.forRoot(),
+        ObjectModule.register({
+            isGlobal: true,
+        }),
         GameplayModule.register({
             isGlobal: true,
+            loadStatic: true,
+            useGlobalImports: true
         }),
         ScheduleModule.forRoot(),
         IoModule.register({

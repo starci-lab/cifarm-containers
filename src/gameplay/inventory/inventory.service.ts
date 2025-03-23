@@ -111,7 +111,7 @@ export class InventoryService {
     }
 
     public remove({ inventories, quantity }: RemoveParams): RemoveResult {
-        const updatedInventories: Array<InventorySchema> = []
+        const updatedInventories: Array<InventoryUpdate> = []
         const removedInventories: Array<InventorySchema> = []
 
         // sort the inventories in ascending order
@@ -119,11 +119,15 @@ export class InventoryService {
 
         // loop through the inventories and remove the quantity from the inventory
         for (const inventory of sortedInventories) {
+            const inventorySnapshot = inventory.$clone()
             const quantityToRemove = Math.min(inventory.quantity, quantity)
             inventory.quantity -= quantityToRemove
             quantity -= quantityToRemove
             if (inventory.quantity > 0) {
-                updatedInventories.push(inventory)
+                updatedInventories.push({
+                    inventorySnapshot,
+                    inventoryUpdated: inventory
+                })
                 break
             } else {
                 removedInventories.push(inventory)

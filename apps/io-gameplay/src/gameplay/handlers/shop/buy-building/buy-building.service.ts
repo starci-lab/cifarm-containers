@@ -203,14 +203,15 @@ export class BuyBuildingService {
                     success: true,
                     userId,
                     data: {
-                        buildingId
+                        buildingId: building.id
                     }
                 }
             })
 
             return {
                 user: syncedUser,
-                placedItems: syncedPlacedItems
+                placedItems: syncedPlacedItems,
+                action: actionPayload
             }
         } catch (error) {
             this.logger.error(error)

@@ -220,7 +220,7 @@ export class HarvestFruitService {
                  ************************************************************/
 
                 // Update user energy and experience
-                this.energyService.substract({
+                this.energyService.subtract({
                     user,
                     quantity: energyConsume
                 })

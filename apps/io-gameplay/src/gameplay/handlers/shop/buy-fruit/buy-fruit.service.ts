@@ -171,14 +171,15 @@ export class BuyFruitService {
                     success: true,
                     userId,
                     data: {
-                        fruitId
+                        fruitId: fruit.id
                     }
                 }
             })
 
             return {
                 user: syncedUser,
-                placedItems: syncedPlacedItems
+                placedItems: syncedPlacedItems,
+                action: actionPayload
             }
         } catch (error) {
             this.logger.error(error)

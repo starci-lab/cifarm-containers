@@ -26,3 +26,7 @@ export interface GetPartialUpdatedSyncedUserParams {
     userUpdated: UserSchema
 }
 
+export interface GetPartialUpdatedSyncedPlacedItemParams {
+    placedItemSnapshot: PlacedItemSchema
+    placedItemUpdated: PlacedItemSchema
+}

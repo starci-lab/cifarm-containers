@@ -11,7 +11,11 @@ export class ObjectService {
         options: ObjectDifferenceOptions = {},
         isRoot: boolean = true
     ) {
-        const object = Object.keys(object1).reduce((diffObj, key) => {
+        const object1Keys = Object.keys(object1)
+        const object2Keys = Object.keys(object2)
+        // get all keys, duplicates are removed
+        const allKeys = [...new Set([...object1Keys, ...object2Keys])]
+        const object = allKeys.reduce((diffObj, key) => {
             // If the key doesn't exist in object2, return null
             if (!_.has(object2, key)) {
                 // use null to indicate that the key is not present in object2

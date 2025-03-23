@@ -215,14 +215,15 @@ export class BuyAnimalService {
                     placedItem: syncedPlacedItemAction,
                     userId,
                     data: {
-                        animalId
+                        animalId: animal.id
                     }
                 }
             })
 
             return {
                 user: syncedUser,
-                placedItems: syncedPlacedItems
+                placedItems: syncedPlacedItems,
+                action: actionPayload
             }
         } catch (error) {
             this.logger.error(error)

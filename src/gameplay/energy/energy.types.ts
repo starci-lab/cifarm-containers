@@ -6,7 +6,7 @@ export interface AddParams {
 }
 export type AddResult = UserSchema
 
-export interface SubstractParams {
+export interface SubtractParams {
     user: UserSchema
     quantity: number
 }

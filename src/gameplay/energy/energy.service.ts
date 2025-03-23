@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import { AddParams, AddResult, SubstractParams, SubstractResult } from "./energy.types"
+import { AddParams, AddResult, SubtractParams, SubstractResult } from "./energy.types"
 import { CheckSufficientParams } from "@src/common"
 import { EnergyNotEnoughException } from "../exceptions"
 
@@ -15,7 +15,7 @@ export class EnergyService {
         return user
     }
 
-    public substract({ user, quantity }: SubstractParams): SubstractResult {
+    public subtract({ user, quantity }: SubtractParams): SubstractResult {
         this.checkSufficient({ current: user.energy, required: quantity })
         user.energy -= quantity
         user.energyFull = false

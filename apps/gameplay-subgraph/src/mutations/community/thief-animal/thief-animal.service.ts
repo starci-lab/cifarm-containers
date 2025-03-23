@@ -274,7 +274,7 @@ export class ThiefAnimalService {
                     syncedInventories.push(...updatedSyncedInventories)
                 }
 
-                this.energyService.substract({
+                this.energyService.subtract({
                     user,
                     quantity: energyConsume
                 })

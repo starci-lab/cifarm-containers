@@ -181,7 +181,7 @@ export class HelpUsePesticideService {
                  * Update all data after all validations are complete
                  ************************************************************/
                 // Apply energy and experience changes
-                this.energyService.substract({
+                this.energyService.subtract({
                     user,
                     quantity: energyConsume
                 })

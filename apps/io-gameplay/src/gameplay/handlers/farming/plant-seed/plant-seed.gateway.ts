@@ -13,8 +13,9 @@ import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
 import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
-import { BuyFruitMessage } from "./buy-fruit.dto"
-import { BuyFruitService } from "./buy-fruit.service"
+import { PlantSeedMessage } from "./plant-seed.dto"
+import { PlantSeedService } from "./plant-seed.service"
+
 @WebSocketGateway({
     cors: {
         origin: "*",
@@ -22,11 +23,11 @@ import { BuyFruitService } from "./buy-fruit.service"
     },
     namespace: NAMESPACE
 })
-export class BuyFruitGateway implements OnGatewayInit {
-    private readonly logger = new Logger(BuyFruitGateway.name)
+export class PlantSeedGateway implements OnGatewayInit {
+    private readonly logger = new Logger(PlantSeedGateway.name)
 
     constructor(
-        private readonly buyFruitService: BuyFruitService,
+        private readonly plantSeedService: PlantSeedService,
         private readonly emitterService: EmitterService
     ) {}
 
@@ -35,17 +36,18 @@ export class BuyFruitGateway implements OnGatewayInit {
 
     afterInit() {
         this.logger.verbose(
-            `Initialized gateway with name: ${BuyFruitGateway.name}, namespace: ${NAMESPACE}`
+            `Initialized gateway with name: ${PlantSeedGateway.name}, namespace: ${NAMESPACE}`
         )
     }
 
-    @SubscribeMessage(ReceiverEventName.BuyFruit)
-    public async buyFruit(
+    @SubscribeMessage(ReceiverEventName.PlantSeed)
+    public async plantSeed(
         @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: BuyFruitMessage,
+        @MessageBody() payload: PlantSeedMessage,
         @WsUser() user: UserLike
     ) {
-        const syncedResponse = await this.buyFruitService.buyFruit(user, payload)
+        const syncedResponse = await this.plantSeedService.plantSeed(user, payload)
+        console.log(syncedResponse)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse
