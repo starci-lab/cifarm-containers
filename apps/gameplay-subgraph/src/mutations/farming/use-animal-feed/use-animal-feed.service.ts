@@ -103,7 +103,7 @@ export class UseAnimalFeedService {
                  ************************************************************/
 
                 // Get activity data
-                const { energyConsume, experiencesGain } = this.staticService.activities.feedAnimal
+                const { energyConsume, experiencesGain } = this.staticService.activities.useAnimalFeed
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/

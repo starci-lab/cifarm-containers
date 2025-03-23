@@ -168,7 +168,7 @@ export class UseWateringCanService {
                  ************************************************************/
 
                 // Get activity data
-                const { energyConsume, experiencesGain } = this.staticService.activities.waterCrop
+                const { energyConsume, experiencesGain } = this.staticService.activities.useWateringCan
 
                 // Validate energy is sufficient
                 this.energyService.checkSufficient({

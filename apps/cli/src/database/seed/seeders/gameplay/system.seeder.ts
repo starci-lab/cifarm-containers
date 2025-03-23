@@ -98,7 +98,7 @@ export class SystemSeeder implements Seeder {
                     energyConsume: 1,
                     experiencesGain: 3
                 },
-                harvestCrop: {
+                harvestPlant: {
                     energyConsume: 1,
                 },
                 useFruitFertilizer: {

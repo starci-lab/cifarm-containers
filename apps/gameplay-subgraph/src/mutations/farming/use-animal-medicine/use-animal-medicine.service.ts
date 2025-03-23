@@ -116,7 +116,7 @@ export class UseAnimalMedicineService {
                 // Get activity data
                 const {
                     value: {
-                        cureAnimal: { energyConsume, experiencesGain }
+                        useAnimalMedicine: { energyConsume, experiencesGain }
                     }
                 } = await this.connection
                     .model<SystemSchema>(SystemSchema.name)

@@ -148,7 +148,7 @@ export class ThiefPlantService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                const { energyConsume, experiencesGain } = this.staticService.activities.thiefCrop
+                const { energyConsume, experiencesGain } = this.staticService.activities.thiefPlant
 
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)

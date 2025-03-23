@@ -13,17 +13,17 @@ export class ProductResolver {
         name: "products",
         description: "Get all products"
     })
-    async products(): Promise<Array<ProductSchema>> {
-        return this.productsService.getProducts()
+    products(): Array<ProductSchema> {
+        return this.productsService.products()
     }
 
     @Query(() => ProductSchema, {
         name: "product",
         description: "Get a product by ID"
     })
-    async product(
+    product(
         @Args("id", { type: () => ID, description: "The ID of the product" }) id: ProductId
-    ): Promise<ProductSchema> {
-        return this.productsService.getProduct(id)
+    ): ProductSchema {
+        return this.productsService.product(id)
     }
 }

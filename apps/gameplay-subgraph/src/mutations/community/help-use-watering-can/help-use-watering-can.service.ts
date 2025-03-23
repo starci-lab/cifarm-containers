@@ -151,7 +151,7 @@ export class HelpUseWateringCanService {
                  ************************************************************/
                 // Fetch system activity values
                 const { energyConsume, experiencesGain } =
-                    this.staticService.activities.helpWaterCrop
+                    this.staticService.activities.helpUseWateringCan
 
                 user = await this.connection
                     .model<UserSchema>(UserSchema.name)

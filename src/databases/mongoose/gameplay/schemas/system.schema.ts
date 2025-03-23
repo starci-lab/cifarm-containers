@@ -125,7 +125,7 @@ export class Activities {
     @Field(() => ActivityInfo, {
         description: "Configuration for harvesting crops"
     })
-        harvestCrop: ActivityInfo
+        harvestPlant: ActivityInfo
 
     @Field(() => ActivityInfo, {
         description: "Configuration for helping others feed animals"

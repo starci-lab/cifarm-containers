@@ -151,7 +151,7 @@ export class HelpUseAnimalMedicineService {
 
                 // Get activity data
                 const { energyConsume, experiencesGain } =
-                    this.staticService.activities.helpCureAnimal
+                    this.staticService.activities.helpUseAnimalMedicine
 
                 // Get user data
                 user = await this.connection

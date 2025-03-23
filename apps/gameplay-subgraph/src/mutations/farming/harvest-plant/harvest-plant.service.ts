@@ -126,7 +126,7 @@ export class HarvestPlantService {
                  ************************************************************/
 
                 // Get activity data
-                const { energyConsume } = this.staticService.activities.harvestCrop
+                const { energyConsume } = this.staticService.activities.harvestPlant
 
                 // Get user data
                 user = await this.connection
