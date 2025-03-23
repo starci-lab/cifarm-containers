@@ -101,7 +101,6 @@ export class SystemSeeder implements Seeder {
                 },
                 harvestCrop: {
                     energyConsume: 1,
-                    experiencesGain: 3
                 },
                 useFruitFertilizer: {
                     energyConsume: 1,
@@ -280,7 +279,7 @@ export class SystemSeeder implements Seeder {
                 decimals: 6,
                 profilesTreeAddresses: ["BTjBVuqM9be9LbSy7USu6VFhZcdmAyWfatNRNCAuqdtu"]
             }
-            
+
             const data: Array<Partial<SystemSchema>> = [
                 {
                     _id: createObjectId(SystemId.Activities),

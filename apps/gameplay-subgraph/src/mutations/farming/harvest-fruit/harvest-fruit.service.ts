@@ -123,8 +123,7 @@ export class HarvestFruitService {
                  ************************************************************/
 
                 // Get activity data
-                const { energyConsume, experiencesGain } =
-                    this.staticService.activities.harvestFruit
+                const { energyConsume } = this.staticService.activities.harvestFruit
 
                 // Get user data
                 user = await this.connection
@@ -214,7 +213,7 @@ export class HarvestFruitService {
                         }
                     })
                 }
-                
+
                 /************************************************************
                  * DATA MODIFICATION
                  * Update all data after all validations are complete
@@ -226,6 +225,10 @@ export class HarvestFruitService {
                     quantity: energyConsume
                 })
 
+                const experiencesGain = placedItemFruit.fruitInfo.isQuality
+                    ? fruit.qualityHarvestExperiences
+                    : fruit.basicHarvestExperiences
+                    
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -260,20 +263,22 @@ export class HarvestFruitService {
                     const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session })
-                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: createdInventoryRaws,
-                        status: SchemaStatus.Created
-                    })
+                    const createdSyncedInventories =
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: createdInventoryRaws,
+                            status: SchemaStatus.Created
+                        })
                     syncedInventories.push(...createdSyncedInventories)
                 }
 
                 // Update existing inventories
                 for (const inventory of updatedInventories) {
                     await inventory.save({ session })
-                    const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: [inventory],
-                        status: SchemaStatus.Updated
-                    })
+                    const updatedSyncedInventories =
+                        this.syncService.getCreatedOrUpdatedSyncedInventories({
+                            inventories: [inventory],
+                            status: SchemaStatus.Updated
+                        })
                     syncedInventories.push(...updatedSyncedInventories)
                 }
 
@@ -289,10 +294,11 @@ export class HarvestFruitService {
 
                 // Save placed item fruit changes
                 await placedItemFruit.save({ session })
-                const updatedSyncedPlacedItems = this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
-                    placedItems: [placedItemFruit],
-                    status: SchemaStatus.Updated
-                })
+                const updatedSyncedPlacedItems =
+                    this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
+                        placedItems: [placedItemFruit],
+                        status: SchemaStatus.Updated
+                    })
                 syncedPlacedItems.push(...updatedSyncedPlacedItems)
 
                 // Prepare action message
@@ -322,15 +328,26 @@ export class HarvestFruitService {
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: this.syncService.getSyncedUser(user) }) }]
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId,
+                                user: this.syncService.getSyncedUser(user)
+                            })
+                        }
+                    ]
                 }),
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncInventories,
-                    messages: [{ value: JSON.stringify({ userId, inventories: syncedInventories }) }]
+                    messages: [
+                        { value: JSON.stringify({ userId, inventories: syncedInventories }) }
+                    ]
                 })
             ])
 

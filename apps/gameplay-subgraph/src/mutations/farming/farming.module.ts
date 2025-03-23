@@ -4,10 +4,10 @@ import { PlantSeedModule } from "./plant-seed"
 import { UseHerbicideModule } from "./use-herbicide"
 import { UsePesticideModule } from "./use-pesticide"
 import { HarvestAnimalModule } from "./harvest-animal"
-import { FeedAnimalModule } from "./feed-animal"
-import { CureAnimalModule } from "./cure-animal"
+import { UseAnimalFeedModule } from "./use-animal-feed"
+import { UseAnimalMedicineModule } from "./use-animal-medicine"
 import { UseFertilizerModule } from "./use-fertilizer"
-import { WaterCropModule } from "./water-crop"
+import { UseWateringCanModule } from "./use-watering-can"
 import { HarvestFruitModule } from "./harvest-fruit"
 import { UseBugNetModule } from "./use-bug-net"
 import { UseFruitFertilizerModule } from "./use-fruit-fertilizer"
@@ -15,14 +15,14 @@ import { UseFruitFertilizerModule } from "./use-fruit-fertilizer"
 @Module({
     imports: [
         HarvestAnimalModule,
-        CureAnimalModule,
-        FeedAnimalModule,
+        UseAnimalMedicineModule,
+        UseAnimalFeedModule,
         HarvestPlantModule,
         PlantSeedModule,
         UseFertilizerModule,
         UseHerbicideModule,
         UsePesticideModule,
-        WaterCropModule,
+        UseWateringCanModule,
         HarvestFruitModule,
         UseBugNetModule,
         UseFruitFertilizerModule
