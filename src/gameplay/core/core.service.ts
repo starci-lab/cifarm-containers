@@ -12,7 +12,7 @@ import {
     UpdatePlacedItemTileAfterUseFertilizerParams,
     UpdatePlacedItemTileAfterUseFertilizerResult
 } from "./types"
-import { AnimalCurrentState, FruitCurrentState, PlantCurrentState, PlantType } from "@src/databases"
+import { AnimalCurrentState, CropSchema, FruitCurrentState, PlantCurrentState, PlantType } from "@src/databases"
 
 //core game logic service
 @Injectable()
@@ -54,24 +54,24 @@ export class CoreService {
     //update the tile information after harvest
     public updatePlacedItemTileAfterHarvest({
         placedItemTile,
-        crop,
-        cropInfo
+        plant,
+        plantInfo
     }: UpdatePlacedItemTileAfterHarvestParams): UpdatePlacedItemTileAfterHarvestResult {
+        const plantType = placedItemTile.plantInfo.plantType
         // update the tile info times harvested
         placedItemTile.tileInfo.timesHarvested += 1
+        const tryParseCrop = plant as CropSchema
+        // perental only work for crop, flower not have perenial count
+        const isPerennial = plantType === PlantType.Crop && placedItemTile.plantInfo.harvestCount + 1 < tryParseCrop.perennialCount
 
-        // perental only work for crop,
-        const isPerennial =
-            placedItemTile.plantInfo.plantType === PlantType.Crop && crop.perennialCount > 1
-            
-        if (isPerennial && placedItemTile.plantInfo.harvestCount + 1 >= crop.perennialCount) {
+        if (!isPerennial) {
             // remove the seed growth info
             placedItemTile.plantInfo = undefined
         } else {
             // update the seed growth info
             placedItemTile.plantInfo.harvestCount += 1
             placedItemTile.plantInfo.currentState = PlantCurrentState.NeedWater
-            placedItemTile.plantInfo.currentStage = cropInfo.nextGrowthStageAfterHarvest - 1
+            placedItemTile.plantInfo.currentStage = plantInfo.nextGrowthStageAfterHarvest - 1
             placedItemTile.plantInfo.currentStageTimeElapsed = 0
             placedItemTile.plantInfo.harvestQuantityRemaining = 0
             placedItemTile.plantInfo.isQuality = false
@@ -122,3 +122,5 @@ export class CoreService {
         return placedItemTile
     }
 }
+
+

@@ -450,6 +450,8 @@ export enum InventoryTypeId {
     CucumberSeed = "cucumberSeed",
     BellPepperSeed = "bellPepperSeed",
     DaisySeed = "daisySeed",
+    Daisy = "daisy",
+    DaisyQuality = "daisyQuality",
     BasicFertilizer = "basicFertilizer",
     AnimalFeed = "animalFeed",
     FruitFertilizer = "fruitFertilizer",

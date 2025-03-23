@@ -2,7 +2,7 @@ export * from "./energy.service"
 import {
     AddParams as AddEnergyParams,
     AddResult as AddEnergyAddResult,
-    SubstractParams as SubstractEnergyParams,
+    SubtractParams as SubstractEnergyParams,
     SubstractResult as SubstractEnergyResult,
 } from "./energy.types"
 

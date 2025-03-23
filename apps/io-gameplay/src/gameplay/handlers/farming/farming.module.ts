@@ -1,13 +1,13 @@
 import { Module } from "@nestjs/common"
-//import { HarvestPlantModule } from "./harvest-plant"
+import { HarvestPlantModule } from "./harvest-plant"
 import { PlantSeedModule } from "./plant-seed"
+import { UseFertilizerModule } from "./use-fertilizer"
+import { UseWateringCanModule } from "./use-watering-can"
 // import { UseHerbicideModule } from "./use-herbicide"
 // import { UsePesticideModule } from "./use-pesticide"
 // import { HarvestAnimalModule } from "./harvest-animal"
 // import { UseAnimalFeedModule } from "./use-animal-feed"
 // import { UseAnimalMedicineModule } from "./use-animal-medicine"
-// import { UseFertilizerModule } from "./use-fertilizer"
-// import { UseWateringCanModule } from "./use-watering-can"
 // import { HarvestFruitModule } from "./harvest-fruit"
 // import { UseBugNetModule } from "./use-bug-net"
 // import { UseFruitFertilizerModule } from "./use-fruit-fertilizer"
@@ -17,12 +17,12 @@ import { PlantSeedModule } from "./plant-seed"
         // HarvestAnimalModule,
         // UseAnimalMedicineModule,
         // UseAnimalFeedModule,
-        // HarvestPlantModule,
+        HarvestPlantModule,
         PlantSeedModule,
-        // UseFertilizerModule,
+        UseFertilizerModule,
         // UseHerbicideModule,
         // UsePesticideModule,
-        // UseWateringCanModule,
+        UseWateringCanModule,
         // HarvestFruitModule,
         // UseBugNetModule,
         // UseFruitFertilizerModule

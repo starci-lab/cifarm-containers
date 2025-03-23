@@ -1,8 +1,9 @@
 import {
+    AbstractPlantSchema,
     AnimalInfo,
     AnimalSchema,
     CropInfo,
-    CropSchema,
+    FlowerInfo,
     FruitInfo,
     FruitSchema,
     PlacedItemSchema,
@@ -27,8 +28,8 @@ export interface ComputeFruitQualityChanceParams {
 
 export interface UpdatePlacedItemTileAfterHarvestParams {
     placedItemTile: PlacedItemSchema
-    crop: CropSchema
-    cropInfo: CropInfo
+    plant: AbstractPlantSchema
+    plantInfo: PlantInfoLike
 }
 
 export type UpdatePlacedItemTileAfterHarvestResult = PlacedItemSchema
@@ -55,3 +56,8 @@ export interface UpdatePlacedItemTileAfterUseFertilizerParams {
 }
 
 export type UpdatePlacedItemTileAfterUseFertilizerResult = PlacedItemSchema
+
+export interface PlantInfoLike {
+    nextGrowthStageAfterHarvest: number
+    growthStages: number
+}

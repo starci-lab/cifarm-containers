@@ -336,14 +336,24 @@ export class InventoryTypeSeeder implements Seeder {
                 type: InventoryType.Seed
             },
             {
-                _id: createObjectId(InventoryTypeId.FruitFertilizer),
-                displayId: InventoryTypeId.FruitFertilizer,
-                asTool: true,
-                deliverable: false,
+                _id: createObjectId(InventoryTypeId.Daisy),
+                displayId: InventoryTypeId.Daisy,
+                asTool: false,
+                deliverable: true,
                 maxStack: 64,
                 placeable: false,
-                supply: createObjectId(SupplyId.FruitFertilizer),
-                type: InventoryType.Supply
+                type: InventoryType.Product,
+                product: createObjectId(ProductId.Daisy),
+            },
+            {
+                _id: createObjectId(InventoryTypeId.DaisyQuality),
+                displayId: InventoryTypeId.DaisyQuality,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                type: InventoryType.Product,
+                product: createObjectId(ProductId.DaisyQuality),
             },
             {
                 _id: createObjectId(InventoryTypeId.BasicFertilizer),
