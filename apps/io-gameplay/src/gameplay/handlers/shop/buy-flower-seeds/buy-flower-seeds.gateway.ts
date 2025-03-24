@@ -12,7 +12,7 @@ import { NAMESPACE } from "../../../gameplay.constants"
 import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
 import { BuyFlowerSeedsService } from "./buy-flower-seeds.service"
-import { ReceiverEventName } from "../../../events"
+import { EmitterEventName, ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { BuyFlowerSeedsMessage } from "./buy-flower-seeds.dto"
 
@@ -51,5 +51,6 @@ export class BuyFlowerSeedsGateway implements OnGatewayInit {
             userId: user.id,
             syncedResponse
         })
+        socket.emit(EmitterEventName.FlowerSeedsBought)
     }
 }

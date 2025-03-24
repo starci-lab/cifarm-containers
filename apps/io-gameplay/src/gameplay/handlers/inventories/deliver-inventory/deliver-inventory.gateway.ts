@@ -11,10 +11,10 @@ import { Namespace, Socket } from "socket.io"
 import { NAMESPACE } from "../../../gameplay.constants"
 import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
-import { BuySuppliesMessage } from "./buy-supplies.dto"
-import { BuySuppliesService } from "./buy-supplies.service"
-import { EmitterEventName, ReceiverEventName } from "../../../events"
+import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
+import { DeliverInventoryMessage } from "./deliver-inventory.dto"
+import { DeliverInventoryService } from "./deliver-inventory.service"
 
 @WebSocketGateway({
     cors: {
@@ -23,11 +23,11 @@ import { EmitterService } from "../../../emitter"
     },
     namespace: NAMESPACE
 })
-export class BuySuppliesGateway implements OnGatewayInit {
-    private readonly logger = new Logger(BuySuppliesGateway.name)
+export class DeliverInventoryGateway implements OnGatewayInit {
+    private readonly logger = new Logger(DeliverInventoryGateway.name)
 
     constructor(
-        private readonly buySuppliesService: BuySuppliesService,
+        private readonly deliverInventoryService: DeliverInventoryService,
         private readonly emitterService: EmitterService
     ) {}
 
@@ -36,21 +36,20 @@ export class BuySuppliesGateway implements OnGatewayInit {
 
     afterInit() {
         this.logger.verbose(
-            `Initialized gateway with name: ${BuySuppliesGateway.name}, namespace: ${NAMESPACE}`
+            `Initialized gateway with name: ${DeliverInventoryGateway.name}, namespace: ${NAMESPACE}`
         )
     }
 
-    @SubscribeMessage(ReceiverEventName.BuySupplies)
-    public async buySupplies(
+    @SubscribeMessage(ReceiverEventName.DeliverInventory)
+    public async deliverInventory(
         @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: BuySuppliesMessage,
+        @MessageBody() payload: DeliverInventoryMessage,
         @WsUser() user: UserLike
     ) {
-        const syncedResponse = await this.buySuppliesService.buySupplies(user, payload)
+        const syncedResponse = await this.deliverInventoryService.deliverInventory(user, payload)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse
         })
-        socket.emit(EmitterEventName.SuppliesBought)
     }
 } 

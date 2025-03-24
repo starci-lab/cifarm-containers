@@ -13,7 +13,7 @@ import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
 import { BuyCropSeedsMessage } from "./buy-crop-seeds.dto"
 import { BuyCropSeedsService } from "./buy-crop-seeds.service"
-import { ReceiverEventName } from "../../../events"
+import { EmitterEventName, ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 
 @WebSocketGateway({
@@ -51,5 +51,6 @@ export class BuyCropSeedsGateway implements OnGatewayInit {
             userId: user.id,
             syncedResponse
         })
+        socket.emit(EmitterEventName.CropSeedsBought)
     }
 }

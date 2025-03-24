@@ -1,7 +1,6 @@
 import { Logger } from "@nestjs/common"
 import {
     ConnectedSocket,
-    MessageBody,
     OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
@@ -11,10 +10,9 @@ import { Namespace, Socket } from "socket.io"
 import { NAMESPACE } from "../../../gameplay.constants"
 import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
-import { BuySuppliesMessage } from "./buy-supplies.dto"
-import { BuySuppliesService } from "./buy-supplies.service"
-import { EmitterEventName, ReceiverEventName } from "../../../events"
+import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
+import { ClaimDailyRewardService } from "./claim-daily-reward.service"
 
 @WebSocketGateway({
     cors: {
@@ -23,11 +21,11 @@ import { EmitterService } from "../../../emitter"
     },
     namespace: NAMESPACE
 })
-export class BuySuppliesGateway implements OnGatewayInit {
-    private readonly logger = new Logger(BuySuppliesGateway.name)
+export class ClaimDailyRewardGateway implements OnGatewayInit {
+    private readonly logger = new Logger(ClaimDailyRewardGateway.name)
 
     constructor(
-        private readonly buySuppliesService: BuySuppliesService,
+        private readonly claimDailyRewardService: ClaimDailyRewardService,
         private readonly emitterService: EmitterService
     ) {}
 
@@ -36,21 +34,16 @@ export class BuySuppliesGateway implements OnGatewayInit {
 
     afterInit() {
         this.logger.verbose(
-            `Initialized gateway with name: ${BuySuppliesGateway.name}, namespace: ${NAMESPACE}`
+            `Initialized gateway with name: ${ClaimDailyRewardGateway.name}, namespace: ${NAMESPACE}`
         )
     }
 
-    @SubscribeMessage(ReceiverEventName.BuySupplies)
-    public async buySupplies(
-        @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: BuySuppliesMessage,
-        @WsUser() user: UserLike
-    ) {
-        const syncedResponse = await this.buySuppliesService.buySupplies(user, payload)
+    @SubscribeMessage(ReceiverEventName.ClaimDailyReward)
+    public async claimDailyReward(@ConnectedSocket() socket: Socket, @WsUser() user: UserLike) {
+        const syncedResponse = await this.claimDailyRewardService.claimDailyReward(user)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse
         })
-        socket.emit(EmitterEventName.SuppliesBought)
     }
-} 
+}

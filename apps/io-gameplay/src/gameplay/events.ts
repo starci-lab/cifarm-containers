@@ -6,7 +6,11 @@ export enum EmitterEventName {
     UserSynced = "user_synced",
     PlacedItemsSynced = "placed_items_synced",
     ActionEmitted = "action_emitted",
-    InventoriesSynced = "inventories_synced"
+    InventoriesSynced = "inventories_synced",
+    CropSeedsBought = "crop_seeds_bought",
+    FlowerSeedsBought = "flower_seeds_bought",
+    SuppliesBought = "supplies_bought",
+    ToolBought = "tool_bought",
 }
 
 export enum ReceiverEventName {
@@ -41,9 +45,13 @@ export enum ReceiverEventName {
     ThiefAnimal = "thief_animal",
     ThiefFruit = "thief_fruit",
     // Delivery features
-    DeliverProduct = "deliver_product",
-    DeliverMoreProduct = "deliver_more_product",
-    RetainProduct = "retain_product"
+    DeliverInventory = "deliver_inventory",
+    DeliverAdditionalInventory = "deliver_additional_inventory",
+    RetainInventory = "retain_inventory",
+    MoveInventory = "move_inventory",
+    ClaimDailyReward = "claim_daily_reward",
+    Visit = "visit",
+    Return = "return"
 }
 
 // sync placed items

@@ -4,4 +4,4 @@ import { DefaultGateway } from "./default.gateway"
 @Module({
     providers: [DefaultGateway]
 })
-export class DefaultModule { }
+export class DefaultNamespaceModule { }

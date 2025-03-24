@@ -13,7 +13,7 @@ import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
 import { BuyToolMessage } from "./buy-tool.dto"
 import { BuyToolService } from "./buy-tool.service"
-import { ReceiverEventName } from "../../../events"
+import { EmitterEventName, ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 
 @WebSocketGateway({
@@ -51,5 +51,6 @@ export class BuyToolGateway implements OnGatewayInit {
             userId: user.id,
             syncedResponse
         })
+        socket.emit(EmitterEventName.ToolBought)
     }
 } 

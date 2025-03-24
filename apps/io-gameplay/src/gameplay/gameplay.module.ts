@@ -1,11 +1,17 @@
 import { Module } from "@nestjs/common"
-import { PlacedItemsModule } from "./placed-items"
-import { VisitModule } from "./visit"
-import { AuthModule } from "@src/blockchain"
-import { UserModule } from "./user"
+import { AuthModule } from "./auth"
 import { HandlersModule } from "./handlers"
+import { EmitterModule } from "./emitter"
 
 @Module({
-    imports: [AuthModule, PlacedItemsModule, VisitModule, UserModule, HandlersModule]
+    imports: [
+        AuthModule.register({
+            isGlobal: true
+        }),
+        EmitterModule.register({
+            isGlobal: true
+        }),
+        HandlersModule
+    ]
 })
-export class Gameplay1Module {}
+export class GameplayNamespaceModule {}

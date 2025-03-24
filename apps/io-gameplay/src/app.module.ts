@@ -1,19 +1,18 @@
 import { Module, ValidationPipe } from "@nestjs/common"
-import { DefaultModule } from "./default"
+import { DefaultNamespaceModule } from "./default"
 import { Container, envConfig, EnvModule } from "@src/env"
 import { CacheModule } from "@src/cache"
 import { IoModule } from "@src/io"
 import { CryptoModule } from "@src/crypto"
 import { JwtModule } from "@src/jwt"
 import { ScheduleModule } from "@nestjs/schedule"
-import { Gameplay1Module } from "./gameplay"
+import { GameplayNamespaceModule } from "./gameplay"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
 import { KafkaModule } from "@src/brokers"
 import { IdModule } from "@src/id"
 import { APP_PIPE } from "@nestjs/core"
 import { GameplayModule } from "@src/gameplay"
-import { EmitterModule } from "./gameplay/emitter"
 import { ObjectModule } from "@src/object"
 @Module({
     imports: [
@@ -56,11 +55,8 @@ import { ObjectModule } from "@src/object"
         }),
 
         // functional modules
-        EmitterModule.register({
-            isGlobal: true
-        }),
-        Gameplay1Module,
-        DefaultModule
+        DefaultNamespaceModule,
+        GameplayNamespaceModule,
     ],
     providers: [
         {
