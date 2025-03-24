@@ -6,13 +6,11 @@ import { UsePesticideModule } from "./use-pesticide"
 import { UseAnimalFeedModule } from "./use-animal-feed"
 import { UseAnimalMedicineModule } from "./use-animal-medicine"
 import { HarvestAnimalModule } from "./harvest-animal"
-// import { HarvestFruitModule } from "./harvest-fruit"
-// import { UseBugNetModule } from "./use-bug-net"
-// import { UseFruitFertilizerModule } from "./use-fruit-fertilizer"
-// import { TendCropModule } from "./tend-crop"
-// import { HarvestCropModule } from "./harvest-crop"
-// import { FeedAnimalModule } from "./feed-animal"
-// import { UseSeedsModule } from "./use-seeds"
+import { HarvestPlantModule } from "./harvest-plant"
+import { PlantSeedModule } from "./plant-seed"
+import { UseBugNetModule } from "./use-bug-net"
+import { UseFruitFertilizerModule } from "./use-fruit-fertilizer"
+import { HarvestFruitModule } from "./harvest-fruit"
 
 @Module({
     imports: [
@@ -23,9 +21,11 @@ import { HarvestAnimalModule } from "./harvest-animal"
         UseAnimalFeedModule,
         UseAnimalMedicineModule,
         HarvestAnimalModule,
-        // HarvestFruitModule,
-        // UseBugNetModule,
-        // UseFruitFertilizerModule,
+        HarvestPlantModule,
+        PlantSeedModule,
+        UseBugNetModule,
+        UseFruitFertilizerModule,
+        HarvestFruitModule,
     ]
 })
 export class FarmingModule {} 
