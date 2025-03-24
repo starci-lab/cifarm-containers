@@ -21,7 +21,7 @@ import {
     ThiefService
 } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
-import { Connection } from "mongoose"
+import { Connection, Types } from "mongoose"
 import { ThiefPlantMessage } from "./thief-plant.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
@@ -87,6 +87,30 @@ export class ThiefPlantService {
                     throw new WsException("Tile not found")
                 }
 
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) => placedItemType.id === placedItemTile.placedItemType.toString()
+                )
+
+                if (!placedItemType) {
+                    throw new WsException("Invalid placed item type")
+                }
+
+                if (placedItemType.type !== PlacedItemType.Tile) {
+                    throw new WsException("Placed item is not a tile")
+                }
+
+                if (!placedItemTile.plantInfo) {
+                    throw new WsException("Tile is not planted")
+                }
+
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.FullyMatured) {
+                    throw new WsException("Plant is not fully mature")
+                }
+
+                if (placedItemTile.plantInfo.thieves.map((thief) => thief.toString()).includes(userId)) {
+                    throw new WsException("You have already stolen this plant")
+                }
+
                 // Add to synced placed items for action
                 syncedPlacedItemAction = {
                     id: placedItemTile.id,
@@ -101,30 +125,6 @@ export class ThiefPlantService {
                 watcherUserId = placedItemTile.user.toString()
                 if (watcherUserId === userId) {
                     throw new WsException("Cannot steal your own plant")
-                }
-
-                // Get placed item type info
-                const placedItemType = this.staticService.placedItemTypes.find(
-                    (placedItemType) =>
-                        placedItemType.id === placedItemTile.placedItemType.toString()
-                )
-                if (!placedItemType) {
-                    throw new WsException("Invalid placed item type")
-                }
-
-                // Validate placed item type is plant
-                if (placedItemType.type !== PlacedItemType.Tile) {
-                    throw new WsException("Placed item is not a tile")
-                }
-
-                // Validate tile has plant info
-                if (!placedItemTile.plantInfo) {
-                    throw new WsException("Tile is not planted")
-                }
-
-                // Validate tile has a harvestable plant
-                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.FullyMatured) {
-                    throw new WsException("Plant is not fully mature")
                 }
 
                 /************************************************************
@@ -299,7 +299,8 @@ export class ThiefPlantService {
                 // Reduce the harvest quantity of the plant by the quantity stolen
                 placedItemTile.plantInfo.harvestQuantityRemaining =
                     placedItemTile.plantInfo.harvestQuantityRemaining - actualQuantity
-
+                // Add thief to plant info
+                placedItemTile.plantInfo.thieves.push(new Types.ObjectId(userId))
                 // Save placed item tile
                 await placedItemTile.save({ session })
 

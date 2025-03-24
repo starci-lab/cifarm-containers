@@ -18,7 +18,7 @@ import {
     ThiefService
 } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
-import { Connection } from "mongoose"
+import { Connection, Types } from "mongoose"
 import { ThiefFruitMessage } from "./thief-fruit.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
@@ -123,6 +123,11 @@ export class ThiefFruitService {
                 if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.FullyMatured) {
                     throw new WsException("Fruit is not ready to harvest")
                 }
+
+                // return error if you already thief fruit
+                if (placedItemFruit.fruitInfo.thieves.map((thief) => thief.toString()).includes(userId)) {
+                    throw new WsException("You have already stolen this fruit")
+                }   
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
@@ -277,6 +282,9 @@ export class ThiefFruitService {
                 // Reduce the harvest quantity of the fruit by the quantity stolen
                 placedItemFruit.fruitInfo.harvestQuantityRemaining =
                     placedItemFruit.fruitInfo.harvestQuantityRemaining - actualQuantity
+
+                // Add thief to fruit info
+                placedItemFruit.fruitInfo.thieves.push(new Types.ObjectId(userId))
 
                 // Save placed item fruit
                 await placedItemFruit.save({ session })

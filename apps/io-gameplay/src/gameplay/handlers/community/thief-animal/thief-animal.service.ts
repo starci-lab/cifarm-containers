@@ -18,7 +18,7 @@ import {
     ThiefService
 } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
-import { Connection } from "mongoose"
+import { Connection, Types } from "mongoose"
 import { ThiefAnimalMessage } from "./thief-animal.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
@@ -82,6 +82,11 @@ export class ThiefAnimalService {
 
                 if (!placedItemAnimal) {
                     throw new WsException("Animal not found")
+                }
+
+                // return error if you already thief animal
+                if (placedItemAnimal.animalInfo.thieves.map((thief) => thief.toString()).includes(userId)) {
+                    throw new WsException("You have already stolen this animal")
                 }
 
                 // Add to synced placed items for action
@@ -277,6 +282,7 @@ export class ThiefAnimalService {
                 // Reduce the harvest quantity of the animal by the quantity stolen
                 placedItemAnimal.animalInfo.harvestQuantityRemaining =
                     placedItemAnimal.animalInfo.harvestQuantityRemaining - actualQuantity
+                placedItemAnimal.animalInfo.thieves.push(new Types.ObjectId(userId))
 
                 // Save placed item animal
                 await placedItemAnimal.save({ session })
