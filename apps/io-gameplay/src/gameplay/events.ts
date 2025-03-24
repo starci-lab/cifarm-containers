@@ -30,7 +30,16 @@ export enum ReceiverEventName {
     UseWateringCan = "use_watering_can",
     HarvestFruit = "harvest_fruit",
     UseBugNet = "use_bug_net",
-    UseFruitFertilizer = "use_fruit_fertilizer"
+    UseFruitFertilizer = "use_fruit_fertilizer",
+    // Community features
+    HelpUseHerbicide = "help_use_herbicide",
+    HelpUsePesticide = "help_use_pesticide",
+    HelpUseWateringCan = "help_use_watering_can",
+    HelpUseAnimalMedicine = "help_use_animal_medicine",
+    HelpUseBugNet = "help_use_bug_net",
+    ThiefPlant = "thief_plant",
+    ThiefAnimal = "thief_animal",
+    ThiefFruit = "thief_fruit"
 }
 
 // sync placed items

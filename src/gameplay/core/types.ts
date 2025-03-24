@@ -60,4 +60,10 @@ export type UpdatePlacedItemTileAfterUseFertilizerResult = PlacedItemSchema
 export interface PlantInfoLike {
     nextGrowthStageAfterHarvest: number
     growthStages: number
+    randomness: RandomnessLike
+}
+
+export interface RandomnessLike {
+    thief2: number
+    thief3: number
 }

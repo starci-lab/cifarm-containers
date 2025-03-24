@@ -156,7 +156,7 @@ export class SystemSeeder implements Seeder {
                 randomness: {
                     thief2: 0.8,
                     thief3: 0.95,
-                    hasCaterpillar: 1,
+                    isBuggy: 1,
                 },
                 nextGrowthStageAfterHarvest: 3,
                 growthStages: 5,

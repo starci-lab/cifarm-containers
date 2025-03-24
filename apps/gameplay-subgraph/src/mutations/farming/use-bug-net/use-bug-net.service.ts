@@ -121,7 +121,7 @@ export class UseBugNetService {
                 }
 
                 // Validate fruit is infested
-                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.HasCaterpillar) {
+                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsBuggy) {
                     throw new GraphQLError("Fruit is not infested", {
                         extensions: {
                             code: "FRUIT_NOT_INFESTED"

@@ -304,7 +304,7 @@ export class FruitRandomness {
     @Field(() => Float, {
         description: "Chance for a fruit to have caterpillars"
     })
-        hasCaterpillar: number
+        isBuggy: number
 }
 
 @ObjectType({

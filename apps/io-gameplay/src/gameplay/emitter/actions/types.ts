@@ -15,6 +15,16 @@ export interface ThiefPlantData {
     productId: string
 }
 
+export interface ThiefAnimalData {
+    quantity: number
+    productId: string
+}
+
+export interface ThiefFruitData {
+    quantity: number
+    productId: string
+}
+
 export interface HarvestPlantData {
     quantity: number
     productId: string
@@ -76,7 +86,7 @@ export enum ActionName {
     HelpUseHerbicide = "help_use_herbicide",
     HelpUsePesticide = "help_use_pesticide",
     HelpUseWateringCan = "help_use_watering_can",
-    ThiefAnimalProduct = "thief_animal_product",
+    ThiefAnimal = "thief_animal",
     ThiefPlant = "thief_plant",
     BuyTile = "buy_tile",
     BuyAnimal = "buy_animal",

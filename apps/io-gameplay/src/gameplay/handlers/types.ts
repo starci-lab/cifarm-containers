@@ -8,4 +8,6 @@ export type SyncedResponse<TData = undefined> = Partial<{
     user: DeepPartial<UserSchema>
     placedItems: Array<WithStatus<PlacedItemSchema>>
     action: EmitActionPayload<TData>
+    /// watcher user id for broadcast the placed items
+    watcherUserId: string
 }>

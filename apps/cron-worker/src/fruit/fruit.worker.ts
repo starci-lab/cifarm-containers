@@ -55,7 +55,7 @@ export class FruitWorker extends WorkerHost {
                 .sort({ createdAt: "desc" })
             const {
                 randomness: {
-                    hasCaterpillar,
+                    isBuggy,
                 },
                 matureGrowthStage,
                 growthStages
@@ -101,8 +101,8 @@ export class FruitWorker extends WorkerHost {
                                 placedItem.fruitInfo.currentStage === growthStages - 2
                             ) {
                             // become has caterpillar
-                                if (Math.random() < hasCaterpillar) {
-                                    placedItem.fruitInfo.currentState = FruitCurrentState.HasCaterpillar
+                                if (Math.random() < isBuggy) {
+                                    placedItem.fruitInfo.currentState = FruitCurrentState.IsBuggy
                                 }
                                 placedItem.fruitInfo.currentStageTimeElapsed -= fruit.matureGrowthStageDuration
                                 return true
@@ -111,7 +111,7 @@ export class FruitWorker extends WorkerHost {
                                 placedItem.fruitInfo.currentStageTimeElapsed = 0
                                 //if sick, the harvest quantity is the average of min and max harvest quantity
                                 if (
-                                    placedItem.fruitInfo.currentState === FruitCurrentState.HasCaterpillar
+                                    placedItem.fruitInfo.currentState === FruitCurrentState.IsBuggy
                                 ) {
                                     placedItem.fruitInfo.harvestQuantityRemaining = Math.floor(
                                         (fruit.minHarvestQuantity + fruit.maxHarvestQuantity) / 2

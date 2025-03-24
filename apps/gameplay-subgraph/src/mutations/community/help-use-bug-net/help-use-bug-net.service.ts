@@ -113,7 +113,7 @@ export class HelpUseBugNetService {
                 // Validate fruit has caterpillar
                 if (
                     !placedItemFruit.fruitInfo ||
-                    placedItemFruit.fruitInfo.currentState !== FruitCurrentState.HasCaterpillar
+                    placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsBuggy
                 ) {
                     actionMessage = {
                         placedItem: syncedPlacedItemAction,

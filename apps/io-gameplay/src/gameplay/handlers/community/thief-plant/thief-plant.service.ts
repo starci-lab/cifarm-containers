@@ -1,0 +1,354 @@
+import { Injectable, Logger } from "@nestjs/common"
+import {
+    PlantCurrentState,
+    InjectMongoose,
+    InventorySchema,
+    InventoryKind,
+    InventoryTypeId,
+    InventoryType,
+    PlacedItemSchema,
+    PlacedItemType,
+    UserSchema,
+    PlantType,
+    AbstractPlantSchema
+} from "@src/databases"
+import {
+    EnergyService,
+    InventoryService,
+    LevelService,
+    PlantInfoLike,
+    SyncService,
+    ThiefService
+} from "@src/gameplay"
+import { StaticService } from "@src/gameplay/static"
+import { Connection } from "mongoose"
+import { ThiefPlantMessage } from "./thief-plant.dto"
+import { UserLike } from "@src/jwt"
+import { createObjectId, DeepPartial, WithStatus } from "@src/common"
+import { EmitActionPayload, ActionName, ThiefPlantData } from "../../../emitter"
+import { WsException } from "@nestjs/websockets"
+import { SyncedResponse } from "../../types"
+
+@Injectable()
+export class ThiefPlantService {
+    private readonly logger = new Logger(ThiefPlantService.name)
+
+    constructor(
+        @InjectMongoose() private readonly connection: Connection,
+        private readonly energyService: EnergyService,
+        private readonly inventoryService: InventoryService,
+        private readonly levelService: LevelService,
+        private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
+        private readonly thiefService: ThiefService
+    ) {}
+
+    async thiefPlant(
+        { id: userId }: UserLike,
+        { placedItemTileId }: ThiefPlantMessage
+    ): Promise<SyncedResponse<ThiefPlantData>> {
+        const mongoSession = await this.connection.startSession()
+
+        // synced variables
+        let actionPayload: EmitActionPayload<ThiefPlantData> | undefined
+        let syncedUser: DeepPartial<UserSchema> | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
+        const syncedInventories: Array<WithStatus<InventorySchema>> = []
+        let watcherUserId: string | undefined
+
+        try {
+            await mongoSession.withTransaction(async (session) => {
+                /************************************************************
+                 * CHECK IF YOU HAVE CRATE IN TOOLBAR
+                 ************************************************************/
+                const inventoryCrateExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Crate),
+                        kind: InventoryKind.Tool
+                    })
+                    .session(session)
+
+                if (!inventoryCrateExisted) {
+                    throw new WsException("Crate not found in toolbar")
+                }
+                /************************************************************
+                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
+                 ************************************************************/
+                // Fetch placed item tile
+                const placedItemTile = await this.connection
+                    .model<PlacedItemSchema>(PlacedItemSchema.name)
+                    .findById(placedItemTileId)
+                    .session(session)
+
+                if (!placedItemTile) {
+                    throw new WsException("Tile not found")
+                }
+
+                // Add to synced placed items for action
+                syncedPlacedItemAction = {
+                    id: placedItemTile.id,
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    placedItemType: placedItemTile.placedItemType
+                }
+
+                const placedItemTileSnapshot = placedItemTile.$clone()
+
+                // Validate user doesn't own the tile
+                watcherUserId = placedItemTile.user.toString()
+                if (watcherUserId === userId) {
+                    throw new WsException("Cannot steal your own plant")
+                }
+
+                // Get placed item type info
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) =>
+                        placedItemType.id === placedItemTile.placedItemType.toString()
+                )
+                if (!placedItemType) {
+                    throw new WsException("Invalid placed item type")
+                }
+
+                // Validate placed item type is plant
+                if (placedItemType.type !== PlacedItemType.Tile) {
+                    throw new WsException("Placed item is not a tile")
+                }
+
+                // Validate tile has plant info
+                if (!placedItemTile.plantInfo) {
+                    throw new WsException("Tile is not planted")
+                }
+
+                // Validate tile has a harvestable plant
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.FullyMatured) {
+                    throw new WsException("Plant is not fully mature")
+                }
+
+                /************************************************************
+                 * RETRIEVE AND VALIDATE USER DATA
+                 ************************************************************/
+                // Get activity data
+                const { energyConsume, experiencesGain } = this.staticService.activities.thiefPlant
+
+                // Get user data
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(session)
+
+                if (!user) {
+                    throw new WsException("User not found")
+                }
+
+                // Save user snapshot for sync later
+                const userSnapshot = user.$clone()
+
+                /************************************************************
+                 * RETRIEVE PRODUCT DATA
+                 ************************************************************/
+                // Get product from static data based on plant
+                let plant: AbstractPlantSchema | undefined
+                let plantInfo: PlantInfoLike
+
+                switch (placedItemTile.plantInfo.plantType) {
+                case PlantType.Crop: {
+                    plant = this.staticService.crops.find(
+                        (crop) => crop.id === placedItemTile.plantInfo.crop.toString()
+                    )
+                    plantInfo = this.staticService.cropInfo
+                    break
+                }
+                case PlantType.Flower: {
+                    plant = this.staticService.flowers.find(
+                        (flower) => flower.id === placedItemTile.plantInfo.flower.toString()
+                    )
+                    plantInfo = this.staticService.flowerInfo
+                    break
+                }
+                }
+
+                // Get product data
+                const product = this.staticService.products.find((product) => {
+                    switch (placedItemTile.plantInfo.plantType) {
+                    case PlantType.Crop: {
+                        return product.crop?.toString() === plant.id
+                    }
+                    case PlantType.Flower: {
+                        return product.flower?.toString() === plant.id
+                    }
+                    }
+                })
+                if (!product) {
+                    throw new WsException("Product not found")
+                }
+
+                /************************************************************
+                 * RETRIEVE INVENTORY TYPE FOR PRODUCT
+                 ************************************************************/
+                // Get inventory type for product
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) =>
+                        inventoryType.type === InventoryType.Product &&
+                        inventoryType.product?.toString() === product.id
+                )
+                if (!inventoryType) {
+                    throw new WsException("Inventory type not found")
+                }
+
+                /************************************************************
+                 * VALIDATE ENERGY
+                 ************************************************************/
+                // Check if the user has enough energy
+                this.energyService.checkSufficient({
+                    current: user.energy,
+                    required: energyConsume
+                })
+
+                /************************************************************
+                 * VALIDATE STORAGE CAPACITY
+                 ************************************************************/
+                // Get storage capacity from static data
+                const { storageCapacity } = this.staticService.defaultInfo
+
+                /************************************************************
+                 * DATA MODIFICATION
+                 ************************************************************/
+                // Deduct energy
+                this.energyService.subtract({
+                    user,
+                    quantity: energyConsume
+                })
+
+                // Add experience
+                this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
+
+                // Save user
+                await user.save({ session })
+
+                // Add to synced user
+                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
+
+                /************************************************************
+                 * ADD HARVESTED PRODUCT TO INVENTORY
+                 ************************************************************/
+                // Amount of product to steal
+
+                const { value } = this.thiefService.compute({
+                    thief2: plantInfo.randomness.thief2,
+                    thief3: plantInfo.randomness.thief3
+                })
+                const desiredQuantity = value
+                const actualQuantity = Math.min(
+                    desiredQuantity,
+                    placedItemTile.plantInfo.harvestQuantityRemaining - plant.minHarvestQuantity
+                )
+
+                // Get inventory add parameters
+                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
+                    connection: this.connection,
+                    inventoryType,
+                    userId,
+                    session
+                })
+
+                // Add the stolen product to inventory
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventoryType,
+                    inventories,
+                    capacity: storageCapacity,
+                    quantity: actualQuantity,
+                    userId,
+                    occupiedIndexes
+                })
+
+                if (createdInventories.length > 0) {
+                    // Create new inventories
+                    const createdInventoryRaws = await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .create(createdInventories, { session })
+
+                    const createdSyncedInventories = this.syncService.getCreatedSyncedInventories({
+                        inventories: createdInventoryRaws
+                    })
+                    syncedInventories.push(...createdSyncedInventories)
+                }
+
+                // Update existing inventories
+                for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
+                    await inventoryUpdated.save({ session })
+                    const updatedSyncedInventory =
+                        this.syncService.getPartialUpdatedSyncedInventory({
+                            inventorySnapshot,
+                            inventoryUpdated
+                        })
+                    syncedInventories.push(updatedSyncedInventory)
+                }
+
+                /************************************************************
+                 * UPDATE PLACED ITEM TILE
+                 ************************************************************/
+                // Reduce the harvest quantity of the plant by the quantity stolen
+                placedItemTile.plantInfo.harvestQuantityRemaining =
+                    placedItemTile.plantInfo.harvestQuantityRemaining - actualQuantity
+
+                // Save placed item tile
+                await placedItemTile.save({ session })
+
+                // Add to synced placed items
+                const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem(
+                    {
+                        placedItemSnapshot: placedItemTileSnapshot,
+                        placedItemUpdated: placedItemTile
+                    }
+                )
+                syncedPlacedItems.push(updatedSyncedPlacedItems)
+
+                /************************************************************
+                 * PREPARE ACTION MESSAGE
+                 ************************************************************/
+                actionPayload = {
+                    action: ActionName.ThiefPlant,
+                    placedItem: syncedPlacedItemAction,
+                    success: true,
+                    userId,
+                    data: {
+                        quantity: actualQuantity,
+                        productId: product.id
+                    }
+                }
+            })
+
+            return {
+                user: syncedUser,
+                placedItems: syncedPlacedItems,
+                inventories: syncedInventories,
+                action: actionPayload,
+                watcherUserId
+            }
+        } catch (error) {
+            this.logger.error(error)
+
+            // Send failure action message if any error occurs
+            if (actionPayload) {
+                return {
+                    action: actionPayload
+                }
+            }
+
+            // Rethrow error to be handled higher up
+            throw error
+        } finally {
+            // End the session after the transaction is complete
+            await mongoSession.endSession()
+        }
+    }
+}

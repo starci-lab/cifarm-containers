@@ -67,7 +67,7 @@ registerEnumType(FirstCharLowerCaseAnimalCurrentState, {
 export enum FruitCurrentState {
     Normal = "normal",
     NeedFertilizer = "needFertilizer",
-    HasCaterpillar = "hasCaterpillar",
+    IsBuggy = "isBuggy",
     FullyMatured = "fullyMatured"
 }
 
@@ -83,7 +83,7 @@ registerEnumType(FirstCharLowerCaseFruitCurrentState, {
         needFertilizer: {
             description: "The fruit needs fertilizer"
         },
-        hasCaterpillar: {
+        isBuggy: {
             description: "The fruit has a caterpillar"
         },
         fullyMatured: {

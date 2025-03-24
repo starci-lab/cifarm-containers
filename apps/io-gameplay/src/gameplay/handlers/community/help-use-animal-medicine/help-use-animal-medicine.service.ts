@@ -1,22 +1,21 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { 
-    FruitCurrentState,
+    AnimalCurrentState,
     InjectMongoose, 
-    InventoryKind, 
     InventorySchema, 
-    InventoryTypeId, 
+    InventoryKind,
+    InventoryTypeId,
     PlacedItemSchema, 
-    UserSchema 
+    UserSchema
 } from "@src/databases"
 import { 
-    CoreService,
     EnergyService, 
     LevelService, 
     SyncService 
 } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
-import { UseBugNetMessage } from "./use-bug-net.dto"
+import { HelpUseAnimalMedicineMessage } from "./help-use-animal-medicine.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
@@ -24,24 +23,21 @@ import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
 @Injectable()
-export class UseBugNetService {
-    private readonly logger = new Logger(UseBugNetService.name)
+export class HelpUseAnimalMedicineService {
+    private readonly logger = new Logger(HelpUseAnimalMedicineService.name)
 
     constructor(
         @InjectMongoose() private readonly connection: Connection,
-        private readonly coreService: CoreService,
         private readonly energyService: EnergyService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService
     ) {}
 
-    async useBugNet(
+    async helpUseAnimalMedicine(
         { id: userId }: UserLike,
-        { placedItemFruitId }: UseBugNetMessage
+        { placedItemAnimalId }: HelpUseAnimalMedicineMessage
     ): Promise<SyncedResponse> {
-        this.logger.debug(`Using bug net for user ${userId}, fruit ID: ${placedItemFruitId}`)
-
         const mongoSession = await this.connection.startSession()
 
         // synced variables
@@ -49,72 +45,70 @@ export class UseBugNetService {
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
+        let watcherUserId: string | undefined
 
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
-                 * RETRIEVE AND VALIDATE BUG NET TOOL
+                 * CHECK IF YOU HAVE ANIMAL MEDICINE IN TOOLBAR
                  ************************************************************/
-
-                // Get bug net inventory
-                const inventoryBugNetExisted = await this.connection
+                const inventoryAnimalMedicineExisted = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findOne({
                         user: userId,
-                        inventoryType: createObjectId(InventoryTypeId.BugNet),
+                        inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
                         kind: InventoryKind.Tool
                     })
                     .session(session)
 
-                // Validate user has bug net
-                if (!inventoryBugNetExisted) {
-                    throw new WsException("Bug net not found in toolbar")
+                if (!inventoryAnimalMedicineExisted) {
+                    throw new WsException("Animal medicine not found in toolbar")
                 }
-
                 /************************************************************
-                 * RETRIEVE AND VALIDATE PLACED ITEM FRUIT
+                 * RETRIEVE AND VALIDATE PLACED ITEM ANIMAL
                  ************************************************************/
-
-                // Get placed item fruit
-                const placedItemFruit = await this.connection
+                // Fetch placed item animal
+                const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .findById(placedItemFruitId)
+                    .findById(placedItemAnimalId)
                     .session(session)
 
-                // Validate placed item fruit exists
-                if (!placedItemFruit) {
-                    throw new WsException("Fruit not found")
+                if (!placedItemAnimal) {
+                    throw new WsException("Animal not found")
                 }
 
                 // Add to synced placed items for action
                 syncedPlacedItemAction = {
-                    id: placedItemFruitId,
-                    placedItemType: placedItemFruit.placedItemType,
-                    x: placedItemFruit.x,
-                    y: placedItemFruit.y
+                    id: placedItemAnimal.id,
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y,
+                    placedItemType: placedItemAnimal.placedItemType
                 }
 
-                // Validate ownership
-                if (placedItemFruit.user.toString() !== userId) {
-                    throw new WsException("Cannot use bug net on other's tile")
+                const placedItemAnimalSnapshot = placedItemAnimal.$clone()
+
+                // Validate user doesn't own the animal
+                watcherUserId = placedItemAnimal.user.toString()
+                if (watcherUserId === userId) {
+                    throw new WsException("Cannot help your own animal")
                 }
 
-                // Validate fruit is planted
-                if (!placedItemFruit.fruitInfo) {
-                    throw new WsException("Fruit is not planted")
+                // Validate animal has animal info
+                if (!placedItemAnimal.animalInfo) {
+                    throw new WsException("Placed item is not an animal")
                 }
 
-                // Validate fruit is infested
-                if (placedItemFruit.fruitInfo.currentState !== FruitCurrentState.IsBuggy) {
-                    throw new WsException("Fruit is not infested")
+                // Validate animal needs medicine
+                if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
+                    throw new WsException("Animal does not need medicine")
                 }
-
-                // Save a copy of the placed item for syncing
-                const placedItemFruitSnapshot = placedItemFruit.$clone()
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
+                // Get activity data
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.helpUseAnimalMedicine
 
                 // Get user data
                 const user = await this.connection
@@ -122,7 +116,6 @@ export class UseBugNetService {
                     .findById(userId)
                     .session(session)
 
-                // Validate user exists
                 if (!user) {
                     throw new WsException("User not found")
                 }
@@ -131,13 +124,9 @@ export class UseBugNetService {
                 const userSnapshot = user.$clone()
 
                 /************************************************************
-                 * RETRIEVE AND VALIDATE ACTIVITY DATA
+                 * VALIDATE ENERGY
                  ************************************************************/
-
-                // Get activity data
-                const { energyConsume, experiencesGain } = this.staticService.activities.useBugNet
-
-                // Validate energy is sufficient
+                // Check if the user has enough energy
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -145,31 +134,18 @@ export class UseBugNetService {
 
                 /************************************************************
                  * DATA MODIFICATION
-                 * Update all data after all validations are complete
                  ************************************************************/
-
-                // Update user energy and experience
+                // Deduct energy
                 this.energyService.subtract({
                     user,
                     quantity: energyConsume
                 })
 
+                // Add experience
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
                 })
-
-                // Update fruit state
-                placedItemFruit.fruitInfo.currentState = FruitCurrentState.Normal
-
-                // Save changes
-                await placedItemFruit.save({ session })
-                
-                const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem({
-                    placedItemSnapshot: placedItemFruitSnapshot,
-                    placedItemUpdated: placedItemFruit
-                })
-                syncedPlacedItems.push(updatedSyncedPlacedItems)
 
                 // Save user
                 await user.save({ session })
@@ -180,10 +156,24 @@ export class UseBugNetService {
                     userUpdated: user
                 })
 
-                // Prepare action message
+                // Apply medicine to the animal - reset to normal state
+                placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
+                // Save placed item animal
+                await placedItemAnimal.save({ session })
+
+                // Add to synced placed items
+                const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem({
+                    placedItemSnapshot: placedItemAnimalSnapshot,
+                    placedItemUpdated: placedItemAnimal
+                })
+                syncedPlacedItems.push(updatedSyncedPlacedItems)
+
+                /************************************************************
+                 * PREPARE ACTION MESSAGE
+                 ************************************************************/
                 actionPayload = {
+                    action: ActionName.HelpUseAnimalMedicine,
                     placedItem: syncedPlacedItemAction,
-                    action: ActionName.UseBugNet,
                     success: true,
                     userId
                 }
@@ -192,14 +182,14 @@ export class UseBugNetService {
             return {
                 user: syncedUser,
                 placedItems: syncedPlacedItems,
-                action: actionPayload
+                action: actionPayload,
+                watcherUserId
             }
         } catch (error) {
             this.logger.error(error)
 
             // Send failure action message if any error occurs
             if (actionPayload) {
-                actionPayload.success = false
                 return {
                     action: actionPayload
                 }

@@ -22,13 +22,14 @@ export class EmitterService {
                 placedItems,
                 user,
                 inventories,
-                action
+                action,
+                watcherUserId   
             }
         }: SyncResponseParams<TData>) {
         if (placedItems) {  
             this.placedItemsGateway.syncPlacedItems({
                 data: placedItems,
-                userId
+                userId: watcherUserId
             })
         }
         if (user) {
