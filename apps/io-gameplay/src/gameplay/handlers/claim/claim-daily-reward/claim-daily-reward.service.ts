@@ -4,7 +4,6 @@ import { GoldBalanceService, StaticService, TokenBalanceService } from "@src/gam
 import { DateUtcService } from "@src/date"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
-import { GraphQLError } from "graphql"
 import { SyncService } from "@src/gameplay"
 import { WithStatus } from "@src/common"
 import { WsException } from "@nestjs/websockets"
@@ -51,11 +50,7 @@ export class ClaimDailyRewardService {
                     user.dailyRewardLastClaimTime &&
                     now.isSame(user.dailyRewardLastClaimTime, "day")
                 ) {
-                    throw new GraphQLError("Daily reward already claimed today", {
-                        extensions: {
-                            code: "DAILY_REWARD_ALREADY_CLAIMED_TODAY"
-                        }
-                    })
+                    throw new WsException("Daily reward already claimed today")
                 }
 
                 /************************************************************

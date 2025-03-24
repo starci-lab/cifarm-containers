@@ -11,6 +11,7 @@ export enum EmitterEventName {
     FlowerSeedsBought = "flower_seeds_bought",
     SuppliesBought = "supplies_bought",
     ToolBought = "tool_bought",
+    DailyRewardClaimed = "daily_reward_claimed"
 }
 
 export enum ReceiverEventName {

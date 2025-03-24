@@ -10,7 +10,7 @@ import { Namespace, Socket } from "socket.io"
 import { NAMESPACE } from "../../../gameplay.constants"
 import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
-import { ReceiverEventName } from "../../../events"
+import { EmitterEventName, ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
 
@@ -45,5 +45,6 @@ export class ClaimDailyRewardGateway implements OnGatewayInit {
             userId: user.id,
             syncedResponse
         })
+        socket.emit(EmitterEventName.DailyRewardClaimed)
     }
 }

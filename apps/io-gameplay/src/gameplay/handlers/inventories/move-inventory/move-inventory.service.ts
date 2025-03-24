@@ -180,8 +180,6 @@ export class MoveInventoryService {
                     syncedInventories.push(updatedSyncedInventory)
                 }
             })
-
-            console.log(syncedInventories)
             return {
                 inventories: syncedInventories,
             }

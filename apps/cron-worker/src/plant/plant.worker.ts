@@ -16,7 +16,8 @@ import { CoreService, SyncService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
-import { SchemaStatus, WithStatus } from "@src/common"
+import { WithStatus } from "@src/common"
+import { SyncPlacedItemsPayload } from "@apps/io-gameplay"
 
 @Processor(bullData[BullQueueName.Plant].name)
 export class PlantWorker extends WorkerHost {
@@ -160,24 +161,27 @@ export class PlantWorker extends WorkerHost {
                             placedItem.plantInfo.currentState = PlantCurrentState.FullyMatured
                             return true
                         }
+                        const placedItemSnapshot = placedItem.$clone()
                         // update the placed item
                         const synced = updatePlacedItem()
                         await placedItem.save()
                         if (synced) {
-                            const updatedSyncedPlacedItems =
-                                this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
-                                    placedItems: [placedItem],
-                                    status: SchemaStatus.Updated
+                            const updatedSyncedPlacedItem =
+                                this.syncService.getPartialUpdatedSyncedPlacedItem({
+                                    placedItemSnapshot,
+                                    placedItemUpdated: placedItem
                                 })
-                            syncedPlacedItems.push(...updatedSyncedPlacedItems)
+                            syncedPlacedItems.push(updatedSyncedPlacedItem)
+                            // create a payload for the kafka producer
+                            const syncedPlacedItemsPayload: SyncPlacedItemsPayload = {
+                                data: [updatedSyncedPlacedItem],
+                                userId: placedItem.user.toString()
+                            }
                             await this.kafkaProducer.send({
                                 topic: KafkaTopic.SyncPlacedItems,
                                 messages: [
                                     {
-                                        value: JSON.stringify({
-                                            userId: placedItem.user.toString(),
-                                            placedItems: updatedSyncedPlacedItems
-                                        })
+                                        value: JSON.stringify(syncedPlacedItemsPayload)
                                     }
                                 ]
                             })
