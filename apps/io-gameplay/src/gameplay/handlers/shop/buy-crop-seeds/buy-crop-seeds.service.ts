@@ -127,6 +127,10 @@ export class BuyCropSeedsService {
                     kind: InventoryKind.Storage
                 })
 
+                console.log(createdInventories)
+                console.log(updatedInventories.map((inventory) => inventory.inventorySnapshot.toJSON()))
+                console.log(updatedInventories.map((inventory) => inventory.inventoryUpdated.toJSON()))
+
                 // Create new inventory items
                 if (createdInventories.length > 0) {
                     const createdInventoryRaws = await this.connection

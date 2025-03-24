@@ -6,16 +6,13 @@ import {
     AddResult,
     GetAddParamsParams,
     GetAddParamsResult,
-    GetRemoveParamsParams,
-    GetRemoveParamsResult,
     GetUnoccupiedIndexesParams,
     InventoryUpdate,
-    RemoveParams,
-    RemoveResult
+    RemoveSingleParams,
+    RemoveSingleResult
 } from "./types"
 import {
     InventoryCapacityExceededException,
-    InventoryQuantityNotSufficientException
 } from "../exceptions"
 
 @Injectable()
@@ -73,12 +70,13 @@ export class InventoryService {
                 const quantityToAdd = Math.min(spaceInCurrentStack, quantity)
                 inventory.quantity += quantityToAdd
                 quantity -= quantityToAdd
+
+                // push the updated inventory to the updated inventories array
+                updatedInventories.push({
+                    inventorySnapshot,
+                    inventoryUpdated: inventory
+                })
             }
-            // push the updated inventory to the updated inventories array
-            updatedInventories.push({
-                inventorySnapshot,
-                inventoryUpdated: inventory
-            })
         }
 
         // if quantity is still remaining, create a new inventory, and add the quantity to it
@@ -110,37 +108,6 @@ export class InventoryService {
         return { updatedInventories, createdInventories }
     }
 
-    public remove({ inventories, quantity }: RemoveParams): RemoveResult {
-        const updatedInventories: Array<InventoryUpdate> = []
-        const removedInventories: Array<InventorySchema> = []
-
-        // sort the inventories in ascending order
-        const sortedInventories = inventories.sort((prev, next) => prev.quantity - next.quantity)
-
-        // loop through the inventories and remove the quantity from the inventory
-        for (const inventory of sortedInventories) {
-            const inventorySnapshot = inventory.$clone()
-            const quantityToRemove = Math.min(inventory.quantity, quantity)
-            inventory.quantity -= quantityToRemove
-            quantity -= quantityToRemove
-            if (inventory.quantity > 0) {
-                updatedInventories.push({
-                    inventorySnapshot,
-                    inventoryUpdated: inventory
-                })
-                break
-            } else {
-                removedInventories.push(inventory)
-            }
-        }
-
-        // if quantity is still remaining, throw an exception
-        if (quantity > 0) {
-            throw new InventoryQuantityNotSufficientException(quantity)
-        }
-        return { updatedInventories, removedInventories }
-    }
-
     public async getAddParams({
         connection,
         inventoryType,
@@ -168,23 +135,6 @@ export class InventoryService {
         return { inventories, occupiedIndexes }
     }
 
-    public async getRemoveParams({
-        connection,
-        userId,
-        session,
-        inventoryType,
-        kind = InventoryKind.Storage
-    }: GetRemoveParamsParams): Promise<GetRemoveParamsResult> {
-        const inventories = await connection
-            .model<InventorySchema>(InventorySchema.name)
-            .find({
-                user: userId,
-                inventoryType: inventoryType.id,
-                kind
-            })
-            .session(session)
-        return { inventories }
-    }
 
     public async getUnoccupiedIndexes({
         connection,
@@ -207,5 +157,25 @@ export class InventoryService {
             }
         }
         return unoccupiedIndexes
+    }
+
+    public removeSingle({
+        inventory,
+        quantity
+    }: RemoveSingleParams): RemoveSingleResult {
+        const inventorySnapshot = inventory.$clone()
+        inventory.quantity -= quantity
+        if (inventory.quantity > 0) {
+            return {
+                updatedInventory: {
+                    inventorySnapshot,
+                    inventoryUpdated: inventory,
+                },
+            }
+        }
+        return {
+            removedInventory: inventory,
+            removeInsteadOfUpdate: true
+        }
     }
 }

@@ -112,10 +112,6 @@ export class PlantSeedService {
                     throw new WsException("Seed is not in toolbar")
                 }
 
-                if (inventorySeed.quantity < 1) {
-                    throw new WsException("Not enough seeds")
-                }
-
                 /************************************************************
                  * VALIDATE ENERGY
                  ************************************************************/
@@ -151,40 +147,27 @@ export class PlantSeedService {
                     (inventoryType) =>
                         inventoryType.id.toString() === inventorySeed.inventoryType.toString()
                 )
-
-                const { inventories } = await this.inventoryService.getRemoveParams({
-                    session,
-                    userId,
-                    inventoryType,
-                    connection: this.connection,
-                    kind: InventoryKind.Tool
-                })
-
-                const { removedInventories, updatedInventories } = this.inventoryService.remove({
-                    inventories,
+                const { removedInventory, updatedInventory, removeInsteadOfUpdate } = this.inventoryService.removeSingle({
+                    inventory: inventorySeed,
                     quantity: 1
                 })
 
-                if (removedInventories.length > 0) {
+                if (removeInsteadOfUpdate) {
                     await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
-                        _id: { $in: removedInventories.map((inventory) => inventory._id) }
-                    })
+                        _id: { $in: removedInventory._id }
+                    }).session(session)
                     const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
-                        inventoryIds: removedInventories.map((inventory) =>
-                            inventory._id.toString()
-                        )
+                        inventoryIds: [removedInventory.id]
                     })
                     syncedInventories.push(...deletedSyncedInventories)
-                }
-
-                if (updatedInventories.length > 0) {
-                    for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
-                        const syncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
-                            inventorySnapshot,
-                            inventoryUpdated
-                        })
-                        syncedInventories.push(syncedInventory)
-                    }
+                } else {
+                    const { inventorySnapshot, inventoryUpdated } = updatedInventory
+                    await inventoryUpdated.save({ session })
+                    const syncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                        inventorySnapshot,
+                        inventoryUpdated
+                    })
+                    syncedInventories.push(syncedInventory)
                 }
 
                 /************************************************************

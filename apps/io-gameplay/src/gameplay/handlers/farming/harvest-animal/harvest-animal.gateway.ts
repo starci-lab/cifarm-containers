@@ -13,8 +13,8 @@ import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
 import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
-import { UseWateringCanMessage } from "./use-watering-can.dto"
-import { UseWateringCanService } from "./use-watering-can.service"
+import { HarvestAnimalMessage } from "./harvest-animal.dto"
+import { HarvestAnimalService } from "./harvest-animal.service"
 
 @WebSocketGateway({
     cors: {
@@ -23,11 +23,11 @@ import { UseWateringCanService } from "./use-watering-can.service"
     },
     namespace: NAMESPACE
 })
-export class UseWateringCanGateway implements OnGatewayInit {
-    private readonly logger = new Logger(UseWateringCanGateway.name)
+export class HarvestAnimalGateway implements OnGatewayInit {
+    private readonly logger = new Logger(HarvestAnimalGateway.name)
 
     constructor(
-        private readonly useWateringCanService: UseWateringCanService,
+        private readonly harvestAnimalService: HarvestAnimalService,
         private readonly emitterService: EmitterService
     ) {}
 
@@ -36,18 +36,17 @@ export class UseWateringCanGateway implements OnGatewayInit {
 
     afterInit() {
         this.logger.verbose(
-            `Initialized gateway with name: ${UseWateringCanGateway.name}, namespace: ${NAMESPACE}`
+            `Initialized gateway with name: ${HarvestAnimalGateway.name}, namespace: ${NAMESPACE}`
         )
     }
 
-    @SubscribeMessage(ReceiverEventName.UseWateringCan)
-    public async useWateringCan(
+    @SubscribeMessage(ReceiverEventName.HarvestAnimal)
+    public async harvestAnimal(
         @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: UseWateringCanMessage,
+        @MessageBody() payload: HarvestAnimalMessage,
         @WsUser() user: UserLike
     ) {
-        const syncedResponse = await this.useWateringCanService.useWateringCan(user, payload)
-        console.log(syncedResponse)
+        const syncedResponse = await this.harvestAnimalService.harvestAnimal(user, payload)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse

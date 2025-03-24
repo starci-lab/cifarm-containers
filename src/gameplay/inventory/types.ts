@@ -35,12 +35,6 @@ export interface RemoveParams {
     quantity: number
 }
 
-export interface RemoveResult {
-    updatedInventories: Array<InventoryUpdate>
-    removedInventories: Array<InventorySchema>
-
-}
-
 export interface GetAddParamsParams {
     userId: string
     connection: Connection,
@@ -53,15 +47,6 @@ export interface GetAddParamsResult {
     inventories: Array<InventorySchema>
     // occupied indexes
     occupiedIndexes: Array<number>
-}
-
-
-export interface GetRemoveParamsParams {
-    userId: string
-    connection: Connection,
-    session: ClientSession,
-    inventoryType: InventoryTypeSchema
-    kind?: InventoryKind
 }
 
 export interface GetUnoccupiedIndexesParams {
@@ -77,3 +62,14 @@ export interface GetRemoveParamsResult {
     inventories: Array<InventorySchema>
 }
 
+export interface RemoveSingleParams {
+    inventory: InventorySchema
+    quantity: number
+}
+
+// we return both object to allow implementation, check if removed or updated
+export interface RemoveSingleResult {
+    updatedInventory?: InventoryUpdate
+    removedInventory?: InventorySchema
+    removeInsteadOfUpdate?: boolean
+}

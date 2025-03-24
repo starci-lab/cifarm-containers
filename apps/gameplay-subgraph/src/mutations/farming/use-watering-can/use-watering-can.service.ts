@@ -12,7 +12,7 @@ import { EnergyService, LevelService, StaticService, SyncService } from "@src/ga
 import { Connection } from "mongoose"
 import { UseWateringCanRequest } from "./use-watering-can.dto"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { ActionName, EmitActionPayload } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload } from ""
 import { Producer } from "@nestjs/microservices/external/kafka.interface"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"

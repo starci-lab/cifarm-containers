@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { 
     InjectMongoose, 
-    InventoryKind, 
     InventorySchema, 
+    InventoryKind, 
     InventoryTypeId, 
     PlacedItemSchema, 
     PlantCurrentState,
@@ -11,7 +11,7 @@ import {
 import { EnergyService, LevelService, SyncService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
-import { UseWateringCanMessage } from "./use-watering-can.dto"
+import { UsePesticideMessage } from "./use-pesticide.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
@@ -19,8 +19,8 @@ import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
 @Injectable()
-export class UseWateringCanService {
-    private readonly logger = new Logger(UseWateringCanService.name)
+export class UsePesticideService {
+    private readonly logger = new Logger(UsePesticideService.name)
 
     constructor(
         @InjectMongoose() private readonly connection: Connection,
@@ -30,11 +30,11 @@ export class UseWateringCanService {
         private readonly syncService: SyncService
     ) {}
 
-    async useWateringCan(
+    async usePesticide(
         { id: userId }: UserLike,
-        { placedItemTileId }: UseWateringCanMessage
+        { placedItemTileId }: UsePesticideMessage
     ): Promise<SyncedResponse> {
-        this.logger.debug(`Using watering can for user ${userId}, tile ID: ${placedItemTileId}`)
+        this.logger.debug(`Using pesticide for user ${userId}, tile ID: ${placedItemTileId}`)
 
         const mongoSession = await this.connection.startSession()
 
@@ -47,23 +47,23 @@ export class UseWateringCanService {
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
-                 * RETRIEVE AND VALIDATE WATERING CAN TOOL
+                 * RETRIEVE AND VALIDATE PESTICIDE TOOL
                  ************************************************************/
-
-                // Check if user has watering can
-                const inventoryWateringCanExisted = await this.connection
+                // Check if user has pesticide
+                const inventoryPesticideExisted = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findOne({
                         user: userId,
-                        inventoryType: createObjectId(InventoryTypeId.WateringCan),
+                        inventoryType: createObjectId(InventoryTypeId.Pesticide),
                         kind: InventoryKind.Tool
                     })
                     .session(session)
 
-                // Validate watering can exists in inventory
-                if (!inventoryWateringCanExisted) {
-                    throw new WsException("Watering can not found in toolbar")
-                }   
+                // Validate pesticide exists in inventory
+                if (!inventoryPesticideExisted) {
+                    throw new WsException("Pesticide not found in toolbar")
+                }
+
                 /************************************************************
                  * RETRIEVE USER DATA
                  ************************************************************/
@@ -101,10 +101,11 @@ export class UseWateringCanService {
                     throw new WsException("No plant found on this tile")
                 }
 
-                // Check if the plant needs water
-                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.NeedWater) {
-                    throw new WsException("Plant does not need water")
+                // Check if the plant has pests
+                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.IsInfested) {
+                    throw new WsException("Plant does not have pests")
                 }
+
                 // Add to synced placed items
                 syncedPlacedItemAction = {
                     id: placedItemTile._id.toString(),
@@ -119,7 +120,7 @@ export class UseWateringCanService {
                  * VALIDATE ENERGY
                  ************************************************************/
                 // Check if the user has enough energy
-                const { energyConsume, experiencesGain } = this.staticService.activities.useWateringCan
+                const { energyConsume, experiencesGain } = this.staticService.activities.usePesticide
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -169,7 +170,7 @@ export class UseWateringCanService {
                  ************************************************************/
                 // Prepare the action payload
                 actionPayload = {
-                    action: ActionName.UseWateringCan,
+                    action: ActionName.UsePesticide,
                     placedItem: syncedPlacedItemAction,
                     success: true,
                     userId

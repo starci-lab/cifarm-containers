@@ -5,13 +5,13 @@ import {
     InventorySchema, 
     InventoryTypeId, 
     PlacedItemSchema, 
-    PlantCurrentState,
+    AnimalCurrentState,
     UserSchema
 } from "@src/databases"
 import { EnergyService, LevelService, SyncService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
-import { UseWateringCanMessage } from "./use-watering-can.dto"
+import { UseAnimalMedicineMessage } from "./use-animal-medicine.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName } from "../../../emitter"
@@ -19,8 +19,8 @@ import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
 @Injectable()
-export class UseWateringCanService {
-    private readonly logger = new Logger(UseWateringCanService.name)
+export class UseAnimalMedicineService {
+    private readonly logger = new Logger(UseAnimalMedicineService.name)
 
     constructor(
         @InjectMongoose() private readonly connection: Connection,
@@ -30,12 +30,10 @@ export class UseWateringCanService {
         private readonly syncService: SyncService
     ) {}
 
-    async useWateringCan(
+    async useAnimalMedicine(
         { id: userId }: UserLike,
-        { placedItemTileId }: UseWateringCanMessage
+        { placedItemAnimalId }: UseAnimalMedicineMessage
     ): Promise<SyncedResponse> {
-        this.logger.debug(`Using watering can for user ${userId}, tile ID: ${placedItemTileId}`)
-
         const mongoSession = await this.connection.startSession()
 
         // synced variables
@@ -47,23 +45,23 @@ export class UseWateringCanService {
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
-                 * RETRIEVE AND VALIDATE WATERING CAN TOOL
+                 * RETRIEVE AND VALIDATE ANIMAL MEDICINE
                  ************************************************************/
-
-                // Check if user has watering can
-                const inventoryWateringCanExisted = await this.connection
+                // Check if user has animal medicine
+                const inventoryMedicineExisted = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findOne({
                         user: userId,
-                        inventoryType: createObjectId(InventoryTypeId.WateringCan),
+                        inventoryType: createObjectId(InventoryTypeId.AnimalMedicine),
                         kind: InventoryKind.Tool
                     })
                     .session(session)
 
-                // Validate watering can exists in inventory
-                if (!inventoryWateringCanExisted) {
-                    throw new WsException("Watering can not found in toolbar")
-                }   
+                // Validate medicine exists in inventory
+                if (!inventoryMedicineExisted) {
+                    throw new WsException("Animal medicine not found in inventory")
+                }
+
                 /************************************************************
                  * RETRIEVE USER DATA
                  ************************************************************/
@@ -81,45 +79,46 @@ export class UseWateringCanService {
                 const userSnapshot = user.$clone()
 
                 /************************************************************
-                 * RETRIEVE AND VALIDATE TILE DATA
+                 * RETRIEVE AND VALIDATE ANIMAL DATA
                  ************************************************************/
-                // Fetch placed item (tile)
-                const placedItemTile = await this.connection
+                // Fetch placed item (animal)
+                const placedItemAnimal = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findOne({
-                        _id: placedItemTileId,
+                        _id: placedItemAnimalId,
                         user: userId
                     })
                     .session(session)
 
-                if (!placedItemTile) {
-                    throw new WsException("Tile not found")
+                if (!placedItemAnimal) {
+                    throw new WsException("Animal not found")
                 }
 
-                // Check if the tile has a plant
-                if (!placedItemTile.plantInfo) {
-                    throw new WsException("No plant found on this tile")
+                // Check if the tile has an animal
+                if (!placedItemAnimal.animalInfo) {
+                    throw new WsException("No animal found on this tile")
                 }
 
-                // Check if the plant needs water
-                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.NeedWater) {
-                    throw new WsException("Plant does not need water")
+                // Check if the animal is sick
+                if (placedItemAnimal.animalInfo.currentState !== AnimalCurrentState.Sick) {
+                    throw new WsException("Animal is not sick")
                 }
+
                 // Add to synced placed items
                 syncedPlacedItemAction = {
-                    id: placedItemTile._id.toString(),
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    placedItemType: placedItemTile.placedItemType
+                    id: placedItemAnimal._id.toString(),
+                    x: placedItemAnimal.x,
+                    y: placedItemAnimal.y,
+                    placedItemType: placedItemAnimal.placedItemType
                 }
                 // Clone for tracking changes
-                const placedItemTileSnapshot = placedItemTile.$clone()
+                const placedItemAnimalSnapshot = placedItemAnimal.$clone()
 
                 /************************************************************
                  * VALIDATE ENERGY
                  ************************************************************/
                 // Check if the user has enough energy
-                const { energyConsume, experiencesGain } = this.staticService.activities.useWateringCan
+                const { energyConsume, experiencesGain } = this.staticService.activities.useAnimalMedicine
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -150,17 +149,17 @@ export class UseWateringCanService {
                 })
 
                 /************************************************************
-                 * UPDATE PLACED ITEM TILE
+                 * UPDATE PLACED ITEM ANIMAL
                  ************************************************************/
-                // Update plant state to Normal
-                placedItemTile.plantInfo.currentState = PlantCurrentState.Normal
+                // Update animal state to Normal
+                placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Normal
 
-                // Save placed item tile
-                await placedItemTile.save({ session })
+                // Save placed item animal
+                await placedItemAnimal.save({ session })
 
                 const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem({
-                    placedItemSnapshot: placedItemTileSnapshot,
-                    placedItemUpdated: placedItemTile
+                    placedItemSnapshot: placedItemAnimalSnapshot,
+                    placedItemUpdated: placedItemAnimal
                 })
                 syncedPlacedItems.push(updatedSyncedPlacedItems)
 
@@ -169,7 +168,7 @@ export class UseWateringCanService {
                  ************************************************************/
                 // Prepare the action payload
                 actionPayload = {
-                    action: ActionName.UseWateringCan,
+                    action: ActionName.UseAnimalMedicine,
                     placedItem: syncedPlacedItemAction,
                     success: true,
                     userId
@@ -186,7 +185,6 @@ export class UseWateringCanService {
 
             // Send failure action message if any error occurs
             if (actionPayload) {
-                actionPayload.success = false
                 return {
                     action: actionPayload
                 }
