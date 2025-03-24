@@ -39,7 +39,11 @@ export enum ReceiverEventName {
     HelpUseBugNet = "help_use_bug_net",
     ThiefPlant = "thief_plant",
     ThiefAnimal = "thief_animal",
-    ThiefFruit = "thief_fruit"
+    ThiefFruit = "thief_fruit",
+    // Delivery features
+    DeliverProduct = "deliver_product",
+    DeliverMoreProduct = "deliver_more_product",
+    RetainProduct = "retain_product"
 }
 
 // sync placed items

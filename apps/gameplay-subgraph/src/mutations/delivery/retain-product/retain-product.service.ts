@@ -108,9 +108,8 @@ export class RetainProductService {
                     const createdInventoryRaws = await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .create(createdInventories, { session })
-                    const createdSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: createdInventoryRaws,
-                        status: SchemaStatus.Created
+                    const createdSyncedInventories = this.syncService.getCreatedSyncedInventories({
+                        inventories: createdInventoryRaws
                     })
                     syncedInventories.push(...createdSyncedInventories)
                 }
@@ -119,13 +118,13 @@ export class RetainProductService {
                  * UPDATE EXISTING INVENTORIES
                  ************************************************************/
                 // Update existing inventories
-                for (const inventory of updatedInventories) {
+                for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
                     await inventory.save({ session })
-                    const updatedSyncedInventories = this.syncService.getCreatedOrUpdatedSyncedInventories({
-                        inventories: [inventory],
-                        status: SchemaStatus.Updated
+                    const updatedSyncedInventories = this.syncService.getPartialUpdatedSyncedInventory({
+                        inventorySnapshot: inventory,
+                        inventoryUpdated: inventory
                     })
-                    syncedInventories.push(...updatedSyncedInventories)
+                    syncedInventories.push(updatedSyncedInventories)
                 }
 
                 /************************************************************

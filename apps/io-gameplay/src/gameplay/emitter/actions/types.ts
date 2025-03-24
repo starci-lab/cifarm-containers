@@ -50,6 +50,13 @@ export interface HarvestAnimalData {
     productId: string
 }
 
+export interface DeliverProductData {
+    inventoryId: string
+    quantity: number
+    index: number
+    productId: string
+}
+
 export interface SellData {
     quantity: number
 }
@@ -100,4 +107,7 @@ export enum ActionName {
     HelpUseFruitFertilizer = "help_use_fruit_fertilizer",
     HarvestFruit = "harvest_fruit",
     ThiefFruit = "thief_fruit",
+    DeliverProduct = "deliver_product",
+    DeliverMoreProduct = "deliver_more_product",
+    RetainProduct = "retain_product"
 }
