@@ -5,6 +5,9 @@ import { CommunityModule } from "./community"
 import { InventoriesModule } from "./inventories"
 import { ClaimModule } from "./claim"
 import { ActionsModule } from "./actions"
+import { PlacementModule } from "./placement"
+//import { PlacementModule } from "./placement"
+
 @Module({
     imports: [
         FarmingModule,
@@ -12,7 +15,8 @@ import { ActionsModule } from "./actions"
         CommunityModule,
         InventoriesModule,
         ClaimModule,
-        ActionsModule
+        ActionsModule,
+        PlacementModule
     ]
 })
 export class HandlersModule {}

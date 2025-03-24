@@ -53,7 +53,6 @@ import { ObjectModule } from "@src/object"
             adapter: envConfig().containers[Container.IoGameplay].adapter,
             isGlobal: true
         }),
-
         // functional modules
         DefaultNamespaceModule,
         GameplayNamespaceModule,

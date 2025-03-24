@@ -18,7 +18,6 @@ import { ReceiverEventName } from "../../../events"
         credentials: true
     },
     namespace: NAMESPACE,
-    transports: [ "websocket"]
 })
 export class VisitGateway {
     private readonly logger = new Logger(VisitGateway.name)

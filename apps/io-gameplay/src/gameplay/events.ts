@@ -51,7 +51,10 @@ export enum ReceiverEventName {
     MoveInventory = "move_inventory",
     ClaimDailyReward = "claim_daily_reward",
     Visit = "visit",
-    Return = "return"
+    Return = "return",
+    // Placements
+    Move = "move",
+    Sell = "sell"
 }
 
 // sync placed items

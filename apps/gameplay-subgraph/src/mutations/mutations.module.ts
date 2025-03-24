@@ -2,18 +2,13 @@ import { Module } from "@nestjs/common"
 import { AuthModule } from "./auth"
 import { HoneycombModule } from "./honeycomb"
 import { PlayerModule } from "./player"
+import { CommunityModule } from "./community"
 @Module({
     imports: [
         AuthModule,
-        // CommunityModule,
-        // ClaimModule,
-        // DeliveryModule,
-        // FarmingModule,
-        // UpgradeModule,
-        // ShopModule,
-        HoneycombModule,
         PlayerModule,
-        // PlacementModule
+        HoneycombModule,
+        CommunityModule,
     ]
 })
 export class MutationsModule {}

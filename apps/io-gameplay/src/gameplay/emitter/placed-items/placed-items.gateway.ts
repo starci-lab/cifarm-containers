@@ -10,7 +10,6 @@ import {
 import { Namespace } from "socket.io"
 import { NAMESPACE } from "../../gameplay.constants"
 import { PlacedItemsService } from "./placed-items.service"
-import { PLACED_ITEMS_SYNCED_EVENT } from "./constants"
 import { AuthGateway, RoomType, SocketData } from "../../auth"
 import { EmitterEventName, PlacedItemsSyncedMessage, SyncPlacedItemsMessage } from "../../events"
 import { TypedSocket } from "@src/io"
@@ -54,7 +53,11 @@ export class PlacedItemsGateway implements OnGatewayInit {
                     type: RoomType.Watcher
                 })
             )
-            .emit(PLACED_ITEMS_SYNCED_EVENT, messageResponse)
+            .emit(EmitterEventName.PlacedItemsSynced, messageResponse)
+        console.log(this.authGateway.getRoomName({
+            userId,
+            type: RoomType.Watcher
+        }))
     }
 
     // force sync placed items

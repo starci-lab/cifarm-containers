@@ -16,7 +16,6 @@ import { ReceiverEventName } from "../../../events"
         credentials: true
     },
     namespace: NAMESPACE,
-    transports: [ "websocket"]
 })
 export class ReturnGateway {
     private readonly logger = new Logger(ReturnGateway.name)

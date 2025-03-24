@@ -1,5 +1,0 @@
-export * from "./help-use-animal-medicine.dto"
-export * from "./help-use-animal-medicine.module"
-export * from "./help-use-animal-medicine.service"
-export * from "./help-use-animal-medicine.resolver"
-//export * from "./claim.spec"

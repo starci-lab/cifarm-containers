@@ -18,7 +18,6 @@ import { SocketData } from "./auth.types"
         credentials: true
     },
     namespace: NAMESPACE,
-    transports: ["websocket"]
 })
 export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
     private readonly logger = new Logger(AuthGateway.name)

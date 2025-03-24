@@ -29,7 +29,7 @@ export class EmitterService {
         if (placedItems) {  
             this.placedItemsGateway.syncPlacedItems({
                 data: placedItems,
-                userId: watcherUserId
+                userId: watcherUserId || userId
             })
         }
         if (user) {
