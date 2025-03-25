@@ -47,8 +47,6 @@ export class MoveGateway implements OnGatewayInit {
         @WsUser() user: UserLike
     ) {
         const syncedResponse = await this.moveService.move(user, payload)
-        console.log(syncedResponse)
-        console.log(user)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse

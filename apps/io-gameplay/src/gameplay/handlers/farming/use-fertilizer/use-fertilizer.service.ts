@@ -1,12 +1,19 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { 
-    InjectMongoose, 
-    InventorySchema, 
+import {
+    InjectMongoose,
+    InventorySchema,
     InventoryType,
-    PlacedItemSchema, 
+    PlacedItemSchema,
+    SupplyType,
     UserSchema
 } from "@src/databases"
-import { EnergyService, InventoryService, LevelService, SyncService } from "@src/gameplay"
+import {
+    CoreService,
+    EnergyService,
+    InventoryService,
+    LevelService,
+    SyncService
+} from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection } from "mongoose"
 import { UseFertilizerMessage } from "./use-fertilizer.dto"
@@ -26,7 +33,8 @@ export class UseFertilizerService {
         private readonly inventoryService: InventoryService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
-        private readonly syncService: SyncService
+        private readonly syncService: SyncService,
+        private readonly coreService: CoreService
     ) {}
 
     async useFertilizer(
@@ -87,6 +95,14 @@ export class UseFertilizerService {
                 if (placedItemTile.plantInfo.isFertilized) {
                     throw new WsException("Plant is already fertilized")
                 }
+                // Add to synced placed items
+                syncedPlacedItemAction = {
+                    id: placedItemTile.id,
+                    x: placedItemTile.x,
+                    y: placedItemTile.y,
+                    placedItemType: placedItemTile.placedItemType,
+                }
+                const placedItemTileSnapshot = placedItemTile.$clone()
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY SUPPLY
@@ -94,26 +110,39 @@ export class UseFertilizerService {
                 // Fetch inventory supply (fertilizer)
                 const inventorySupply = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
-                    .findOne({
-                        _id: inventorySupplyId,
-                        user: userId,
-                        inventoryType: InventoryType.Supply
-                    })
+                    .findById(inventorySupplyId)
                     .session(session)
-
                 if (!inventorySupply) {
                     throw new WsException("Fertilizer not found in inventory")
                 }
-
-                if (inventorySupply.quantity < 1) {
-                    throw new WsException("Not enough fertilizer")
+                // Check if the inventory supply is a fertilizer
+                const inventoryType = this.staticService.inventoryTypes.find(
+                    (inventoryType) => inventoryType.id === inventorySupply.inventoryType.toString()
+                )
+                if (!inventoryType) {
+                    throw new WsException("Inventory type not found")
+                }
+                if (inventoryType.type !== InventoryType.Supply) {
+                    throw new WsException("Not a supply")
+                }
+                const supplyFertilizer = this.staticService.supplies.find(
+                    (supply) =>
+                        supply.type === SupplyType.Fertilizer &&
+                        supply.id === inventoryType.supply.toString()
+                )
+                if (!supplyFertilizer) {
+                    throw new WsException("Supply fertilizer not found")
+                }
+                if (supplyFertilizer.type !== SupplyType.Fertilizer) {
+                    throw new WsException("Not a fertilizer")
                 }
 
                 /************************************************************
                  * VALIDATE ENERGY
                  ************************************************************/
                 // Check if the user has enough energy
-                const { energyConsume } = this.staticService.activities.useFertilizer
+                const { energyConsume, experiencesGain } =
+                    this.staticService.activities.useFertilizer
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -129,7 +158,6 @@ export class UseFertilizerService {
                 })
 
                 // Add experience
-                const { experiencesGain } = this.staticService.activities.useFertilizer
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -137,7 +165,7 @@ export class UseFertilizerService {
 
                 // Save user
                 await user.save({ session })
-                
+
                 // Add to synced user
                 syncedUser = this.syncService.getPartialUpdatedSyncedUser({
                     userSnapshot,
@@ -147,39 +175,52 @@ export class UseFertilizerService {
                 /************************************************************
                  * UPDATE INVENTORY
                  ************************************************************/
-                // Decrease fertilizer quantity
-                inventorySupply.quantity -= 1
+                // Get parameters for removing inventory
+                const { removedInventory, updatedInventory, removeInsteadOfUpdate } =
+                    this.inventoryService.removeSingle({
+                        inventory: inventorySupply,
+                        quantity: 1
+                    })
 
-                // Save inventory supply
-                await inventorySupply.save({ session })
-
-                // Add to synced inventories
-                const syncedUpdatedInventories = this.syncService.getCreatedSyncedInventories({
-                    inventories: [inventorySupply]
-                })
-                syncedInventories.push(...syncedUpdatedInventories)
+                if (removeInsteadOfUpdate) {
+                    await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany(
+                        {
+                            _id: { $in: removedInventory._id }
+                        },
+                        { session }
+                    )
+                    const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
+                        inventoryIds: [removedInventory.id]
+                    })
+                    syncedInventories.push(...deletedSyncedInventories)
+                } else {
+                    const { inventorySnapshot, inventoryUpdated } = updatedInventory
+                    await inventoryUpdated.save({ session })
+                    const syncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                        inventorySnapshot,
+                        inventoryUpdated
+                    })
+                    syncedInventories.push(syncedInventory)
+                }
 
                 /************************************************************
                  * UPDATE PLACED ITEM TILE
                  ************************************************************/
                 // Update tile with fertilizer information
-                placedItemTile.plantInfo.isFertilized = true
-
+                this.coreService.updatePlacedItemTileAfterUseFertilizer({
+                    placedItemTile,
+                    supply: supplyFertilizer
+                })
                 // Save placed item tile
                 await placedItemTile.save({ session })
 
-                // Add to synced placed items
-                syncedPlacedItemAction = {
-                    id: placedItemTile._id.toString(),
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    plantInfo: placedItemTile.plantInfo
-                }
-
-                const syncedUpdatedPlacedItems = this.syncService.getCreatedSyncedPlacedItems({
-                    placedItems: [placedItemTile]
-                })
-                syncedPlacedItems.push(...syncedUpdatedPlacedItems)
+                const syncedUpdatedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem(
+                    {
+                        placedItemSnapshot: placedItemTileSnapshot,
+                        placedItemUpdated: placedItemTile
+                    }
+                )
+                syncedPlacedItems.push(syncedUpdatedPlacedItems)
 
                 /************************************************************
                  * PREPARE ACTION MESSAGE
@@ -205,7 +246,7 @@ export class UseFertilizerService {
             // Send failure action message if any error occurs
             if (actionPayload) {
                 return {
-                    action: actionPayload,
+                    action: actionPayload
                 }
             }
 
@@ -216,4 +257,4 @@ export class UseFertilizerService {
             await mongoSession.endSession()
         }
     }
-} 
+}

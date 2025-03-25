@@ -111,6 +111,19 @@ export class CropSeeder implements Seeder {
                 perennialCount: 3,
                 availableInShop: true,
             },
+            {
+                _id: createObjectId(CropId.Strawberry),
+                displayId: CropId.Strawberry,
+                price: 100,
+                growthStageDuration: 9000,
+                unlockLevel: 9,
+                basicHarvestExperiences: 21,
+                qualityHarvestExperiences: 110,
+                minHarvestQuantity: 16,
+                maxHarvestQuantity: 23,
+                perennialCount: 1,
+                availableInShop: true,
+            },
         ]
 
         await this.connection.model<CropSchema>(CropSchema.name).insertMany(data)

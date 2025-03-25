@@ -254,7 +254,25 @@ export class ProductSeeder implements Seeder {
                 type: ProductType.Flower,
                 flower: createObjectId(FlowerId.Daisy),
             },
-
+            {
+                _id: createObjectId(ProductId.Strawberry),
+                displayId: ProductId.Strawberry,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 10,
+                type: ProductType.Crop,
+                crop: createObjectId(CropId.Strawberry),
+            },
+            {
+                _id: createObjectId(ProductId.StrawberryQuality),
+                displayId: ProductId.StrawberryQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 10,
+                tokenAmount: 1,
+                type: ProductType.Crop,
+                crop: createObjectId(CropId.Strawberry),
+            }
         ]
         
         await this.connection.model<ProductSchema>(ProductSchema.name).insertMany(data)

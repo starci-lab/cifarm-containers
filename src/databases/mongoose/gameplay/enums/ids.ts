@@ -65,7 +65,8 @@ export enum CropId {
     Pineapple = "pineapple",
     Watermelon = "watermelon",
     Cucumber = "cucumber",
-    BellPepper = "bellPepper"
+    BellPepper = "bellPepper",
+    Strawberry = "strawberry",
 }
 
 export const FirstCharLowerCaseCropId = createFirstCharLowerCaseEnumType(CropId)
@@ -94,6 +95,9 @@ registerEnumType(FirstCharLowerCaseCropId, {
         },
         bellPepper: {
             description: "The bell pepper id.",
+        },
+        strawberry: {
+            description: "The strawberry id.",
         },
     },
 })
@@ -283,6 +287,8 @@ export enum ProductId {
     AppleQuality = "appleQuality",
     Daisy = "daisy",
     DaisyQuality = "daisyQuality",
+    Strawberry = "strawberry",
+    StrawberryQuality = "strawberryQuality",
 }
 
 export const FirstCharLowerCaseProductId = createFirstCharLowerCaseEnumType(ProductId)    
@@ -356,6 +362,18 @@ registerEnumType(FirstCharLowerCaseProductId, {
         },
         appleQuality: {
             description: "The apple quality id.",
+        },
+        daisy: {
+            description: "The daisy id.",
+        },
+        daisyQuality: {
+            description: "The daisy quality id.",
+        },
+        strawberry: {
+            description: "The strawberry id.",
+        },
+        strawberryQuality: {
+            description: "The strawberry quality id.",
         },
     },
 })
@@ -485,6 +503,9 @@ export enum InventoryTypeId {
     Pesticide = "pesticide",
     AnimalMedicine = "animalMedicine",
     BugNet = "bugNet",
+    StrawberrySeed = "strawberrySeed",
+    Strawberry = "strawberry",
+    StrawberryQuality = "strawberryQuality",
 }
 
 export const FirstCharLowerCaseInventoryTypeId = createFirstCharLowerCaseEnumType(InventoryTypeId)
@@ -612,6 +633,15 @@ registerEnumType(FirstCharLowerCaseInventoryTypeId, {
         },
         bugNet: {
             description: "The bug net id.",
+        },
+        strawberrySeed: {
+            description: "The strawberry seed id.",
+        },
+        strawberry: {
+            description: "The strawberry id.",
+        },
+        strawberryQuality: {
+            description: "The strawberry quality id.",
         },
     },
 })

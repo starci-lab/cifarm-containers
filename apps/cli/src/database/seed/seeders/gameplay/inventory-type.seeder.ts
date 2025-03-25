@@ -465,6 +465,33 @@ export class InventoryTypeSeeder implements Seeder {
                 tool: createObjectId(ToolId.BugNet),
                 type: InventoryType.Tool
             },
+            {
+                _id: createObjectId(InventoryTypeId.Strawberry),
+                displayId: InventoryTypeId.Strawberry,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.StrawberryQuality),
+                displayId: InventoryTypeId.StrawberryQuality,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.StrawberrySeed),
+                displayId: InventoryTypeId.StrawberrySeed,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Seed
+            },
         ]
 
         await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).insertMany(data)
