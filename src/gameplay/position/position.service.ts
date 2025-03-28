@@ -11,9 +11,10 @@ export class PositionService {
 
     public async getOccupiedPositions({
         connection,
-        userId
+        userId,
+        itself
     }: GetOccupiedPositionsParams): Promise<Array<Position>> {
-        return await connection
+        let placedItems = await connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .find({ user: userId })
             .select({
@@ -21,6 +22,12 @@ export class PositionService {
                 y: 1,
                 _id: 0  // Exclude the _id field
             }).lean().exec()
+        console.log(placedItems)
+        if (itself) {
+            placedItems = placedItems.filter(placedItem => (placedItem.x !== itself.x && placedItem.y !== itself.y))
+        }
+        console.log(placedItems.length)
+        return placedItems
     }
 
     public checkPositionAvailable(

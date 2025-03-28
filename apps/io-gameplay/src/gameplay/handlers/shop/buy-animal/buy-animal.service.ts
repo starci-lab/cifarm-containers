@@ -116,7 +116,7 @@ export class BuyAnimalService {
                  ************************************************************/
                 const occupiedPositions = await this.positionService.getOccupiedPositions({
                     connection: this.connection,
-                    userId
+                    userId,
                 })
                 this.positionService.checkPositionAvailable({
                     position,

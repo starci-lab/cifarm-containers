@@ -166,7 +166,6 @@ export class HoneycombService {
         network = Network.Testnet,
         projectAddress,
         tokenAddress,
-        payerAddress,
         metadata
     }: CreateCreateSplStakingPoolTransactionParams): Promise<CreateCreateSplStakingPoolTransactionResponse> {
         console.log({

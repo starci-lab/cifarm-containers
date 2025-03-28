@@ -71,16 +71,6 @@ export class CreateSplStakingPoolCommand extends CommandRunner {
         return projectAddress
     }
 
-
-    @Option({
-        flags: "-ra, --resource-address <resourceAddress>",
-        description: "Resource address",
-        defaultValue: "6JkqdDyrXsySvnvKBmFVpay9L413VXJcd78kFJ2XSABH"
-    })
-    parseResourceAddress(resourceAddress: string): string {
-        return resourceAddress
-    }
-
     @Option({
         flags: "-mssd, --max-stake-duration-secs <maxStakeDurationSecs>",
         description: "Maximum stake duration in seconds",

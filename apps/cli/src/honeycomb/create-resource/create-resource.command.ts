@@ -85,7 +85,7 @@ export class CreateResourceCommand extends CommandRunner {
     @Option({
         flags: "-s, --storage <storage>",
         description: "Resource storage",
-        defaultValue: ResourceStorageEnum.LedgerState
+        defaultValue: ResourceStorageEnum.AccountState
     })
     parseStorage(storage: string): ResourceStorageEnum {
         return storage as ResourceStorageEnum

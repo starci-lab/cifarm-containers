@@ -4,7 +4,7 @@ import { ClaimHoneycombDailyRewardService } from "./claim-honeycomb-daily-reward
 import { GraphQLJwtAuthGuard } from "@src/jwt"
 import { UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { VoidResolver } from "graphql-scalars"
+import { TxResponse } from "../types"
 
 @Resolver()
 export class ClaimHoneycombDailyRewardResolver {
@@ -15,7 +15,7 @@ export class ClaimHoneycombDailyRewardResolver {
     ) {}
 
     @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, {
+    @Mutation(() => TxResponse, {
         name: "claimHoneycombDailyReward",
         description: "Claim honeycomb daily reward",
         nullable: true

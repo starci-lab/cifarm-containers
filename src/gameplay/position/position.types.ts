@@ -1,9 +1,10 @@
-import { PlacedItemTypeSchema, Position } from "@src/databases"
+import { PlacedItemSchema, PlacedItemTypeSchema, Position } from "@src/databases"
 import { Connection } from "mongoose"
 
 export interface GetOccupiedPositionsParams {
     userId: string
     connection: Connection,
+    itself?: PlacedItemSchema
 }
 
 export interface CheckPositionAvailableParams {

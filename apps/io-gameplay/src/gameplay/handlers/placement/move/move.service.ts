@@ -41,6 +41,9 @@ export class MoveService {
                 if (!placedItem) {
                     throw new WsException("Placed item not found")
                 }
+                if (placedItem.x === position.x && placedItem.y === position.y) {
+                    throw new WsException("You are already at this position")
+                }
                 const placedItemSnapshot = placedItem.$clone()
 
                 const placedItemType = this.staticService.placedItemTypes.find(
@@ -58,7 +61,8 @@ export class MoveService {
                  ************************************************************/
                 const occupiedPositions = await this.positionService.getOccupiedPositions({
                     connection: this.connection,
-                    userId
+                    userId,
+                    itself: placedItem
                 })
                 this.positionService.checkPositionAvailable({
                     position,
