@@ -15,11 +15,17 @@ registerEnumType(FirstCharLowerCaseAnimalId, {
     name: "AnimalId",
     description: "The animal id.",
     valuesMap: {
-        chicken: {
+        [AnimalId.Chicken]: {
             description: "The chicken id.",
         },
-        cow: {
+        [AnimalId.Cow]: {
             description: "The cow id.",
+        },
+        [AnimalId.Pig]: {
+            description: "The pig id.",
+        },
+        [AnimalId.Sheep]: {
+            description: "The sheep id.",
         },
     },
 })
@@ -39,19 +45,19 @@ registerEnumType(FirstCharLowerCaseBuildingId, {
     name: "BuildingId",
     description: "The building id.",
     valuesMap: {
-        coop: {
+        [BuildingId.Coop]: {
             description: "The coop id.",
         },
-        barn: {
+        [BuildingId.Barn]: {
             description: "The barn id.",
         },
-        home: {
+        [BuildingId.Home]: {
             description: "The home id.",
         },
-        beeHouse: {
+        [BuildingId.BeeHouse]: {
             description: "The bee house id.",
         },
-        petHouse: {
+        [BuildingId.PetHouse]: {
             description: "The pet house id.",
         },
     },
@@ -75,28 +81,28 @@ registerEnumType(FirstCharLowerCaseCropId, {
     name: "CropId",
     description: "The crop id.",
     valuesMap: {
-        turnip: {
+        [CropId.Turnip]: {
             description: "The turnip id.",
         },
-        carrot: {
+        [CropId.Carrot]: {
             description: "The carrot id.",
         },
-        potato: {
+        [CropId.Potato]: {
             description: "The potato id.",
         },
-        pineapple: {
+        [CropId.Pineapple]: {
             description: "The pineapple id.",
         },
-        watermelon: {
+        [CropId.Watermelon]: {
             description: "The watermelon id.",
         },
-        cucumber: {
+        [CropId.Cucumber]: {
             description: "The cucumber id.",
         },
-        bellPepper: {
+        [CropId.BellPepper]: {
             description: "The bell pepper id.",
         },
-        strawberry: {
+        [CropId.Strawberry]: {
             description: "The strawberry id.",
         },
     },
@@ -113,7 +119,7 @@ registerEnumType(FirstCharLowerCaseFlowerId, {
     name: "FlowerId",
     description: "The flower id.",
     valuesMap: {
-        daisy: {
+        [FlowerId.Daisy]: {
             description: "The daisy id.",
         },
     },
@@ -131,10 +137,10 @@ registerEnumType(FirstCharLowerCaseFruitId, {
     name: "FruitId",
     description: "The fruit id.",
     valuesMap: {
-        banana: {
+        [FruitId.Banana]: {
             description: "The banana id.",
         },
-        apple: {
+        [FruitId.Apple]: {
             description: "The apple id.",
         },
     },
@@ -162,13 +168,13 @@ registerEnumType(FirstCharLowerCaseSupplyId, {
     name: "SupplyId",
     description: "The supply id.",
     valuesMap: {
-        basicFertilizer: {
+        [SupplyId.BasicFertilizer]: {
             description: "The basic fertilizer id.",
         },
-        animalFeed: {
+        [SupplyId.AnimalFeed]: {
             description: "The animal feed id.",
         },
-        fruitFertilizer: {
+        [SupplyId.FruitFertilizer]: {
             description: "The fruit fertilizer id.",
         },
     },
@@ -185,7 +191,7 @@ registerEnumType(FirstCharLowerCaseTileId, {
     name: "TileId",
     description: "The tile id.",
     valuesMap: {
-        basicTile: {
+        [TileId.BasicTile]: {
             description: "The basic tile id.",
         },
     },
@@ -210,31 +216,31 @@ registerEnumType(FirstCharLowerCaseToolId, {
     name: "ToolId",
     description: "The tool id.",
     valuesMap: {
-        hand: {
+        [ToolId.Hand]: {
             description: "The hand id.",
         },
-        crate: {
+        [ToolId.Crate]: {
             description: "The crate id.",
         },
-        thiefHand: {
+        [ToolId.ThiefHand]: {
             description: "The thief hand id.",
         },
-        wateringCan: {
+        [ToolId.WateringCan]: {
             description: "The watering can id.",
         },
-        herbicide: {
+        [ToolId.Herbicide]: {
             description: "The herbicide id.",
         },
-        pesticide: {
+        [ToolId.Pesticide]: {
             description: "The pesticide id.",
         },
-        hammer: {
+        [ToolId.Hammer]: {
             description: "The hammer id.",
         },
-        animalMedicine: {
+        [ToolId.AnimalMedicine]: {
             description: "The animal medicine id.",
         },
-        bugNet: {
+        [ToolId.BugNet]: {
             description: "The bug net id.",
         },
     },
@@ -252,10 +258,10 @@ registerEnumType(FirstCharLowerCasePetId, {
     name: "PetId",
     description: "The pet id.",
     valuesMap: {
-        dog: {
+        [PetId.Dog]: {
             description: "The dog id.",
         },
-        cat: {
+        [PetId.Cat]: {
             description: "The cat id.",
         },
     },
@@ -289,6 +295,8 @@ export enum ProductId {
     DaisyQuality = "daisyQuality",
     Strawberry = "strawberry",
     StrawberryQuality = "strawberryQuality",
+    Honey = "honey",
+    HoneyQuality = "honeyQuality",
 }
 
 export const FirstCharLowerCaseProductId = createFirstCharLowerCaseEnumType(ProductId)    
@@ -297,82 +305,82 @@ registerEnumType(FirstCharLowerCaseProductId, {
     name: "ProductId",
     description: "The product id.",
     valuesMap: {
-        egg: {
+        [ProductId.Egg]: {
             description: "The egg id.",
         },
-        eggQuality: {
+        [ProductId.EggQuality]: {
             description: "The egg quality id.",
         },
-        milk: {
+        [ProductId.Milk]: {
             description: "The milk id.",
         },
-        milkQuality: {
+        [ProductId.MilkQuality]: {
             description: "The milk quality id.",
         },
-        turnip: {
+        [ProductId.Turnip]: {
             description: "The turnip id.",
         },
-        turnipQuality: {
+        [ProductId.TurnipQuality]: {
             description: "The turnip quality id.",
         },
-        carrot: {
+        [ProductId.Carrot]: {
             description: "The carrot id.",
         },
-        carrotQuality: {
+        [ProductId.CarrotQuality]: {
             description: "The carrot quality id.",
         },
-        potato: {
+        [ProductId.Potato]: {
             description: "The potato id.",
         },
-        potatoQuality: {
+        [ProductId.PotatoQuality]: {
             description: "The potato quality id.",
         },
-        pineapple: {
+        [ProductId.Pineapple]: {
             description: "The pineapple id.",
         },
-        pineappleQuality: {
+        [ProductId.PineappleQuality]: {
             description: "The pineapple quality id.",
         },
-        watermelon: {
+        [ProductId.Watermelon]: {
             description: "The watermelon id.",
         },
-        watermelonQuality: {
+        [ProductId.WatermelonQuality]: {
             description: "The watermelon quality id.",
         },
-        cucumber: {
+        [ProductId.Cucumber]: {
             description: "The cucumber id.",
         },
-        cucumberQuality: {
+        [ProductId.CucumberQuality]: {
             description: "The cucumber quality id.",
         },
-        bellPepper: {
+        [ProductId.BellPepper]: {
             description: "The bell pepper id.",
         },
-        bellPepperQuality: {
+        [ProductId.BellPepperQuality]: {
             description: "The bell pepper quality id.",
         },
-        banana: {
+        [ProductId.Banana]: {
             description: "The banana id.",
         },
-        bananaQuality: {
+        [ProductId.BananaQuality]: {
             description: "The banana quality id.",
         },
-        apple: {
+        [ProductId.Apple]: {
             description: "The apple id.",
         },
-        appleQuality: {
+        [ProductId.AppleQuality]: {
             description: "The apple quality id.",
         },
-        daisy: {
+        [ProductId.Daisy]: {
             description: "The daisy id.",
         },
-        daisyQuality: {
+        [ProductId.DaisyQuality]: {
             description: "The daisy quality id.",
         },
-        strawberry: {
+        [ProductId.Strawberry]: {
             description: "The strawberry id.",
         },
-        strawberryQuality: {
+        [ProductId.StrawberryQuality]: {
             description: "The strawberry quality id.",
         },
     },
@@ -384,7 +392,6 @@ export enum SystemId {
     AnimalInfo = "animalInfo",
     FruitInfo = "fruitInfo",
     DefaultInfo = "defaultInfo",
-    SpinInfo = "spinInfo",
     EnergyRegen = "energyRegen",
     DailyRewardInfo = "dailyRewardInfo",
     HoneycombInfo = "honeycombInfo",
@@ -397,32 +404,32 @@ registerEnumType(FirstCharLowerCaseSystemId, {
     name: "SystemId",
     description: "The system id.",
     valuesMap: {
-        activities: {
+        [SystemId.Activities]: {
             description: "The activities id.",
         },
-        cropInfo: {
+        [SystemId.CropInfo]: {
             description: "The crop info id.",
         },
-        animalInfo: {
+        [SystemId.AnimalInfo]: {
             description: "The animal info id.",
         },
-        fruitInfo: {
+        [SystemId.FruitInfo]: {
             description: "The fruit info id.",
         },
-        defaultInfo: {
+        [SystemId.DefaultInfo]: {
             description: "The default info id.",
         },
-        spinInfo: {
-            description: "The spin info id.",
-        },
-        energyRegen: {
+        [SystemId.EnergyRegen]: {
             description: "The energy regen id.",
         },
-        dailyRewardInfo: {
+        [SystemId.DailyRewardInfo]: {
             description: "The daily reward info id.",
         },
-        honeycombInfo: {
+        [SystemId.HoneycombInfo]: {
             description: "The honeycomb info id.",
+        },
+        [SystemId.FlowerInfo]: {
+            description: "The flower info id.",
         },
     },
 })
@@ -514,133 +521,133 @@ registerEnumType(FirstCharLowerCaseInventoryTypeId, {
     name: "InventoryTypeId",
     description: "The inventory type id.",
     valuesMap: {
-        turnipSeed: {
+        [InventoryTypeId.TurnipSeed]: {
             description: "The turnip seed id.",
         },
-        carrotSeed: {
+        [InventoryTypeId.CarrotSeed]: {
             description: "The carrot seed id.",
         },
-        potatoSeed: {
+        [InventoryTypeId.PotatoSeed]: {
             description: "The potato seed id.",
         },
-        pineappleSeed: {
+        [InventoryTypeId.PineappleSeed]: {
             description: "The pineapple seed id.",
         },
-        watermelonSeed: {
+        [InventoryTypeId.WatermelonSeed]: {
             description: "The watermelon seed id.",
         },
-        cucumberSeed: {
+        [InventoryTypeId.CucumberSeed]: {
             description: "The cucumber seed id.",
         },
-        bellPepperSeed: {
+        [InventoryTypeId.BellPepperSeed]: {
             description: "The bell pepper seed id.",
         },
-        basicFertilizer: {
+        [InventoryTypeId.BasicFertilizer]: {
             description: "The basic fertilizer id.",
         },
-        animalFeed: {
+        [InventoryTypeId.AnimalFeed]: {
             description: "The animal feed id.",
         },
-        fruitFertilizer: {
+        [InventoryTypeId.FruitFertilizer]: {
             description: "The fruit fertilizer id.",
         },
-        egg: {  
+        [InventoryTypeId.Egg]: {  
             description: "The egg id.",
         },
-        eggQuality: {
+        [InventoryTypeId.EggQuality]: {
             description: "The egg quality id.",
         },
-        milk: {
+        [InventoryTypeId.Milk]: {
             description: "The milk id.",
         },
-        milkQuality: {
+        [InventoryTypeId.MilkQuality]: {
             description: "The milk quality id.",
         },
-        turnip: {
+        [InventoryTypeId.Turnip]: {
             description: "The turnip id.",
         },
-        turnipQuality: {
+        [InventoryTypeId.TurnipQuality]: {
             description: "The turnip quality id.",
         },
-        carrot: {
+        [InventoryTypeId.Carrot]: {
             description: "The carrot id.",
         },
-        carrotQuality: {
+        [InventoryTypeId.CarrotQuality]: {
             description: "The carrot quality id.",
         },
-        potato: {
+        [InventoryTypeId.Potato]: {
             description: "The potato id.",
         },
-        potatoQuality: {
+        [InventoryTypeId.PotatoQuality]: {
             description: "The potato quality id.",
         },
-        pineapple: {
+        [InventoryTypeId.Pineapple]: {
             description: "The pineapple id.",
         },
-        pineappleQuality: {
+        [InventoryTypeId.PineappleQuality]: {
             description: "The pineapple quality id.",
         },
-        watermelon: {
+        [InventoryTypeId.Watermelon]: {
             description: "The watermelon id.",
         },
-        watermelonQuality: {
+        [InventoryTypeId.WatermelonQuality]: {
             description: "The watermelon quality id.",
         },
-        cucumber: {
+        [InventoryTypeId.Cucumber]: {
             description: "The cucumber id.",
         },
-        cucumberQuality: {
+        [InventoryTypeId.CucumberQuality]: {
             description: "The cucumber quality id.",
         },
-        bellPepper: {
+        [InventoryTypeId.BellPepper]: {
             description: "The bell pepper id.",
         },
-        bellPepperQuality: {
+        [InventoryTypeId.BellPepperQuality]: {
             description: "The bell pepper quality id.",
         },
-        banana: {
+        [InventoryTypeId.Banana]: {
             description: "The banana id.",
         },
-        bananaQuality: {
+        [InventoryTypeId.BananaQuality]: {
             description: "The banana quality id.",
         },
-        apple: {
+        [InventoryTypeId.Apple]: {
             description: "The apple id.",
         },
-        appleQuality: {
+        [InventoryTypeId.AppleQuality]: {
             description: "The apple quality id.",
         },
-        hand: {
+        [InventoryTypeId.Hand]: {
             description: "The hand id.",
         },
-        crate: {
+        [InventoryTypeId.Crate]: {
             description: "The crate id.",
         },
-        wateringCan: {
+        [InventoryTypeId.WateringCan]: {
             description: "The watering can id.",
         },
-        hammer: {
+        [InventoryTypeId.Hammer]: {
             description: "The hammer id.",
         },
-        herbicide: {
+        [InventoryTypeId.Herbicide]: {
             description: "The herbicide id.",
         },
-        pesticide: {
+        [InventoryTypeId.Pesticide]: {
             description: "The pesticide id.",
         },
-        animalMedicine: {
+        [InventoryTypeId.AnimalMedicine]: {
             description: "The animal medicine id.",
         },
-        bugNet: {
+        [InventoryTypeId.BugNet]: {
             description: "The bug net id.",
         },
-        strawberrySeed: {
+        [InventoryTypeId.StrawberrySeed]: {
             description: "The strawberry seed id.",
         },
-        strawberry: {
+        [InventoryTypeId.Strawberry]: {
             description: "The strawberry id.",
         },
-        strawberryQuality: {
+        [InventoryTypeId.StrawberryQuality]: {
             description: "The strawberry quality id.",
         },
     },
@@ -667,34 +674,37 @@ registerEnumType(FirstCharLowerCasePlacedItemTypeId, {
     name: "PlacedItemTypeId",
     description: "The placed item type id.",
     valuesMap: {
-        chicken: {
+        [PlacedItemTypeId.Chicken]: {
             description: "The chicken id.",
         },
-        cow: {
+        [PlacedItemTypeId.Cow]: {
             description: "The cow id.",
         },
-        pig: {
+        [PlacedItemTypeId.Pig]: {
             description: "The pig id.",
         },
-        sheep: {
+        [PlacedItemTypeId.Sheep]: {
             description: "The sheep id.",
         },
-        coop: {
+        [PlacedItemTypeId.Coop]: {
             description: "The coop id.",
         },
-        barn: {
+        [PlacedItemTypeId.Barn]: {
             description: "The barn id.",
         },
-        home: {
+        [PlacedItemTypeId.PetHouse]: {
+            description: "The pet house id.",
+        },
+        [PlacedItemTypeId.BeeHouse]: {
+            description: "The bee house id.",
+        },
+        [PlacedItemTypeId.Home]: {
             description: "The home id.",
         },
-        basicTile: {
-            description: "The basic tile id.",
-        },
-        apple: {
+        [PlacedItemTypeId.Apple]: {
             description: "The apple id.",
         },  
-        banana: {
+        [PlacedItemTypeId.Banana]: {
             description: "The banana id.",
         },
     },

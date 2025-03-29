@@ -2,6 +2,7 @@ import {
     AnimalType,
     BuildingId,
     BuildingSchema,
+    BuildingKind,
     InjectMongoose,
 } from "@src/databases"
 import { Injectable, Logger } from "@nestjs/common"
@@ -30,7 +31,8 @@ export class BuildingSeeder implements Seeder {
                     price: 0,
                     upgradable: false,
                     unlockLevel: 0, 
-                    maxOwnership: 1
+                    maxOwnership: 1,
+                    kind: BuildingKind.Neutral
                 },
                 {
                     _id: createObjectId(BuildingId.Coop),
@@ -42,6 +44,7 @@ export class BuildingSeeder implements Seeder {
                     unlockLevel: 5,
                     upgradable: true,
                     maxOwnership: 3,
+                    kind: BuildingKind.Neutral,
                     sellable: true,
                     sellPrice: 1000,
                     upgrades: [
@@ -71,6 +74,7 @@ export class BuildingSeeder implements Seeder {
                     unlockLevel: 10,
                     upgradable: true,
                     maxOwnership: 3,
+                    kind: BuildingKind.Neutral,
                     sellable: true,
                     sellPrice: 1000,
                     upgrades: [
@@ -99,9 +103,11 @@ export class BuildingSeeder implements Seeder {
                     unlockLevel: 10,
                     upgradable: false,
                     maxOwnership: 3,
+                    kind: BuildingKind.BeeHouse,
                     beeHouseYieldTime: 3600,
                     beeHouseBasicHarvestExperiences: 10,
                     beeHouseQualityHarvestExperiences: 15,
+                    baseHoneyYieldCoefficient: 1,
                     sellable: true,
                     sellPrice: 1000,
                     upgrades: [
@@ -131,6 +137,7 @@ export class BuildingSeeder implements Seeder {
                     unlockLevel: 10,
                     upgradable: false,
                     maxOwnership: 1,
+                    kind: BuildingKind.Neutral,
                 },
             ]
         

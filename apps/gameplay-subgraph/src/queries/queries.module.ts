@@ -6,8 +6,6 @@ import { ProductsModule } from "./products"
 import { InventoriesModule } from "./inventories"
 import { InventoryTypesModule } from "./inventory-types"
 import { PlacedItemTypesModule } from "./placed-item-types"
-import { SpinPrizesModule } from "./spin-prizes"
-import { SpinSlotsModule } from "./spin-slots"
 import { SuppliesModule } from "./supplies"
 import { SystemsModule } from "./systems"
 import { TilesModule } from "./tiles"
@@ -26,8 +24,6 @@ import { FlowersModule } from "./flowers"
         InventoriesModule,
         InventoryTypesModule,
         PlacedItemTypesModule,
-        SpinPrizesModule,
-        SpinSlotsModule,
         SuppliesModule,
         SystemsModule,
         PlacedItemsModule,

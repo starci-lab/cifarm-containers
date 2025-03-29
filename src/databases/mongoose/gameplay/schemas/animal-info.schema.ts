@@ -59,10 +59,9 @@ export class AnimalInfoSchema extends AbstractSchema {
 
     @Field(() => Int, {
         description: "The harvest quantity remaining of the animal",
-        nullable: true
     })
-    @Prop({ type: Number, required: false, default: 0 })
-        harvestQuantityRemaining?: number
+    @Prop({ type: Number, default: 0 })
+        harvestQuantityRemaining: number
 
     @Field(() => Boolean, {
         description: "Whether the animal is immunized",

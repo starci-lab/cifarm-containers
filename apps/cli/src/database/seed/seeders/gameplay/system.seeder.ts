@@ -3,7 +3,6 @@ import { createObjectId } from "@src/common"
 import {
     Activities,
     AnimalInfo,
-    AppearanceChance,
     CropId,
     CropInfo,
     DailyRewardId,
@@ -14,7 +13,6 @@ import {
     FruitInfo,
     HoneycombInfo,
     InjectMongoose,
-    SpinInfo,
     SystemId,
     SystemSchema
 } from "@src/databases"
@@ -210,30 +208,6 @@ export class SystemSeeder implements Seeder {
                 fruitLimit: 10,
                 buildingLimit: 30
             }
-            const spinInfo: SpinInfo = {
-                appearanceChanceSlots: {
-                    [AppearanceChance.Common]: {
-                        count: 4,
-                        thresholdMin: 0,
-                        thresholdMax: 0.8
-                    },
-                    [AppearanceChance.Uncommon]: {
-                        count: 2,
-                        thresholdMin: 0.8,
-                        thresholdMax: 0.95
-                    },
-                    [AppearanceChance.Rare]: {
-                        count: 1,
-                        thresholdMin: 0.95,
-                        thresholdMax: 0.99
-                    },
-                    [AppearanceChance.VeryRare]: {
-                        count: 1,
-                        thresholdMin: 0.99,
-                        thresholdMax: 1
-                    }
-                }
-            }
             const energyRegen: EnergyRegen = {
             // 5 minutes
                 time: 60 * 5
@@ -303,11 +277,6 @@ export class SystemSeeder implements Seeder {
                     _id: createObjectId(SystemId.DefaultInfo),
                     displayId: SystemId.DefaultInfo,
                     value: defaultInfo
-                },
-                {
-                    _id: createObjectId(SystemId.SpinInfo),
-                    displayId: SystemId.SpinInfo,
-                    value: spinInfo
                 },
                 {
                     _id: createObjectId(SystemId.EnergyRegen),

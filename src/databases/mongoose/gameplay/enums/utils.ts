@@ -1,4 +1,6 @@
-export const createFirstCharLowerCaseEnumType = (enumType: object) : Record<string, string | number> => {
+export const createFirstCharLowerCaseEnumType = (
+    enumType: object
+): Record<string, string | number> => {
     const lowerCaseEnumType = {}
     for (const key in enumType) {
         // lower the first letter of the key

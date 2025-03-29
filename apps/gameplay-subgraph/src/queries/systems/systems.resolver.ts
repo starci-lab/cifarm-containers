@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common"
 import { Query, Resolver } from "@nestjs/graphql"
-import { Activities, AnimalInfo, CropInfo, DailyRewardInfo, DefaultInfo, EnergyRegen, FruitInfo, SpinInfo, HoneycombInfo } from "@src/databases"
+import { Activities, AnimalInfo, CropInfo, DailyRewardInfo, DefaultInfo, EnergyRegen, FruitInfo, HoneycombInfo } from "@src/databases"
 import { SystemsService } from "./systems.service"
 
 @Resolver()
@@ -47,14 +47,6 @@ export class SystemsResolver {
     })
     async defaultInfo(): Promise<DefaultInfo> {
         return this.systemsService.defaultInfo()
-    }
-
-    @Query(() => SpinInfo, {
-        name: "spinInfo",
-        description: "Get the spin info"
-    })
-    async spinInfo(): Promise<SpinInfo> {
-        return this.systemsService.spinInfo()
     }
 
     @Query(() => EnergyRegen, {

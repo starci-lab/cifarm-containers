@@ -30,7 +30,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.BasicTile,
                 type: PlacedItemType.Tile,
                 tile: createObjectId(TileId.BasicTile),
-                sellable: true,
                 sizeX: 1,
                 sizeY: 1
             },
@@ -41,7 +40,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.Chicken,
                 type: PlacedItemType.Animal,
                 animal: createObjectId(AnimalId.Chicken),
-                sellable: true,
                 sizeX: 1,
                 sizeY: 1
             },
@@ -50,7 +48,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.Cow,
                 type: PlacedItemType.Animal,
                 animal: createObjectId(AnimalId.Cow),
-                sellable: true,
                 sizeX: 1,
                 sizeY: 1
             },
@@ -61,7 +58,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.Home,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Home),
-                sellable: false,
                 sizeX: 4,
                 sizeY: 4
             },
@@ -70,7 +66,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.Barn,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Barn),
-                sellable: true,
                 sizeX: 3,
                 sizeY: 3
             },
@@ -79,7 +74,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.Coop,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Coop),
-                sellable: true,
                 sizeX: 3,
                 sizeY: 3
             },
@@ -89,7 +83,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.PetHouse,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.PetHouse),
-                sellable: true,
                 sizeX: 3,
                 sizeY: 3
             },
@@ -98,7 +91,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.BeeHouse,
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.BeeHouse),
-                sellable: true,
                 sizeX: 2,
                 sizeY: 2
             },
@@ -107,7 +99,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.Apple,
                 type: PlacedItemType.Fruit,
                 fruit: createObjectId(FruitId.Apple),
-                sellable: true,
                 sizeX: 2,
                 sizeY: 2
             },
@@ -116,7 +107,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 displayId: PlacedItemTypeId.Banana,
                 type: PlacedItemType.Fruit,
                 fruit: createObjectId(FruitId.Banana),
-                sellable: true,
                 sizeX: 2,
                 sizeY: 2
             },

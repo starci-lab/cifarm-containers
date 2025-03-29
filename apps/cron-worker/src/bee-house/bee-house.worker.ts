@@ -6,10 +6,10 @@ import {
     InjectMongoose,
     PlacedItemSchema,
     PlacedItemTypeId,
-    BuildingId,
     PlacedItemType,
     PlantCurrentState,
-    PlantType
+    PlantType,
+    BuildingKind
 } from "@src/databases"
 import { Job } from "bullmq"
 import { DateUtcService } from "@src/date"
@@ -17,8 +17,9 @@ import { SyncService, StaticService, PositionService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
-import { createObjectId, SchemaStatus, WithStatus } from "@src/common"
+import { createObjectId, WithStatus } from "@src/common"
 import { BeeHouseJobData } from "@apps/cron-scheduler"
+import { SyncPlacedItemsPayload } from "@apps/io-gameplay"
 
 @Processor(bullData[BullQueueName.BeeHouse].name)
 export class BeeHouseWorker extends WorkerHost {
@@ -42,9 +43,8 @@ export class BeeHouseWorker extends WorkerHost {
             this.logger.verbose(`Processing job: ${job.id}`)
             const { time, skip, take, utcTime } = job.data
 
-            // if the owner is currently on tutorial, skip the crop growth
             const building = this.staticService.buildings.find(
-                (building) => building.displayId === BuildingId.BeeHouse
+                (building) => building.kind === BuildingKind.BeeHouse
             )
             if (!building) {
                 throw new Error("Bee house not found")
@@ -53,7 +53,6 @@ export class BeeHouseWorker extends WorkerHost {
             if (!upgrades) {
                 throw new Error("Bee house upgrades not found")
             }
-
             const placedItems = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .find({
@@ -75,7 +74,6 @@ export class BeeHouseWorker extends WorkerHost {
                 .skip(skip)
                 .limit(take)
                 .sort({ createdAt: "desc" })
-
             const promises: Array<Promise<void>> = []
             const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
             for (const placedItem of placedItems) {
@@ -135,20 +133,23 @@ export class BeeHouseWorker extends WorkerHost {
                                         "plantInfo.plantType": {
                                             $in: [PlantType.Flower]
                                         },
-                                        x: { $in: adjacentPositions.map((position) => position.x) },
-                                        y: { $in: adjacentPositions.map((position) => position.y) }
+                                        $or: adjacentPositions.map(position => ({
+                                            x: position.x,
+                                            y: position.y
+                                        }))
                                     })
-
                                 for (const placedItemTile of placedItemTiles) {
                                     const placedItemTileType = this.staticService.placedItemTypes.find(
-                                        (placedItemType) => placedItemType.id === placedItemTile.placedItemType
+                                        (placedItemType) => placedItemType.id === placedItemTile.placedItemType.toString()
                                     )
                                     if (!placedItemTileType) {
                                         throw new Error("Placed item tile type not found")
                                     }
                                     const flower = this.staticService.flowers.find(
-                                        (flower) => flower.id === placedItemTile.plantInfo.plantType
+                                        (flower) => placedItemTile.plantInfo.plantType === PlantType.Flower
+                                        && flower.id === placedItemTile.plantInfo.flower.toString()
                                     )
+
                                     if (!flower) {
                                         throw new Error("Flower not found")
                                     }
@@ -157,9 +158,12 @@ export class BeeHouseWorker extends WorkerHost {
                                 }
 
                                 placedItem.beeHouseInfo.currentState = BeeHouseCurrentState.Yield
-                                placedItem.beeHouseInfo.harvestQuantityRemaining = Math.floor(
+                                const desiredHarvestQuantity = Math.floor(
                                     totalHoneyYieldCoefficient * honeyMultiplier
                                 )
+                                placedItem.beeHouseInfo.harvestQuantityRemaining = desiredHarvestQuantity
+                                placedItem.beeHouseInfo.harvestQuantityDesired = desiredHarvestQuantity
+
                                 if (Math.random() < totalHoneyQualityChancePlus) {
                                     placedItem.beeHouseInfo.isQuality = true
                                 }
@@ -169,23 +173,25 @@ export class BeeHouseWorker extends WorkerHost {
                             return false
                         }
                         // update the placed item
-                        const synced = updatePlacedItem()
+                        const placedItemSnapshot = placedItem.$clone()
+                        const synced = await updatePlacedItem()
                         await placedItem.save()
                         if (synced) {
-                            const updatedSyncedPlacedItems =
-                                this.syncService.getCreatedOrUpdatedSyncedPlacedItems({
-                                    placedItems: [placedItem],
-                                    status: SchemaStatus.Updated
+                            const updatedSyncedPlacedItem =
+                                this.syncService.getPartialUpdatedSyncedPlacedItem({
+                                    placedItemSnapshot,
+                                    placedItemUpdated: placedItem
                                 })
-                            syncedPlacedItems.push(...updatedSyncedPlacedItems)
+                            syncedPlacedItems.push(updatedSyncedPlacedItem)
+                            const syncedPlacedItemsPayload: SyncPlacedItemsPayload = {
+                                data: [updatedSyncedPlacedItem],
+                                userId: placedItem.user.toString()
+                            }
                             await this.kafkaProducer.send({
                                 topic: KafkaTopic.SyncPlacedItems,
                                 messages: [
                                     {
-                                        value: JSON.stringify({
-                                            userId: placedItem.user.toString(),
-                                            placedItems: updatedSyncedPlacedItems
-                                        })
+                                        value: JSON.stringify(syncedPlacedItemsPayload)
                                     }
                                 ]
                             })

@@ -25,6 +25,22 @@ export class ProductSeeder implements Seeder {
         this.logger.debug("Seeding products...")
         const data: Array<DeepPartial<ProductSchema>> = [
             {
+                _id: createObjectId(ProductId.Honey),
+                displayId: ProductId.Honey,
+                maxStack: 64,
+                isQuality: false,
+                goldAmount: 100,
+                type: ProductType.Honey,
+            },
+            {
+                _id: createObjectId(ProductId.HoneyQuality),
+                displayId: ProductId.HoneyQuality,
+                maxStack: 64,
+                isQuality: true,
+                goldAmount: 100,
+                type: ProductType.Honey,
+            },
+            {
                 _id: createObjectId(ProductId.Egg),
                 displayId: ProductId.Egg,
                 maxStack: 64,

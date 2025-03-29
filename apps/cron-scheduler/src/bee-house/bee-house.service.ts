@@ -86,7 +86,7 @@ export class BeeHouseService {
                     KeyValueRecord<BeeHouseLastSchedule>
                 >(createObjectId(KeyValueStoreId.BeeHouseLastSchedule))
 
-            // this.logger.debug(`Found ${count} crops that need to be grown`)
+            this.logger.debug(`Found ${count} bee houses that need to be processed`)
             if (count !== 0) {
                 //split into 10000 per batch
                 const batchSize = bullData[BullQueueName.BeeHouse].batchSize

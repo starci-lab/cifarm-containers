@@ -16,19 +16,19 @@ registerEnumType(FirstCharLowerCasePlantCurrentState, {
     name: "PlantCurrentState",
     description: "The current state of the plant",
     valuesMap: {
-        normal: {
+        [PlantCurrentState.Normal]: {
             description: "The plant is normal"
         },
-        needWater: {
+        [PlantCurrentState.NeedWater]: {
             description: "The plant needs water"
         },
-        isWeedy: {
+        [PlantCurrentState.IsWeedy]: {
             description: "The plant is weedy"
         },
-        isInfested: {
+        [PlantCurrentState.IsInfested]: {
             description: "The plant is infested"
         },
-        fullyMatured: {
+        [PlantCurrentState.FullyMatured]: {
             description: "The plant is fully matured"
         }
     }
@@ -48,16 +48,16 @@ registerEnumType(FirstCharLowerCaseAnimalCurrentState, {
     name: "AnimalCurrentState",
     description: "The current state of the animal",
     valuesMap: {
-        normal: {
+        [AnimalCurrentState.Normal]: {
             description: "The animal is normal"
         },
-        hungry: {
+        [AnimalCurrentState.Hungry]: {
             description: "The animal is hungry"
         },
-        sick: {
+        [AnimalCurrentState.Sick]: {
             description: "The animal is sick"
         },
-        yield: {
+        [AnimalCurrentState.Yield]: {
             description: "The animal is yielding"
         }
     }
@@ -77,16 +77,16 @@ registerEnumType(FirstCharLowerCaseFruitCurrentState, {
     name: "FruitCurrentState",
     description: "The current state of the fruit",
     valuesMap: {
-        normal: {
+        [FruitCurrentState.Normal]: {
             description: "The fruit is normal"
         },
-        needFertilizer: {
+        [FruitCurrentState.NeedFertilizer]: {
             description: "The fruit needs fertilizer"
         },
-        isBuggy: {
+        [FruitCurrentState.IsBuggy]: {
             description: "The fruit has a caterpillar"
         },
-        fullyMatured: {
+        [FruitCurrentState.FullyMatured]: {
             description: "The fruit is fully matured"
         }
     }
@@ -105,10 +105,10 @@ registerEnumType(FirstCharLowerCaseBeeHouseCurrentState, {
     name: "BeeHouseCurrentState",
     description: "The current state of the bee house",
     valuesMap: {    
-        normal: {
+        [BeeHouseCurrentState.Normal]: {
             description: "The bee house is normal"
         },
-        yield: {
+        [BeeHouseCurrentState.Yield]: {
             description: "The bee house is yielding"
         }
     }

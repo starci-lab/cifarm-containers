@@ -9,7 +9,6 @@ import {
     FruitInfo,
     HoneycombInfo,
     InjectMongoose,
-    SpinInfo,
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { StaticService } from "@src/gameplay"                                           
@@ -42,10 +41,6 @@ export class SystemsService {
 
     async defaultInfo(): Promise<DefaultInfo> {
         return this.staticService.defaultInfo
-    }
-
-    async spinInfo(): Promise<SpinInfo> {
-        return this.staticService.spinInfo
     }
 
     async energyRegen(): Promise<EnergyRegen> {

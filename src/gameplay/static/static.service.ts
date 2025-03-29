@@ -14,7 +14,6 @@ import {
     ToolSchema,
     TileSchema,
     Activities,
-    SpinInfo,
     EnergyRegen,
     DailyRewardInfo,
     HoneycombInfo,
@@ -39,7 +38,6 @@ export class StaticService implements OnModuleInit {
     public cropInfo: CropInfo
     public animalInfo: AnimalInfo
     public fruitInfo: FruitInfo
-    public spinInfo: SpinInfo
     public energyRegen: EnergyRegen
     public dailyRewardInfo: DailyRewardInfo
     public honeycombInfo: HoneycombInfo
@@ -92,11 +90,6 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<FruitInfo>>(createObjectId(SystemId.FruitInfo))
         this.fruitInfo = fruitInfoDoc.value
-
-        const spinInfoDoc = await this.connection
-            .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<SpinInfo>>(createObjectId(SystemId.SpinInfo))
-        this.spinInfo = spinInfoDoc.value
 
         const energyRegenDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)

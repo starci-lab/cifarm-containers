@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    BuildingId,
+    BuildingKind,
     InjectMongoose,
     PlacedItemSchema,
     PlacedItemType,
@@ -10,7 +10,7 @@ import { GoldBalanceService, StaticService, SyncService, PositionService } from 
 import { Connection } from "mongoose"
 import { BuyBuildingMessage } from "./buy-building.dto"
 import { UserLike } from "@src/jwt"
-import { DeepPartial, WithStatus, createObjectId } from "@src/common"
+import { DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName, BuyBuildingData } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
@@ -142,7 +142,8 @@ export class BuyBuildingService {
                 let placedItemBuildingRaw: PlacedItemSchema
 
                 // If the building is a bee house, we need to create a bee house info
-                if (building.id.toString() === createObjectId(BuildingId.BeeHouse).toString()) {
+                switch (building.kind) {
+                case BuildingKind.BeeHouse: {
                     const [_placedItemBuildingRaw] = await this.connection
                         .model<PlacedItemSchema>(PlacedItemSchema.name)
                         .create(
@@ -161,7 +162,9 @@ export class BuyBuildingService {
                             { session }
                         )
                     placedItemBuildingRaw = _placedItemBuildingRaw
-                } else {
+                    break
+                }
+                case BuildingKind.Neutral: {
                     const [_placedItemBuildingRaw] = await this.connection
                         .model<PlacedItemSchema>(PlacedItemSchema.name)
                         .create(
@@ -179,6 +182,8 @@ export class BuyBuildingService {
                             { session }
                         )
                     placedItemBuildingRaw = _placedItemBuildingRaw
+                    break
+                }
                 }
 
                 syncedPlacedItemAction = {

@@ -1,7 +1,6 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import JSON from "graphql-type-json"
 import {
-    AppearanceChance,
     CropId,
     DailyRewardId,
     FirstCharLowerCaseCropId,
@@ -478,41 +477,6 @@ export class HoneycombInfo {
         description: "Profile tree addresses for honeycomb"
     })
         profilesTreeAddresses: Array<string>
-}
-
-@ObjectType({
-    description: "Configuration for appearance chance slots"
-})
-export class AppearanceChanceSlots {
-    @Field(() => SlotInfo, {
-        description: "Configuration for common slots"
-    })
-    [AppearanceChance.Common]: SlotInfo
-
-    @Field(() => SlotInfo, {
-        description: "Configuration for uncommon slots"
-    })
-    [AppearanceChance.Uncommon]: SlotInfo
-
-    @Field(() => SlotInfo, {
-        description: "Configuration for rare slots"
-    })
-    [AppearanceChance.Rare]: SlotInfo
-
-    @Field(() => SlotInfo, {
-        description: "Configuration for very rare slots"
-    })
-    [AppearanceChance.VeryRare]: SlotInfo
-}
-
-@ObjectType({
-    description: "Configuration for spin wheel"
-})
-export class SpinInfo {
-    @Field(() => AppearanceChanceSlots, {
-        description: "Configuration for appearance chance slots"
-    })
-        appearanceChanceSlots: AppearanceChanceSlots
 }
 
 @ObjectType({

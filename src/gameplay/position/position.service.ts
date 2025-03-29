@@ -22,11 +22,9 @@ export class PositionService {
                 y: 1,
                 _id: 0  // Exclude the _id field
             }).lean().exec()
-        console.log(placedItems)
         if (itself) {
             placedItems = placedItems.filter(placedItem => (placedItem.x !== itself.x && placedItem.y !== itself.y))
         }
-        console.log(placedItems.length)
         return placedItems
     }
 
@@ -72,10 +70,9 @@ export class PositionService {
                 positions.push({ x, y })
             }
         }
-
         const adjacentPositions: Array<Position> = []
-        for (let x = position.x + 1; x > position.x - sizeX; x--) {
-            for (let y = position.y + 1; y > position.y - sizeY; y--) {
+        for (let x = position.x + 1; x >= position.x - sizeX; x--) {
+            for (let y = position.y + 1; y >= position.y - sizeY; y--) {
                 // if the position not in the positions array, add it to the adjacent positions
                 if (!positions.some(position => _.isEqual(position, { x, y }))) {
                     adjacentPositions.push({ x, y })

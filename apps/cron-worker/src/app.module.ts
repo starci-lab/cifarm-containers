@@ -12,7 +12,7 @@ import { KafkaModule } from "@src/brokers"
 import { FruitModule } from "./fruit"
 import { IdModule } from "@src/id"
 import { PlantModule } from "./plant"
-
+import { BeeHouseModule } from "./bee-house"
 @Module({
     imports: [
         IdModule.register({
@@ -37,6 +37,7 @@ import { PlantModule } from "./plant"
         DeliveryModule,
         EnergyModule,
         FruitModule,
+        BeeHouseModule
     ]
 })
 export class AppModule {}

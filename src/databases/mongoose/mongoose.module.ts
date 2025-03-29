@@ -13,10 +13,6 @@ import {
     CropSchemaClass,
     InventoryTypeSchema,
     InventoryTypeSchemaClass,
-    SpinPrizeSchema,
-    SpinPrizeSchemaClass,
-    SpinSlotSchema,
-    SpinSlotSchemaClass,
     SystemSchema,
     SystemSchemaClass,
     TileSchema,
@@ -129,20 +125,12 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => InventoryTypeSchemaClass
                         },
                         {
-                            name: SpinPrizeSchema.name,
-                            useFactory: () => SpinPrizeSchemaClass
-                        },
-                        {
                             name: UserFollowRelationSchema.name,
                             useFactory: () => UserFollowRelationSchemaClass
                         },
                         {
                             name: PetSchema.name,
                             useFactory: () => PetSchemaClass
-                        },
-                        {
-                            name: SpinSlotSchema.name,
-                            useFactory: () => SpinSlotSchemaClass
                         },
                         {
                             name: SupplySchema.name,

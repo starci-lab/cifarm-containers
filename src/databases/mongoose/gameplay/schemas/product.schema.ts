@@ -6,8 +6,9 @@ import { Schema as MongooseSchema, Types } from "mongoose"
 import { CropSchema } from "./crop.schema"
 import { AnimalSchema } from "./animal.schema"
 import { FruitSchema } from "./fruit.schema"
-import { CROP, ANIMAL, FRUIT, FLOWER } from "../constants"
+import { CROP, ANIMAL, FRUIT, FLOWER, BUILDING } from "../constants"
 import { FlowerSchema } from "./flower.schema"
+import { BuildingSchema } from "./building.schema"
 
 @ObjectType({
     description: "The product schema"
@@ -78,6 +79,13 @@ export class ProductSchema extends AbstractSchema {
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FlowerSchema.name })
     [FLOWER]: FlowerSchema | Types.ObjectId
+
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The building associated with this product, if applicable"
+    })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: BuildingSchema.name })
+    [BUILDING]: BuildingSchema | Types.ObjectId
 }
 
 // Generate Mongoose Schema

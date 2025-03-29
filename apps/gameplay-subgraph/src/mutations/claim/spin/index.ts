@@ -1,5 +1,0 @@
-export * from "./spin.dto"
-export * from "./spin.module"
-export * from "./spin.service"
-export * from "./spin.resolver"
-//export * from "./claim.spec"

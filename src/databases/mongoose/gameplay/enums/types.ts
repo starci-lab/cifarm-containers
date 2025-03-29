@@ -6,7 +6,8 @@ export enum ProductType {
     Animal = "animal",
     Crop = "crop",
     Fruit = "fruit",
-    Flower = "flower"
+    Flower = "flower",
+    Honey = "honey",
 }
 
 export const FirstCharLowerCaseProductType = createFirstCharLowerCaseEnumType(ProductType)
@@ -15,17 +16,20 @@ registerEnumType(FirstCharLowerCaseProductType, {
     name: "ProductType",
     description: "The type of product",
     valuesMap: {
-        animal: {
+        [ProductType.Animal]: {
             description: "The animal product",
         },
-        crop: {
+        [ProductType.Crop]: {
             description: "The crop product",
         },
-        fruit: {
+        [ProductType.Fruit]: {
             description: "The fruit product",
         },
-        flower: {
+        [ProductType.Flower]: {
             description: "The flower product",
+        },
+        [ProductType.Honey]: {
+            description: "The honey product",
         },
     },
 })
@@ -42,40 +46,11 @@ registerEnumType(FirstCharLowerCaseAnimalType, {
     name: "AnimalType",
     description: "The type of animal",
     valuesMap: {
-        poultry: {
+        [AnimalType.Poultry]: {
             description: "The poultry animal",
         },
-        livestock: {
+        [AnimalType.Livestock]: {
             description: "The livestock animal",
-        },
-    },
-})
-
-// Spin Type Enum
-export enum SpinPrizeType {
-    Gold = "gold",
-    Seed = "seed",
-    Supply = "supply",
-    Token = "token"
-}
-
-export const FirstCharLowerCaseSpinPrizeType = createFirstCharLowerCaseEnumType(SpinPrizeType)
-
-registerEnumType(FirstCharLowerCaseSpinPrizeType, {
-    name: "SpinPrizeType",
-    description: "The type of spin prize",
-    valuesMap: {
-        gold: {
-            description: "The gold spin prize",
-        },
-        seed: {
-            description: "The seed spin prize",
-        },
-        supply: {
-            description: "The supply spin prize",
-        },
-        token: {
-            description: "The token spin prize",
         },
     },
 })
@@ -94,16 +69,16 @@ registerEnumType(FirstCharLowerCaseInventoryType, {
     name: "InventoryType",
     description: "The type of inventory",
     valuesMap: {
-        seed: {
+        [InventoryType.Seed]: {
             description: "The seed inventory",
         },
-        product: {
+        [InventoryType.Product]: {
             description: "The product inventory",
         },
-        supply: {
+        [InventoryType.Supply]: {
             description: "The supply inventory",
         },
-        tool: {
+        [InventoryType.Tool]: {
             description: "The tool inventory",
         },
     },
@@ -123,46 +98,17 @@ registerEnumType(FirstCharLowerCasePlacedItemType, {
     name: "PlacedItemType",
     description: "The type of placed item",
     valuesMap: {
-        tile: {
+        [PlacedItemType.Tile]: {
             description: "The tile placed item",
         },
-        building: {
+        [PlacedItemType.Building]: {
             description: "The building placed item",
         },
-        animal: {
+        [PlacedItemType.Animal]: {
             description: "The animal placed item",
         },
-        fruit: {
+        [PlacedItemType.Fruit]: {
             description: "The fruit placed item",
-        },
-    },
-})
-
-// AppearanceChance Enum
-export enum AppearanceChance {
-    Common = "common",
-    Uncommon = "uncommon",
-    Rare = "rare",
-    VeryRare = "veryRare",  
-} 
-
-export const FirstCharLowerCaseAppearanceChance = createFirstCharLowerCaseEnumType(AppearanceChance)
-
-registerEnumType(FirstCharLowerCaseAppearanceChance, {
-    name: "AppearanceChance",
-    description: "The chance of appearance",
-    valuesMap: {
-        common: {
-            description: "The common appearance chance",
-        },
-        uncommon: {
-            description: "The uncommon appearance chance",
-        },
-        rare: {
-            description: "The rare appearance chance",
-        },
-        veryRare: {
-            description: "The very rare appearance chance",
         },
     },
 })
@@ -180,17 +126,42 @@ registerEnumType(FirstCharLowerCaseInventoryKind, {
     name: "InventoryKind",
     description: "The kind of inventory",
     valuesMap: {
-        storage: {
+        [InventoryKind.Storage]: {
             description: "The storage inventory",
         },
-        tool: {
+        [InventoryKind.Tool]: {
             description: "The tool inventory",
         },
-        delivery: {
+        [InventoryKind.Delivery]: {
             description: "The delivery inventory",
         },
     },
 })
+
+// Building Kind
+export enum BuildingKind {
+    // neutral mean normal building, no special function
+    Neutral = "neutral",
+    // bee house mean building that can produce honey
+    BeeHouse = "beeHouse",
+}
+
+export const FirstCharLowerCaseBuildingKind = createFirstCharLowerCaseEnumType(BuildingKind)
+
+registerEnumType(FirstCharLowerCaseBuildingKind, {
+    name: "BuildingKind",
+    description: "The kind of building",
+    valuesMap: {
+        [BuildingKind.Neutral]: {
+            description: "The neutral building",
+        },
+        [BuildingKind.BeeHouse]: {
+            description: "The bee house building",
+        },
+    },
+})
+
+
 
 // Supply Type Enum
 export enum SupplyType {
@@ -205,13 +176,13 @@ registerEnumType(FirstCharLowerCaseSupplyType, {
     name: "SupplyType",
     description: "The type of supply",
     valuesMap: {
-        fertilizer: {
+        [SupplyType.Fertilizer]: {
             description: "The fertilizer supply",
         },
-        animalFeed: {
+        [SupplyType.AnimalFeed]: {
             description: "The animal feed supply",
         },
-        fruitFertilizer: {
+        [SupplyType.FruitFertilizer]: {
             description: "The fruit fertilizer supply",
         },
     },

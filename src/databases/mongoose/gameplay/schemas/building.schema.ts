@@ -4,7 +4,9 @@ import {
     AnimalType,
     BuildingId,
     FirstCharLowerCaseAnimalType,
-    FirstCharLowerCaseBuildingId
+    FirstCharLowerCaseBuildingId,
+    BuildingKind,
+    FirstCharLowerCaseBuildingKind
 } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
@@ -75,6 +77,12 @@ export class BuildingSchema extends AbstractSchema {
     })
     @Prop({ type: [UpgradeSchemaClass], required: false })
         upgrades?: Array<UpgradeSchema>
+
+    @Field(() => FirstCharLowerCaseBuildingKind, {
+        description: "The kind of building",
+    })
+    @Prop({ type: String, enum: BuildingKind, default: BuildingKind.Neutral })
+        kind: BuildingKind
 
     @Field(() => Int, {
         description: "Bee house yield time",
