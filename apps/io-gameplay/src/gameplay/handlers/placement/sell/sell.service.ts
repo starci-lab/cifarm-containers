@@ -1,13 +1,12 @@
 import { ActionName, EmitActionPayload, SellData } from "@apps/io-gameplay"
 import { Injectable, Logger } from "@nestjs/common"
-import { Producer } from "@nestjs/microservices/external/kafka.interface"
-import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
 import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { SellRequest } from "./sell.dto"
+import { SellMessage } from "./sell.dto"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
+import { SyncedResponse } from "../../types"
 import { DeepPartial, WithStatus } from "@src/common"
 
 @Injectable()
@@ -19,17 +18,16 @@ export class SellService {
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
-        @InjectKafkaProducer() private readonly kafkaProducer: Producer,
         private readonly syncService: SyncService
     ) {}
 
-    async sell({ id: userId }: UserLike, { placedItemId }: SellRequest): Promise<void> {
+    async sell({ id: userId }: UserLike, { placedItemId }: SellMessage): Promise<SyncedResponse<SellData>> {
         const mongoSession = await this.connection.startSession()
 
         let actionMessage: EmitActionPayload<SellData> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
-        let user: UserSchema | undefined
-        const syncedPlacedItems: Array<DeepPartial<WithStatus<PlacedItemSchema>>> = []
+        let syncedUser: DeepPartial<UserSchema> | undefined
+        const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -54,7 +52,6 @@ export class SellService {
                     y: placedItem.y,
                     placedItemType: placedItem.placedItemType
                 }
-
                 /************************************************************
                  * VALIDATE OWNERSHIP
                  ************************************************************/
@@ -65,7 +62,6 @@ export class SellService {
                         }
                     })
                 }
-
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM TYPE
                  ************************************************************/
@@ -79,20 +75,11 @@ export class SellService {
                         }
                     })
                 }
-
-                if (!placedItemType.sellable) {
-                    throw new GraphQLError("Item not sellable", {
-                        extensions: {
-                            code: "ITEM_NOT_SELLABLE"
-                        }
-                    })
-                }
-
                 /************************************************************
                  * DETERMINE SELL PRICE BASED ON ITEM TYPE
                  ************************************************************/
-                let sellPrice = 0
-
+                let sellPrice: number
+                let id: string  
                 switch (placedItemType.type) {
                 case PlacedItemType.Building: {
                     const building = this.staticService.buildings.find(
@@ -105,18 +92,22 @@ export class SellService {
                             }
                         })
                     }
-                    const upgradeLevel = placedItem?.buildingInfo?.currentUpgrade ?? 1
-                    const upgradePrice = building.upgrades?.find(
-                        (upgrade) => upgrade.upgradeLevel === upgradeLevel
-                    )?.sellPrice
-                    if (!upgradePrice) {
-                        throw new GraphQLError("Upgrade price not found", {
+                    if (!building.sellable) {
+                        throw new GraphQLError("Building not sellable", {
                             extensions: {
-                                code: "UPGRADE_PRICE_NOT_FOUND"
+                                code: "BUILDING_NOT_SELLABLE"
                             }
                         })
                     }
-                    sellPrice = upgradePrice
+                    if (!building.sellPrice) {
+                        throw new GraphQLError("Building sell price not found", {
+                            extensions: {
+                                code: "BUILDING_SELL_PRICE_NOT_FOUND"
+                            }
+                        })
+                    }
+                    sellPrice = building.sellPrice
+                    id = building.id
                     break
                 }
                 case PlacedItemType.Tile: {
@@ -129,8 +120,23 @@ export class SellService {
                                 code: "TILE_NOT_FOUND"
                             }
                         })
+                    }   
+                    if (!tile.sellable) {
+                        throw new GraphQLError("Tile not sellable", {
+                            extensions: {
+                                code: "TILE_NOT_SELLABLE"
+                            }
+                        })
                     }
-                    sellPrice = tile.sellPrice ?? 0
+                    if (!tile.sellPrice) {
+                        throw new GraphQLError("Tile sell price not found", {
+                            extensions: {
+                                code: "TILE_SELL_PRICE_NOT_FOUND"
+                            }
+                        })
+                    }
+                    sellPrice = tile.sellPrice
+                    id = tile.id
                     break
                 }
                 case PlacedItemType.Animal: {
@@ -148,7 +154,37 @@ export class SellService {
                             }
                         })
                     }
-                    sellPrice = animal.sellPrice ?? 0
+                    if (!animal.sellable) {
+                        throw new GraphQLError("Animal not sellable", {
+                            extensions: {
+                                code: "ANIMAL_NOT_SELLABLE"
+                            }
+                        })
+                    }
+                    if (!animal.sellPrice) {
+                        throw new GraphQLError("Animal sell price not found", {
+                            extensions: {
+                                code: "ANIMAL_SELL_PRICE_NOT_FOUND"
+                            }
+                        })
+                    }
+                    sellPrice = animal.sellPrice
+                    id = animal.id
+                    break
+                }
+                case PlacedItemType.Fruit: {
+                    const fruit = this.staticService.fruits.find(
+                        (fruit) => fruit.id === placedItemType.fruit.toString()
+                    )
+                    if (!fruit) {
+                        throw new GraphQLError("Fruit not found", {
+                            extensions: {
+                                code: "FRUIT_NOT_FOUND"
+                            }
+                        })
+                    }
+                    sellPrice = fruit.sellPrice
+                    id = fruit.id
                     break
                 }
                 }
@@ -156,7 +192,7 @@ export class SellService {
                 /************************************************************
                  * RETRIEVE AND UPDATE USER DATA
                  ************************************************************/
-                user = await this.connection
+                const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -168,6 +204,7 @@ export class SellService {
                         }
                     })
                 }
+                const userSnapshot = user.$clone()
 
                 // Add gold from selling
                 this.goldBalanceService.add({
@@ -177,7 +214,10 @@ export class SellService {
 
                 // Update user with gold changes
                 await user.save({ session })
-
+                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
                 /************************************************************
                  * REMOVE PLACED ITEM
                  ************************************************************/
@@ -196,46 +236,24 @@ export class SellService {
                     success: true,
                     userId,
                     data: {
-                        quantity: sellPrice
+                        id,
+                        type: placedItemType.type
                     }
                 }
             })
 
-            /************************************************************
-             * SEND KAFKA MESSAGES
-             ************************************************************/
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }]
-                }),
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncUser,
-                    messages: [
-                        {
-                            value: JSON.stringify({
-                                userId,
-                                user: this.syncService.getSyncedUser(user)
-                            })
-                        }
-                    ]
-                }),
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncPlacedItems,
-                    messages: [
-                        { value: JSON.stringify({ userId, placedItems: syncedPlacedItems }) }
-                    ]
-                })
-            ])
+            return {
+                user: syncedUser,
+                placedItems: syncedPlacedItems,
+                action: actionMessage
+            }
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {
-                await this.kafkaProducer.send({
-                    topic: KafkaTopic.EmitAction,
-                    messages: [{ value: JSON.stringify(actionMessage) }]
-                })
+                return {
+                    action: actionMessage
+                }
             }
-
             throw error
         } finally {
             await mongoSession.endSession() // End the session after the transaction

@@ -1,5 +1,5 @@
 import { DeepPartial } from "@src/common"
-import { PlacedItemSchema } from "@src/databases"
+import { PlacedItemSchema, PlacedItemType } from "@src/databases"
 
 export interface EmitActionPayload<TData = undefined> {
     userId: string
@@ -58,7 +58,8 @@ export interface DeliverProductData {
 }
 
 export interface SellData {
-    quantity: number
+    id: string
+    type: PlacedItemType
 }
 
 export interface BuyTileData {

@@ -42,7 +42,12 @@ export class PlacedItemsService {
                 "fruitInfo.currentStageTimeElapsed": 1,
                 "fruitInfo.harvestQuantityRemaining": 1,
                 "fruitInfo.isQuality": 1,
-                "fruitInfo.thieves": 1
+                "fruitInfo.thieves": 1,
+                "beeHouseInfo.currentState": 1,
+                "beeHouseInfo.thieves": 1,
+                "beeHouseInfo.harvestQuantityRemaining": 1,
+                "beeHouseInfo.isQuality": 1,
+                "beeHouseInfo.currentYieldTime": 1,
             })
     }
 
@@ -82,7 +87,12 @@ export class PlacedItemsService {
                 "fruitInfo.currentState": 1,
                 "fruitInfo.harvestQuantityRemaining": 1,
                 "fruitInfo.isQuality": 1,
-                "fruitInfo.thieves": 1
+                "fruitInfo.thieves": 1,
+                "beeHouseInfo.currentState": 1,
+                "beeHouseInfo.thieves": 1,
+                "beeHouseInfo.harvestQuantityRemaining": 1,
+                "beeHouseInfo.isQuality": 1,
+                "beeHouseInfo.currentYieldTime": 1,
             })
 
         return placedItems.map((placedItem) => ({

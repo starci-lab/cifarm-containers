@@ -35,6 +35,8 @@ export class FruitSeeder implements Seeder {
                 minHarvestQuantity: 14,
                 maxHarvestQuantity: 20,
                 availableInShop: true,
+                sellable: true,
+                sellPrice: 2500
             },
             {
                 _id: createObjectId(FruitId.Apple),
@@ -51,6 +53,8 @@ export class FruitSeeder implements Seeder {
                 minHarvestQuantity: 14,
                 maxHarvestQuantity: 20,
                 availableInShop: true,
+                sellable: true,
+                sellPrice: 2500
             },
         ]
 

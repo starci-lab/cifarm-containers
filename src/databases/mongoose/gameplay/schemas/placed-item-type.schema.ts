@@ -30,12 +30,6 @@ export class PlacedItemTypeSchema extends AbstractSchema {
     @Prop({ type: String, enum: PlacedItemType, required: true })
         type: PlacedItemType
 
-    @Field(() => Boolean, {
-        description: "Whether the placed item can be sold"
-    })
-    @Prop({ type: Boolean, default: false })
-        sellable: boolean
-
     @Field(() => ID, { 
         nullable: true,
         description: "The building associated with this placed item type, if applicable"

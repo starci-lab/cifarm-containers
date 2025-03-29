@@ -42,23 +42,22 @@ export class BuildingSeeder implements Seeder {
                     unlockLevel: 5,
                     upgradable: true,
                     maxOwnership: 3,
+                    sellable: true,
+                    sellPrice: 1000,
                     upgrades: [
                         {
                             capacity: 3,
                             upgradeLevel: 1,
-                            sellPrice: 1000
                         },
                         {
                             upgradePrice: 1000,
                             capacity: 5,
                             upgradeLevel: 2,
-                            sellPrice: 1500
                         },
                         {
                             upgradePrice: 2000,
                             capacity: 10,
                             upgradeLevel: 3,
-                            sellPrice: 2000
                         }
                     ]
                 },
@@ -72,23 +71,22 @@ export class BuildingSeeder implements Seeder {
                     unlockLevel: 10,
                     upgradable: true,
                     maxOwnership: 3,
+                    sellable: true,
+                    sellPrice: 1000,
                     upgrades: [
                         {
                             capacity: 3,
                             upgradeLevel: 1,
-                            sellPrice: 1000
                         },
                         {
                             upgradePrice: 1000,
                             capacity: 5,
                             upgradeLevel: 2,
-                            sellPrice: 1500
                         },
                         {
                             upgradePrice: 2000,
                             capacity: 10,
                             upgradeLevel: 3,
-                            sellPrice: 2000
                         }
                     ],
                 },
@@ -104,24 +102,23 @@ export class BuildingSeeder implements Seeder {
                     beeHouseYieldTime: 3600,
                     beeHouseBasicHarvestExperiences: 10,
                     beeHouseQualityHarvestExperiences: 15,
+                    sellable: true,
+                    sellPrice: 1000,
                     upgrades: [
                         {
                             capacity: 3,
-                            sellPrice: 1000,
                             upgradeLevel: 1,
                             honeyMultiplier: 1,
                         },
                         {
                             upgradePrice: 1000,
                             upgradeLevel: 2,
-                            sellPrice: 1500,
                             honeyMultiplier: 1.25
                         },
                         {
                             upgradePrice: 2000,
                             capacity: 10,
                             upgradeLevel: 3,
-                            sellPrice: 2000,
                             honeyMultiplier: 1.5
                         }
                     ],

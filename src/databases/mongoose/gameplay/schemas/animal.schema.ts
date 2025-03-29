@@ -42,13 +42,20 @@ export class AnimalSchema extends AbstractSchema {
     @Prop({ type: Number, required: false, min: 0 })
         price: number
         
+    @Field(() => Boolean, {
+        description: "Whether the animal is sellable",
+        nullable: true
+    })
+    @Prop({ type: Boolean, required: false })
+        sellable?: boolean
+
     @Field(() => Int, {
         description: "The sell price of the animal",
         nullable: true
     })
     @Prop({ type: Number, required: false, default: 0 })
         sellPrice?: number
-  
+
     @Field(() => Int, {
         description: "The growth time of the animal"
     })

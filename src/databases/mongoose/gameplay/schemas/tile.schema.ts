@@ -64,6 +64,13 @@ export class TileSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: false })
         unlockLevel?: number
+
+    @Field(() => Boolean, {
+        description: "Whether the tile is sellable",
+        nullable: true
+    })
+    @Prop({ type: Boolean, required: false })
+        sellable?: boolean  
 }
 
 // Generate Mongoose Schema

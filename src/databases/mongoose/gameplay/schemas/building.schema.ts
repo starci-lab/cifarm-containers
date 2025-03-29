@@ -103,6 +103,20 @@ export class BuildingSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: false })
         baseHoneyYieldCoefficient?: number
+    
+    @Field(() => Boolean, {
+        description: "Whether the building is sellable",
+        nullable: true
+    })
+    @Prop({ type: Boolean, required: false })
+        sellable?: boolean
+
+    @Field(() => Int, {
+        description: "The sell price of the building",
+        nullable: true
+    })
+    @Prop({ type: Number, required: false, default: 0 })
+        sellPrice?: number
 }
 
 // Generate the Mongoose schema class

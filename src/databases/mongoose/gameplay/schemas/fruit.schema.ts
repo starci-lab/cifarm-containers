@@ -88,6 +88,20 @@ export class FruitSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: true })
         qualityHarvestExperiences: number
+
+    @Field(() => Boolean, {
+        description: "Whether the fruit is sellable",
+        nullable: true
+    })
+    @Prop({ type: Boolean, required: false })
+        sellable?: boolean  
+
+    @Field(() => Int, {
+        description: "The sell price of the fruit",
+        nullable: true
+    })
+    @Prop({ type: Number, required: false, default: 0 })
+        sellPrice?: number
 }
 
 export const FruitSchemaClass = SchemaFactory.createForClass(FruitSchema)

@@ -30,13 +30,6 @@ export class UpgradeSchema extends AbstractSchema {
     @Prop({ type: Number, required: true })
         upgradeLevel: number
 
-    @Field(() => Int, { 
-        nullable: true,
-        description: "The sell price of the upgrade"
-    })
-    @Prop({ type: Number, required: false, default: 0 })
-        sellPrice?: number
-
     @Field(() => Float, {
         nullable: true,
         description: "The honey multiplier of this upgrade"

@@ -40,7 +40,7 @@ export class AnimalSeeder implements Seeder {
                 price: 1000,
                 type: AnimalType.Poultry,
                 unlockLevel: 5,
-                sellPrice: 500
+                sellPrice: 500,
             },
             {
                 _id: createObjectId(AnimalId.Cow),
@@ -60,7 +60,7 @@ export class AnimalSeeder implements Seeder {
                 price: 2500,
                 type: AnimalType.Livestock,
                 unlockLevel: 10,
-                sellPrice: 1250
+                sellPrice: 1250,
             }
         ]
         try {

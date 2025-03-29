@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common"
 import { SellService } from "./sell.service"
-import { SellResolver } from "./sell.resolver"
+import { SellGateway } from "./sell.gateway"
 
 @Module({
-    providers: [SellService, SellResolver],
+    providers: [SellService, SellGateway],
 })
 export class SellModule {}
