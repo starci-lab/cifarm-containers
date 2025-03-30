@@ -1,13 +1,13 @@
-import { ActionName, EmitActionPayload, SellData } from "@apps/io-gameplay"
+import { ActionName, EmitActionPayload } from "../../../emitter"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
 import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { SellMessage } from "./sell.dto"
 import { UserLike } from "@src/jwt"
-import { GraphQLError } from "graphql"
 import { SyncedResponse } from "../../types"
 import { DeepPartial, WithStatus } from "@src/common"
+import { WsException } from "@nestjs/websockets"
 
 @Injectable()
 export class SellService {
@@ -21,10 +21,10 @@ export class SellService {
         private readonly syncService: SyncService
     ) {}
 
-    async sell({ id: userId }: UserLike, { placedItemId }: SellMessage): Promise<SyncedResponse<SellData>> {
+    async sell({ id: userId }: UserLike, { placedItemId }: SellMessage): Promise<SyncedResponse> {
         const mongoSession = await this.connection.startSession()
 
-        let actionMessage: EmitActionPayload<SellData> | undefined
+        let actionMessage: EmitActionPayload | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
@@ -39,11 +39,7 @@ export class SellService {
                     .session(session)
 
                 if (!placedItem) {
-                    throw new GraphQLError("Placed item not found", {
-                        extensions: {
-                            code: "PLACED_ITEM_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("Placed item not found")
                 }
                 
                 syncedPlacedItemAction = {
@@ -56,11 +52,7 @@ export class SellService {
                  * VALIDATE OWNERSHIP
                  ************************************************************/
                 if (placedItem.user.toString() !== userId) {
-                    throw new GraphQLError("User not match", {
-                        extensions: {
-                            code: "USER_NOT_MATCH"
-                        }
-                    })
+                    throw new WsException("You do not own this placed item")
                 }
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM TYPE
@@ -69,45 +61,27 @@ export class SellService {
                     (placedItemType) => placedItemType.id === placedItem.placedItemType.toString()
                 )
                 if (!placedItemType) {
-                    throw new GraphQLError("Placed item type not found", {
-                        extensions: {
-                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("Placed item type not found")
                 }
                 /************************************************************
                  * DETERMINE SELL PRICE BASED ON ITEM TYPE
                  ************************************************************/
                 let sellPrice: number
-                let id: string  
                 switch (placedItemType.type) {
                 case PlacedItemType.Building: {
                     const building = this.staticService.buildings.find(
                         (building) => building.id === placedItemType.building.toString()
                     )
                     if (!building) {
-                        throw new GraphQLError("Building not found", {
-                            extensions: {
-                                code: "BUILDING_NOT_FOUND"
-                            }
-                        })
+                        throw new WsException("Building not found")
                     }
                     if (!building.sellable) {
-                        throw new GraphQLError("Building not sellable", {
-                            extensions: {
-                                code: "BUILDING_NOT_SELLABLE"
-                            }
-                        })
+                        throw new WsException("Building not sellable")
                     }
                     if (!building.sellPrice) {
-                        throw new GraphQLError("Building sell price not found", {
-                            extensions: {
-                                code: "BUILDING_SELL_PRICE_NOT_FOUND"
-                            }
-                        })
+                        throw new WsException("Building sell price not found")
                     }
                     sellPrice = building.sellPrice
-                    id = building.id
                     break
                 }
                 case PlacedItemType.Tile: {
@@ -115,61 +89,31 @@ export class SellService {
                         (tile) => tile.id === placedItemType.tile.toString()
                     )
                     if (!tile) {
-                        throw new GraphQLError("Tile not found", {
-                            extensions: {
-                                code: "TILE_NOT_FOUND"
-                            }
-                        })
+                        throw new WsException("Tile not found")
                     }   
                     if (!tile.sellable) {
-                        throw new GraphQLError("Tile not sellable", {
-                            extensions: {
-                                code: "TILE_NOT_SELLABLE"
-                            }
-                        })
+                        throw new WsException("Tile not sellable")
                     }
                     if (!tile.sellPrice) {
-                        throw new GraphQLError("Tile sell price not found", {
-                            extensions: {
-                                code: "TILE_SELL_PRICE_NOT_FOUND"
-                            }
-                        })
+                        throw new WsException("Tile sell price not found")
                     }
                     sellPrice = tile.sellPrice
-                    id = tile.id
                     break
                 }
                 case PlacedItemType.Animal: {
-                    // const animal = await this.connection
-                    //     .model<AnimalSchema>(AnimalSchema.name)
-                    //     .findById(placedItemType.animal)
-                    //     .session(mongoSession)
                     const animal = this.staticService.animals.find(
                         (animal) => animal.id === placedItemType.animal.toString()
                     )
                     if (!animal) {
-                        throw new GraphQLError("Animal not found", {
-                            extensions: {
-                                code: "ANIMAL_NOT_FOUND"
-                            }
-                        })
+                        throw new WsException("Animal not found")
                     }
                     if (!animal.sellable) {
-                        throw new GraphQLError("Animal not sellable", {
-                            extensions: {
-                                code: "ANIMAL_NOT_SELLABLE"
-                            }
-                        })
+                        throw new WsException("Animal not sellable")
                     }
                     if (!animal.sellPrice) {
-                        throw new GraphQLError("Animal sell price not found", {
-                            extensions: {
-                                code: "ANIMAL_SELL_PRICE_NOT_FOUND"
-                            }
-                        })
+                        throw new WsException("Animal sell price not found")
                     }
                     sellPrice = animal.sellPrice
-                    id = animal.id
                     break
                 }
                 case PlacedItemType.Fruit: {
@@ -177,14 +121,15 @@ export class SellService {
                         (fruit) => fruit.id === placedItemType.fruit.toString()
                     )
                     if (!fruit) {
-                        throw new GraphQLError("Fruit not found", {
-                            extensions: {
-                                code: "FRUIT_NOT_FOUND"
-                            }
-                        })
+                        throw new WsException("Fruit not found")
+                    }
+                    if (!fruit.sellable) {
+                        throw new WsException("Fruit not sellable")
+                    }
+                    if (!fruit.sellPrice) {
+                        throw new WsException("Fruit sell price not found")
                     }
                     sellPrice = fruit.sellPrice
-                    id = fruit.id
                     break
                 }
                 }
@@ -198,11 +143,7 @@ export class SellService {
                     .session(session)
 
                 if (!user) {
-                    throw new GraphQLError("User not found", {
-                        extensions: {
-                            code: "USER_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("User not found")
                 }
                 const userSnapshot = user.$clone()
 
@@ -235,10 +176,6 @@ export class SellService {
                     action: ActionName.Sell,
                     success: true,
                     userId,
-                    data: {
-                        id,
-                        type: placedItemType.type
-                    }
                 }
             })
 
