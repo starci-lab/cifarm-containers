@@ -30,7 +30,7 @@ export class ProductSeeder implements Seeder {
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 100,
-                type: ProductType.Honey,
+                type: ProductType.BeeHouse,
             },
             {
                 _id: createObjectId(ProductId.HoneyQuality),
@@ -38,7 +38,7 @@ export class ProductSeeder implements Seeder {
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 100,
-                type: ProductType.Honey,
+                type: ProductType.BeeHouse,
             },
             {
                 _id: createObjectId(ProductId.Egg),

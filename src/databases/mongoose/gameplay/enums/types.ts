@@ -7,7 +7,7 @@ export enum ProductType {
     Crop = "crop",
     Fruit = "fruit",
     Flower = "flower",
-    Honey = "honey",
+    BeeHouse = "beeHouse",
 }
 
 export const FirstCharLowerCaseProductType = createFirstCharLowerCaseEnumType(ProductType)
@@ -28,8 +28,8 @@ registerEnumType(FirstCharLowerCaseProductType, {
         [ProductType.Flower]: {
             description: "The flower product",
         },
-        [ProductType.Honey]: {
-            description: "The honey product",
+        [ProductType.BeeHouse]: {
+            description: "The bee house product",
         },
     },
 })

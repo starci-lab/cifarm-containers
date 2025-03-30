@@ -4,15 +4,20 @@ import {
     ComputeFruitQualityChanceParams,
     ComputeTileQualityChanceParams,
     UpdatePlacedItemAnimalAfterHarvestParams,
-    UpdatePlacedItemAnimalAfterHarvestResult,
+    UpdatePlacedItemBuildingBeeHouseAfterHarvestParams,
     UpdatePlacedItemFruitAfterHarvestParams,
-    UpdatePlacedItemFruitAfterHarvestResult,
     UpdatePlacedItemTileAfterHarvestParams,
-    UpdatePlacedItemTileAfterHarvestResult,
-    UpdatePlacedItemTileAfterUseFertilizerParams,
-    UpdatePlacedItemTileAfterUseFertilizerResult
+    UpdatePlacedItemTileAfterUseFertilizerParams
 } from "./types"
-import { AnimalCurrentState, CropSchema, FruitCurrentState, PlantCurrentState, PlantType } from "@src/databases"
+import {
+    AnimalCurrentState,
+    BeeHouseCurrentState,
+    CropSchema,
+    FruitCurrentState,
+    PlacedItemSchema,
+    PlantCurrentState,
+    PlantType
+} from "@src/databases"
 
 //core game logic service
 @Injectable()
@@ -56,13 +61,15 @@ export class CoreService {
         placedItemTile,
         plant,
         plantInfo
-    }: UpdatePlacedItemTileAfterHarvestParams): UpdatePlacedItemTileAfterHarvestResult {
+    }: UpdatePlacedItemTileAfterHarvestParams): PlacedItemSchema {
         const plantType = placedItemTile.plantInfo.plantType
         // update the tile info times harvested
         placedItemTile.tileInfo.timesHarvested += 1
         const tryParseCrop = plant as CropSchema
         // perental only work for crop, flower not have perenial count
-        const isPerennial = plantType === PlantType.Crop && placedItemTile.plantInfo.harvestCount + 1 < tryParseCrop.perennialCount
+        const isPerennial =
+            plantType === PlantType.Crop &&
+            placedItemTile.plantInfo.harvestCount + 1 < tryParseCrop.perennialCount
 
         if (!isPerennial) {
             // remove the seed growth info
@@ -82,7 +89,7 @@ export class CoreService {
     //update the animal information after collect
     public updatePlacedItemAnimalAfterHarvest({
         placedItemAnimal
-    }: UpdatePlacedItemAnimalAfterHarvestParams): UpdatePlacedItemAnimalAfterHarvestResult {
+    }: UpdatePlacedItemAnimalAfterHarvestParams): PlacedItemSchema {
         // update the animal info times harvested
         placedItemAnimal.animalInfo.timesHarvested += 1
 
@@ -98,7 +105,7 @@ export class CoreService {
     public updatePlacedItemFruitAfterHarvest({
         placedItemFruit,
         fruitInfo
-    }: UpdatePlacedItemFruitAfterHarvestParams): UpdatePlacedItemFruitAfterHarvestResult {
+    }: UpdatePlacedItemFruitAfterHarvestParams): PlacedItemSchema {
         // update the fruit info harvest time
         placedItemFruit.fruitInfo.timesHarvested += 1
 
@@ -115,12 +122,19 @@ export class CoreService {
     public updatePlacedItemTileAfterUseFertilizer({
         placedItemTile,
         supply
-    }: UpdatePlacedItemTileAfterUseFertilizerParams): UpdatePlacedItemTileAfterUseFertilizerResult {
+    }: UpdatePlacedItemTileAfterUseFertilizerParams): PlacedItemSchema {
         placedItemTile.plantInfo.currentStageTimeElapsed += supply.fertilizerEffectTimeReduce
         placedItemTile.plantInfo.isFertilized = true
         // return the placed item tile
         return placedItemTile
     }
+
+    public updatePlacedItemBuildingBeeHouseAfterHarvest({
+        placedItemBuilding
+    }: UpdatePlacedItemBuildingBeeHouseAfterHarvestParams): PlacedItemSchema {
+        placedItemBuilding.beeHouseInfo.harvestQuantityRemaining = 0
+        placedItemBuilding.beeHouseInfo.harvestQuantityDesired = 0
+        placedItemBuilding.beeHouseInfo.currentState = BeeHouseCurrentState.Normal
+        return placedItemBuilding
+    }
 }
-
-

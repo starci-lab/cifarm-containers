@@ -2,8 +2,6 @@ import {
     AbstractPlantSchema,
     AnimalInfo,
     AnimalSchema,
-    CropInfo,
-    FlowerInfo,
     FruitInfo,
     FruitSchema,
     PlacedItemSchema,
@@ -31,32 +29,21 @@ export interface UpdatePlacedItemTileAfterHarvestParams {
     plant: AbstractPlantSchema
     plantInfo: PlantInfoLike
 }
-
-export type UpdatePlacedItemTileAfterHarvestResult = PlacedItemSchema
-
 export interface UpdatePlacedItemFruitAfterHarvestParams {
     placedItemFruit: PlacedItemSchema
     fruit: FruitSchema
     fruitInfo: FruitInfo
 }
 
-export type UpdatePlacedItemFruitAfterHarvestResult = PlacedItemSchema
-
 export interface UpdatePlacedItemAnimalAfterHarvestParams {
     placedItemAnimal: PlacedItemSchema
     animal: AnimalSchema
     animalInfo: AnimalInfo
 }
-
-export type UpdatePlacedItemAnimalAfterHarvestResult = PlacedItemSchema
-
 export interface UpdatePlacedItemTileAfterUseFertilizerParams {
     placedItemTile: PlacedItemSchema
     supply: SupplySchema
 }
-
-export type UpdatePlacedItemTileAfterUseFertilizerResult = PlacedItemSchema
-
 export interface PlantInfoLike {
     nextGrowthStageAfterHarvest: number
     growthStages: number
@@ -66,4 +53,8 @@ export interface PlantInfoLike {
 export interface RandomnessLike {
     thief2: number
     thief3: number
+}
+
+export interface UpdatePlacedItemBuildingBeeHouseAfterHarvestParams {
+    placedItemBuilding: PlacedItemSchema
 }

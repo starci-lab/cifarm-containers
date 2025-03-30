@@ -1,29 +1,34 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    AbstractPlantSchema,
+    BeeHouseCurrentState,
+    BuildingKind,
     InjectMongoose,
     InventoryKind,
     InventorySchema,
     InventoryType,
+    InventoryTypeId,
     PlacedItemSchema,
-    PlantCurrentState,
-    PlantType,
+    ProductType,
     UserSchema
 } from "@src/databases"
-import { CoreService, EnergyService, LevelService, PlantInfoLike, SyncService } from "@src/gameplay"
+import { CoreService, EnergyService, LevelService, SyncService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { InventoryService } from "@src/gameplay/inventory"
 import { Connection } from "mongoose"
-import { HarvestPlantMessage } from "./harvest-plant.dto"
+import { HarvestBeeHouseMessage } from "./harvest-bee-house.dto"
 import { UserLike } from "@src/jwt"
-import { DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, HarvestPlantData } from "../../../emitter"
+import { createObjectId, DeepPartial, WithStatus } from "@src/common"
+import {
+    EmitActionPayload,
+    ActionName,
+    HarvestBeeHouseData
+} from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
 @Injectable()
-export class HarvestPlantService {
-    private readonly logger = new Logger(HarvestPlantService.name)
+export class HarvestBeeHouseService {
+    private readonly logger = new Logger(HarvestBeeHouseService.name)
 
     constructor(
         @InjectMongoose() private readonly connection: Connection,
@@ -35,16 +40,16 @@ export class HarvestPlantService {
         private readonly inventoryService: InventoryService
     ) {}
 
-    async harvestPlant(
+    async harvestBeeHouse(
         { id: userId }: UserLike,
-        { placedItemTileId }: HarvestPlantMessage
-    ): Promise<SyncedResponse<HarvestPlantData>> {
-        this.logger.debug(`Harvesting plant for user ${userId}, tile ID: ${placedItemTileId}`)
+        { placedItemBuildingId }: HarvestBeeHouseMessage
+    ): Promise<SyncedResponse<HarvestBeeHouseData>> {
+        this.logger.debug(`Harvesting plant for user ${userId}, tile ID: ${placedItemBuildingId}`)
 
         const mongoSession = await this.connection.startSession()
 
         // synced variables
-        let actionPayload: EmitActionPayload<HarvestPlantData> | undefined
+        let actionPayload: EmitActionPayload<HarvestBeeHouseData> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
@@ -52,8 +57,21 @@ export class HarvestPlantService {
 
         try {
             await mongoSession.withTransaction(async (session) => {
-                // check if crate is in toolbar
+                /************************************************************
+                 * CHECK IF YOU HAVE CRATE IN TOOLBAR
+                 ************************************************************/
+                const inventoryCrateExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Crate),
+                        kind: InventoryKind.Tool
+                    })
+                    .session(session)
 
+                if (!inventoryCrateExisted) {
+                    throw new WsException("Crate not found in toolbar")
+                }
                 /************************************************************
                  * RETRIEVE USER DATA
                  ************************************************************/
@@ -74,38 +92,50 @@ export class HarvestPlantService {
                  * RETRIEVE AND VALIDATE TILE DATA
                  ************************************************************/
                 // Fetch placed item (tile)
-                const placedItemTile = await this.connection
+                const placedItemBuilding = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
-                    .findById(placedItemTileId)
+                    .findById(placedItemBuildingId)
                     .session(session)
 
-                if (!placedItemTile) {
+                if (!placedItemBuilding) {
                     throw new WsException("Tile not found")
                 }
 
-                if (placedItemTile.user.toString() !== userId) {
+                if (placedItemBuilding.user.toString() !== userId) {
                     throw new WsException("Cannot harvest another user's tile")
+                }
+
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) =>
+                        placedItemType.id === placedItemBuilding.placedItemType.toString()
+                )
+                if (!placedItemType) {
+                    throw new WsException("Placed item type not found")
+                }
+                const building = this.staticService.buildings.find(
+                    (building) => building.id === placedItemType?.building?.toString()
+                )
+                // Check if the tile has a plant
+                if (!building) {
+                    throw new WsException("Building not found")
+                }
+                if (building.kind !== BuildingKind.BeeHouse) {
+                    throw new WsException("This is not a bee house")
+                }
+                // Check if the bee house is ready to harvest
+                if (placedItemBuilding.beeHouseInfo.currentState !== BeeHouseCurrentState.Yield) {
+                    throw new WsException("Bee house is not ready to harvest")
                 }
 
                 // Add to synced placed items
                 syncedPlacedItemAction = {
-                    id: placedItemTile.id,
-                    x: placedItemTile.x,
-                    y: placedItemTile.y,
-                    placedItemType: placedItemTile.placedItemType
+                    id: placedItemBuilding.id,
+                    x: placedItemBuilding.x,
+                    y: placedItemBuilding.y,
+                    placedItemType: placedItemBuilding.placedItemType
                 }
 
-                const placedItemTileSnapshot = placedItemTile.$clone()
-
-                // Check if the tile has a plant
-                if (!placedItemTile.plantInfo) {
-                    throw new WsException("No plant found on this tile")
-                }
-
-                // Check if the plant is ready to harvest
-                if (placedItemTile.plantInfo.currentState !== PlantCurrentState.FullyMatured) {
-                    throw new WsException("Plant is not ready to harvest")
-                }
+                //const placedItemBuildingSnapshot = placedItemBuilding.$clone()
 
                 /************************************************************
                  * VALIDATE ENERGY
@@ -126,40 +156,13 @@ export class HarvestPlantService {
                     quantity: energyConsume
                 })
 
-                let plantInfo: PlantInfoLike
-                let plant: AbstractPlantSchema
-
-                switch (placedItemTile.plantInfo.plantType) {
-                case PlantType.Crop: {
-                    const crop = this.staticService.crops.find(
-                        (crop) => crop.id === placedItemTile.plantInfo.crop?.toString()
-                    )
-                    if (!crop) {
-                        throw new WsException("Crop information not found")
-                    }
-                    const cropInfo = this.staticService.cropInfo
-                    plant = crop
-                    plantInfo = cropInfo
-                    break
-                }
-                case PlantType.Flower: {
-                    const flower = this.staticService.flowers.find(
-                        (flower) => flower.id === placedItemTile.plantInfo.flower?.toString()
-                    )
-                    if (!flower) {
-                        throw new WsException("Flower information not found")
-                    }
-                    const flowerInfo = this.staticService.flowerInfo
-                    plant = flower
-                    plantInfo = flowerInfo
-                    break
-                }
-                }
+                // let plantInfo: PlantInfoLike
+                // let plant: AbstractPlantSchema
 
                 // Add experience based on quality
-                const experiencesGain = placedItemTile.plantInfo.isQuality
-                    ? plant.qualityHarvestExperiences
-                    : plant.basicHarvestExperiences
+                const experiencesGain = placedItemBuilding.beeHouseInfo.isQuality
+                    ? building.beeHouseQualityHarvestExperiences
+                    : building.beeHouseBasicHarvestExperiences
 
                 this.levelService.addExperiences({
                     user,
@@ -178,30 +181,22 @@ export class HarvestPlantService {
                 /************************************************************
                  * PROCESS HARVEST AND UPDATE INVENTORY
                  ************************************************************/
-                // Get harvest quantity
+                // Find inventory type for this crop
                 const product = this.staticService.products.find((product) => {
-                    switch (placedItemTile.plantInfo.plantType) {
-                    case PlantType.Crop:
-                        return product.crop?.toString() === plant.id
-                    case PlantType.Flower:
-                        return product.flower?.toString() === plant.id
-                    }
+                    return product.type === ProductType.BeeHouse
+                    && product.building?.toString() === building.id
+                        && product.isQuality === placedItemBuilding.beeHouseInfo.isQuality
                 })
-
                 if (!product) {
                     throw new WsException("Product not found")
                 }
-
-                const inventoryTypeProduct = this.staticService.inventoryTypes.find(
-                    (inventoryType) =>
-                        inventoryType.type === InventoryType.Product &&
-                        inventoryType.product?.toString() === product.id
-                )
-
+                const inventoryTypeProduct = this.staticService.inventoryTypes.find((inventoryType) => {
+                    return inventoryType.type === InventoryType.Product &&
+                    inventoryType.product?.toString() === product.id
+                })
                 if (!inventoryTypeProduct) {
-                    throw new WsException("Inventory type not found for this product")
+                    throw new WsException("Inventory type not found for this crop")
                 }
-
                 // use inventory service to create inventory
                 const { inventories, occupiedIndexes } = await this.inventoryService.getAddParams({
                     connection: this.connection,
@@ -211,7 +206,7 @@ export class HarvestPlantService {
                     kind: InventoryKind.Storage
                 })
 
-                const harvestQuantityRemaining = placedItemTile.plantInfo.harvestQuantityRemaining
+                const harvestQuantityRemaining = placedItemBuilding.plantInfo.harvestQuantityRemaining
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventories,
                     occupiedIndexes,
@@ -248,22 +243,22 @@ export class HarvestPlantService {
                 /************************************************************
                  * UPDATE PLACED ITEM TILE
                  ************************************************************/
-                this.coreService.updatePlacedItemTileAfterHarvest({
-                    placedItemTile,
-                    plant,
-                    plantInfo
-                })
+                // this.coreService.updatePlacedItemTileAfterHarvest({
+                //     placedItemBuilding,
+                //     plant,
+                //     plantInfo
+                // })
 
-                // Save placed item tile
-                await placedItemTile.save({ session })
+                // // Save placed item tile
+                // await placedItemTile.save({ session })
 
-                const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem(
-                    {
-                        placedItemSnapshot: placedItemTileSnapshot,
-                        placedItemUpdated: placedItemTile
-                    }
-                )
-                syncedPlacedItems.push(updatedSyncedPlacedItems)
+                // const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem(
+                //     {
+                //         placedItemSnapshot: placedItemTileSnapshot,
+                //         placedItemUpdated: placedItemTile
+                //     }
+                // )
+                //syncedPlacedItems.push(updatedSyncedPlacedItems)
 
                 /************************************************************
                  * PREPARE ACTION MESSAGE

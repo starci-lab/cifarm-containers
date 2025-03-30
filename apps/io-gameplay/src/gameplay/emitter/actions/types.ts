@@ -50,6 +50,11 @@ export interface HarvestAnimalData {
     productId: string
 }
 
+export interface HarvestBeeHouseData {
+    quantity: number
+    productId: string
+}
+
 export interface DeliverProductData {
     inventoryId: string
     quantity: number
