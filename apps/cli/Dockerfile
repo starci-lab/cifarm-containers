@@ -1,4 +1,4 @@
-#docker build -t cifarm/cli -f ./apps/cli/Dockerfile . & docker push cifarm/cli
+# docker build -t cifarm/cli -f ./apps/cli/Dockerfile . & docker push cifarm/cli
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0

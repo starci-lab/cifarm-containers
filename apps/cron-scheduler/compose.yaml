@@ -7,7 +7,5 @@ services:
       - ../../.env.docker
     environment:
       NODE_ENV: production
-    ports:
-      - "3005:3005"
 
-#docker compose -f apps/cron-scheduler/compose.yaml up -d
+#docker compose -f apps/cron-scheduler/compose.yaml up -d --build

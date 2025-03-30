@@ -161,21 +161,40 @@ export class SystemSeeder implements Seeder {
                 matureGrowthStage: 3
             }
             const defaultInfo: DefaultInfo = {
-                golds: 1000, 
+                golds: 10000, 
                 followeeLimit: 150,
                 positions: {
-                    home: {
-                        x: 4,
-                        y: 0
-                    },
                     tiles: [
+                        // first row
+                        {
+                            x: -1,
+                            y: -1
+                        },
                         {
                             x: 0,
                             y: -1
                         },
                         {
+                            x: 1,
+                            y: -1
+                        },
+                        // second row
+                        {
+                            x: -1,
+                            y: 0
+                        },
+                        {
                             x: 0,
                             y: 0
+                        },
+                        {
+                            x: 1,
+                            y: 0
+                        },
+                        // third row
+                        {
+                            x: -1,
+                            y: 1
                         },
                         {
                             x: 0,
@@ -183,17 +202,42 @@ export class SystemSeeder implements Seeder {
                         },
                         {
                             x: 1,
-                            y: -1
-                        },
-                        {
-                            x: 1,
-                            y: 0
-                        },
-                        {
-                            x: 1,
                             y: 1
+                        },
+                        // fourth row
+                        {
+                            x: -1,
+                            y: 2
+                        },
+                        {
+                            x: 0,
+                            y: 2
+                        },
+                        {
+                            x: 1,
+                            y: 2
                         }
-                    ]
+                    ],
+                    home: {
+                        x: 5,
+                        y: 1
+                    },
+                    beeHouse: {
+                        x: -1,
+                        y: -4
+                    },
+                    bananaFruit: {
+                        x: 3,
+                        y: 3
+                    },
+                    coop: {
+                        x: -4,
+                        y: -3
+                    },
+                    chicken: {
+                        x: -4,
+                        y: 1
+                    }
                 },
                 defaultCropId: CropId.Turnip,
                 defaultSeedQuantity: 10,

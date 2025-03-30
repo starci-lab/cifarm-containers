@@ -347,6 +347,26 @@ export class Positions {
         description: "Default position for the home building"
     })
         home: Position
+
+    @Field(() => Position, {
+        description: "Default position for the bee house"
+    })
+        beeHouse: Position
+
+    @Field(() => Position, {
+        description: "Default position for the banana fruit"
+    })
+        bananaFruit: Position
+    
+    @Field(() => Position, {
+        description: "Default position for the coop"
+    })
+        coop: Position
+    
+    @Field(() => Position, {
+        description: "Default position for the chicken"
+    })
+        chicken: Position
 }
 
 @ObjectType({

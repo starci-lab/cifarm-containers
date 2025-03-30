@@ -37,7 +37,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/cron-scheduler/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/cron-scheduler/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/cron-scheduler/tsconfig.app.json",
+        "webpackConfigPath": "apps/cron-scheduler/webpack.config.js"
       }
     },
     "cron-worker": {

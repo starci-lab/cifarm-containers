@@ -18,6 +18,7 @@ const basePackage = {
         "@apollo/subgraph": "2.9.3",
         "@apollo/server": "^4.11.3",
         "ioredis": "^5.4.2",
+        "class-transformer": "0.5.1",
     }
 }
 

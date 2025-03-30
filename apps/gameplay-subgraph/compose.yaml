@@ -10,4 +10,4 @@ services:
     ports:
       - "3007:3007"
 
-#docker compose -f apps/gameplay-subgraph/compose.yaml up -d --build
+# docker compose -f apps/gameplay-subgraph/compose.yaml up -d --build

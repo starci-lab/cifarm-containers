@@ -1,4 +1,4 @@
-#docker build -t cifarm/telegram-bot -f ./apps/telegram-bot/Dockerfile . & docker push cifarm/telegram-bot
+# docker build -t cifarm/telegram-bot -f ./apps/telegram-bot/Dockerfile . & docker push cifarm/telegram-bot
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0

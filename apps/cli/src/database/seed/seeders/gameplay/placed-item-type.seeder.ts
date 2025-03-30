@@ -59,7 +59,7 @@ export class PlacedItemTypeSeeder implements Seeder {
                 type: PlacedItemType.Building,
                 building: createObjectId(BuildingId.Home),
                 sizeX: 4,
-                sizeY: 4
+                sizeY: 3
             },
             {
                 _id: createObjectId(PlacedItemTypeId.Barn),

@@ -26,7 +26,7 @@ import { Cache } from "cache-manager"
 import { createObjectId, DeepPartial } from "@src/common"
 import { ModuleRef } from "@nestjs/core"
 import { Connection } from "mongoose"
-import { GraphQLError } from "graphql"
+import { WsException } from "@nestjs/websockets"
 
 @Injectable()
 export class VerifySignatureService {
@@ -59,11 +59,7 @@ export class VerifySignatureService {
                  ************************************************************/
                 const valid = await this.cacheManager.get(message)
                 if (!valid) {
-                    throw new GraphQLError("Message not found", {
-                        extensions: {
-                            code: "MESSAGE_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("Message not found")
                 }
 
                 chainKey = chainKey || defaultChainKey
@@ -77,11 +73,7 @@ export class VerifySignatureService {
 
                 const verified = authService.verifyMessage({ message, publicKey, signature })
                 if (!verified) {
-                    throw new GraphQLError("Signature is invalid", {
-                        extensions: {
-                            code: "INVALID_SIGNATURE"
-                        }
-                    })
+                    throw new WsException("Signature is invalid")
                 }
 
                 /************************************************************
@@ -123,6 +115,7 @@ export class VerifySignatureService {
                     /************************************************************
                      * CREATE HOME AND TILES
                      ************************************************************/
+                    // create home
                     await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
                         [
                             {
@@ -135,6 +128,7 @@ export class VerifySignatureService {
                         { session: mongoSession, ordered: true }
                     )
 
+                    // create tiles
                     const tilePartials: Array<DeepPartial<PlacedItemSchema>> = positions.tiles.map(
                         (tile) => ({
                             placedItemType: createObjectId(PlacedItemTypeId.BasicTile).toString(),
@@ -147,6 +141,63 @@ export class VerifySignatureService {
                     await this.connection
                         .model<PlacedItemSchema>(PlacedItemSchema.name)
                         .create(tilePartials, { session: mongoSession, ordered: true })
+
+                    // create banana fruit
+                    await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
+                        [
+                            {
+                                placedItemType: createObjectId(PlacedItemTypeId.Banana).toString(),
+                                fruitInfo: {},
+                                user: user.id,
+                                ...positions.bananaFruit
+                            }
+                        ],
+                        { session: mongoSession }
+                    )
+
+                    // create bee house
+                    await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
+                        [
+                            {
+                                placedItemType: createObjectId(PlacedItemTypeId.BeeHouse).toString(),
+                                buildingInfo: {
+                                    currentUpgrade: 1
+                                },
+                                user: user.id,
+                                beeHouseInfo: {},
+                                ...positions.beeHouse
+                            }
+                        ],
+                        { session: mongoSession }
+                    )
+
+                    // create coop
+                    await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
+                        [
+                            {
+                                placedItemType: createObjectId(PlacedItemTypeId.Coop).toString(),
+                                buildingInfo: {
+                                    currentUpgrade: 1
+                                },
+                                user: user.id,
+                                ...positions.coop
+                            }
+                        ],
+                        { session: mongoSession }
+                    )
+
+                    // create chicken
+                    await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
+                        [
+                            {
+                                placedItemType: createObjectId(PlacedItemTypeId.Chicken).toString(),
+                                animalInfo: {},
+                                user: user.id,
+                                ...positions.chicken
+                            }
+                        ],
+                        { session: mongoSession }
+                    )
 
                     /************************************************************
                      * CREATE DEFAULT TOOLS
@@ -173,11 +224,7 @@ export class VerifySignatureService {
                             .session(mongoSession)
 
                         if (!inventoryType) {
-                            throw new GraphQLError("Inventory tool type not found", {
-                                extensions: {
-                                    code: "INVENTORY_TOOL_TYPE_NOT_FOUND"
-                                }
-                            })
+                            throw new WsException("Inventory tool type not found")
                         }
 
                         toolInventories.push({
@@ -207,11 +254,7 @@ export class VerifySignatureService {
                         .session(mongoSession)
 
                     if (!inventoryType) {
-                        throw new GraphQLError("Inventory seed type not found", {
-                            extensions: {
-                                code: "INVENTORY_SEED_TYPE_NOT_FOUND"
-                            }
-                        })
+                        throw new WsException("Inventory seed type not found")
                     }
 
                     await this.connection.model<InventorySchema>(InventorySchema.name).create(

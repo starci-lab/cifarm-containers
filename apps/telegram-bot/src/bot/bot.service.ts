@@ -1,7 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { envConfig } from "@src/env"
-import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
-import { InjectTelegraf } from "@src/telegraf/telegraf.decorators"
+import { InjectTelegraf } from "@src/telegraf"
 import { readFileSync } from "fs"
 import { join } from "path"
 import { Telegraf } from "telegraf"
@@ -9,7 +8,7 @@ import { Telegraf } from "telegraf"
 @Injectable()
 export class BotService implements OnModuleInit {
     private readonly logger = new Logger(BotService.name)
-    private isLeader = false
+
     constructor(
         @InjectTelegraf()
         private readonly telegraf: Telegraf
@@ -17,17 +16,6 @@ export class BotService implements OnModuleInit {
 
     onModuleInit() {
         this.launch()
-    }
-
-    @OnEventLeaderElected()
-    handleLeaderElected() {
-        this.isLeader = true
-    }
-
-    @OnEventLeaderLost()
-    handleLeaderLost() {
-        //this.stop()
-        //this.isLeader = false
     }
 
     private async launch() {
@@ -42,7 +30,7 @@ export class BotService implements OnModuleInit {
             try {
                 const photo = readFileSync(photoPath)
                 const caption =
-                    "🌾 Cifarm: Farm-to-earn on Telegram! 🌾\n Farm, help, visit, and even steal from other players while earning airdropped tokens! 💰\n\n🚀 Free to play & packed with rewards! Unlock the potential of Solana gaming with Cifarm. 🌱✨\n👉 Start playing now and grow your farm!\n"
+                    "🌾 Cifarm: The first GameFi x DeFi concept. Farm, steal, earn, and use $CARROT to enter our DeFi ecosystem. Start playing now and earn big rewards!"
 
                 await ctx.replyWithPhoto(
                     { source: photo },
