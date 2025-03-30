@@ -116,7 +116,7 @@ export class PlantSeedService {
                  * VALIDATE ENERGY
                  ************************************************************/
                 // Check if the user has enough energy
-                const { energyConsume } = this.staticService.activities.plantSeed
+                const { energyConsume, experiencesGain } = this.staticService.activities.plantSeed
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -131,6 +131,11 @@ export class PlantSeedService {
                     quantity: energyConsume
                 })
 
+                // Increase experience
+                this.levelService.addExperiences({
+                    user,
+                    experiences: experiencesGain
+                })
                 // Save user
                 await user.save({ session })
 

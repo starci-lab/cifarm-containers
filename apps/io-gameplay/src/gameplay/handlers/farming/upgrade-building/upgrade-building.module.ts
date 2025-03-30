@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common"
-import { UpgradeBuildingResolver } from "./upgrade-building.resolver"
+import { UpgradeBuildingGateway } from "./upgrade-building.gateway"
 import { UpgradeBuildingService } from "./upgrade-building.service"
 
 @Module({
-    providers: [UpgradeBuildingService, UpgradeBuildingResolver],
+    providers: [UpgradeBuildingService, UpgradeBuildingGateway],
 })
 export class UpgradeBuildingModule {}

@@ -1,13 +1,15 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { Connection } from "mongoose"
-import { UpgradeBuildingRequest } from "./upgrade-building.dto"
+import { UpgradeBuildingMessage } from "./upgrade-building.dto"
 import { PlacedItemSchema, UserSchema, InjectMongoose } from "@src/databases"
 import { UserLike } from "@src/jwt"
-import { GraphQLError } from "graphql"
-import { KafkaTopic } from "@src/brokers"
-import { InjectKafkaProducer } from "@src/brokers"
-import { Producer } from "kafkajs"
+import { ActionName, EmitActionPayload } from "../../../emitter"
+import { DeepPartial } from "@src/common"
+import { WithStatus } from "@src/common"
+import { WsException } from "@nestjs/websockets"
+import { SyncService } from "@src/gameplay"
+import { SyncedResponse } from "../../types"
 
 @Injectable()
 export class UpgradeBuildingService {
@@ -18,16 +20,20 @@ export class UpgradeBuildingService {
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
-        @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer
+        private readonly syncService: SyncService
     ) {}
 
     async upgradeBuilding(
         { id: userId }: UserLike,
-        { placedItemBuildingId }: UpgradeBuildingRequest
-    ): Promise<void> {
+        { placedItemBuildingId }: UpgradeBuildingMessage
+    ): Promise<SyncedResponse> {
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined
+        // synced variables
+        let actionPayload: EmitActionPayload | undefined
+        let syncedUser: DeepPartial<UserSchema> | undefined
+        let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
+
         try {
             await mongoSession.withTransaction(async () => {
                 /************************************************************
@@ -39,12 +45,10 @@ export class UpgradeBuildingService {
                     .session(mongoSession)
 
                 if (!placedItemBuilding) {
-                    throw new GraphQLError("Placed item not found", {
-                        extensions: {
-                            code: "PLACED_ITEM_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("Placed item not found")
                 }
+
+                const placedItemBuildingSnapshot = placedItemBuilding.$clone()
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE BUILDING TYPE
@@ -53,11 +57,7 @@ export class UpgradeBuildingService {
                     (building) => building.id === placedItemBuilding.placedItemType.toString()
                 )   
                 if (!building) {
-                    throw new GraphQLError("Building type not found in static data", {
-                        extensions: {
-                            code: "BUILDING_TYPE_NOT_FOUND_IN_STATIC"
-                        }
-                    })
+                    throw new WsException("Building type not found in static data")
                 }
 
                 /************************************************************
@@ -65,12 +65,8 @@ export class UpgradeBuildingService {
                  ************************************************************/
                 const currentUpgradeLevel = placedItemBuilding.buildingInfo.currentUpgrade
 
-                if (currentUpgradeLevel > building.maxUpgrade) {
-                    throw new GraphQLError("Building already at max upgrade level", {
-                        extensions: {
-                            code: "BUILDING_MAX_LEVEL"
-                        }
-                    })
+                if (currentUpgradeLevel >= building.maxUpgrade) {
+                    throw new WsException("Building already at max upgrade level")
                 }
 
                 const nextUpgrade = building.upgrades.find(
@@ -78,29 +74,21 @@ export class UpgradeBuildingService {
                 )
 
                 if (!nextUpgrade) {
-                    throw new GraphQLError("Next upgrade not found", {
-                        extensions: {
-                            code: "NEXT_UPGRADE_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("Next upgrade not found")
                 }
 
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                user = await this.connection
+                const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
                     
                 if (!user) {
-                    throw new GraphQLError("User not found", {
-                        extensions: {
-                            code: "USER_NOT_FOUND"
-                        }
-                    })
+                    throw new WsException("User not found")
                 }
-
+                const userSnapshot = user.$clone()
                 /************************************************************
                  * CHECK SUFFICIENT GOLD
                  ************************************************************/
@@ -118,23 +106,44 @@ export class UpgradeBuildingService {
                 })
 
                 await user.save({ session: mongoSession })
-
+                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
                 /************************************************************
                  * UPDATE BUILDING UPGRADE LEVEL
                  ************************************************************/
                 placedItemBuilding.buildingInfo.currentUpgrade = currentUpgradeLevel + 1
                 await placedItemBuilding.save({ session: mongoSession })
-            })
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
-                }),
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncPlacedItems,
-                    messages: [{ value: JSON.stringify({ userId }) }]
+                const updatedSyncedPlacedItem = this.syncService.getPartialUpdatedSyncedPlacedItem({
+                    placedItemSnapshot: placedItemBuildingSnapshot,
+                    placedItemUpdated: placedItemBuilding
                 })
-            ])
+                syncedPlacedItems.push(updatedSyncedPlacedItem)
+
+                // we thus emit the new synced placed item action
+                syncedPlacedItemAction = {
+                    x: placedItemBuilding.x,
+                    y: placedItemBuilding.y,
+                    buildingInfo: {
+                        currentUpgrade: placedItemBuilding.buildingInfo.currentUpgrade
+                    },
+                    placedItemType: placedItemBuilding.placedItemType
+                }
+
+                actionPayload = {
+                    action: ActionName.UpgradeBuilding,
+                    userId,
+                    placedItem: syncedPlacedItemAction,
+                    success: true,
+                }
+            })
+
+            return {
+                user: syncedUser,
+                placedItems: syncedPlacedItems,
+                action: actionPayload
+            }
         } catch (error) {
             this.logger.error(error)
             throw error

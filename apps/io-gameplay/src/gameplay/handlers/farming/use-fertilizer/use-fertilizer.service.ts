@@ -41,8 +41,6 @@ export class UseFertilizerService {
         { id: userId }: UserLike,
         { inventorySupplyId, placedItemTileId }: UseFertilizerMessage
     ): Promise<SyncedResponse> {
-        this.logger.debug(`Using fertilizer for user ${userId}, tile ID: ${placedItemTileId}`)
-
         const mongoSession = await this.connection.startSession()
 
         // synced variables

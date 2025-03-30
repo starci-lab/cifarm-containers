@@ -55,7 +55,8 @@ export enum ReceiverEventName {
     Return = "return",
     // Placements
     Move = "move",
-    Sell = "sell"
+    Sell = "sell",
+    UpgradeBuilding = "upgrade_building"
 }
 
 // sync placed items

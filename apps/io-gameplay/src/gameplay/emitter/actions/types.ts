@@ -105,5 +105,6 @@ export enum ActionName {
     ThiefFruit = "thief_fruit",
     DeliverProduct = "deliver_product",
     DeliverMoreProduct = "deliver_more_product",
-    RetainProduct = "retain_product"
+    RetainProduct = "retain_product",
+    UpgradeBuilding = "upgrade_building"
 }
