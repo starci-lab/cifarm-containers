@@ -27,6 +27,7 @@ export class TileSeeder implements Seeder {
                 displayId: TileId.BasicTile,
                 price: 1000,
                 isNft: false,
+                sellable: true,
                 qualityProductChanceStack: 0,
                 qualityProductChanceLimit: 0,
                 availableInShop: true,
