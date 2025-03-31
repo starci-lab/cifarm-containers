@@ -22,6 +22,7 @@ export class PositionInput {
 export interface GameplayOptions extends BaseOptions {
     theif?: TheifOptions
     loadStatic?: boolean
+    loadLimit?: boolean
 }
 
 export interface TheifOptions {

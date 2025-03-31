@@ -35,35 +35,35 @@ export class PlacedItemTypeSchema extends AbstractSchema {
         description: "The building associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: BuildingSchema.name })
-    [BUILDING]: BuildingSchema | Types.ObjectId
+    [BUILDING]?: BuildingSchema | Types.ObjectId
             
     @Field(() => ID, { 
         nullable: true,
         description: "The animal associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: AnimalSchema.name })
-    [ANIMAL]: AnimalSchema | Types.ObjectId
+    [ANIMAL]?: AnimalSchema | Types.ObjectId
 
     @Field(() => ID, { 
         nullable: true,
         description: "The tile associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: TileSchema.name })
-    [TILE]: TileSchema | Types.ObjectId
+    [TILE]?: TileSchema | Types.ObjectId
 
     @Field(() => ID, { 
         nullable: true,
         description: "The pet associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: PetSchema.name })
-    [PET]: PetSchema | Types.ObjectId
+    [PET]?: PetSchema | Types.ObjectId
 
     @Field(() => ID, { 
         nullable: true,
         description: "The fruit associated with this placed item type, if applicable"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FruitSchema.name })
-    [FRUIT]: FruitSchema | Types.ObjectId
+    [FRUIT]?: FruitSchema | Types.ObjectId
 
     @Field(() => Int, {
         description: "The width of the placed item in grid cells"

@@ -11,7 +11,7 @@ import { Namespace, Socket } from "socket.io"
 import { NAMESPACE } from "../../../gameplay.constants"
 import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
-import { ReceiverEventName } from "../../../events"
+import { EmitterEventName, ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { BuyBuildingMessage } from "./buy-building.dto"
 import { BuyBuildingService } from "./buy-building.service"
@@ -47,9 +47,13 @@ export class BuyBuildingGateway implements OnGatewayInit {
         @WsUser() user: UserLike
     ) {
         const syncedResponse = await this.buyBuildingService.buyBuilding(user, payload)
+        const { stopBuying, ...restSyncedResponse } = syncedResponse    
         this.emitterService.syncResponse({
             userId: user.id,
-            syncedResponse
+            syncedResponse: restSyncedResponse
         })
+        if (stopBuying) {
+            socket.emit(EmitterEventName.StopBuying)
+        }
     }
 } 

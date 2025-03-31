@@ -6,14 +6,14 @@ import {
     PlacedItemType,
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, StaticService, SyncService, PositionService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService, PositionService, LimitService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyBuildingMessage } from "./buy-building.dto"
 import { UserLike } from "@src/jwt"
 import { DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName, BuyBuildingData } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
-import { SyncedResponse } from "../../types"
+import { StopBuyingResponse } from "../../types"
 
 @Injectable()
 export class BuyBuildingService {
@@ -24,19 +24,21 @@ export class BuyBuildingService {
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
-        private readonly positionService: PositionService
+        private readonly positionService: PositionService,
+        private readonly limitService: LimitService
     ) {}
 
     async buyBuilding(
         { id: userId }: UserLike,
         { position, buildingId }: BuyBuildingMessage
-    ): Promise<SyncedResponse<BuyBuildingData>> {
+    ): Promise<StopBuyingResponse<BuyBuildingData>> {
         const mongoSession = await this.connection.startSession()
         // synced variables
         let actionPayload: EmitActionPayload<BuyBuildingData> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
+        let stopBuying: boolean | undefined
 
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -211,12 +213,22 @@ export class BuyBuildingService {
                         buildingId: building.id
                     }
                 }
+                // Check if the user has reached the limit for this building
+                const limitResult = await this.limitService.getBuildingLimit({
+                    session,
+                    userId,
+                    building
+                })
+                stopBuying = !limitResult.placedItemCountNotExceedLimit
+                || !limitResult.selectedPlacedItemCountNotExceedLimit
+                || user.golds < building.price
             })
 
             return {
                 user: syncedUser,
                 placedItems: syncedPlacedItems,
-                action: actionPayload
+                action: actionPayload,
+                stopBuying
             }
         } catch (error) {
             this.logger.error(error)

@@ -11,11 +11,13 @@ import { NestExport, NestImport, NestProvider, NestService } from "@src/common"
 import { StaticService } from "./static"
 import { SyncService } from "./sync"
 import { ObjectModule } from "@src/object"
+import { LimitService } from "./limit"
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE) : DynamicModule {
         const dynamicModule = super.register(options)
         const loadStatic = options.loadStatic || true
+        const loadLimit = options.loadLimit || true
         // services that are always loaded
         const services: Array<NestService> = [
             LevelService,
@@ -32,7 +34,10 @@ export class GameplayModule extends ConfigurableModuleClass {
             // services that are loaded if static is enabled
             services.push(StaticService)
         }
-
+        if (loadLimit) {
+            // services that are loaded if limit is enabled
+            services.push(LimitService)
+        }
         const imports: Array<NestImport> = []
         const providers: Array<NestProvider> = services
         const exports: Array<NestExport> = services

@@ -1,13 +1,19 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
-import { GoldBalanceService, StaticService, SyncService, PositionService } from "@src/gameplay"
+import {
+    GoldBalanceService,
+    StaticService,
+    SyncService,
+    PositionService,
+    LimitService
+} from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyFruitMessage } from "./buy-fruit.dto"
 import { UserLike } from "@src/jwt"
 import { DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName, BuyFruitData } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
-import { SyncedResponse } from "../../types"
+import { StopBuyingResponse } from "../../types"
 
 @Injectable()
 export class BuyFruitService {
@@ -18,20 +24,21 @@ export class BuyFruitService {
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
-        private readonly positionService: PositionService
+        private readonly positionService: PositionService,
+        private readonly limitService: LimitService
     ) {}
 
     async buyFruit(
         { id: userId }: UserLike,
         { position, fruitId }: BuyFruitMessage
-    ): Promise<SyncedResponse<BuyFruitData>> {
+    ): Promise<StopBuyingResponse<BuyFruitData>> {
         const mongoSession = await this.connection.startSession()
         // synced variables
         let actionPayload: EmitActionPayload<BuyFruitData> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
+        let stopBuying: boolean | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
-
         try {
             await mongoSession.withTransaction(async (session) => {
                 /************************************************************
@@ -155,10 +162,9 @@ export class BuyFruitService {
                     placedItemType: placedItemFruitRaw.placedItemType
                 }
 
-                const createdSyncedPlacedItems =
-                    this.syncService.getCreatedSyncedPlacedItems({
-                        placedItems: [placedItemFruitRaw]
-                    })
+                const createdSyncedPlacedItems = this.syncService.getCreatedSyncedPlacedItems({
+                    placedItems: [placedItemFruitRaw]
+                })
                 syncedPlacedItems.push(...createdSyncedPlacedItems)
 
                 /************************************************************
@@ -174,12 +180,22 @@ export class BuyFruitService {
                         fruitId: fruit.id
                     }
                 }
+
+                // check can continue
+                const limitResult = await this.limitService.getFruitLimit({
+                    session,
+                    userId
+                })
+                stopBuying =
+                    !limitResult.placedItemCountNotExceedLimit ||
+                    user.golds < fruit.price
             })
 
             return {
                 user: syncedUser,
                 placedItems: syncedPlacedItems,
-                action: actionPayload
+                action: actionPayload,
+                stopBuying
             }
         } catch (error) {
             this.logger.error(error)

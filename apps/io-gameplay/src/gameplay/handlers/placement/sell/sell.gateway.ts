@@ -15,6 +15,7 @@ import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { SellService } from "./sell.service"
 import { SellMessage } from "./sell.dto"
+
 @WebSocketGateway({
     cors: {
         origin: "*",

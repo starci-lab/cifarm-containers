@@ -11,3 +11,7 @@ export type SyncedResponse<TData = undefined> = Partial<{
     /// watcher user id for broadcast the placed items
     watcherUserId: string
 }>
+
+export interface StopBuyingResponse<TData = undefined> extends SyncedResponse<TData> {
+    stopBuying?: boolean
+}

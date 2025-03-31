@@ -5,14 +5,14 @@ import {
     PlacedItemType, 
     UserSchema
 } from "@src/databases"
-import { GoldBalanceService, StaticService, SyncService, PositionService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService, PositionService, LimitService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { BuyAnimalMessage } from "./buy-animal.dto"
 import { UserLike } from "@src/jwt"
 import { DeepPartial, WithStatus, createObjectId } from "@src/common"
 import { EmitActionPayload, ActionName, BuyAnimalData } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
-import { SyncedResponse } from "../../types"
+import { StopBuyingResponse } from "../../types"
 
 @Injectable()
 export class BuyAnimalService {
@@ -23,19 +23,21 @@ export class BuyAnimalService {
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
-        private readonly positionService: PositionService
+        private readonly positionService: PositionService,
+        private readonly limitService: LimitService 
     ) {}
 
     async buyAnimal(
         { id: userId }: UserLike,
         { position, animalId }: BuyAnimalMessage
-    ): Promise<SyncedResponse<BuyAnimalData>> {
+    ): Promise<StopBuyingResponse<BuyAnimalData>> {
         const mongoSession = await this.connection.startSession()
         // synced variables
         let actionPayload: EmitActionPayload<BuyAnimalData> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
+        let stopBuying: boolean | undefined
 
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -218,12 +220,23 @@ export class BuyAnimalService {
                         animalId: animal.id
                     }
                 }
+
+                const limitData = await this.limitService.getAnimalLimit({
+                    animal,
+                    userId,
+                    session
+                })
+                
+                stopBuying =
+                    !limitData.selectedPlacedItemCountNotExceedLimit ||
+                    user.golds < animal.price
             })
 
             return {
                 user: syncedUser,
                 placedItems: syncedPlacedItems,
-                action: actionPayload
+                action: actionPayload,
+                stopBuying
             }
         } catch (error) {
             this.logger.error(error)

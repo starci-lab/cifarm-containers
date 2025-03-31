@@ -11,7 +11,9 @@ export enum EmitterEventName {
     FlowerSeedsBought = "flower_seeds_bought",
     SuppliesBought = "supplies_bought",
     ToolBought = "tool_bought",
-    DailyRewardClaimed = "daily_reward_claimed"
+    DailyRewardClaimed = "daily_reward_claimed",
+    // method to indicate whether the user can continue buying items
+    StopBuying = "stop_buying",
 }
 
 export enum ReceiverEventName {
