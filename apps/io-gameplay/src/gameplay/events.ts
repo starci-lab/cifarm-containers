@@ -14,10 +14,11 @@ export enum EmitterEventName {
     DailyRewardClaimed = "daily_reward_claimed",
     // method to indicate whether the user can continue buying items
     StopBuying = "stop_buying",
+    DisplayTimersResponsed = "display_timers_responsed",
 }
 
 export enum ReceiverEventName {
-    SyncPlacedItems = "sync_placed_items",
+    RequestDisplayTimers = "request_display_timers",
     BuyCropSeeds = "buy_crop_seeds",
     BuyFlowerSeeds = "buy_flower_seeds",
     BuySupplies = "buy_supplies",
@@ -59,11 +60,6 @@ export enum ReceiverEventName {
     Move = "move",
     Sell = "sell",
     UpgradeBuilding = "upgrade_building"
-}
-
-// sync placed items
-export interface SyncPlacedItemsMessage {
-    placedItemIds: Array<string>
 }
 
 // sync user

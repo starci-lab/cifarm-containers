@@ -11,10 +11,10 @@ import { Namespace } from "socket.io"
 import { NAMESPACE } from "../../gameplay.constants"
 import { PlacedItemsService } from "./placed-items.service"
 import { AuthGateway, RoomType, SocketData } from "../../auth"
-import { EmitterEventName, PlacedItemsSyncedMessage, SyncPlacedItemsMessage } from "../../events"
+import { EmitterEventName, PlacedItemsSyncedMessage } from "../../events"
 import { TypedSocket } from "@src/io"
 import { SchemaStatus } from "@src/common"
-import { SyncPlacedItemsPayload } from "./types"
+import { RequestDisplayTimersMessage, SyncPlacedItemsPayload } from "./types"
 import { ReceiverEventName } from "../../events"
 
 @WebSocketGateway({
@@ -61,15 +61,14 @@ export class PlacedItemsGateway implements OnGatewayInit {
     }
 
     // force sync placed items
-    @SubscribeMessage(ReceiverEventName.SyncPlacedItems)
-    public async handleSyncPlacedItems(
+    @SubscribeMessage(ReceiverEventName.RequestDisplayTimers)
+    public async handleRequestDisplayTimers(
         @ConnectedSocket() socket: TypedSocket<SocketData>,
-        @MessageBody() { placedItemIds }: SyncPlacedItemsMessage
+        @MessageBody() { ids }: RequestDisplayTimersMessage
     ) {
         const placedItems = await this.placedItemsService.getPlacedItemsByIds({
-            placedItemIds
+            placedItemIds: ids
         })
-
         const messageResponse: PlacedItemsSyncedMessage = {
             data: placedItems.map((placedItem) => ({
                 ...placedItem,
@@ -77,5 +76,10 @@ export class PlacedItemsGateway implements OnGatewayInit {
             }))
         }
         socket.emit(EmitterEventName.PlacedItemsSynced, messageResponse)
+        // timer synced for the corresponding ids
+        socket.emit(EmitterEventName.DisplayTimersResponsed, {
+            ids
+        })
     }
 }       
+

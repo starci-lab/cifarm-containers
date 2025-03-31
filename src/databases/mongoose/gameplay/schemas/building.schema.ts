@@ -66,10 +66,10 @@ export class BuildingSchema extends AbstractSchema {
         unlockLevel: number
 
     @Field(() => Boolean, {
-        description: "Whether the building is upgradable"
+        description: "Whether the building is upgradeable"
     })
     @Prop({ type: Boolean, required: true })
-        upgradable: boolean
+        upgradeable: boolean
 
     @Field(() => [UpgradeSchema], {
         description: "The upgrades of the building",

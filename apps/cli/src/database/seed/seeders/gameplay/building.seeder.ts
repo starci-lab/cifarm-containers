@@ -29,7 +29,7 @@ export class BuildingSeeder implements Seeder {
                     availableInShop: false,
                     maxUpgrade: 0,
                     price: 0,
-                    upgradable: false,
+                    upgradeable: false,
                     unlockLevel: 0, 
                     maxOwnership: 1,
                     kind: BuildingKind.Neutral
@@ -42,7 +42,7 @@ export class BuildingSeeder implements Seeder {
                     maxUpgrade: 3,
                     price: 2000,
                     unlockLevel: 5,
-                    upgradable: true,
+                    upgradeable: true,
                     maxOwnership: 3,
                     kind: BuildingKind.Neutral,
                     sellable: true,
@@ -72,7 +72,7 @@ export class BuildingSeeder implements Seeder {
                     maxUpgrade: 3,
                     price: 2000,
                     unlockLevel: 10,
-                    upgradable: true,
+                    upgradeable: true,
                     maxOwnership: 3,
                     kind: BuildingKind.Neutral,
                     sellable: true,
@@ -101,7 +101,7 @@ export class BuildingSeeder implements Seeder {
                     maxUpgrade: 3,
                     price: 2000,
                     unlockLevel: 10,
-                    upgradable: false,
+                    upgradeable: true,
                     maxOwnership: 3,
                     kind: BuildingKind.BeeHouse,
                     beeHouseYieldTime: 3600,
@@ -135,9 +135,25 @@ export class BuildingSeeder implements Seeder {
                     availableInShop: true,
                     price: 2000,
                     unlockLevel: 10,
-                    upgradable: false,
+                    upgradeable: true,
                     maxOwnership: 1,
                     kind: BuildingKind.Neutral,
+                    upgrades: [
+                        {
+                            capacity: 3,
+                            upgradeLevel: 1,
+                        },
+                        {
+                            upgradePrice: 1000,
+                            capacity: 5,
+                            upgradeLevel: 2,
+                        },
+                        {
+                            upgradePrice: 2000,
+                            capacity: 10,
+                            upgradeLevel: 3,
+                        }
+                    ],
                 },
             ]
         
