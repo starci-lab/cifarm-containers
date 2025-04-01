@@ -4,10 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'src/**'  # Trigger khi có thay đổi trong thư mục 'src'
-      - 'apps/gameplay-subgraph/**'  # Trigger khi có thay đổi trong thư mục 'apps/gameplay-service'
-
 jobs:
   deployment:
     runs-on: self-hosted
