@@ -1,5 +1,5 @@
 import { FruitJobData } from "@apps/cron-scheduler"
-import { SyncPlacedItemsPayload } from "@apps/io-gameplay"
+import { SyncPlacedItemsPayload } from "@apps/io"
 import { Processor, WorkerHost } from "@nestjs/bullmq"
 import { Logger } from "@nestjs/common"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"

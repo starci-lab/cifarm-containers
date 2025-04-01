@@ -1,3 +1,3 @@
 export enum IoService {
-    IoGameplay = "IoGameplay",
+    Io = "Io",
 }

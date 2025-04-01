@@ -8,7 +8,7 @@ $services = @(
     @{ Name = "graphql-gateway"; Dockerfile = "./apps/graphql-gateway/Dockerfile"; Tag = "cifarm/graphql-gateway" },
     @{ Name = "rest-api-gateway"; Dockerfile = "./apps/rest-api-gateway/Dockerfile"; Tag = "cifarm/rest-api-gateway" },
     @{ Name = "telegram-bot"; Dockerfile = "./apps/telegram-bot/Dockerfile"; Tag = "cifarm/telegram-bot" },
-    @{ Name = "io-gameplay"; Dockerfile = "./apps/io-gameplay/Dockerfile"; Tag = "cifarm/io-gameplay" }
+    @{ Name = "io"; Dockerfile = "./apps/io/Dockerfile"; Tag = "cifarm/io" }
 )
 
 # Function to build and push a Docker image

@@ -1,5 +1,5 @@
 export enum Container {
-    IoGameplay = "ioGameplay",
+    Io = "ioGameplay",
     GraphQLGateway = "graphQlGateway",
     GameplaySubgraph = "gameplaySubgraph",
     CronWorker = "cronWorker",

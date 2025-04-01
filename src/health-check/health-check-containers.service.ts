@@ -33,11 +33,11 @@ export class HealthCheckContainersService {
         return this.pingCheckContainer(HealthCheckDependency.GameplaySubgraph, Container.GameplaySubgraph)
     }
 
-    public async pingCheckIoGameplay(): Promise<HealthIndicatorResult> {
-        return this.pingCheckContainer(HealthCheckDependency.IoGameplay, Container.IoGameplay)
+    public async pingCheckIO(): Promise<HealthIndicatorResult> {
+        return this.pingCheckContainer(HealthCheckDependency.IO, Container.Io)
     }
 
-    public async pingCheckGraphQlGateway(): Promise<HealthIndicatorResult> {
+    public async pingCheckGraphQLGateway(): Promise<HealthIndicatorResult> {
         return this.pingCheckContainer(HealthCheckDependency.GraphQLGateway, Container.GraphQLGateway)
     }
 

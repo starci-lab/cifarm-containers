@@ -18,9 +18,9 @@ export const containerMap : Record<Container, ContainerInfo> = {
         image: "cifarm/graphql-gateway",
         dockerfile: "./apps/graphql-gateway/Dockerfile"
     },
-    [Container.IoGameplay]: {
-        image: "cifarm/io-gameplay",
-        dockerfile: "./apps/io-gameplay/Dockerfile"
+    [Container.Io]: {
+        image: "cifarm/io",
+        dockerfile: "./apps/io/Dockerfile"
     },
     [Container.Cli]: {
         image: "cifarm/cli",

@@ -48,11 +48,11 @@ export class HealthCheckController {
         if (this.options.dependencies.includes(HealthCheckDependency.GameplaySubgraph)) {
             healthIndicators.push(async () => this.healthCheckContainersService.pingCheckGameplaySubgraph())
         }
-        if (this.options.dependencies.includes(HealthCheckDependency.IoGameplay)) {
-            healthIndicators.push(async () => this.healthCheckContainersService.pingCheckIoGameplay())
+        if (this.options.dependencies.includes(HealthCheckDependency.IO)) {
+            healthIndicators.push(async () => this.healthCheckContainersService.pingCheckIO())
         }
         if (this.options.dependencies.includes(HealthCheckDependency.GraphQLGateway)) {
-            healthIndicators.push(async () => this.healthCheckContainersService.pingCheckGraphQlGateway())
+            healthIndicators.push(async () => this.healthCheckContainersService.pingCheckGraphQLGateway())
         }
         if (this.options.dependencies.includes(HealthCheckDependency.CronScheduler)) {
             healthIndicators.push(async () => this.healthCheckContainersService.pingCheckCronScheduler())

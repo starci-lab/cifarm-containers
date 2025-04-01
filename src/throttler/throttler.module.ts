@@ -64,24 +64,24 @@ const throttlers: Array<ThrottlerOptions> = [
         // 2 requests per minute
         name: ThrottlerName.Tiny,
         ttl: 60000,
-        limit: 2
+        limit: 5
     },
     {
         // 10 requests per minute
         name: ThrottlerName.Small,
         ttl: 60000,
-        limit: 5
+        limit: 10
     },
     {
         // 20 requests per minute
         name: ThrottlerName.Medium,
         ttl: 60000,
-        limit: 10
+        limit: 20
     },
     {
-        // 100 requests per minute
+        // 60 requests per minute
         name: ThrottlerName.Large,
         ttl: 60000,
-        limit: 25
+        limit: 60
     }
 ]

@@ -19,7 +19,7 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
 import { createObjectId, WithStatus } from "@src/common"
 import { BeeHouseJobData } from "@apps/cron-scheduler"
-import { SyncPlacedItemsPayload } from "@apps/io-gameplay"
+import { SyncPlacedItemsPayload } from "@apps/io"
 
 @Processor(bullData[BullQueueName.BeeHouse].name)
 export class BeeHouseWorker extends WorkerHost {

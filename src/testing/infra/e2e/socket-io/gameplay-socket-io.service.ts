@@ -9,7 +9,7 @@ export class E2EGameplaySocketIoService {
     private url: string
     constructor() {
         this.managerWrapperMap = {}
-        this.url = urlMap()[IoService.IoGameplay]
+        this.url = urlMap()[IoService.Io]
     }
 
     public async create(name: string): Promise<ManagerWrapper> {

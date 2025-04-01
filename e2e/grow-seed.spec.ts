@@ -43,7 +43,7 @@ import { Cache } from "cache-manager"
 import { CROP_CACHE_SPEED_UP, CropCacheSpeedUpData } from "@apps/cron-scheduler"
 import { CACHE_MANAGER } from "@src/cache"
 import { sleep } from "@src/common"
-import { PlacedItemsSyncedMessage, PLACED_ITEMS_SYNCED_EVENT } from "@apps/io-gameplay"
+import { PlacedItemsSyncedMessage, PLACED_ITEMS_SYNCED_EVENT } from "@apps/io"
 
 describe("Grow seed flow", () => {
     let dataSource: DataSource

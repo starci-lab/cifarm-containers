@@ -15,18 +15,21 @@ import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 @Resolver()
 export class UsersResolver {
     private readonly logger = new Logger(UsersResolver.name)
-    constructor(
-        private readonly usersService: UsersService,
-    ) {}
+    constructor(private readonly usersService: UsersService) {}
 
+    // if the params not provided, it will return the current user
+    // to minimize the number of queries
     @UseThrottlerName()
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => UserSchema, {
-        name: "me",   
-        description: "Get the current user"
+        name: "user",
+        description: "Get the user"
     })
-    async me(@GraphQLUser() user: UserLike): Promise<UserSchema> {
-        return await this.usersService.me(user.id)
+    async user( 
+        @GraphQLUser() user: UserLike,
+        @Args("id", { nullable: true }) id?: string
+    ): Promise<UserSchema> {
+        return await this.usersService.user(id ?? user.id)
     }
 
     @UseThrottlerName()

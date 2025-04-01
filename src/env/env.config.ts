@@ -41,7 +41,7 @@ export const envConfig = () => ({
         }).flat()
     },
     containers: {
-        [Container.IoGameplay]: {
+        [Container.Io]: {
             host: process.env.IO_GAMEPLAY_HOST ?? LOCALHOST,
             port: process.env.IO_GAMEPLAY_PORT
                 ? Number.parseInt(process.env.IO_GAMEPLAY_PORT)

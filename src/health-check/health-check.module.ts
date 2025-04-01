@@ -33,7 +33,7 @@ export class HealthCheckModule extends ConfigurableModuleClass {
             HealthCheckDependency.GameplaySubgraph,
             HealthCheckDependency.CronScheduler,
             HealthCheckDependency.CronWorker,
-            HealthCheckDependency.IoGameplay
+            HealthCheckDependency.IO
         ]
 
         if (httpDependencies.some((dependency) => options.dependencies.includes(dependency))) {

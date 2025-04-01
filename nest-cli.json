@@ -9,15 +9,15 @@
   "monorepo": true,
   "root": "apps/cifarm-server",
   "projects": {
-    "io-gameplay": {
+    "io": {
       "type": "application",
-      "root": "apps/io-gameplay",
+      "root": "apps/io",
       "entryFile": "main",
-      "sourceRoot": "apps/io-gameplay/src",
+      "sourceRoot": "apps/io/src",
       "compilerOptions": {
         "webpack": true,
-        "tsConfigPath": "apps/io-gameplay/tsconfig.app.json",
-        "webpackConfigPath": "apps/io-gameplay/webpack.config.js"
+        "tsConfigPath": "apps/io/tsconfig.app.json",
+        "webpackConfigPath": "apps/io/webpack.config.js"
       }
     },
     "graphql-gateway": {

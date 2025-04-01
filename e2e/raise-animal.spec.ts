@@ -14,7 +14,7 @@ import {
     FeedAnimalRequest,
     FeedAnimalResponse
 } from "@apps/gameplay-service"
-import { PLACED_ITEMS_SYNCED_EVENT, PlacedItemsSyncedMessage } from "@apps/io-gameplay"
+import { PLACED_ITEMS_SYNCED_EVENT, PlacedItemsSyncedMessage } from "@apps/io"
 import { Test } from "@nestjs/testing"
 import { CACHE_MANAGER } from "@src/cache"
 import { sleep } from "@src/common"

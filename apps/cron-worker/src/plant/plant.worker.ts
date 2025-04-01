@@ -17,7 +17,7 @@ import { Connection } from "mongoose"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
 import { WithStatus } from "@src/common"
-import { SyncPlacedItemsPayload } from "@apps/io-gameplay"
+import { SyncPlacedItemsPayload } from "@apps/io"
 
 @Processor(bullData[BullQueueName.Plant].name)
 export class PlantWorker extends WorkerHost {

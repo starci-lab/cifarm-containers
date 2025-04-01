@@ -3,8 +3,8 @@ import { IoService } from "./socket-io.types"
 import { Container, envConfig } from "@src/env"
 
 export const urlMap = (): Record<IoService, string> => ({
-    [IoService.IoGameplay]: getWsUrl({
-        host: envConfig().containers[Container.IoGameplay].host,
-        port: envConfig().containers[Container.IoGameplay].port
+    [IoService.Io]: getWsUrl({
+        host: envConfig().containers[Container.Io].host,
+        port: envConfig().containers[Container.Io].port
     })
 })
