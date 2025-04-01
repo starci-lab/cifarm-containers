@@ -36,30 +36,30 @@ export const envConfig = () => ({
             return origin ? [origin] : []
         }).flat(),
         ioGameplay: Array.from({ length: 10 }, (_, i) => {
-            const origin = process.env[`IO_GAMEPLAY_ALLOW_ORIGIN_${i + 1}`]
+            const origin = process.env[`IO_ALLOW_ORIGIN_${i + 1}`]
             return origin ? [origin] : []
         }).flat()
     },
     containers: {
         [Container.Io]: {
-            host: process.env.IO_GAMEPLAY_HOST ?? LOCALHOST,
-            port: process.env.IO_GAMEPLAY_PORT
-                ? Number.parseInt(process.env.IO_GAMEPLAY_PORT)
+            host: process.env.IO_HOST ?? LOCALHOST,
+            port: process.env.IO_PORT
+                ? Number.parseInt(process.env.IO_PORT)
                 : DEFAULT_PORT,
-            healthCheckPort: process.env.IO_GAMEPLAY_HEALTH_CHECK_PORT
-                ? Number.parseInt(process.env.IO_GAMEPLAY_HEALTH_CHECK_PORT)
+            healthCheckPort: process.env.IO_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.IO_HEALTH_CHECK_PORT)
                 : DEFAULT_HEALTH_PORT,
-            adminUiPort: process.env.IO_GAMEPLAY_ADMIN_UI_PORT
-                ? Number.parseInt(process.env.IO_GAMEPLAY_ADMIN_UI_PORT)
+            adminUiPort: process.env.IO_ADMIN_UI_PORT
+                ? Number.parseInt(process.env.IO_ADMIN_UI_PORT)
                 : 8082,
-            adapter: (process.env.IO_GAMEPLAY_ADAPTER ?? IoAdapterType.MongoDb) as IoAdapterType,
+            adapter: (process.env.IO_ADAPTER ?? IoAdapterType.MongoDb) as IoAdapterType,
             cluster: {
-                enabled: process.env.IO_GAMEPLAY_CLUSTER_ENABLED === "true",
-                numberOfWorkers: process.env.IO_GAMEPLAY_CLUSTER_NUMBER_OF_WORKERS
-                    ? Number.parseInt(process.env.IO_GAMEPLAY_CLUSTER_NUMBER_OF_WORKERS)
+                enabled: process.env.IO_CLUSTER_ENABLED === "true",
+                numberOfWorkers: process.env.IO_CLUSTER_NUMBER_OF_WORKERS
+                    ? Number.parseInt(process.env.IO_CLUSTER_NUMBER_OF_WORKERS)
                     : 3,
-                workerPort: process.env.IO_GAMEPLAY_CLUSTER_WORKER_PORT
-                    ? Number.parseInt(process.env.IO_GAMEPLAY_CLUSTER_WORKER_PORT)
+                workerPort: process.env.IO_CLUSTER_WORKER_PORT
+                    ? Number.parseInt(process.env.IO_CLUSTER_WORKER_PORT)
                     : DEFAULT_PORT + 10
             }
         },
