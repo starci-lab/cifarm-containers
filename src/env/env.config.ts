@@ -36,30 +36,30 @@ export const envConfig = () => ({
             return origin ? [origin] : []
         }).flat(),
         ioGameplay: Array.from({ length: 10 }, (_, i) => {
-            const origin = process.env[`IO_ALLOW_ORIGIN_${i + 1}`]
+            const origin = process.env[`WS_ALLOW_ORIGIN_${i + 1}`]
             return origin ? [origin] : []
         }).flat()
     },
     containers: {
-        [Container.Io]: {
-            host: process.env.IO_HOST ?? LOCALHOST,
-            port: process.env.IO_PORT
-                ? Number.parseInt(process.env.IO_PORT)
+        [Container.Ws]: {
+            host: process.env.WS_HOST ?? LOCALHOST,
+            port: process.env.WS_PORT
+                ? Number.parseInt(process.env.WS_PORT)
                 : DEFAULT_PORT,
-            healthCheckPort: process.env.IO_HEALTH_CHECK_PORT
-                ? Number.parseInt(process.env.IO_HEALTH_CHECK_PORT)
+            healthCheckPort: process.env.WS_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.WS_HEALTH_CHECK_PORT)
                 : DEFAULT_HEALTH_PORT,
-            adminUiPort: process.env.IO_ADMIN_UI_PORT
-                ? Number.parseInt(process.env.IO_ADMIN_UI_PORT)
+            adminUiPort: process.env.WS_ADMIN_UI_PORT
+                ? Number.parseInt(process.env.WS_ADMIN_UI_PORT)
                 : 8082,
-            adapter: (process.env.IO_ADAPTER ?? IoAdapterType.MongoDb) as IoAdapterType,
+            adapter: (process.env.WS_ADAPTER ?? IoAdapterType.MongoDb) as IoAdapterType,
             cluster: {
-                enabled: process.env.IO_CLUSTER_ENABLED === "true",
-                numberOfWorkers: process.env.IO_CLUSTER_NUMBER_OF_WORKERS
-                    ? Number.parseInt(process.env.IO_CLUSTER_NUMBER_OF_WORKERS)
+                enabled: process.env.WS_CLUSTER_ENABLED === "true",
+                numberOfWorkers: process.env.WS_CLUSTER_NUMBER_OF_WORKERS
+                    ? Number.parseInt(process.env.WS_CLUSTER_NUMBER_OF_WORKERS)
                     : 3,
-                workerPort: process.env.IO_CLUSTER_WORKER_PORT
-                    ? Number.parseInt(process.env.IO_CLUSTER_WORKER_PORT)
+                workerPort: process.env.WS_CLUSTER_WORKER_PORT
+                    ? Number.parseInt(process.env.WS_CLUSTER_WORKER_PORT)
                     : DEFAULT_PORT + 10
             }
         },
@@ -271,8 +271,8 @@ export const envConfig = () => ({
         useMinikubeForDevelopment: process.env.KUBERNETES_USE_MINIKUBE_FOR_DEVELOPMENT === "true",
     },
     socketIoAdmin: {
-        username: process.env.SOCKET_IO_ADMIN_USERNAME,
-        password: process.env.SOCKET_IO_ADMIN_PASSWORD
+        username: process.env.SOCKET_WS_ADMIN_USERNAME,
+        password: process.env.SOCKET_WS_ADMIN_PASSWORD
     },
     productionUrl: process.env.PRODUCTION_URL,
     // e2e debugging

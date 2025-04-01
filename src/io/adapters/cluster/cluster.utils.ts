@@ -10,7 +10,7 @@ export const createPrimaryServer = async (port: number, logger: Logger) => {
     const httpServer = http.createServer()
     // Create HTTP server
     logger.verbose(`Primary ${process.pid} is running`)
-    const numberOfWorkers = envConfig().containers[Container.Io].cluster.numberOfWorkers
+    const numberOfWorkers = envConfig().containers[Container.Ws].cluster.numberOfWorkers
 
     // Setup sticky sessions for load balancing
     setupMaster(httpServer, {

@@ -3,7 +3,7 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./io.module-definition"
 import { IoAdapterType, MongoDatabase, RedisType } from "@src/env"
 import { MongoDbModule, RedisModule } from "@src/native"
 import { NestExport, NestImport, NestProvider } from "@src/common"
-import { IO_ADAPTER_FACTORY } from "./io.constants"
+import { WS_ADAPTER_FACTORY } from "./io.constants"
 import { ClusterIoAdapterFactory, MongoDbIoAdapterFactory, RedisIoAdapterFactory, RedisStreamIoAdapterFactory } from "./adapters"
 import { SocketCoreService } from "./socket-core.service"
 import { JwtModule } from "@src/jwt"
@@ -34,7 +34,7 @@ export class IoModule extends ConfigurableModuleClass {
                 )
             }
             const provider: Provider = {
-                provide: IO_ADAPTER_FACTORY,
+                provide: WS_ADAPTER_FACTORY,
                 useClass: RedisIoAdapterFactory
             }
             providers.push(provider)
@@ -50,7 +50,7 @@ export class IoModule extends ConfigurableModuleClass {
                 )
             }
             const provider: Provider = {
-                provide: IO_ADAPTER_FACTORY,
+                provide: WS_ADAPTER_FACTORY,
                 useClass: MongoDbIoAdapterFactory
             }
             // define the provider for the MongoIoAdapter
@@ -60,7 +60,7 @@ export class IoModule extends ConfigurableModuleClass {
         }
         case IoAdapterType.Cluster: {
             const provider: Provider = {
-                provide: IO_ADAPTER_FACTORY,
+                provide: WS_ADAPTER_FACTORY,
                 useClass: ClusterIoAdapterFactory
             }
             providers.push(provider)
@@ -76,7 +76,7 @@ export class IoModule extends ConfigurableModuleClass {
                 )
             }
             const provider: Provider = {
-                provide: IO_ADAPTER_FACTORY,
+                provide: WS_ADAPTER_FACTORY,
                 useClass: RedisStreamIoAdapterFactory
             }
             providers.push(provider)

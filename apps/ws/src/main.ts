@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core"
 import { Container, envConfig, loadEnv } from "@src/env"
 import { AppModule } from "./app.module"
-import { createPrimaryServer, IO_ADAPTER_FACTORY, IoAdapterFactory } from "@src/io"
+import { createPrimaryServer, WS_ADAPTER_FACTORY, IoAdapterFactory } from "@src/io"
 import cluster from "cluster"
 import { Logger } from "@nestjs/common"
 import { join } from "path"
@@ -14,7 +14,7 @@ import { IncomingMessage, Server, ServerResponse } from "http"
 const addAdapter = async (
     app: NestExpressApplication<Server<typeof IncomingMessage, typeof ServerResponse>>
 ) => {
-    const factory = app.get<IoAdapterFactory>(IO_ADAPTER_FACTORY)
+    const factory = app.get<IoAdapterFactory>(WS_ADAPTER_FACTORY)
     const adapter = factory.createAdapter(app)
     await adapter.connect()
     // trust proxy from the gateway to the subgraphs
@@ -26,13 +26,13 @@ const addAdapter = async (
 const bootstrap = async () => {
     const app = await NestFactory.create<NestExpressApplication>(AppModule)
     await addAdapter(app)
-    await app.listen(envConfig().containers[Container.Io].port)
+    await app.listen(envConfig().containers[Container.Ws].port)
 }
 
 const bootstrapMaster = async () => {
     const logger = new Logger(bootstrapMaster.name)
     await loadEnv()
-    await createPrimaryServer(envConfig().containers[Container.Io].port, logger)
+    await createPrimaryServer(envConfig().containers[Container.Ws].port, logger)
 }
 
 const bootstrapWorker = async () => {
@@ -41,11 +41,11 @@ const bootstrapWorker = async () => {
 
     const app = await NestFactory.create<NestExpressApplication>(AppModule)
     await addAdapter(app)
-    await app.listen(envConfig().containers[Container.Io].cluster.workerPort)
+    await app.listen(envConfig().containers[Container.Ws].cluster.workerPort)
 }
 
 const bootstrapAll = async () => {
-    if (!envConfig().containers[Container.Io].cluster.enabled) {
+    if (!envConfig().containers[Container.Ws].cluster.enabled) {
         await bootstrap().then(bootstrapHealthCheck).then(bootstrapAdminUI)
         return
     }
@@ -68,7 +68,7 @@ const bootstrapHealthCheck = async () => {
             ]
         })
     )
-    await app.listen(envConfig().containers[Container.Io].healthCheckPort)
+    await app.listen(envConfig().containers[Container.Ws].healthCheckPort)
 }
 
 const bootstrapAdminUI = async () => {
@@ -77,7 +77,7 @@ const bootstrapAdminUI = async () => {
             rootPath: join(process.cwd(), "node_modules", "@socket.io", "admin-ui", "ui", "dist")
         })
     )
-    await app.listen(envConfig().containers[Container.Io].adminUiPort)
+    await app.listen(envConfig().containers[Container.Ws].adminUiPort)
 }
 
 bootstrapAll()

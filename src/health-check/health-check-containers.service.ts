@@ -34,7 +34,7 @@ export class HealthCheckContainersService {
     }
 
     public async pingCheckIO(): Promise<HealthIndicatorResult> {
-        return this.pingCheckContainer(HealthCheckDependency.IO, Container.Io)
+        return this.pingCheckContainer(HealthCheckDependency.Ws, Container.Ws)
     }
 
     public async pingCheckGraphQLGateway(): Promise<HealthIndicatorResult> {

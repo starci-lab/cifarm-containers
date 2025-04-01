@@ -1,4 +1,4 @@
-# docker build -t cifarm/io -f ./apps/io/Dockerfile . & docker push cifarm/io
+# docker build -t cifarm/ws -f ./apps/ws/Dockerfile . & docker push cifarm/ws
 # syntax=docker/dockerfile:1
 
 ARG NODE_VERSION=23.5.0
@@ -16,7 +16,7 @@ RUN npm ci
 
 # Copy remaining source code and build the application
 COPY . .
-RUN npx nest build io
+RUN npx nest build ws
 
 # Production Stage (final image)
 FROM node:${NODE_VERSION}-alpine AS production
@@ -24,7 +24,7 @@ FROM node:${NODE_VERSION}-alpine AS production
 WORKDIR /usr/src/app
 
 # Copy only the build output and proto files
-COPY --from=build /usr/src/app/dist/apps/io .
+COPY --from=build /usr/src/app/dist/apps/ws .
 
 # Install only production dependencies
 RUN npm i --production

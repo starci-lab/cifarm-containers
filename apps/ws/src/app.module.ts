@@ -19,7 +19,7 @@ import { ThrottlerModule } from "@src/throttler"
     imports: [
         IdModule.register({
             isGlobal: true,
-            name: "IO"
+            name: "Ws"
         }),
         EnvModule.forRoot(),
         CacheModule.register({
@@ -37,7 +37,7 @@ import { ThrottlerModule } from "@src/throttler"
         }),
         KafkaModule.register({
             isGlobal: true,
-            clientId: "io",    
+            clientId: "ws",    
         }),
         MongooseModule.forRoot(),
         ObjectModule.register({
@@ -51,7 +51,7 @@ import { ThrottlerModule } from "@src/throttler"
         ScheduleModule.forRoot(),
         IoModule.register({
             useGlobalImports: true,
-            adapter: envConfig().containers[Container.Io].adapter,
+            adapter: envConfig().containers[Container.Ws].adapter,
             isGlobal: true
         }),
         ThrottlerModule.forRoot(),

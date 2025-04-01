@@ -6,7 +6,7 @@ export enum HealthCheckDependency {
     Kafka = "kafka",
     GameplaySubgraph = "gameplay-subgraph",
     GraphQLGateway = "graphql-gateway",
-    IO = "io",
+    Ws = "ws",
     CronScheduler = "cron-scheduler",
     CronWorker = "cron-worker",
     AdapterMongoDb = "adapter-mongodb",

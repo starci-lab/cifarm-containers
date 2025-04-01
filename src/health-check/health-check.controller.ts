@@ -48,7 +48,7 @@ export class HealthCheckController {
         if (this.options.dependencies.includes(HealthCheckDependency.GameplaySubgraph)) {
             healthIndicators.push(async () => this.healthCheckContainersService.pingCheckGameplaySubgraph())
         }
-        if (this.options.dependencies.includes(HealthCheckDependency.IO)) {
+        if (this.options.dependencies.includes(HealthCheckDependency.Ws)) {
             healthIndicators.push(async () => this.healthCheckContainersService.pingCheckIO())
         }
         if (this.options.dependencies.includes(HealthCheckDependency.GraphQLGateway)) {

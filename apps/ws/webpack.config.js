@@ -5,8 +5,8 @@ const GeneratePackageJsonPlugin = require("generate-package-json-webpack-plugin"
 
 // base package
 const basePackage = {
-    name: "io",
-    version: "1.0.0",
+    name: "ws",
+    verswsn: "1.0.0",
     main: "./main.js",
     scripts: {
         "start": "node ./main.js"
@@ -16,14 +16,14 @@ const basePackage = {
     },
     dependencies: {
         "@nestjs/platform-express": "^10.0.0",
-        "ioredis": "^5.4.2",
+        "wsredis": "^5.4.2",
     }
 }
 
 module.exports = {
-    entry: "./apps/io/src/main.ts",
+    entry: "./apps/ws/src/main.ts",
     output: {
-        path: path.join(__dirname, "../..", "dist", "apps", "io"),
+        path: path.join(__dirname, "../..", "dist", "apps", "ws"),
         filename: "main.js",
     },
     target: "node",
@@ -31,7 +31,7 @@ module.exports = {
     plugins: [
         new GeneratePackageJsonPlugin(basePackage, {
             resolveContextPaths: [__dirname],
-            useInstalledVersions: true,
+            useInstalledVerswsns: true,
             excludeDependencies: [          
                 
             ],

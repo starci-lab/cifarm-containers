@@ -9,15 +9,15 @@
   "monorepo": true,
   "root": "apps/cifarm-server",
   "projects": {
-    "io": {
+    "ws": {
       "type": "application",
-      "root": "apps/io",
+      "root": "apps/ws",
       "entryFile": "main",
-      "sourceRoot": "apps/io/src",
+      "sourceRoot": "apps/ws/src",
       "compilerOptions": {
         "webpack": true,
-        "tsConfigPath": "apps/io/tsconfig.app.json",
-        "webpackConfigPath": "apps/io/webpack.config.js"
+        "tsConfigPath": "apps/ws/tsconfig.app.json",
+        "webpackConfigPath": "apps/ws/webpack.config.js"
       }
     },
     "graphql-gateway": {
