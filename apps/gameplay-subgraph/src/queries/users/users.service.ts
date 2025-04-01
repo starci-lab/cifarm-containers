@@ -18,7 +18,7 @@ export class UsersService {
         private readonly connection: Connection
     ) {}
 
-    async user(id: string): Promise<UserSchema> {
+    async me(id: string): Promise<UserSchema> {
         return await this.connection.model<UserSchema>(UserSchema.name).findById(id)
     }
 

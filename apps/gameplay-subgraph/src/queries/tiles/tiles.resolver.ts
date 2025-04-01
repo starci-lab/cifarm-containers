@@ -1,7 +1,8 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { TilesService } from "./tiles.service"
 import { TileId, TileSchema } from "@src/databases"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 
 @Resolver()
 export class TilesResolver {
@@ -9,6 +10,8 @@ export class TilesResolver {
 
     constructor(private readonly tilesService: TilesService) {}
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [TileSchema], {
         name: "tiles",
         description: "Get all tiles"
@@ -17,6 +20,8 @@ export class TilesResolver {
         return this.tilesService.tiles()
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => TileSchema, {
         name: "tile",
         description: "Get a tile by ID"

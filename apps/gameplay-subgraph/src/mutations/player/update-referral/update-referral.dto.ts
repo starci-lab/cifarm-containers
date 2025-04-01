@@ -1,5 +1,6 @@
-import { Field, InputType } from "@nestjs/graphql"
+import { Field, InputType, ObjectType } from "@nestjs/graphql"
 import { IsMongoId } from "class-validator"
+import { ResponseLike } from "@src/graphql"
 
 @InputType()
 export class UpdateReferralRequest {
@@ -7,3 +8,7 @@ export class UpdateReferralRequest {
     @Field(() => String, { description: "The id of the referral user" })
         referralUserId: string
 }
+
+@ObjectType()
+export class UpdateReferralResponse extends ResponseLike {}
+

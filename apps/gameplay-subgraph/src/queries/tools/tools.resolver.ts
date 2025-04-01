@@ -1,7 +1,8 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseGuards } from "@nestjs/common"
 import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { ToolId, ToolSchema } from "@src/databases"
 import { ToolsService } from "./tools.service"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 
 @Resolver()
 export class ToolsResolver {
@@ -9,6 +10,8 @@ export class ToolsResolver {
 
     constructor(private readonly toolsService: ToolsService) {}
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => ToolSchema, {
         name: "tool",
         description: "Get a tool by ID"
@@ -19,6 +22,8 @@ export class ToolsResolver {
         return this.toolsService.tool(id)
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [ToolSchema], {
         name: "tools",
         description: "Get all tools"

@@ -1,5 +1,6 @@
 import { IsUUID } from "class-validator"
-import { Field, InputType } from "@nestjs/graphql"
+import { Field, InputType, ObjectType } from "@nestjs/graphql"
+import { ResponseLike } from "@src/graphql"
 
 @InputType()
 export class UnfollowRequest {
@@ -7,3 +8,6 @@ export class UnfollowRequest {
     @Field(() => String, { description: "The ID of the user to unfollow" })
         followeeUserId: string
 }
+
+@ObjectType()
+export class UnfollowResponse extends ResponseLike {}

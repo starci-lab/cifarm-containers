@@ -1,12 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection, Types } from "mongoose"
-import { UpdateReferralRequest } from "./update-referral.dto"
-import { TokenBalanceService, StaticService } from "@src/gameplay"
+import { UpdateReferralRequest, UpdateReferralResponse } from "./update-referral.dto"
+import { TokenBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { WithStatus } from "@src/common"
 
 @Injectable()
 export class UpdateReferralService {
@@ -17,6 +18,7 @@ export class UpdateReferralService {
         private readonly connection: Connection,
         private readonly tokenBalanceService: TokenBalanceService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -24,9 +26,9 @@ export class UpdateReferralService {
     async updateReferral(
         { id: userId }: UserLike,
         { referralUserId }: UpdateReferralRequest
-    ): Promise<void> {
+    ): Promise<UpdateReferralResponse> {
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined
+        let syncedUser: WithStatus<UserSchema> | undefined
         try {
             // Using `withTransaction` for automatic transaction handling
             await mongoSession.withTransaction(async (session) => {
@@ -63,7 +65,7 @@ export class UpdateReferralService {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                user = await this.connection
+                const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(session)
@@ -75,6 +77,7 @@ export class UpdateReferralService {
                         }
                     })
                 }
+                const userSnapshot = user.$clone()
 
                 /************************************************************
                  * VALIDATE REFERRAL ELIGIBILITY
@@ -125,15 +128,24 @@ export class UpdateReferralService {
                 // Update the referred user with their referral information
                 user.referralUserId = new Types.ObjectId(referralUserId)
                 await user.save({ session })
+                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
             })
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
                     messages: [
-                        { value: JSON.stringify({ userId, user: user.toJSON() }) }
+                        { value: JSON.stringify({ userId, data: syncedUser }) }
                     ]
                 })
             ])
+
+            return {
+                success: true,
+                message: "Referral updated successfully",
+            }
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging

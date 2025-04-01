@@ -22,8 +22,18 @@ export class GraphQLGatewayModule extends ConfigurableModuleClass {
                         plugins: [
                             ApolloServerPluginLandingPageLocalDefault(),
                         ],
+                        context: ({ req, res }) => ({ req, res }),
+                        debug: false,
                         playground: false,
                         path: "/graphql",
+                        formatError: (error) => {
+                            // remove the stack trace
+                            delete error.extensions.stacktrace
+                            return {
+                                message: error.message, // Only show the error message
+                                extensions: error.extensions,
+                            }
+                        }
                     },
                     gateway: {
                         buildService: ({ url }) => {

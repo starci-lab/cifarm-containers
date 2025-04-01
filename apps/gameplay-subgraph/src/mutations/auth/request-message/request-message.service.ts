@@ -27,7 +27,11 @@ export class RequestMessageService {
         await this.cacheManager.set(message, true, 60 * 1000)
         
         return {
-            message
+            success: true,
+            message: "Message requested successfully",
+            data: {
+                message
+            }
         }
     }
 }

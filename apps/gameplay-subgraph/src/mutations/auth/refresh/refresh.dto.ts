@@ -1,4 +1,6 @@
 import { InputType, Field, ObjectType } from "@nestjs/graphql"
+import { IResponseLike } from "@src/graphql"
+import { ResponseLike } from "@src/graphql"
 import { IsJWT, IsUUID } from "class-validator"
 
 @InputType()
@@ -11,7 +13,7 @@ export class RefreshRequest {
 }
 
 @ObjectType()
-export class RefreshResponse {
+export class RefreshResponseData {
     @IsJWT()
     @Field(() => String, {
         description: "Access token for the user"
@@ -23,4 +25,10 @@ export class RefreshResponse {
         description: "Refresh token to get a new access token",
     })
         refreshToken: string
+}
+
+@ObjectType()
+export class RefreshResponse extends ResponseLike implements IResponseLike<RefreshResponseData> {
+    @Field(() => RefreshResponseData)
+        data: RefreshResponseData
 }

@@ -1,7 +1,17 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseGuards } from "@nestjs/common"
 import { Query, Resolver } from "@nestjs/graphql"
-import { Activities, AnimalInfo, CropInfo, DailyRewardInfo, DefaultInfo, EnergyRegen, FruitInfo, HoneycombInfo } from "@src/databases"
+import {
+    Activities,
+    AnimalInfo,
+    CropInfo,
+    DailyRewardInfo,
+    DefaultInfo,
+    EnergyRegen,
+    FruitInfo,
+    HoneycombInfo
+} from "@src/databases"
 import { SystemsService } from "./systems.service"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 
 @Resolver()
 export class SystemsResolver {
@@ -9,68 +19,83 @@ export class SystemsResolver {
 
     constructor(private readonly systemsService: SystemsService) {}
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => Activities, {
         name: "activities",
         description: "Get all activities"
-    })  
-    async activities(): Promise<Activities> {
+    })
+    activities(): Activities {
         return this.systemsService.activities()
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => CropInfo, {
         name: "cropInfo",
         description: "Get the crop info"
     })
-    async cropInfo(): Promise<CropInfo> {
+    cropInfo(): CropInfo {
         return this.systemsService.cropInfo()
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => AnimalInfo, {
         name: "animalInfo",
         description: "Get the animal info"
     })
-    async animalInfo(): Promise<AnimalInfo> {
+    animalInfo(): AnimalInfo {
         return this.systemsService.animalInfo()
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => FruitInfo, {
         name: "fruitInfo",
         description: "Get the fruit info"
     })
-    async fruitInfo(): Promise<FruitInfo> {
+    fruitInfo(): FruitInfo {
         return this.systemsService.fruitInfo()
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => DefaultInfo, {
         name: "defaultInfo",
         description: "Get the default info"
     })
-    async defaultInfo(): Promise<DefaultInfo> {
+    defaultInfo(): DefaultInfo {
         return this.systemsService.defaultInfo()
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => EnergyRegen, {
         name: "energyRegen",
         description: "Get the energy regen"
     })
-    async energyRegen(): Promise<EnergyRegen> {
+    energyRegen(): EnergyRegen {
         return this.systemsService.energyRegen()
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => DailyRewardInfo, {
         name: "dailyRewardInfo",
         description: "Get the daily reward info"
     })
-    async dailyRewardInfo(): Promise<DailyRewardInfo> {
+    dailyRewardInfo(): DailyRewardInfo {
         return this.systemsService.dailyRewardInfo()
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => HoneycombInfo, {
         name: "honeycombInfo",
         description: "Get the honeycomb info"
     })
-    async honeycombInfo(): Promise<HoneycombInfo> {
+    honeycombInfo(): HoneycombInfo {
         return this.systemsService.honeycombInfo()
     }
 }
-

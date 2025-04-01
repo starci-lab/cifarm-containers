@@ -1,7 +1,8 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { PlacedItemTypesService } from "./placed-item-types.service"
 import { PlacedItemTypeId, PlacedItemTypeSchema } from "@src/databases"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 
 @Resolver()
 export class PlacedItemTypesResolver {
@@ -9,7 +10,8 @@ export class PlacedItemTypesResolver {
 
     constructor(private readonly placedItemTypesService: PlacedItemTypesService) {}
 
-    
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [PlacedItemTypeSchema], {
         name: "placedItemTypes",
         description: "Get all placed item types"
@@ -18,7 +20,8 @@ export class PlacedItemTypesResolver {
         return this.placedItemTypesService.placedItemTypes()
     }
 
-    
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => PlacedItemTypeSchema, {
         name: "placedItemType",
         description: "Get a placed item type by ID"

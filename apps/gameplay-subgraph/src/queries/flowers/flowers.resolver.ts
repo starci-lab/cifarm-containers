@@ -1,7 +1,8 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { FlowersService } from "./flowers.service"
 import { FlowerSchema, FlowerId } from "@src/databases"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 
 @Resolver()
 export class FlowersResolver {
@@ -9,13 +10,17 @@ export class FlowersResolver {
 
     constructor(private readonly flowersService: FlowersService) {}
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [FlowerSchema], { name: "flowers", description: "Get all flowers" })
-    async flowers(): Promise<   Array<FlowerSchema>> {
+    flowers(): Array<FlowerSchema> {
         return this.flowersService.flowers()
     }
     
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => FlowerSchema, { name: "flower", description: "Get a flower by ID" })
-    async flower(@Args("id", { type: () => ID, description: "The ID of the flower" }) id: FlowerId): Promise<FlowerSchema> {
+    flower(@Args("id", { type: () => ID, description: "The ID of the flower" }) id: FlowerId): FlowerSchema {
         return this.flowersService.flower(id)
     }
 }

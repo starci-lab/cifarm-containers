@@ -15,6 +15,7 @@ import { PetsModule } from "./pets"
 import { FruitsModule } from "./fruits"
 import { PlacedItemsModule } from "./placed-items"
 import { FlowersModule } from "./flowers"
+
 @Module({
     imports: [
         AnimalsModule,

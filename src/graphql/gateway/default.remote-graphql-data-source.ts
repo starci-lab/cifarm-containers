@@ -9,5 +9,11 @@ export class DefaultRemoteGraphQLDataSource extends RemoteGraphQLDataSource  {
         if (token) {
             request.http.headers.set("authorization", token)
         }
+        // set the ip address of the client
+        const ip = context.req?.headers?.["x-forwarded-for"]
+        console.log(context.req?.headers)
+        if (ip) {
+            request.http.headers.set("x-forwarded-for", ip)
+        }
     }
 }

@@ -4,7 +4,8 @@ import { ClaimHoneycombDailyRewardService } from "./claim-honeycomb-daily-reward
 import { GraphQLJwtAuthGuard } from "@src/jwt"
 import { UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { TxResponse } from "../types"
+import { GraphQLThrottlerGuard, ThrottlerName, UseThrottlerName } from "@src/throttler"
+import { ClaimHoneycombDailyRewardResponse } from "./claim-honeycomb-daily-reward.dto"
 
 @Resolver()
 export class ClaimHoneycombDailyRewardResolver {
@@ -14,15 +15,14 @@ export class ClaimHoneycombDailyRewardResolver {
         private readonly claimHoneycombDailyRewardService: ClaimHoneycombDailyRewardService
     ) {}
 
-    @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => TxResponse, {
+    @UseThrottlerName(ThrottlerName.Tiny)
+    @UseGuards(GraphQLJwtAuthGuard, GraphQLThrottlerGuard)
+    @Mutation(() => ClaimHoneycombDailyRewardResponse, {
         name: "claimHoneycombDailyReward",
         description: "Claim honeycomb daily reward",
         nullable: true
     })
-    public async claimHoneycombDailyReward(
-        @GraphQLUser() user: UserLike
-    ) {
+    public async claimHoneycombDailyReward(@GraphQLUser() user: UserLike) {
         return this.claimHoneycombDailyRewardService.claimHoneycombDailyReward(user)
     }
 }

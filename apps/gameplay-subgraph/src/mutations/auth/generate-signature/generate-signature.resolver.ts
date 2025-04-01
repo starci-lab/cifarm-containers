@@ -1,7 +1,10 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseGuards } from "@nestjs/common"
 import { GenerateSignatureRequest, GenerateSignatureResponse } from "./generate-signature.dto"
 import { GenerateSignatureService } from "./generate-signature.service"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
+import { ThrottlerName } from "@src/throttler"
+import { UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class GenerateSignatureResolver {
@@ -9,6 +12,8 @@ export class GenerateSignatureResolver {
 
     constructor(private readonly generateSignatureService: GenerateSignatureService) {}
 
+    @UseThrottlerName(ThrottlerName.Tiny)
+    @UseGuards(GraphQLThrottlerGuard)
     @Mutation(() => GenerateSignatureResponse, {
         name: "generateSignature",
         description: "Generate a signature"

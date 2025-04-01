@@ -10,6 +10,7 @@ import {
     NeighborsRequest,
     NeighborsResponse
 } from "./users.dto"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 
 @Resolver()
 export class UsersResolver {
@@ -18,16 +19,18 @@ export class UsersResolver {
         private readonly usersService: UsersService,
     ) {}
 
-    @UseGuards(GraphQLJwtAuthGuard)
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => UserSchema, {
-        name: "user",   
-        description: "Get a user by ID"
+        name: "me",   
+        description: "Get the current user"
     })
-    async user(@GraphQLUser() user: UserLike): Promise<UserSchema> {
-        return await this.usersService.user(user.id)
+    async me(@GraphQLUser() user: UserLike): Promise<UserSchema> {
+        return await this.usersService.me(user.id)
     }
 
-    @UseGuards(GraphQLJwtAuthGuard)
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => NeighborsResponse, {
         name: "neighbors",
         description: "Get neighbors of a user with pagination"
@@ -40,7 +43,8 @@ export class UsersResolver {
         return this.usersService.neighbors(user, request)
     }
 
-    @UseGuards(GraphQLJwtAuthGuard)
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => FolloweesResponse, {
         name: "followees",
         description: "Get followees of a user with pagination"

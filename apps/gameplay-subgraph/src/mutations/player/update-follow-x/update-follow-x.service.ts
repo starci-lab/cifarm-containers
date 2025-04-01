@@ -9,6 +9,7 @@ import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { UpdateFollowXResponse } from "./update-follow-x.dto"
 
 @Injectable()
 export class UpdateFollowXService {
@@ -25,7 +26,7 @@ export class UpdateFollowXService {
 
     async updateFollowX({
         id: userId
-    }: UserLike): Promise<void> {
+    }: UserLike): Promise<UpdateFollowXResponse> {
         const mongoSession = await this.connection.startSession()
         let user: UserSchema | undefined
         try {
@@ -84,6 +85,11 @@ export class UpdateFollowXService {
                     messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
                 })
             ])
+
+            return {
+                success: true,
+                message: "FollowX updated successfully",
+            }
         } catch (error) {
             this.logger.error(error)
             throw error

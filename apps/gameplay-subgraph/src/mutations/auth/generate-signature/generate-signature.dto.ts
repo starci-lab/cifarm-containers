@@ -1,6 +1,7 @@
 import { IsEnum, IsInt, IsOptional, IsUUID } from "class-validator"
 import { Network, ChainKey } from "@src/env"
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
+import { ResponseLike, IResponseLike } from "@src/graphql"
 
 @InputType()
 export class GenerateSignatureRequest {
@@ -27,7 +28,7 @@ export class GenerateSignatureRequest {
 }
 
 @ObjectType()
-export class GenerateSignatureResponse {
+export class GenerateSignatureResponseData {
     @IsOptional()
     @IsEnum(ChainKey)
     @Field(() => String, {
@@ -56,4 +57,13 @@ export class GenerateSignatureResponse {
 
     @Field(() => String, { description: "Account address to generate signature for" })
         accountAddress: string
+}
+
+@ObjectType()
+export class GenerateSignatureResponse
+    extends ResponseLike
+    implements IResponseLike<GenerateSignatureResponseData>
+{
+    @Field(() => GenerateSignatureResponseData)
+        data: GenerateSignatureResponseData
 }

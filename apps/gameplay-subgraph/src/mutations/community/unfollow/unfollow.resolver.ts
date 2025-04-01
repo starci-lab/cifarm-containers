@@ -1,10 +1,10 @@
 import { Logger, UseGuards } from "@nestjs/common"
 import { UnfollowService } from "./unfollow.service"
-import { UnfollowRequest } from "./unfollow.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { VoidResolver } from "graphql-scalars"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { UnfollowRequest, UnfollowResponse } from "./unfollow.dto"
 
 @Resolver()
 export class UnfollowResolver {
@@ -12,8 +12,9 @@ export class UnfollowResolver {
 
     constructor(private readonly unfollowService: UnfollowService) {}
 
-    @UseGuards(GraphQLJwtAuthGuard)
-    @Mutation(() => VoidResolver, {
+    @UseThrottlerName()
+    @UseGuards(GraphQLJwtAuthGuard, GraphQLThrottlerGuard)
+    @Mutation(() => UnfollowResponse, {
         name: "unfollow",
         description: "Unfollow a user",
         nullable: true

@@ -298,7 +298,11 @@ export class VerifySignatureService {
                 }
             })
 
-            return result
+            return {
+                success: true,
+                message: "Signature verified successfully",
+                data: result
+            }
         } catch (error) {
             this.logger.error(error)
             throw error

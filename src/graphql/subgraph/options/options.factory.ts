@@ -20,9 +20,11 @@ export class SubgraphOptionsFactory {
             resolvers: {
                 Void: VoidResolver
             },
+            context: ({ req, res }) => ({ req, res }),
             cache: keyvAdapter,
             plugins: [ApolloServerPluginCacheControl(), responseCachePlugin()],
             playground: false,
+            debug: false,
             buildSchemaOptions: {
                 orphanedTypes: [],
                 directives: [

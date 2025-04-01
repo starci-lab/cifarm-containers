@@ -1,20 +1,25 @@
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
-import { Logger } from "@nestjs/common"
+import { Logger, UseGuards } from "@nestjs/common"
 import { BuildingsService } from "./buildings.service"
 import { BuildingId, BuildingSchema } from "@src/databases"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 @Resolver()
 export class BuildingsResolver {
     private readonly logger = new Logger(BuildingsResolver.name)
 
     constructor(private readonly buildingsService: BuildingsService) {}
 
+    @UseThrottlerName()     
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [BuildingSchema], { name: "buildings", description: "Get all buildings" })
-    async buildings(): Promise<Array<BuildingSchema>> {
+    buildings(): Array<BuildingSchema> {
         return this.buildingsService.buildings()
     }
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => BuildingSchema, { name: "building", description: "Get a building by ID" })
-    async building(@Args("id", { type: () => ID, description: "The ID of the building" }) id: BuildingId): Promise<BuildingSchema> {
+    building(@Args("id", { type: () => ID, description: "The ID of the building" }) id: BuildingId): BuildingSchema {
         return this.buildingsService.building(id)
     }
 }

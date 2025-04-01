@@ -7,11 +7,13 @@ import { Connection } from "mongoose"
 import { HoneycombService } from "@src/honeycomb"
 import { DateUtcService } from "@src/date"
 import { UserLike } from "@src/jwt"
-import { TxResponse } from "../types"
 import { StaticService } from "@src/gameplay"
 import { GraphQLError } from "graphql"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { ClaimHoneycombDailyRewardResponse } from "./claim-honeycomb-daily-reward.dto"
+import { SyncService } from "@src/gameplay"
+import { WithStatus } from "@src/common"
 
 @Injectable()
 export class ClaimHoneycombDailyRewardService {
@@ -23,20 +25,22 @@ export class ClaimHoneycombDailyRewardService {
         private readonly honeycombService: HoneycombService,
         private readonly dateUtcService: DateUtcService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
 
     async claimHoneycombDailyReward(
-        { id: userId }: UserLike,): Promise<TxResponse> {
+        { id: userId }: UserLike,
+    ): Promise<ClaimHoneycombDailyRewardResponse> {
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined
+        let syncedUser: WithStatus<UserSchema> | undefined 
         try {
             const result = await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                user = await this.connection
+                const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -48,6 +52,7 @@ export class ClaimHoneycombDailyRewardService {
                         }
                     })
                 }
+                const userSnapshot = user.$clone()
 
                 /************************************************************
                  * CHECK DAILY REWARD ELIGIBILITY
@@ -88,15 +93,23 @@ export class ClaimHoneycombDailyRewardService {
                 // Update user honeycomb daily reward last claim time
                 user.honeycombDailyRewardLastClaimTime = now.toDate()
                 await user.save({ session: mongoSession })
+                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
                 return txResponse
             })
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
+                    messages: [{ value: JSON.stringify({ userId, data: syncedUser }) }]
                 })
             ])
-            return result
+            return {
+                success: true,
+                message: "Honeycomb daily reward claimed successfully",
+                data: result
+            }
         } catch (error) {
             this.logger.error(error)
             throw error

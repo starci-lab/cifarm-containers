@@ -1,12 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, UserSchema } from "@src/databases"
-import { computeRaw } from "@src/common"
+import { computeRaw, WithStatus } from "@src/common"
 import { Connection } from "mongoose"
-import { MintOffchainTokensRequest } from "./mint-offchain-tokens.dto"
+import { MintOffchainTokensRequest, MintOffchainTokensResponse } from "./mint-offchain-tokens.dto"
 import { HoneycombService } from "@src/honeycomb"
-import { TokenBalanceService, StaticService } from "@src/gameplay"
+import { TokenBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
-import { TxResponse } from "../types"
 import { GraphQLError } from "graphql"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
@@ -21,6 +20,7 @@ export class MintOffchainTokensService {
         private readonly honeycombService: HoneycombService,
         private readonly tokenBalanceService: TokenBalanceService,
         private readonly staticService: StaticService,
+        private readonly syncService: SyncService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
     ) {}
@@ -28,15 +28,15 @@ export class MintOffchainTokensService {
     async mintOffchainTokensService(
         { id: userId }: UserLike,
         { amount }: MintOffchainTokensRequest
-    ): Promise<TxResponse> {
+    ): Promise<MintOffchainTokensResponse> {
         const mongoSession = await this.connection.startSession()
-        let user: UserSchema | undefined
+        let syncedUser: WithStatus<UserSchema> | undefined
         try {
             const result = await mongoSession.withTransaction(async (mongoSession) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
-                user = await this.connection
+                const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
                     .session(mongoSession)
@@ -48,6 +48,7 @@ export class MintOffchainTokensService {
                         }
                     })
                 }
+                const userSnapshot = user.$clone()  
 
                 /************************************************************
                  * VALIDATE AND UPDATE TOKEN BALANCE
@@ -89,18 +90,25 @@ export class MintOffchainTokensService {
                     amount
                 })
                 await user.save({ session: mongoSession })
-
+                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
                 return txResponse
             })
             await Promise.all([
                 this.kafkaProducer.send({
                     topic: KafkaTopic.SyncUser,
                     messages: [
-                        { value: JSON.stringify({ userId, user: user.toJSON() }) }
+                        { value: JSON.stringify({ userId, data: syncedUser }) }
                     ]
                 })
             ])
-            return result
+            return {
+                success: true,
+                message: "Mint offchain tokens successfully",
+                data: result
+            }
         } catch (error) {
             this.logger.error(error)
             throw error

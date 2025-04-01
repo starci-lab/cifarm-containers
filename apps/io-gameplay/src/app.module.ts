@@ -14,6 +14,7 @@ import { IdModule } from "@src/id"
 import { APP_PIPE } from "@nestjs/core"
 import { GameplayModule } from "@src/gameplay"
 import { ObjectModule } from "@src/object"
+import { ThrottlerModule } from "@src/throttler"
 @Module({
     imports: [
         IdModule.register({
@@ -53,6 +54,7 @@ import { ObjectModule } from "@src/object"
             adapter: envConfig().containers[Container.IoGameplay].adapter,
             isGlobal: true
         }),
+        ThrottlerModule.forRoot(),
         // functional modules
         DefaultNamespaceModule,
         GameplayNamespaceModule,

@@ -3,6 +3,7 @@ import { getHttpUrl } from "@src/common"
 import { Container, envConfig, EnvModule } from "@src/env"
 import { GraphQLGatewayModule } from "@src/graphql"
 import { IdModule } from "@src/id"  
+//import { ThrottlerModule } from "@src/throttler"
 @Module({
     imports: [
         IdModule.register({
@@ -22,6 +23,8 @@ import { IdModule } from "@src/id"
                 }
             ]
         }),
+        //ThrottlerModule.forRoot()
     ],
 })
 export class AppModule {}
+

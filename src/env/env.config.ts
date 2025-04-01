@@ -29,15 +29,16 @@ export const envConfig = () => ({
             ? Number.parseInt(process.env.GRAPHQL_CACHE_TIMEOUT_MS)
             : DEFAULT_CACHE_TIMEOUT_MS
     },
+    // we use upto 10 origins for each cors policy
     cors: {
-        origin:
-            process.env.NODE_ENV !== NodeEnv.Production
-                ? "*"
-                : process.env.CORS_ORIGIN === "false"
-                    ? false
-                    : process.env.CORS_ORIGIN === "true"
-                        ? true
-                        : process.env.CORS_ORIGIN.split(",")
+        graphql: Array.from({ length: 10 }, (_, i) => {
+            const origin = process.env[`GRAPHQL_ALLOW_ORIGIN_${i + 1}`]
+            return origin ? [origin] : []
+        }).flat(),
+        ioGameplay: Array.from({ length: 10 }, (_, i) => {
+            const origin = process.env[`IO_GAMEPLAY_ALLOW_ORIGIN_${i + 1}`]
+            return origin ? [origin] : []
+        }).flat()
     },
     containers: {
         [Container.IoGameplay]: {

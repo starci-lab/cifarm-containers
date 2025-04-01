@@ -65,15 +65,20 @@ export class EnergyWorker extends WorkerHost {
                     }
                     return false
                 }
+                const userSnapshot = user.$clone()
                 const synced = updateUser()
                 await user.save()
                 if (synced) {
+                    const data = this.syncService.getPartialUpdatedSyncedUser({
+                        userSnapshot,
+                        userUpdated: user
+                    })
                     await this.kafkaProducer.send({
                         topic: KafkaTopic.SyncUser,
                         messages: [
                             { value: JSON.stringify({
                                 userId: user.id,
-                                user: this.syncService.getSyncedUser(user)
+                                data
                             }) }
                         ]
                     })

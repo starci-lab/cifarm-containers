@@ -4,6 +4,7 @@ import { InventorySchema } from "@src/databases"
 import { InventoriesService } from "./inventories.service"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 
 @Resolver()
 export class InventoriesResolver {
@@ -11,7 +12,8 @@ export class InventoriesResolver {
 
     constructor(private readonly inventoriesService: InventoriesService) {}
 
-    @UseGuards(GraphQLJwtAuthGuard)
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => [InventorySchema], {
         name: "inventories",
         description: "Get many inventories with pagination"
@@ -22,7 +24,8 @@ export class InventoriesResolver {
         return await this.inventoriesService.getInventories(user)
     }
 
-    @UseGuards(GraphQLJwtAuthGuard)
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => InventorySchema, {
         name: "inventory",
         description: "Get an inventory by ID"

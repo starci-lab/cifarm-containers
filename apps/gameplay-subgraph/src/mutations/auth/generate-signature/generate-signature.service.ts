@@ -56,12 +56,16 @@ export class GenerateSignatureService {
         const signature = authService.signMessage({ message, privateKey })
 
         return {
-            message,
-            signature,
-            publicKey,
-            accountAddress,
-            chainKey,
-            network
+            success: true,
+            message: "Signature generated successfully",
+            data: {
+                message,
+                signature,
+                publicKey,
+                accountAddress,
+                chainKey,
+                network
+            }
         }
     }
 }

@@ -15,7 +15,7 @@ import { GameplayModule } from "@src/gameplay"
 import { MutationsModule } from "./mutations"
 import { QueriesModule } from "./queries"
 import { IdModule } from "@src/id"
-
+import { ThrottlerModule } from "@src/throttler"
 @Module({
     imports: [
         IdModule.register({
@@ -50,6 +50,7 @@ import { IdModule } from "@src/id"
         HoneycombModule.register({
             isGlobal: true
         }),
+        ThrottlerModule.forRoot(),
         //functional modules
         QueriesModule,
         MutationsModule

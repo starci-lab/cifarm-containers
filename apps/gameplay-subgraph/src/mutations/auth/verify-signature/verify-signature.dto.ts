@@ -2,8 +2,9 @@ import { IsUUID, IsEnum, IsJWT, IsNotEmpty, IsOptional } from "class-validator"
 import { Network, ChainKey } from "@src/env"
 import { SignedMessage } from "@src/blockchain"
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
+import { ResponseLike, IResponseLike } from "@src/graphql"
 
-@InputType()    
+@InputType()
 export class VerifySignatureRequest implements SignedMessage {
     @IsUUID("4")
     @Field(() => String, { description: "Message to verify signature for" })
@@ -12,21 +13,27 @@ export class VerifySignatureRequest implements SignedMessage {
     @IsNotEmpty()
     @Field(() => String, { description: "Public key to verify signature for" })
         publicKey: string
-    
+
     @IsNotEmpty()
     @Field(() => String, { description: "Signature to verify signature for" })
         signature: string
-    
+
     @IsNotEmpty()
     @Field(() => String, { description: "Username to verify signature for" })
         username: string
 
     @IsEnum(ChainKey)
-    @Field(() => String, { description: "Chain key to verify signature for", defaultValue: ChainKey.Solana })
+    @Field(() => String, {
+        description: "Chain key to verify signature for",
+        defaultValue: ChainKey.Solana
+    })
         chainKey: ChainKey
 
     @IsEnum(Network)
-    @Field(() => String, { description: "Network to verify signature for", defaultValue: Network.Testnet })
+    @Field(() => String, {
+        description: "Network to verify signature for",
+        defaultValue: Network.Testnet
+    })
         network: Network
 
     @IsOptional()
@@ -35,7 +42,7 @@ export class VerifySignatureRequest implements SignedMessage {
 }
 
 @ObjectType()
-export class VerifySignatureResponse {
+export class VerifySignatureResponseData {
     @IsJWT()
     @Field(() => String, { description: "Access token for the user" })
         accessToken: string
@@ -43,4 +50,13 @@ export class VerifySignatureResponse {
     @IsUUID("4")
     @Field(() => String, { description: "Refresh token to get a new access token" })
         refreshToken: string
+}
+
+@ObjectType()
+export class VerifySignatureResponse
+    extends ResponseLike
+    implements IResponseLike<VerifySignatureResponseData>
+{
+    @Field(() => VerifySignatureResponseData)
+        data: VerifySignatureResponseData
 }

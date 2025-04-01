@@ -1,5 +1,6 @@
 import { IsMongoId } from "class-validator"
-import { InputType, Field } from "@nestjs/graphql"
+import { InputType, Field, ObjectType } from "@nestjs/graphql"
+import { ResponseLike } from "@src/graphql"
 
 @InputType()
 export class FollowRequest {
@@ -7,3 +8,6 @@ export class FollowRequest {
     @Field(() => String, { description: "The user ID of the followee" })
         followeeUserId: string
 }
+
+@ObjectType()
+export class FollowResponse extends ResponseLike {}

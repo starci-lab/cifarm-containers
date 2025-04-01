@@ -9,7 +9,7 @@ import {
     UserSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
-import { FollowRequest } from "./follow.dto"
+import { FollowRequest, FollowResponse } from "./follow.dto"
 import { createObjectId } from "@src/common"
 import { UserLike } from "@src/jwt"
 
@@ -19,7 +19,7 @@ export class FollowService {
 
     constructor(@InjectMongoose() private readonly connection: Connection) {}
 
-    async follow({ id: userId }: UserLike, { followeeUserId }: FollowRequest): Promise<void> {
+    async follow({ id: userId }: UserLike, { followeeUserId }: FollowRequest): Promise<FollowResponse> {
         const mongoSession = await this.connection.startSession()
         
         try {
@@ -77,7 +77,10 @@ export class FollowService {
 
                 // No return value needed for void
             })
-
+            return {
+                success: true,
+                message: "Followed successfully",
+            }
             // No return value needed for void
         } catch (error) {
             this.logger.error(error)

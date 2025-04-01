@@ -1,7 +1,8 @@
-import { Logger } from "@nestjs/common"
+import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { AnimalsService } from "./animals.service"
 import { AnimalId, AnimalSchema } from "@src/databases"
+import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
 
 @Resolver()
 export class AnimalsResolver {
@@ -9,20 +10,23 @@ export class AnimalsResolver {
 
     constructor(private readonly animalsService: AnimalsService) {}
 
-    
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [AnimalSchema], {
         name: "animals",
         description: "Get all animals"
     })
-    async animals(): Promise<Array<AnimalSchema>> {
-        return await this.animalsService.animals()
+    animals(): Array<AnimalSchema> {
+        return this.animalsService.animals()
     } 
 
+    @UseThrottlerName()
+    @UseGuards(GraphQLThrottlerGuard)
     @Query(() => AnimalSchema, {
         name: "animal",
         description: "Get an animal by ID",
     })
-    async animal(@Args("id", { type: () => ID, description: "The ID of the animal" }) id: AnimalId): Promise<AnimalSchema> {
-        return await this.animalsService.animal(id)
+    animal(@Args("id", { type: () => ID, description: "The ID of the animal" }) id: AnimalId): AnimalSchema {
+        return this.animalsService.animal(id)
     }
 }

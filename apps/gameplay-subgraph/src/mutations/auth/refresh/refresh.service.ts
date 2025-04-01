@@ -80,7 +80,11 @@ export class RefreshService {
                     refreshToken: newRefreshToken
                 }
             })
-            return result // Return the result after the transaction
+            return {
+                success: true,
+                message: "Refresh token generated successfully",
+                data: result
+            } // Return the result after the transaction
         } catch (error) {
             this.logger.error(error)
             throw error

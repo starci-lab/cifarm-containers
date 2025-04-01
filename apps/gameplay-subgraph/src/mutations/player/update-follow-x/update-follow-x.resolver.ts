@@ -4,6 +4,9 @@ import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
 import { VoidResolver } from "graphql-scalars"
 import { UpdateFollowXService } from "./update-follow-x.service"
+import { GraphQLThrottlerGuard } from "@src/throttler"
+import { UseThrottlerName } from "@src/throttler"
+import { ThrottlerName } from "@src/throttler"
 
 @Resolver()
 export class UpdateFollowXResolver {
@@ -11,7 +14,8 @@ export class UpdateFollowXResolver {
 
     constructor(private readonly updateFollowXService: UpdateFollowXService) {}
 
-    @UseGuards(GraphQLJwtAuthGuard)
+    @UseThrottlerName(ThrottlerName.Tiny)
+    @UseGuards(GraphQLJwtAuthGuard, GraphQLThrottlerGuard)
     @Mutation(() => VoidResolver, {
         name: "updateFollowX",
         description: "Update follow X",
