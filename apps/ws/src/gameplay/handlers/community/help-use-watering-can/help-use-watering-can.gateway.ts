@@ -13,7 +13,7 @@ import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { HelpUseWateringCanMessage } from "./help-use-watering-can.dto"
 import { HelpUseWateringCanService } from "./help-use-watering-can.service"
-import { ThrottlerName, UseThrottlerName, WsThrottlerGuard } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 

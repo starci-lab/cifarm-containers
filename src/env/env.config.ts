@@ -35,7 +35,7 @@ export const envConfig = () => ({
             const origin = process.env[`GRAPHQL_ALLOW_ORIGIN_${i + 1}`]
             return origin ? [origin] : []
         }).flat(),
-        ioGameplay: Array.from({ length: 10 }, (_, i) => {
+        ws: Array.from({ length: 10 }, (_, i) => {
             const origin = process.env[`WS_ALLOW_ORIGIN_${i + 1}`]
             return origin ? [origin] : []
         }).flat()
@@ -271,8 +271,8 @@ export const envConfig = () => ({
         useMinikubeForDevelopment: process.env.KUBERNETES_USE_MINIKUBE_FOR_DEVELOPMENT === "true",
     },
     socketIoAdmin: {
-        username: process.env.SOCKET_WS_ADMIN_USERNAME,
-        password: process.env.SOCKET_WS_ADMIN_PASSWORD
+        username: process.env.SOCKET_IO_ADMIN_USERNAME,
+        password: process.env.SOCKET_IO_ADMIN_PASSWORD
     },
     productionUrl: process.env.PRODUCTION_URL,
     // e2e debugging

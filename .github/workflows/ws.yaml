@@ -1,0 +1,22 @@
+name: CI/CD Pipeline for Ws
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deployment:
+    runs-on: self-hosted
+    environment: cifarm
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2       
+
+    - name: Build Ws via Docker
+      run: |
+        docker build -t cifarm/ws:latest -f apps/ws/Dockerfile .
+        docker push cifarm/ws:latest
+        
+    - name: Upgrade Ws via Helm
+      run: |
+          helm upgrade ws cifarm/service -n containers
+

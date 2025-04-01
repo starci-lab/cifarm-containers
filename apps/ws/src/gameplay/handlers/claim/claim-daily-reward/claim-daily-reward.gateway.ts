@@ -11,7 +11,7 @@ import { WsUser } from "@src/decorators"
 import { EmitterEventName, ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { ClaimDailyRewardService } from "./claim-daily-reward.service"
-import { UseThrottlerName, WsThrottlerGuard } from "@src/throttler"
+import {  WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 

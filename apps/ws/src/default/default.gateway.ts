@@ -12,7 +12,7 @@ import { Server, Socket } from "socket.io"
 import { instrument } from "@socket.io/admin-ui"
 import { isProduction, envConfig } from "@src/env"
 import { BcryptService } from "@src/crypto"
-import { ThrottlerName, UseThrottlerName, WsThrottlerGuard } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 
 @WebSocketGateway({
     cors: {

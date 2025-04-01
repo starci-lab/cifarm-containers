@@ -1,0 +1,22 @@
+name: CI/CD Pipeline for Cron Worker
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deployment:
+    runs-on: self-hosted
+    environment: cifarm
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2       
+
+    - name: Build Cron Worker via Docker
+      run: |
+        docker build -t cifarm/cron-worker:latest -f apps/cron-worker/Dockerfile .
+        docker push cifarm/cron-worker:latest
+
+    - name: Upgrade Cron Worker via Helm
+      run: |
+          helm upgrade cron-worker cifarm/service -n containers
+

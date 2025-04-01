@@ -7,7 +7,7 @@ import {
 import { AuthGateway, RoomType, SocketData } from "../../../auth"
 import { TypedNamespace, TypedSocket } from "@src/io"
 import { ReceiverEventName } from "../../../events"
-import { UseThrottlerName, WsThrottlerGuard } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 

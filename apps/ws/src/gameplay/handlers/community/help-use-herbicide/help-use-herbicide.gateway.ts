@@ -13,7 +13,7 @@ import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { HelpUseHerbicideMessage } from "./help-use-herbicide.dto"
 import { HelpUseHerbicideService } from "./help-use-herbicide.service"
-import { ThrottlerName, UseThrottlerName, WsThrottlerGuard } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 

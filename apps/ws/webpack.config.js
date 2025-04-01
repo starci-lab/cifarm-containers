@@ -16,7 +16,7 @@ const basePackage = {
     },
     dependencies: {
         "@nestjs/platform-express": "^10.0.0",
-        "wsredis": "^5.4.2",
+        "ioredis": "^5.4.2",
     }
 }
 
