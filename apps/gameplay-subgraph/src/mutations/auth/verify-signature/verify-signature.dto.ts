@@ -6,7 +6,7 @@ import { ResponseLike, IResponseLike } from "@src/graphql"
 
 @InputType()
 export class VerifySignatureRequest implements SignedMessage {
-    @IsUUID("4")
+    @IsNotEmpty()
     @Field(() => String, { description: "Message to verify signature for" })
         message: string
 

@@ -53,9 +53,9 @@ import { ThrottlerModule } from "@src/throttler"
         ThrottlerModule.forRoot({
             overrideThrottlers: [
                 {
-                    name: "10_per_minute",
+                    name: "30_per_minute",
                     ttl: 60000,
-                    limit: 10
+                    limit: 30
                 }
             ]
         }),

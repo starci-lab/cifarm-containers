@@ -56,20 +56,20 @@ export class ThrottlerModule extends ConfigurableModuleClass {
 const baseThrottlers: Array<ThrottlerOptions> = [
     {
         // 60 requests per minute
-        name: "60_per_minute",
+        name: "100_per_minute",
         ttl: 60000,
-        limit: 60
+        limit: 100
     },
     {
         // 300 requests per 10 minutes
-        name: "300_per_10_minutes",  
+        name: "500_per_10_minutes",  
         ttl: 600000,
-        limit: 300
+        limit: 500
     },
     {
         // 1000 requests per 1 hours, 1000 requests per hours
-        name: "1000_per_1_hour",
+        name: "1500_per_1_hour",
         ttl: 600000,
-        limit: 1000
+        limit: 1500
     },
 ]
