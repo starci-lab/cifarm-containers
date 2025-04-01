@@ -2,7 +2,6 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { GenerateSignatureRequest, GenerateSignatureResponse } from "./generate-signature.dto"
 import { GenerateSignatureService } from "./generate-signature.service"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
-
 import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
