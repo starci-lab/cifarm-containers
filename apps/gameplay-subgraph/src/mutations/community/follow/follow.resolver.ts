@@ -4,7 +4,6 @@ import { FollowRequest, FollowResponse } from "./follow.dto"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { Resolver, Mutation, Args } from "@nestjs/graphql"
 import { GraphQLUser } from "@src/decorators"
-import { UseThrottlerName } from "@src/throttler"
 import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
@@ -13,7 +12,7 @@ export class FollowResolver {
 
     constructor(private readonly followService: FollowService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLJwtAuthGuard, GraphQLThrottlerGuard)
     @Mutation(() => FollowResponse, {
         name: "follow",

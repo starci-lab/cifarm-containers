@@ -13,7 +13,7 @@ import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { RetainInventoryMessage } from "./retain-inventory.dto"
 import { RetainInventoryService } from "./retain-inventory.service"
-import { UseThrottlerName, WsThrottlerGuard, ThrottlerName } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 
@@ -35,7 +35,7 @@ export class RetainInventoryGateway implements OnGatewayInit {
         )
     }
 
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.RetainInventory)
     public async retainInventory(

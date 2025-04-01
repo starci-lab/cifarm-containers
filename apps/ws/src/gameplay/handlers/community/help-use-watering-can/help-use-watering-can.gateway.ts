@@ -35,7 +35,7 @@ export class HelpUseWateringCanGateway implements OnGatewayInit {
         )
     }
 
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.HelpUseWateringCan)
     public async helpUseWateringCan(

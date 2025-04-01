@@ -13,7 +13,7 @@ import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { DeliverAdditionalInventoryMessage } from "./deliver-additional-inventory.dto"
 import { DeliverAdditionalInventoryService } from "./deliver-additional-inventory.service"
-import { UseThrottlerName, WsThrottlerGuard, ThrottlerName } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 
@@ -35,7 +35,7 @@ export class DeliverAdditionalInventoryGateway implements OnGatewayInit {
         )
     }
 
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.DeliverAdditionalInventory)
     public async deliverAdditionalInventory(

@@ -13,7 +13,7 @@ import { EmitterEventName, ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { BuyTileMessage } from "./buy-tile.dto"
 import { BuyTileService } from "./buy-tile.service"
-import { UseThrottlerName, WsThrottlerGuard, ThrottlerName } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 
@@ -35,7 +35,7 @@ export class BuyTileGateway implements OnGatewayInit {
         )
     }
 
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.BuyTile)
     public async buyTile(

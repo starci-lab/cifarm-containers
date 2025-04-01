@@ -13,7 +13,7 @@ import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { SellService } from "./sell.service"
 import { SellMessage } from "./sell.dto"
-import { UseThrottlerName, WsThrottlerGuard, ThrottlerName } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 
@@ -35,7 +35,7 @@ export class SellGateway implements OnGatewayInit {
         )
     }
     
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.Sell)
     public async sell(

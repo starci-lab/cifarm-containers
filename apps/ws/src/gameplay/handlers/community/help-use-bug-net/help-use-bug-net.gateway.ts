@@ -13,7 +13,7 @@ import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { HelpUseBugNetMessage } from "./help-use-bug-net.dto"
 import { HelpUseBugNetService } from "./help-use-bug-net.service"
-import { UseThrottlerName, WsThrottlerGuard, ThrottlerName } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 
@@ -35,7 +35,7 @@ export class HelpUseBugNetGateway implements OnGatewayInit {
         )
     }
 
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.HelpUseBugNet)
     public async helpUseBugNet(

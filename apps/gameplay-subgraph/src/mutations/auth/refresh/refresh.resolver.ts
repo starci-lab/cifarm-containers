@@ -2,7 +2,7 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { RefreshService } from "./refresh.service"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
-import { GraphQLThrottlerGuard, ThrottlerName, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class RefreshResolver {
@@ -10,7 +10,6 @@ export class RefreshResolver {
 
     constructor(private readonly refreshService: RefreshService) {}
 
-    @UseThrottlerName(ThrottlerName.Tiny)
     @UseGuards(GraphQLThrottlerGuard)
     @Mutation(() => RefreshResponse, { name: "refresh", description: "Refresh a user's session" })
     public async refresh(@Args("request") request: RefreshRequest) {

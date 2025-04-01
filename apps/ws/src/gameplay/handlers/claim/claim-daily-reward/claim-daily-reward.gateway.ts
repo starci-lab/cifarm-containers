@@ -33,7 +33,7 @@ export class ClaimDailyRewardGateway implements OnGatewayInit {
         )
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.ClaimDailyReward)
     public async claimDailyReward(@ConnectedSocket() socket: Socket, @WsUser() user: UserLike) {

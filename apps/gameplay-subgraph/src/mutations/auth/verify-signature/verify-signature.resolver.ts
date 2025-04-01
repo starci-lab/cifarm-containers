@@ -2,7 +2,7 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { VerifySignatureService } from "./verify-signature.service"
 import { VerifySignatureRequest, VerifySignatureResponse } from "./verify-signature.dto"
 import { Resolver, Mutation, Args } from "@nestjs/graphql"
-import { GraphQLThrottlerGuard, ThrottlerName, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class VerifySignatureResolver {
@@ -10,7 +10,6 @@ export class VerifySignatureResolver {
 
     constructor(private readonly verifySignatureService: VerifySignatureService) {}
 
-    @UseThrottlerName(ThrottlerName.Tiny)
     @UseGuards(GraphQLThrottlerGuard)
     @Mutation(() => VerifySignatureResponse, {
         name: "verifySignature",

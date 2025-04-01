@@ -13,7 +13,7 @@ import { BuySuppliesMessage } from "./buy-supplies.dto"
 import { BuySuppliesService } from "./buy-supplies.service"
 import { EmitterEventName, ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
-import { UseThrottlerName, WsThrottlerGuard, ThrottlerName } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 
@@ -35,7 +35,7 @@ export class BuySuppliesGateway implements OnGatewayInit {
         )
     }
 
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.BuySupplies)
     public async buySupplies(

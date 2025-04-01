@@ -4,7 +4,7 @@ import { InventorySchema } from "@src/databases"
 import { InventoriesService } from "./inventories.service"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class InventoriesResolver {
@@ -12,7 +12,7 @@ export class InventoriesResolver {
 
     constructor(private readonly inventoriesService: InventoriesService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => [InventorySchema], {
         name: "inventories",
@@ -24,7 +24,7 @@ export class InventoriesResolver {
         return await this.inventoriesService.getInventories(user)
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => InventorySchema, {
         name: "inventory",

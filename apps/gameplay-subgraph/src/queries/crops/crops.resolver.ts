@@ -2,7 +2,7 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { CropsService } from "./crops.service"
 import { CropId, CropSchema } from "@src/databases"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class CropsResolver {
@@ -10,14 +10,14 @@ export class CropsResolver {
 
     constructor(private readonly cropsService: CropsService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [CropSchema], { name: "crops", description: "Get all crops" })
     crops(): Array<CropSchema> {
         return this.cropsService.crops()
     }
     
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => CropSchema, { name: "crop", description: "Get a crop by ID" })
     crop(@Args("id", { type: () => ID, description: "The ID of the crop" }) id: CropId): CropSchema {

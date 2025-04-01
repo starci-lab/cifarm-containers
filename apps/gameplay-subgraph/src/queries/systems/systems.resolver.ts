@@ -11,7 +11,7 @@ import {
     HoneycombInfo
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class SystemsResolver {
@@ -19,7 +19,7 @@ export class SystemsResolver {
 
     constructor(private readonly systemsService: SystemsService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => Activities, {
         name: "activities",
@@ -29,7 +29,7 @@ export class SystemsResolver {
         return this.systemsService.activities()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => CropInfo, {
         name: "cropInfo",
@@ -39,7 +39,7 @@ export class SystemsResolver {
         return this.systemsService.cropInfo()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => AnimalInfo, {
         name: "animalInfo",
@@ -49,7 +49,7 @@ export class SystemsResolver {
         return this.systemsService.animalInfo()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => FruitInfo, {
         name: "fruitInfo",
@@ -59,7 +59,7 @@ export class SystemsResolver {
         return this.systemsService.fruitInfo()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => DefaultInfo, {
         name: "defaultInfo",
@@ -69,7 +69,7 @@ export class SystemsResolver {
         return this.systemsService.defaultInfo()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => EnergyRegen, {
         name: "energyRegen",
@@ -79,7 +79,7 @@ export class SystemsResolver {
         return this.systemsService.energyRegen()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => DailyRewardInfo, {
         name: "dailyRewardInfo",
@@ -89,7 +89,7 @@ export class SystemsResolver {
         return this.systemsService.dailyRewardInfo()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => HoneycombInfo, {
         name: "honeycombInfo",

@@ -2,7 +2,7 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { ProductId, ProductSchema } from "@src/databases"
 import { ProductService } from "./products.service"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class ProductResolver {
@@ -10,7 +10,7 @@ export class ProductResolver {
 
     constructor(private readonly productsService: ProductService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [ProductSchema], {
         name: "products",
@@ -20,7 +20,7 @@ export class ProductResolver {
         return this.productsService.products()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => ProductSchema, {
         name: "product",

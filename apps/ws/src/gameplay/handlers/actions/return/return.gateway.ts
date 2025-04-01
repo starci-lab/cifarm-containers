@@ -28,7 +28,7 @@ export class ReturnGateway {
         )
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.Return)
     public async return(

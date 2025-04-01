@@ -13,7 +13,7 @@ import { BuyFlowerSeedsService } from "./buy-flower-seeds.service"
 import { EmitterEventName, ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { BuyFlowerSeedsMessage } from "./buy-flower-seeds.dto"
-import { UseThrottlerName, WsThrottlerGuard, ThrottlerName } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 
@@ -35,7 +35,7 @@ export class BuyFlowerSeedsGateway implements OnGatewayInit {
         )
     }
 
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.BuyFlowerSeeds)
     public async buyFlowerSeeds(

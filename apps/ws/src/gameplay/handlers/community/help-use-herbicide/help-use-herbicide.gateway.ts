@@ -35,7 +35,7 @@ export class HelpUseHerbicideGateway implements OnGatewayInit {
         )
     }
 
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.HelpUseHerbicide)
     public async helpUseHerbicide(

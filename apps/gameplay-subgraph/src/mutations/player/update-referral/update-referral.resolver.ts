@@ -4,7 +4,7 @@ import { UpdateReferralRequest, UpdateReferralResponse } from "./update-referral
 import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { GraphQLThrottlerGuard, ThrottlerName, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class UpdateReferralResolver {
@@ -12,7 +12,7 @@ export class UpdateReferralResolver {
 
     constructor(private readonly updateReferralService: UpdateReferralService) {}
 
-    @UseThrottlerName(ThrottlerName.Tiny)
+    
     @UseGuards(GraphQLJwtAuthGuard, GraphQLThrottlerGuard)
     @Mutation(() => UpdateReferralResponse, {
         name: "updateReferral",

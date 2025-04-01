@@ -2,7 +2,7 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { AnimalsService } from "./animals.service"
 import { AnimalId, AnimalSchema } from "@src/databases"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class AnimalsResolver {
@@ -10,7 +10,7 @@ export class AnimalsResolver {
 
     constructor(private readonly animalsService: AnimalsService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [AnimalSchema], {
         name: "animals",
@@ -20,7 +20,7 @@ export class AnimalsResolver {
         return this.animalsService.animals()
     } 
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => AnimalSchema, {
         name: "animal",

@@ -2,7 +2,6 @@ import { ThrottlerGuard } from "@nestjs/throttler"
 import { ExecutionContext, Injectable } from "@nestjs/common"
 import { GqlExecutionContext } from "@nestjs/graphql"
 import { Request } from "express"
-import { METADATA_KEY } from "../throttler.decorators"
 import { GraphQLError } from "graphql"
 import { isIPv4, isIPv6 } from "net"
 @Injectable()
@@ -33,12 +32,6 @@ export class GraphQLThrottlerGuard extends ThrottlerGuard {
         return { req: ctx.req, res: ctx.res }
     }
 
-    protected async getThrottlerOptions(context: ExecutionContext) {
-        // Extract custom limit name from metadata if defined
-        const throttlerName = this.reflector.get<string>(METADATA_KEY, context.getHandler())
-        return throttlerName ? { name: throttlerName } : {}
-    } 
-    
     protected override throwThrottlingException(context: ExecutionContext): Promise<void> {
         const gqlCtx = GqlExecutionContext.create(context)
         const ctx = gqlCtx.getContext()

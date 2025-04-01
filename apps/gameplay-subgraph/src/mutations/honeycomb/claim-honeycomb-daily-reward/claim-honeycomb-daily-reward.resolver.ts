@@ -4,7 +4,7 @@ import { ClaimHoneycombDailyRewardService } from "./claim-honeycomb-daily-reward
 import { GraphQLJwtAuthGuard } from "@src/jwt"
 import { UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { GraphQLThrottlerGuard, ThrottlerName, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 import { ClaimHoneycombDailyRewardResponse } from "./claim-honeycomb-daily-reward.dto"
 
 @Resolver()
@@ -15,7 +15,7 @@ export class ClaimHoneycombDailyRewardResolver {
         private readonly claimHoneycombDailyRewardService: ClaimHoneycombDailyRewardService
     ) {}
 
-    @UseThrottlerName(ThrottlerName.Tiny)
+    
     @UseGuards(GraphQLJwtAuthGuard, GraphQLThrottlerGuard)
     @Mutation(() => ClaimHoneycombDailyRewardResponse, {
         name: "claimHoneycombDailyReward",

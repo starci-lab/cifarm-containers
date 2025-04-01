@@ -14,7 +14,7 @@ import { TypedSocket } from "@src/io"
 import { SchemaStatus } from "@src/common"
 import { RequestDisplayTimersMessage, SyncPlacedItemsPayload } from "./types"
 import { ReceiverEventName } from "../../events"
-import { UseThrottlerName, WsThrottlerGuard, ThrottlerName } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../gateway.decorators"
 
@@ -56,7 +56,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
     }
 
     // force sync placed items
-    @UseThrottlerName(ThrottlerName.Large)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.RequestDisplayTimers)
     public async handleRequestDisplayTimers(

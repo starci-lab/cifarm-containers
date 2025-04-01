@@ -10,7 +10,7 @@ import {
     NeighborsRequest,
     NeighborsResponse
 } from "./users.dto"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class UsersResolver {
@@ -19,7 +19,7 @@ export class UsersResolver {
 
     // if the params not provided, it will return the current user
     // to minimize the number of queries
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => UserSchema, {
         name: "user",
@@ -32,7 +32,7 @@ export class UsersResolver {
         return await this.usersService.user(id ?? user.id)
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => NeighborsResponse, {
         name: "neighbors",
@@ -46,7 +46,7 @@ export class UsersResolver {
         return this.usersService.neighbors(user, request)
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => FolloweesResponse, {
         name: "followees",

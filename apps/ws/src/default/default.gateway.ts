@@ -52,7 +52,7 @@ export class DefaultGateway implements OnGatewayConnection, OnGatewayDisconnect,
     }
     
     // for testing
-    @UseThrottlerName(ThrottlerName.Tiny)
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage("ping")
     handlePing():  WsResponse<string> {

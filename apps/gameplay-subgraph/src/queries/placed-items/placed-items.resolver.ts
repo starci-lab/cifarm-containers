@@ -5,7 +5,7 @@ import { PlacedItemSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { PlacedItemsRequest } from "./placed-items.dto"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class PlacedItemsResolver {
@@ -13,7 +13,7 @@ export class PlacedItemsResolver {
 
     constructor(private readonly placeditemsService: PlacedItemsService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => PlacedItemSchema, {
         name: "placedItem",
@@ -25,7 +25,7 @@ export class PlacedItemsResolver {
         return this.placeditemsService.getPlacedItem(id)
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => [PlacedItemSchema], {
         name: "placedItems",

@@ -29,7 +29,7 @@ export class VisitGateway {
         )
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.Visit)
     public async handleVisit(

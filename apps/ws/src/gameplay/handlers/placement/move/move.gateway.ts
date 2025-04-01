@@ -13,7 +13,7 @@ import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
 import { MoveService } from "./move.service"
 import { MoveMessage } from "./move.dto"
-import { UseThrottlerName, WsThrottlerGuard, ThrottlerName } from "@src/throttler"
+import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 
@@ -35,7 +35,6 @@ export class MoveGateway implements OnGatewayInit {
         )
     }
     
-    @UseThrottlerName(ThrottlerName.Large)
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(ReceiverEventName.Move)
     public async move(

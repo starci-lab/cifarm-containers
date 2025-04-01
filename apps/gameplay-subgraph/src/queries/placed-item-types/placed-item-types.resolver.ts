@@ -2,7 +2,7 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { PlacedItemTypesService } from "./placed-item-types.service"
 import { PlacedItemTypeId, PlacedItemTypeSchema } from "@src/databases"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class PlacedItemTypesResolver {
@@ -10,7 +10,7 @@ export class PlacedItemTypesResolver {
 
     constructor(private readonly placedItemTypesService: PlacedItemTypesService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [PlacedItemTypeSchema], {
         name: "placedItemTypes",
@@ -20,7 +20,7 @@ export class PlacedItemTypesResolver {
         return this.placedItemTypesService.placedItemTypes()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => PlacedItemTypeSchema, {
         name: "placedItemType",

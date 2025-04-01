@@ -2,7 +2,7 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { SupplyId, SupplySchema } from "@src/databases"
 import { SuppliesService } from "./supplies.service"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class SuppliesResolver {
@@ -10,7 +10,7 @@ export class SuppliesResolver {
 
     constructor(private readonly suppliesService: SuppliesService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => SupplySchema, {
         name: "supply",
@@ -20,7 +20,7 @@ export class SuppliesResolver {
         return this.suppliesService.supply(id)
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [SupplySchema], {
         name: "supplies",

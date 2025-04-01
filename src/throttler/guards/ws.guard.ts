@@ -1,6 +1,5 @@
 import { ExecutionContext, Injectable } from "@nestjs/common"
 import { ThrottlerGuard, ThrottlerRequest } from "@nestjs/throttler"
-import { METADATA_KEY } from "../throttler.decorators"
 import { Socket } from "socket.io"
 import { WsException } from "@nestjs/websockets"    
 
@@ -11,7 +10,7 @@ export class WsThrottlerGuard extends ThrottlerGuard {
     }
 
     protected override async handleRequest(requestProps: ThrottlerRequest): Promise<boolean> {
-        const { context, limit, ttl, throttler, blockDuration, generateKey } = requestProps
+        const { context, limit, ttl , blockDuration, throttler, generateKey } = requestProps
         const client = context.switchToWs().getClient<Socket>()
         const tracker = client.conn.remoteAddress
         const key = generateKey(context, tracker, throttler.name)
@@ -27,12 +26,6 @@ export class WsThrottlerGuard extends ThrottlerGuard {
             await this.throwThrottlingException(context)
         }
         return true
-    }
-
-    protected async getThrottlerOptions(context: ExecutionContext) {
-        // Extract custom limit name from metadata if defined
-        const throttlerName = this.reflector.get<string>(METADATA_KEY, context.getHandler())
-        return throttlerName ? { name: throttlerName } : {}
     }
 
     protected override throwThrottlingException(context: ExecutionContext): Promise<void> {

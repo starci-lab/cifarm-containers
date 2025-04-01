@@ -2,7 +2,7 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Resolver, Query, Args, ID } from "@nestjs/graphql"
 import { InventoryTypesService } from "./inventory-types.service"
 import { InventoryTypeId, InventoryTypeSchema } from "@src/databases"
-import { GraphQLThrottlerGuard, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
 export class InventoryTypesResolver {
@@ -10,7 +10,7 @@ export class InventoryTypesResolver {
 
     constructor(private readonly inventoryTypesService: InventoryTypesService) {}
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => [InventoryTypeSchema], {
         name: "inventoryTypes",
@@ -20,7 +20,7 @@ export class InventoryTypesResolver {
         return this.inventoryTypesService.inventoryTypes()
     }
 
-    @UseThrottlerName()
+    
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => InventoryTypeSchema, {
         name: "inventoryType",

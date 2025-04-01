@@ -4,7 +4,7 @@ import { MintOffchainTokensRequest } from "./mint-offchain-tokens.dto"
 import { MintOffchainTokensService } from "./mint-offchain-tokens.service"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { GraphQLThrottlerGuard, ThrottlerName, UseThrottlerName } from "@src/throttler"
+import { GraphQLThrottlerGuard } from "@src/throttler"
 import { MintOffchainTokensResponse } from "./mint-offchain-tokens.dto"
 
 @Resolver()
@@ -13,7 +13,7 @@ export class MintOffchainTokensResolver {
 
     constructor(private readonly mintOffchainTokensService: MintOffchainTokensService) {}
 
-    @UseThrottlerName(ThrottlerName.Tiny)
+    
     @UseGuards(GraphQLJwtAuthGuard, GraphQLThrottlerGuard)
     @Mutation(() => MintOffchainTokensResponse, {
         name: "mintOffchainTokens",
