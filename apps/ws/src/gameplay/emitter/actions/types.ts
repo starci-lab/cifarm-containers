@@ -75,6 +75,10 @@ export interface BuyAnimalData {
     animalId: string
 }
 
+export interface BuyPetData {
+    petId: string
+}
+
 export interface BuyBuildingData {
     buildingId: string
 }
@@ -119,4 +123,5 @@ export enum ActionName {
     UpgradeBuilding = "upgrade_building",
     HarvestBeeHouse = "harvest_bee_house",
     ThiefBeeHouse = "thief_bee_house",
+    BuyPet = "buy_pet"
 }

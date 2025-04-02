@@ -53,7 +53,9 @@ import {
     BeeHouseInfoSchema,
     BeeHouseInfoSchemaClass,
     FlowerSchema,
-    FlowerSchemaClass
+    FlowerSchemaClass,
+    PetInfoSchema,
+    PetInfoSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -111,6 +113,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: FlowerSchema.name,
                             useFactory: () => FlowerSchemaClass
+                        },
+                        {
+                            name: PetInfoSchema.name,
+                            useFactory: () => PetInfoSchemaClass
                         },
                         {
                             name: CropSchema.name,

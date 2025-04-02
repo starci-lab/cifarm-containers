@@ -1,7 +1,7 @@
-import { Field, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { PetId, FirstCharLowerCasePetId } from "../enums"
+import { PetId, FirstCharLowerCasePetId, PetType, FirstCharLowerCasePetType } from "../enums"
 
 @ObjectType({
     description: "The pet schema"
@@ -37,6 +37,18 @@ export class PetSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: false })
         unlockLevel?: number
+
+    @Field(() => FirstCharLowerCasePetType, {
+        description: "The type of the pet"
+    })
+    @Prop({ type: String, enum: PetType, required: true, unique: true })
+        type: PetType
+
+    @Field(() => Float, {
+        description: "The help coefficient of the pet"
+    })
+    @Prop({ type: Number, required: true })
+        helpPercentage: number
 }
 
 // Generate Mongoose Schema

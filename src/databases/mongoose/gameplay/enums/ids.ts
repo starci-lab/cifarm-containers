@@ -668,7 +668,9 @@ export enum PlacedItemTypeId {
     Home = "home",
     BasicTile = "basicTile",
     Apple = "apple",
-    Banana = "banana"
+    Banana = "banana",
+    Dog = "dog",
+    Cat = "cat",
 }
 
 export const FirstCharLowerCasePlacedItemTypeId = createFirstCharLowerCaseEnumType(PlacedItemTypeId)

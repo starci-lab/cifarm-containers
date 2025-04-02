@@ -7,6 +7,7 @@ import { BuyFruitModule } from "./buy-fruit"
 import { BuyTileModule } from "./buy-tile"
 import { BuyAnimalModule } from "./buy-animal"
 import { BuyBuildingModule } from "./buy-building"
+import { BuyPetModule } from "./buy-pet"
 
 @Module({
     imports: [
@@ -18,6 +19,7 @@ import { BuyBuildingModule } from "./buy-building"
         BuyTileModule,
         BuyAnimalModule,
         BuyBuildingModule,
+        BuyPetModule
     ]
 })
 export class ShopModule {}

@@ -15,10 +15,12 @@ import {
     FRUIT_INFO,
     PLACED_ITEM_TYPE,
     TILE_INFO,
-    PLANT_INFO
+    PLANT_INFO,
+    PET_INFO
 } from "../constants"
 import { FruitInfoSchema, FruitInfoSchemaClass } from "./fruit-info.schema"
 import { BeeHouseInfoSchema, BeeHouseInfoSchemaClass } from "./bee-house-info.schema"
+import { PetInfoSchema, PetInfoSchemaClass } from "./pet-info.schema"
 
 @ObjectType({
     description: "The schema for items placed on the farm"
@@ -90,6 +92,13 @@ export class PlacedItemSchema extends AbstractSchema {
     })
     @Prop({ type: BeeHouseInfoSchemaClass, required: false })
     [BEE_HOUSE_INFO]?: BeeHouseInfoSchema
+
+    @Field(() => PetInfoSchema, { 
+        nullable: true,
+        description: "The pet info associated with this placed item, if applicable"
+    })
+    @Prop({ type: PetInfoSchemaClass, required: false })
+    [PET_INFO]?: PetInfoSchema
 }
 
 // Generate Mongoose Schema
