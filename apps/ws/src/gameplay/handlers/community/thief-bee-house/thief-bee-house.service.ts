@@ -11,47 +11,48 @@ import {
     ProductType,
     UserSchema
 } from "@src/databases"
-import { CoreService, EnergyService, LevelService, SyncService } from "@src/gameplay"
+import { EnergyService, LevelService, SyncService, ThiefService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { InventoryService } from "@src/gameplay/inventory"
-import { Connection } from "mongoose"
-import { HarvestBeeHouseMessage } from "./harvest-bee-house.dto"
+import { Connection, Types } from "mongoose"
+import { ThiefBeeHouseMessage } from "./thief-bee-house.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import {
     EmitActionPayload,
     ActionName,
-    HarvestBeeHouseData
+    ThiefBeeHouseData
 } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
 @Injectable()
-export class HarvestBeeHouseService {
-    private readonly logger = new Logger(HarvestBeeHouseService.name)
+export class ThiefBeeHouseService {
+    private readonly logger = new Logger(ThiefBeeHouseService.name)
 
     constructor(
         @InjectMongoose() private readonly connection: Connection,
         private readonly energyService: EnergyService,
-        private readonly coreService: CoreService,
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
+        private readonly thiefService: ThiefService,
         private readonly inventoryService: InventoryService
     ) {}
 
-    async harvestBeeHouse(
+    async thiefBeeHouse(
         { id: userId }: UserLike,
-        { placedItemBuildingId }: HarvestBeeHouseMessage
-    ): Promise<SyncedResponse<HarvestBeeHouseData>> {
+        { placedItemBuildingId }: ThiefBeeHouseMessage
+    ): Promise<SyncedResponse<ThiefBeeHouseData>> {
         const mongoSession = await this.connection.startSession()
 
         // synced variables
-        let actionPayload: EmitActionPayload<HarvestBeeHouseData> | undefined
+        let actionPayload: EmitActionPayload<ThiefBeeHouseData> | undefined
         let syncedUser: DeepPartial<UserSchema> | undefined
         let syncedPlacedItemAction: DeepPartial<PlacedItemSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
+        let watcherUserId: string | undefined
 
         try {
             await mongoSession.withTransaction(async (session) => {
@@ -99,8 +100,10 @@ export class HarvestBeeHouseService {
                     throw new WsException("Tile not found")
                 }
 
-                if (placedItemBuilding.user.toString() !== userId) {
-                    throw new WsException("Cannot harvest another user's tile")
+                // Validate user doesn't own the animal
+                watcherUserId = placedItemBuilding.user.toString()
+                if (watcherUserId === userId) {
+                    throw new WsException("Cannot steal your own bee house")
                 }
                 const placedItemBuildingSnapshot = placedItemBuilding.$clone()
 
@@ -139,7 +142,7 @@ export class HarvestBeeHouseService {
                  * VALIDATE ENERGY
                  ************************************************************/
                 // Check if the user has enough energy
-                const { energyConsume } = this.staticService.activities.harvestBeeHouse
+                const { experiencesGain, energyConsume } = this.staticService.activities.thiefBeeHouse
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -154,11 +157,7 @@ export class HarvestBeeHouseService {
                     quantity: energyConsume
                 })
 
-                // Add experience based on quality
-                const experiencesGain = placedItemBuilding.beeHouseInfo.isQuality
-                    ? building.beeHouseQualityHarvestExperiences
-                    : building.beeHouseBasicHarvestExperiences
-
+                // Add experience for the activity
                 this.levelService.addExperiences({
                     user,
                     experiences: experiencesGain
@@ -192,21 +191,30 @@ export class HarvestBeeHouseService {
                 if (!inventoryTypeProduct) {
                     throw new WsException("Inventory type not found for bee house")
                 }
-                // use inventory service to create inventory
-                const { inventories, occupiedIndexes } = await this.inventoryService.getAddParams({
-                    connection: this.connection,
-                    userId,
-                    session,
-                    inventoryType: inventoryTypeProduct,
-                    kind: InventoryKind.Storage
+                const animalInfo = this.staticService.beeHouseInfo
+                
+                const { value } = this.thiefService.compute({
+                    thief2: animalInfo.randomness.thief2,
+                    thief3: animalInfo.randomness.thief3
                 })
- 
-                const harvestQuantityRemaining = placedItemBuilding.beeHouseInfo.harvestQuantityRemaining
+                const desiredQuantity = value
+                const actualQuantity = Math.min(
+                    desiredQuantity,
+                    placedItemBuilding.beeHouseInfo.harvestQuantityRemaining - placedItemBuilding.beeHouseInfo.harvestQuantityMin
+                )
+
+                // Get inventory add parameters
+                const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
+                    connection: this.connection,
+                    inventoryType: inventoryTypeProduct,
+                    userId,
+                    session
+                })
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventories,
                     occupiedIndexes,
                     userId,
-                    quantity: harvestQuantityRemaining,
+                    quantity: actualQuantity,
                     inventoryType: inventoryTypeProduct,
                     kind: InventoryKind.Storage,
                     capacity: this.staticService.defaultInfo.storageCapacity
@@ -238,9 +246,9 @@ export class HarvestBeeHouseService {
                 /************************************************************
                  * UPDATE PLACED ITEM TILE
                  ************************************************************/
-                this.coreService.updatePlacedItemBuildingBeeHouseAfterHarvest({
-                    placedItemBuilding,
-                })
+                placedItemBuilding.beeHouseInfo.harvestQuantityRemaining -= actualQuantity
+                placedItemBuilding.beeHouseInfo.thieves.push(new Types.ObjectId(userId))
+                
                 // Save placed item bee
                 await placedItemBuilding.save({ session })
 
@@ -251,18 +259,17 @@ export class HarvestBeeHouseService {
                     }
                 )
                 syncedPlacedItems.push(updatedSyncedPlacedItems)
-
                 /************************************************************
                  * PREPARE ACTION MESSAGE
                  ************************************************************/
                 // Prepare the action payload
                 actionPayload = {
-                    action: ActionName.HarvestBeeHouse,
+                    action: ActionName.ThiefBeeHouse,
                     placedItem: syncedPlacedItemAction,
                     success: true,
                     userId,
                     data: {
-                        quantity: harvestQuantityRemaining,
+                        quantity: actualQuantity,
                         productId: product.id
                     }
                 }
@@ -272,7 +279,8 @@ export class HarvestBeeHouseService {
                 user: syncedUser,
                 placedItems: syncedPlacedItems,
                 inventories: syncedInventories,
-                action: actionPayload
+                action: actionPayload,
+                watcherUserId
             }
         } catch (error) {
             this.logger.error(error)

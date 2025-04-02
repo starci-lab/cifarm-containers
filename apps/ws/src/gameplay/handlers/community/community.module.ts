@@ -7,6 +7,7 @@ import { HelpUseAnimalMedicineModule } from "./help-use-animal-medicine"
 import { HelpUseBugNetModule } from "./help-use-bug-net"
 import { ThiefAnimalModule } from "./thief-animal"
 import { ThiefFruitModule } from "./thief-fruit"
+import { ThiefBeeHouseModule } from "./thief-bee-house"
 
 @Module({
     imports: [
@@ -17,7 +18,8 @@ import { ThiefFruitModule } from "./thief-fruit"
         HelpUseBugNetModule,
         HelpUseAnimalMedicineModule,
         ThiefAnimalModule,
-        ThiefFruitModule
+        ThiefFruitModule,
+        ThiefBeeHouseModule
     ]
 })
 export class CommunityModule {} 

@@ -218,9 +218,28 @@ export class CropInfo {
 }
 
 @ObjectType({
+    description: "Configuration for bee house randomness events"
+})
+export class BeeHouseRandomness {
+    @Field(() => Float, {
+        description: "Chance for a bee house to be stolen by 3 thieves"
+    })
+        thief3: number
+
+    @Field(() => Float, {
+        description: "Chance for a bee house to be stolen by 2 thieves"
+    })
+        thief2: number
+}
+
+@ObjectType({
     description: "Configuration for bee house theft mechanics"
 })
 export class BeeHouseInfo {
+    @Field(() => BeeHouseRandomness, {
+        description: "Configuration for bee house randomness events"
+    })
+        randomness: BeeHouseRandomness
     @Field(() => Int, {
         description: "Minimum percentage of the total quantity that can be stolen by a thief", 
         defaultValue: 5

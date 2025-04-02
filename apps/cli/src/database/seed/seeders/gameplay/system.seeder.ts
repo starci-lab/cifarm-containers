@@ -305,6 +305,10 @@ export class SystemSeeder implements Seeder {
             }
 
             const beeHouseInfo: BeeHouseInfo = {
+                randomness: {
+                    thief2: 0.8,
+                    thief3: 0.95,
+                },
                 minThievablePercentage: 0.7
             }
 
