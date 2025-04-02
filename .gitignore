@@ -63,3 +63,5 @@ db
 
 .env.local
 .env.docker
+
+*.secret.yaml

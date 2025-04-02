@@ -8,6 +8,7 @@ export enum KafkaGroupId {
     Visit = "topic-visit",
     Delivery = "topic-delivery",
     User = "topic-user",
+    Inventories = "topic-inventories",
 }
 
 export enum KafkaTopic {

@@ -13,7 +13,7 @@ export class InventoriesConsumer implements OnModuleInit {
 
     async onModuleInit() {
         const consumer = await this.kafkaConsumersService.createConsumer({
-            groupId: KafkaGroupId.User,
+            groupId: KafkaGroupId.Inventories,
             topics: [KafkaTopic.SyncInventories],
             fromBeginning: true
         })

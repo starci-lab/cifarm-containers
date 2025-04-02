@@ -9,7 +9,7 @@ import {
     OnEventLeaderLost
 } from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
-import { InjectMongoose, InventoryKind, InventorySchema, USER } from "@src/databases"
+import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
@@ -36,17 +36,10 @@ export class DeliveryService {
         private readonly dateUtcService: DateUtcService
     ) {}
 
-    @Cron("*/1 * * * * *")
-    showNextDelivery() {
-        const nowUtc = this.dateUtcService.getDayjs().utc()
-        // Define the target time: 00:00 UTC+7, which is equivalent to 17:00 UTC
-        const nextDeliveryUtc = this.dateUtcService.getNextDayMidnightUtc(7) // 00:00 UTC+7, but in UTC 
-        //retreive the next delivery cron and subtract the current time
-        const differentFromNextDelivery = nextDeliveryUtc.diff(nowUtc, "seconds")
-        this.logger.log(`Next delivery is in ${this.dateUtcService.formatTime(differentFromNextDelivery)}`)
-    }
-
-    @Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
+    
+    // deliver at 00:00, 15:00, 30:00, 45:00 each hour UTC+7
+    @Cron("0 0,15,30,45 * * * *", { utcOffset: 7 })
+    //@Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     public async process() {
         if (!this.isLeader) {
             return
@@ -60,18 +53,14 @@ export class DeliveryService {
             const utcNow = this.dateUtcService.getDayjs()
 
             const count = await this.connection
-                .model<InventorySchema>(InventorySchema.name)
-                .distinct(USER)
-                .countDocuments({
-                    kind: InventoryKind.Delivery
-                })
+                .model<UserSchema>(UserSchema.name)
+                .countDocuments()
                 .session(mongoSession)
-
             if (!count) {
                 return
             }
 
-            const batchSize = bullData[BullQueueName.Animal].batchSize
+            const batchSize = bullData[BullQueueName.Delivery].batchSize
             const batchCount = Math.ceil(count / batchSize)
 
             const batches: Array<{
