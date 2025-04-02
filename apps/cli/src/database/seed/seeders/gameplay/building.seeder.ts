@@ -107,7 +107,7 @@ export class BuildingSeeder implements Seeder {
                     beeHouseYieldTime: 3600,
                     beeHouseBasicHarvestExperiences: 10,
                     beeHouseQualityHarvestExperiences: 15,
-                    baseHoneyYieldCoefficient: 1,
+                    baseHoneyYieldCoefficient: 10,
                     sellable: true,
                     sellPrice: 1000,
                     upgrades: [

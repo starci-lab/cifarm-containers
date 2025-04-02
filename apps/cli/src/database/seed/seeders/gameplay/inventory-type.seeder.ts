@@ -492,6 +492,26 @@ export class InventoryTypeSeeder implements Seeder {
                 placeable: false,
                 type: InventoryType.Seed
             },
+            {
+                _id: createObjectId(InventoryTypeId.Honey),
+                displayId: InventoryTypeId.Honey,
+                asTool: false,
+                maxStack: 64,
+                deliverable: true,
+                placeable: false,
+                product: createObjectId(ProductId.Honey),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.HoneyQuality),
+                displayId: InventoryTypeId.HoneyQuality,
+                asTool: false,
+                maxStack: 64,
+                deliverable: true,
+                placeable: false,
+                product: createObjectId(ProductId.HoneyQuality),
+                type: InventoryType.Product
+            },
         ]
 
         await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).insertMany(data)

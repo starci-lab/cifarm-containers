@@ -15,7 +15,7 @@ import { Job } from "bullmq"
 import { Connection } from "mongoose"
 import { Producer } from "kafkajs"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { SyncPlacedItemsPayload } from "@apps/io"
+import { SyncPlacedItemsPayload } from "@apps/ws"
 
 @Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost {

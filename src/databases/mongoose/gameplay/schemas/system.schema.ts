@@ -160,6 +160,14 @@ export class Activities {
         description: "Configuration for stealing fruits"
     })
         thiefFruit: ActivityInfo
+    @Field(() => ActivityInfo, {
+        description: "Configuration for harvesting bee house"
+    })
+        harvestBeeHouse: ActivityInfo
+    @Field(() => ActivityInfo, {
+        description: "Configuration for thief bee house"
+    })
+        thiefBeeHouse: ActivityInfo
 }
 
 @ObjectType({
@@ -207,6 +215,17 @@ export class CropInfo {
         defaultValue: 5
     })
         growthStages: number
+}
+
+@ObjectType({
+    description: "Configuration for bee house theft mechanics"
+})
+export class BeeHouseInfo {
+    @Field(() => Int, {
+        description: "Minimum percentage of the total quantity that can be stolen by a thief", 
+        defaultValue: 5
+    })
+        minThievablePercentage: number 
 }
 
 @ObjectType({

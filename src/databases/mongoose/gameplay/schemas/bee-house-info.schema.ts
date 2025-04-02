@@ -46,6 +46,12 @@ export class BeeHouseInfoSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0 })
         harvestQuantityDesired: number
 
+    @Field(() => Int, {
+        description: "The min harvest quantity of the bee house",
+    })
+    @Prop({ type: Number, default: 0 })
+        harvestQuantityMin: number
+
     @Field(() => Boolean, {
         description: "Whether the bee house is quality",
         nullable: true

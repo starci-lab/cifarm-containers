@@ -19,7 +19,7 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
 import { createObjectId, WithStatus } from "@src/common"
 import { BeeHouseJobData } from "@apps/cron-scheduler"
-import { SyncPlacedItemsPayload } from "@apps/io"
+import { SyncPlacedItemsPayload } from "@apps/ws"
 
 @Processor(bullData[BullQueueName.BeeHouse].name)
 export class BeeHouseWorker extends WorkerHost {
@@ -157,12 +157,14 @@ export class BeeHouseWorker extends WorkerHost {
                                     totalHoneyQualityChancePlus += flower.honeyQualityChancePlus
                                 }
 
+                                const { minThievablePercentage } = this.staticService.beeHouseInfo
                                 placedItem.beeHouseInfo.currentState = BeeHouseCurrentState.Yield
                                 const desiredHarvestQuantity = Math.floor(
                                     totalHoneyYieldCoefficient * honeyMultiplier
                                 )
                                 placedItem.beeHouseInfo.harvestQuantityRemaining = desiredHarvestQuantity
                                 placedItem.beeHouseInfo.harvestQuantityDesired = desiredHarvestQuantity
+                                placedItem.beeHouseInfo.harvestQuantityMin = Math.floor(desiredHarvestQuantity * minThievablePercentage)
 
                                 if (Math.random() < totalHoneyQualityChancePlus) {
                                     placedItem.beeHouseInfo.isQuality = true

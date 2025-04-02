@@ -3,6 +3,7 @@ import { createObjectId } from "@src/common"
 import {
     Activities,
     AnimalInfo,
+    BeeHouseInfo,
     CropId,
     CropInfo,
     DailyRewardId,
@@ -119,6 +120,13 @@ export class SystemSeeder implements Seeder {
                     energyConsume: 1,
                 },
                 thiefFruit: {
+                    energyConsume: 1,
+                    experiencesGain: 3
+                },
+                harvestBeeHouse: {
+                    energyConsume: 1,
+                },
+                thiefBeeHouse: {
                     energyConsume: 1,
                     experiencesGain: 3
                 }
@@ -296,6 +304,10 @@ export class SystemSeeder implements Seeder {
                 profilesTreeAddresses: ["BTjBVuqM9be9LbSy7USu6VFhZcdmAyWfatNRNCAuqdtu"]
             }
 
+            const beeHouseInfo: BeeHouseInfo = {
+                minThievablePercentage: 0.7
+            }
+
             const data: Array<Partial<SystemSchema>> = [
                 {
                     _id: createObjectId(SystemId.Activities),
@@ -341,7 +353,12 @@ export class SystemSeeder implements Seeder {
                     _id: createObjectId(SystemId.FlowerInfo),
                     displayId: SystemId.FlowerInfo,
                     value: flowerInfo
-                }
+                },
+                {
+                    _id: createObjectId(SystemId.BeeHouseInfo),
+                    displayId: SystemId.BeeHouseInfo,
+                    value: beeHouseInfo
+                },
             ]
             await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)
         } catch (error) {

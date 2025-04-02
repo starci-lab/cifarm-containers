@@ -26,6 +26,7 @@ import {
     CropInfo,
     FlowerSchema,
     FlowerInfo,
+    BeeHouseInfo,
 } from "@src/databases"
 import { Connection } from "mongoose"
 @Injectable()
@@ -54,6 +55,7 @@ export class StaticService implements OnModuleInit {
     public tiles: Array<TileSchema>
     public flowers: Array<FlowerSchema>
     public flowerInfo: FlowerInfo
+    public beeHouseInfo: BeeHouseInfo
 
     constructor(
         @InjectMongoose()
@@ -111,6 +113,11 @@ export class StaticService implements OnModuleInit {
             .findById<KeyValueRecord<FlowerInfo>>(createObjectId(SystemId.FlowerInfo))
         this.flowerInfo = flowerInfoDoc.value
 
+        const beeHouseInfoDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<BeeHouseInfo>>(createObjectId(SystemId.BeeHouseInfo))
+        this.beeHouseInfo = beeHouseInfoDoc.value
+
         // Load collections
         this.placedItemTypes = await this.connection
             .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
@@ -141,7 +148,7 @@ export class StaticService implements OnModuleInit {
         this.flowers = await this.connection.model<FlowerSchema>(FlowerSchema.name).find()
 
         this.logger.verbose("All static data loaded")
-        this.logger.verbose("System data: 9") // hardcoded
+        this.logger.verbose("System data: 10") // hardcoded
         this.logger.verbose(`Animals: ${this.animals.length}`)
         this.logger.verbose(`Crops: ${this.crops.length}`)
         this.logger.verbose(`Buildings: ${this.buildings.length}`)

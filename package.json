@@ -13,7 +13,7 @@
     "format": "prettier --write \"apps/**/*.ts\" ",
     "start": "nest start",
     "start:dev": "nest start --watch",
-    "start:gameplay": "concurrently \"nest start io --watch\" \"nest start cron-scheduler --watch\" \"nest start cron-worker --watch\" \"nest start gameplay-subgraph --watch\" \"nest start graphql-gateway --watch\"",
+    "start:gameplay": "concurrently \"nest start ws --watch\" \"nest start cron-scheduler --watch\" \"nest start cron-worker --watch\" \"nest start gameplay-subgraph --watch\" \"nest start graphql-gateway --watch\"",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/cifarm-server/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",

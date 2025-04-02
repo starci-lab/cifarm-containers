@@ -59,7 +59,9 @@ export enum ReceiverEventName {
     // Placements
     Move = "move",
     Sell = "sell",
-    UpgradeBuilding = "upgrade_building"
+    UpgradeBuilding = "upgrade_building",
+    HarvestBeeHouse = "harvest_bee_house",
+    ThiefBeeHouse = "thief_bee_house",
 }
 
 // sync user

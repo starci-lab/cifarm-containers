@@ -37,8 +37,8 @@ export class HarvestBeeHouseGateway implements OnGatewayInit {
 
     
     @UseGuards(WsThrottlerGuard)
-    @SubscribeMessage(ReceiverEventName.HarvestPlant)
-    public async harvestPlant(
+    @SubscribeMessage(ReceiverEventName.HarvestBeeHouse)
+    public async harvestBeeHouse(
         @ConnectedSocket() socket: Socket,
         @MessageBody() payload: HarvestBeeHouseMessage,
         @WsUser() user: UserLike

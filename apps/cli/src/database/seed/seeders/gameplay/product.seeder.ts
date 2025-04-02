@@ -9,6 +9,7 @@ import {
     ProductId,
     ProductSchema,
     ProductType,
+    BuildingId,
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
@@ -30,6 +31,7 @@ export class ProductSeeder implements Seeder {
                 maxStack: 64,
                 isQuality: false,
                 goldAmount: 100,
+                building: createObjectId(BuildingId.BeeHouse),
                 type: ProductType.BeeHouse,
             },
             {
@@ -38,6 +40,7 @@ export class ProductSeeder implements Seeder {
                 maxStack: 64,
                 isQuality: true,
                 goldAmount: 100,
+                building: createObjectId(BuildingId.BeeHouse),
                 type: ProductType.BeeHouse,
             },
             {

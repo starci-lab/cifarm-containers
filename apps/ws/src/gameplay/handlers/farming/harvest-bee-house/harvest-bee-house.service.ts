@@ -44,8 +44,6 @@ export class HarvestBeeHouseService {
         { id: userId }: UserLike,
         { placedItemBuildingId }: HarvestBeeHouseMessage
     ): Promise<SyncedResponse<HarvestBeeHouseData>> {
-        this.logger.debug(`Harvesting plant for user ${userId}, tile ID: ${placedItemBuildingId}`)
-
         const mongoSession = await this.connection.startSession()
 
         // synced variables
@@ -104,6 +102,7 @@ export class HarvestBeeHouseService {
                 if (placedItemBuilding.user.toString() !== userId) {
                     throw new WsException("Cannot harvest another user's tile")
                 }
+                const placedItemBuildingSnapshot = placedItemBuilding.$clone()
 
                 const placedItemType = this.staticService.placedItemTypes.find(
                     (placedItemType) =>
@@ -115,7 +114,6 @@ export class HarvestBeeHouseService {
                 const building = this.staticService.buildings.find(
                     (building) => building.id === placedItemType?.building?.toString()
                 )
-                // Check if the tile has a plant
                 if (!building) {
                     throw new WsException("Building not found")
                 }
@@ -141,7 +139,8 @@ export class HarvestBeeHouseService {
                  * VALIDATE ENERGY
                  ************************************************************/
                 // Check if the user has enough energy
-                const { energyConsume } = this.staticService.activities.harvestPlant
+                const { energyConsume } = this.staticService.activities.harvestBeeHouse
+                console.log(energyConsume)
                 this.energyService.checkSufficient({
                     current: user.energy,
                     required: energyConsume
@@ -155,9 +154,6 @@ export class HarvestBeeHouseService {
                     user,
                     quantity: energyConsume
                 })
-
-                // let plantInfo: PlantInfoLike
-                // let plant: AbstractPlantSchema
 
                 // Add experience based on quality
                 const experiencesGain = placedItemBuilding.beeHouseInfo.isQuality
@@ -195,7 +191,7 @@ export class HarvestBeeHouseService {
                     inventoryType.product?.toString() === product.id
                 })
                 if (!inventoryTypeProduct) {
-                    throw new WsException("Inventory type not found for this crop")
+                    throw new WsException("Inventory type not found for bee house")
                 }
                 // use inventory service to create inventory
                 const { inventories, occupiedIndexes } = await this.inventoryService.getAddParams({
@@ -205,8 +201,8 @@ export class HarvestBeeHouseService {
                     inventoryType: inventoryTypeProduct,
                     kind: InventoryKind.Storage
                 })
-
-                const harvestQuantityRemaining = placedItemBuilding.plantInfo.harvestQuantityRemaining
+ 
+                const harvestQuantityRemaining = placedItemBuilding.beeHouseInfo.harvestQuantityRemaining
                 const { createdInventories, updatedInventories } = this.inventoryService.add({
                     inventories,
                     occupiedIndexes,
@@ -216,6 +212,9 @@ export class HarvestBeeHouseService {
                     kind: InventoryKind.Storage,
                     capacity: this.staticService.defaultInfo.storageCapacity
                 })
+                console.log(createdInventories)
+                console.log(updatedInventories)
+
 
                 if (createdInventories.length > 0) {
                     // Create new inventories
@@ -243,29 +242,26 @@ export class HarvestBeeHouseService {
                 /************************************************************
                  * UPDATE PLACED ITEM TILE
                  ************************************************************/
-                // this.coreService.updatePlacedItemTileAfterHarvest({
-                //     placedItemBuilding,
-                //     plant,
-                //     plantInfo
-                // })
+                this.coreService.updatePlacedItemBuildingBeeHouseAfterHarvest({
+                    placedItemBuilding,
+                })
+                // Save placed item bee
+                await placedItemBuilding.save({ session })
 
-                // // Save placed item tile
-                // await placedItemTile.save({ session })
-
-                // const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem(
-                //     {
-                //         placedItemSnapshot: placedItemTileSnapshot,
-                //         placedItemUpdated: placedItemTile
-                //     }
-                // )
-                //syncedPlacedItems.push(updatedSyncedPlacedItems)
+                const updatedSyncedPlacedItems = this.syncService.getPartialUpdatedSyncedPlacedItem(
+                    {
+                        placedItemSnapshot: placedItemBuildingSnapshot,
+                        placedItemUpdated: placedItemBuilding
+                    }
+                )
+                syncedPlacedItems.push(updatedSyncedPlacedItems)
 
                 /************************************************************
                  * PREPARE ACTION MESSAGE
                  ************************************************************/
                 // Prepare the action payload
                 actionPayload = {
-                    action: ActionName.HarvestPlant,
+                    action: ActionName.HarvestBeeHouse,
                     placedItem: syncedPlacedItemAction,
                     success: true,
                     userId,

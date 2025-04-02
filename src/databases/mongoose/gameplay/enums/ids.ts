@@ -396,6 +396,7 @@ export enum SystemId {
     DailyRewardInfo = "dailyRewardInfo",
     HoneycombInfo = "honeycombInfo",
     FlowerInfo = "flowerInfo",
+    BeeHouseInfo = "beeHouseInfo",
 }
 
 export const FirstCharLowerCaseSystemId = createFirstCharLowerCaseEnumType(SystemId)
@@ -513,6 +514,8 @@ export enum InventoryTypeId {
     StrawberrySeed = "strawberrySeed",
     Strawberry = "strawberry",
     StrawberryQuality = "strawberryQuality",
+    Honey = "honey",
+    HoneyQuality = "honeyQuality",
 }
 
 export const FirstCharLowerCaseInventoryTypeId = createFirstCharLowerCaseEnumType(InventoryTypeId)

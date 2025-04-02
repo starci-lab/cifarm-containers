@@ -12,6 +12,7 @@ import { UseBugNetModule } from "./use-bug-net"
 import { UseFruitFertilizerModule } from "./use-fruit-fertilizer"
 import { HarvestFruitModule } from "./harvest-fruit"
 import { UpgradeBuildingModule } from "./upgrade-building"
+import { HarvestBeeHouseModule } from "./harvest-bee-house"
 
 @Module({
     imports: [
@@ -23,6 +24,7 @@ import { UpgradeBuildingModule } from "./upgrade-building"
         UseAnimalMedicineModule,
         HarvestAnimalModule,
         HarvestPlantModule,
+        HarvestBeeHouseModule,
         PlantSeedModule,
         UseBugNetModule,
         UseFruitFertilizerModule,
