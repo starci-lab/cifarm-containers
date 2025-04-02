@@ -38,7 +38,7 @@ export class DeliveryService {
 
     
     // deliver at 00:00, 15:00, 30:00, 45:00 each hour UTC+7
-    @Cron("0 0,15,30,45 * * * *", { utcOffset: 7 })
+    @Cron("0,15,30,45 * * * *", { utcOffset: 7 })
     //@Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     public async process() {
         if (!this.isLeader) {

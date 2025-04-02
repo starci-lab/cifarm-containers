@@ -1,9 +1,12 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
 import { UserSchema } from "@src/databases"
 import { IPaginatedResponse, PaginatedRequest, PaginatedResponse } from "@src/graphql"
+import { IsOptional, IsString } from "class-validator"
 
 @InputType()
 export class NeighborsRequest extends PaginatedRequest {
+    @IsString()
+    @IsOptional()
     @Field(() => String, { nullable : true, description: "The search string" })
         searchString?: string
 }
