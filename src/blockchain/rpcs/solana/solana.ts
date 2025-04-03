@@ -9,7 +9,7 @@ export const solanaHttpRpcUrl = (network: Network) => {
         break
     }
     case Network.Testnet: {
-        rpcUrl = clusterApiUrl("devnet")
+        rpcUrl = "https://rpc.test.honeycombprotocol.com"
         break
     }
     }

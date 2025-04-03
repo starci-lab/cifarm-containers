@@ -61,7 +61,8 @@ start.bat
 
 db
 
-.env.local
-.env.docker
+# .env.local
+# .env.docker
+.env.secret
 
 *.secret.yaml

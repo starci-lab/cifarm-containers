@@ -42,7 +42,7 @@ export class PlacedItemSchema extends AbstractSchema {
     @Field(() => ID, {
         description: "The user who owns this placed item"
     })
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name, index: true })
         user: UserSchema | string
 
     @Field(() => ID, {

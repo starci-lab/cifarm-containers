@@ -67,7 +67,7 @@ const baseThrottlers: Array<ThrottlerOptions> = [
         limit: 500
     },
     {
-        // 1000 requests per 1 hours, 1000 requests per hours
+        // 1500 requests per 1 hours, 1000 requests per hours
         name: "1500_per_1_hour",
         ttl: 600000,
         limit: 1500

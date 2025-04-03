@@ -1,0 +1,33 @@
+{
+    "name": "Dragon Fruit #1",
+    "description": "First NFT in this collection",
+    "image": "https://violet-lazy-yak-333.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4",
+    "properties": {
+        "category": "Fruit"
+    },
+    "creators": [
+        {
+            "address": "2k4v3g5h8x7y6z8v9w3e4r5t6u7i8j9k0l1m2n3o4p5q6r7s8t9u0v1w2x3y4z5",
+            "share": 100
+        }
+    ],
+    "seller_fee_basis_points": 500,
+    "collection": {
+        "name": "Dragon Fruit Collection",
+        "family": "CiFarm"
+    },
+    "attributes": [
+        {
+            "trait_type": "Color",
+            "value": "Pink"
+        },
+        {
+            "trait_type": "Size",
+            "value": "Large"
+        },
+        {
+            "trait_type": "Rarity",
+            "value": "Rare"
+        }
+    ]
+}

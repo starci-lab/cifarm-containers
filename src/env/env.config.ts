@@ -178,6 +178,12 @@ export const envConfig = () => ({
         admin: {
             username: process.env.ADMIN_USERNAME,
             password: process.env.ADMIN_PASSWORD
+        },
+        pinata: {
+            apiKey: process.env.PINATA_API_KEY,
+            secretApiKey: process.env.PINATA_SECRET_API_KEY,
+            jwtToken: process.env.PINATA_JWT_TOKEN,
+            gatewayUrl: process.env.PINATA_GATEWAY_URL,
         }
     },
     chainCredentials: {
@@ -190,6 +196,14 @@ export const envConfig = () => ({
                     privateKey: process.env.SOLANA_HONEYCOMB_AUTHORITY_PRIVATE_KEY_TESTNET
                 }
             },
+            metaplexAuthority: {
+                [Network.Mainnet]: {
+                    privateKey: process.env.SOLANA_METAPLEX_AUTHORITY_PRIVATE_KEY_MAINNET
+                },
+                [Network.Testnet]: {
+                    privateKey: process.env.SOLANA_METAPLEX_AUTHORITY_PRIVATE_KEY_TESTNET
+                }
+            }
         },
         [ChainKey.Near]: {
             tokenMinter: {

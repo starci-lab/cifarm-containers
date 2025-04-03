@@ -1,18 +1,23 @@
 import { DynamicModule, Module } from "@nestjs/common"
-import { SolanaMetaplexService } from "./solana"
+import { BlockchainNftBaseService } from "./base"
+import { IpfsService } from "./common"
+import { BlockchainNftObserverService } from "./observer"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./nft.module-definition"
 
 @Module({
     providers: [
-        SolanaMetaplexService
+        IpfsService,
+        BlockchainNftBaseService,
+        BlockchainNftObserverService,
     ],
     exports: [
-        SolanaMetaplexService
+        IpfsService,
+        BlockchainNftBaseService,
+        BlockchainNftObserverService,
     ],
 })
 export class NFTModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
-        
         return super.register(options)
     }
 }
