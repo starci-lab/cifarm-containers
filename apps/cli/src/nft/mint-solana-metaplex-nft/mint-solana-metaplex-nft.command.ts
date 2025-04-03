@@ -15,8 +15,8 @@ export class MintSolanaMetaplexNFTCommand extends CommandRunner {
     }
 
     async run(_: Array<string>, options: MintSolanaMetaplexNFTCommandOptions): Promise<void> {
-        this.logger.debug("Creating new Solana metaplex collection...")
-        const { name, network, metadataFilePath, collectionAddress } = options
+        this.logger.debug("Minting new Solana metaplex NFT...")
+        const { name, network, metadataFilePath, collectionAddress, ownerAddress } = options
         try {
             const metadata = readFileSync(metadataFilePath, "utf-8")
             const parsedMetadata = JSON.parse(metadata) as MetaplexNFTMetadata 
@@ -24,7 +24,8 @@ export class MintSolanaMetaplexNFTCommand extends CommandRunner {
                 network,
                 name,
                 collectionAddress,
-                metadata: parsedMetadata
+                metadata: parsedMetadata,
+                ownerAddress
             })
             this.logger.debug(`NFT created: ${nft}`)
             this.logger.debug(`Transaction signature: ${signature}`)
@@ -68,6 +69,14 @@ export class MintSolanaMetaplexNFTCommand extends CommandRunner {
     parseCollectionAddress(collectionAddress: string): string {
         return collectionAddress
     }
+
+    @Option({
+        flags: "-oa, --owner-address <owner-address>",
+        description: "Address of the owner",
+    })
+    parseOwnerAddress(ownerAddress: string): string {
+        return ownerAddress
+    }
 }
 
 export interface MintSolanaMetaplexNFTCommandOptions {
@@ -75,4 +84,5 @@ export interface MintSolanaMetaplexNFTCommandOptions {
     name: string
     collectionAddress: string
     metadataFilePath: string
+    ownerAddress?: string
 }
