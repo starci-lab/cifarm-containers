@@ -4,8 +4,10 @@ import {
     BuildingSchema,
     InjectMongoose,
     PlacedItemSchema,
+    PetSchema,
     PlacedItemType,
-    PlacedItemTypeId
+    PlacedItemTypeId,
+    BuildingKind
 } from "@src/databases"
 import { StaticService } from "../static"
 import { ClientSession, Connection } from "mongoose"
@@ -30,6 +32,10 @@ export interface GetAnimalLimitParams extends GetLimitParams {
     animal: AnimalSchema
 }
 
+export interface GetPetLimitParams extends GetLimitParams {
+    pet: PetSchema
+}
+
 @Injectable()
 export class LimitService {
     constructor(
@@ -38,10 +44,7 @@ export class LimitService {
         private readonly staticSerivce: StaticService
     ) {}
 
-    public async getFruitLimit({
-        userId,
-        session
-    }: GetFruitLimitParams): Promise<LimitResult> {
+    public async getFruitLimit({ userId, session }: GetFruitLimitParams): Promise<LimitResult> {
         const placedItemTypeFruits = this.staticSerivce.placedItemTypes.filter(
             (placedItemType) => placedItemType.type === PlacedItemType.Fruit
         )
@@ -50,22 +53,18 @@ export class LimitService {
             .countDocuments({
                 user: userId,
                 placedItemType: {
-                    $in: placedItemTypeFruits
-                        .map((placedItemType) => placedItemType.id)
+                    $in: placedItemTypeFruits.map((placedItemType) => placedItemType.id)
                 }
             })
             .session(session)
 
         return {
             placedItemCountNotExceedLimit:
-                placedItemCount < this.staticSerivce.defaultInfo.fruitLimit,
+                placedItemCount < this.staticSerivce.defaultInfo.fruitLimit
         }
     }
 
-    public async getTileLimit({
-        userId,
-        session
-    }: GetTileLimitParams): Promise<LimitResult> {
+    public async getTileLimit({ userId, session }: GetTileLimitParams): Promise<LimitResult> {
         const placedItemTypeTiles = this.staticSerivce.placedItemTypes.filter(
             (placedItemType) => placedItemType.type === PlacedItemType.Tile
         )
@@ -74,15 +73,14 @@ export class LimitService {
             .countDocuments({
                 user: userId,
                 placedItemType: {
-                    $in: placedItemTypeTiles
-                        .map((placedItemType) => placedItemType.id)
+                    $in: placedItemTypeTiles.map((placedItemType) => placedItemType.id)
                 }
             })
             .session(session)
 
         return {
             placedItemCountNotExceedLimit:
-            placedItemCount < this.staticSerivce.defaultInfo.tileLimit,
+                placedItemCount < this.staticSerivce.defaultInfo.tileLimit
         }
     }
 
@@ -101,15 +99,15 @@ export class LimitService {
             .countDocuments({
                 user: userId,
                 placedItemType: {
-                    $in: placedItemTypeBuildings
-                        .map((placedItemType) => placedItemType.id)
+                    $in: placedItemTypeBuildings.map((placedItemType) => placedItemType.id)
                 }
-            }).session(session)
+            })
+            .session(session)
 
         const selectedPlacedItemType = this.staticSerivce.placedItemTypes.find(
-            (placedItemType) => 
+            (placedItemType) =>
                 placedItemType.type === PlacedItemType.Building &&
-                    placedItemType.building.toString() === building.id
+                placedItemType.building.toString() === building.id
         )
         if (!selectedPlacedItemType) {
             throw new Error(`No placed item type building found for id: ${building.id}`)
@@ -119,12 +117,12 @@ export class LimitService {
             .countDocuments({
                 user: userId,
                 placedItemType: selectedPlacedItemType.id
-            }).session(session)
+            })
+            .session(session)
         return {
             placedItemCountNotExceedLimit:
                 placedItemCount < this.staticSerivce.defaultInfo.buildingLimit,
-            selectedPlacedItemCountNotExceedLimit:
-                selectedPlacedItemCount < building.maxOwnership,
+            selectedPlacedItemCountNotExceedLimit: selectedPlacedItemCount < building.maxOwnership
         }
     }
 
@@ -133,7 +131,7 @@ export class LimitService {
         userId,
         session
     }: GetAnimalLimitParams): Promise<LimitResult> {
-        try{
+        try {
             const buildings = this.staticSerivce.buildings
             const correspondingBuilding = buildings.find(
                 (building) => building.animalContainedType === animal.type
@@ -176,25 +174,98 @@ export class LimitService {
             }, 0)
 
             const placedItemTypeAnimal = this.staticSerivce.placedItemTypes.find(
-                (placedItemType) => 
+                (placedItemType) =>
                     placedItemType.type === PlacedItemType.Animal &&
-                placedItemType.animal.toString() === animal.id
+                    placedItemType.animal.toString() === animal.id
             )
             if (!placedItemTypeAnimal) {
                 throw new Error(`No placed item type animal found for id: ${animal.id}`)
             }
-            const placedItemAnimalCount = await this.connection.model<PlacedItemSchema>(
-                PlacedItemSchema.name
-            ).countDocuments({
-                user: userId,
-                placedItemType: placedItemTypeAnimal.id
-            }).session(session)
+            const placedItemAnimalCount = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .countDocuments({
+                    user: userId,
+                    placedItemType: placedItemTypeAnimal.id
+                })
+                .session(session)
             return {
-                selectedPlacedItemCountNotExceedLimit:
-                placedItemAnimalCount < limit,
+                selectedPlacedItemCountNotExceedLimit: placedItemAnimalCount < limit
             }
         } catch (error) {
             console.error("Error in getAnimalLimit:", error)
+            throw error
+        }
+    }
+
+    public async getPetLimit({ pet, userId, session }: GetPetLimitParams): Promise<LimitResult> {
+        try {
+            const placedItemTypePets = this.staticSerivce.placedItemTypes.filter((placedItemType) => {
+                const correspondingPet = this.staticSerivce.pets.find(
+                    (pet) => 
+                        placedItemType.type === PlacedItemType.Pet &&
+                        pet.id === placedItemType.pet.toString()
+                )
+                if (!correspondingPet) {
+                    return false
+                }
+                if (correspondingPet.type === pet.type) {
+                    return true
+                }
+                return false
+            })
+
+            const placedItemCount = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .countDocuments({
+                    user: userId,
+                    placedItemType: {
+                        $in: placedItemTypePets.map((placedItemType) => placedItemType.id)
+                    }
+                })
+                .session(session)
+
+            const building = this.staticSerivce.buildings.find(
+                (building) => building.kind === BuildingKind.PetHouse
+            )
+            if (!building) {
+                throw new Error(`No building found for pet type: ${pet.type}`)
+            }
+            const placedItemTypeBuilding = this.staticSerivce.placedItemTypes.find(
+                (placedItemType) => 
+                    placedItemType.type === PlacedItemType.Building &&
+                    placedItemType.building.toString() === building.id
+            )
+            if (!placedItemTypeBuilding) {
+                throw new Error(`No placed item type building found for id: ${building.id}`)
+            }
+            // only one dog house is required
+            const placedItemBuilding = await this.connection
+                .model<PlacedItemSchema>(PlacedItemSchema.name)
+                .findOne({
+                    user: userId,
+                    placedItemType: placedItemTypeBuilding.id
+                })
+                .select({
+                    "buildingInfo.currentUpgrade": 1
+                })
+                .lean()
+                .exec()
+            if (!placedItemBuilding) {
+                return {
+                    selectedPlacedItemCountNotExceedLimit: false
+                }
+            }
+            const capacity = building.upgrades?.find(
+                (upgrade) => upgrade.upgradeLevel === placedItemBuilding.buildingInfo?.currentUpgrade
+            )?.capacity
+            if (!capacity) {
+                throw new Error(`No capacity found for id: ${placedItemTypeBuilding.id}`)
+            }
+            return {
+                selectedPlacedItemCountNotExceedLimit: placedItemCount < capacity
+            }
+        } catch (error) {
+            console.error("Error in getPetLimit:", error)
             throw error
         }
     }

@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { createObjectId } from "@src/common"
-import { InjectMongoose, PetSchema, PetId } from "@src/databases"
+import { InjectMongoose, PetSchema, PetId, PetType } from "@src/databases"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
 
@@ -24,6 +24,8 @@ export class PetSeeder implements Seeder {
                 price: 1000,
                 unlockLevel: 20,
                 sellPrice: 500,
+                type: PetType.Dog,
+                helpPercentage: 10,
             },
             {
                 _id: createObjectId(PetId.Cat),
@@ -32,6 +34,8 @@ export class PetSeeder implements Seeder {
                 price: 1000,
                 unlockLevel: 20,
                 sellPrice: 500,
+                type: PetType.Cat,
+                helpPercentage: 10,
             },
         ]
 

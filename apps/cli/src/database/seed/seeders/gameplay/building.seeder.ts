@@ -137,18 +137,21 @@ export class BuildingSeeder implements Seeder {
                     unlockLevel: 10,
                     upgradeable: true,
                     maxOwnership: 1,
-                    kind: BuildingKind.Neutral,
+                    kind: BuildingKind.PetHouse,
                     upgrades: [
-                        {
+                        {   
+                            //2 cats, 2 dogs
                             capacity: 3,
                             upgradeLevel: 1,
                         },
                         {
+                            //4 cats, 4 dogs
                             upgradePrice: 1000,
                             capacity: 5,
                             upgradeLevel: 2,
                         },
                         {
+                            //8 cats, 8 dogs
                             upgradePrice: 2000,
                             capacity: 10,
                             upgradeLevel: 3,

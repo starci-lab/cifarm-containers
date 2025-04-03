@@ -186,6 +186,26 @@ export class BuyBuildingService {
                     placedItemBuildingRaw = _placedItemBuildingRaw
                     break
                 }
+                case BuildingKind.PetHouse: {
+                    const [_placedItemBuildingRaw] = await this.connection
+                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                        .create(
+                            [
+                                {
+                                    user: userId,
+                                    x: position.x,
+                                    y: position.y,
+                                    placedItemType: placedItemType.id,
+                                    buildingInfo: {
+                                        currentUpgrade: 1
+                                    }
+                                }
+                            ],
+                            { session }
+                        )
+                    placedItemBuildingRaw = _placedItemBuildingRaw
+                    break
+                }
                 }
 
                 syncedPlacedItemAction = {

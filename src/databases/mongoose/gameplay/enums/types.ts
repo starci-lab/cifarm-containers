@@ -90,6 +90,7 @@ export enum PlacedItemType {
     Building = "building",
     Animal = "animal",
     Fruit = "fruit",
+    Pet = "pet",
 }
 
 export const FirstCharLowerCasePlacedItemType = createFirstCharLowerCaseEnumType(PlacedItemType)
@@ -109,6 +110,9 @@ registerEnumType(FirstCharLowerCasePlacedItemType, {
         },
         [PlacedItemType.Fruit]: {
             description: "The fruit placed item",
+        },
+        [PlacedItemType.Pet]: {
+            description: "The pet placed item",
         },
     },
 })
@@ -144,6 +148,8 @@ export enum BuildingKind {
     Neutral = "neutral",
     // bee house mean building that can produce honey
     BeeHouse = "beeHouse",
+    // pet house mean building that can work with pets
+    PetHouse = "petHouse",
 }
 
 export const FirstCharLowerCaseBuildingKind = createFirstCharLowerCaseEnumType(BuildingKind)
@@ -157,6 +163,9 @@ registerEnumType(FirstCharLowerCaseBuildingKind, {
         },
         [BuildingKind.BeeHouse]: {
             description: "The bee house building",
+        },
+        [BuildingKind.PetHouse]: {
+            description: "The pet house building",
         },
     },
 })
@@ -208,4 +217,26 @@ registerEnumType(FirstCharLowerCasePlantType, {
         },
     },
 })
+
+// Pet Type Enum
+export enum PetType {
+    Cat = "cat",
+    Dog = "dog"
+}   
+
+export const FirstCharLowerCasePetType = createFirstCharLowerCaseEnumType(PetType)
+
+registerEnumType(FirstCharLowerCasePetType, {
+    name: "PetType",
+    description: "The type of pet",
+    valuesMap: {
+        [PetType.Cat]: {
+            description: "The cat pet",
+        },
+        [PetType.Dog]: {
+            description: "The dog pet",
+        },
+    },
+})
+
 
