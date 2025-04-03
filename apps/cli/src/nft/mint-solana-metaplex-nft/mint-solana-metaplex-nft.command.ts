@@ -15,19 +15,19 @@ export class MintSolanaMetaplexNFTCommand extends CommandRunner {
     }
 
     async run(_: Array<string>, options: MintSolanaMetaplexNFTCommandOptions): Promise<void> {
-        this.logger.debug("Minting new Solana metaplex NFT...")
+        this.logger.debug("Creating new Solana metaplex collection...")
         const { name, network, metadataFilePath, collectionAddress, ownerAddress } = options
         try {
             const metadata = readFileSync(metadataFilePath, "utf-8")
             const parsedMetadata = JSON.parse(metadata) as MetaplexNFTMetadata 
-            const { nft, signature } = await this.solanaMetaplexService.createNft({
+            const { nftAddress, signature } = await this.solanaMetaplexService.mintNft({
                 network,
                 name,
+                ownerAddress,
                 collectionAddress,
-                metadata: parsedMetadata,
-                ownerAddress
+                metadata: parsedMetadata
             })
-            this.logger.debug(`NFT created: ${nft}`)
+            this.logger.debug(`NFT created: ${nftAddress}`)
             this.logger.debug(`Transaction signature: ${signature}`)
         } catch (error) {
             this.logger.error(`Failed to create the resource: ${error.message}`)
@@ -62,7 +62,7 @@ export class MintSolanaMetaplexNFTCommand extends CommandRunner {
     }
 
     @Option({
-        flags: "-c, --collection-address <collection-address>",
+        flags: "-ca, --collection-address <collection-address>",
         description: "Address of the collection",
         defaultValue: "FkJJyaMCMmNHGWQkBkrVBo9Trz8o9ZffKBcpyC3SdZx4"
     })
@@ -73,10 +73,12 @@ export class MintSolanaMetaplexNFTCommand extends CommandRunner {
     @Option({
         flags: "-oa, --owner-address <owner-address>",
         description: "Address of the owner",
+        required: false,
     })
     parseOwnerAddress(ownerAddress: string): string {
         return ownerAddress
     }
+
 }
 
 export interface MintSolanaMetaplexNFTCommandOptions {
@@ -84,5 +86,5 @@ export interface MintSolanaMetaplexNFTCommandOptions {
     name: string
     collectionAddress: string
     metadataFilePath: string
-    ownerAddress?: string
+    ownerAddress: string
 }

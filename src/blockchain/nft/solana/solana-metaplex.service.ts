@@ -53,19 +53,20 @@ export class SolanaMetaplexService {
             uri: this.pinataService.getUrl(metadataUri.cid),
         }).sendAndConfirm(umi)
         return {
-            collection: collection.publicKey,
+            collectionAddress: collection.publicKey,
             signature: base58.encode(signature)
         }
     }
 
-    public async createNft({
+    public async mintNft({
         network = Network.Mainnet,
         name,
         collectionAddress,
         ownerAddress,
         metadata
-    }: CreateNftParams): Promise<CreateNFTResponse> {
+    }: MintNftParams): Promise<MintNFTResponse> {
         const umi = this.umis[network]
+        console.log(ownerAddress)
         // Logic to create a collection on Solana
         const metadataUri = await this.pinataService.pinata.upload.public.json(metadata)
         const asset = generateSigner(umi)
@@ -91,7 +92,7 @@ export class SolanaMetaplexService {
             ]
         }).sendAndConfirm(umi)
         return {
-            nft: asset.publicKey,
+            nftAddress: asset.publicKey,
             signature: base58.encode(signature)
         }
     }
@@ -128,7 +129,7 @@ export interface TransferNftParams extends WithNetwork {
     collectionAddress: string
 }
 
-export interface CreateNftParams extends WithNetwork {
+export interface MintNftParams extends WithNetwork {
     name: string
     collectionAddress: string
     metadata: MetaplexNFTMetadata
@@ -156,7 +157,7 @@ export interface MetaplexCollectionMetadata {
 }
 
 export interface CreateCollectionResponse {
-    collection: string
+    collectionAddress: string
     signature: string
 }
 
@@ -180,7 +181,7 @@ export interface MetaplexNFTMetadata {
     youtube_url?: string
 }
 
-export interface CreateNFTResponse {
-    nft: string
+export interface MintNFTResponse {
+    nftAddress: string
     signature: string
 }

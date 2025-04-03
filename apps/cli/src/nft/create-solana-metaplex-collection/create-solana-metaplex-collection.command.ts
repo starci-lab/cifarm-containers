@@ -20,12 +20,12 @@ export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
         try {
             const metadata = readFileSync(metadataFilePath, "utf-8")
             const parsedMetadata = JSON.parse(metadata) as MetaplexCollectionMetadata 
-            const { collection, signature } = await this.solanaMetaplexService.createCollection({
+            const { collectionAddress, signature } = await this.solanaMetaplexService.createCollection({
                 network,
                 name,
                 metadata: parsedMetadata
             })
-            this.logger.debug(`Collection created: ${collection}`)
+            this.logger.debug(`Collection created: ${collectionAddress}`)
             this.logger.debug(`Transaction signature: ${signature}`)
         } catch (error) {
             this.logger.error(`Failed to create the resource: ${error.message}`)
@@ -42,7 +42,7 @@ export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
     }
 
     @Option({
-        flags: "-n, --name <name>",
+        flags: "--name <name>",
         description: "Name of the collection",
         defaultValue: "Dragon Fruit"
     })
