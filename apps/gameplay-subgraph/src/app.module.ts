@@ -50,15 +50,7 @@ import { ThrottlerModule } from "@src/throttler"
         HoneycombModule.register({
             isGlobal: true
         }),
-        ThrottlerModule.forRoot({
-            overrideThrottlers: [
-                {
-                    name: "30_per_minute",
-                    ttl: 60000,
-                    limit: 30
-                }
-            ]
-        }),
+        ThrottlerModule.forRoot(),
         //functional modules
         QueriesModule,
         MutationsModule
