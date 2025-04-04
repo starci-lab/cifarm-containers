@@ -1,13 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, UserSchema } from "@src/databases"
-import { computeRaw, WithStatus } from "@src/common"
+import { InjectMongoose } from "@src/databases"
 import { Connection } from "mongoose"
-import { MintOffchainTokensRequest, MintOffchainTokensResponse } from "./wrap-nft-and-create-item.dto"
+import { WrapNFTAndCreateItemRequest, WrapNFTAndCreateItemResponse } from "./wrap-nft-and-create-item.dto"
 import { HoneycombService } from "@src/honeycomb"
 import { TokenBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
-import { GraphQLError } from "graphql"
-import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { InjectKafkaProducer } from "@src/brokers"
 import { Producer } from "kafkajs"
 
 @Injectable()
@@ -25,89 +23,60 @@ export class WrapNFTAndCreateItemService {
         private readonly kafkaProducer: Producer
     ) {}
 
-    async wrapNFTAndCreateItemService(
+    async wrapNftAndCreateItemService(
         { id: userId }: UserLike,
-        { amount }: MintOffchainTokensRequest
-    ): Promise<MintOffchainTokensResponse> {
+        { chainKey, network, nftAddress, collectionAddress }: WrapNFTAndCreateItemRequest
+    ): Promise<WrapNFTAndCreateItemResponse> {
         const mongoSession = await this.connection.startSession()
-        let syncedUser: WithStatus<UserSchema> | undefined
+        //let syncedUser: WithStatus<UserSchema> | undefined
         try {
-            const result = await mongoSession.withTransaction(async (mongoSession) => {
-                /************************************************************
-                 * RETRIEVE AND VALIDATE USER DATA
-                 ************************************************************/
-                const user = await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .findById(userId)
-                    .session(mongoSession)
+            console.log(chainKey, network, nftAddress, collectionAddress)
+            console.log(userId)
+            // const result = await mongoSession.withTransaction(async (mongoSession) => {
+            //     // const { txResponse } = await this.honeycombService.createMintResourceTransaction({
+            //     //     amount: computeRaw(amount, decimals).toString(),
+            //     //     resourceAddress: tokenResourceAddress,
+            //     //     network: user.network,
+            //     //     payerAddress: user.accountAddress,
+            //     //     toAddress: user.accountAddress
+            //     // })
 
-                if (!user) {
-                    throw new GraphQLError("User not found", {
-                        extensions: {
-                            code: "USER_NOT_FOUND"
-                        }
-                    })
-                }
-                const userSnapshot = user.$clone()  
-
-                /************************************************************
-                 * VALIDATE AND UPDATE TOKEN BALANCE
-                 ************************************************************/
-                // Check if user has enough tokens
-                if (user.tokens < amount) {
-                    throw new GraphQLError("Insufficient tokens", {
-                        extensions: {
-                            code: "INSUFFICIENT_TOKENS"
-                        }
-                    })
-                }
-
-                // Subtract tokens from user's balance
-                this.tokenBalanceService.subtract({
-                    user,
-                    amount
-                })
-
-                /************************************************************
-                 * CREATE MINT TRANSACTION
-                 ************************************************************/
-                const { tokenResourceAddress, decimals } = this.staticService.honeycombInfo
-
-                const { txResponse } = await this.honeycombService.createMintResourceTransaction({
-                    amount: computeRaw(amount, decimals).toString(),
-                    resourceAddress: tokenResourceAddress,
-                    network: user.network,
-                    payerAddress: user.accountAddress,
-                    toAddress: user.accountAddress
-                })
-
-                /************************************************************
-                 * UPDATE USER DATA
-                 ************************************************************/
-                // Update user token balance
-                this.tokenBalanceService.subtract({
-                    user,
-                    amount
-                })
-                await user.save({ session: mongoSession })
-                syncedUser = this.syncService.getPartialUpdatedSyncedUser({
-                    userSnapshot,
-                    userUpdated: user
-                })
-                return txResponse
-            })
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncUser,
-                    messages: [
-                        { value: JSON.stringify({ userId, data: syncedUser }) }
-                    ]
-                })
-            ])
+            //     // /************************************************************
+            //     //  * UPDATE USER DATA
+            //     //  ************************************************************/
+            //     // // Update user token balance
+            //     // this.tokenBalanceService.subtract({
+            //     //     user,
+            //     //     amount
+            //     // })
+            //     // await user.save({ session: mongoSession })
+            //     // syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+            //     //     userSnapshot,
+            //     //     userUpdated: user
+            //     // })
+            //     //return txResponse
+            // })
+            // await Promise.all([
+            //     this.kafkaProducer.send({
+            //         topic: KafkaTopic.SyncUser,
+            //         messages: [
+            //             { value: JSON.stringify({ userId, data: syncedUser }) }
+            //         ]
+            //     })
+            // ])
+            // return {
+            //     success: true,
+            //     message: "Mint offchain tokens successfully",
+            //     data: result
+            // }
             return {
                 success: true,
                 message: "Mint offchain tokens successfully",
-                data: result
+                data: {
+                    blockhash: "0x1234567890abcdef",
+                    lastValidBlockHeight: 1234567890,
+                    transaction: "0x1234567890abcdef"
+                }
             }
         } catch (error) {
             this.logger.error(error)

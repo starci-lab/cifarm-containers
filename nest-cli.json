@@ -71,8 +71,8 @@
       "sourceRoot": "apps/cli/src",
       "compilerOptions": {
         "webpack": true,
-        "tsConfigPath": "apps/cli/tsconfig.app.json",
-        "webpackConfigPath": "apps/cli/webpack.config.js"
+        "webpackConfigPath": "apps/cli/webpack.config.js",
+        "tsConfigPath": "apps/cli/tsconfig.app.json"
       }
     },
     "telegram-bot": {

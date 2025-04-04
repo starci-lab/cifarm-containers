@@ -93,9 +93,6 @@ export interface CreateCharacterModelCommandOptions {
     //create the database if it does not exist
     network: Network
     projectAddress: string
-    mintAsKind: MintAsKind
+    mintAsKind: MintAsKind  
     collectionAddress: string
 }
-
-//sample
-//npm run cli:dev hc create-character-model

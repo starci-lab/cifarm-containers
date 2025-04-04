@@ -183,6 +183,30 @@ export class HoneycombService {
 
         return { txResponse: { ...txResponse, transaction: signedTransaction } }
     }
+    
+    public async createWrapNFTAndCreateItemTransaction({
+        network = Network.Testnet,
+        resourceAddress,
+        amount,
+        toAddress,
+        payerAddress
+    }: CreateMintResourceTransactionParams): Promise<CreateMintResourceTransactionResponse> {
+        const {
+            createMintResourceTransaction: txResponse // This is the transaction response, you'll need to sign and send this transaction
+        } = await this.edgeClients[network].createMintResourceTransaction({
+            resource: resourceAddress.toString(), // Resource public key as a string
+            amount: amount.toString(), // Amount of the resource to mint
+            authority: this.authorityKeypairs[network].publicKey.toBase58(), // Project authority's public key
+            owner: toAddress, // The owner's public key, this wallet will receive the resource
+            payer: payerAddress // Optional, specify when you want a different wallet to pay for the tx
+        })
+        const signedTransaction = this.signTransaction({
+            network,
+            parsedTransaction: txResponse.transaction
+        })
+
+        return { txResponse: { ...txResponse, transaction: signedTransaction } }
+    }
 
     public async createCreateSplStakingPoolTransaction({
         network = Network.Testnet,
@@ -418,7 +442,7 @@ export class HoneycombService {
             mintAs,
             config,
             attributes,
-            cooldown
+            cooldown,
         })
 
         const signedTransaction = this.signTransaction({
