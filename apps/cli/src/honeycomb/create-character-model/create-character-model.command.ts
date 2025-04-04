@@ -13,6 +13,7 @@ export class CreateCharacterModelCommand extends CommandRunner {
     }
 
     async run(_: Array<string>, options?: CreateCharacterModelCommandOptions): Promise<void> {
+<<<<<<< HEAD
         try {
             const {
                 network,
@@ -52,6 +53,33 @@ export class CreateCharacterModelCommand extends CommandRunner {
             } else {
                 this.logger.error(error)
                 this.logger.error(`Failed to create the character model: ${error}`)
+=======
+        console.log(options)
+        const {
+            network,
+            projectAddress,
+            mintAsKind,
+            collectionAddress,
+        } = options
+        this.logger.debug("Creating the character model...")
+        const { txResponse, characterModelAddress } = await this.honeycombService.createCreateCharacterModelTransaction({
+            network,
+            projectAddress,
+            mintAs: {
+                kind: mintAsKind
+            },
+            config: {
+                kind: "Wrapped",
+                criterias: [{
+                    kind: "Collection",
+                    params: collectionAddress
+                }]
+
+            },
+            attributes: [],
+            cooldown: {
+                ejection: 0
+>>>>>>> bdaed17d1e64604964f0edb3902bc842e6a2fa53
             }
         } catch (error) {
             this.logger.error(error)
@@ -68,7 +96,10 @@ export class CreateCharacterModelCommand extends CommandRunner {
         return mintAsKind as MintAsKind
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> bdaed17d1e64604964f0edb3902bc842e6a2fa53
     @Option({
         flags: "-n, --network <network>",
         description: "Network to create the project",
@@ -77,7 +108,7 @@ export class CreateCharacterModelCommand extends CommandRunner {
     parseNetwork(network: string): Network {
         return network as Network
     }
-
+    
     @Option({
         flags: "-p, --projectAddress <projectAddress>",
         description: "Project address",
@@ -88,7 +119,11 @@ export class CreateCharacterModelCommand extends CommandRunner {
     }
 
     @Option({
+<<<<<<< HEAD
         flags: "-c, --collectionAddress <collectionAddress>",
+=======
+        flags: "-ca, --collectionAddress <collectionAddress>",
+>>>>>>> bdaed17d1e64604964f0edb3902bc842e6a2fa53
         description: "Collection address",
         defaultValue: "FkJJyaMCMmNHGWQkBkrVBo9Trz8o9ZffKBcpyC3SdZx4"
     })
@@ -101,6 +136,15 @@ export interface CreateCharacterModelCommandOptions {
     //create the database if it does not exist
     network: Network
     projectAddress: string
+<<<<<<< HEAD
     mintAsKind: MintAsKind  
     collectionAddress: string
 }
+=======
+    mintAsKind: MintAsKind
+    collectionAddress: string
+}
+
+//sample
+//npm run cli:dev hc create-character-model
+>>>>>>> bdaed17d1e64604964f0edb3902bc842e6a2fa53
