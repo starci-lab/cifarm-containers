@@ -13,48 +13,6 @@ export class CreateCharacterModelCommand extends CommandRunner {
     }
 
     async run(_: Array<string>, options?: CreateCharacterModelCommandOptions): Promise<void> {
-<<<<<<< HEAD
-        try {
-            const {
-                network,
-                projectAddress,
-                mintAsKind,
-                collectionAddress
-            } = options
-            this.logger.debug("Creating the character model...")
-            console.log(options)
-            const { txResponse, characterModelAddress } = await this.honeycombService.createCreateCharacterModelTransaction({
-                network,
-                projectAddress,
-                mintAs: {
-                    kind: mintAsKind
-                },
-                config: {
-                    kind: "Wrapped",
-                    criterias: [
-                        {
-                            kind: "Collection",
-                            params: collectionAddress,
-                        },
-                    ],
-                },
-                attributes: [],
-                cooldown: {
-                    ejection: 0
-                }
-            })
-            const { signature, status, error } = await this.honeycombService.sendTransaction({
-                network,
-                txResponse
-            })
-            if (status.trim().toLowerCase() === "success") {
-                this.logger.debug(`Character model created with txHash: ${signature}`)
-                this.logger.debug(`Character model address: ${characterModelAddress}`)
-            } else {
-                this.logger.error(error)
-                this.logger.error(`Failed to create the character model: ${error}`)
-=======
-        console.log(options)
         const {
             network,
             projectAddress,
@@ -79,13 +37,11 @@ export class CreateCharacterModelCommand extends CommandRunner {
             attributes: [],
             cooldown: {
                 ejection: 0
->>>>>>> bdaed17d1e64604964f0edb3902bc842e6a2fa53
             }
-        } catch (error) {
-            this.logger.error(error)
-        }
+        })
+        this.logger.debug(`Character model created at ${characterModelAddress}`)
+        this.logger.debug(`Transaction hash: ${txResponse.transaction}`)
     }
-
 
     @Option({
         flags: "-mak, --mintAsKind <mintAsKind>",
@@ -96,10 +52,6 @@ export class CreateCharacterModelCommand extends CommandRunner {
         return mintAsKind as MintAsKind
     }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> bdaed17d1e64604964f0edb3902bc842e6a2fa53
     @Option({
         flags: "-n, --network <network>",
         description: "Network to create the project",
@@ -119,11 +71,7 @@ export class CreateCharacterModelCommand extends CommandRunner {
     }
 
     @Option({
-<<<<<<< HEAD
-        flags: "-c, --collectionAddress <collectionAddress>",
-=======
         flags: "-ca, --collectionAddress <collectionAddress>",
->>>>>>> bdaed17d1e64604964f0edb3902bc842e6a2fa53
         description: "Collection address",
         defaultValue: "FkJJyaMCMmNHGWQkBkrVBo9Trz8o9ZffKBcpyC3SdZx4"
     })
@@ -136,15 +84,6 @@ export interface CreateCharacterModelCommandOptions {
     //create the database if it does not exist
     network: Network
     projectAddress: string
-<<<<<<< HEAD
     mintAsKind: MintAsKind  
     collectionAddress: string
 }
-=======
-    mintAsKind: MintAsKind
-    collectionAddress: string
-}
-
-//sample
-//npm run cli:dev hc create-character-model
->>>>>>> bdaed17d1e64604964f0edb3902bc842e6a2fa53
