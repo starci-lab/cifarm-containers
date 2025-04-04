@@ -1,5 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
-import { createFirstCharLowerCaseEnumType } from "./utils"
+import { createFirstCharLowerCaseEnumType } from "@src/common"
 
 // Plant Current State Enum
 export enum PlantCurrentState {

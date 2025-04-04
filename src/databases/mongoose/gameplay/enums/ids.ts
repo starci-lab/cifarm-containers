@@ -1,5 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
-import { createFirstCharLowerCaseEnumType } from "./utils"
+import { createFirstCharLowerCaseEnumType } from "@src/common"
 
 // Animal Enum
 export enum AnimalId {

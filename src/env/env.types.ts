@@ -1,3 +1,6 @@
+import { registerEnumType } from "@nestjs/graphql"
+import { createFirstCharLowerCaseEnumType } from "@src/common"
+
 export enum Container {
     Ws = "ws",
     GraphQLGateway = "graphQlGateway",
@@ -23,6 +26,22 @@ export enum Network {
     Mainnet = "mainnet"
 }
 
+export const FirstCharLowerCaseNetwork = createFirstCharLowerCaseEnumType(Network)
+
+registerEnumType(FirstCharLowerCaseNetwork, {
+    name: "Network",
+    description: "The current chain key",
+    valuesMap: {
+        [Network.Testnet]: {
+            description: "Testnet network key"
+        },
+        [Network.Mainnet]: {
+            description: "Mainnet network key"
+        },
+    }
+})
+
+
 export enum ChainKey {
     Sui = "sui",
     Aptos = "aptos",
@@ -33,6 +52,38 @@ export enum ChainKey {
     Polkadot = "polkadot",
     Near = "near"
 }
+
+export const FirstCharLowerCaseChainKey = createFirstCharLowerCaseEnumType(ChainKey)
+registerEnumType(FirstCharLowerCaseChainKey, {
+    name: "ChainKey",
+    description: "The current chain key",
+    valuesMap: {
+        [ChainKey.Sui]: {
+            description: "The Sui chain key"
+        },
+        [ChainKey.Aptos]: {
+            description: "The Aptos chain key"
+        },
+        [ChainKey.Avalanche]: {
+            description: "The Avalanche chain key"
+        },
+        [ChainKey.Solana]: {
+            description: "The Solana chain key"
+        },
+        [ChainKey.Bsc]: {
+            description: "The BSC chain key"
+        },
+        [ChainKey.Algorand]: {
+            description: "The Algorand chain key"
+        },
+        [ChainKey.Polkadot]: {
+            description: "The Polkadot chain key"
+        },
+        [ChainKey.Near]: {
+            description: "The Near chain key"
+        }
+    }
+})
 
 export interface ChainCredentialsConfig {
     [ChainKey.Near]: {
