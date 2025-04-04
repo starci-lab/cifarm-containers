@@ -14,36 +14,35 @@ export class CreateCharacterModelCommand extends CommandRunner {
 
     async run(_: Array<string>, options?: CreateCharacterModelCommandOptions): Promise<void> {
         console.log(options)
-        const {
-            network,
-            projectAddress,
-            mintAsKind,
-            collectionAddress,
-        } = options
+        const { network, projectAddress, mintAsKind, collectionAddress } = options
         this.logger.debug("Creating the character model...")
-        const { txResponse, characterModelAddress } = await this.honeycombService.createCreateCharacterModelTransaction({
-            network,
-            projectAddress,
-            mintAs: {
-                kind: mintAsKind
-            },
-            config: {
-                kind: "Wrapped",
-                criterias: [{
-                    kind: "Collection",
-                    params: collectionAddress
-                }]
-
-            },
-            attributes: [],
-            cooldown: {
-                ejection: 0
-            }
-        })
-        const { signature, status, error } = await this.honeycombService.sendTransaction({
+        const { txResponse, characterModelAddress } =
+            await this.honeycombService.createCreateCharacterModelTransaction({
+                network,
+                projectAddress,
+                mintAs: {
+                    kind: mintAsKind
+                },
+                config: {
+                    kind: "Wrapped",
+                    criterias: [
+                        {
+                            kind: "Collection",
+                            params: collectionAddress
+                        }
+                    ]
+                },
+                attributes: [],
+                cooldown: {
+                    ejection: 0
+                }
+            })
+        const response = await this.honeycombService.sendTransaction({
             network,
             txResponse
         })
+        const { signature, status, error } = response 
+
         if (status.trim().toLowerCase() === "success") {
             this.logger.debug(`Character model created with txHash: ${signature}`)
             this.logger.debug(`Character model address: ${characterModelAddress}`)
@@ -52,7 +51,6 @@ export class CreateCharacterModelCommand extends CommandRunner {
             this.logger.error(`Failed to create the character model: ${error}`)
         }
     }
-
 
     @Option({
         flags: "-mak, --mintAsKind <mintAsKind>",
@@ -71,7 +69,7 @@ export class CreateCharacterModelCommand extends CommandRunner {
     parseNetwork(network: string): Network {
         return network as Network
     }
-    
+
     @Option({
         flags: "-p, --projectAddress <projectAddress>",
         description: "Project address",

@@ -8,6 +8,7 @@ import { CreateProfilesTreeModule } from "./create-profiles-tree"
 import { CreateAssemblerConfigModule } from "./create-assembler-config"
 import { CreateCharacterModelModule } from "./create-character-model"
 import { CreateCharacterTreeModule } from "./create-character-tree"
+import { CreateWrapAssetToCharacterModule } from "./create-wrap-asset-to-character"
 @Module({
     imports: [
         CreateProjectModule,
@@ -17,7 +18,8 @@ import { CreateCharacterTreeModule } from "./create-character-tree"
         CreateProfilesTreeModule,
         CreateAssemblerConfigModule,
         CreateCharacterModelModule,
-        CreateCharacterTreeModule
+        CreateCharacterTreeModule,
+        CreateWrapAssetToCharacterModule
     ],
     providers: [HoneycombCommand],
 })

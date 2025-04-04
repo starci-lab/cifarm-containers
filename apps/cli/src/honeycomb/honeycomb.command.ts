@@ -8,6 +8,8 @@ import { CreateProfilesTreeCommand } from "./create-profiles-tree"
 import { CreateAssemblerConfigCommand } from "./create-assembler-config"
 import { CreateCharacterModelCommand } from "./create-character-model"
 import { CreateCharacterTreeCommand } from "./create-character-tree"
+import { CreateWrapAssetToCharacterCommand } from "./create-wrap-asset-to-character"
+
 @Command({
     name: "honeycomb",
     aliases: ["hc"],
@@ -20,7 +22,8 @@ import { CreateCharacterTreeCommand } from "./create-character-tree"
         CreateProfilesTreeCommand,
         CreateAssemblerConfigCommand,
         CreateCharacterModelCommand,
-        CreateCharacterTreeCommand
+        CreateCharacterTreeCommand,
+        CreateWrapAssetToCharacterCommand
     ]
 })
 export class HoneycombCommand extends CommandRunner {

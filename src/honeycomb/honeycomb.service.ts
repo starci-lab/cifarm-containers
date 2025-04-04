@@ -17,7 +17,7 @@ import { HoneycombOptions } from "./types"
 import { SolanaCoreService } from "@src/blockchain"
 import { Keypair, VersionedTransaction } from "@solana/web3.js"
 import { decode, encode } from "bs58"
-import { sendTransaction } from "@honeycomb-protocol/edge-client/client/helpers"
+import { sendTransaction, sendTransactions } from "@honeycomb-protocol/edge-client/client/helpers"
 import { Atomic } from "@src/common"
 
 @Injectable()
@@ -59,13 +59,35 @@ export class HoneycombService {
         return encode(tx.serialize())
     }
 
-    public sendTransaction({ txResponse, network = Network.Testnet }: SendTransactionParams) {
-        return sendTransaction(this.edgeClients[network], txResponse, [
-            this.authorityKeypairs[network]
-        ])
+    public sendTransactions({ txResponses, network = Network.Testnet }: SendTransactionsParams) {
+        const transactions = []
+        for (const tx of txResponses.transactions) {
+            transactions.push(this.signTransaction({ network, parsedTransaction: tx }))
+        }
+        return sendTransactions(
+            this.edgeClients[network],
+            {
+                blockhash: txResponses.blockhash,
+                lastValidBlockHeight: txResponses.lastValidBlockHeight,
+                transactions
+            },
+            [this.authorityKeypairs[network]]
+        )
     }
 
-    public async createCreateCreateProjectTransaction({
+    public sendTransaction({ txResponse, network = Network.Testnet }: SendTransactionParams) {
+        return sendTransaction(
+            this.edgeClients[network],
+            {
+                blockhash: txResponse.blockhash,
+                lastValidBlockHeight: txResponse.lastValidBlockHeight,
+                transaction: txResponse.transaction
+            },
+            [this.authorityKeypairs[network]]
+        )
+    }
+
+    public async createCreateProjectTransaction({
         network = Network.Testnet,
         projectName,
         achievements,
@@ -351,7 +373,10 @@ export class HoneycombService {
         order
     }: CreateCreateAssemblerConfigTransactionParams): Promise<CreateCreateAssemblerConfigTransactionResponse> {
         const {
-            createCreateAssemblerConfigTransaction: { tx: txResponse, assemblerConfig: assemblerConfigAddress }
+            createCreateAssemblerConfigTransaction: {
+                tx: txResponse,
+                assemblerConfig: assemblerConfigAddress
+            }
         } = await this.edgeClients[network].createCreateAssemblerConfigTransaction({
             project: projectAddress.toString(),
             authority: this.authorityKeypairs[network].publicKey.toBase58(),
@@ -366,7 +391,10 @@ export class HoneycombService {
             parsedTransaction: txResponse.transaction
         })
 
-        return { txResponse: { ...txResponse, transaction: signedTransaction }, assemblerConfigAddress }
+        return {
+            txResponse: { ...txResponse, transaction: signedTransaction },
+            assemblerConfigAddress
+        }
     }
 
     public async createCreateCharacterModelTransaction({
@@ -379,7 +407,10 @@ export class HoneycombService {
         cooldown
     }: CreateCreateCharacterModelTransactionParams): Promise<CreateCreateCharacterModelTransactionResponse> {
         const {
-            createCreateCharacterModelTransaction: { tx: txResponse, characterModel: characterModelAddress }
+            createCreateCharacterModelTransaction: {
+                tx: txResponse,
+                characterModel: characterModelAddress
+            }
         } = await this.edgeClients[network].createCreateCharacterModelTransaction({
             project: projectAddress.toString(),
             authority: this.authorityKeypairs[network].publicKey.toBase58(),
@@ -395,7 +426,10 @@ export class HoneycombService {
             parsedTransaction: txResponse.transaction
         })
 
-        return { txResponse: { ...txResponse, transaction: signedTransaction }, characterModelAddress }
+        return {
+            txResponse: { ...txResponse, transaction: signedTransaction },
+            characterModelAddress
+        }
     }
 
     public async createCreateCharactersTreeTransaction({
@@ -451,6 +485,50 @@ export class HoneycombService {
 
         return { txResponse: { ...txResponse, transaction: signedTransaction } }
     }
+
+    public async createWrapAssetsToCharacterTransactions({
+        network = Network.Testnet,
+        projectAddress,
+        characterModelAddress,
+        walletAddress,
+        mintAddresses
+    }: CreateWrapAssetsToCharacterTransactionParams): Promise<CreateWrapAssetsToCharacterTransactionsResponse> {
+        const { createWrapAssetsToCharacterTransactions: txResponse } = await this.edgeClients[
+            network
+        ].createWrapAssetsToCharacterTransactions({
+            project: projectAddress.toString(),
+            characterModel: characterModelAddress.toString(),
+            wallet: walletAddress.toString(),
+            mintList: mintAddresses
+        })      
+
+        const parsedTransactions = []
+        for (const tx of txResponse.transactions) {
+            const signedTransaction = this.signTransaction({
+                network,
+                parsedTransaction: tx
+            })
+            parsedTransactions.push(signedTransaction)
+        }
+
+        return {
+            txResponses: { ...txResponse, transactions: parsedTransactions },
+            characterModelAddress
+        }
+    }
+}
+
+export interface CreateWrapAssetsToCharacterTransactionParams
+    extends BaseHoneycombTransactionParams {
+    projectAddress: string
+    characterModelAddress: string
+    walletAddress: string
+    mintAddresses: Array<string>
+}
+
+export interface CreateWrapAssetsToCharacterTransactionsResponse
+    extends BaseHoneycombTransactionResponses {
+    characterModelAddress: string
 }
 
 export interface CreateAssembleCharacterTransactionParams extends BaseHoneycombTransactionParams {
@@ -547,8 +625,18 @@ export interface EdgeTxResponse {
     lastValidBlockHeight: number
 }
 
-export type BaseHoneycombTransactionResponse = {
+export interface EdgeTxResponses {
+    transactions: Array<string>
+    blockhash: string
+    lastValidBlockHeight: number
+}
+
+export interface BaseHoneycombTransactionResponse {
     txResponse: EdgeTxResponse
+}
+
+export interface BaseHoneycombTransactionResponses {
+    txResponses: EdgeTxResponses
 }
 
 export interface CreateCreateProjectTransactionParams extends BaseHoneycombTransactionParams {
@@ -605,6 +693,11 @@ export enum HoneycombPrefix {
 
 export interface SendTransactionParams {
     txResponse: EdgeTxResponse
+    network?: Network
+}
+
+export interface SendTransactionsParams {
+    txResponses: EdgeTxResponses
     network?: Network
 }
 
