@@ -24,9 +24,9 @@ import { NFTModule } from "./nft"
             isGlobal: true
         }),
         DatabaseModule,
-        DockerModule,
-        HoneycombModule,
-        NFTModule
+        //DockerModule,
+        //HoneycombModule,
+        //NFTModule
     ]
 })
 export class AppModule {}

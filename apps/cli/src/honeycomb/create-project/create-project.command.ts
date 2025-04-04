@@ -14,10 +14,9 @@ export class CreateProjectCommand extends CommandRunner {
     }
 
     async run(_: Array<string>, options?: CreateProjectCommandOptions): Promise<void> {
-        console.log(options)
         this.logger.debug("Creating the project...")
         try {
-            const { projectAddress, txResponse } = await this.honeycombService.createCreateCreateProjectTransaction({
+            const { projectAddress, txResponse } = await this.honeycombService.createCreateProjectTransaction({
                 network: options.network,
                 projectName: options.projectName,
             })

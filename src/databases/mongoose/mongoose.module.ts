@@ -56,6 +56,8 @@ import {
     FlowerSchemaClass,
     PetInfoSchema,
     PetInfoSchemaClass,
+    NFTItemSchema,
+    NFTItemSchemaClass,
     //NFTItemSchema,
     //NFTItemSchemaClass
 } from "./gameplay"
@@ -230,10 +232,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                             name: KeyValueStoreSchema.name,
                             useFactory: () => KeyValueStoreSchemaClass
                         },
-                        // {
-                        //     name: NFTItemSchema.name,
-                        //     useFactory: () => NFTItemSchemaClass
-                        // }
+                        {
+                            name: NFTItemSchema.name,
+                            useFactory: () => NFTItemSchemaClass
+                        }
                     ],
                     connectionName
                 )
