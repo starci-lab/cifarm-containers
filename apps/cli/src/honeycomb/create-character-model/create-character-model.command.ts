@@ -17,13 +17,8 @@ export class CreateCharacterModelCommand extends CommandRunner {
         const {
             network,
             projectAddress,
-            assemblerConfigAddress,
             mintAsKind,
-            collectionName,
-            name,
-            creatorAddress,
-            symbol,
-            description
+            collectionAddress,
         } = options
         this.logger.debug("Creating the character model...")
         const { txResponse, characterModelAddress } = await this.honeycombService.createCreateCharacterModelTransaction({
@@ -33,23 +28,13 @@ export class CreateCharacterModelCommand extends CommandRunner {
                 kind: mintAsKind
             },
             config: {
-                kind: "Assembled",
-                assemblerConfigInput: {
-                    assemblerConfig: assemblerConfigAddress,
-                    collectionName,
-                    name,
-                    creators: [
-                        {
-                            address: creatorAddress,
-                            share: 100
-                        }
-                    ],
-                    description,
-                    sellerFeeBasisPoints: 0,
-                    symbol
-                }
+                kind: "Wrapped",
+                criterias: [{
+                    kind: "Collection",
+                    params: collectionAddress
+                }]
+
             },
-            payerAddress: creatorAddress,
             attributes: [],
             cooldown: {
                 ejection: 0
@@ -68,32 +53,6 @@ export class CreateCharacterModelCommand extends CommandRunner {
         }
     }
 
-    @Option({
-        flags: "-s, --symbol <symbol>",
-        description: "Symbol",
-        defaultValue: "CIFARMFRUIT"
-    })
-    parseSymbol(symbol: string): string {
-        return symbol
-    }
-
-    @Option({
-        flags: "-d, --description <description>",
-        description: "Description",
-        defaultValue: "CiFarm Fruit collection"
-    })
-    parseDescription(description: string): string {
-        return description
-    }
-
-    @Option({
-        flags: "-a, --assemblerConfigAddress <assemblerConfigAddress>",
-        description: "Assembler config address",
-        defaultValue: "3PQRrZjX2zMoFPYmf2RYgxfss4TaeTpFa7R1KnJopEFe"
-    })
-    parseAssemblerConfigAddress(assemblerConfigAddress: string): string {
-        return assemblerConfigAddress
-    }
 
     @Option({
         flags: "-mak, --mintAsKind <mintAsKind>",
@@ -105,15 +64,6 @@ export class CreateCharacterModelCommand extends CommandRunner {
     }
 
     @Option({
-        flags: "-t, --ticker <ticker>",
-        description: "Ticker",
-        defaultValue: "Fruit"
-    })
-    parseTicker(ticker: string): string {
-        return ticker
-    }
-
-    @Option({
         flags: "-n, --network <network>",
         description: "Network to create the project",
         defaultValue: Network.Testnet
@@ -121,7 +71,7 @@ export class CreateCharacterModelCommand extends CommandRunner {
     parseNetwork(network: string): Network {
         return network as Network
     }
-
+    
     @Option({
         flags: "-p, --projectAddress <projectAddress>",
         description: "Project address",
@@ -132,39 +82,12 @@ export class CreateCharacterModelCommand extends CommandRunner {
     }
 
     @Option({
-        flags: "-na, --numAssets <numAssets>",
-        description: "Number of assets",
-        defaultValue: 100000
+        flags: "-ca, --collectionAddress <collectionAddress>",
+        description: "Collection address",
+        defaultValue: "FkJJyaMCMmNHGWQkBkrVBo9Trz8o9ZffKBcpyC3SdZx4"
     })
-    parseNumAssets(numAssets: string): number {
-        return parseInt(numAssets)
-    }
-
-    @Option({
-        flags: "-c, --creatorAddress <creatorAddress>",
-        description: "Creator address",
-        defaultValue: "QVeEob5S8U47rwSH6wMsPRiFDPCcQ3wPqBgfjQQd8aX"
-    })
-    parseCreatorAddress(creatorAddress: string): string {
-        return creatorAddress
-    }
-
-    @Option({
-        flags: "--name <name>",
-        description: "Name",
-        defaultValue: "Apple 0"
-    })
-    parseName(name: string): string {
-        return name
-    }
-
-    @Option({
-        flags: "-cn,--collectionName <collectionName>",
-        description: "Collection name",
-        defaultValue: "CiFarm Fruit"
-    })
-    parseCollectionName(collectionName: string): string {
-        return collectionName
+    parseCollectionAddress(collectionAddress: string): string {
+        return collectionAddress
     }
 }
 
@@ -172,16 +95,8 @@ export interface CreateCharacterModelCommandOptions {
     //create the database if it does not exist
     network: Network
     projectAddress: string
-    numAssets: number
-    ticker: string
     mintAsKind: MintAsKind
-    mintAsAddress: string
-    assemblerConfigAddress: string
-    collectionName: string
-    name: string
-    creatorAddress: string
-    symbol: string
-    description: string
+    collectionAddress: string
 }
 
 //sample

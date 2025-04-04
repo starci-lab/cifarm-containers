@@ -478,7 +478,6 @@ export interface CreateCreateCharactersTreeTransactionResponse
 export interface CreateCreateCharacterModelTransactionParams
     extends BaseHoneycombTransactionParams {
     projectAddress: string
-    payerAddress: string
     mintAs: MintAsInput
     config: CharacterConfigInput
     attributes: Array<[Atomic, Atomic]>
