@@ -55,7 +55,9 @@ import {
     FlowerSchema,
     FlowerSchemaClass,
     PetInfoSchema,
-    PetInfoSchemaClass
+    PetInfoSchemaClass,
+    //NFTItemSchema,
+    //NFTItemSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -153,8 +155,8 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: FruitSchema.name,
                             useFactory: () => FruitSchemaClass
-                        }
-                        ,{
+                        },
+                        {
                             name: UserSchema.name,
                             inject: [getMongooseToken(options)],
                             useFactory: (
@@ -227,7 +229,11 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: KeyValueStoreSchema.name,
                             useFactory: () => KeyValueStoreSchemaClass
-                        }
+                        },
+                        // {
+                        //     name: NFTItemSchema.name,
+                        //     useFactory: () => NFTItemSchemaClass
+                        // }
                     ],
                     connectionName
                 )
