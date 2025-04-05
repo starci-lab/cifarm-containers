@@ -11,6 +11,8 @@ import { GraphQLError } from "graphql"
 import { NFTMetadataSchema } from "@src/databases"
 import { StaticService } from "@src/gameplay"
 import { NFTTypeToPlacedItemTypeId } from "@src/databases"
+import { NFT_METADATA } from "@src/databases"
+
 @Injectable()
 export class ValidateSolanaMetaplexNFTFrozenService {
     private readonly logger = new Logger(ValidateSolanaMetaplexNFTFrozenService.name)
@@ -142,6 +144,7 @@ export class ValidateSolanaMetaplexNFTFrozenService {
                                         (attribute) => attribute.key === AttributeName.DiseaseResistance
                                     )?.value
                                 },
+                                [NFT_METADATA]: foundNFTMetadata.id,
                                 isStored: true
                             }
                         ],

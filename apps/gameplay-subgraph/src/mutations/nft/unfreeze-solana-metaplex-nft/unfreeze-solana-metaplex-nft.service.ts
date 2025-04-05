@@ -1,19 +1,19 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose } from "@src/databases"
+import { InjectMongoose, PlacedItemSchema } from "@src/databases"
 import { Connection } from "mongoose"
-import {
-    FreezeSolanaMetaplexNFTRequest,
-    FreezeSolanaMetaplexNFTResponse
-} from "./freeze-solana-metaplex-nft.dto"
 import { SolanaMetaplexService } from "@src/blockchain"
 import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
 import { NFTMetadataSchema } from "@src/databases"
+import {
+    UnfreezeSolanaMetaplexNFTRequest,
+    UnfreezeSolanaMetaplexNFTResponse
+} from "./unfreeze-solana-metaplex-nft.dto"
 
 @Injectable()
-export class FreezeSolanaMetaplexNFTService {
-    private readonly logger = new Logger(FreezeSolanaMetaplexNFTService.name)
+export class UnfreezeSolanaMetaplexNFTService {
+    private readonly logger = new Logger(UnfreezeSolanaMetaplexNFTService.name)
 
     constructor(
         @InjectMongoose()
@@ -21,10 +21,10 @@ export class FreezeSolanaMetaplexNFTService {
         private readonly solanaMetaplexService: SolanaMetaplexService,
     ) {}
 
-    async freezeSolanaMetaplexNFT(
+    async unfreezeSolanaMetaplexNFT(
         { id }: UserLike,
-        { nftAddress, collectionAddress }: FreezeSolanaMetaplexNFTRequest
-    ): Promise<FreezeSolanaMetaplexNFTResponse> {
+        { nftAddress }: UnfreezeSolanaMetaplexNFTRequest
+    ): Promise<UnfreezeSolanaMetaplexNFTResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to handle the transaction lifecycle
@@ -40,10 +40,9 @@ export class FreezeSolanaMetaplexNFTService {
                         }
                     })
                 }
-                const { network, accountAddress } = user
                 const nft = await this.solanaMetaplexService.getNft({
                     nftAddress,
-                    network
+                    network: user.network
                 })
                 if (!nft) {
                     throw new GraphQLError("NFT not found", {
@@ -52,52 +51,52 @@ export class FreezeSolanaMetaplexNFTService {
                         }
                     })
                 }
-                if (nft.permanentFreezeDelegate.frozen) {
-                    throw new GraphQLError("NFT is already frozen", {
+                if (!nft.permanentFreezeDelegate.frozen) {
+                    throw new GraphQLError("NFT is not frozen", {
                         extensions: {
-                            code: "NFT_ALREADY_FROZEN"
+                            code: "NFT_NOT_FROZEN"
                         }
                     })
                 }
-                if (nft.owner !== accountAddress) {
-                    throw new GraphQLError("You are not the owner of this NFT", {
+                if (nft.owner !== user.accountAddress) {
+                    throw new GraphQLError("NFT is not owned by the user", {
                         extensions: {
-                            code: "NOT_OWNER"
+                            code: "NFT_NOT_OWNED"
                         }
                     })
                 }
-                // create a versionel transaction to free the nft from the collection
-                const { serializedTx } = await this.solanaMetaplexService.createFreezeNFTTransaction({
-                    nftAddress,
-                    collectionAddress,
-                    network,
-                    feePayer: accountAddress
-                })
-                // create a nft metadata to track the nft status
-                // recall the validate to set the frozen status to true
-                const foundNFTMetadata = await this.connection
+                
+                const { network, accountAddress } = user
+                const metadata = await this.connection
                     .model<NFTMetadataSchema>(NFTMetadataSchema.name)
                     .findOne({
                         nftAddress,
-                        collectionAddress,
                         user: id
-                    }).session(session)
-                if (!foundNFTMetadata) {
-                    await this.connection
-                        .model<NFTMetadataSchema>(NFTMetadataSchema.name)
-                        .create([{
-                            nftAddress,
-                            collectionAddress,
-                            user: id,
-                            validated: false
-                        }], { session })
-                }
+                    })
+                if (metadata) {
+                    await metadata.deleteOne({ session })
+                    const placedItem = await this.connection
+                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                        .findOne({
+                            nftMetadata: metadata.id
+                        }).session(session) 
+                    // delete if exists
+                    if (placedItem) {
+                        await placedItem.deleteOne({ session })
+                    }
+                }        
+                const { serializedTx } = await this.solanaMetaplexService.createUnfreezeNFTTransaction({
+                    nftAddress,
+                    network,
+                    feePayer: accountAddress,
+                    collectionAddress: metadata.collectionAddress
+                })         
                 return {
-                    message: "NFT frozen transaction created",
-                    success: true,
                     data: {
                         serializedTx
                     },
+                    success: true,
+                    message: "NFT unfrozen successfully"
                 }
             })
             return result

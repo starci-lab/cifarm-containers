@@ -151,6 +151,28 @@ export class SolanaMetaplexService {
         }
     }
 
+    public async createUnfreezeNFTTransaction({
+        network = Network.Mainnet,
+        nftAddress,
+        collectionAddress,
+        feePayer
+    }: CreateUnfreezeNFTTransactionParams): Promise<CreateUnfreezeNFTTransactionResponse> {
+        const umi = this.umis[network]
+        const tx = await updatePlugin(umi, {
+            asset: publicKey(nftAddress),
+            collection: publicKey(collectionAddress),
+            plugin: {
+                type: "PermanentFreezeDelegate",
+                frozen: false,
+            },
+            payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity
+        }).useV0()
+            .setBlockhash(await umi.rpc.getLatestBlockhash())
+            .buildAndSign(umi)
+
+        return { serializedTx: base58.encode(umi.transactions.serialize(tx)) }
+    }
+
     public async createFreezeNFTTransaction({
         network = Network.Mainnet,
         nftAddress,
@@ -234,6 +256,15 @@ export interface MetaplexCollectionMetadata {
     }>
     animation_url?: string
     youtube_url?: string
+}
+
+export interface CreateUnfreezeNFTTransactionParams extends WithFeePayer {
+    nftAddress: string
+    collectionAddress?: string
+}
+
+export interface CreateUnfreezeNFTTransactionResponse {
+    serializedTx: string
 }
 
 export interface CreateCollectionResponse {

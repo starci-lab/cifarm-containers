@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { Schema as MongooseSchema } from "mongoose"
+import { Schema as MongooseSchema, Types } from "mongoose"
 import { AbstractSchema } from "./abstract"
 import { AnimalInfoSchema, AnimalInfoSchemaClass } from "./animal-info.schema"
 import { BuildingInfoSchema, BuildingInfoSchemaClass } from "./building-info.schema"
@@ -16,11 +16,13 @@ import {
     PLACED_ITEM_TYPE,
     TILE_INFO,
     PLANT_INFO,
-    PET_INFO
+    PET_INFO,
+    NFT_METADATA
 } from "../constants"
 import { FruitInfoSchema, FruitInfoSchemaClass } from "./fruit-info.schema"
 import { BeeHouseInfoSchema, BeeHouseInfoSchemaClass } from "./bee-house-info.schema"
 import { PetInfoSchema, PetInfoSchemaClass } from "./pet-info.schema"
+import { NFTMetadataSchema, NFTMetadataSchemaClass } from "./nft-metadata.schema"
 
 @ObjectType({
     description: "The schema for items placed on the farm"
@@ -43,13 +45,13 @@ export class PlacedItemSchema extends AbstractSchema {
         description: "The user who owns this placed item"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name, index: true })
-        user: UserSchema | string
+        user: UserSchema | Types.ObjectId
 
     @Field(() => ID, {
         description: "The type of the placed item"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: PlacedItemTypeSchema.name })
-    [PLACED_ITEM_TYPE]: PlacedItemTypeSchema | string
+    [PLACED_ITEM_TYPE]: PlacedItemTypeSchema | Types.ObjectId
 
     @Field(() => AnimalInfoSchema, { 
         nullable: true,
@@ -106,6 +108,13 @@ export class PlacedItemSchema extends AbstractSchema {
     })
     @Prop({ type: Boolean,  default: false })
         isStored: boolean
+
+    @Field(() => NFTMetadataSchema, {
+        nullable: true,
+        description: "The NFT metadata associated with this placed item, if applicable"
+    })
+    @Prop({ type: NFTMetadataSchemaClass, required: false })
+    [NFT_METADATA]?: NFTMetadataSchema | Types.ObjectId
 }
 
 // Generate Mongoose Schema
