@@ -44,7 +44,7 @@ export class FreezeSolanaMetaplexNFTService {
                         }
                     })
                 }
-                if (nft.freezeDelegate.frozen) {
+                if (nft.permanentFreezeDelegate.frozen) {
                     throw new GraphQLError("NFT is already frozen", {
                         extensions: {
                             code: "NFT_ALREADY_FROZEN"
@@ -63,7 +63,6 @@ export class FreezeSolanaMetaplexNFTService {
                     nftAddress,
                     collectionAddress,
                     network,
-                    //delegateAddress: accountAddress,
                     feePayer: accountAddress
                 })
                 // create a prepare frozen document

@@ -12,8 +12,7 @@ import {
     transferV1,
     fetchAsset,
     AssetV1,
-    freezeAsset,
-    CollectionV1,
+    updatePlugin,
 } from "@metaplex-foundation/mpl-core"
 import { WithFeePayer, WithNetwork } from "../../types"
 import base58 from "bs58"
@@ -100,8 +99,12 @@ export class SolanaMetaplexService {
                     ruleSet: ruleSet("None") // Compatibility rule set
                 },
                 {
-                    type: "FreezeDelegate",
+                    type: "PermanentFreezeDelegate",
                     frozen: false,
+                    authority: {
+                        type: "Owner",
+                        address: umi.identity.publicKey
+                    }
                 }
             ]
         }).sendAndConfirm(umi)
@@ -115,30 +118,21 @@ export class SolanaMetaplexService {
         network = Network.Mainnet,
         nftAddress,
         collectionAddress,
-        delegateAddress,
         feePayer
     }: CreateFreezeNFTTransactionParams): Promise<CreateFreezeNFTTransactionResponse> {
         const umi = this.umis[network]
-        const asset = await fetchAsset(umi, nftAddress)
-        let collection: CollectionV1 | undefined
-        if (collectionAddress) {
-            collection = await fetchCollection(umi, collectionAddress)
-        }
-        const transactionBuilder = freezeAsset(umi, {
-            asset,
-            authority: delegateAddress ? createNoopSigner(publicKey(delegateAddress)) : umi.identity,
-            delegate: delegateAddress ? publicKey(delegateAddress) : umi.identity.publicKey,
-            collection, 
-        })
-        if (feePayer) {
-            const feePayerSigner = createNoopSigner(publicKey(feePayer))
-            transactionBuilder.setFeePayer(feePayerSigner)
-        }
-        
-        const tx = await transactionBuilder
-            .useV0()
+        const tx = await updatePlugin(umi, {
+            asset: publicKey(nftAddress),
+            collection: publicKey(collectionAddress),
+            plugin: {
+                type: "PermanentFreezeDelegate",
+                frozen: true,
+            },
+            payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity
+        }).useV0()
             .setBlockhash(await umi.rpc.getLatestBlockhash())
             .buildAndSign(umi)
+
         return { serializedTx: base58.encode(umi.transactions.serialize(tx)) }
     }
 
@@ -161,7 +155,6 @@ export class SolanaMetaplexService {
 export interface CreateFreezeNFTTransactionParams extends WithFeePayer {
     nftAddress: string
     collectionAddress?: string
-    delegateAddress?: string
 }
 
 export interface CreateFreezeNFTTransactionResponse {
