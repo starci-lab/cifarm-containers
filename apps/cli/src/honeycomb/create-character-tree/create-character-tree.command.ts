@@ -54,7 +54,7 @@ export class CreateCharacterTreeCommand extends CommandRunner {
     @Option({
         flags: "-c, --characterModelAddress <characterModelAddress>",
         description: "Character model address",
-        defaultValue: "EUVza4hJBwGWpdKnz77fV7gN5fzriwrvcCSgdRmn6ikV"
+        defaultValue: "AuHyybLoYrHFHy3D6rPkoc9Dn7VPPD2sYcTm4wJgVvCe"
     })
     parseCharacterModelAddress(characterModelAddress: string): string {
         return characterModelAddress

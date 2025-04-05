@@ -74,7 +74,7 @@ export class SolanaMetaplexService {
         const { signature } = await create(umi, {
             asset,
             collection,
-            owner: ownerAddress ? publicKey(ownerAddress) : undefined,
+            owner: ownerAddress ? publicKey(ownerAddress) : umi.identity.publicKey,
             name,
             uri: this.pinataService.getUrl(metadataUri.cid),
             plugins: [

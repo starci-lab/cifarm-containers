@@ -3,25 +3,24 @@ import { Logger } from "@nestjs/common"
 import { Network } from "@src/env"
 import { HoneycombService } from "@src/honeycomb"
 
-@SubCommand({ name: "create-wrap-asset-to-character", description: "Create the honeycomb wrap asset to character" })
-export class CreateWrapAssetToCharacterCommand extends CommandRunner {
-    private readonly logger = new Logger(CreateWrapAssetToCharacterCommand.name)
+@SubCommand({ name: "create-unwrap-asset-from-character", description: "Create the honeycomb unwrap asset from character" })
+export class CreateUnwrapAssetFromCharacterCommand extends CommandRunner {
+    private readonly logger = new Logger(CreateUnwrapAssetFromCharacterCommand.name)
 
     constructor(private readonly honeycombService: HoneycombService) {
         super()
     }
 
-    async run(_: Array<string>, options?: CreateWrapAssetToCharacterCommandOptions): Promise<void> {
-        console.log(options)
-        const { network, projectAddress, walletAddress, mintAddress, characterModelAddress } = options
-        this.logger.debug("Creating the wrap asset to character...")
+    async run(_: Array<string>, options?: CreateUnwrapAssetFromCharacterCommandOptions): Promise<void> {
+        const { network, projectAddress, walletAddress, characterAddress, characterModelAddress } = options
+        this.logger.debug("Creating the unwrap asset from character...")
         try {
             const { txResponses } =
-            await this.honeycombService.createWrapAssetsToCharacterTransactions({
+            await this.honeycombService.createUnwrapAssetsFromCharacterTransactions({
                 network,
                 projectAddress,
                 walletAddress,
-                mintAddresses: [mintAddress],
+                characterAddresses: [characterAddress],
                 characterModelAddress,
             })  
             const transactions = await this.honeycombService.sendTransactions({
@@ -65,12 +64,12 @@ export class CreateWrapAssetToCharacterCommand extends CommandRunner {
     }
 
     @Option({
-        flags: "-ma, --mintAddress <mintAddress>",
-        description: "Mint address",
+        flags: "-ca, --characterAddress <characterAddress>",
+        description: "Character address",
         defaultValue: "4PzSh87tPLL544We3ePLH6VaKUdHuscWEn21Eej5QpUq"
     })
-    parseMintAddress(mintAddress: string): string {
-        return mintAddress
+    parseCharacterAddress(characterAddress: string): string {
+        return characterAddress
     }
 
     @Option({
@@ -83,14 +82,14 @@ export class CreateWrapAssetToCharacterCommand extends CommandRunner {
     }
 }
 
-export interface CreateWrapAssetToCharacterCommandOptions {
+export interface CreateUnwrapAssetFromCharacterCommandOptions {
     //create the database if it does not exist
     network: Network
     projectAddress: string
     walletAddress: string
-    mintAddress: string
+    characterAddress: string
     characterModelAddress: string
 }
 
 //sample
-//npm run cli:dev hc create-wrap-asset-to-character
+//npm run cli:dev hc create-unwrap-asset-from-character

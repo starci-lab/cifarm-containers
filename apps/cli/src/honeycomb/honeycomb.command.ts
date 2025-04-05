@@ -9,6 +9,7 @@ import { CreateAssemblerConfigCommand } from "./create-assembler-config"
 import { CreateCharacterModelCommand } from "./create-character-model"
 import { CreateCharacterTreeCommand } from "./create-character-tree"
 import { CreateWrapAssetToCharacterCommand } from "./create-wrap-asset-to-character"
+import { CreateUnwrapAssetFromCharacterCommand } from "./create-unwrap-asset-from-character"
 
 @Command({
     name: "honeycomb",
@@ -23,7 +24,8 @@ import { CreateWrapAssetToCharacterCommand } from "./create-wrap-asset-to-charac
         CreateAssemblerConfigCommand,
         CreateCharacterModelCommand,
         CreateCharacterTreeCommand,
-        CreateWrapAssetToCharacterCommand
+        CreateWrapAssetToCharacterCommand,
+        CreateUnwrapAssetFromCharacterCommand   
     ]
 })
 export class HoneycombCommand extends CommandRunner {

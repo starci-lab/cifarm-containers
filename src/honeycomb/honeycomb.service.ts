@@ -24,7 +24,7 @@ import { Atomic } from "@src/common"
 export class HoneycombService {
     private readonly logger = new Logger(HoneycombService.name)
     private authorityKeypairs: Record<Network, Keypair>
-    private edgeClients: Record<Network, EdgeClient>
+    public edgeClients: Record<Network, EdgeClient>
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: HoneycombOptions,
@@ -52,24 +52,17 @@ export class HoneycombService {
 
     private signTransaction({ network, parsedTransaction }: SignTransactionParams) {
         const tx = VersionedTransaction.deserialize(decode(parsedTransaction))
-        console.log({
-            tx
-        })
         tx.sign([this.authorityKeypairs[network]])
         return encode(tx.serialize())
     }
 
     public sendTransactions({ txResponses, network = Network.Testnet }: SendTransactionsParams) {
-        const transactions = []
-        for (const tx of txResponses.transactions) {
-            transactions.push(this.signTransaction({ network, parsedTransaction: tx }))
-        }
         return sendTransactions(
             this.edgeClients[network],
             {
                 blockhash: txResponses.blockhash,
                 lastValidBlockHeight: txResponses.lastValidBlockHeight,
-                transactions
+                transactions: txResponses.transactions
             },
             [this.authorityKeypairs[network]]
         )
@@ -183,7 +176,7 @@ export class HoneycombService {
 
         return { txResponse: { ...txResponse, transaction: signedTransaction } }
     }
-    
+
     public async createWrapNFTAndCreateItemTransaction({
         network = Network.Testnet,
         resourceAddress,
@@ -204,8 +197,32 @@ export class HoneycombService {
             network,
             parsedTransaction: txResponse.transaction
         })
-
         return { txResponse: { ...txResponse, transaction: signedTransaction } }
+    }
+
+    public async createUnwrapAssetsFromCharacterTransactions({
+        network = Network.Testnet,
+        characterAddresses,
+        walletAddress,
+        projectAddress,
+        characterModelAddress
+    }: CreateUnwrapAssetsFromCharacterTransactionsParams): Promise<CreateUnwrapAssetsFromCharacterTransactionsResponse> {
+        const {
+            createUnwrapAssetsFromCharacterTransactions: txResponse // This is the transaction response, you'll need to sign and send this transaction
+        } = await this.edgeClients[network].createUnwrapAssetsFromCharacterTransactions({
+            characterAddresses: characterAddresses, // Resource public key as a string
+            wallet: walletAddress, // Amount of the resource to mint
+            characterModel: characterModelAddress,
+            project: projectAddress
+        })
+
+        const signedTransactions = txResponse.transactions.map((transaction) =>
+            this.signTransaction({
+                network,
+                parsedTransaction: transaction
+            })
+        )
+        return { txResponses: { ...txResponse, transactions: signedTransactions } }
     }
 
     public async createCreateSplStakingPoolTransaction({
@@ -442,7 +459,7 @@ export class HoneycombService {
             mintAs,
             config,
             attributes,
-            cooldown,
+            cooldown
         })
 
         const signedTransaction = this.signTransaction({
@@ -524,7 +541,7 @@ export class HoneycombService {
             characterModel: characterModelAddress.toString(),
             wallet: walletAddress.toString(),
             mintList: mintAddresses
-        })      
+        })
 
         const parsedTransactions = []
         for (const tx of txResponse.transactions) {
@@ -534,6 +551,7 @@ export class HoneycombService {
             })
             parsedTransactions.push(signedTransaction)
         }
+        console.log(parsedTransactions)
 
         return {
             txResponses: { ...txResponse, transactions: parsedTransactions },
@@ -541,6 +559,16 @@ export class HoneycombService {
         }
     }
 }
+
+export interface CreateUnwrapAssetsFromCharacterTransactionsParams
+    extends BaseHoneycombTransactionParams {
+    projectAddress: string
+    characterAddresses: Array<string>
+    walletAddress: string
+    characterModelAddress: string
+}
+
+export type CreateUnwrapAssetsFromCharacterTransactionsResponse = BaseHoneycombTransactionResponses
 
 export interface CreateWrapAssetsToCharacterTransactionParams
     extends BaseHoneycombTransactionParams {
