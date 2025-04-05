@@ -10,7 +10,7 @@ export abstract class ResponseLike {
         message: string
 }
 
-export interface IResponseLike<TData extends object> {
+export interface IResponseLike<TData> {
     success: boolean
     message: string
     data?: TData

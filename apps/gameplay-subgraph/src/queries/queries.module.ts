@@ -3,10 +3,9 @@ import { AnimalsModule } from "./animals"
 import { BuildingsModule } from "./buildings"
 import { CropsModule } from "./crops"
 import { ProductsModule } from "./products"
-import { InventoriesModule } from "./inventories"
 import { InventoryTypesModule } from "./inventory-types"
 import { PlacedItemTypesModule } from "./placed-item-types"
-import { SuppliesModule } from "./supplies"
+import { SuppliesModule  } from "./supplies"
 import { SystemsModule } from "./systems"
 import { TilesModule } from "./tiles"
 import { ToolsModule } from "./tools"
@@ -15,15 +14,17 @@ import { PetsModule } from "./pets"
 import { FruitsModule } from "./fruits"
 import { PlacedItemsModule } from "./placed-items"
 import { FlowersModule } from "./flowers"
-
+import { InventoriesModule } from "./inventories"
+import { NftsModule } from "./nfts"
 @Module({
     imports: [
         AnimalsModule,
         BuildingsModule,
         CropsModule,
         FruitsModule,
-        InventoriesModule,
         InventoryTypesModule,
+        InventoriesModule,
+        NftsModule,
         PlacedItemTypesModule,
         SuppliesModule,
         SystemsModule,

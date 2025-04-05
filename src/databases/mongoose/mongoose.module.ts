@@ -58,8 +58,8 @@ import {
     PetInfoSchemaClass,
     NFTItemSchema,
     NFTItemSchemaClass,
-    //NFTItemSchema,
-    //NFTItemSchemaClass
+    PrepareFrozenNFTSchema,
+    PrepareFrozenNFTSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -235,6 +235,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: NFTItemSchema.name,
                             useFactory: () => NFTItemSchemaClass
+                        },
+                        {
+                            name: PrepareFrozenNFTSchema.name,
+                            useFactory: () => PrepareFrozenNFTSchemaClass
                         }
                     ],
                     connectionName

@@ -18,7 +18,6 @@ export class CreateCharacterTreeCommand extends CommandRunner {
             characterModelAddress,
             numAssets,
         } = options
-        this.logger.debug("Creating the character tree...")
         const { txResponse, treeAddress } = await this.honeycombService.createCreateCharactersTreeTransaction({
             network,
             projectAddress,
@@ -52,7 +51,7 @@ export class CreateCharacterTreeCommand extends CommandRunner {
     }
 
     @Option({
-        flags: "-c, --characterModelAddress <characterModelAddress>",
+        flags: "-cma, --characterModelAddress <characterModelAddress>",
         description: "Character model address",
         defaultValue: "AuHyybLoYrHFHy3D6rPkoc9Dn7VPPD2sYcTm4wJgVvCe"
     })

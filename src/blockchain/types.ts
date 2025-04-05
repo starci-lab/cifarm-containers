@@ -5,4 +5,8 @@ export interface WithNetwork {
     network?: Network 
 }
 
+export interface WithFeePayer extends WithNetwork {
+    feePayer?: string
+}
+
 export type BlockchainOptions = BaseOptions

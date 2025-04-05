@@ -14,6 +14,7 @@ import {
     FruitInfo,
     HoneycombInfo,
     InjectMongoose,
+    NFTType,
     SystemId,
     SystemSchema
 } from "@src/databases"
@@ -301,7 +302,13 @@ export class SystemSeeder implements Seeder {
                 tokenResourceAddress: "6JkqdDyrXsySvnvKBmFVpay9L413VXJcd78kFJ2XSABH",
                 projectAddress: "BoRbyNqh3YmYzzuFMLZ2kjFEC1whr4zS9wPskqp7uqZL",
                 decimals: 6,
-                profilesTreeAddresses: ["BTjBVuqM9be9LbSy7USu6VFhZcdmAyWfatNRNCAuqdtu"]
+                profilesTreeAddresses: ["BTjBVuqM9be9LbSy7USu6VFhZcdmAyWfatNRNCAuqdtu"],
+                characterModels: {
+                    [NFTType.DragonFruit]: {
+                        testnet: "AoDvMMjnuBpeQ6mAkiuRsHkrYCogF3iGVMgr95oysezM",
+                        mainnet: ""
+                    }
+                }
             }
 
             const beeHouseInfo: BeeHouseInfo = {

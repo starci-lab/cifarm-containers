@@ -534,30 +534,24 @@ export class HoneycombService {
         walletAddress,
         mintAddresses
     }: CreateWrapAssetsToCharacterTransactionParams): Promise<CreateWrapAssetsToCharacterTransactionsResponse> {
-        const { createWrapAssetsToCharacterTransactions: txResponse } = await this.edgeClients[
-            network
-        ].createWrapAssetsToCharacterTransactions({
-            project: projectAddress.toString(),
-            characterModel: characterModelAddress.toString(),
-            wallet: walletAddress.toString(),
-            mintList: mintAddresses
-        })
-
-        const parsedTransactions = []
-        for (const tx of txResponse.transactions) {
-            const signedTransaction = this.signTransaction({
-                network,
-                parsedTransaction: tx
+        try {
+            const { createWrapAssetsToCharacterTransactions: txResponses } = await this.edgeClients[
+                network
+            ].createWrapAssetsToCharacterTransactions({
+                project: projectAddress,
+                characterModel: characterModelAddress,
+                wallet: walletAddress,
+                mintList: mintAddresses
             })
-            parsedTransactions.push(signedTransaction)
-        }
-        console.log(parsedTransactions)
 
-        return {
-            txResponses: { ...txResponse, transactions: parsedTransactions },
-            characterModelAddress
+            return {
+                txResponses
+            }
+        } catch (error) {
+            console.log(error)
+            throw error
         }
-    }
+    } 
 }
 
 export interface CreateUnwrapAssetsFromCharacterTransactionsParams
@@ -578,10 +572,7 @@ export interface CreateWrapAssetsToCharacterTransactionParams
     mintAddresses: Array<string>
 }
 
-export interface CreateWrapAssetsToCharacterTransactionsResponse
-    extends BaseHoneycombTransactionResponses {
-    characterModelAddress: string
-}
+export type CreateWrapAssetsToCharacterTransactionsResponse = BaseHoneycombTransactionResponses
 
 export interface CreateAssembleCharacterTransactionParams extends BaseHoneycombTransactionParams {
     projectAddress: string

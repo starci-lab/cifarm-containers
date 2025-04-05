@@ -6,6 +6,7 @@ import {
     FirstCharLowerCaseCropId,
     SystemId,
     FirstCharLowerCaseSystemId,
+    NFTType,
 } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
@@ -507,6 +508,32 @@ export class SlotInfo {
         thresholdMax: number
 }
 
+
+@ObjectType({
+    description: "Configuration for character model addresses"
+})
+export class CharacterModelAddresses {
+    @Field(() => String, {
+        description: "Testnet address"
+    })
+        testnet: string
+
+    @Field(() => String, {
+        description: "Mainnet address"
+    })
+        mainnet: string
+}
+
+@ObjectType({
+    description: "Configuration for character models"
+})
+export class CharacterModels {
+    @Field(() => CharacterModelAddresses, {
+        description: "Character model addresses"
+    })
+    [NFTType.DragonFruit]: CharacterModelAddresses
+}
+
 @ObjectType({
     description: "Configuration for honeycomb rewards"
 })
@@ -535,6 +562,11 @@ export class HoneycombInfo {
         description: "Profile tree addresses for honeycomb"
     })
         profilesTreeAddresses: Array<string>
+
+    @Field(() => CharacterModels, {
+        description: "Character models"
+    })
+        characterModels: CharacterModels
 }
 
 @ObjectType({

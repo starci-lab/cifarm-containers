@@ -239,4 +239,19 @@ registerEnumType(FirstCharLowerCasePetType, {
     },
 })
 
+export enum NFTType {
+    DragonFruit = "dragonFruit",
+}
+
+export const FirstCharLowerCaseNFTType = createFirstCharLowerCaseEnumType(NFTType)
+
+registerEnumType(FirstCharLowerCaseNFTType, {
+    name: "NFTType",
+    description: "The type of NFT",
+    valuesMap: {
+        [NFTType.DragonFruit]: {
+            description: "The dragon fruit NFT",
+        },
+    },
+})
 

@@ -9,7 +9,11 @@ import {
     create,
     fetchCollection,
     ruleSet,
-    transferV1
+    transferV1,
+    fetchAsset,
+    AssetV1,
+    freezeAsset,
+    CollectionV1,
 } from "@metaplex-foundation/mpl-core"
 import { WithNetwork } from "../../types"
 import base58 from "bs58"
@@ -58,6 +62,13 @@ export class SolanaMetaplexService {
         }
     }
 
+    public async getNft({
+        network = Network.Mainnet,
+        nftAddress,
+    }: GetNftParams): Promise<AssetV1> {
+        return await fetchAsset(this.umis[network], nftAddress)
+    }
+
     public async mintNft({
         network = Network.Mainnet,
         name,
@@ -88,6 +99,10 @@ export class SolanaMetaplexService {
                         }
                     ],
                     ruleSet: ruleSet("None") // Compatibility rule set
+                },
+                {
+                    type: "FreezeDelegate",
+                    frozen: false,
                 }
             ]
         }).sendAndConfirm(umi)
@@ -95,6 +110,29 @@ export class SolanaMetaplexService {
             nftAddress: asset.publicKey,
             signature: base58.encode(signature)
         }
+    }
+
+    public async createFreezeNFTTransaction({
+        network = Network.Mainnet,
+        nftAddress,
+        collectionAddress
+    }: CreateFreezeNFTTransactionParams): Promise<CreateFreezeNFTTransactionResponse> {
+        const umi = this.umis[network]
+        const asset = await fetchAsset(umi, nftAddress)
+        let collection: CollectionV1 | undefined
+        if (collectionAddress) {
+            collection = await fetchCollection(umi, collectionAddress)
+        }
+        const transactionBuilder = freezeAsset(umi, {
+            asset,
+            delegate: umi.identity.publicKey,
+            collection,
+        })
+        const tx = await transactionBuilder.useV0()
+            .setBlockhash(await umi.rpc.getLatestBlockhash())
+            .buildAndSign(umi)
+        console.log(tx)
+        return { serializedTx: base58.encode(umi.transactions.serialize(tx)) }
     }
 
     public async transferNft({
@@ -111,11 +149,15 @@ export class SolanaMetaplexService {
         }).sendAndConfirm(umi)
         return { signature: base58.encode(signature) }
     }
-
 }
 
-export interface TransferNftResponse {
-    signature: string
+export interface CreateFreezeNFTTransactionParams extends WithNetwork {
+    nftAddress: string
+    collectionAddress?: string
+}
+
+export interface CreateFreezeNFTTransactionResponse {
+    serializedTx: string
 }   
 
 export interface CreateCollectionParams extends WithNetwork {
@@ -185,3 +227,12 @@ export interface MintNFTResponse {
     nftAddress: string
     signature: string
 }
+
+export interface GetNftParams extends WithNetwork {
+    nftAddress: string
+}
+
+export interface TransferNftResponse {
+    signature: string
+}
+

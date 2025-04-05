@@ -94,21 +94,21 @@ export class MintOffchainTokensService {
                     userSnapshot,
                     userUpdated: user
                 })
-                return txResponse
+                await Promise.all([
+                    this.kafkaProducer.send({
+                        topic: KafkaTopic.SyncUser,
+                        messages: [
+                            { value: JSON.stringify({ userId, data: syncedUser }) }
+                        ]
+                    })
+                ])
+                return {
+                    success: true,
+                    message: "Mint offchain tokens successfully",
+                    data: txResponse
+                }
             })
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncUser,
-                    messages: [
-                        { value: JSON.stringify({ userId, data: syncedUser }) }
-                    ]
-                })
-            ])
-            return {
-                success: true,
-                message: "Mint offchain tokens successfully",
-                data: result
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error
