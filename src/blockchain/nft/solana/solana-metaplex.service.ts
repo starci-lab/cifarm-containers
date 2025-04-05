@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common"
 import { ChainKey, envConfig, Network } from "@src/env"
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults"
 import { solanaHttpRpcUrl } from "../../rpcs"
-import { generateSigner, keypairIdentity, publicKey, Umi } from "@metaplex-foundation/umi"
+import { createNoopSigner, generateSigner, keypairIdentity, publicKey, Umi } from "@metaplex-foundation/umi"
 import {
     createCollection as metaplexCreateCollection,
     mplCore,
@@ -15,7 +15,7 @@ import {
     freezeAsset,
     CollectionV1,
 } from "@metaplex-foundation/mpl-core"
-import { WithNetwork } from "../../types"
+import { WithFeePayer, WithNetwork } from "../../types"
 import base58 from "bs58"
 import { PinataService } from "@src/pinata"
 
@@ -77,7 +77,6 @@ export class SolanaMetaplexService {
         metadata
     }: MintNftParams): Promise<MintNFTResponse> {
         const umi = this.umis[network]
-        console.log(ownerAddress)
         // Logic to create a collection on Solana
         const metadataUri = await this.pinataService.pinata.upload.public.json(metadata)
         const asset = generateSigner(umi)
@@ -115,7 +114,9 @@ export class SolanaMetaplexService {
     public async createFreezeNFTTransaction({
         network = Network.Mainnet,
         nftAddress,
-        collectionAddress
+        collectionAddress,
+        delegateAddress,
+        feePayer
     }: CreateFreezeNFTTransactionParams): Promise<CreateFreezeNFTTransactionResponse> {
         const umi = this.umis[network]
         const asset = await fetchAsset(umi, nftAddress)
@@ -125,13 +126,19 @@ export class SolanaMetaplexService {
         }
         const transactionBuilder = freezeAsset(umi, {
             asset,
-            delegate: umi.identity.publicKey,
-            collection,
+            authority: delegateAddress ? createNoopSigner(publicKey(delegateAddress)) : umi.identity,
+            delegate: delegateAddress ? publicKey(delegateAddress) : umi.identity.publicKey,
+            collection, 
         })
-        const tx = await transactionBuilder.useV0()
+        if (feePayer) {
+            const feePayerSigner = createNoopSigner(publicKey(feePayer))
+            transactionBuilder.setFeePayer(feePayerSigner)
+        }
+        
+        const tx = await transactionBuilder
+            .useV0()
             .setBlockhash(await umi.rpc.getLatestBlockhash())
             .buildAndSign(umi)
-        console.log(tx)
         return { serializedTx: base58.encode(umi.transactions.serialize(tx)) }
     }
 
@@ -151,9 +158,10 @@ export class SolanaMetaplexService {
     }
 }
 
-export interface CreateFreezeNFTTransactionParams extends WithNetwork {
+export interface CreateFreezeNFTTransactionParams extends WithFeePayer {
     nftAddress: string
     collectionAddress?: string
+    delegateAddress?: string
 }
 
 export interface CreateFreezeNFTTransactionResponse {

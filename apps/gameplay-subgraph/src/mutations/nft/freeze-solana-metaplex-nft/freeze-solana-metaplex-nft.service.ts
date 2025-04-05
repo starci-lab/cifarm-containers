@@ -62,16 +62,27 @@ export class FreezeSolanaMetaplexNFTService {
                 const { serializedTx } = await this.solanaMetaplexService.createFreezeNFTTransaction({
                     nftAddress,
                     collectionAddress,
-                    network
+                    network,
+                    //delegateAddress: accountAddress,
+                    feePayer: accountAddress
                 })
                 // create a prepare frozen document
-                await this.connection
+                const foundPrepareFrozenNFT = await this.connection
                     .model<PrepareFrozenNFTSchema>(PrepareFrozenNFTSchema.name)
-                    .create([{
+                    .findOne({
                         nftAddress,
                         collectionAddress,
                         user: id
-                    }], { session })
+                    }).session(session)
+                if (!foundPrepareFrozenNFT) {
+                    await this.connection
+                        .model<PrepareFrozenNFTSchema>(PrepareFrozenNFTSchema.name)
+                        .create([{
+                            nftAddress,
+                            collectionAddress,
+                            user: id
+                        }], { session })
+                }
 
                 return {
                     message: "NFT frozen successfully and item created",
