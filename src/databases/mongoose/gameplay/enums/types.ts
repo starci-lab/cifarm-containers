@@ -1,5 +1,6 @@
 import { registerEnumType } from "@nestjs/graphql"
 import { createFirstCharLowerCaseEnumType } from "@src/common"
+import { PlacedItemTypeId } from "./ids"
 
 // Product Type Enum
 export enum ProductType {
@@ -255,3 +256,6 @@ registerEnumType(FirstCharLowerCaseNFTType, {
     },
 })
 
+export const NFTTypeToPlacedItemTypeId: Record<NFTType, PlacedItemTypeId> = {
+    [NFTType.DragonFruit]: PlacedItemTypeId.DragonFruit,
+}   

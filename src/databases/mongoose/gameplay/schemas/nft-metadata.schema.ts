@@ -6,29 +6,35 @@ import { UserSchema } from "./user.schema"
 import { USER } from "../constants"
 
 @ObjectType({
-    description: "The prepare frozen schema"
+    description: "The nft metadata"
 })
-@Schema({ timestamps: true, collection: "prepare-frozen-nfts" })
-export class PrepareFrozenNFTSchema extends AbstractSchema {
+@Schema({ timestamps: true, collection: "nft-metadata" })
+export class NFTMetadataSchema extends AbstractSchema {
     @Field(() => String, {
-        description: "The user who owns this prepare frozen"
+        description: "The nft address"
     })
     @Prop({ type: String, required: true })
         nftAddress: string
 
     @Field(() => String, {
-        description: "The collection address of the prepare frozen",
+        description: "The collection address of the nft",
         nullable: true
     })
     @Prop({ type: String, required: false })
         collectionAddress?: string
 
     @Field(() => ID, {
-        description: "The user who owns this prepare frozen"
+        description: "The user who owns this nft"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name, index: true })
     [USER]: UserSchema | Types.ObjectId
+
+    @Field(() => Boolean, {
+        description: "Whether the nft has been validated"
+    })
+    @Prop({ type: Boolean, required: true })
+        validated: boolean
 }
 
 // Generate Mongoose Schema
-export const PrepareFrozenNFTSchemaClass = SchemaFactory.createForClass(PrepareFrozenNFTSchema)
+export const NFTMetadataSchemaClass = SchemaFactory.createForClass(NFTMetadataSchema)

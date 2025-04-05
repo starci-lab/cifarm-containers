@@ -27,6 +27,7 @@ import {
     FlowerSchema,
     FlowerInfo,
     BeeHouseInfo,
+    NFTCollections,
 } from "@src/databases"
 import { Connection } from "mongoose"
 @Injectable()
@@ -56,6 +57,7 @@ export class StaticService implements OnModuleInit {
     public flowers: Array<FlowerSchema>
     public flowerInfo: FlowerInfo
     public beeHouseInfo: BeeHouseInfo
+    public nftCollections: NFTCollections
 
     constructor(
         @InjectMongoose()
@@ -117,6 +119,11 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<BeeHouseInfo>>(createObjectId(SystemId.BeeHouseInfo))
         this.beeHouseInfo = beeHouseInfoDoc.value
+
+        const nftCollectionsDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<NFTCollections>>(createObjectId(SystemId.NFTCollections))
+        this.nftCollections = nftCollectionsDoc.value
 
         // Load collections
         this.placedItemTypes = await this.connection

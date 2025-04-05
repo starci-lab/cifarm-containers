@@ -102,6 +102,12 @@ export class FruitSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: false, default: 0 })
         sellPrice?: number
+    
+    @Field(() => Boolean, {
+        description: "Whether the fruit is a NFT",
+    })
+    @Prop({ type: Boolean, default: false })
+        isNFT: boolean
 }
 
 export const FruitSchemaClass = SchemaFactory.createForClass(FruitSchema)

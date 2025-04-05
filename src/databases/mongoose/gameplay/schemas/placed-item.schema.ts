@@ -99,6 +99,13 @@ export class PlacedItemSchema extends AbstractSchema {
     })
     @Prop({ type: PetInfoSchemaClass, required: false })
     [PET_INFO]?: PetInfoSchema
+
+    @Field(() => Boolean, {
+        nullable: true,
+        description: "Whether the placed item is stored in the NFT storage"
+    })
+    @Prop({ type: Boolean,  default: false })
+        isStored: boolean
 }
 
 // Generate Mongoose Schema

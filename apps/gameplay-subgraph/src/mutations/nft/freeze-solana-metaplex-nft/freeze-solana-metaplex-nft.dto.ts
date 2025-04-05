@@ -1,16 +1,16 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
 import { IResponseLike, ResponseLike } from "@src/graphql"
-import {  IsOptional, IsString } from "class-validator"
+import { IsBase58, IsOptional } from "class-validator"
 
 @InputType({
     description: "Freeze Solana Metaplex NFT request"
 })
 export class FreezeSolanaMetaplexNFTRequest {
-    @IsString()
+    @IsBase58()
     @Field(() => String)
         nftAddress: string
 
-    @IsString()
+    @IsBase58()
     @IsOptional()
     @Field(() => String, { nullable: true })
         collectionAddress?: string

@@ -129,6 +129,10 @@ registerEnumType(FirstCharLowerCaseFlowerId, {
 export enum FruitId {
     Banana = "banana",
     Apple = "apple",
+    DragonFruit = "dragonFruit",
+    Jackfruit = "jackfruit",
+    Rambutan = "rambutan",
+    Pomegranate = "pomegranate",
 }
 
 export const FirstCharLowerCaseFruitId = createFirstCharLowerCaseEnumType(FruitId)    
@@ -297,6 +301,14 @@ export enum ProductId {
     StrawberryQuality = "strawberryQuality",
     Honey = "honey",
     HoneyQuality = "honeyQuality",
+    DragonFruit = "dragonFruit",
+    DragonFruitQuality = "dragonFruitQuality",
+    Jackfruit = "jackfruit",
+    JackfruitQuality = "jackfruitQuality",
+    Rambutan = "rambutan",
+    RambutanQuality = "rambutanQuality",    
+    Pomegranate = "pomegranate",
+    PomegranateQuality = "pomegranateQuality",
 }
 
 export const FirstCharLowerCaseProductId = createFirstCharLowerCaseEnumType(ProductId)    
@@ -397,6 +409,7 @@ export enum SystemId {
     HoneycombInfo = "honeycombInfo",
     FlowerInfo = "flowerInfo",
     BeeHouseInfo = "beeHouseInfo",
+    NFTCollections = "nftCollections",
 }
 
 export const FirstCharLowerCaseSystemId = createFirstCharLowerCaseEnumType(SystemId)
@@ -431,6 +444,9 @@ registerEnumType(FirstCharLowerCaseSystemId, {
         },
         [SystemId.FlowerInfo]: {
             description: "The flower info id.",
+        },
+        [SystemId.NFTCollections]: {
+            description: "The NFT collections id.",
         },
     },
 })
@@ -516,6 +532,14 @@ export enum InventoryTypeId {
     StrawberryQuality = "strawberryQuality",
     Honey = "honey",
     HoneyQuality = "honeyQuality",
+    DragonFruit = "dragonFruit",
+    DragonFruitQuality = "dragonFruitQuality",
+    Jackfruit = "jackfruit",
+    JackfruitQuality = "jackfruitQuality",
+    Rambutan = "rambutan",
+    RambutanQuality = "rambutanQuality",
+    Pomegranate = "pomegranate",
+    PomegranateQuality = "pomegranateQuality",
 }
 
 export const FirstCharLowerCaseInventoryTypeId = createFirstCharLowerCaseEnumType(InventoryTypeId)
@@ -671,6 +695,11 @@ export enum PlacedItemTypeId {
     Banana = "banana",
     Dog = "dog",
     Cat = "cat",
+    //ga-cha solana nft
+    DragonFruit = "dragonFruit",
+    Jackfruit = "jackfruit",
+    Rambutan = "rambutan",
+    Pomegranate = "pomegranate",
 }
 
 export const FirstCharLowerCasePlacedItemTypeId = createFirstCharLowerCaseEnumType(PlacedItemTypeId)

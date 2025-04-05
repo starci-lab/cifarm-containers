@@ -105,6 +105,43 @@ export class SolanaMetaplexService {
                         type: "Owner",
                         address: umi.identity.publicKey
                     }
+                },
+                {
+                    type: "Attributes",
+                    attributeList: [
+                        {
+                            key: AttributeName.Stars,
+                            value: "1"
+                        },
+                        {
+                            key: AttributeName.Rarity,
+                            value: "common"
+                        },
+                        {
+                            key: AttributeName.Type,
+                            value: "fruit"
+                        },
+                        // growth acceleration when the nft is planted
+                        {
+                            key: AttributeName.GrowthAcceleration,
+                            value: "0.1" // 10% growth speedup
+                        },
+                        // quality yield chance when the nft is harvested
+                        {
+                            key: AttributeName.QualityYieldChance,
+                            value: "0.1" // 10% quality yield chance
+                        },
+                        // disease resistance when the nft is planted
+                        {
+                            key: AttributeName.DiseaseResistance,
+                            value: "0.1" // 10% disease resistance
+                        },
+                        // harvest yield bonus when the nft is harvested
+                        {
+                            key: AttributeName.HarvestYieldBonus,
+                            value: "0.1" // 10% yield bonus
+                        }
+                    ]
                 }
             ]
         }).sendAndConfirm(umi)
@@ -237,3 +274,16 @@ export interface TransferNftResponse {
     signature: string
 }
 
+export enum AttributeName {
+    Stars = "stars",
+    Rarity = "rarity",
+    Type = "type",
+    GrowthAcceleration = "growthAcceleration",
+    QualityYieldChance = "qualityYieldChance",
+    DiseaseResistance = "diseaseResistance",
+    HarvestYieldBonus = "harvestYieldBonus"
+}
+
+export enum AttributeTypeValue {
+    Fruit = "fruit",
+}

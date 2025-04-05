@@ -9,7 +9,7 @@ import { SolanaMetaplexService } from "@src/blockchain"
 import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
-import { PrepareFrozenNFTSchema } from "@src/databases"
+import { NFTMetadataSchema } from "@src/databases"
 
 @Injectable()
 export class FreezeSolanaMetaplexNFTService {
@@ -58,6 +58,7 @@ export class FreezeSolanaMetaplexNFTService {
                         }
                     })
                 }
+                console.log(accountAddress)
                 // create a versionel transaction to free the nft from the collection
                 const { serializedTx } = await this.solanaMetaplexService.createFreezeNFTTransaction({
                     nftAddress,
@@ -65,26 +66,27 @@ export class FreezeSolanaMetaplexNFTService {
                     network,
                     feePayer: accountAddress
                 })
-                // create a prepare frozen document
-                const foundPrepareFrozenNFT = await this.connection
-                    .model<PrepareFrozenNFTSchema>(PrepareFrozenNFTSchema.name)
+                // create a nft metadata to track the nft status
+                // recall the validate to set the frozen status to true
+                const foundNFTMetadata = await this.connection
+                    .model<NFTMetadataSchema>(NFTMetadataSchema.name)
                     .findOne({
                         nftAddress,
                         collectionAddress,
                         user: id
                     }).session(session)
-                if (!foundPrepareFrozenNFT) {
+                if (!foundNFTMetadata) {
                     await this.connection
-                        .model<PrepareFrozenNFTSchema>(PrepareFrozenNFTSchema.name)
+                        .model<NFTMetadataSchema>(NFTMetadataSchema.name)
                         .create([{
                             nftAddress,
                             collectionAddress,
-                            user: id
+                            user: id,
+                            validated: false
                         }], { session })
                 }
-
                 return {
-                    message: "NFT frozen successfully and item created",
+                    message: "NFT frozen transaction created",
                     success: true,
                     data: {
                         serializedTx

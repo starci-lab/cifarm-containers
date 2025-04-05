@@ -14,6 +14,7 @@ import {
     FruitInfo,
     HoneycombInfo,
     InjectMongoose,
+    NFTCollections,
     NFTType,
     SystemId,
     SystemSchema
@@ -297,6 +298,17 @@ export class SystemSeeder implements Seeder {
                     tokens: 1
                 },
             }
+            const nftCollections: NFTCollections = {
+                [NFTType.DragonFruit]: {
+                    testnet: {
+                        collectionAddress: "FkJJyaMCMmNHGWQkBkrVBo9Trz8o9ZffKBcpyC3SdZx4"
+                    },
+                    mainnet: {
+                        collectionAddress: "FkJJyaMCMmNHGWQkBkrVBo9Trz8o9ZffKBcpyC3SdZx4"
+                    }
+                }
+            }
+
             const honeycombInfo: HoneycombInfo = {
                 dailyRewardAmount: 10000000, // 10 $CARROT
                 tokenResourceAddress: "6JkqdDyrXsySvnvKBmFVpay9L413VXJcd78kFJ2XSABH",
@@ -370,6 +382,11 @@ export class SystemSeeder implements Seeder {
                     displayId: SystemId.BeeHouseInfo,
                     value: beeHouseInfo
                 },
+                {
+                    _id: createObjectId(SystemId.NFTCollections),
+                    displayId: SystemId.NFTCollections,
+                    value: nftCollections
+                }
             ]
             await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)
         } catch (error) {

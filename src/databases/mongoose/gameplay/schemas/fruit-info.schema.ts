@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Schema as MongooseSchema, Types } from "mongoose"
 import { FruitCurrentState, FirstCharLowerCaseFruitCurrentState } from "../enums"
 import { AbstractSchema } from "./abstract"
+import { AttributeName } from "@src/blockchain"
 
 @ObjectType({
     description: "The schema for fruit info"
@@ -57,5 +58,32 @@ export class FruitInfoSchema extends AbstractSchema {
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
         thieves: Array<Types.ObjectId>
+    
+    @Field(() => Float, {
+        description: "Where the chance of the fruit to be quality"
+    })
+    @Prop({ type: Number, default: 0 })
+    [AttributeName.QualityYieldChance]: number
+
+    @Field(() => Float, {
+        description: "The growth acceleration of the fruit"
+    }) 
+    @Prop({ type: Number, default: 0 })
+    [AttributeName.GrowthAcceleration]: number
+
+    @Field(() => Float, {
+        description: "The harvest yield bonus of the fruit"
+    })
+    @Prop({ type: Number, default: 0 })
+    [AttributeName.HarvestYieldBonus]: number
+
+    @Field(() => Float, {
+        description: "The disease resistance of the fruit"
+    })
+    @Prop({
+        type: Number,
+        default: 0
+    })
+    [AttributeName.DiseaseResistance]: number
 }
 export const FruitInfoSchemaClass = SchemaFactory.createForClass(FruitInfoSchema)

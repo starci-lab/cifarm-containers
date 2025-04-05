@@ -11,6 +11,7 @@ import {
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Position } from "./types"
+import { Network } from "@src/env"
 
 @ObjectType({
     description: "The system schema"
@@ -636,5 +637,40 @@ export class DailyRewardInfo {
     [DailyRewardId.Day5]: DailyReward
 }
 
+@ObjectType({
+    description: "Configuration for NFT collection data"
+})
+export class NFTCollectionData {
+    @Field(() => String, {
+        description: "Testnet collection address"
+    })
+        collectionAddress: string
+}
+
+@ObjectType({
+    description: "Configuration for NFT collections"
+})
+export class NFTCollection {
+    @Field(() => NFTCollectionData, {
+        description: "Testnet collection address"
+    })
+    [Network.Testnet]: NFTCollectionData
+
+    @Field(() => NFTCollectionData, {
+        description: "Mainnet collection address"
+    })
+    [Network.Mainnet]: NFTCollectionData
+}
+
+@ObjectType({
+    description: "Configuration for NFT collections"
+})
+export class NFTCollections implements Record<NFTType, NFTCollection> {
+    @Field(() => NFTCollection, {
+        description: "NFT collection"
+    })
+    [NFTType.DragonFruit]: NFTCollection
+}
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)
+

@@ -512,6 +512,78 @@ export class InventoryTypeSeeder implements Seeder {
                 product: createObjectId(ProductId.HoneyQuality),
                 type: InventoryType.Product
             },
+            {
+                _id: createObjectId(InventoryTypeId.DragonFruit),
+                displayId: InventoryTypeId.DragonFruit,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.DragonFruitQuality),
+                displayId: InventoryTypeId.DragonFruitQuality,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            },
+            {   
+                _id: createObjectId(InventoryTypeId.Jackfruit),
+                displayId: InventoryTypeId.Jackfruit,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.JackfruitQuality),
+                displayId: InventoryTypeId.JackfruitQuality,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Rambutan),  
+                displayId: InventoryTypeId.Rambutan,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.RambutanQuality),
+                displayId: InventoryTypeId.RambutanQuality,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Pomegranate),
+                displayId: InventoryTypeId.Pomegranate,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.PomegranateQuality),
+                displayId: InventoryTypeId.PomegranateQuality,
+                stackable: false,
+                asTool: true,
+                deliverable: false,
+                placeable: false,
+                type: InventoryType.Product
+            }
         ]
 
         await this.connection.model<InventoryTypeSchema>(InventoryTypeSchema.name).insertMany(data)

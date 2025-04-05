@@ -126,6 +126,38 @@ export class PlacedItemTypeSeeder implements Seeder {
                 pet: createObjectId(PetId.Cat),
                 sizeX: 1,
                 sizeY: 1
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.DragonFruit),
+                displayId: PlacedItemTypeId.DragonFruit,
+                type: PlacedItemType.Fruit,
+                fruit: createObjectId(FruitId.DragonFruit),
+                sizeX: 2,
+                sizeY: 2    
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.Jackfruit),
+                displayId: PlacedItemTypeId.Jackfruit,
+                type: PlacedItemType.Fruit,
+                fruit: createObjectId(FruitId.Jackfruit),
+                sizeX: 2,
+                sizeY: 2
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.Rambutan),
+                displayId: PlacedItemTypeId.Rambutan,
+                type: PlacedItemType.Fruit,
+                fruit: createObjectId(FruitId.Rambutan),
+                sizeX: 2,
+                sizeY: 2
+            },
+            {   
+                _id: createObjectId(PlacedItemTypeId.Pomegranate),
+                displayId: PlacedItemTypeId.Pomegranate,
+                type: PlacedItemType.Fruit,
+                fruit: createObjectId(FruitId.Pomegranate),
+                sizeX: 2,
+                sizeY: 2
             }
         ]
 
