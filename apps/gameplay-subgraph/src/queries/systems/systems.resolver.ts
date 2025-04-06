@@ -8,7 +8,8 @@ import {
     DefaultInfo,
     EnergyRegen,
     FruitInfo,
-    HoneycombInfo
+    HoneycombInfo,
+    NFTCollections
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -97,5 +98,14 @@ export class SystemsResolver {
     })
     honeycombInfo(): HoneycombInfo {
         return this.systemsService.honeycombInfo()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => NFTCollections, {
+        name: "nftCollections",
+        description: "Get the nft collections"
+    })
+    nftCollections(): NFTCollections {
+        return this.systemsService.nftCollections()
     }
 }
