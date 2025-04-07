@@ -89,7 +89,8 @@ export class FreezeSolanaMetaplexNFTService {
                             nftAddress,
                             collectionAddress,
                             user: id,
-                            validated: false
+                            validated: false,
+                            nftName: nft.name,
                         }], { session })
                 }
                 return {

@@ -130,7 +130,6 @@ export class RetainInventoryService {
                     throw new WsException("The inventory type is not a product")
                 }
             })
-
             return {
                 inventories: syncedInventories
             }

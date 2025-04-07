@@ -62,7 +62,8 @@ export enum ReceiverEventName {
     UpgradeBuilding = "upgrade_building",
     HarvestBeeHouse = "harvest_bee_house",
     ThiefBeeHouse = "thief_bee_house",
-    BuyPet = "buy_pet"
+    BuyPet = "buy_pet",
+    PlaceNFT = "place_nft"
 }
 
 // sync user

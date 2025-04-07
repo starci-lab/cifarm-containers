@@ -4,7 +4,7 @@ import { PlacedItemsService } from "./placed-items.service"
 import { PlacedItemSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { PlacedItemsRequest } from "./placed-items.dto"
+import { PlacedItemsRequest, StoredPlacedItemsRequest, StoredPlacedItemsResponse } from "./placed-items.dto"
 import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
@@ -37,5 +37,18 @@ export class PlacedItemsResolver {
             request: PlacedItemsRequest
     ): Promise<Array<PlacedItemSchema>> {
         return this.placeditemsService.getPlacedItems(user, request)
+    }
+
+    @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
+    @Query(() => StoredPlacedItemsResponse, {
+        name: "storedPlacedItems",
+        description: "Get many stored placed items with pagination"
+    })
+    async storedPlacedItems(
+        @GraphQLUser() user: UserLike,
+        @Args("request", { type: () => StoredPlacedItemsRequest, nullable: true })
+            request: StoredPlacedItemsRequest
+    ): Promise<StoredPlacedItemsResponse> {
+        return this.placeditemsService.getStoredPlacedItems(user, request)
     }
 }

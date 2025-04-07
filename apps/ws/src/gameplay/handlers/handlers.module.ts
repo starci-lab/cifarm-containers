@@ -6,6 +6,7 @@ import { InventoriesModule } from "./inventories"
 import { ClaimModule } from "./claim"
 import { ActionsModule } from "./actions"
 import { PlacementModule } from "./placement"
+import { PlaceNFTModule } from "./nft/place-nft"
 
 @Module({
     imports: [
@@ -15,7 +16,8 @@ import { PlacementModule } from "./placement"
         InventoriesModule,
         ClaimModule,
         ActionsModule,
-        PlacementModule
+        PlacementModule,
+        PlaceNFTModule
     ]
 })
 export class HandlersModule {}

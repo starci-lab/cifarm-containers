@@ -22,7 +22,7 @@ import {
 import { FruitInfoSchema, FruitInfoSchemaClass } from "./fruit-info.schema"
 import { BeeHouseInfoSchema, BeeHouseInfoSchemaClass } from "./bee-house-info.schema"
 import { PetInfoSchema, PetInfoSchemaClass } from "./pet-info.schema"
-import { NFTMetadataSchema, NFTMetadataSchemaClass } from "./nft-metadata.schema"
+import { NFTMetadataSchema } from "./nft-metadata.schema"
 
 @ObjectType({
     description: "The schema for items placed on the farm"
@@ -103,7 +103,7 @@ export class PlacedItemSchema extends AbstractSchema {
     [PET_INFO]?: PetInfoSchema
 
     @Field(() => Boolean, {
-        nullable: true,
+        defaultValue: false,
         description: "Whether the placed item is stored in the NFT storage"
     })
     @Prop({ type: Boolean,  default: false })
@@ -113,7 +113,7 @@ export class PlacedItemSchema extends AbstractSchema {
         nullable: true,
         description: "The NFT metadata associated with this placed item, if applicable"
     })
-    @Prop({ type: NFTMetadataSchemaClass, required: false })
+    @Prop({ type: MongooseSchema.Types.ObjectId, ref: NFTMetadataSchema.name, required: false })
     [NFT_METADATA]?: NFTMetadataSchema | Types.ObjectId
 }
 

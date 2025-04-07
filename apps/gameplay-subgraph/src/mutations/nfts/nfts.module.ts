@@ -5,6 +5,10 @@ import { ValidateSolanaMetaplexNFTFrozenModule } from "./validate-solana-metaple
 import { UnfreezeSolanaMetaplexNFTModule } from "./unfreeze-solana-metaplex-nft"
 
 @Module({
-    imports: [FreezeSolanaMetaplexNFTModule, ValidateSolanaMetaplexNFTFrozenModule, UnfreezeSolanaMetaplexNFTModule]
+    imports: [
+        FreezeSolanaMetaplexNFTModule,
+        ValidateSolanaMetaplexNFTFrozenModule,
+        UnfreezeSolanaMetaplexNFTModule
+    ]
 })
 export class NFTsModule {}

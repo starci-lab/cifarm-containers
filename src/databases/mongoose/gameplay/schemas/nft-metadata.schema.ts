@@ -34,6 +34,12 @@ export class NFTMetadataSchema extends AbstractSchema {
     })
     @Prop({ type: Boolean, required: true })
         validated: boolean
+
+    @Field(() => String, {
+        description: "The name of the nft"
+    })
+    @Prop({ type: String, required: true })
+        nftName: string
 }
 
 // Generate Mongoose Schema
