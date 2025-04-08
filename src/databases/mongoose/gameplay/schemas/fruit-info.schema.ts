@@ -38,7 +38,7 @@ export class FruitInfoSchema extends AbstractSchema {
         description: "Times the fruit has been harvested"
     })
     @Prop({ type: Number, default: 0 })
-        timesHarvested: number
+        harvestCount: number
 
     @Field(() => Boolean, {
         description: "Whether the fruit is quality"

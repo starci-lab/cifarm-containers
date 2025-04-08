@@ -17,7 +17,7 @@ import { FlowerSchema } from "./flower.schema"
 })
 @Schema({ timestamps: true, autoCreate: false })
 export class PlantInfoSchema extends AbstractSchema {
-    @Field(() => Int, { 
+    @Field(() => Int, {
         description: "The current growth stage of the seed"
     })
     @Prop({ type: Number, default: 0 })
@@ -42,7 +42,8 @@ export class PlantInfoSchema extends AbstractSchema {
         harvestQuantityRemaining: number
 
     @Field(() => Int, {
-        description: "The number of times the crop has been harvested"
+        description: "The number of times the crop has been harvested",
+        defaultValue: 0
     })
     @Prop({ type: Number, default: 0 })
         harvestCount: number

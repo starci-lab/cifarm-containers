@@ -4,6 +4,7 @@ import { AbstractSchema } from "./abstract"
 import { BeeHouseCurrentState, FirstCharLowerCaseBeeHouseCurrentState } from "../enums"
 import { Types } from "mongoose"
 import { Schema as MongooseSchema } from "mongoose"
+import { AttributeName } from "@src/blockchain"
 
 @ObjectType({
     description: "The schema for building info"
@@ -14,7 +15,7 @@ export class BeeHouseInfoSchema extends AbstractSchema {
         description: "Times the building has been harvested"
     })
     @Prop({ type: Number, default: 0 })
-        timesHarvested: number
+        harvestCount: number
 
     @Field(() => Float, {
         description: "The current yield time of the bee house"
@@ -35,19 +36,19 @@ export class BeeHouseInfoSchema extends AbstractSchema {
         thieves: Array<Types.ObjectId>
 
     @Field(() => Int, {
-        description: "The harvest quantity remaining of the animal",
+        description: "The harvest quantity remaining of the animal"
     })
     @Prop({ type: Number, default: 0 })
         harvestQuantityRemaining: number
 
     @Field(() => Int, {
-        description: "The desired harvest quantity of the bee house",
+        description: "The desired harvest quantity of the bee house"
     })
     @Prop({ type: Number, default: 0 })
         harvestQuantityDesired: number
 
     @Field(() => Int, {
-        description: "The min harvest quantity of the bee house",
+        description: "The min harvest quantity of the bee house"
     })
     @Prop({ type: Number, default: 0 })
         harvestQuantityMin: number
@@ -58,6 +59,33 @@ export class BeeHouseInfoSchema extends AbstractSchema {
     })
     @Prop({ type: Boolean, required: false, default: false })
         isQuality?: boolean
+
+    @Field(() => Float, {
+        description: "Where the chance of the fruit to be quality"
+    })
+    @Prop({ type: Number, default: 0 })
+    [AttributeName.QualityYieldChance]: number
+
+    @Field(() => Float, {
+        description: "The growth acceleration of the fruit"
+    })
+    @Prop({ type: Number, default: 0 })
+    [AttributeName.GrowthAcceleration]: number
+
+    @Field(() => Float, {
+        description: "The harvest yield bonus of the fruit"
+    })
+    @Prop({ type: Number, default: 0 })
+    [AttributeName.HarvestYieldBonus]: number
+
+    @Field(() => Float, {
+        description: "The disease resistance of the fruit"
+    })
+    @Prop({
+        type: Number,
+        default: 0
+    })
+    [AttributeName.DiseaseResistance]: number
 }
 
 export const BeeHouseInfoSchemaClass = SchemaFactory.createForClass(BeeHouseInfoSchema)

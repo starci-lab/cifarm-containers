@@ -31,7 +31,7 @@ export class CoreService {
     }: ComputeAnimalQualityChanceParams): number {
         return Math.min(
             animal.qualityProductChanceLimit,
-            animal.qualityProductChanceStack * placedItemAnimal.animalInfo.timesHarvested
+            animal.qualityProductChanceStack * placedItemAnimal.animalInfo.harvestCount
         )
     }
 
@@ -42,7 +42,7 @@ export class CoreService {
     }: ComputeTileQualityChanceParams): number {
         return Math.min(
             tile.qualityProductChanceLimit,
-            tile.qualityProductChanceStack * placedItemTile.tileInfo.timesHarvested
+            tile.qualityProductChanceStack * placedItemTile.tileInfo.harvestCount
         )
     }
 
@@ -52,7 +52,7 @@ export class CoreService {
     }: ComputeFruitQualityChanceParams): number {
         return Math.min(
             fruit.qualityProductChanceLimit,
-            fruit.qualityProductChanceStack * placedItemFruit.fruitInfo.timesHarvested
+            fruit.qualityProductChanceStack * placedItemFruit.fruitInfo.harvestCount
         )
     }
 
@@ -64,7 +64,7 @@ export class CoreService {
     }: UpdatePlacedItemTileAfterHarvestParams): PlacedItemSchema {
         const plantType = placedItemTile.plantInfo.plantType
         // update the tile info times harvested
-        placedItemTile.tileInfo.timesHarvested += 1
+        placedItemTile.tileInfo.harvestCount += 1
         const tryParseCrop = plant as CropSchema
         // perental only work for crop, flower not have perenial count
         const isPerennial =
@@ -91,7 +91,7 @@ export class CoreService {
         placedItemAnimal
     }: UpdatePlacedItemAnimalAfterHarvestParams): PlacedItemSchema {
         // update the animal info times harvested
-        placedItemAnimal.animalInfo.timesHarvested += 1
+        placedItemAnimal.animalInfo.harvestCount += 1
 
         placedItemAnimal.animalInfo.currentYieldTime = 0
         placedItemAnimal.animalInfo.currentHungryTime = 0
@@ -107,7 +107,7 @@ export class CoreService {
         fruitInfo
     }: UpdatePlacedItemFruitAfterHarvestParams): PlacedItemSchema {
         // update the fruit info harvest time
-        placedItemFruit.fruitInfo.timesHarvested += 1
+        placedItemFruit.fruitInfo.harvestCount += 1
 
         // update the fruit info
         placedItemFruit.fruitInfo.currentState = FruitCurrentState.NeedFertilizer

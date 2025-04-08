@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { AnimalCurrentState, FirstCharLowerCaseAnimalCurrentState } from "../enums"
 import { Schema as MongooseSchema, Types } from "mongoose"
+import { AttributeName } from "@src/blockchain/nft/solana/solana-metaplex.service"
 
 @ObjectType({
     description: "The schema for animal info"
@@ -43,7 +44,7 @@ export class AnimalInfoSchema extends AbstractSchema {
         description: "Times the animal has been harvested"
     })
     @Prop({ type: Number, default: 0 })
-        timesHarvested: number
+        harvestCount: number
 
     @Field(() => FirstCharLowerCaseAnimalCurrentState, {
         description: "The current state of the animal"
@@ -58,7 +59,7 @@ export class AnimalInfoSchema extends AbstractSchema {
         thieves: Array<Types.ObjectId>
 
     @Field(() => Int, {
-        description: "The harvest quantity remaining of the animal",
+        description: "The harvest quantity remaining of the animal"
     })
     @Prop({ type: Number, default: 0 })
         harvestQuantityRemaining: number
@@ -69,5 +70,32 @@ export class AnimalInfoSchema extends AbstractSchema {
     })
     @Prop({ type: Boolean, default: false })
         immunized: boolean
+
+    @Field(() => Float, {
+        description: "Where the chance of the animal to be quality"
+    })
+    @Prop({ type: Number, default: 0 })
+    [AttributeName.QualityYieldChance]: number
+
+    @Field(() => Float, {
+        description: "The growth acceleration of the animal"
+    })
+    @Prop({ type: Number, default: 0 })
+    [AttributeName.GrowthAcceleration]: number
+
+    @Field(() => Float, {
+        description: "The harvest yield bonus of the animal"
+    })
+    @Prop({ type: Number, default: 0 })
+    [AttributeName.HarvestYieldBonus]: number
+
+    @Field(() => Float, {
+        description: "The disease resistance of the animal"
+    })
+    @Prop({
+        type: Number,
+        default: 0
+    })
+    [AttributeName.DiseaseResistance]: number
 }
 export const AnimalInfoSchemaClass = SchemaFactory.createForClass(AnimalInfoSchema)
