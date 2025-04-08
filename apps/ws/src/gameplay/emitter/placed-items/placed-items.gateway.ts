@@ -12,7 +12,7 @@ import { AuthGateway, RoomType, SocketData } from "../../auth"
 import { EmitterEventName, PlacedItemsSyncedMessage } from "../../events"
 import { TypedSocket } from "@src/io"
 import { SchemaStatus } from "@src/common"
-import { RequestDisplayTimersMessage, SyncPlacedItemsPayload } from "./types"
+import { SyncPlacedItemMessage, SyncPlacedItemsPayload } from "./types"
 import { ReceiverEventName } from "../../events"
 import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
@@ -49,19 +49,15 @@ export class PlacedItemsGateway implements OnGatewayInit {
                 })
             )
             .emit(EmitterEventName.PlacedItemsSynced, messageResponse)
-        console.log(this.authGateway.getRoomName({
-            userId,
-            type: RoomType.Watcher
-        }))
     }
 
     // force sync placed items
     
     @UseGuards(WsThrottlerGuard)
-    @SubscribeMessage(ReceiverEventName.RequestDisplayTimers)
-    public async handleRequestDisplayTimers(
+    @SubscribeMessage(ReceiverEventName.ForceSyncPlacedItems)
+    public async handleForceSyncPlacedItems(
         @ConnectedSocket() socket: TypedSocket<SocketData>,
-        @MessageBody() { ids }: RequestDisplayTimersMessage
+        @MessageBody() { ids }: SyncPlacedItemMessage
     ) {
         const placedItems = await this.placedItemsService.getPlacedItemsByIds({
             placedItemIds: ids
@@ -74,9 +70,7 @@ export class PlacedItemsGateway implements OnGatewayInit {
         }
         socket.emit(EmitterEventName.PlacedItemsSynced, messageResponse)
         // timer synced for the corresponding ids
-        socket.emit(EmitterEventName.DisplayTimersResponsed, {
-            ids
-        })
+        socket.emit(EmitterEventName.ForceSyncPlacedItemsResponsed)
     }
 }       
 

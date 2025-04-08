@@ -14,11 +14,11 @@ export enum EmitterEventName {
     DailyRewardClaimed = "daily_reward_claimed",
     // method to indicate whether the user can continue buying items
     StopBuying = "stop_buying",
-    DisplayTimersResponsed = "display_timers_responsed",
+    // force sync placed items
+    ForceSyncPlacedItemsResponsed = "force_sync_placed_items_responsed"
 }
 
 export enum ReceiverEventName {
-    RequestDisplayTimers = "request_display_timers",
     BuyCropSeeds = "buy_crop_seeds",
     BuyFlowerSeeds = "buy_flower_seeds",
     BuySupplies = "buy_supplies",
@@ -63,7 +63,8 @@ export enum ReceiverEventName {
     HarvestBeeHouse = "harvest_bee_house",
     ThiefBeeHouse = "thief_bee_house",
     BuyPet = "buy_pet",
-    PlaceNFT = "place_nft"
+    PlaceNFT = "place_nft",
+    ForceSyncPlacedItems = "force_sync_placed_items"
 }
 
 // sync user

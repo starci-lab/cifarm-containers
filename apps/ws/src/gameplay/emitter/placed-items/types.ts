@@ -20,7 +20,6 @@ export interface PlacedItemsSyncedMessage {
     //current user id, beneficial for debugging
 }
 
-
-export interface RequestDisplayTimersMessage { 
+export interface SyncPlacedItemMessage { 
     ids: Array<string>
 }
