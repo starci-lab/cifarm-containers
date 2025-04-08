@@ -40,6 +40,7 @@
     "@aptos-labs/ts-sdk": "1.31.0",
     "@aurory/nestjs-k8s-leader-election": "^2.0.0",
     "@esm2cjs/execa": "^6.1.1-cjs.1",
+    "@esotericsoftware/spine-player": "^4.2.76",
     "@ethers-ext/provider-multicall": "6.0.0-beta.2",
     "@faker-js/faker": "8.0.0",
     "@graphql-tools/merge": "8.4.2",

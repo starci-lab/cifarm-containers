@@ -32,7 +32,7 @@ export class PlacedItemsService {
             isStored: {
                 $ne: true
             }
-        })
+        }).populate(NFT_METADATA)
     }
 
     async getStoredPlacedItems(
