@@ -124,7 +124,6 @@ export class RetainInventoryService {
                 /************************************************************
                  * CREATE PRODUCT INVENTORY
                  ************************************************************/
-                
                 const productId = inventoryType.product?.toString()
                 if (!productId) {
                     throw new WsException("The inventory type is not a product")

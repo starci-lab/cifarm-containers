@@ -22,7 +22,7 @@ export class DeliverInventoryService {
 
     async deliverInventory(
         { id: userId }: UserLike,
-        { inventoryId, quantity, index }: DeliverInventoryMessage
+        { inventoryId }: DeliverInventoryMessage
     ): Promise<SyncedResponse> {
         const mongoSession = await this.connection.startSession()
 
@@ -53,9 +53,6 @@ export class DeliverInventoryService {
                     throw new WsException("Delivery product does not belong to user")
                 }
 
-                if (inventory.quantity < quantity) {
-                    throw new WsException("Not enough quantity to deliver")
-                }
 
                 /************************************************************
                  * VALIDATE PRODUCT TYPE
@@ -70,55 +67,57 @@ export class DeliverInventoryService {
                 /************************************************************
                  * REMOVE SOME QUANTITY FROM SOURCE INVENTORY
                  ************************************************************/
-                const { removeInsteadOfUpdate, removedInventory, updatedInventory } =
-                    this.inventoryService.removeSingle({
-                        inventory: inventory,
-                        quantity
+                await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .deleteOne({
+                        _id: inventoryId
                     })
-
-                if (removeInsteadOfUpdate) {
-                    await this.connection
-                        .model<InventorySchema>(InventorySchema.name)
-                        .deleteMany({
-                            _id: { $in: removedInventory._id }
-                        })
-                        .session(session)
-                    const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
-                        inventoryIds: [removedInventory.id]
-                    })
-                    syncedInventories.push(...deletedSyncedInventories)
-                } else {
-                    const { inventorySnapshot, inventoryUpdated } = updatedInventory
-                    await inventoryUpdated.save({ session })
-                    const syncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
-                        inventorySnapshot,
-                        inventoryUpdated
-                    })
-                    syncedInventories.push(syncedInventory)
-                }
+                    .session(session)
+                const deletedSyncedInventories = this.syncService.getDeletedSyncedInventories({
+                    inventoryIds: [inventoryId]
+                })
+                syncedInventories.push(...deletedSyncedInventories)
 
                 /************************************************************
                  * CREATE DELIVERY INVENTORY
                  ************************************************************/
                 // Create a new inventory kind for Delivery
-                const createdInventoryRaws = await this.connection
-                    .model<InventorySchema>(InventorySchema.name)
-                    .create(
-                        [
-                            {
-                                quantity,
-                                index,
-                                kind: InventoryKind.Delivery,
-                                user: userId,
-                                inventoryType: inventory.inventoryType
-                            }
-                        ],
-                        { session }
-                    )
-                const createdSyncedInventories = this.syncService.getCreatedSyncedInventories({
-                    inventories: createdInventoryRaws
+                const { inventories, occupiedIndexes } = await this.inventoryService.getAddParams({
+                    connection: this.connection,
+                    inventoryType,
+                    userId,
+                    session,
+                    kind: InventoryKind.Delivery
                 })
-                syncedInventories.push(...createdSyncedInventories)
+                const { createdInventories, updatedInventories } = this.inventoryService.add({
+                    inventories,
+                    occupiedIndexes,
+                    inventoryType,
+                    userId,
+                    capacity: this.staticService.defaultInfo.storageCapacity,
+                    kind: InventoryKind.Delivery,
+                    quantity: inventory.quantity
+                })
+
+                if (createdInventories.length > 0) {
+                    const createdInventoryRaws = await this.connection
+                        .model<InventorySchema>(InventorySchema.name)
+                        .create(createdInventories, { session })
+
+                    syncedInventories.push(...this.syncService.getCreatedSyncedInventories({
+                        inventories: createdInventoryRaws
+                    }))
+                }
+
+                if (updatedInventories.length > 0) {
+                    const { inventorySnapshot, inventoryUpdated } = updatedInventories[0]
+                    await inventoryUpdated.save({ session })
+                    const updatedSyncedInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                        inventorySnapshot,
+                        inventoryUpdated
+                    })
+                    syncedInventories.push(updatedSyncedInventory)
+                }
             })
 
             return {
