@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { RetainInventoryMessage } from "./retain-inventory.dto"
+import { RetrieveInventoryMessage } from "./retrieve-inventory.dto"
 import { 
     InjectMongoose, 
     InventoryKind, 
@@ -17,8 +17,8 @@ import { SyncedResponse } from "../../types"
 import { InventoryService } from "@src/gameplay"
 
 @Injectable()
-export class RetainInventoryService {
-    private readonly logger = new Logger(RetainInventoryService.name)
+export class RetrieveInventoryService {
+    private readonly logger = new Logger(RetrieveInventoryService.name)
 
     constructor(
         @InjectMongoose()
@@ -28,9 +28,9 @@ export class RetainInventoryService {
         private readonly syncService: SyncService
     ) {}
 
-    async retainInventory(
+    async retrieveInventory(
         { id: userId }: UserLike,
-        { inventoryId }: RetainInventoryMessage
+        { inventoryId }: RetrieveInventoryMessage
     ): Promise<SyncedResponse> {
         const mongoSession = await this.connection.startSession()
 

@@ -48,6 +48,7 @@ export class BuyFlowerSeedsGateway implements OnGatewayInit {
             userId: user.id,
             syncedResponse
         })
-        socket.emit(EmitterEventName.FlowerSeedsBought)
+        socket.emit(EmitterEventName.FlowerSeedsBought, payload)
     }
 }
+    

@@ -24,8 +24,8 @@ import { v4 } from "uuid"
 import {
     DeliverProductRequest,
     DeliverProductResponse,
-    RetainProductRequest,
-    RetainProductResponse
+    RetrieveProductRequest,
+    RetrieveProductResponse
 } from "@apps/gameplay-service"
 import { AxiosResponse } from "axios"
 import { HttpStatus } from "@nestjs/common"
@@ -172,15 +172,15 @@ describe("Delivery flow", () => {
                     index: 3
                 }
             })
-            //Retain
-            const retainProductInIndex3Response = await authAxios.post<
-                RetainProductResponse,
-                AxiosResponse<RetainProductResponse, Omit<RetainProductRequest, "userId">>,
-                Omit<RetainProductRequest, "userId">
-            >("/gameplay/retain-product", {
+            //Retrieve
+            const retrieveProductInIndex3Response = await authAxios.post<
+                RetrieveProductResponse,
+                AxiosResponse<RetrieveProductResponse, Omit<RetrieveProductRequest, "userId">>,
+                Omit<RetrieveProductRequest, "userId">
+            >("/gameplay/retrieve-product", {
                 deliveringProductId: deliveringProduct.id
             })
-            expect(retainProductInIndex3Response.status).toBe(HttpStatus.CREATED)
+            expect(retrieveProductInIndex3Response.status).toBe(HttpStatus.CREATED)
 
             //send kafka
             clientKafka.emit(KafkaPattern.Delivery, {})

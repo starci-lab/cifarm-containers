@@ -51,7 +51,7 @@ export enum ReceiverEventName {
     // Delivery features
     DeliverInventory = "deliver_inventory",
     DeliverAdditionalInventory = "deliver_additional_inventory",
-    RetainInventory = "retain_inventory",
+    RetrieveInventory = "retrieve_inventory",
     MoveInventory = "move_inventory",
     ClaimDailyReward = "claim_daily_reward",
     Visit = "visit",

@@ -48,9 +48,9 @@ export class DeliverProductTransactionFailedException extends GrpcInternalExcept
     }
 }
 
-export class RetainProductTransactionFailedException extends GrpcInternalException {
+export class RetrieveProductTransactionFailedException extends GrpcInternalException {
     constructor(deliveringProductId: string) {
-        super(`Retain product transaction failed for product ID: ${deliveringProductId}`)
+        super(`Retrieve product transaction failed for product ID: ${deliveringProductId}`)
     }
 }
 
