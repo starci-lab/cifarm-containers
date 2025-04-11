@@ -152,6 +152,18 @@ export class UserSchema extends AbstractSchema {
         description: "Whether the current user is followed by the requesting user"
     })
         followed?: boolean
+
+    @Field(() => Float, {
+        description: "Volume level for sound effects (range: 0.0 to 1.0)"
+    })
+    @Prop({ type: Number, default: 0.5 })
+        sound: number
+
+    @Field(() => Float, {
+        description: "Volume level for ambient sounds (range: 0.0 to 1.0)"
+    })
+    @Prop({ type: Number, default: 0.5 })
+        ambient: number
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

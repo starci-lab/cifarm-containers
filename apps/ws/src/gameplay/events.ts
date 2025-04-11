@@ -64,7 +64,9 @@ export enum ReceiverEventName {
     ThiefBeeHouse = "thief_bee_house",
     BuyPet = "buy_pet",
     PlaceNFT = "place_nft",
-    ForceSyncPlacedItems = "force_sync_placed_items"
+    ForceSyncPlacedItems = "force_sync_placed_items",
+    // Player
+    UpdateSettings = "update_settings"
 }
 
 // sync user
