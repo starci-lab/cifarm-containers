@@ -7,6 +7,9 @@ import { HoneycombModule } from "./honeycomb"
 import { BlockchainModule } from "@src/blockchain"
 import { HoneycombModule as BaseHoneycombModule } from "@src/honeycomb"
 import { NFTModule } from "./nft"
+import { FarcasterModule as FarcasterCoreModule } from "@src/farcaster"
+import { FarcasterModule } from "./farcaster"
+
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -23,6 +26,10 @@ import { NFTModule } from "./nft"
             },
             isGlobal: true
         }),
+        FarcasterCoreModule.register({
+            isGlobal: true
+        }),
+        FarcasterModule,
         DatabaseModule,
         DockerModule,
         HoneycombModule,

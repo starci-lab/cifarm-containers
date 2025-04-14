@@ -86,24 +86,15 @@
         "webpackConfigPath": "apps/telegram-bot/webpack.config.js"
       }
     },
-    "seeders": {
+    "farcaster-bot": {
       "type": "application",
-      "root": "apps/seeders",
+      "root": "apps/farcaster-bot",
       "entryFile": "main",
-      "sourceRoot": "apps/seeders/src",
+      "sourceRoot": "apps/farcaster-bot/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/seeders/tsconfig.app.json",
+        "tsConfigPath": "apps/farcaster-bot/tsconfig.app.json",
         "webpack": true,
-        "webpackConfigPath": "apps/seeders/webpack.config.js"
-      }
-    },
-    "blockchain-service": {
-      "type": "application",
-      "root": "apps/blockchain-service",
-      "entryFile": "main",
-      "sourceRoot": "apps/blockchain-service/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/blockchain-service/tsconfig.app.json"
+        "webpackConfigPath": "apps/farcaster-bot/webpack.config.js"
       }
     }
   }

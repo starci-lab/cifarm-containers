@@ -124,22 +124,22 @@ export class SolanaMetaplexService {
                         // growth acceleration when the nft is planted
                         {
                             key: AttributeName.GrowthAcceleration,
-                            value: "0.1" // 10% growth speedup
+                            value: "100" // 10% growth speedup
                         },
                         // quality yield chance when the nft is harvested
                         {
-                            key: AttributeName.QualityYieldChance,
-                            value: "0.1" // 10% quality yield chance
+                            key: AttributeName.QualityYield,
+                            value: "100" // 10% quality yield chance
                         },
                         // disease resistance when the nft is planted
                         {
                             key: AttributeName.DiseaseResistance,
-                            value: "0.1" // 10% disease resistance
+                            value: "100" // 10% disease resistance
                         },
                         // harvest yield bonus when the nft is harvested
                         {
                             key: AttributeName.HarvestYieldBonus,
-                            value: "0.1" // 10% yield bonus
+                            value: "100" // 10% yield bonus
                         }
                     ]
                 }
@@ -310,7 +310,7 @@ export enum AttributeName {
     Rarity = "rarity",
     Type = "type",
     GrowthAcceleration = "growthAcceleration",
-    QualityYieldChance = "qualityYieldChance",
+    QualityYield = "qualityYield",
     DiseaseResistance = "diseaseResistance",
     HarvestYieldBonus = "harvestYieldBonus"
 }

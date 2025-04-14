@@ -75,7 +75,7 @@ export class AnimalInfoSchema extends AbstractSchema {
         description: "Where the chance of the animal to be quality"
     })
     @Prop({ type: Number, default: 0 })
-    [AttributeName.QualityYieldChance]: number
+    [AttributeName.QualityYield]: number
 
     @Field(() => Float, {
         description: "The growth acceleration of the animal"

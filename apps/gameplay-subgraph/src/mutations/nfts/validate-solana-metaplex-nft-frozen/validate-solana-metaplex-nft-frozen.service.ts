@@ -131,8 +131,8 @@ export class ValidateSolanaMetaplexNFTFrozenService {
                                 y: 0,
                                 placedItemType: placedItemType.id,
                                 fruitInfo: {
-                                    [AttributeName.QualityYieldChance]: nft.attributes.attributeList.find(
-                                        (attribute) => attribute.key === AttributeName.QualityYieldChance
+                                    [AttributeName.QualityYield]: nft.attributes.attributeList.find(
+                                        (attribute) => attribute.key === AttributeName.QualityYield
                                     )?.value,
                                     [AttributeName.GrowthAcceleration]: nft.attributes.attributeList.find(
                                         (attribute) => attribute.key === AttributeName.GrowthAcceleration

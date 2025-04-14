@@ -2,6 +2,6 @@ import { Module } from "@nestjs/common"
 import { PlaceNFTModule } from "./place-nft"
 
 @Module({
-    providers: [ PlaceNFTModule ]
+    imports: [ PlaceNFTModule ]
 })
 export class NFTModule {}

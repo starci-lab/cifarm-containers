@@ -13,11 +13,12 @@ export class TileInfoSchema extends AbstractSchema {
     })
     @Prop({ type: Number, default: 0 })
         harvestCount: number
+        
     @Field(() => Float, {
         description: "Where the chance of the tile to be quality"
     })
     @Prop({ type: Number, default: 0 })
-    [AttributeName.QualityYieldChance]: number
+    [AttributeName.QualityYield]: number
 
     @Field(() => Float, {
         description: "The growth acceleration of the tile"

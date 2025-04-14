@@ -168,6 +168,11 @@ export const envConfig = () => ({
             miniappUrl: process.env.TELEGRAM_MINIAPP_URL
         } 
     },
+    farcaster: {
+        address: process.env.FARCASTER_ADDRESS,
+        apiKey: process.env.FARCASTER_API_KEY,
+        signerUuid: process.env.FARCASTER_SIGNER_UUID
+    },
     secrets: {
         salt: process.env.SALT,
         jwt: {
