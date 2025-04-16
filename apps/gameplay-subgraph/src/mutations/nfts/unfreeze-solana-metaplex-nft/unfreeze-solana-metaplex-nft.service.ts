@@ -40,7 +40,7 @@ export class UnfreezeSolanaMetaplexNFTService {
                         }
                     })
                 }
-                const nft = await this.solanaMetaplexService.getNft({
+                const nft = await this.solanaMetaplexService.getNFT({
                     nftAddress,
                     network: user.network
                 })

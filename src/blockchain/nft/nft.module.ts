@@ -12,7 +12,6 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./nft.module-definition"
 })
 export class NFTModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE = {}) : DynamicModule {
-        
         return super.register(options)
     }
 }

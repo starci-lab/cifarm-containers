@@ -16,6 +16,8 @@ import { PlacedItemsModule } from "./placed-items"
 import { FlowersModule } from "./flowers"
 import { InventoriesModule } from "./inventories"
 import { NftsModule } from "./nfts"
+import { NFTMetadatasModule } from "./nft-metadatas"
+
 @Module({
     imports: [
         AnimalsModule,
@@ -35,6 +37,7 @@ import { NftsModule } from "./nfts"
         PetsModule,
         ProductsModule,
         FlowersModule,
+        NFTMetadatasModule,
     ]
 })
 export class QueriesModule {}

@@ -92,9 +92,7 @@
       "entryFile": "main",
       "sourceRoot": "apps/farcaster-bot/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/farcaster-bot/tsconfig.app.json",
-        "webpack": true,
-        "webpackConfigPath": "apps/farcaster-bot/webpack.config.js"
+        "tsConfigPath": "apps/farcaster-bot/tsconfig.app.json"
       }
     }
   }

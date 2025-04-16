@@ -61,10 +61,10 @@ export class SolanaMetaplexService {
         }
     }
 
-    public async getNft({
+    public async getNFT({
         network = Network.Mainnet,
         nftAddress,
-    }: GetNftParams): Promise<AssetV1> {
+    }: getNFTParams): Promise<AssetV1> {
         return await fetchAsset(this.umis[network], nftAddress)
     }
 
@@ -118,8 +118,10 @@ export class SolanaMetaplexService {
                             value: "common"
                         },
                         {
-                            key: AttributeName.Type,
-                            value: "fruit"
+                            key: AttributeName.Data,
+                            value: JSON.stringify({
+                                currentStage: 1,
+                            })
                         },
                         // growth acceleration when the nft is planted
                         {
@@ -140,7 +142,7 @@ export class SolanaMetaplexService {
                         {
                             key: AttributeName.HarvestYieldBonus,
                             value: "100" // 10% yield bonus
-                        }
+                        },
                     ]
                 }
             ]
@@ -297,7 +299,7 @@ export interface MintNFTResponse {
     signature: string
 }
 
-export interface GetNftParams extends WithNetwork {
+export interface getNFTParams extends WithNetwork {
     nftAddress: string
 }
 
@@ -308,7 +310,7 @@ export interface TransferNftResponse {
 export enum AttributeName {
     Stars = "stars",
     Rarity = "rarity",
-    Type = "type",
+    Data = "data",
     GrowthAcceleration = "growthAcceleration",
     QualityYield = "qualityYield",
     DiseaseResistance = "diseaseResistance",

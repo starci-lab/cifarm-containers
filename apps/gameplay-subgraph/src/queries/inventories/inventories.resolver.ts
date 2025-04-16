@@ -12,25 +12,24 @@ export class InventoriesResolver {
 
     constructor(private readonly inventoriesService: InventoriesService) {}
 
-    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => [InventorySchema], {
         name: "inventories",
         description: "Get many inventories with pagination"
     })
-    async inventories(
-        @GraphQLUser() user: UserLike
-    ): Promise<Array<InventorySchema>> {
+    async inventories(@GraphQLUser() user: UserLike): Promise<Array<InventorySchema>> {
         return await this.inventoriesService.getInventories(user)
     }
 
-    
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
     @Query(() => InventorySchema, {
         name: "inventory",
         description: "Get an inventory by ID"
     })
-    async inventory(@Args("id", { type: () => ID, description: "The ID of the inventory" }) id: string): Promise<InventorySchema> {
-        return await this.inventoriesService.getInventory(id)
+    async inventory(
+        @Args("id", { type: () => ID, description: "The ID of the inventory" }) id: string,
+        @GraphQLUser() user: UserLike
+    ): Promise<InventorySchema> {
+        return await this.inventoriesService.getInventory(id, user)
     }
 }

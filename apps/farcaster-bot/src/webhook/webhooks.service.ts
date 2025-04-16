@@ -10,10 +10,9 @@ export class WebhookService {
     constructor(private readonly farcasterService: FarcasterService) {}
 
     async castCreated(body: WebhookCastCreated) {
-        console.log(body)
         await this.farcasterService.publishCast({
             parent: body.data.hash,
-            text: "this is auto generated cast",
+            text: "this is auto generated cast. i am cuong",
         })
     } 
 }

@@ -18,7 +18,7 @@ import { Atomic } from "@src/common"
 import { blockchainConfig, chainKeyToPlatform, Platform } from "../../blockchain.config"
 import { Network } from "@src/env"
 
-export interface GetNftsByOwnerAddressParams {
+export interface getNFTsByOwnerAddressParams {
   accountAddress: string;
   nftCollectionKey: string;
   chainKey: string;
@@ -28,11 +28,11 @@ export interface GetNftsByOwnerAddressParams {
 }
 
 //services from dependency injection
-export interface GetNftsByOwnerAddressServices {
+export interface getNFTsByOwnerAddressServices {
   ipfsService?: IpfsService;
 }
 
-export interface GetNftsByOwnerAddressResult {
+export interface getNFTsByOwnerAddressResult {
   records: Array<NftData>;
   count: number;
 }
@@ -45,9 +45,9 @@ export const _getEvmNftsByOwnerAddress = async (
         accountAddress,
         skip,
         take,
-    }: GetNftsByOwnerAddressParams,
-    { ipfsService }: GetNftsByOwnerAddressServices,
-): Promise<GetNftsByOwnerAddressResult> => {
+    }: getNFTsByOwnerAddressParams,
+    { ipfsService }: getNFTsByOwnerAddressServices,
+): Promise<getNFTsByOwnerAddressResult> => {
     const nftCollectionId =
     blockchainConfig[chainKey].nftCollections[nftCollectionKey][network]
         .collectionId
@@ -119,9 +119,9 @@ export const _getSolanaNftsByOwnerAddress = async (
         accountAddress,
         skip,
         take,
-    }: GetNftsByOwnerAddressParams,
-    { ipfsService }: GetNftsByOwnerAddressServices,
-): Promise<GetNftsByOwnerAddressResult> => {
+    }: getNFTsByOwnerAddressParams,
+    { ipfsService }: getNFTsByOwnerAddressServices,
+): Promise<getNFTsByOwnerAddressResult> => {
     const nftCollectionId =
     blockchainConfig[chainKey].nftCollections[nftCollectionKey][network]
         .collectionId
@@ -174,9 +174,9 @@ export const _getAptosNftsByOwnerAddress = async (
         accountAddress,
         skip,
         take,
-    }: GetNftsByOwnerAddressParams,
-    { ipfsService }: GetNftsByOwnerAddressServices,
-): Promise<GetNftsByOwnerAddressResult> => {
+    }: getNFTsByOwnerAddressParams,
+    { ipfsService }: getNFTsByOwnerAddressServices,
+): Promise<getNFTsByOwnerAddressResult> => {
     const nftCollectionId =
     blockchainConfig[nftCollectionKey].nftCollections[nftCollectionKey][
         network
@@ -225,9 +225,9 @@ export const _getAlgorandNftsByOwnerAddress = async (
         accountAddress,
         skip,
         take,
-    }: GetNftsByOwnerAddressParams,
-    { ipfsService }: GetNftsByOwnerAddressServices,
-): Promise<GetNftsByOwnerAddressResult> => {
+    }: getNFTsByOwnerAddressParams,
+    { ipfsService }: getNFTsByOwnerAddressServices,
+): Promise<getNFTsByOwnerAddressResult> => {
     const nftCollectionId =
     blockchainConfig.algorand.nftCollections[nftCollectionKey][network]
         .collectionId
@@ -275,7 +275,7 @@ export const _getPolkadotUniqueNetworkNftsByOwnerAddress = async ({
     accountAddress,
     skip,
     take,
-}: GetNftsByOwnerAddressParams): Promise<GetNftsByOwnerAddressResult> => {
+}: getNFTsByOwnerAddressParams): Promise<getNFTsByOwnerAddressResult> => {
     const nftCollectionId =
     blockchainConfig.polkadotUniqueNetwork.nftCollections[nftCollectionKey][
         network
@@ -323,7 +323,7 @@ export const _getNearNftsByOwnerAddress = async ({
     accountAddress,
     skip,
     take,
-}: GetNftsByOwnerAddressParams): Promise<GetNftsByOwnerAddressResult> => {
+}: getNFTsByOwnerAddressParams): Promise<getNFTsByOwnerAddressResult> => {
     const nftCollectionId =
     blockchainConfig.near.nftCollections[nftCollectionKey][network]
         .collectionId
@@ -355,9 +355,9 @@ export const _getNearNftsByOwnerAddress = async ({
     }
 }
 
-export const _getNftsByOwnerAddress = (
-    params: GetNftsByOwnerAddressParams,
-    services: GetNftsByOwnerAddressServices,
+export const _getNFTsByOwnerAddress = (
+    params: getNFTsByOwnerAddressParams,
+    services: getNFTsByOwnerAddressServices,
 ) => {
     const platform = chainKeyToPlatform(params.chainKey)
     switch (platform) {

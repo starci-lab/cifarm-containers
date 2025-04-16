@@ -25,7 +25,7 @@ export class MintSolanaMetaplexNFTCommand extends CommandRunner {
                 name,
                 ownerAddress,
                 collectionAddress,
-                metadata: parsedMetadata
+                metadata: parsedMetadata,
             })
             this.logger.debug(`NFT created: ${nftAddress}`)
             this.logger.debug(`Transaction signature: ${signature}`)

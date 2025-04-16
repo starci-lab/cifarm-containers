@@ -20,7 +20,7 @@ import { Atomic } from "@src/common"
 import { blockchainConfig, chainKeyToPlatform, Platform } from "../../blockchain.config"
 import { Network } from "@src/env"
 
-export interface GetNftsByTokenIdsParams {
+export interface getNFTsByTokenIdsParams {
   tokenIds: Array<string>;
   nftCollectionKey: string;
   chainKey: string;
@@ -28,18 +28,18 @@ export interface GetNftsByTokenIdsParams {
 }
 
 //services from dependency injection
-export interface GetNftsByTokenIdsServices {
+export interface getNFTsByTokenIdsServices {
   ipfsService: IpfsService;
 }
 
-export interface GetNftsByTokenIdsResult {
+export interface getNFTsByTokenIdsResult {
   records: Array<NftData>;
 }
 
 export const _getEvmNftsByTokenIds = async (
-    { nftCollectionKey, chainKey, network, tokenIds }: GetNftsByTokenIdsParams,
-    { ipfsService }: GetNftsByTokenIdsServices,
-): Promise<GetNftsByTokenIdsResult> => {
+    { nftCollectionKey, chainKey, network, tokenIds }: getNFTsByTokenIdsParams,
+    { ipfsService }: getNFTsByTokenIdsServices,
+): Promise<getNFTsByTokenIdsResult> => {
     const nftCollectionId =
     blockchainConfig[chainKey].nftCollections[nftCollectionKey][network]
         .collectionId
@@ -82,9 +82,9 @@ export const _getEvmNftsByTokenIds = async (
 }
 
 export const _getSolanaNftsByTokenIds = async (
-    { chainKey, network, tokenIds }: GetNftsByTokenIdsParams,
-    { ipfsService }: GetNftsByTokenIdsServices,
-): Promise<GetNftsByTokenIdsResult> => {
+    { chainKey, network, tokenIds }: getNFTsByTokenIdsParams,
+    { ipfsService }: getNFTsByTokenIdsServices,
+): Promise<getNFTsByTokenIdsResult> => {
     const rpc = solanaHttpRpcUrl(chainKey, network)
     const connection = new Connection(rpc, "confirmed")
     const umi = createUmi(rpc)
@@ -124,9 +124,9 @@ export const _getSolanaNftsByTokenIds = async (
 }
 
 export const _getAptosNftsByTokenIds = async (
-    { network, tokenIds }: GetNftsByTokenIdsParams,
-    { ipfsService }: GetNftsByTokenIdsServices,
-): Promise<GetNftsByTokenIdsResult> => {
+    { network, tokenIds }: getNFTsByTokenIdsParams,
+    { ipfsService }: getNFTsByTokenIdsServices,
+): Promise<getNFTsByTokenIdsResult> => {
     const client = aptosClient(network)
     const records: Array<NftData> = []
     const promises: Array<Promise<void>> = []
@@ -164,9 +164,9 @@ export const _getAptosNftsByTokenIds = async (
 }
 
 export const _getAlgorandNftsByTokenIds = async (
-    { tokenIds, network }: GetNftsByTokenIdsParams,
-    { ipfsService }: GetNftsByTokenIdsServices,
-): Promise<GetNftsByTokenIdsResult> => {
+    { tokenIds, network }: getNFTsByTokenIdsParams,
+    { ipfsService }: getNFTsByTokenIdsServices,
+): Promise<getNFTsByTokenIdsResult> => {
     const algodClient = algorandAlgodClient(network)
     const indexerClient = algorandIndexerClient(network)
     const records: Array<NftData> = []
@@ -205,7 +205,7 @@ export const _getPolkadotUniqueNetworkNftsByTokenIds = async ({
     network,
     nftCollectionKey,
     chainKey,
-}: GetNftsByTokenIdsParams): Promise<GetNftsByTokenIdsResult> => {
+}: getNFTsByTokenIdsParams): Promise<getNFTsByTokenIdsResult> => {
     const nftCollectionId =
     blockchainConfig[chainKey].nftCollections[nftCollectionKey][network]
         .collectionId
@@ -241,7 +241,7 @@ export const _getNearNftsByTokenIds = async ({
     network,
     tokenIds,
     nftCollectionKey,
-}: GetNftsByTokenIdsParams): Promise<GetNftsByTokenIdsResult> => {
+}: getNFTsByTokenIdsParams): Promise<getNFTsByTokenIdsResult> => {
     const nftCollectionId =
     blockchainConfig.near.nftCollections[nftCollectionKey][network]
         .collectionId
@@ -277,9 +277,9 @@ export const _getNearNftsByTokenIds = async ({
     }
 }
 
-export const _getNftsByTokenIds = (
-    params: GetNftsByTokenIdsParams,
-    services: GetNftsByTokenIdsServices,
+export const _getNFTsByTokenIds = (
+    params: getNFTsByTokenIdsParams,
+    services: getNFTsByTokenIdsServices,
 ) => {
     const platform = chainKeyToPlatform(params.chainKey)
     switch (platform) {

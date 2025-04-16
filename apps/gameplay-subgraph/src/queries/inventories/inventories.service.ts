@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, NotFoundException, ForbiddenException } from "@nestjs/common"
 import { InjectMongoose, InventorySchema } from "@src/databases"
 import { UserLike } from "@src/jwt"
 import { Connection } from "mongoose"
@@ -16,8 +16,15 @@ export class InventoriesService {
         private readonly cache: Cache
     ) {}
 
-    async getInventory(id: string): Promise<InventorySchema> {
-        return await this.connection.model(InventorySchema.name).findById(id)
+    async getInventory(id: string, { id: userId }: UserLike): Promise<InventorySchema> {
+        const inventory = await this.connection.model(InventorySchema.name).findById(id)
+        if (!inventory) {
+            throw new NotFoundException("Inventory not found")
+        }
+        if (inventory.user.toString() !== userId) {
+            throw new ForbiddenException("You are not allowed to access this inventory")
+        }
+        return inventory
     }
 
     async getInventories({ id }: UserLike): Promise<Array<InventorySchema>> {

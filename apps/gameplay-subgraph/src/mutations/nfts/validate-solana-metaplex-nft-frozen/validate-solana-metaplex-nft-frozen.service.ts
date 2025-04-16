@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, NFTType, PlacedItemSchema, UserSchema } from "@src/databases"
+import { InjectMongoose, NFTType, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import {
     ValidateSolanaMetaplexNFTFrozenRequest,
     ValidateSolanaMetaplexNFTFrozenResponse
 } from "./validate-solana-metaplex-nft-frozen.dto"
-import { AttributeName, AttributeTypeValue, SolanaMetaplexService } from "@src/blockchain"
+import { AttributeName, SolanaMetaplexService } from "@src/blockchain"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { NFTMetadataSchema } from "@src/databases"
@@ -44,7 +44,7 @@ export class ValidateSolanaMetaplexNFTFrozenService {
                         }
                     })
                 }
-                const nft = await this.solanaMetaplexService.getNft({
+                const nft = await this.solanaMetaplexService.getNFT({
                     nftAddress,
                     network: user.network
                 })
@@ -104,12 +104,18 @@ export class ValidateSolanaMetaplexNFTFrozenService {
                     })
                 }
                 
-                switch (
-                    nft.attributes.attributeList.find(
-                        (attribute) => attribute.key === AttributeName.Type
-                    )?.value
-                ) {
-                case AttributeTypeValue.Fruit: {
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) => placedItemType.displayId === NFTTypeToPlacedItemTypeId[nftType]
+                )
+                if (!placedItemType) {
+                    throw new GraphQLError("Placed item type not found", {
+                        extensions: {
+                            code: "PLACED_ITEM_TYPE_NOT_FOUND"
+                        }
+                    })
+                }
+                switch (placedItemType.type) {
+                case PlacedItemType.Fruit: {
                     const placedItemTypeId = NFTTypeToPlacedItemTypeId[nftType]
                     const placedItemType = this.staticService.placedItemTypes.find(
                         (placedItemType) => placedItemType.displayId === placedItemTypeId
