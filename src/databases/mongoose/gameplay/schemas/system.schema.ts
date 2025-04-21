@@ -7,11 +7,15 @@ import {
     SystemId,
     FirstCharLowerCaseSystemId,
     NFTType,
+    NFTRarity,
+    FirstCharLowerCaseNFTType,
+    StableCoinName,
 } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Position } from "./types"
-import { Network } from "@src/env"
+import { Network, ChainKey } from "@src/env"
+import { AttributeName } from "@src/blockchain"
 
 @ObjectType({
     description: "The system schema"
@@ -638,19 +642,99 @@ export class DailyRewardInfo {
 }
 
 @ObjectType({
+    description: "Configuration for NFT rarity"
+})
+export class NFTRarityInfo {
+    @Field(() => Float, {
+        description: "Growth acceleration"
+    })
+    [AttributeName.GrowthAcceleration]: number
+
+    @Field(() => Float, {
+        description: "Quality yield"
+    })
+    [AttributeName.QualityYield]: number
+
+    @Field(() => Float, {
+        description: "Disease resistance"
+    })
+    [AttributeName.DiseaseResistance]: number
+
+    @Field(() => Float, {
+        description: "Harvest yield bonus"
+    })
+    [AttributeName.HarvestYieldBonus]: number
+}
+
+@ObjectType({
+    description: "Configuration for NFT fruit stage"
+})
+export class NFTFruitStage {
+    @Field(() => Int, {
+        description: "Fruit stage"
+    })
+        stage: number
+    @Field(() => String, {
+        description: "Image URL for fruit stage"
+    })
+        imageUrl: string
+}
+
+@ObjectType({
+    description: "Configuration for NFT fruit stages"
+})
+export class NFTFruitStages {
+    @Field(() => [NFTFruitStage], {
+        description: "Fruit stages"
+    })
+        stages: Array<NFTFruitStage>
+}
+
+@ObjectType({
+    description: "Configuration for NFT rarities"
+})
+export class NFTRarities {
+    @Field(() => NFTRarityInfo, {
+        description: "Common rarity"
+    })
+    [NFTRarity.Common]: NFTRarityInfo
+
+    @Field(() => NFTRarityInfo, {
+        description: "Rare rarity"
+    })
+    [NFTRarity.Rare]: NFTRarityInfo
+
+    @Field(() => NFTRarityInfo, {
+        description: "Epic rarity"
+    })
+    [NFTRarity.Epic]: NFTRarityInfo
+}
+
+@ObjectType({
     description: "Configuration for NFT collection data"
 })
 export class NFTCollectionData {
     @Field(() => String, {
-        description: "Testnet collection address"
+        description: "Collection address"
     })
         collectionAddress: string
+
+    @Field(() => NFTRarities, {
+        description: "NFT rarities"
+    })
+        rarities: NFTRarities
+
+    @Field(() => NFTFruitStages, {
+        description: "NFT fruit stages",
+        nullable: true
+    })
+        fruitStages?: NFTFruitStages
 }
 
 @ObjectType({
     description: "Configuration for NFT collections"
 })
-export class NFTCollection {
+export class NFTCollectionWrapped {
     @Field(() => NFTCollectionData, {
         description: "Testnet collection address"
     })
@@ -663,14 +747,179 @@ export class NFTCollection {
 }
 
 @ObjectType({
+    description: "Configuration for NFT collections wrapper"
+})
+export class NFTCollection {
+    @Field(() => NFTCollectionWrapped, {
+        description: "NFT collection"
+    })
+    [ChainKey.Solana]: NFTCollectionWrapped
+}
+
+@ObjectType({
     description: "Configuration for NFT collections"
 })
-export class NFTCollections implements Record<NFTType, NFTCollection> {
+export class NFTCollections {
     @Field(() => NFTCollection, {
         description: "NFT collection"
     })
     [NFTType.DragonFruit]: NFTCollection
+    
+    @Field(() => NFTCollection, {
+        description: "NFT collection"
+    })
+    [NFTType.Pomegranate]: NFTCollection
+    @Field(() => NFTCollection, {
+        description: "NFT collection"
+    })
+    [NFTType.Rambutan]: NFTCollection
+
+    @Field(() => NFTCollection, {
+        description: "NFT collection"
+    })
+    [NFTType.Jackfruit]: NFTCollection
 }
+
+@ObjectType({
+    description: "Stable coin data"
+})
+export class StableCoinData {
+    @Field(() => String, {
+        description: "Stable coin address"
+    })
+        address: string
+    @Field(() => Int, {
+        description: "Stable coin decimals"
+    })
+        decimals: number
+}
+
+@ObjectType({
+    description: "Stable coin"
+})
+export class StableCoinWrapped {
+    @Field(() => StableCoinData, {
+        description: "Stable coin data"
+    })
+    [Network.Testnet]: StableCoinData
+
+    @Field(() => StableCoinData, {
+        description: "Stable coin data"
+    })
+    [Network.Mainnet]: StableCoinData
+}
+
+@ObjectType({
+    description: "Stable coin"
+})
+export class StableCoin {
+    @Field(() => StableCoinWrapped, {
+        description: "Stable coin"
+    })
+    [ChainKey.Solana]: StableCoinWrapped
+}
+
+@ObjectType({
+    description: "Configuration for stable coins"
+})
+export class StableCoins {
+    @Field(() => StableCoin, {
+        description: "Stable coin"
+    })
+    [StableCoinName.USDC]: StableCoin
+}
+
+@ObjectType({
+    description: "Configuration for NFT starter box"
+})
+export class NFTStarterBoxInfo {
+    @Field(() => [NFTStarterBoxChance], {
+        description: "Each chance for a box configuration"
+    })
+        chances: Array<NFTStarterBoxChance>
+    
+    @Field(() => Float, {
+        description: "Price for each box"
+    })
+        boxPrice: number
+}
+
+@ObjectType({
+    description: "Configuration for NFT starter box"
+})
+export class NFTStarterBox {
+    @Field(() => NFTStarterBoxInfo, {
+        description: "NFT starter box"
+    })
+        info: NFTStarterBoxInfo
+}
+
+@ObjectType({
+    description: "Each chance for a NFT starter box"
+})
+export class NFTStarterBoxChance {
+    @Field(() => FirstCharLowerCaseNFTType, {
+        description: "NFT type"
+    })
+        nftType: NFTType
+    @Field(() => Float, {
+        description: "Start chance"
+    })
+        startChance: number
+    @Field(() => Float, {
+        description: "End chance"
+    })
+        endChance: number
+    @Field(() => Float, {
+        description: "Rare rarity chance"
+    })
+        rareRarityChance: number
+    @Field(() => Float, {
+        description: "Epic rarity chance"
+    })
+        epicRarityChance: number
+}
+
+
+@ObjectType({
+    description: "Token vault data"
+})
+export class TokenVaultData {
+    @Field(() => String, {
+        description: "Token address"
+    })
+        address: string
+    @Field(() => Int, {
+        description: "Stable coin decimals"
+    })
+        decimals: number
+}
+
+@ObjectType({
+    description: "Token vault"
+})
+export class TokenVault {
+    @Field(() => TokenVaultData, {
+        description: "Token vault data"
+    })
+    [Network.Testnet]: TokenVaultData
+
+    @Field(() => StableCoinData, {
+        description: "Stable coin data"
+    })
+    [Network.Mainnet]: StableCoinData
+}
+
+@ObjectType({
+    description: "Token vault"
+})
+export class TokenVaults {
+    @Field(() => TokenVault, {
+        description: "Token vault wrapped"
+    })
+    [ChainKey.Solana]: TokenVault
+}
+ 
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)
 

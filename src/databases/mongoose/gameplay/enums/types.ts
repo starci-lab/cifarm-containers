@@ -242,6 +242,9 @@ registerEnumType(FirstCharLowerCasePetType, {
 
 export enum NFTType {
     DragonFruit = "dragonFruit",
+    Jackfruit = "jackfruit",
+    Rambutan = "rambutan",
+    Pomegranate = "pomegranate",
 }
 
 export const FirstCharLowerCaseNFTType = createFirstCharLowerCaseEnumType(NFTType)
@@ -253,9 +256,52 @@ registerEnumType(FirstCharLowerCaseNFTType, {
         [NFTType.DragonFruit]: {
             description: "The dragon fruit NFT",
         },
+        [NFTType.Jackfruit]: {
+            description: "The jackfruit NFT",
+        },
+        [NFTType.Rambutan]: {
+            description: "The rambutan NFT",
+        },
+        [NFTType.Pomegranate]: {
+            description: "The pomegranate NFT",
+        },
     },
 })
 
 export const NFTTypeToPlacedItemTypeId: Record<NFTType, PlacedItemTypeId> = {
     [NFTType.DragonFruit]: PlacedItemTypeId.DragonFruit,
+    [NFTType.Jackfruit]: PlacedItemTypeId.Jackfruit,
+    [NFTType.Rambutan]: PlacedItemTypeId.Rambutan,
+    [NFTType.Pomegranate]: PlacedItemTypeId.Pomegranate,
 }   
+
+export enum NFTRarity {
+    Common = "common",
+    Rare = "rare",
+    Epic = "epic",
+}
+
+export const FirstCharLowerCaseNFTRarity = createFirstCharLowerCaseEnumType(NFTRarity)
+
+registerEnumType(FirstCharLowerCaseNFTRarity, {
+    name: "NFTRarity",
+    description: "The rarity of NFT",
+    valuesMap: {
+        [NFTRarity.Common]: {
+            description: "The common rarity",
+        },
+        [NFTRarity.Rare]: {
+            description: "The rare rarity",
+        },
+        [NFTRarity.Epic]: {
+            description: "The epic rarity",
+        },
+    },
+})
+
+// Stable Coin Name Enum
+export enum StableCoinName {
+    USDC = "usdc",
+    USDT = "usdt",
+}
+

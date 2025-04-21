@@ -164,6 +164,20 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: Number, default: 0.5 })
         ambient: number
+
+    @Field(() => Float, {
+        description: "Last time the user rolled the solana starter box type",
+        defaultValue: 0
+    })
+    @Prop({ type: Number, default: 0 })
+        lastSolanaStarterBoxRollType?: number
+
+    @Field(() => Float, {
+        description: "Last time the user rolled the nft starter box rarity",
+        defaultValue: 0
+    })
+    @Prop({ type: Number, default: 0 })
+        lastNFTStarterBoxRollRarity?: number
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

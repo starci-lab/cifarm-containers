@@ -15,10 +15,17 @@ import {
     HoneycombInfo,
     InjectMongoose,
     NFTCollections,
+    NFTRarity,
+    NFTStarterBoxInfo,
     NFTType,
+    StableCoinName,
+    StableCoins,
     SystemId,
-    SystemSchema
+    SystemSchema,
+    TokenVaults
 } from "@src/databases"
+import { ChainKey, Network } from "@src/env"
+import { AttributeName } from "@src/blockchain"
 import { Connection } from "mongoose"
 import { Seeder } from "nestjs-seeder"
 
@@ -300,11 +307,363 @@ export class SystemSeeder implements Seeder {
             }
             const nftCollections: NFTCollections = {
                 [NFTType.DragonFruit]: {
-                    testnet: {
-                        collectionAddress: "FkJJyaMCMmNHGWQkBkrVBo9Trz8o9ZffKBcpyC3SdZx4"
-                    },
-                    mainnet: {
-                        collectionAddress: "FkJJyaMCMmNHGWQkBkrVBo9Trz8o9ZffKBcpyC3SdZx4"
+                    [ChainKey.Solana]: {
+                        [Network.Testnet]: {
+                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            fruitStages: {
+                                stages: [
+                                    {
+                                        stage: 0,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    },
+                                    {
+                                        stage: 1,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                    },
+                                    {
+                                        stage: 2,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                    },
+                                    {
+                                        stage: 3,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                    },
+                                    {
+                                        stage: 4,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                    }
+                                ]
+                            },
+                            rarities: {
+                                [NFTRarity.Common]: {
+                                    [AttributeName.GrowthAcceleration]: 100,
+                                    [AttributeName.QualityYield]: 100,
+                                    [AttributeName.DiseaseResistance]: 100,
+                                    [AttributeName.HarvestYieldBonus]: 100
+                                },
+                                [NFTRarity.Rare]: {
+                                    [AttributeName.GrowthAcceleration]: 200,
+                                    [AttributeName.QualityYield]: 200,
+                                    [AttributeName.DiseaseResistance]: 200,
+                                    [AttributeName.HarvestYieldBonus]: 200
+                                },
+                                [NFTRarity.Epic]: {
+                                    [AttributeName.GrowthAcceleration]: 300,
+                                    [AttributeName.QualityYield]: 300,
+                                    [AttributeName.DiseaseResistance]: 300,
+                                    [AttributeName.HarvestYieldBonus]: 300
+                                }
+                            }
+                        },
+                        [Network.Mainnet]: {
+                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            fruitStages: {
+                                stages: [
+                                    {
+                                        stage: 0,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    },
+                                    {
+                                        stage: 1,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                    },
+                                    {
+                                        stage: 2,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                    },
+                                    {
+                                        stage: 3,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                    },
+                                    {
+                                        stage: 4,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                    }
+                                ]
+                            },
+                            rarities: {
+                                [NFTRarity.Common]: {
+                                    [AttributeName.GrowthAcceleration]: 100,
+                                    [AttributeName.QualityYield]: 100,
+                                    [AttributeName.DiseaseResistance]: 100,
+                                    [AttributeName.HarvestYieldBonus]: 100
+                                },
+                                [NFTRarity.Rare]: {
+                                    [AttributeName.GrowthAcceleration]: 200,
+                                    [AttributeName.QualityYield]: 200,
+                                    [AttributeName.DiseaseResistance]: 200,
+                                    [AttributeName.HarvestYieldBonus]: 200
+                                },
+                                [NFTRarity.Epic]: {
+                                    [AttributeName.GrowthAcceleration]: 300,
+                                    [AttributeName.QualityYield]: 300,
+                                    [AttributeName.DiseaseResistance]: 300,
+                                    [AttributeName.HarvestYieldBonus]: 300
+                                }
+                            }
+                        }
+                    }
+                },
+                [NFTType.Jackfruit]: {
+                    [ChainKey.Solana]: {
+                        [Network.Testnet]: {
+                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            fruitStages: {
+                                stages: [
+                                    {
+                                        stage: 0,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    },
+                                    {
+                                        stage: 1,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                    },
+                                    {
+                                        stage: 2,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                    },
+                                    {
+                                        stage: 3,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                    },
+                                    {
+                                        stage: 4,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                    }
+                                ]
+                            },
+                            rarities: {
+                                [NFTRarity.Common]: {
+                                    [AttributeName.GrowthAcceleration]: 100,
+                                    [AttributeName.QualityYield]: 100,
+                                    [AttributeName.DiseaseResistance]: 100,
+                                    [AttributeName.HarvestYieldBonus]: 100
+                                },
+                                [NFTRarity.Rare]: {
+                                    [AttributeName.GrowthAcceleration]: 200,
+                                    [AttributeName.QualityYield]: 200,
+                                    [AttributeName.DiseaseResistance]: 200,
+                                    [AttributeName.HarvestYieldBonus]: 200
+                                },
+                                [NFTRarity.Epic]: {
+                                    [AttributeName.GrowthAcceleration]: 300,
+                                    [AttributeName.QualityYield]: 300,
+                                    [AttributeName.DiseaseResistance]: 300,
+                                    [AttributeName.HarvestYieldBonus]: 300
+                                }
+                            }
+                        },
+                        [Network.Mainnet]: {
+                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            fruitStages: {
+                                stages: [
+                                    {
+                                        stage: 0,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    },
+                                    {
+                                        stage: 1,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                    },
+                                    {
+                                        stage: 2,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                    },
+                                    {
+                                        stage: 3,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                    },
+                                    {
+                                        stage: 4,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                    }
+                                ]
+                            },
+                            rarities: {
+                                [NFTRarity.Common]: {
+                                    [AttributeName.GrowthAcceleration]: 100,
+                                    [AttributeName.QualityYield]: 100,
+                                    [AttributeName.DiseaseResistance]: 100,
+                                    [AttributeName.HarvestYieldBonus]: 100
+                                },
+                                [NFTRarity.Rare]: {
+                                    [AttributeName.GrowthAcceleration]: 200,
+                                    [AttributeName.QualityYield]: 200,
+                                    [AttributeName.DiseaseResistance]: 200,
+                                    [AttributeName.HarvestYieldBonus]: 200
+                                },
+                                [NFTRarity.Epic]: {
+                                    [AttributeName.GrowthAcceleration]: 300,
+                                    [AttributeName.QualityYield]: 300,
+                                    [AttributeName.DiseaseResistance]: 300,
+                                    [AttributeName.HarvestYieldBonus]: 300
+                                }
+                            }
+                        }
+                    }
+                },
+                [NFTType.Pomegranate]: {
+                    [ChainKey.Solana]: {
+                        [Network.Testnet]: {
+                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            fruitStages: {
+                                stages: [
+                                    {
+                                        stage: 0,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    }
+                                ]
+                            },
+                            rarities: {
+                                [NFTRarity.Common]: {
+                                    [AttributeName.GrowthAcceleration]: 100,
+                                    [AttributeName.QualityYield]: 100,
+                                    [AttributeName.DiseaseResistance]: 100,
+                                    [AttributeName.HarvestYieldBonus]: 100
+                                },
+                                [NFTRarity.Rare]: {
+                                    [AttributeName.GrowthAcceleration]: 200,
+                                    [AttributeName.QualityYield]: 200,
+                                    [AttributeName.DiseaseResistance]: 200,
+                                    [AttributeName.HarvestYieldBonus]: 200
+                                },
+                                [NFTRarity.Epic]: {
+                                    [AttributeName.GrowthAcceleration]: 300,
+                                    [AttributeName.QualityYield]: 300,
+                                    [AttributeName.DiseaseResistance]: 300,
+                                    [AttributeName.HarvestYieldBonus]: 300
+                                }
+                            }
+                        },
+                        [Network.Mainnet]: {
+                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            fruitStages: {
+                                stages: [
+                                    {
+                                        stage: 0,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    }
+                                ]
+                            },
+                            rarities: {
+                                [NFTRarity.Common]: {
+                                    [AttributeName.GrowthAcceleration]: 100,
+                                    [AttributeName.QualityYield]: 100,
+                                    [AttributeName.DiseaseResistance]: 100,
+                                    [AttributeName.HarvestYieldBonus]: 100
+                                },
+                                [NFTRarity.Rare]: {
+                                    [AttributeName.GrowthAcceleration]: 200,
+                                    [AttributeName.QualityYield]: 200,
+                                    [AttributeName.DiseaseResistance]: 200,
+                                    [AttributeName.HarvestYieldBonus]: 200
+                                },
+                                [NFTRarity.Epic]: {
+                                    [AttributeName.GrowthAcceleration]: 300,
+                                    [AttributeName.QualityYield]: 300,
+                                    [AttributeName.DiseaseResistance]: 300,
+                                    [AttributeName.HarvestYieldBonus]: 300
+                                }
+                            }
+                        }
+                    }
+                },
+                [NFTType.Rambutan]: {
+                    [ChainKey.Solana]: {
+                        [Network.Testnet]: {
+                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            fruitStages: {
+                                stages: [
+                                    {
+                                        stage: 0,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    },
+                                    {
+                                        stage: 1,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                    },
+                                    {
+                                        stage: 2,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                    },
+                                    {
+                                        stage: 3,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                    },
+                                    {
+                                        stage: 4,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                    }
+                                ]
+                            },
+                            rarities: {
+                                [NFTRarity.Common]: {
+                                    [AttributeName.GrowthAcceleration]: 100,
+                                    [AttributeName.QualityYield]: 100,
+                                    [AttributeName.DiseaseResistance]: 100,
+                                    [AttributeName.HarvestYieldBonus]: 100
+                                },
+                                [NFTRarity.Rare]: {
+                                    [AttributeName.GrowthAcceleration]: 200,
+                                    [AttributeName.QualityYield]: 200,
+                                    [AttributeName.DiseaseResistance]: 200,
+                                    [AttributeName.HarvestYieldBonus]: 200
+                                },
+                                [NFTRarity.Epic]: {
+                                    [AttributeName.GrowthAcceleration]: 300,
+                                    [AttributeName.QualityYield]: 300,
+                                    [AttributeName.DiseaseResistance]: 300,
+                                    [AttributeName.HarvestYieldBonus]: 300
+                                }
+                            }
+                        },
+                        [Network.Mainnet]: {
+                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            fruitStages: {
+                                stages: [
+                                    {
+                                        stage: 0,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    },
+                                    {
+                                        stage: 1,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                    },
+                                    {
+                                        stage: 2,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                    },
+                                    {
+                                        stage: 3,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                    },
+                                    {
+                                        stage: 4,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                    }
+                                ]
+                            },
+                            rarities: {
+                                [NFTRarity.Common]: {
+                                    [AttributeName.GrowthAcceleration]: 100,
+                                    [AttributeName.QualityYield]: 100,
+                                    [AttributeName.DiseaseResistance]: 100,
+                                    [AttributeName.HarvestYieldBonus]: 100
+                                },
+                                [NFTRarity.Rare]: {
+                                    [AttributeName.GrowthAcceleration]: 200,
+                                    [AttributeName.QualityYield]: 200,
+                                    [AttributeName.DiseaseResistance]: 200,
+                                    [AttributeName.HarvestYieldBonus]: 200
+                                },
+                                [NFTRarity.Epic]: {
+                                    [AttributeName.GrowthAcceleration]: 300,
+                                    [AttributeName.QualityYield]: 300,
+                                    [AttributeName.DiseaseResistance]: 300,
+                                    [AttributeName.HarvestYieldBonus]: 300
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -326,11 +685,72 @@ export class SystemSeeder implements Seeder {
             const beeHouseInfo: BeeHouseInfo = {
                 randomness: {
                     thief2: 0.8,
-                    thief3: 0.95,
+                    thief3: 0.95
                 },
                 minThievablePercentage: 0.7
             }
 
+            const nftStarterBoxInfo: NFTStarterBoxInfo = {
+                chances: [
+                    {
+                        nftType: NFTType.Jackfruit,
+                        startChance: 0,
+                        endChance: 0.3,
+                        rareRarityChance: 0.8,
+                        epicRarityChance: 0.9
+                    },
+                    {
+                        nftType: NFTType.Pomegranate,
+                        startChance: 0.3,
+                        endChance: 0.6,
+                        rareRarityChance: 0.8,
+                        epicRarityChance: 0.9
+                    },
+                    {
+                        nftType: NFTType.Rambutan,
+                        startChance: 0.6,
+                        endChance: 0.9,
+                        rareRarityChance: 0.8,
+                        epicRarityChance: 0.9
+                    },
+                    {
+                        nftType: NFTType.DragonFruit,
+                        startChance: 0.9,
+                        endChance: 1,
+                        rareRarityChance: 0.8,
+                        epicRarityChance: 0.9
+                    }
+                ],
+                boxPrice: 0.1 // 0.1 USDC
+            }
+
+            const stableCoins: StableCoins = {
+                [StableCoinName.USDC]: {
+                    [ChainKey.Solana]: {
+                        [Network.Testnet]: {
+                            address: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+                            decimals: 6
+                        },
+                        [Network.Mainnet]: {
+                            address: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+                            decimals: 6
+                        }
+                    }
+                }
+            }
+
+            const tokenVaults: TokenVaults = {
+                [ChainKey.Solana]: {
+                    [Network.Testnet]: {
+                        address: "D2HHp9gtFgs8dKtV6Hg2xgLv998HrwsyaWAeHkfuCJxJ",
+                        decimals: 6
+                    },
+                    [Network.Mainnet]: {
+                        address: "D2HHp9gtFgs8dKtV6Hg2xgLv998HrwsyaWAeHkfuCJxJ",
+                        decimals: 6
+                    }
+                },
+            }
             const data: Array<Partial<SystemSchema>> = [
                 {
                     _id: createObjectId(SystemId.Activities),
@@ -386,6 +806,21 @@ export class SystemSeeder implements Seeder {
                     _id: createObjectId(SystemId.NFTCollections),
                     displayId: SystemId.NFTCollections,
                     value: nftCollections
+                },
+                {
+                    _id: createObjectId(SystemId.NFTStarterBoxInfo),
+                    displayId: SystemId.NFTStarterBoxInfo,
+                    value: nftStarterBoxInfo
+                },
+                {
+                    _id: createObjectId(SystemId.StableCoins),
+                    displayId: SystemId.StableCoins,
+                    value: stableCoins
+                },
+                {
+                    _id: createObjectId(SystemId.TokenVaults),
+                    displayId: SystemId.TokenVaults,
+                    value: tokenVaults
                 }
             ]
             await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

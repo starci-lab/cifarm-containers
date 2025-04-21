@@ -410,6 +410,9 @@ export enum SystemId {
     FlowerInfo = "flowerInfo",
     BeeHouseInfo = "beeHouseInfo",
     NFTCollections = "nftCollections",
+    NFTStarterBoxInfo = "nftStarterBoxInfo",
+    StableCoins = "stableCoins",
+    TokenVaults = "tokenVaults",
 }
 
 export const FirstCharLowerCaseSystemId = createFirstCharLowerCaseEnumType(SystemId)
@@ -447,6 +450,15 @@ registerEnumType(FirstCharLowerCaseSystemId, {
         },
         [SystemId.NFTCollections]: {
             description: "The NFT collections id.",
+        },
+        [SystemId.NFTStarterBoxInfo]: {
+            description: "The NFT starter box info id.",
+        },
+        [SystemId.StableCoins]: {
+            description: "The stable coins id.",
+        },
+        [SystemId.TokenVaults]: {
+            description: "The token vaults id.",
         },
     },
 })
