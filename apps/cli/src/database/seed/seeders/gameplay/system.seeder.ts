@@ -276,7 +276,7 @@ export class SystemSeeder implements Seeder {
             const dailyRewardInfo: DailyRewardInfo = {
                 [DailyRewardId.Day1]: {
                     golds: 100,
-                    tokens: 0,
+                    tokens: 0,  
                     day: 1,
                     lastDay: false
                 },
@@ -309,6 +309,7 @@ export class SystemSeeder implements Seeder {
                 [NFTType.DragonFruit]: {
                     [ChainKey.Solana]: {
                         [Network.Testnet]: {
+                            name: "Dragon Fruit",
                             collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
                             fruitStages: {
                                 stages: [
@@ -356,6 +357,7 @@ export class SystemSeeder implements Seeder {
                             }
                         },
                         [Network.Mainnet]: {
+                            name: "Dragon Fruit",
                             collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
                             fruitStages: {
                                 stages: [
@@ -407,28 +409,29 @@ export class SystemSeeder implements Seeder {
                 [NFTType.Jackfruit]: {
                     [ChainKey.Solana]: {
                         [Network.Testnet]: {
-                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            name: "Jackfruit",
+                            collectionAddress: "2Ap4nT8Pby5LUEB7TvbwsLUnr1q7NBBCoLQZR4Ei3dNh",
                             fruitStages: {
                                 stages: [
                                     {
                                         stage: 0,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiak2uhq3p7i7opwdnqrmslkmxdbliuzmwmw6riie6okurhypkjjcq"
                                     },
                                     {
                                         stage: 1,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreids4ezcjpym3xf3hwelnobtl5744cbdebal566bqtq36bo3cupnti"
                                     },
                                     {
                                         stage: 2,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigwig65u5amdczpgigbu4cauksmlravhkavi2mruqhdvobjv3frpa"
                                     },
                                     {
                                         stage: 3,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreibv7hz23vx5lhrpveooivkrmddd63uz75nqjfwzclfolqqzwlupwm"
                                     },
                                     {
                                         stage: 4,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreicjj3agbxozskonq646i5i6q6srlp6pami7dlxl4mvqok5y6ldocm"
                                     }
                                 ]
                             },
@@ -454,28 +457,29 @@ export class SystemSeeder implements Seeder {
                             }
                         },
                         [Network.Mainnet]: {
-                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            name: "Jackfruit",
+                            collectionAddress: "2Ap4nT8Pby5LUEB7TvbwsLUnr1q7NBBCoLQZR4Ei3dNh",
                             fruitStages: {
                                 stages: [
                                     {
                                         stage: 0,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiak2uhq3p7i7opwdnqrmslkmxdbliuzmwmw6riie6okurhypkjjcq"
                                     },
                                     {
                                         stage: 1,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreids4ezcjpym3xf3hwelnobtl5744cbdebal566bqtq36bo3cupnti"
                                     },
                                     {
                                         stage: 2,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigwig65u5amdczpgigbu4cauksmlravhkavi2mruqhdvobjv3frpa"
                                     },
                                     {
                                         stage: 3,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreibv7hz23vx5lhrpveooivkrmddd63uz75nqjfwzclfolqqzwlupwm"
                                     },
                                     {
                                         stage: 4,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreicjj3agbxozskonq646i5i6q6srlp6pami7dlxl4mvqok5y6ldocm"
                                     }
                                 ]
                             },
@@ -505,12 +509,29 @@ export class SystemSeeder implements Seeder {
                 [NFTType.Pomegranate]: {
                     [ChainKey.Solana]: {
                         [Network.Testnet]: {
-                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            name: "Pomegranate",
+                            collectionAddress: "CRUwWJr8eAPaHoj7kA5WrpKMSiotV9vdMxdXUJLZfe9b",
                             fruitStages: {
                                 stages: [
                                     {
                                         stage: 0,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreicg5i2jjhwnp4bxgzqml5ziugsezjcylbd5taqlaohh63rpbvczqa"
+                                    },
+                                    {
+                                        stage: 1,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreibps4efh5i4jhqgy5jaeokmuhynu653ay2seqxqjmrsbccyzqrksa"
+                                    },
+                                    {
+                                        stage: 2,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreidmh3ntrfbraqgmubvk3g7ov54otm4wth456yr3uwegmmdvjvhkb4"
+                                    },
+                                    {
+                                        stage: 3,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreih7sl3efh4zegtttut3c5l25ywa2ux3afbzyxoo346o54nd6xz2nq"
+                                    },
+                                    {
+                                        stage: 4,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreidg53fkyp2ho4f4v62rqb7awrdktu465la3lk6q63aketivkbyf2u"
                                     }
                                 ]
                             },
@@ -536,12 +557,29 @@ export class SystemSeeder implements Seeder {
                             }
                         },
                         [Network.Mainnet]: {
-                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            name: "Pomegranate",
+                            collectionAddress: "CRUwWJr8eAPaHoj7kA5WrpKMSiotV9vdMxdXUJLZfe9b",
                             fruitStages: {
                                 stages: [
                                     {
                                         stage: 0,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreicg5i2jjhwnp4bxgzqml5ziugsezjcylbd5taqlaohh63rpbvczqa"
+                                    },
+                                    {
+                                        stage: 1,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreibps4efh5i4jhqgy5jaeokmuhynu653ay2seqxqjmrsbccyzqrksa"
+                                    },
+                                    {
+                                        stage: 2,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreidmh3ntrfbraqgmubvk3g7ov54otm4wth456yr3uwegmmdvjvhkb4"
+                                    },
+                                    {
+                                        stage: 3,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreih7sl3efh4zegtttut3c5l25ywa2ux3afbzyxoo346o54nd6xz2nq"
+                                    },
+                                    {
+                                        stage: 4,
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreidg53fkyp2ho4f4v62rqb7awrdktu465la3lk6q63aketivkbyf2u"
                                     }
                                 ]
                             },
@@ -571,28 +609,29 @@ export class SystemSeeder implements Seeder {
                 [NFTType.Rambutan]: {
                     [ChainKey.Solana]: {
                         [Network.Testnet]: {
-                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            name: "Rambutan",
+                            collectionAddress: "4rM1G8YE7JxJPWuENSv1X5gkn6PYEJ8Wuc6bS8DZBz8K",
                             fruitStages: {
                                 stages: [
                                     {
                                         stage: 0,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreifojfrzhqvcuo35qkdwtjhiz73v65narov2ecx677jvn4szb5evba"
                                     },
                                     {
                                         stage: 1,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigr6ytjpxmces34mql4x5ibknb7r3w73qxg5shvsclpoakeq2fwmy"
                                     },
                                     {
                                         stage: 2,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreich2uoijlel36l23b4jdo3gt3jp532wew6gromq66z7ng7dyzhv6i"
                                     },
                                     {
                                         stage: 3,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihbhc6ertoa4aibh2bay7lfqor6w7dcof6jfhedk6iqiemghnm5ai"
                                     },
                                     {
                                         stage: 4,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreifodqo5eicqvcq25mydbnkpvo4yymengndqw3izmdjttq2tqy5beu"
                                     }
                                 ]
                             },
@@ -618,28 +657,29 @@ export class SystemSeeder implements Seeder {
                             }
                         },
                         [Network.Mainnet]: {
-                            collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                            name: "Rambutan",
+                            collectionAddress: "4rM1G8YE7JxJPWuENSv1X5gkn6PYEJ8Wuc6bS8DZBz8K",
                             fruitStages: {
                                 stages: [
                                     {
                                         stage: 0,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreifojfrzhqvcuo35qkdwtjhiz73v65narov2ecx677jvn4szb5evba"
                                     },
                                     {
                                         stage: 1,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigr6ytjpxmces34mql4x5ibknb7r3w73qxg5shvsclpoakeq2fwmy"
                                     },
                                     {
                                         stage: 2,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreich2uoijlel36l23b4jdo3gt3jp532wew6gromq66z7ng7dyzhv6i"
                                     },
                                     {
                                         stage: 3,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihbhc6ertoa4aibh2bay7lfqor6w7dcof6jfhedk6iqiemghnm5ai"
                                     },
                                     {
                                         stage: 4,
-                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                        imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreifodqo5eicqvcq25mydbnkpvo4yymengndqw3izmdjttq2tqy5beu"
                                     }
                                 ]
                             },

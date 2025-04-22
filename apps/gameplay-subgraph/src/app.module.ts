@@ -16,6 +16,7 @@ import { MutationsModule } from "./mutations"
 import { QueriesModule } from "./queries"
 import { IdModule } from "@src/id"
 import { ThrottlerModule } from "@src/throttler"
+import { BlockchainDatabaseModule } from "@src/blockchain-database"
 @Module({
     imports: [
         IdModule.register({
@@ -51,6 +52,9 @@ import { ThrottlerModule } from "@src/throttler"
             isGlobal: true
         }),
         ThrottlerModule.forRoot(),
+        BlockchainDatabaseModule.register({
+            isGlobal: true
+        }),
         //functional modules
         QueriesModule,
         MutationsModule

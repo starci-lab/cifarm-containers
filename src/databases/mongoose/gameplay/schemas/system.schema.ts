@@ -715,6 +715,10 @@ export class NFTRarities {
 })
 export class NFTCollectionData {
     @Field(() => String, {
+        description: "Collection name"
+    })
+        name: string
+    @Field(() => String, {
         description: "Collection address"
     })
         collectionAddress: string

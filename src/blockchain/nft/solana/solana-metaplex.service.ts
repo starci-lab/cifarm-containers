@@ -84,8 +84,15 @@ export class SolanaMetaplexService {
         }
     }
 
-    public async getNFT({ network = Network.Mainnet, nftAddress }: getNFTParams): Promise<AssetV1> {
-        return await fetchAsset(this.umis[network], nftAddress)
+    public async getNFT({
+        network = Network.Mainnet,
+        nftAddress
+    }: getNFTParams): Promise<AssetV1 | null> {
+        try {
+            return await fetchAsset(this.umis[network], nftAddress)
+        } catch {
+            return null
+        }
     }
 
     public async mintNft({
@@ -249,7 +256,7 @@ export class SolanaMetaplexService {
                 }
             ]
         })
-        return { transaction: tx }
+        return { transaction: tx, nftAddress: asset.publicKey }
     }
 
     public async createUnfreezeNFTTransaction({

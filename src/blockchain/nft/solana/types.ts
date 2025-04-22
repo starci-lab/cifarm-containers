@@ -16,6 +16,7 @@ export interface CreateMintNFTTransactionParams extends WithFeePayer {
 }
 export interface CreateMintNFTTransactionResponse {
     transaction: TransactionBuilder
+    nftAddress: string
 }
 
 // freeze nft - request and response

@@ -59,7 +59,9 @@ import {
     NFTItemSchema,
     NFTItemSchemaClass,
     NFTMetadataSchema,
-    NFTMetadataSchemaClass
+    NFTMetadataSchemaClass,
+    NFTIndexSchema,
+    NFTIndexSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -239,6 +241,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: NFTMetadataSchema.name,
                             useFactory: () => NFTMetadataSchemaClass
+                        },
+                        {
+                            name: NFTIndexSchema.name,
+                            useFactory: () => NFTIndexSchemaClass
                         }
                     ],
                     connectionName
