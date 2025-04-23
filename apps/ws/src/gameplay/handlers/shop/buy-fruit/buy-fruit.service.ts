@@ -89,12 +89,15 @@ export class BuyFruitService {
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .countDocuments({
                         user: userId,
+                        isStored: {
+                            $ne: true
+                        },
                         placedItemType: {
                             $in: placedItemTypes.map((placedItemType) => placedItemType.id)
                         }
                     })
                     .session(session)
-
+                
                 if (count >= fruitLimit) {
                     throw new WsException("Max fruit limit reached")
                 }
@@ -107,7 +110,7 @@ export class BuyFruitService {
                     user,
                     amount: fruit.price
                 })
-
+                
                 // Save updated user data
                 await user.save({ session })
                 syncedUser = this.syncService.getPartialUpdatedSyncedUser({

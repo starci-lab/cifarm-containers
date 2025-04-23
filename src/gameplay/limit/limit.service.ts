@@ -52,12 +52,14 @@ export class LimitService {
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .countDocuments({
                 user: userId,
+                isStored: {
+                    $ne: true
+                },
                 placedItemType: {
                     $in: placedItemTypeFruits.map((placedItemType) => placedItemType.id)
                 }
             })
             .session(session)
-
         return {
             placedItemCountNotExceedLimit:
                 placedItemCount < this.staticSerivce.defaultInfo.fruitLimit
