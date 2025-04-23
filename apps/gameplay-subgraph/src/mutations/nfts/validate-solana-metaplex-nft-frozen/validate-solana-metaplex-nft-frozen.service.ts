@@ -89,7 +89,7 @@ export class ValidateSolanaMetaplexNFTFrozenService {
                 // thus, base on nft type, we create corresponding off-chain, first is about the fruits
                 let nftType: NFTType
                 for (const _nftType of Object.values(NFTType)) {
-                    const found = this.staticService.nftCollections[_nftType][user.network].collectionAddress ===
+                    const found = this.staticService.nftCollections[_nftType][user.chainKey][user.network].collectionAddress  ===
                             foundNFTMetadata.collectionAddress
                     if (found) {
                         nftType = _nftType

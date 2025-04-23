@@ -91,7 +91,10 @@ export class PurchaseSolanaNFTStarterBoxService {
                     await this.solanaMetaplexService.createMintNFTTransaction({
                         network: user.network,
                         ownerAddress: user.accountAddress,
-                        attributes: Object.values(nftCollectionData.rarities[rarity]),
+                        attributes: Object.entries(nftCollectionData.rarities[rarity]).map(([key, value]) => ({
+                            key,
+                            value
+                        })),
                         collectionAddress: nftCollectionData.collectionAddress,
                         name: `${nftCollectionData.name} #${nextNFTIndex}`,
                         feePayer: user.accountAddress,
