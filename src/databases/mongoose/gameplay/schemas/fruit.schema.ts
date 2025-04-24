@@ -1,4 +1,4 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { FruitId, FirstCharLowerCaseFruitId } from "../enums"
 import { AbstractSchema } from "./abstract"
@@ -42,10 +42,11 @@ export class FruitSchema extends AbstractSchema {
         price: number
 
     @Field(() => Int, {
-        description: "The unlock level of the fruit"
+        description: "The unlock level of the fruit",
+        nullable: true
     })
-    @Prop({ type: Number, required: true, min: 1 })
-        unlockLevel: number
+    @Prop({ type: Number, required: false, min: 1 })
+        unlockLevel?: number
 
     @Field(() => Boolean, {
         description: "Whether the fruit is available in the shop"
@@ -54,28 +55,10 @@ export class FruitSchema extends AbstractSchema {
         availableInShop: boolean
 
     @Field(() => Int, {
-        description: "The minimum harvest quantity of the fruit"
-    })
-    @Prop({ type: Number, required: true })
-        minHarvestQuantity: number
-
-    @Field(() => Float, {
-        description: "The quality product chance stack of the fruit"
-    })
-    @Prop({ type: Number, min: 0 })
-        qualityProductChanceStack: number
-
-    @Field(() => Float, {
-        description: "The quality product chance limit of the fruit"
-    })
-    @Prop({ type: Number, min: 0 })
-        qualityProductChanceLimit: number
-
-    @Field(() => Int, {
         description: "The maximum harvest quantity of the fruit"
     })
     @Prop({ type: Number, required: true })
-        maxHarvestQuantity: number
+        harvestQuantity: number
 
     @Field(() => Int, {
         description: "The basic harvest experiences of the fruit"

@@ -1,4 +1,4 @@
-import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
+import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { ProductId, ProductType, FirstCharLowerCaseProductId, FirstCharLowerCaseProductType } from "../enums"
 import { AbstractSchema } from "./abstract"
@@ -39,12 +39,13 @@ export class ProductSchema extends AbstractSchema {
     @Prop({ type: Number, required: true })
         goldAmount: number
 
-    @Field(() => Float, { 
-        nullable: true,
-        description: "The amount of tokens the product is worth, if applicable"
-    })
-    @Prop({ type: Number, required: false })
-        tokenAmount?: number
+    // no longer need token
+    // @Field(() => Float, { 
+    //     nullable: true,
+    //     description: "The amount of tokens the product is worth, if applicable"
+    // })
+    // @Prop({ type: Number, required: false })
+    //     tokenAmount?: number
 
     @Field(() => FirstCharLowerCaseProductType, {
         description: "The type of the product"

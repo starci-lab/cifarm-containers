@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common"
 import {
-    ComputeAnimalQualityChanceParams,
-    ComputeFruitQualityChanceParams,
-    ComputeTileQualityChanceParams,
+    ComputeDiseaseResistanceParams,
+    ComputeGrowthAccelerationParams,
+    ComputeHarvestYieldBonusParams,
+    ComputeQualityYieldParams,
     UpdatePlacedItemAnimalAfterHarvestParams,
     UpdatePlacedItemBuildingBeeHouseAfterHarvestParams,
     UpdatePlacedItemFruitAfterHarvestParams,
@@ -23,38 +24,6 @@ import {
 @Injectable()
 export class CoreService {
     constructor() {}
-
-    //compute the quality of animal after several time of harvest
-    public computeAnimalQualityChance({
-        placedItemAnimal,
-        animal
-    }: ComputeAnimalQualityChanceParams): number {
-        return Math.min(
-            animal.qualityProductChanceLimit,
-            animal.qualityProductChanceStack * placedItemAnimal.animalInfo.harvestCount
-        )
-    }
-
-    //compute the quality of tile after several time of harvest
-    public computeTileQualityChance({
-        placedItemTile,
-        tile
-    }: ComputeTileQualityChanceParams): number {
-        return Math.min(
-            tile.qualityProductChanceLimit,
-            tile.qualityProductChanceStack * placedItemTile.tileInfo.harvestCount
-        )
-    }
-
-    public computeFruitQualityChance({
-        placedItemFruit,
-        fruit
-    }: ComputeFruitQualityChanceParams): number {
-        return Math.min(
-            fruit.qualityProductChanceLimit,
-            fruit.qualityProductChanceStack * placedItemFruit.fruitInfo.harvestCount
-        )
-    }
 
     //update the tile information after harvest
     public updatePlacedItemTileAfterHarvest({
@@ -136,5 +105,37 @@ export class CoreService {
         placedItemBuilding.beeHouseInfo.harvestQuantityDesired = 0
         placedItemBuilding.beeHouseInfo.currentState = BeeHouseCurrentState.Normal
         return placedItemBuilding
+    }
+
+    public computeGrowthAcceleration({ growthAcceleration }: ComputeGrowthAccelerationParams): number {
+        // we use a fomular
+        // growthAcceleration/(500+growthAcceleration)
+        // to compute the growth acceleration percentage
+        const _growthAcceleration = growthAcceleration ?? 0
+        return _growthAcceleration / (1000 + _growthAcceleration)
+    }
+
+    public computeQualityYield({ qualityYield }: ComputeQualityYieldParams): number {
+        // we use a fomular
+        // qualityYield/(500+qualityYield)
+        // to compute the quality yield percentage
+        const _qualityYield = qualityYield ?? 0
+        return _qualityYield / (1000 + _qualityYield)
+    }
+
+    public computeDiseaseResistance({ diseaseResistance }: ComputeDiseaseResistanceParams): number {
+        // we use a fomular
+        // diseaseResistance/(500+diseaseResistance)
+        // to compute the disease resistance percentage
+        const _diseaseResistance = diseaseResistance ?? 0
+        return _diseaseResistance / (1000 + _diseaseResistance)
+    }   
+
+    public computeHarvestYieldBonus({ harvestYieldBonus }: ComputeHarvestYieldBonusParams): number {
+        // we use a fomular
+        // harvestYieldBonus/(500+harvestYieldBonus)
+        // to compute the harvest yield bonus percentage
+        const _harvestYieldBonus = harvestYieldBonus ?? 0
+        return _harvestYieldBonus / (1000 + _harvestYieldBonus)
     }
 }

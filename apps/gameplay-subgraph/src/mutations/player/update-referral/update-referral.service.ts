@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection, Types } from "mongoose"
 import { UpdateReferralRequest, UpdateReferralResponse } from "./update-referral.dto"
-import { TokenBalanceService, StaticService, SyncService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -16,7 +16,7 @@ export class UpdateReferralService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly tokenBalanceService: TokenBalanceService,
+        private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
         @InjectKafkaProducer()
@@ -102,15 +102,15 @@ export class UpdateReferralService {
                 }
 
                 /************************************************************
-                 * UPDATE TOKEN BALANCES
+                 * UPDATE GOLD BALANCES
                  ************************************************************/
                 // Handle referral rewards and update balances
-                this.tokenBalanceService.add({
+                this.goldBalanceService.add({
                     amount: referredRewardQuantity,
                     user: referralUser
                 })
 
-                this.tokenBalanceService.add({
+                this.goldBalanceService.add({
                     amount: referralRewardQuantity,
                     user
                 })

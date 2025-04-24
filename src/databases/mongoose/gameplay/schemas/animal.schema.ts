@@ -1,4 +1,4 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AnimalId, AnimalType, FirstCharLowerCaseAnimalId, FirstCharLowerCaseAnimalType } from "../enums"
 import { AbstractSchema } from "./abstract"
@@ -74,29 +74,11 @@ export class AnimalSchema extends AbstractSchema {
     @Prop({ type: Number, min: 0 })
         hungerTime: number
   
-    @Field(() => Float, {
-        description: "The quality product chance stack of the animal"
-    })
-    @Prop({ type: Number, min: 0 })
-        qualityProductChanceStack: number
-  
-    @Field(() => Float, {
-        description: "The quality product chance limit of the animal"
-    })
-    @Prop({ type: Number, min: 0 })
-        qualityProductChanceLimit: number
-  
     @Field(() => Int, {
-        description: "The minimum harvest quantity of the animal"
+        description: "The harvest quantity of the animal"
     })
     @Prop({ type: Number, min: 0 })
-        minHarvestQuantity: number
-  
-    @Field(() => Int, {
-        description: "The maximum harvest quantity of the animal"
-    })
-    @Prop({ type: Number, min: 0 })
-        maxHarvestQuantity: number
+        harvestQuantity: number
   
     @Field(() => Int, {
         description: "The basic harvest experiences of the animal"
@@ -121,6 +103,8 @@ export class AnimalSchema extends AbstractSchema {
     })
     @Prop({ type: String, enum: AnimalType, default: AnimalType.Poultry })
         type: AnimalType
+
+    
 }
 
 export const AnimalSchemaClass = SchemaFactory.createForClass(AnimalSchema)

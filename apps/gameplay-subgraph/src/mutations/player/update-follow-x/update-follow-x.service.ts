@@ -4,7 +4,7 @@ import {
     UserSchema
 } from "@src/databases"
 import { Connection } from "mongoose"
-import { TokenBalanceService, StaticService } from "@src/gameplay"
+import { StaticService, GoldBalanceService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
@@ -18,7 +18,7 @@ export class UpdateFollowXService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly tokenBalanceService: TokenBalanceService,
+        private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
         @InjectKafkaProducer()
         private readonly kafkaProducer: Producer
@@ -67,7 +67,7 @@ export class UpdateFollowXService {
                  * UPDATE TOKEN BALANCE
                  ************************************************************/
                 // Update the token balance for the user
-                this.tokenBalanceService.add({
+                this.goldBalanceService.add({
                     user,
                     amount: followXRewardQuantity
                 })

@@ -13,7 +13,7 @@ import {
     AbstractPlantSchema
 } from "@src/databases"
 import {
-    EnergyService,
+    EnergyService,  
     InventoryService,
     LevelService,
     PlantInfoLike,
@@ -249,7 +249,7 @@ export class ThiefPlantService {
                 const desiredQuantity = value
                 const actualQuantity = Math.min(
                     desiredQuantity,
-                    placedItemTile.plantInfo.harvestQuantityRemaining - plant.minHarvestQuantity
+                    placedItemTile.plantInfo.harvestQuantityRemaining - placedItemTile.plantInfo.harvestQuantityMin
                 )
 
                 // Get inventory add parameters

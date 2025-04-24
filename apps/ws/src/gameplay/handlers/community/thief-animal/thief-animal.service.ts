@@ -14,7 +14,7 @@ import {
     EnergyService, 
     InventoryService,
     LevelService, 
-    SyncService,
+    SyncService,    
     ThiefService
 } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
@@ -232,7 +232,7 @@ export class ThiefAnimalService {
                 const desiredQuantity = value
                 const actualQuantity = Math.min(
                     desiredQuantity,
-                    placedItemAnimal.animalInfo.harvestQuantityRemaining - animal.minHarvestQuantity
+                    placedItemAnimal.animalInfo.harvestQuantityRemaining - placedItemAnimal.animalInfo.harvestQuantityMin
                 )
 
                 // Get inventory add parameters

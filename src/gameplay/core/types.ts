@@ -5,24 +5,8 @@ import {
     FruitInfo,
     FruitSchema,
     PlacedItemSchema,
-    SupplySchema,
-    TileSchema
+    SupplySchema
 } from "@src/databases"
-
-export interface ComputeAnimalQualityChanceParams {
-    placedItemAnimal: PlacedItemSchema
-    animal: AnimalSchema
-}
-
-export interface ComputeTileQualityChanceParams {
-    placedItemTile: PlacedItemSchema
-    tile: TileSchema
-}
-
-export interface ComputeFruitQualityChanceParams {
-    placedItemFruit: PlacedItemSchema
-    fruit: FruitSchema
-}
 
 export interface UpdatePlacedItemTileAfterHarvestParams {
     placedItemTile: PlacedItemSchema
@@ -57,4 +41,20 @@ export interface RandomnessLike {
 
 export interface UpdatePlacedItemBuildingBeeHouseAfterHarvestParams {
     placedItemBuilding: PlacedItemSchema
+}
+
+export interface ComputeGrowthAccelerationParams {
+    growthAcceleration: number
+}
+
+export interface ComputeQualityYieldParams {
+    qualityYield: number
+}
+
+export interface ComputeDiseaseResistanceParams {
+    diseaseResistance: number
+}
+
+export interface ComputeHarvestYieldBonusParams {
+    harvestYieldBonus: number
 }

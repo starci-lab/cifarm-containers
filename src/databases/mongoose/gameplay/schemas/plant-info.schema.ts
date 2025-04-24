@@ -91,5 +91,17 @@ export class PlantInfoSchema extends AbstractSchema {
     })
     @Prop({ type: String, enum: PlantType, default: PlantType.Crop })
         plantType: PlantType
+
+    @Field(() => Int, {
+        description: "The desired harvest quantity of the bee house"
+    })
+    @Prop({ type: Number, default: 0 })
+        harvestQuantityDesired: number
+
+    @Field(() => Int, {
+        description: "The min harvest quantity of the bee house"
+    })
+    @Prop({ type: Number, default: 0 })
+        harvestQuantityMin: number
 }
 export const PlantInfoSchemaClass = SchemaFactory.createForClass(PlantInfoSchema)

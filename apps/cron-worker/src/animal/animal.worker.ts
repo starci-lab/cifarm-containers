@@ -64,6 +64,18 @@ export class AnimalWorker extends WorkerHost {
 
             const promises: Array<Promise<void>> = []
             for (const placedItem of placedItems) {
+                const growthAcceleration = this.coreService.computeGrowthAcceleration({
+                    growthAcceleration: placedItem.animalInfo.growthAcceleration
+                })
+                const qualityYield = this.coreService.computeQualityYield({
+                    qualityYield: placedItem.animalInfo.qualityYield
+                })
+                const harvestYieldBonus = this.coreService.computeHarvestYieldBonus({
+                    harvestYieldBonus: placedItem.animalInfo.harvestYieldBonus
+                })
+                const diseaseResistance = this.coreService.computeDiseaseResistance({
+                    diseaseResistance: placedItem.animalInfo.diseaseResistance
+                })
                 const promise = async () => {
                     const updatePlacedItem = () => {
                         const placedItemType = this.staticService.placedItemTypes.find(
@@ -79,7 +91,7 @@ export class AnimalWorker extends WorkerHost {
                         // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
                         const updateAdultAnimalPlacedItem = (): boolean => {
                             // If animal is adult, add time to the animal yield
-                            placedItem.animalInfo.currentYieldTime += time
+                            placedItem.animalInfo.currentYieldTime += time * (1 + growthAcceleration)
 
                             // if animal grow to half of the yield time, it may get sick and immunized
                             if (
@@ -88,33 +100,32 @@ export class AnimalWorker extends WorkerHost {
                                 !placedItem.animalInfo.immunized
                             ) {
                                 if (Math.random() < sickChance) {
-                                    placedItem.animalInfo.currentState = AnimalCurrentState.Sick
+                                    if (Math.random() > diseaseResistance) {
+                                        placedItem.animalInfo.currentState = AnimalCurrentState.Sick
+                                    }
                                 }
                                 placedItem.animalInfo.immunized = true
                                 // if animal yield time is more than or equal the yield time, it will yield
                             }
                             if (placedItem.animalInfo.currentYieldTime >= animal.yieldTime) {
                                 placedItem.animalInfo.currentYieldTime = 0
+                                placedItem.animalInfo.harvestQuantityDesired = animal.harvestQuantity * (1 + harvestYieldBonus)
+                                placedItem.animalInfo.harvestQuantityMin = Math.floor(placedItem.animalInfo.harvestQuantityDesired * this.staticService.animalInfo.minThievablePercentage)
                                 //if sick, the harvest quantity is the average of min and max harvest quantity
                                 if (
                                     placedItem.animalInfo.currentState === AnimalCurrentState.Sick
                                 ) {
                                     placedItem.animalInfo.harvestQuantityRemaining = Math.floor(
-                                        (animal.minHarvestQuantity + animal.maxHarvestQuantity) / 2
+                                        (placedItem.animalInfo.harvestQuantityMin + placedItem.animalInfo.harvestQuantityDesired) / 2
                                     )
                                 } else {
                                     // if not sick, the harvest quantity is the max harvest quantity
                                     placedItem.animalInfo.harvestQuantityRemaining =
-                                        animal.maxHarvestQuantity
+                                        placedItem.animalInfo.harvestQuantityDesired
                                 }
                                 placedItem.animalInfo.currentState = AnimalCurrentState.Yield
 
-                                const chance = this.coreService.computeAnimalQualityChance({
-                                    placedItemAnimal: placedItem,
-                                    animal
-                                })
-
-                                if (Math.random() < chance) {
+                                if (Math.random() < qualityYield) {
                                     placedItem.animalInfo.isQuality = true
                                 }
                                 return true

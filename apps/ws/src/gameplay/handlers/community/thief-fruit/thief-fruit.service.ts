@@ -12,7 +12,7 @@ import {
 } from "@src/databases"
 import { 
     EnergyService, 
-    InventoryService,
+    InventoryService,   
     LevelService, 
     SyncService,
     ThiefService
@@ -232,7 +232,7 @@ export class ThiefFruitService {
                 const desiredQuantity = value
                 const actualQuantity = Math.min(
                     desiredQuantity,
-                    placedItemFruit.fruitInfo.harvestQuantityRemaining - fruit.minHarvestQuantity
+                    placedItemFruit.fruitInfo.harvestQuantityRemaining - placedItemFruit.fruitInfo.harvestQuantityMin
                 )
 
                 // Get inventory add parameters

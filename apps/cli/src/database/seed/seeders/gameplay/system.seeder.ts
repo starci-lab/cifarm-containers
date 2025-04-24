@@ -148,7 +148,8 @@ export class SystemSeeder implements Seeder {
                     isWeedyOrInfested: 1
                 },
                 nextGrowthStageAfterHarvest: 3,
-                growthStages: 5
+                growthStages: 5,
+                minThievablePercentage: 0.7
             }
             const animalInfo: AnimalInfo = {
                 randomness: {
@@ -156,6 +157,7 @@ export class SystemSeeder implements Seeder {
                     thief2: 0.8,
                     thief3: 0.95
                 },
+                minThievablePercentage: 0.7
             }
             const flowerInfo: FlowerInfo = {
                 randomness: {
@@ -165,7 +167,8 @@ export class SystemSeeder implements Seeder {
                     isWeedyOrInfested: 1
                 },
                 nextGrowthStageAfterHarvest: 3,
-                growthStages: 5
+                growthStages: 5,
+                minThievablePercentage: 0.7
             }
             const fruitInfo: FruitInfo = {
                 randomness: {
@@ -175,7 +178,8 @@ export class SystemSeeder implements Seeder {
                 },
                 nextGrowthStageAfterHarvest: 3,
                 growthStages: 5,
-                matureGrowthStage: 3
+                matureGrowthStage: 3,
+                minThievablePercentage: 0.7
             }
             const defaultInfo: DefaultInfo = {
                 golds: 10000, 
@@ -276,25 +280,21 @@ export class SystemSeeder implements Seeder {
             const dailyRewardInfo: DailyRewardInfo = {
                 [DailyRewardId.Day1]: {
                     golds: 100,
-                    tokens: 0,  
                     day: 1,
                     lastDay: false
                 },
                 [DailyRewardId.Day2]: {
                     golds: 200,
-                    tokens: 0,
                     day: 2,
                     lastDay: false
                 },
                 [DailyRewardId.Day3]: {
                     golds: 300,
-                    tokens: 0,
                     day: 3,
                     lastDay: false
                 },
                 [DailyRewardId.Day4]: {
                     golds: 600,
-                    tokens: 0,
                     day: 4,
                     lastDay: false
                 },
@@ -302,7 +302,6 @@ export class SystemSeeder implements Seeder {
                     day: 5,
                     lastDay: true,
                     golds: 1000,
-                    tokens: 1
                 },
             }
             const nftCollections: NFTCollections = {

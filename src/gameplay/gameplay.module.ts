@@ -4,7 +4,7 @@ import { ConfigurableModuleClass, OPTIONS_TYPE } from "./gameplay.module-definit
 import { InventoryService } from "./inventory"
 import { LevelService } from "./level"
 import { ThiefService } from "./thief"
-import { GoldBalanceService, TokenBalanceService } from "./wallet"
+import { GoldBalanceService } from "./wallet"
 import { CoreService } from "./core"
 import { PositionService } from "./position"
 import { NestExport, NestImport, NestProvider, NestService } from "@src/common"
@@ -24,7 +24,6 @@ export class GameplayModule extends ConfigurableModuleClass {
             ThiefService,
             EnergyService,
             GoldBalanceService,
-            TokenBalanceService,
             InventoryService,
             CoreService,
             PositionService,

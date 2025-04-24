@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { DailyRewardId, InjectMongoose, UserSchema } from "@src/databases"
-import { GoldBalanceService, StaticService, TokenBalanceService } from "@src/gameplay"
+import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { DateUtcService } from "@src/date"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
@@ -17,7 +17,6 @@ export class ClaimDailyRewardService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly tokenBalanceService: TokenBalanceService,
         private readonly dateUtcService: DateUtcService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
@@ -74,14 +73,10 @@ export class ClaimDailyRewardService {
                  ************************************************************/
                 // Check streak
                 if (user.dailyRewardStreak >= 4) {
-                    // Day 5 reward (gold + tokens)
+                    // Day 5 reward (gold)
                     this.goldBalanceService.add({
                         user,
                         amount: dailyRewardInfo[DailyRewardId.Day5].golds
-                    })
-                    this.tokenBalanceService.add({
-                        user,
-                        amount: dailyRewardInfo[DailyRewardId.Day5].tokens
                     })
                 } else {
                     // Day 1-4 rewards (gold only)

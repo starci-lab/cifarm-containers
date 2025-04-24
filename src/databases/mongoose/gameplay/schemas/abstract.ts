@@ -57,16 +57,10 @@ export class AbstractPlantSchema extends AbstractSchema {
         availableInShop: boolean
 
     @Field(() => Int, {
-        description: "The minimum harvest quantity of the plant"
+        description: "The harvest quantity of the plant"
     })
     @Prop({ type: Number, required: true })
-        minHarvestQuantity: number
-
-    @Field(() => Int, {
-        description: "The maximum harvest quantity of the plant"
-    })
-    @Prop({ type: Number, required: true })
-        maxHarvestQuantity: number
+        harvestQuantity: number
 
     @Field(() => Int, {
         description: "The basic harvest experiences of the plant"

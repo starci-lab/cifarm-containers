@@ -27,10 +27,9 @@ export class FlowerSeeder implements Seeder {
                     price: 50,
                     growthStageDuration: 300,
                     unlockLevel: 1,
-                    basicHarvestExperiences: 12,
-                    qualityHarvestExperiences: 60,
-                    minHarvestQuantity: 14,
-                    maxHarvestQuantity: 20,
+                    basicHarvestExperiences: 6,
+                    qualityHarvestExperiences: 12,
+                    harvestQuantity: 20,
                     availableInShop: true,
                     honeyYieldCoefficient: 2.5,
                     honeyQualityChancePlus: 0

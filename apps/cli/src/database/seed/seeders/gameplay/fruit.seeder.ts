@@ -24,16 +24,13 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Banana),
                 displayId: FruitId.Banana,
                 price: 5000,
-                youngGrowthStageDuration: 3600,
-                matureGrowthStageDuration: 300,
-                fertilizerTime: 600,
+                youngGrowthStageDuration: 60 * 60 * 12, // 12 hours
+                matureGrowthStageDuration: 60 * 60 * 6, // 6 hours
+                fertilizerTime: 60 * 60 * 8, // 8 hour
                 unlockLevel: 10,
                 basicHarvestExperiences: 12,
-                qualityHarvestExperiences: 60,
-                qualityProductChanceStack: 0.001,
-                qualityProductChanceLimit: 0.1,
-                minHarvestQuantity: 14,
-                maxHarvestQuantity: 20,
+                qualityHarvestExperiences: 24,
+                harvestQuantity: 20,
                 availableInShop: true,
                 sellable: true,
                 sellPrice: 2500
@@ -42,16 +39,13 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Apple),
                 displayId: FruitId.Apple,
                 price: 5000,
-                youngGrowthStageDuration: 3600,
-                matureGrowthStageDuration: 300,
-                fertilizerTime: 600,
-                unlockLevel: 20,
+                youngGrowthStageDuration: 60 * 60 * 12, // 12 hours
+                matureGrowthStageDuration: 60 * 60 * 6, // 6 hours
+                fertilizerTime: 60 * 60 * 8, // 8 hour
+                unlockLevel: 10,
                 basicHarvestExperiences: 12,
-                qualityHarvestExperiences: 60,
-                qualityProductChanceStack: 0.001,
-                qualityProductChanceLimit: 0.1,
-                minHarvestQuantity: 14,
-                maxHarvestQuantity: 20,
+                qualityHarvestExperiences: 24,
+                harvestQuantity: 20,
                 availableInShop: true,
                 sellable: true,
                 sellPrice: 2500
@@ -60,16 +54,12 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.DragonFruit),
                 displayId: FruitId.DragonFruit,
                 price: 5000,
-                youngGrowthStageDuration: 3600,
-                matureGrowthStageDuration: 300,
-                fertilizerTime: 600,
-                unlockLevel: 10,
-                basicHarvestExperiences: 12,
-                qualityHarvestExperiences: 60,
-                qualityProductChanceStack: 0.001,
-                qualityProductChanceLimit: 0.1,
-                minHarvestQuantity: 14,
-                maxHarvestQuantity: 20,
+                youngGrowthStageDuration: 60 * 60 * 18, // 18 hours
+                matureGrowthStageDuration: 60 * 60 * 9, // 9 hours
+                fertilizerTime: 60 * 60 * 8, // 8 hour
+                basicHarvestExperiences: 24,
+                qualityHarvestExperiences: 48,
+                harvestQuantity: 20,
                 availableInShop: false,
                 sellable: false,
                 isNFT: true
@@ -78,16 +68,12 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Jackfruit),
                 displayId: FruitId.Jackfruit,
                 price: 5000,
-                youngGrowthStageDuration: 3600,
-                matureGrowthStageDuration: 300,
-                fertilizerTime: 600,
-                unlockLevel: 10,
-                basicHarvestExperiences: 12,
-                qualityHarvestExperiences: 60,
-                qualityProductChanceStack: 0.001,
-                qualityProductChanceLimit: 0.1,
-                minHarvestQuantity: 14,
-                maxHarvestQuantity: 20,
+                youngGrowthStageDuration: 60 * 60 * 18, // 18 hours
+                matureGrowthStageDuration: 60 * 60 * 9, // 9 hours
+                fertilizerTime: 60 * 60 * 8, // 8 hour
+                basicHarvestExperiences: 24,
+                qualityHarvestExperiences: 48,
+                harvestQuantity: 20,
                 availableInShop: false,
                 sellable: false,
                 isNFT: true
@@ -96,16 +82,12 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Rambutan),
                 displayId: FruitId.Rambutan,
                 price: 5000,
-                youngGrowthStageDuration: 3600,
-                matureGrowthStageDuration: 300,
-                fertilizerTime: 600,
-                unlockLevel: 10,
-                basicHarvestExperiences: 12,
-                qualityHarvestExperiences: 60,
-                qualityProductChanceStack: 0.001,
-                qualityProductChanceLimit: 0.1,
-                minHarvestQuantity: 14,
-                maxHarvestQuantity: 20,
+                youngGrowthStageDuration: 60 * 60 * 18, // 18 hours
+                matureGrowthStageDuration: 60 * 60 * 9, // 9 hours
+                fertilizerTime: 60 * 60 * 8, // 8 hour
+                basicHarvestExperiences: 24,
+                qualityHarvestExperiences: 48,
+                harvestQuantity: 20,
                 availableInShop: false,
                 sellable: false,
                 isNFT: true
@@ -114,23 +96,22 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Pomegranate),   
                 displayId: FruitId.Pomegranate,
                 price: 5000,
-                youngGrowthStageDuration: 3600,
-                matureGrowthStageDuration: 300,
-                fertilizerTime: 600,
-                unlockLevel: 10,
-                basicHarvestExperiences: 12,
-                qualityHarvestExperiences: 60,
-                qualityProductChanceStack: 0.001,
-                qualityProductChanceLimit: 0.1,
-                minHarvestQuantity: 14,
-                maxHarvestQuantity: 20,
+                youngGrowthStageDuration: 60 * 60 * 24, // 24 hours
+                matureGrowthStageDuration: 60 * 60 * 12, // 12 hours
+                fertilizerTime: 60 * 60 * 8, // 8 hour
+                basicHarvestExperiences: 36,
+                qualityHarvestExperiences: 72,
+                harvestQuantity: 20,
                 availableInShop: false,
                 sellable: false,
                 isNFT: true
             }
         ]
-
-        await this.connection.model<FruitSchema>(FruitSchema.name).insertMany(data)
+        try {
+            await this.connection.model<FruitSchema>(FruitSchema.name).insertMany(data)
+        } catch (error) {
+            this.logger.error(error)
+        }
     }
     
     async drop(): Promise<void> {

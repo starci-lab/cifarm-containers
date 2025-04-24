@@ -59,12 +59,6 @@ export class UserSchema extends AbstractSchema {
     @Prop({ type: String, required: false })
         avatarUrl?: string
 
-    @Field(() => Float, {
-        description: "The amount of token currency the user has"
-    })
-    @Prop({ type: Number, default: 0 })
-        tokens: number
-
     @Field(() => Int, {
         description: "The experience points of the user"
     })

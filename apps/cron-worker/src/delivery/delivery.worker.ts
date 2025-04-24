@@ -5,7 +5,7 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { bullData, BullQueueName } from "@src/bull"
 import { WithStatus } from "@src/common"
 import { InjectMongoose, InventoryKind, InventorySchema, UserSchema } from "@src/databases"
-import { GoldBalanceService, StaticService, SyncService, TokenBalanceService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { Producer } from "kafkajs"
 import { Connection } from "mongoose"
@@ -20,7 +20,6 @@ export class DeliveryWorker extends WorkerHost {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
-        private readonly tokenBalanceService: TokenBalanceService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
     ) {
@@ -66,7 +65,6 @@ export class DeliveryWorker extends WorkerHost {
                             }
 
                             let totalGoldAmount = 0
-                            let totalTokenAmount = 0
                             for (const inventory of deliveringInventories) {
                                 const inventoryType = this.staticService.inventoryTypes.find(
                                     (inventoryType) =>
@@ -84,17 +82,11 @@ export class DeliveryWorker extends WorkerHost {
                                     throw new Error(`Product not found: ${inventoryType.product}`)
                                 }
                                 totalGoldAmount += (product.goldAmount ?? 0) * inventory.quantity
-                                totalTokenAmount += (product.tokenAmount ?? 0) * inventory.quantity
                             }
-
                             // Update user balance
                             this.goldBalanceService.add({
                                 user,
                                 amount: totalGoldAmount
-                            })
-                            this.tokenBalanceService.add({
-                                user,
-                                amount: totalTokenAmount
                             })
 
                             // delete delivering products

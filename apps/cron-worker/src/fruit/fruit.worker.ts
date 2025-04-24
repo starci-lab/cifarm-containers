@@ -64,6 +64,18 @@ export class FruitWorker extends WorkerHost {
             const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
             const promises: Array<Promise<void>> = []
             for (const placedItem of placedItems) {
+                const growthAcceleration = this.coreService.computeGrowthAcceleration({
+                    growthAcceleration: placedItem.fruitInfo.growthAcceleration
+                })
+                const qualityYield = this.coreService.computeQualityYield({
+                    qualityYield: placedItem.fruitInfo.qualityYield
+                })
+                const harvestYieldBonus = this.coreService.computeHarvestYieldBonus({
+                    harvestYieldBonus: placedItem.fruitInfo.harvestYieldBonus
+                })
+                const diseaseResistance = this.coreService.computeDiseaseResistance({
+                    diseaseResistance: placedItem.fruitInfo.diseaseResistance
+                })
                 const promise = async () => {
                     const placedItemType = this.staticService.placedItemTypes.find(
                         (placedItemType) =>
@@ -86,11 +98,10 @@ export class FruitWorker extends WorkerHost {
                         if (placedItem.fruitInfo.currentStage >= growthStages - 1) {
                             return false
                         }
-
                         // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
                         const updateMatureFruitPlacedItem = (): boolean => {
                             // If fruit is mature
-                            placedItem.fruitInfo.currentStageTimeElapsed += time
+                            placedItem.fruitInfo.currentStageTimeElapsed += time * (1 + growthAcceleration)
                             if (
                                 placedItem.fruitInfo.currentStageTimeElapsed <
                                 fruit.matureGrowthStageDuration
@@ -101,33 +112,34 @@ export class FruitWorker extends WorkerHost {
                             if (
                                 placedItem.fruitInfo.currentStage === growthStages - 2
                             ) {
-                            // become has caterpillar
+                                // become buggy
                                 if (Math.random() < isBuggy) {
-                                    placedItem.fruitInfo.currentState = FruitCurrentState.IsBuggy
+                                    if (Math.random() > diseaseResistance) {
+                                        placedItem.fruitInfo.currentState = FruitCurrentState.IsBuggy
+                                    }
                                 }
                                 placedItem.fruitInfo.currentStageTimeElapsed -= fruit.matureGrowthStageDuration
                                 return true
                             }
                             if (placedItem.fruitInfo.currentStage === growthStages - 1) {
                                 placedItem.fruitInfo.currentStageTimeElapsed = 0
+                                placedItem.fruitInfo.harvestQuantityDesired = Math.floor(fruit.harvestQuantity * (1 + harvestYieldBonus))
+                                placedItem.fruitInfo.harvestQuantityMin = Math.floor(placedItem.fruitInfo.harvestQuantityDesired * this.staticService.fruitInfo.minThievablePercentage)
                                 //if sick, the harvest quantity is the average of min and max harvest quantity
                                 if (
                                     placedItem.fruitInfo.currentState === FruitCurrentState.IsBuggy
                                 ) {
                                     placedItem.fruitInfo.harvestQuantityRemaining = Math.floor(
-                                        (fruit.minHarvestQuantity + fruit.maxHarvestQuantity) / 2
+                                        (placedItem.fruitInfo.harvestQuantityMin + placedItem.fruitInfo.harvestQuantityDesired) / 2
                                     )
                                 } else {
                                 // if not sick, the harvest quantity is the max harvest quantity
                                     placedItem.fruitInfo.harvestQuantityRemaining =
-                                    fruit.maxHarvestQuantity
+                                    placedItem.fruitInfo.harvestQuantityDesired
                                 }
                                 placedItem.fruitInfo.currentState = FruitCurrentState.FullyMatured
-                                const chance = this.coreService.computeFruitQualityChance({
-                                    placedItemFruit: placedItem,
-                                    fruit
-                                })
-                                if (Math.random() < chance) {
+                                // quality yield
+                                if (Math.random() < qualityYield) {
                                     placedItem.fruitInfo.isQuality = true
                                 }
                                 return true

@@ -70,6 +70,18 @@ export class PlantWorker extends WorkerHost {
             const promises: Array<Promise<void>> = []
             const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
             for (const placedItem of placedItems) {
+                const growthAcceleration = this.coreService.computeGrowthAcceleration({
+                    growthAcceleration: placedItem.tileInfo.growthAcceleration
+                })
+                const qualityYield = this.coreService.computeQualityYield({
+                    qualityYield: placedItem.tileInfo.qualityYield
+                })
+                const harvestYieldBonus = this.coreService.computeHarvestYieldBonus({
+                    harvestYieldBonus: placedItem.tileInfo.harvestYieldBonus
+                })
+                const diseaseResistance = this.coreService.computeDiseaseResistance({
+                    diseaseResistance: placedItem.tileInfo.diseaseResistance
+                })
                 const promise = async () => {
                     try {
                         let plant: AbstractPlantSchema
@@ -91,9 +103,9 @@ export class PlantWorker extends WorkerHost {
                         if (!placedItemType) {
                             throw new Error("Placed item type not found")
                         }
-                        const tile = this.staticService.tiles.find(
-                            (tile) => tile.id.toString() === placedItemType.tile.toString()
-                        )
+                        // const tile = this.staticService.tiles.find(
+                        //     (tile) => tile.id.toString() === placedItemType.tile.toString()
+                        // )
                         // Add time to the seed growth
                         // if
                         const updatePlacedItem = (): boolean => {
@@ -102,7 +114,7 @@ export class PlantWorker extends WorkerHost {
                                 return false
                             }
                             // add time to the seed growth
-                            placedItem.plantInfo.currentStageTimeElapsed += time
+                            placedItem.plantInfo.currentStageTimeElapsed += time * (1 + growthAcceleration)
                             if (
                                 placedItem.plantInfo.currentStageTimeElapsed <
                                 plant.growthStageDuration
@@ -130,35 +142,36 @@ export class PlantWorker extends WorkerHost {
                             // if the current stage is max stage - 2, check if weedy or infested
                             if (placedItem.plantInfo.currentStage === growthStages - 2) {
                                 if (Math.random() < isWeedyOrInfested) {
-                                    if (Math.random() < 0.5) {
-                                        placedItem.plantInfo.currentState = PlantCurrentState.IsWeedy
-                                    } else {
-                                        placedItem.plantInfo.currentState =
+                                    if (Math.random() > diseaseResistance) {
+                                        if (Math.random() < 0.5) {
+                                            placedItem.plantInfo.currentState = PlantCurrentState.IsWeedy
+                                        } else {
+                                            placedItem.plantInfo.currentState =
                                             PlantCurrentState.IsInfested
+                                        }
                                     }
                                 }
                                 return true
                             }
                             // else, the crop is fully matured
+                            placedItem.plantInfo.currentStageTimeElapsed = 0
+                            placedItem.plantInfo.harvestQuantityDesired = plant.harvestQuantity * (1 + harvestYieldBonus)
+                            placedItem.plantInfo.harvestQuantityMin = Math.floor(placedItem.plantInfo.harvestQuantityDesired * this.staticService.cropInfo.minThievablePercentage)
                             if (
                                 placedItem.plantInfo.currentState === PlantCurrentState.IsInfested ||
                                 placedItem.plantInfo.currentState === PlantCurrentState.IsWeedy
                             ) {
                                 placedItem.plantInfo.harvestQuantityRemaining = Math.floor(
-                                    (plant.minHarvestQuantity + plant.maxHarvestQuantity) / 2
+                                    (placedItem.plantInfo.harvestQuantityMin + placedItem.plantInfo.harvestQuantityDesired) / 2
                                 )
                             } else {
                                 placedItem.plantInfo.harvestQuantityRemaining =
-                                    plant.maxHarvestQuantity
-                            }
-                            const chance = this.coreService.computeTileQualityChance({
-                                placedItemTile: placedItem,
-                                tile: tile
-                            })
-                            if (Math.random() < chance) {
-                                placedItem.plantInfo.isQuality = true
+                                    placedItem.plantInfo.harvestQuantityDesired
                             }
                             placedItem.plantInfo.currentState = PlantCurrentState.FullyMatured
+                            if (Math.random() < qualityYield) {
+                                placedItem.plantInfo.isQuality = true
+                            }
                             return true
                         }
                         const placedItemSnapshot = placedItem.$clone()

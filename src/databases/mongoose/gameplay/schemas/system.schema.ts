@@ -9,7 +9,7 @@ import {
     NFTType,
     NFTRarity,
     FirstCharLowerCaseNFTType,
-    StableCoinName,
+    StableCoinName
 } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
@@ -215,12 +215,18 @@ export class CropInfo {
         defaultValue: 3
     })
         nextGrowthStageAfterHarvest: number
-    
+
     @Field(() => Int, {
-        description: "The number of growth stages for the crop", 
+        description: "The number of growth stages for the crop",
         defaultValue: 5
     })
         growthStages: number
+
+    @Field(() => Int, {
+        description: "Minimum percentage of the total quantity that can be stolen by a thief",
+        defaultValue: 5
+    })
+        minThievablePercentage: number
 }
 
 @ObjectType({
@@ -247,10 +253,10 @@ export class BeeHouseInfo {
     })
         randomness: BeeHouseRandomness
     @Field(() => Int, {
-        description: "Minimum percentage of the total quantity that can be stolen by a thief", 
+        description: "Minimum percentage of the total quantity that can be stolen by a thief",
         defaultValue: 5
     })
-        minThievablePercentage: number 
+        minThievablePercentage: number
 }
 
 @ObjectType({
@@ -297,7 +303,13 @@ export class FlowerInfo {
         description: "The number of growth stages for the flower",
         defaultValue: 5
     })
-        growthStages: number    
+        growthStages: number
+
+    @Field(() => Int, {
+        description: "Minimum percentage of the total quantity that can be stolen by a thief",
+        defaultValue: 5
+    })
+        minThievablePercentage: number
 }
 
 @ObjectType({
@@ -328,6 +340,12 @@ export class AnimalInfo {
         description: "Configuration for animal randomness events"
     })
         randomness: AnimalRandomness
+
+    @Field(() => Int, {
+        description: "Minimum percentage of the total quantity that can be stolen by a thief",
+        defaultValue: 5
+    })
+        minThievablePercentage: number
 }
 
 @ObjectType({
@@ -343,7 +361,7 @@ export class FruitRandomness {
         description: "Chance for a fruit to be stolen by 2 thieves"
     })
         thief2: number
-        
+
     @Field(() => Float, {
         description: "Chance for a fruit to have caterpillars"
     })
@@ -376,6 +394,12 @@ export class FruitInfo {
         defaultValue: 3
     })
         matureGrowthStage: number
+
+    @Field(() => Int, {
+        description: "Minimum percentage of the total quantity that can be stolen by a thief",
+        defaultValue: 5
+    })
+        minThievablePercentage: number
 }
 
 @ObjectType({
@@ -401,12 +425,12 @@ export class Positions {
         description: "Default position for the banana fruit"
     })
         bananaFruit: Position
-    
+
     @Field(() => Position, {
         description: "Default position for the coop"
     })
         coop: Position
-    
+
     @Field(() => Position, {
         description: "Default position for the chicken"
     })
@@ -513,7 +537,6 @@ export class SlotInfo {
         thresholdMax: number
 }
 
-
 @ObjectType({
     description: "Configuration for character model addresses"
 })
@@ -593,12 +616,6 @@ export class DailyReward {
         description: "Gold amount for this daily reward"
     })
         golds: number
-
-    @Field(() => Float, {
-        nullable: true,
-        description: "Token amount for this daily reward"
-    })
-        tokens: number
 
     @Field(() => Int, {
         description: "Day number for this daily reward"
@@ -768,7 +785,7 @@ export class NFTCollections {
         description: "NFT collection"
     })
     [NFTType.DragonFruit]: NFTCollection
-    
+
     @Field(() => NFTCollection, {
         description: "NFT collection"
     })
@@ -841,7 +858,7 @@ export class NFTStarterBoxInfo {
         description: "Each chance for a box configuration"
     })
         chances: Array<NFTStarterBoxChance>
-    
+
     @Field(() => Float, {
         description: "Price for each box"
     })
@@ -884,7 +901,6 @@ export class NFTStarterBoxChance {
         epicRarityChance: number
 }
 
-
 @ObjectType({
     description: "Token vault data"
 })
@@ -923,7 +939,6 @@ export class TokenVaults {
     })
     [ChainKey.Solana]: TokenVault
 }
- 
+
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)
-

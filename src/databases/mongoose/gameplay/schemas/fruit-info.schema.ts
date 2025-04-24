@@ -85,5 +85,17 @@ export class FruitInfoSchema extends AbstractSchema {
         default: 0
     })
     [AttributeName.DiseaseResistance]: number
+
+    @Field(() => Int, {
+        description: "The desired harvest quantity of the bee house"
+    })
+    @Prop({ type: Number, default: 0 })
+        harvestQuantityDesired: number
+
+    @Field(() => Int, {
+        description: "The min harvest quantity of the bee house"
+    })
+    @Prop({ type: Number, default: 0 })
+        harvestQuantityMin: number
 }
 export const FruitInfoSchemaClass = SchemaFactory.createForClass(FruitInfoSchema)
