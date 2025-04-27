@@ -20,4 +20,4 @@ import { CreateUnwrapSolanaMetaplexNFTTransactionModule } from "./create-unwrap-
         CreateUnwrapSolanaMetaplexNFTTransactionModule
     ]
 })
-export class NFTsModule {}
+export class SolanaModule {}

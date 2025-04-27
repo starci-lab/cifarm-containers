@@ -3,7 +3,7 @@ import { AuthModule } from "./auth"
 import { HoneycombModule } from "./honeycomb"
 import { PlayerModule } from "./player"
 import { CommunityModule } from "./community"
-import { NFTsModule } from "./nfts"
+import { SolanaModule } from "./solana"
 import { WholesaleMarketModule } from "./wholesale-market"
 
 @Module({
@@ -12,7 +12,7 @@ import { WholesaleMarketModule } from "./wholesale-market"
         PlayerModule,
         HoneycombModule,
         CommunityModule,
-        NFTsModule,
+        SolanaModule,
         WholesaleMarketModule
     ]
 })
