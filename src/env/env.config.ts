@@ -208,6 +208,14 @@ export const envConfig = () => ({
                 [Network.Testnet]: {
                     privateKey: process.env.SOLANA_METAPLEX_AUTHORITY_PRIVATE_KEY_TESTNET
                 }
+            },
+            vault: {
+                [Network.Mainnet]: {
+                    privateKey: process.env.SOLANA_VAULT_PRIVATE_KEY_MAINNET
+                },
+                [Network.Testnet]: {
+                    privateKey: process.env.SOLANA_VAULT_PRIVATE_KEY_TESTNET
+                }
             }
         },
         [ChainKey.Near]: {

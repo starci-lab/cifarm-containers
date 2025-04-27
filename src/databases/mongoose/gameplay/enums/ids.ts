@@ -414,6 +414,7 @@ export enum SystemId {
     StableCoins = "stableCoins",
     TokenVaults = "tokenVaults",
     WholesaleMarket = "wholesaleMarket",
+    FeeReceivers = "feeReceivers",
 }
 
 export const GraphQLTypeSystemId = createEnumType(SystemId)
@@ -461,6 +462,12 @@ registerEnumType(GraphQLTypeSystemId, {
         [SystemId.TokenVaults]: {
             description: "The token vaults id.",
         },
+        [SystemId.WholesaleMarket]: {
+            description: "The wholesale market id.",
+        },
+        [SystemId.FeeReceivers]: {
+            description: "The fee receivers id.",
+        },
     },
 })
 
@@ -470,6 +477,7 @@ export enum KeyValueStoreId {
     FruitLastSchedule = "fruitLastSchedule",
     BeeHouseLastSchedule = "beeHouseLastSchedule",
     PlantLastSchedule = "plantLastSchedule",
+    VaultInfos = "vaultInfos",
 }
 
 export const GraphQLTypeKeyValueStoreId = createEnumType(KeyValueStoreId)
@@ -492,6 +500,9 @@ registerEnumType(GraphQLTypeKeyValueStoreId, {
         },
         plantLastSchedule: {
             description: "The plant last schedule id.",
+        },
+        vaultInfos: {
+            description: "The vaults info id.",
         },
     },
 })

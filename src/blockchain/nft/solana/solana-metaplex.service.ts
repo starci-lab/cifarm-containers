@@ -7,6 +7,7 @@ import {
     generateSigner,
     keypairIdentity,
     publicKey,
+    TransactionBuilder,
     Umi
 } from "@metaplex-foundation/umi"
 import {
@@ -28,7 +29,8 @@ import {
     CreateMintNFTTransactionParams,
     CreateMintNFTTransactionResponse,
     CreateTransferTokenTransactionParams,
-    CreateTransferTokenTransactionResponse
+    CreateTransferTokenTransactionResponse,
+    CreateUnfreezeNFTTransactionResponse
 } from "./types"
 import {
     transferTokens,
@@ -62,6 +64,15 @@ export class SolanaMetaplexService {
 
     public getUmi(network: Network): Umi {
         return this.umis[network]
+    }
+
+    public getVaultUmi(network: Network): Umi {
+        const umi = createUmi(solanaHttpRpcUrl(ChainKey.Solana, network)).use(mplCore())
+        const signer = umi.eddsa.createKeypairFromSecretKey(
+            base58.decode(envConfig().chainCredentials[ChainKey.Solana].vault[network].privateKey)
+        )
+        umi.use(keypairIdentity(signer)).use(mplToolbox())
+        return umi
     }
 
     public async createCollection({
@@ -260,14 +271,15 @@ export class SolanaMetaplexService {
     }
 
     public async createUnfreezeNFTTransaction({
-        network = Network.Mainnet,
+        network = Network.Testnet,
         nftAddress,
         collectionAddress,
         feePayer
     }: CreateUnfreezeNFTTransactionParams): Promise<CreateUnfreezeNFTTransactionResponse> {
         const umi = this.umis[network]
-        const tx = await updatePlugin(umi, {
+        const transaction = updatePlugin(umi, {
             asset: publicKey(nftAddress),
+            authority: createNoopSigner(publicKey(umi.identity.publicKey)),
             collection: publicKey(collectionAddress),
             plugin: {
                 type: "PermanentFreezeDelegate",
@@ -275,34 +287,27 @@ export class SolanaMetaplexService {
             },
             payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity
         })
-            .useV0()
-            .setBlockhash(await umi.rpc.getLatestBlockhash())
-            .buildAndSign(umi)
-
-        return { serializedTx: base58.encode(umi.transactions.serialize(tx)) }
+        return { transaction }
     }
 
     public async createFreezeNFTTransaction({
-        network = Network.Mainnet,
+        network = Network.Testnet,
         nftAddress,
         collectionAddress,
         feePayer
     }: CreateFreezeNFTTransactionParams): Promise<CreateFreezeNFTTransactionResponse> {
         const umi = this.umis[network]
-        const tx = await updatePlugin(umi, {
+        const transaction = updatePlugin(umi, {
+            authority: createNoopSigner(publicKey(umi.identity.publicKey)),
             asset: publicKey(nftAddress),
             collection: publicKey(collectionAddress),
             plugin: {
                 type: "PermanentFreezeDelegate",
                 frozen: true
             },
-            payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity
+            payer: feePayer ? createNoopSigner(publicKey(feePayer)) : createNoopSigner(umi.identity.publicKey)
         })
-            .useV0()
-            .setBlockhash(await umi.rpc.getLatestBlockhash())
-            .buildAndSign(umi)
-
-        return { serializedTx: base58.encode(umi.transactions.serialize(tx)) }
+        return { transaction }
     }
 
     public async transferNft({
@@ -367,10 +372,6 @@ export interface MetaplexCollectionMetadata {
 export interface CreateUnfreezeNFTTransactionParams extends WithFeePayer {
     nftAddress: string
     collectionAddress?: string
-}
-
-export interface CreateUnfreezeNFTTransactionResponse {
-    serializedTx: string
 }
 
 export interface CreateCollectionResponse {

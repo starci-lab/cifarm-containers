@@ -13,6 +13,8 @@ import { NFTDatabaseService } from "@src/blockchain-database"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
+import { roundNumber } from "@src/common"
+
 @Injectable()
 export class CreatePurchaseSolanaNFTStarterBoxTransactionService {
     private readonly logger = new Logger(CreatePurchaseSolanaNFTStarterBoxTransactionService.name)
@@ -50,12 +52,7 @@ export class CreatePurchaseSolanaNFTStarterBoxTransactionService {
                     user.lastSolanaStarterBoxRollType = Math.random()
                     await user.save({ session })
                 }
-
-                const nftStarterBoxInfo = this.staticService.nftStarterBoxInfo
-                if (!nftStarterBoxInfo) {
-                    throw new GraphQLError("NFT starter box info not found")
-                }
-                const nftStarterBoxChances = nftStarterBoxInfo.chances
+                const nftStarterBoxChances = this.staticService.nftStarterBoxInfo.chances
                 const nftStarterBoxChance = nftStarterBoxChances.find((chance) => {
                     return (
                         user.lastSolanaNFTStarterBoxRollRarity >= chance.startChance &&
@@ -108,22 +105,34 @@ export class CreatePurchaseSolanaNFTStarterBoxTransactionService {
 
                 builder = builder.add(mintNFTTransaction)
                 //get the stable coin address
-                const { address: stableCoinAddress, decimals: stableCoinDecimals } =
+                const { address: tokenAddress, decimals: tokenDecimals } =
                     this.staticService.stableCoins[StableCoinName.USDC][user.chainKey][user.network]
-
-                const tokenVaultAddress =
-                    this.staticService.tokenVaults[user.chainKey][user.network].address
-                const { transaction: transferStableCoinTransaction } =
+                // first season is USDC so that we hardcode the token address
+                const tokenVaultAddress = this.solanaMetaplexService.getVaultUmi(user.network).identity.publicKey.toString()
+                const feeAmount = roundNumber(this.staticService.nftStarterBoxInfo.boxPrice * this.staticService.nftStarterBoxInfo.feePercentage)
+                const { transaction: transferTokenToVaultTransaction } =
                     await this.solanaMetaplexService.createTransferTokenTransaction({
                         network: user.network,
-                        tokenAddress: stableCoinAddress,
+                        tokenAddress: tokenAddress,
                         toAddress: tokenVaultAddress,
-                        amount: nftStarterBoxInfo.boxPrice,
-                        decimals: stableCoinDecimals,
+                        amount: this.staticService.nftStarterBoxInfo.boxPrice - feeAmount,
+                        decimals: tokenDecimals,
                         fromAddress: user.accountAddress
                     })
                 // add to the transaction
-                builder = builder.add(transferStableCoinTransaction)
+                builder = builder.add(transferTokenToVaultTransaction)  
+                // get the fee receiver address
+                const feeReceiverAddress = this.staticService.feeReceivers[user.chainKey][user.network].address
+                const { transaction: transferTokenToFeeReceiverTransaction } =
+                    await this.solanaMetaplexService.createTransferTokenTransaction({
+                        network: user.network,
+                        tokenAddress: tokenAddress,
+                        toAddress: feeReceiverAddress,
+                        amount: feeAmount,
+                        decimals: tokenDecimals,
+                        fromAddress: user.accountAddress
+                    })
+                builder = builder.add(transferTokenToFeeReceiverTransaction)
                 const transaction = await builder
                     .useV0()
                     .setFeePayer(createNoopSigner(publicKey(user.accountAddress)))
@@ -136,23 +145,25 @@ export class CreatePurchaseSolanaNFTStarterBoxTransactionService {
                             .transactions.serializeMessage(transaction.message)
                     )
                 )
-                await this.cacheManager.set(cacheKey, true, 1000 * 15)
-                return base58.encode(
-                    this.solanaMetaplexService
-                        .getUmi(user.network)
-                        .transactions.serialize(transaction)
-                )
+                await this.cacheManager.set(cacheKey, true, 1000 * 60 * 15) // 15 minutes to verify the transaction
+                return {
+                    serializedTx: base58.encode(
+                        this.solanaMetaplexService
+                            .getUmi(user.network)
+                            .transactions.serialize(transaction)
+                    )
+                }
             })
             return {
                 success: true,
                 message: "NFT starter box purchased successfully",
-                data: {
-                    serializedTx: result
-                }
+                data: result
             }
         } catch (error) {
             this.logger.error(error)
             throw error
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

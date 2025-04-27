@@ -25,7 +25,8 @@ import {
     SystemSchema,
     TokenVaults,
     WholesaleMarket,
-    PaymentKind
+    PaymentKind,
+    FeeReceivers
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -763,7 +764,8 @@ export class SystemSeeder implements Seeder {
                     epicRarityChance: 0.9
                 }
             ],
-            boxPrice: 0.1 // 0.1 USDC
+            boxPrice: 0.1, // 0.1 USDC
+            feePercentage: 0.02 // 2% to fee collector, will to the fee collector address
         }
 
         const stableCoins: StableCoins = {
@@ -784,12 +786,14 @@ export class SystemSeeder implements Seeder {
         const tokenVaults: TokenVaults = {
             [ChainKey.Solana]: {
                 [Network.Testnet]: {
-                    address: "D2HHp9gtFgs8dKtV6Hg2xgLv998HrwsyaWAeHkfuCJxJ",
-                    decimals: 6
+                    maxPaidAmount: 5,
+                    maxPaidDecreasePercentage: 0.01,
+                    vaultPaidPercentage: 0.05
                 },
                 [Network.Mainnet]: {
-                    address: "D2HHp9gtFgs8dKtV6Hg2xgLv998HrwsyaWAeHkfuCJxJ",
-                    decimals: 6
+                    maxPaidAmount: 5,
+                    maxPaidDecreasePercentage: 0.01,
+                    vaultPaidPercentage: 0.05
                 }
             },
         }
@@ -797,56 +801,35 @@ export class SystemSeeder implements Seeder {
         const wholesaleMarket: WholesaleMarket = {
             products: [
                 {
-                    productId: createObjectId(ProductId.Egg),
-                    quantity: 20,
-                },
-                {
-                    productId: createObjectId(ProductId.EggQuality),
-                    quantity: 5,
-                },
-                {
-                    productId: createObjectId(ProductId.Milk),
-                    quantity: 20,
-                },
-                {
-                    productId: createObjectId(ProductId.MilkQuality),
-                    quantity: 5,
-                },
-                {
-                    productId: createObjectId(ProductId.DragonFruit),
-                    quantity: 20,
-                },
-                {
                     productId: createObjectId(ProductId.DragonFruitQuality),
-                    quantity: 5,
-                },
-                {
-                    productId: createObjectId(ProductId.Jackfruit),
                     quantity: 20,
                 },
                 {
                     productId: createObjectId(ProductId.JackfruitQuality),
-                    quantity: 5,
-                },
-                {
-                    productId: createObjectId(ProductId.Rambutan),
                     quantity: 20,
                 },
                 {
                     productId: createObjectId(ProductId.RambutanQuality),
-                    quantity: 5,
-                },
-                {
-                    productId: createObjectId(ProductId.Pomegranate),
                     quantity: 20,
                 },
                 {
                     productId: createObjectId(ProductId.PomegranateQuality),
-                    quantity: 5,
+                    quantity: 20,
                 },
             ],
             price: 5,
             paymentKind: PaymentKind.USDC
+        }
+
+        const feeReceivers: FeeReceivers = {
+            [ChainKey.Solana]: {
+                [Network.Testnet]: {
+                    address: "D2HHp9gtFgs8dKtV6Hg2xgLv998HrwsyaWAeHkfuCJxJ"
+                },
+                [Network.Mainnet]: {
+                    address: "D2HHp9gtFgs8dKtV6Hg2xgLv998HrwsyaWAeHkfuCJxJ"
+                }
+            }
         }
 
         const data: Array<Partial<SystemSchema>> = [
@@ -924,6 +907,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.WholesaleMarket),
                 displayId: SystemId.WholesaleMarket,
                 value: wholesaleMarket
+            },
+            {
+                _id: createObjectId(SystemId.FeeReceivers),
+                displayId: SystemId.FeeReceivers,
+                value: feeReceivers
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

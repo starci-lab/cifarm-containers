@@ -1,7 +1,7 @@
 import { Int, Field, ObjectType } from "@nestjs/graphql"
-
+import { Document } from "mongoose"
 // interface for type checking
-export interface KeyValueRecord<Value> {
+export interface KeyValueRecord<Value> extends Document {
     value: Value
 }
 

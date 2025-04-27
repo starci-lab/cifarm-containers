@@ -1,51 +1,77 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, NFTType, PlacedItemSchema, PlacedItemType, UserSchema } from "@src/databases"
-import { Connection } from "mongoose"
 import {
-    ValidateSolanaMetaplexNFTFrozenRequest,
-    ValidateSolanaMetaplexNFTFrozenResponse
-} from "./validate-solana-metaplex-nft-frozen.dto"
-import { AttributeName, SolanaMetaplexService } from "@src/blockchain"
+    InjectMongoose,
+    NFT_METADATA,
+    PlacedItemSchema,
+    NFTMetadataSchema,
+    NFTType,
+    NFTTypeToPlacedItemTypeId,
+    PlacedItemType
+} from "@src/databases"
+import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
-import { GraphQLError } from "graphql"
-import { NFTMetadataSchema } from "@src/databases"
+import {
+    SendWrapSolanaMetaplexNFTTransactionRequest,
+    SendWrapSolanaMetaplexNFTTransactionResponse
+} from "./send-wrap-solana-metaplex-nft-transaction.dto"
+import { AttributeName, SolanaMetaplexService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
-import { NFTTypeToPlacedItemTypeId } from "@src/databases"
-import { NFT_METADATA } from "@src/databases"
+import { InjectCache, WrapSolanaMetaplexNFTTransactionCache } from "@src/cache"
+import { Cache } from "cache-manager"
+import { Sha256Service } from "@src/crypto"
+import { UserSchema } from "@src/databases"
+import { GraphQLError } from "graphql"
+import base58 from "bs58"
 
 @Injectable()
-export class ValidateSolanaMetaplexNFTFrozenService {
-    private readonly logger = new Logger(ValidateSolanaMetaplexNFTFrozenService.name)
-
+export class SendWrapSolanaMetaplexNFTTransactionService {
+    private readonly logger = new Logger(SendWrapSolanaMetaplexNFTTransactionService.name)
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly solanaMetaplexService: SolanaMetaplexService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        @InjectCache()
+        private readonly cacheManager: Cache,
+        private readonly sha256Service: Sha256Service,
     ) {}
 
-    async validateSolanaMetaplexNFTFrozen(
+    async sendWrapSolanaMetaplexNFTTransaction(
         { id }: UserLike,
-        { nftAddress }: ValidateSolanaMetaplexNFTFrozenRequest
-    ): Promise<ValidateSolanaMetaplexNFTFrozenResponse> {
+        { serializedTx }: SendWrapSolanaMetaplexNFTTransactionRequest
+    ): Promise<SendWrapSolanaMetaplexNFTTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to handle the transaction lifecycle
             const result = await mongoSession.withTransaction(async (session) => {
-                // fetch the nft on-chain
+                // get the user
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(id)
                     .session(session)
                 if (!user) {
-                    throw new GraphQLError("User not found", {
+                    throw new Error("User not found")
+                }
+                const tx = this.solanaMetaplexService
+                    .getUmi(user.network)
+                    .transactions.deserialize(base58.decode(serializedTx))
+                const cacheKey = this.sha256Service.hash(
+                    base58.encode(
+                        this.solanaMetaplexService
+                            .getUmi(user.network)
+                            .transactions.serializeMessage(tx.message)
+                    )
+                )
+                const cacheData = await this.cacheManager.get<WrapSolanaMetaplexNFTTransactionCache>(cacheKey)
+                if (!cacheData) {
+                    throw new GraphQLError("Transaction not found in cache", {
                         extensions: {
-                            code: "USER_NOT_FOUND"
+                            code: "TRANSACTION_NOT_FOUND_IN_CACHE"
                         }
                     })
                 }
                 const nft = await this.solanaMetaplexService.getNFT({
-                    nftAddress,
+                    nftAddress: cacheData.nftAddress,
                     network: user.network
                 })
                 if (!nft) {
@@ -66,7 +92,7 @@ export class ValidateSolanaMetaplexNFTFrozenService {
                 const foundNFTMetadata = await this.connection
                     .model<NFTMetadataSchema>(NFTMetadataSchema.name)
                     .findOne({
-                        nftAddress,
+                        nftAddress: cacheData.nftAddress,
                         user: id
                     })
                     .session(session)
@@ -90,7 +116,7 @@ export class ValidateSolanaMetaplexNFTFrozenService {
                 let nftType: NFTType
                 for (const _nftType of Object.values(NFTType)) {
                     const found = this.staticService.nftCollections[_nftType][user.chainKey][user.network].collectionAddress  ===
-                            foundNFTMetadata.collectionAddress
+                            cacheData.collectionAddress
                     if (found) {
                         nftType = _nftType
                         break
@@ -164,18 +190,39 @@ export class ValidateSolanaMetaplexNFTFrozenService {
                             code: "NFT_TYPE_NOT_SUPPORTED"
                         }
                     })
-                }
+                }   
+                const signedTxWithAuthority = await this.solanaMetaplexService
+                    .getUmi(user.network)
+                    .identity.signTransaction(tx)
+                const signedTxWithVault = await this.solanaMetaplexService
+                    .getVaultUmi(user.network)
+                    .identity.signTransaction(signedTxWithAuthority)
+                const txHash = await this.solanaMetaplexService
+                    .getUmi(user.network)
+                    .rpc.sendTransaction(signedTxWithVault)
+                const latestBlockhash = await this.solanaMetaplexService
+                    .getUmi(user.network)
+                    .rpc.getLatestBlockhash()
+                await this.solanaMetaplexService
+                    .getUmi(user.network)
+                    .rpc.confirmTransaction(txHash, {
+                        commitment: "finalized",
+                        strategy: {
+                            type: "blockhash",
+                            blockhash: latestBlockhash.blockhash,
+                            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+                        }
+                    })
                 return {
-                    message: "NFT validated successfully",
-                    success: true
+                    success: true,
+                    message: "Wrap Solana Metaplex NFT transaction sent successfully",
+                    data: result
                 }
             })
             return result
         } catch (error) {
             this.logger.error(error)
             throw error
-        } finally {
-            await mongoSession.endSession()
         }
     }
 }

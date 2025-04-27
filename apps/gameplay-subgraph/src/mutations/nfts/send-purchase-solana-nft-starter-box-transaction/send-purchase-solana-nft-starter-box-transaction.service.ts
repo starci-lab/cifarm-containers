@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose } from "@src/databases"
+import { InjectMongoose, KeyValueRecord, KeyValueStoreId, KeyValueStoreSchema, VaultInfos } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
@@ -13,6 +13,8 @@ import base58 from "bs58"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
+import { StaticService } from "@src/gameplay"
+import { createObjectId, roundNumber } from "@src/common"
 
 @Injectable()
 export class SendPurchaseSolanaNFTStarterBoxTransactionService {
@@ -23,7 +25,8 @@ export class SendPurchaseSolanaNFTStarterBoxTransactionService {
         private readonly solanaMetaplexService: SolanaMetaplexService,
         @InjectCache()
         private readonly cacheManager: Cache,
-        private readonly sha256Service: Sha256Service
+        private readonly sha256Service: Sha256Service,
+        private readonly staticService: StaticService
     ) {}
 
     async sendPurchaseSolanaNFTStarterBoxTransaction(
@@ -65,6 +68,42 @@ export class SendPurchaseSolanaNFTStarterBoxTransactionService {
                 const signedTx = await this.solanaMetaplexService
                     .getUmi(user.network)
                     .identity.signTransaction(tx)
+                // first season is USDC so that we hardcode the token address
+                const feeAmount = roundNumber(
+                    this.staticService.nftStarterBoxInfo.boxPrice *
+                        this.staticService.nftStarterBoxInfo.feePercentage
+                )
+                // update the valut info in the database
+                const vaultInfos = await this.connection
+                    .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                    .findById<
+                        KeyValueRecord<VaultInfos>
+                    >(createObjectId(KeyValueStoreId.VaultInfos))
+                    .session(session)
+                if (!vaultInfos) {
+                    throw new GraphQLError("Vault infos not found")
+                }
+                await this.connection
+                    .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                    .updateOne(
+                        {
+                            _id: createObjectId(KeyValueStoreId.VaultInfos)
+                        },
+                        {
+                            value: {
+                                [user.chainKey]: {
+                                    [user.network]: {
+                                        tokenLocked:
+                                            vaultInfos.value[user.chainKey][user.network]
+                                                .tokenLocked +
+                                            (this.staticService.nftStarterBoxInfo.boxPrice -
+                                                feeAmount)
+                                    }
+                                }
+                            }
+                        }
+                    )
+                    .session(session)
                 //console.log(signedTx.signatures.length)
                 const txHash = await this.solanaMetaplexService
                     .getUmi(user.network)
@@ -82,18 +121,20 @@ export class SendPurchaseSolanaNFTStarterBoxTransactionService {
                             lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
                         }
                     })
-
-                await this.cacheManager.del(cacheKey)
-                return { txHash: base58.encode(txHash) }
+                return {
+                    data: {
+                        txHash: base58.encode(txHash)
+                    },
+                    success: true,
+                    message: "NFT starter box transaction sent successfully"
+                }
             })
-            return {
-                success: true,
-                message: "NFT starter box transaction sent successfully",
-                data: result
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

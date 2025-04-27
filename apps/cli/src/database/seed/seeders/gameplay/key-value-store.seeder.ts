@@ -5,6 +5,7 @@ import { Seeder } from "nestjs-seeder"
 import { InjectMongoose, KeyValueStoreId, KeyValueStoreSchema } from "@src/databases"
 import { createObjectId, DeepPartial } from "@src/common"
 import { Connection } from "mongoose"
+import { ChainKey, Network } from "@src/env"
 dayjs.extend(utc)
 
 @Injectable()
@@ -18,6 +19,7 @@ export class KeyValueStoreSeeder implements Seeder {
 
     public async seed(): Promise<void> {
         this.logger.debug("Seeding key value store...")
+        
         const data: Array<DeepPartial<KeyValueStoreSchema>> = [
             {
                 _id: createObjectId(KeyValueStoreId.EnergyRegenerationLastSchedule),
@@ -53,9 +55,35 @@ export class KeyValueStoreSeeder implements Seeder {
                 value: {    
                     date: dayjs().utc().toDate()
                 }
+            },
+            {
+                _id: createObjectId(KeyValueStoreId.VaultInfos),
+                displayId: KeyValueStoreId.VaultInfos,
+                value: {
+                    [ChainKey.Solana]: {
+                        [Network.Mainnet]: {
+                            paidCount: 0,
+                            tokenLocked: 0,
+                        },
+                        [Network.Testnet]: {
+                            paidCount: 0,
+                            tokenLocked: 0,
+                        },
+                    }
+                }
             }
         ]
-        await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).insertMany(data)
+
+        // Check each entry and only insert if it doesn't exist
+        for (const entry of data) {
+            const existingEntry = await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).findById(entry._id)
+            if (!existingEntry) {
+                await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).create(entry)
+                this.logger.debug(`Created new key-value store entry: ${entry.displayId}`)
+            } else {
+                this.logger.debug(`Key-value store entry already exists: ${entry.displayId}`)
+            }
+        }
     }
 
     public async drop(): Promise<void> {

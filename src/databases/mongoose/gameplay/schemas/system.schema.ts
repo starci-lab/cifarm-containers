@@ -871,6 +871,11 @@ export class NFTStarterBoxInfo {
         description: "Price for each box"
     })
         boxPrice: number
+    
+    @Field(() => Float, {
+        description: "Fee percentage"
+    })
+        feePercentage: number
 }
 
 @ObjectType({
@@ -912,15 +917,21 @@ export class NFTStarterBoxChance {
 @ObjectType({
     description: "Token vault data"
 })
-export class TokenVaultData {
-    @Field(() => String, {
-        description: "Token address"
+export class TokenVaultData {   
+    @Field(() => Float, {
+        description: "Max paid amount"
     })
-        address: string
-    @Field(() => Int, {
-        description: "Stable coin decimals"
+        maxPaidAmount: number
+
+    @Field(() => Float, {
+        description: "Max paid decrease"
     })
-        decimals: number
+        maxPaidDecreasePercentage: number
+
+    @Field(() => Float, {
+        description: "Vault paid percentage"
+    })
+        vaultPaidPercentage: number
 }
 
 @ObjectType({
@@ -932,10 +943,10 @@ export class TokenVault {
     })
     [Network.Testnet]: TokenVaultData
 
-    @Field(() => StableCoinData, {
+    @Field(() => TokenVaultData, {
         description: "Stable coin data"
     })
-    [Network.Mainnet]: StableCoinData
+    [Network.Mainnet]: TokenVaultData
 }
 
 @ObjectType({
@@ -981,6 +992,41 @@ export class WholesaleMarket {
         description: "Wholesale market payment kind"
     })
         paymentKind: PaymentKind
+}
+
+@ObjectType({
+    description: "Fee receiver"
+})
+export class FeeReceiverData {
+    @Field(() => String, {
+        description: "Fee receiver address"
+    })
+        address: string
+}
+
+@ObjectType({
+    description: "Fee receiver"
+})
+export class FeeReceiver {
+    @Field(() => FeeReceiverData, {
+        description: "Fee receiver data"
+    })
+    [Network.Testnet]: FeeReceiverData
+
+    @Field(() => FeeReceiverData, {
+        description: "Fee receiver data"
+    })
+    [Network.Mainnet]: FeeReceiverData
+}
+
+@ObjectType({
+    description: "Fee receiver"
+})
+export class FeeReceivers {
+    @Field(() => FeeReceiver, {
+        description: "Fee receiver"
+    })
+    [ChainKey.Solana]: FeeReceiver
 }
 
 // Generate the Mongoose schema class

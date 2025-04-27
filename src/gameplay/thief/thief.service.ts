@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common"
-import { ComputeParams, ComputeResult } from "./thief.types"
+import { ComputeParams, ComputeResult } from "./types"
 import { MODULE_OPTIONS_TOKEN } from "../gameplay.module-definition"
 import { GameplayOptions } from "../gameplay.types"
 

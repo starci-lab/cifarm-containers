@@ -44,7 +44,8 @@ export class ShipService {
             const inventoryMapData: InventoryMapData = {
                 inventories: [],
                 totalQuantity: 0,
-                enough: false
+                enough: false,
+                requiredQuantity: product.quantity
             }
             // find the inventory of the product
             for (const inventory of inventories) {

@@ -11,6 +11,7 @@ export interface InventoryMapData {
     inventories: Array<InventorySchema>
     totalQuantity: number
     enough: boolean
+    requiredQuantity: number
 }
 
 export interface PartitionInventoriesResult {

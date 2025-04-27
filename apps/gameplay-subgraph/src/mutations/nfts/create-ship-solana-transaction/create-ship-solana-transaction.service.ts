@@ -1,16 +1,27 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose } from "@src/databases"
+import {
+    InjectMongoose,
+    KeyValueRecord,
+    KeyValueStoreId,
+    KeyValueStoreSchema,
+    StableCoinName,
+    VaultInfos
+} from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { CreateShipSolanaTransactionResponse } from "./create-ship-solana-transaction.dto"
 import { SolanaMetaplexService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
-import { NFTDatabaseService } from "@src/blockchain-database"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
-import { ShipService } from "@src/gameplay"
-
+import { ShipService, VaultService } from "@src/gameplay"
+import { GraphQLError } from "graphql"
+import { UserSchema } from "@src/databases"
+import { createNoopSigner } from "@metaplex-foundation/umi"
+import { publicKey } from "@metaplex-foundation/umi"
+import { transactionBuilder } from "@metaplex-foundation/umi"
+import base58 from "bs58"
 @Injectable()
 export class CreateShipSolanaTransactionService {
     private readonly logger = new Logger(CreateShipSolanaTransactionService.name)
@@ -19,11 +30,11 @@ export class CreateShipSolanaTransactionService {
         private readonly connection: Connection,
         private readonly solanaMetaplexService: SolanaMetaplexService,
         private readonly staticService: StaticService,
-        private readonly nftDatabaseService: NFTDatabaseService,
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service,
-        private readonly shipService: ShipService   
+        private readonly shipService: ShipService,
+        private readonly vaultService: VaultService
     ) {}
 
     async createShipSolanaTransaction({
@@ -33,18 +44,96 @@ export class CreateShipSolanaTransactionService {
         try {
             // Using withTransaction to handle the transaction lifecycle
             const result = await mongoSession.withTransaction(async (session) => {
-                const { inventoryMap} = await this.shipService.partitionInventories({
+                const { inventoryMap } = await this.shipService.partitionInventories({
                     userId: id,
                     session
                 })
-                console.log(inventoryMap)
+                console.log(Object.values(inventoryMap).flatMap((data) => data.inventories.map((inventory) => inventory.id)))
+                const enoughs = Object.values(inventoryMap).every((data) => data.enough)
+                if (!enoughs) {
+                    throw new GraphQLError("Not enough items", {
+                        extensions: {
+                            code: "NOT_ENOUGH_ITEMS"
+                        }
+                    })
+                }
+                // get vault info
+                const vaultInfos = await this.connection
+                    .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
+                    .findOne<KeyValueRecord<VaultInfos>>({
+                        displayId: KeyValueStoreId.VaultInfos
+                    })
+                if (!vaultInfos) {
+                    throw new GraphQLError("Vaults info not found", {
+                        extensions: {
+                            code: "VAULTS_INFO_NOT_FOUND"
+                        }
+                    })
+                }
+                // we thus create the send transaction from vault
+                // vault always pay 5%, at max 5 usc - 1% for each item
+                const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id)
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
+                // compute the paid amount
+                const paidAmount = await this.vaultService.computePaidAmount({
+                    network: user.network,
+                    chainKey: user.chainKey,
+                    vaultInfoData: vaultInfos.value[user.chainKey][user.network]
+                })
+                // get the stable coin address
+                const tokenVaultAddress = this.solanaMetaplexService
+                    .getVaultUmi(user.network)
+                    .identity.publicKey.toString()
+                const { address: tokenAddress, decimals: tokenDecimals } =
+                    this.staticService.stableCoins[StableCoinName.USDC][user.chainKey][user.network]
+                // create a tx to transfer token from the vault to the user
+                let builder = transactionBuilder()
+
+                const { transaction: transferTokenTransaction } =
+                    await this.solanaMetaplexService.createTransferTokenTransaction({
+                        network: user.network,
+                        tokenAddress,
+                        toAddress: user.accountAddress,
+                        amount: paidAmount,
+                        decimals: tokenDecimals,
+                        fromAddress: tokenVaultAddress
+                    })
+
+                // add to the transaction
+                builder = builder.add(transferTokenTransaction)
+
+                const transaction = await builder
+                    .useV0()
+                    .setFeePayer(createNoopSigner(publicKey(user.accountAddress)))
+                    .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
+
+                // store the transaction in the cache
+                const cacheKey = this.sha256Service.hash(
+                    base58.encode(
+                        this.solanaMetaplexService
+                            .getUmi(user.network)
+                            .transactions.serializeMessage(transaction.message)
+                    )
+                )
+                await this.cacheManager.set(cacheKey, true, 1000 * 60 * 15) // 15 minutes
+                return {
+                    serializedTx: base58.encode(
+                        this.solanaMetaplexService
+                            .getUmi(user.network)
+                            .transactions.serialize(transaction)
+                    )
+                }
             })
             return {
                 success: true,
-                message: "NFT starter box purchased successfully",
-                data: {
-                    serializedTx: ""
-                }
+                message: "Ship Solana transaction created successfully",
+                data: result
             }
         } catch (error) {
             this.logger.error(error)

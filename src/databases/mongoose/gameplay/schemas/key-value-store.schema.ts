@@ -1,7 +1,8 @@
-import { Field, ObjectType } from "@nestjs/graphql"
+import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { KeyValueStoreId, GraphQLTypeKeyValueStoreId } from "../enums"
+import { ChainKey, Network } from "@src/env"
 
 @ObjectType({
     description: "The key value store schema"
@@ -78,3 +79,49 @@ export class PlantLastSchedule {
         date: Date
 }
 
+@ObjectType({
+    description: "Vault info"
+})
+export class VaultInfoData {
+    @Field(() => Int, {
+        description: "The number of times the vault has been paid",
+        defaultValue: 0
+    })
+        paidCount: number
+
+    @Field(() => Float, {
+        description: "The number of tokens locked in the vault",
+        defaultValue: 0
+    })
+        tokenLocked: number
+
+    @Field(() => Float, {
+        description: "The current max paid amount",
+        nullable: true
+    })
+        currentMaxPaidAmount?: number
+}
+
+@ObjectType({
+    description: "The vault info"
+})
+export class VaultInfo {
+    @Field(() => VaultInfoData, {
+        description: "The vault info data"
+    })
+    [Network.Mainnet]: VaultInfoData
+    @Field(() => VaultInfoData, {
+        description: "The vault info data"
+    })
+    [Network.Testnet]: VaultInfoData
+}
+
+@ObjectType({
+    description: "The vault infos"
+})
+export class VaultInfos {
+    @Field(() => VaultInfo, {
+        description: "The vault info data"
+    })
+    [ChainKey.Solana]: VaultInfo
+}

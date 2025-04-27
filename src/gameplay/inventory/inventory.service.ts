@@ -8,6 +8,8 @@ import {
     GetAddParamsResult,
     GetUnoccupiedIndexesParams,
     InventoryUpdate,
+    RemoveParams,
+    RemoveResult,
     RemoveSingleParams,
     RemoveSingleResult
 } from "./types"
@@ -177,5 +179,41 @@ export class InventoryService {
             removedInventory: inventory,
             removeInsteadOfUpdate: true
         }
+    }
+
+    public remove({
+        inventories,
+        quantity,
+        inventoryType,
+    }: RemoveParams): RemoveResult {
+        const updatedInventories: Array<InventoryUpdate> = []
+        const removedInventoryIds: Array<string> = []
+
+        // sort the quantity in ascending order
+        const sortedInventories = inventories.sort((prev, next) => next.quantity - prev.quantity)
+        // if inventory not stackable, create a new inventory for each quantity
+
+        if (inventoryType.stackable === false) {
+            //remove base on the quantity
+            const removedInventoryIds = sortedInventories.slice(0, quantity).map((inventory) => inventory.id)
+            return { removedInventoryIds, updatedInventories }
+        }
+        // loop through the inventories and add the quantity to the inventory
+        for (const inventory of sortedInventories) {
+            // clone the inventory
+            const inventorySnapshot = inventory.$clone()
+            if (quantity >= inventory.quantity) {
+                removedInventoryIds.push(inventory.id)
+                quantity -= inventory.quantity
+            } else {
+                inventory.quantity -= quantity
+                updatedInventories.push({
+                    inventorySnapshot,
+                    inventoryUpdated: inventory
+                })
+                break
+            }
+        }
+        return { removedInventoryIds, updatedInventories }
     }
 }

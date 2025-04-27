@@ -472,7 +472,8 @@ export class InventoryTypeSeeder implements Seeder {
                 asTool: true,
                 deliverable: false,
                 placeable: false,
-                type: InventoryType.Product
+                type: InventoryType.Product,
+                product: createObjectId(ProductId.Strawberry)
             },
             {
                 _id: createObjectId(InventoryTypeId.StrawberryQuality),
@@ -481,7 +482,8 @@ export class InventoryTypeSeeder implements Seeder {
                 asTool: true,
                 deliverable: false,
                 placeable: false,
-                type: InventoryType.Product
+                type: InventoryType.Product,
+                product: createObjectId(ProductId.StrawberryQuality)
             },
             {
                 _id: createObjectId(InventoryTypeId.StrawberrySeed),

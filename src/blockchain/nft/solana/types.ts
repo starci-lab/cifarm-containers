@@ -19,11 +19,6 @@ export interface CreateMintNFTTransactionResponse {
     nftAddress: string
 }
 
-// freeze nft - request and response
-export interface CreateFreezeNFTTransactionResponse {
-    serializedTx: string
-}
-
 // transfer token 2022 - request and response
 export interface CreateTransferTokenTransactionParams extends WithFeePayer {
     tokenAddress: string
@@ -36,3 +31,13 @@ export interface CreateTransferTokenTransactionParams extends WithFeePayer {
 export interface CreateTransferTokenTransactionResponse {
     transaction: TransactionBuilder
 }
+
+export interface CreateUnfreezeNFTTransactionResponse {
+    transaction: TransactionBuilder
+}
+
+export interface CreateFreezeNFTTransactionResponse {
+    transaction: TransactionBuilder
+}
+
+

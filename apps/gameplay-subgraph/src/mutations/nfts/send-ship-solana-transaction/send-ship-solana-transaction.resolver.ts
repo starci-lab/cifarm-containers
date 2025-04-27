@@ -1,10 +1,10 @@
 import { Logger, UseGuards } from "@nestjs/common"
-import { Mutation, Resolver } from "@nestjs/graphql"
+import { Args, Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
 import { SendShipSolanaTransactionService } from "./send-ship-solana-transaction.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
-import { SendShipSolanaTransactionResponse } from "./send-ship-solana-transaction.dto"
+import { SendShipSolanaTransactionRequest, SendShipSolanaTransactionResponse } from "./send-ship-solana-transaction.dto"
 
 @Resolver()
 export class SendShipSolanaTransactionResolver {
@@ -18,9 +18,12 @@ export class SendShipSolanaTransactionResolver {
         name: "sendShipSolanaTransaction",
         description: "Send Ship Solana Transaction"
     })
-    public async sendShipSolanaTransaction(@GraphQLUser() user: UserLike) {
+    public async sendShipSolanaTransaction(@GraphQLUser() user: UserLike,
+        @Args("request") request: SendShipSolanaTransactionRequest
+    ) {
         return this.sendShipSolanaTransactionService.sendShipSolanaTransaction(
-            user
+            user,
+            request
         )
     }
 }

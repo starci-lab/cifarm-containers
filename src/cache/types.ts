@@ -18,3 +18,14 @@ export enum CacheKey {
     PlacedItems = "placed-items",
     Inventories = "inventories"
 }
+
+export interface WrapSolanaMetaplexNFTTransactionCache {
+    nftAddress: string
+    collectionAddress: string
+}
+
+export interface UnwrapSolanaMetaplexNFTTransactionCache {
+    nftAddress: string
+    collectionAddress: string
+}
+

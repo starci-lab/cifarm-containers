@@ -13,6 +13,7 @@ import { SyncService } from "./sync"
 import { ObjectModule } from "@src/object"
 import { LimitService } from "./limit"
 import { ShipService } from "./ship"
+import { VaultService } from "./vault"
 
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {
@@ -30,7 +31,8 @@ export class GameplayModule extends ConfigurableModuleClass {
             CoreService,
             PositionService,
             SyncService,
-            ShipService
+            ShipService,
+            VaultService
         ]
         if (loadStatic) {
             // services that are loaded if static is enabled
@@ -56,23 +58,3 @@ export class GameplayModule extends ConfigurableModuleClass {
         }
     }
 }
-
-// const dynamicModule = super.register(options)
-
-// const imports: Array<NestImport> = []
-// const providers: Array<NestProvider> = []
-// const exports: Array<NestExport> = []
-
-// if (!options.useGlobalImports) {
-//     imports.push(BlockchainModule.register())
-// }
-
-// providers.push(HoneycombService)
-// exports.push(HoneycombService)
-
-// return {
-//     ...dynamicModule,
-//     providers: [...dynamicModule.providers, ...providers],
-//     imports,
-//     exports
-// }

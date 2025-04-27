@@ -28,13 +28,6 @@ export interface AddResult {
     createdInventories: Array<DeepPartial<InventorySchema>>
 }
 
-export interface RemoveParams {
-    // inventories with the same type key
-    inventories: Array<InventorySchema>
-    // quantity to remove
-    quantity: number
-}
-
 export interface GetAddParamsParams {
     userId: string
     connection: Connection,
@@ -73,3 +66,18 @@ export interface RemoveSingleResult {
     removedInventory?: InventorySchema
     removeInsteadOfUpdate?: boolean
 }
+
+export interface RemoveParams {
+     // inventories with the same type key and same kind
+     inventories: Array<InventorySchema>
+     // inventory type
+     inventoryType: DeepPartial<InventoryTypeSchema>
+     // quantity to add
+     quantity?: number
+}
+
+export interface RemoveResult {
+    removedInventoryIds: Array<string>
+    updatedInventories: Array<InventoryUpdate>
+}
+

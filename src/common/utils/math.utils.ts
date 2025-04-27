@@ -1,3 +1,5 @@
+import Decimal from "decimal.js"
+
 export const computePercentage = (
     numerator: number,
     denominator: number,
@@ -28,4 +30,8 @@ export const computeDenomination = (
 export const computeRaw = (amount: number, decimals = 8): bigint => {
     const mutiplier = 10 ** decimals
     return BigInt(amount * mutiplier)
+}
+
+export const roundNumber = (amount: number, decimals = 5): number => {
+    return new Decimal(amount).toDecimalPlaces(decimals).toNumber()
 }
