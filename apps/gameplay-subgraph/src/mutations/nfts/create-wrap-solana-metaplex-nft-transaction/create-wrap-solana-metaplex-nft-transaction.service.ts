@@ -130,7 +130,7 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                         serializedTx: base58.encode(
                             this.solanaMetaplexService
                                 .getUmi(user.network)
-                                .transactions.serializeMessage(transaction.message)
+                                .transactions.serialize(transaction)
                         )
                     }
                 }

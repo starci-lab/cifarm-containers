@@ -81,10 +81,10 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                         }
                     })
                 }
-                if (!nft.permanentFreezeDelegate.frozen) {
-                    throw new GraphQLError("NFT is not frozen", {
+                if (nft.permanentFreezeDelegate.frozen) {
+                    throw new GraphQLError("NFT is frozen", {
                         extensions: {
-                            code: "NFT_NOT_FROZEN"
+                            code: "NFT_FROZEN"
                         }
                     })
                 }
@@ -129,7 +129,6 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                         }
                     })
                 }
-                
                 const placedItemType = this.staticService.placedItemTypes.find(
                     (placedItemType) => placedItemType.displayId === NFTTypeToPlacedItemTypeId[nftType]
                 )
@@ -191,15 +190,12 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                         }
                     })
                 }   
-                const signedTxWithAuthority = await this.solanaMetaplexService
+                const signedTx = await this.solanaMetaplexService
                     .getUmi(user.network)
                     .identity.signTransaction(tx)
-                const signedTxWithVault = await this.solanaMetaplexService
-                    .getVaultUmi(user.network)
-                    .identity.signTransaction(signedTxWithAuthority)
                 const txHash = await this.solanaMetaplexService
                     .getUmi(user.network)
-                    .rpc.sendTransaction(signedTxWithVault)
+                    .rpc.sendTransaction(signedTx)
                 const latestBlockhash = await this.solanaMetaplexService
                     .getUmi(user.network)
                     .rpc.getLatestBlockhash()
@@ -216,13 +212,17 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                 return {
                     success: true,
                     message: "Wrap Solana Metaplex NFT transaction sent successfully",
-                    data: result
+                    data: {
+                        txHash: base58.encode(txHash)
+                    }
                 }
             })
             return result
         } catch (error) {
             this.logger.error(error)
             throw error
+        } finally {
+            await mongoSession.endSession()
         }
     }
 }

@@ -1,6 +1,4 @@
 import { Module } from "@nestjs/common"
-
-import { PurchaseSolanaNFTStarterBoxModule } from "./purchase-solana-nft-starter-box"
 import { CreatePurchaseSolanaNFTStarterBoxTransactionModule } from "./create-purchase-solana-nft-starter-box-transaction"
 import { SendPurchaseSolanaNFTStarterBoxTransactionModule } from "./send-purchase-solana-nft-starter-box-transaction"
 import { CreateShipSolanaTransactionModule } from "./create-ship-solana-transaction"
@@ -12,7 +10,6 @@ import { CreateUnwrapSolanaMetaplexNFTTransactionModule } from "./create-unwrap-
 
 @Module({
     imports: [
-        PurchaseSolanaNFTStarterBoxModule,
         CreatePurchaseSolanaNFTStarterBoxTransactionModule,
         SendPurchaseSolanaNFTStarterBoxTransactionModule,
         CreateShipSolanaTransactionModule,

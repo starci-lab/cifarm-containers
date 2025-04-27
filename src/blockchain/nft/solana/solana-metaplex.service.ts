@@ -7,7 +7,6 @@ import {
     generateSigner,
     keypairIdentity,
     publicKey,
-    TransactionBuilder,
     Umi
 } from "@metaplex-foundation/umi"
 import {
@@ -261,7 +260,7 @@ export class SolanaMetaplexService {
                     type: "PermanentFreezeDelegate",
                     frozen: false,
                     authority: {
-                        type: "Owner",
+                        type: "UpdateAuthority",
                         address: umi.identity.publicKey
                     }
                 }
@@ -298,9 +297,9 @@ export class SolanaMetaplexService {
     }: CreateFreezeNFTTransactionParams): Promise<CreateFreezeNFTTransactionResponse> {
         const umi = this.umis[network]
         const transaction = updatePlugin(umi, {
-            authority: createNoopSigner(publicKey(umi.identity.publicKey)),
             asset: publicKey(nftAddress),
             collection: publicKey(collectionAddress),
+            authority: createNoopSigner(publicKey(umi.identity.publicKey)),
             plugin: {
                 type: "PermanentFreezeDelegate",
                 frozen: true
