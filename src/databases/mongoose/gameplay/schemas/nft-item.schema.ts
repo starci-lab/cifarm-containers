@@ -1,7 +1,7 @@
 import { Field, ID, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { ChainKey, FirstCharLowerCaseChainKey, FirstCharLowerCaseNetwork, Network } from "@src/env"
+import { ChainKey, GraphQLTypeChainKey, GraphQLTypeNetwork, Network } from "@src/env"
 import { UserSchema } from "./user.schema"
 import { USER } from "../constants"
 import { Types } from "mongoose"
@@ -12,7 +12,7 @@ import { Schema as MongooseSchema } from "mongoose"
 })
 @Schema({ timestamps: true, collection: "nft_items" })
 export class NFTItemSchema extends AbstractSchema {
-    @Field(() => FirstCharLowerCaseNetwork, {
+    @Field(() => GraphQLTypeNetwork, {
         description: "The blockchain network of the user"
     })
     @Prop({
@@ -23,7 +23,7 @@ export class NFTItemSchema extends AbstractSchema {
     })
         network: Network
 
-    @Field(() => FirstCharLowerCaseChainKey, {
+    @Field(() => GraphQLTypeChainKey, {
         description: "The blockchain chain key for the NFT item"
     })
     @Prop({

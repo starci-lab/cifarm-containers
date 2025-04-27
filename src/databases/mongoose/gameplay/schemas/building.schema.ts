@@ -3,10 +3,10 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import {
     AnimalType,
     BuildingId,
-    FirstCharLowerCaseAnimalType,
-    FirstCharLowerCaseBuildingId,
+    GraphQLTypeAnimalType,
+    GraphQLTypeBuildingId,
     BuildingKind,
-    FirstCharLowerCaseBuildingKind
+    GraphQLTypeBuildingKind
 } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
@@ -19,7 +19,7 @@ import { UpgradeSchema, UpgradeSchemaClass } from "./upgrade.schema"
     collection: "buildings"
 })
 export class BuildingSchema extends AbstractSchema {
-    @Field(() => FirstCharLowerCaseBuildingId, {
+    @Field(() => GraphQLTypeBuildingId, {
         description: "The ID of the building"
     })
     @Prop({ type: String, enum: BuildingId, required: true })
@@ -31,7 +31,7 @@ export class BuildingSchema extends AbstractSchema {
     @Prop({ type: Boolean })
         availableInShop: boolean
 
-    @Field(() => FirstCharLowerCaseAnimalType, {
+    @Field(() => GraphQLTypeAnimalType, {
         description: "The type of animal that can be placed in this building",
         nullable: true
     })
@@ -78,7 +78,7 @@ export class BuildingSchema extends AbstractSchema {
     @Prop({ type: [UpgradeSchemaClass], required: false })
         upgrades?: Array<UpgradeSchema>
 
-    @Field(() => FirstCharLowerCaseBuildingKind, {
+    @Field(() => GraphQLTypeBuildingKind, {
         description: "The kind of building",
     })
     @Prop({ type: String, enum: BuildingKind, default: BuildingKind.Neutral })

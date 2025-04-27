@@ -1,5 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
-import { createFirstCharLowerCaseEnumType } from "@src/common"
+import { createEnumType } from "@src/common"
 import { PlacedItemTypeId } from "./ids"
 
 // Product Type Enum
@@ -11,9 +11,9 @@ export enum ProductType {
     BeeHouse = "beeHouse",
 }
 
-export const FirstCharLowerCaseProductType = createFirstCharLowerCaseEnumType(ProductType)
+export const GraphQLTypeProductType = createEnumType(ProductType)
 
-registerEnumType(FirstCharLowerCaseProductType, {
+registerEnumType(GraphQLTypeProductType, {
     name: "ProductType",
     description: "The type of product",
     valuesMap: {
@@ -41,9 +41,9 @@ export enum AnimalType {
     Livestock = "livestock"
 }
 
-export const FirstCharLowerCaseAnimalType = createFirstCharLowerCaseEnumType(AnimalType)
+export const GraphQLTypeAnimalType = createEnumType(AnimalType)
 
-registerEnumType(FirstCharLowerCaseAnimalType, {
+registerEnumType(GraphQLTypeAnimalType, {
     name: "AnimalType",
     description: "The type of animal",
     valuesMap: {
@@ -64,9 +64,9 @@ export enum InventoryType {
     Tool = "tool",
 }
 
-export const FirstCharLowerCaseInventoryType = createFirstCharLowerCaseEnumType(InventoryType)
+export const GraphQLTypeInventoryType = createEnumType(InventoryType)
 
-registerEnumType(FirstCharLowerCaseInventoryType, {
+registerEnumType(GraphQLTypeInventoryType, {
     name: "InventoryType",
     description: "The type of inventory",
     valuesMap: {
@@ -94,9 +94,9 @@ export enum PlacedItemType {
     Pet = "pet",
 }
 
-export const FirstCharLowerCasePlacedItemType = createFirstCharLowerCaseEnumType(PlacedItemType)
+export const GraphQLTypePlacedItemType = createEnumType(PlacedItemType)
 
-registerEnumType(FirstCharLowerCasePlacedItemType, {
+registerEnumType(GraphQLTypePlacedItemType, {
     name: "PlacedItemType",
     description: "The type of placed item",
     valuesMap: {
@@ -122,12 +122,13 @@ registerEnumType(FirstCharLowerCasePlacedItemType, {
 export enum InventoryKind {
     Storage = "storage",
     Tool = "tool",
-    Delivery = "delivery"
+    Delivery = "delivery",
+    WholesaleMarket = "wholesaleMarket"
 }
 
-export const FirstCharLowerCaseInventoryKind = createFirstCharLowerCaseEnumType(InventoryKind)
+export const GraphQLTypeInventoryKind = createEnumType(InventoryKind)
 
-registerEnumType(FirstCharLowerCaseInventoryKind, {
+registerEnumType(GraphQLTypeInventoryKind, {
     name: "InventoryKind",
     description: "The kind of inventory",
     valuesMap: {
@@ -139,6 +140,9 @@ registerEnumType(FirstCharLowerCaseInventoryKind, {
         },
         [InventoryKind.Delivery]: {
             description: "The delivery inventory",
+        },
+        [InventoryKind.WholesaleMarket]: {
+            description: "The wholesale market inventory",
         },
     },
 })
@@ -153,9 +157,9 @@ export enum BuildingKind {
     PetHouse = "petHouse",
 }
 
-export const FirstCharLowerCaseBuildingKind = createFirstCharLowerCaseEnumType(BuildingKind)
+export const GraphQLTypeBuildingKind = createEnumType(BuildingKind)
 
-registerEnumType(FirstCharLowerCaseBuildingKind, {
+registerEnumType(GraphQLTypeBuildingKind, {
     name: "BuildingKind",
     description: "The kind of building",
     valuesMap: {
@@ -180,9 +184,9 @@ export enum SupplyType {
     FruitFertilizer = "fruitFertilizer",
 }
 
-export const FirstCharLowerCaseSupplyType = createFirstCharLowerCaseEnumType(SupplyType)
+export const GraphQLTypeSupplyType = createEnumType(SupplyType)
 
-registerEnumType(FirstCharLowerCaseSupplyType, {
+registerEnumType(GraphQLTypeSupplyType, {
     name: "SupplyType",
     description: "The type of supply",
     valuesMap: {
@@ -204,9 +208,9 @@ export enum PlantType {
     Flower = "flower"
 }
 
-export const FirstCharLowerCasePlantType = createFirstCharLowerCaseEnumType(PlantType)
+export const GraphQLTypePlantType = createEnumType(PlantType)
 
-registerEnumType(FirstCharLowerCasePlantType, {
+registerEnumType(GraphQLTypePlantType, {
     name: "PlantType",
     description: "The type of plant",
     valuesMap: {
@@ -225,9 +229,9 @@ export enum PetType {
     Dog = "dog"
 }   
 
-export const FirstCharLowerCasePetType = createFirstCharLowerCaseEnumType(PetType)
+export const GraphQLTypePetType = createEnumType(PetType)
 
-registerEnumType(FirstCharLowerCasePetType, {
+registerEnumType(GraphQLTypePetType, {
     name: "PetType",
     description: "The type of pet",
     valuesMap: {
@@ -247,9 +251,9 @@ export enum NFTType {
     Pomegranate = "pomegranate",
 }
 
-export const FirstCharLowerCaseNFTType = createFirstCharLowerCaseEnumType(NFTType)
+export const GraphQLTypeNFTType = createEnumType(NFTType)
 
-registerEnumType(FirstCharLowerCaseNFTType, {
+registerEnumType(GraphQLTypeNFTType, {
     name: "NFTType",
     description: "The type of NFT",
     valuesMap: {
@@ -281,9 +285,9 @@ export enum NFTRarity {
     Epic = "epic",
 }
 
-export const FirstCharLowerCaseNFTRarity = createFirstCharLowerCaseEnumType(NFTRarity)
+export const GraphQLTypeNFTRarity = createEnumType(NFTRarity)
 
-registerEnumType(FirstCharLowerCaseNFTRarity, {
+registerEnumType(GraphQLTypeNFTRarity, {
     name: "NFTRarity",
     description: "The rarity of NFT",
     valuesMap: {
@@ -304,4 +308,28 @@ export enum StableCoinName {
     USDC = "usdc",
     USDT = "usdt",
 }
+
+export enum PaymentKind {
+    USDC = "usdc",
+    USDT = "usdt",
+    Token = "token",
+}
+
+export const GraphQLTypePaymentKind = createEnumType(PaymentKind)
+
+registerEnumType(GraphQLTypePaymentKind, {
+    name: "PaymentKind",
+    description: "The kind of wholesale market payment",
+    valuesMap: {
+        [PaymentKind.USDC]: {
+            description: "Wholesale market payment in USDC",
+        },
+        [PaymentKind.USDT]: {
+            description: "Wholesale market payment in USDT",
+        },
+        [PaymentKind.Token]: {
+            description: "Wholesale market payment in token",
+        },
+    },
+})
 

@@ -5,7 +5,7 @@ import { AbstractSchema } from "./abstract"
 import { InventoryTypeSchema } from "./inventory-type.schema"
 import { UserSchema } from "./user.schema"
 import { Schema as MongooseSchema, Types } from "mongoose"
-import { InventoryKind, FirstCharLowerCaseInventoryKind } from "../enums"
+import { InventoryKind, GraphQLTypeInventoryKind } from "../enums"
 
 @ObjectType({
     description: "The schema for inventory items"
@@ -34,7 +34,7 @@ export class InventorySchema extends AbstractSchema {
     @Prop({ type: Number, required: true })
         index: number
 
-    @Field(() => FirstCharLowerCaseInventoryKind, {
+    @Field(() => GraphQLTypeInventoryKind, {
         description: "The kind of inventory item"
     })
     @Prop({ type: String, required: true, enum: InventoryKind })

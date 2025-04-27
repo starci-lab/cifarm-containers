@@ -1,21 +1,24 @@
-import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
+import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import JSON from "graphql-type-json"
 import {
     CropId,
     DailyRewardId,
-    FirstCharLowerCaseCropId,
+    GraphQLTypeCropId,
     SystemId,
-    FirstCharLowerCaseSystemId,
+    GraphQLTypeSystemId,
     NFTType,
     NFTRarity,
-    FirstCharLowerCaseNFTType,
-    StableCoinName
+    GraphQLTypeNFTType,
+    StableCoinName,
+    PaymentKind,
+    GraphQLTypePaymentKind
 } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { Position } from "./types"
 import { Network, ChainKey } from "@src/env"
 import { AttributeName } from "@src/blockchain"
+import { Types } from "mongoose"
 
 @ObjectType({
     description: "The system schema"
@@ -25,7 +28,7 @@ import { AttributeName } from "@src/blockchain"
     collection: "systems"
 })
 export class SystemSchema extends AbstractSchema {
-    @Field(() => FirstCharLowerCaseSystemId, {
+    @Field(() => GraphQLTypeSystemId, {
         description: "The display ID of the system"
     })
     @Prop({ type: String, enum: SystemId, required: true, unique: true })
@@ -451,7 +454,7 @@ export class DefaultInfo {
     })
         positions: Positions
 
-    @Field(() => FirstCharLowerCaseCropId, {
+    @Field(() => GraphQLTypeCropId, {
         description: "Default crop ID given to new users"
     })
         defaultCropId: CropId
@@ -475,6 +478,11 @@ export class DefaultInfo {
         description: "Default delivery capacity"
     })
         deliveryCapacity: number
+        
+    @Field(() => Int, {
+        description: "Default wholesale market capacity"
+    })
+        wholesaleMarketCapacity: number
 
     @Field(() => Int, {
         description: "Maximum number of users that can be followed"
@@ -879,7 +887,7 @@ export class NFTStarterBox {
     description: "Each chance for a NFT starter box"
 })
 export class NFTStarterBoxChance {
-    @Field(() => FirstCharLowerCaseNFTType, {
+    @Field(() => GraphQLTypeNFTType, {
         description: "NFT type"
     })
         nftType: NFTType
@@ -938,6 +946,41 @@ export class TokenVaults {
         description: "Token vault wrapped"
     })
     [ChainKey.Solana]: TokenVault
+}
+
+@ObjectType({
+    description: "Wholesale market product"
+})
+export class WholesaleMarketProduct {
+    @Field(() => ID, {
+        description: "Product id"
+    })
+        productId: Types.ObjectId
+
+    @Field(() => Int, {
+        description: "Product quantity"
+    })
+        quantity: number
+}
+
+@ObjectType({
+    description: "Configuration for wholesale market"
+})
+export class WholesaleMarket {
+    @Field(() => [WholesaleMarketProduct], {
+        description: "Wholesale market products"
+    })
+        products: Array<WholesaleMarketProduct>
+
+    @Field(() => Int, {
+        description: "Wholesale market price"
+    })
+        price: number
+
+    @Field(() => GraphQLTypePaymentKind, {
+        description: "Wholesale market payment kind"
+    })
+        paymentKind: PaymentKind
 }
 
 // Generate the Mongoose schema class

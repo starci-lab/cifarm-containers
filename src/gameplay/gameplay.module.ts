@@ -12,6 +12,8 @@ import { StaticService } from "./static"
 import { SyncService } from "./sync"
 import { ObjectModule } from "@src/object"
 import { LimitService } from "./limit"
+import { ShipService } from "./ship"
+
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE) : DynamicModule {
@@ -28,6 +30,7 @@ export class GameplayModule extends ConfigurableModuleClass {
             CoreService,
             PositionService,
             SyncService,
+            ShipService
         ]
         if (loadStatic) {
             // services that are loaded if static is enabled

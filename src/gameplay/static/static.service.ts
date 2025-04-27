@@ -30,7 +30,8 @@ import {
     NFTCollections,
     NFTStarterBoxInfo,
     StableCoins,
-    TokenVaults
+    TokenVaults,
+    WholesaleMarket
 } from "@src/databases"
 import { Connection } from "mongoose"
 @Injectable()
@@ -64,6 +65,7 @@ export class StaticService implements OnModuleInit {
     public nftStarterBoxInfo: NFTStarterBoxInfo
     public stableCoins: StableCoins
     public tokenVaults: TokenVaults
+    public wholesaleMarket: WholesaleMarket
 
     constructor(
         @InjectMongoose()
@@ -145,6 +147,11 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<TokenVaults>>(createObjectId(SystemId.TokenVaults))
         this.tokenVaults = tokenVaultsDoc.value
+
+        const wholesaleMarketDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<WholesaleMarket>>(createObjectId(SystemId.WholesaleMarket))
+        this.wholesaleMarket = wholesaleMarketDoc.value
 
         // Load collections
         this.placedItemTypes = await this.connection

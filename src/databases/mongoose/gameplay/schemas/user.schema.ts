@@ -1,7 +1,7 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { ChainKey, FirstCharLowerCaseChainKey, FirstCharLowerCaseNetwork, Network } from "@src/env"
+import { ChainKey, GraphQLTypeChainKey, GraphQLTypeNetwork, Network } from "@src/env"
 import { Schema as MongooseSchema, Types } from "mongoose"
 
 @ObjectType({
@@ -18,7 +18,7 @@ export class UserSchema extends AbstractSchema {
     @Prop({ type: String, required: true, unique: true, length: 100 })
         username: string
 
-    @Field(() => FirstCharLowerCaseChainKey, {
+    @Field(() => GraphQLTypeChainKey, {
         description: "The blockchain chain key of the user"
     })
     @Prop({
@@ -29,7 +29,7 @@ export class UserSchema extends AbstractSchema {
     })
         chainKey: ChainKey
 
-    @Field(() => FirstCharLowerCaseNetwork, {
+    @Field(() => GraphQLTypeNetwork, {
         description: "The blockchain network of the user"
     })
     @Prop({
@@ -172,13 +172,6 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: false })
         lastSolanaNFTStarterBoxRollRarity?: number
-
-    @Field(() => String, {
-        description: "The address of the solana nft starter box",
-        nullable: true
-    })
-    @Prop({ type: String, required: false })
-        lastSolanaNFTAddress?: string
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

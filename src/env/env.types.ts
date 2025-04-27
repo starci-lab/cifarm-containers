@@ -1,5 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
-import { createFirstCharLowerCaseEnumType } from "@src/common"
+import { createEnumType } from "@src/common"
 
 export enum Container {
     Ws = "ws",
@@ -26,9 +26,9 @@ export enum Network {
     Mainnet = "mainnet"
 }
 
-export const FirstCharLowerCaseNetwork = createFirstCharLowerCaseEnumType(Network)
+export const GraphQLTypeNetwork = createEnumType(Network)
 
-registerEnumType(FirstCharLowerCaseNetwork, {
+registerEnumType(GraphQLTypeNetwork, {
     name: "Network",
     description: "The current chain key",
     valuesMap: {
@@ -53,8 +53,8 @@ export enum ChainKey {
     Near = "near"
 }
 
-export const FirstCharLowerCaseChainKey = createFirstCharLowerCaseEnumType(ChainKey)
-registerEnumType(FirstCharLowerCaseChainKey, {
+export const GraphQLTypeChainKey = createEnumType(ChainKey)
+registerEnumType(GraphQLTypeChainKey, {
     name: "ChainKey",
     description: "The current chain key",
     valuesMap: {

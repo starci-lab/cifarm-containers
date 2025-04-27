@@ -1,7 +1,7 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { KeyValueStoreId, FirstCharLowerCaseKeyValueStoreId } from "../enums"
+import { KeyValueStoreId, GraphQLTypeKeyValueStoreId } from "../enums"
 
 @ObjectType({
     description: "The key value store schema"
@@ -11,7 +11,7 @@ import { KeyValueStoreId, FirstCharLowerCaseKeyValueStoreId } from "../enums"
     collection: "key-value-stores",
 })
 export class KeyValueStoreSchema extends AbstractSchema {
-    @Field(() => FirstCharLowerCaseKeyValueStoreId, {
+    @Field(() => GraphQLTypeKeyValueStoreId, {
         description: "The display ID of the key value store"
     })
     @Prop({ type: String, enum: KeyValueStoreId, required: true, unique: true })

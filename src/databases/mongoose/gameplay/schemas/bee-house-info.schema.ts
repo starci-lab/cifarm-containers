@@ -1,7 +1,7 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { BeeHouseCurrentState, FirstCharLowerCaseBeeHouseCurrentState } from "../enums"
+import { BeeHouseCurrentState, GraphQLTypeBeeHouseCurrentState } from "../enums"
 import { Types } from "mongoose"
 import { Schema as MongooseSchema } from "mongoose"
 import { AttributeName } from "@src/blockchain"
@@ -23,7 +23,7 @@ export class BeeHouseInfoSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0 })
         currentYieldTime: number
 
-    @Field(() => FirstCharLowerCaseBeeHouseCurrentState, {
+    @Field(() => GraphQLTypeBeeHouseCurrentState, {
         description: "The current state of the bee house"
     })
     @Prop({ type: String, enum: BeeHouseCurrentState, default: BeeHouseCurrentState.Normal })

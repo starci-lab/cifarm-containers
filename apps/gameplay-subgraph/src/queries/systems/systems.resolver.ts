@@ -9,7 +9,8 @@ import {
     EnergyRegen,
     FruitInfo,
     HoneycombInfo,
-    NFTCollections
+    NFTCollections,
+    WholesaleMarket
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -107,5 +108,14 @@ export class SystemsResolver {
     })
     nftCollections(): NFTCollections {
         return this.systemsService.nftCollections()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => WholesaleMarket, {
+        name: "wholesaleMarket",
+        description: "Get the wholesale market"
+    })
+    wholesaleMarket(): WholesaleMarket {
+        return this.systemsService.wholesaleMarket()
     }
 }

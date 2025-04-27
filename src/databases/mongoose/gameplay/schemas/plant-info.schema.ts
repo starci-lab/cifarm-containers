@@ -4,8 +4,8 @@ import { Schema as MongooseSchema, Types } from "mongoose"
 import { CROP, FLOWER } from "../constants"
 import {
     PlantCurrentState,
-    FirstCharLowerCasePlantCurrentState,
-    FirstCharLowerCasePlantType,
+    GraphQLTypePlantCurrentState,
+    GraphQLTypePlantType,
     PlantType
 } from "../enums"
 import { AbstractSchema } from "./abstract"
@@ -68,7 +68,7 @@ export class PlantInfoSchema extends AbstractSchema {
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: FlowerSchema.name, required: false })
     [FLOWER]: FlowerSchema | Types.ObjectId
 
-    @Field(() => FirstCharLowerCasePlantCurrentState, {
+    @Field(() => GraphQLTypePlantCurrentState, {
         description: "The current state of the plant (normal, withered, etc.)"
     })
     @Prop({ type: String, enum: PlantCurrentState, default: PlantCurrentState.Normal })
@@ -86,7 +86,7 @@ export class PlantInfoSchema extends AbstractSchema {
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false, default: [] })
         thieves: Array<Types.ObjectId>
 
-    @Field(() => FirstCharLowerCasePlantType, {
+    @Field(() => GraphQLTypePlantType, {
         description: "The type of plant"
     })
     @Prop({ type: String, enum: PlantType, default: PlantType.Crop })

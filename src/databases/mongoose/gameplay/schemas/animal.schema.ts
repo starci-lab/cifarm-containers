@@ -1,6 +1,6 @@
 import { Field, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { AnimalId, AnimalType, FirstCharLowerCaseAnimalId, FirstCharLowerCaseAnimalType } from "../enums"
+import { AnimalId, AnimalType, GraphQLTypeAnimalId, GraphQLTypeAnimalType } from "../enums"
 import { AbstractSchema } from "./abstract"
 
 @ObjectType({
@@ -11,7 +11,7 @@ import { AbstractSchema } from "./abstract"
     collection: "animals"
 })
 export class AnimalSchema extends AbstractSchema {
-    @Field(() => FirstCharLowerCaseAnimalId, {
+    @Field(() => GraphQLTypeAnimalId, {
         description: "The display ID of the animal"
     })
     @Prop({ type: String, enum: AnimalId, required: true, unique: true })
@@ -98,7 +98,7 @@ export class AnimalSchema extends AbstractSchema {
     @Prop({ type: Number, min: 1 })
         unlockLevel: number
 
-    @Field(() => FirstCharLowerCaseAnimalType, {
+    @Field(() => GraphQLTypeAnimalType, {
         description: "The type of the animal"
     })
     @Prop({ type: String, enum: AnimalType, default: AnimalType.Poultry })

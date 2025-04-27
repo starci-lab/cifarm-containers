@@ -4,6 +4,7 @@ import { HoneycombModule } from "./honeycomb"
 import { PlayerModule } from "./player"
 import { CommunityModule } from "./community"
 import { NFTsModule } from "./nfts"
+import { WholesaleMarketModule } from "./wholesale-market"
 
 @Module({
     imports: [
@@ -11,7 +12,8 @@ import { NFTsModule } from "./nfts"
         PlayerModule,
         HoneycombModule,
         CommunityModule,
-        NFTsModule
+        NFTsModule,
+        WholesaleMarketModule
     ]
 })
 export class MutationsModule {}

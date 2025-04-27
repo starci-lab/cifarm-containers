@@ -1,5 +1,5 @@
 import { registerEnumType } from "@nestjs/graphql"
-import { createFirstCharLowerCaseEnumType } from "@src/common"
+import { createEnumType } from "@src/common"
 
 // Plant Current State Enum
 export enum PlantCurrentState {
@@ -10,9 +10,9 @@ export enum PlantCurrentState {
     FullyMatured = "fullyMatured"
 }
 
-export const FirstCharLowerCasePlantCurrentState = createFirstCharLowerCaseEnumType(PlantCurrentState)
+export const GraphQLTypePlantCurrentState = createEnumType(PlantCurrentState)
 
-registerEnumType(FirstCharLowerCasePlantCurrentState, {
+registerEnumType(GraphQLTypePlantCurrentState, {
     name: "PlantCurrentState",
     description: "The current state of the plant",
     valuesMap: {
@@ -42,9 +42,9 @@ export enum AnimalCurrentState {
     Yield = "yield"
 }
 
-export const FirstCharLowerCaseAnimalCurrentState = createFirstCharLowerCaseEnumType(AnimalCurrentState)
+export const GraphQLTypeAnimalCurrentState = createEnumType(AnimalCurrentState)
 
-registerEnumType(FirstCharLowerCaseAnimalCurrentState, {
+registerEnumType(GraphQLTypeAnimalCurrentState, {
     name: "AnimalCurrentState",
     description: "The current state of the animal",
     valuesMap: {
@@ -71,9 +71,9 @@ export enum FruitCurrentState {
     FullyMatured = "fullyMatured"
 }
 
-export const FirstCharLowerCaseFruitCurrentState = createFirstCharLowerCaseEnumType(FruitCurrentState)
+export const GraphQLTypeFruitCurrentState = createEnumType(FruitCurrentState)
 
-registerEnumType(FirstCharLowerCaseFruitCurrentState, {
+registerEnumType(GraphQLTypeFruitCurrentState, {
     name: "FruitCurrentState",
     description: "The current state of the fruit",
     valuesMap: {
@@ -99,9 +99,9 @@ export enum BeeHouseCurrentState {
     Yield = "yield"
 }
 
-export const FirstCharLowerCaseBeeHouseCurrentState = createFirstCharLowerCaseEnumType(BeeHouseCurrentState)
+export const GraphQLTypeBeeHouseCurrentState = createEnumType(BeeHouseCurrentState)
 
-registerEnumType(FirstCharLowerCaseBeeHouseCurrentState, {
+registerEnumType(GraphQLTypeBeeHouseCurrentState, {
     name: "BeeHouseCurrentState",
     description: "The current state of the bee house",
     valuesMap: {    

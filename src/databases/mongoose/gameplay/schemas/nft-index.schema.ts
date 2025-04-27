@@ -1,14 +1,14 @@
 import { Field, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { ChainKey, FirstCharLowerCaseChainKey, FirstCharLowerCaseNetwork, Network } from "@src/env"
+import { ChainKey, GraphQLTypeChainKey, GraphQLTypeNetwork, Network } from "@src/env"
 
 @ObjectType({
     description: "NFT index schema"
 })
 @Schema({ timestamps: true, collection: "nft-indexes" })
 export class NFTIndexSchema extends AbstractSchema {
-    @Field(() => FirstCharLowerCaseNetwork, {
+    @Field(() => GraphQLTypeNetwork, {
         description: "The blockchain network of the user"
     })
     @Prop({
@@ -19,7 +19,7 @@ export class NFTIndexSchema extends AbstractSchema {
     })
         network: Network
 
-    @Field(() => FirstCharLowerCaseChainKey, {
+    @Field(() => GraphQLTypeChainKey, {
         description: "The blockchain chain key for the NFT item"
     })
     @Prop({

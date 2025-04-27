@@ -21,6 +21,7 @@ export class PurchaseSolanaNFTStarterBoxService {
         private readonly staticService: StaticService,
         private readonly nftDatabaseService: NFTDatabaseService
     ) {}
+    
     async purchaseSolanaNFTStarterBox({
         id
     }: UserLike): Promise<PurchaseSolanaNFTStarterBoxResponse> {

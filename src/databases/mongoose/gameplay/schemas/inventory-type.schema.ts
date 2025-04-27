@@ -3,10 +3,10 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import {
     InventoryType,
     InventoryTypeId,
-    FirstCharLowerCaseInventoryType,
-    FirstCharLowerCaseInventoryTypeId,
+    GraphQLTypeInventoryType,
+    GraphQLTypeInventoryTypeId,
     PlantType,
-    FirstCharLowerCasePlantType
+    GraphQLTypePlantType
 } from "../enums"
 import { CropSchema } from "./crop.schema"
 import { Schema as MongooseSchema, Types } from "mongoose"
@@ -25,13 +25,13 @@ import { FlowerSchema } from "./flower.schema"
     collection: "inventory-types"
 })
 export class InventoryTypeSchema extends AbstractSchema {
-    @Field(() => FirstCharLowerCaseInventoryTypeId, {
+    @Field(() => GraphQLTypeInventoryTypeId, {
         description: "The display ID of the inventory type"
     })
     @Prop({ type: String, enum: InventoryTypeId, required: true, unique: true })
         displayId: InventoryTypeId
 
-    @Field(() => FirstCharLowerCaseInventoryType, {
+    @Field(() => GraphQLTypeInventoryType, {
         description: "The type of the inventory type"
     })
     @Prop({ type: String, enum: InventoryType })
@@ -51,7 +51,7 @@ export class InventoryTypeSchema extends AbstractSchema {
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FlowerSchema.name })
     [FLOWER]: FlowerSchema | Types.ObjectId
 
-    @Field(() => FirstCharLowerCasePlantType, {
+    @Field(() => GraphQLTypePlantType, {
         description: "The seed type",
         nullable: true
     })

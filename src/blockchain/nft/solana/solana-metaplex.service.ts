@@ -33,7 +33,7 @@ import {
 import {
     transferTokens,
     findAssociatedTokenPda,
-    mplToolbox
+    mplToolbox,
 } from "@metaplex-foundation/mpl-toolbox"
 import { computeRaw } from "@src/common"
 
@@ -41,7 +41,7 @@ const getUmi = (network: Network) => {
     const umi = createUmi(solanaHttpRpcUrl(ChainKey.Solana, network)).use(mplCore())
     const signer = umi.eddsa.createKeypairFromSecretKey(
         base58.decode(
-            envConfig().chainCredentials[ChainKey.Solana].metaplexAuthority[Network.Testnet]
+            envConfig().chainCredentials[ChainKey.Solana].metaplexAuthority[network]
                 .privateKey
         )
     )
@@ -223,11 +223,11 @@ export class SolanaMetaplexService {
         const collection = await fetchCollection(umi, collectionAddress)
         const tx = create(umi, {
             asset,
-            authority: umi.identity,
+            authority: createNoopSigner(umi.identity.publicKey),
             collection,
             owner: ownerAddress ? publicKey(ownerAddress) : umi.identity.publicKey,
             name,
-            payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity,
+            payer: feePayer ? createNoopSigner(publicKey(feePayer)) : createNoopSigner(umi.identity.publicKey),
             // no uri required since solana store attributes on-chain
             uri,
             plugins: [

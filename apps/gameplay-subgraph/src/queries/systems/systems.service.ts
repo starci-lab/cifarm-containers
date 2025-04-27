@@ -9,6 +9,7 @@ import {
     FruitInfo,
     HoneycombInfo,
     NFTCollections,
+    WholesaleMarket
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -54,5 +55,9 @@ export class SystemsService {
 
     nftCollections(): NFTCollections {
         return this.staticService.nftCollections
+    }
+
+    wholesaleMarket(): WholesaleMarket {
+        return this.staticService.wholesaleMarket
     }
 }

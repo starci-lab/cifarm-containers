@@ -1,0 +1,5 @@
+export * from "./ship-wholesale-market-inventories.dto"
+export * from "./ship-wholesale-market-inventories.module"
+export * from "./ship-wholesale-market-inventories.service"
+export * from "./ship-wholesale-market-inventories.resolver"
+//export * from "./claim.spec"

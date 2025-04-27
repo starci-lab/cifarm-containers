@@ -1,7 +1,7 @@
 import { ObjectType, Field, Int, Float, ID } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { AnimalCurrentState, FirstCharLowerCaseAnimalCurrentState } from "../enums"
+import { AnimalCurrentState, GraphQLTypeAnimalCurrentState } from "../enums"
 import { Schema as MongooseSchema, Types } from "mongoose"
 import { AttributeName } from "@src/blockchain/nft/solana/solana-metaplex.service"
 
@@ -46,7 +46,7 @@ export class AnimalInfoSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0 })
         harvestCount: number
 
-    @Field(() => FirstCharLowerCaseAnimalCurrentState, {
+    @Field(() => GraphQLTypeAnimalCurrentState, {
         description: "The current state of the animal"
     })
     @Prop({ type: String, enum: AnimalCurrentState, default: AnimalCurrentState.Normal })

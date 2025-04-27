@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
-import { ProductId, ProductType, FirstCharLowerCaseProductId, FirstCharLowerCaseProductType } from "../enums"
+import { ProductId, ProductType, GraphQLTypeProductId, GraphQLTypeProductType } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Schema as MongooseSchema, Types } from "mongoose"
 import { CropSchema } from "./crop.schema"
@@ -15,7 +15,7 @@ import { BuildingSchema } from "./building.schema"
 })
 @Schema({ timestamps: true, collection: "products" })
 export class ProductSchema extends AbstractSchema {
-    @Field(() => FirstCharLowerCaseProductId, {
+    @Field(() => GraphQLTypeProductId, {
         description: "The display ID of the product"
     })
     @Prop({ type: String, enum: ProductId, required: true, unique: true })
@@ -33,21 +33,17 @@ export class ProductSchema extends AbstractSchema {
     @Prop({ type: Boolean, required: true })
         isQuality: boolean
 
+    @Field(() => ID, { nullable: true, description: "The base product that this is a quality version of" })  
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: ProductSchema.name })  
+        qualityVersionOf?: ProductSchema | Types.ObjectId
+
     @Field(() => Int, {
         description: "The amount of gold the product is worth"
     })
     @Prop({ type: Number, required: true })
         goldAmount: number
 
-    // no longer need token
-    // @Field(() => Float, { 
-    //     nullable: true,
-    //     description: "The amount of tokens the product is worth, if applicable"
-    // })
-    // @Prop({ type: Number, required: false })
-    //     tokenAmount?: number
-
-    @Field(() => FirstCharLowerCaseProductType, {
+    @Field(() => GraphQLTypeProductType, {
         description: "The type of the product"
     })
     @Prop({ type: String, enum: ProductType, required: true })

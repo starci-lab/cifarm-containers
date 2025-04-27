@@ -1,5 +1,5 @@
 import { InputType, Field, ObjectType, registerEnumType } from "@nestjs/graphql"
-import { createFirstCharLowerCaseEnumType } from "@src/common"
+import { createEnumType } from "@src/common"
 import { IResponseLike, ResponseLike } from "@src/graphql"
 import { IsString } from "class-validator"
 
@@ -20,10 +20,10 @@ export enum MetaplexNFTStatus {
     Used = "Used"
 }
 
-export const FirstCharLowerCaseMetaplexNFTStatus =
-    createFirstCharLowerCaseEnumType(MetaplexNFTStatus)
+export const GraphQLTypeMetaplexNFTStatus =
+    createEnumType(MetaplexNFTStatus)
 
-registerEnumType(FirstCharLowerCaseMetaplexNFTStatus, {
+registerEnumType(GraphQLTypeMetaplexNFTStatus, {
     name: "MetaplexNFTStatus",
     description: "The current chain key",
     valuesMap: {
@@ -43,7 +43,7 @@ registerEnumType(FirstCharLowerCaseMetaplexNFTStatus, {
     description: "Get Solana Metaplex NFT response data"
 })
 export class GetSolanaMetaplexNFTResponseData {
-    @Field(() => FirstCharLowerCaseMetaplexNFTStatus, {
+    @Field(() => GraphQLTypeMetaplexNFTStatus, {
         description: "NFT status"
     })
         status: MetaplexNFTStatus

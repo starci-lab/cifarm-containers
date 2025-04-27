@@ -1,14 +1,14 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { TileId, FirstCharLowerCaseTileId } from "../enums"
+import { TileId, GraphQLTypeTileId } from "../enums"
 
 @ObjectType({
     description: "The tile schema"
 })
 @Schema({ timestamps: true, collection: "tiles" })
 export class TileSchema extends AbstractSchema {
-    @Field(() => FirstCharLowerCaseTileId, {
+    @Field(() => GraphQLTypeTileId, {
         description: "The display ID of the tile"
     })
     @Prop({ type: String, enum: TileId, required: true, unique: true })

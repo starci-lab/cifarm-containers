@@ -53,6 +53,7 @@ export enum ReceiverEventName {
     DeliverAdditionalInventory = "deliver_additional_inventory",
     RetrieveInventory = "retrieve_inventory",
     MoveInventory = "move_inventory",
+    MoveInventoryWholesaleMarket = "move_inventory_wholesale_market",
     ClaimDailyReward = "claim_daily_reward",
     Visit = "visit",
     Return = "return",
