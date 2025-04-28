@@ -414,7 +414,7 @@ export enum SystemId {
     StableCoins = "stableCoins",
     TokenVaults = "tokenVaults",
     WholesaleMarket = "wholesaleMarket",
-    FeeReceivers = "feeReceivers",
+    RevenueRecipients = "revenueRecipients",
     GoldPurchases = "goldPurchases",
 }
 
@@ -466,8 +466,11 @@ registerEnumType(GraphQLTypeSystemId, {
         [SystemId.WholesaleMarket]: {
             description: "The wholesale market id.",
         },
-        [SystemId.FeeReceivers]: {
-            description: "The fee receivers id.",
+        [SystemId.RevenueRecipients]: {
+            description: "The revenue recipients id.",
+        },
+        [SystemId.GoldPurchases]: {
+            description: "The gold purchases id.",
         },
     },
 })

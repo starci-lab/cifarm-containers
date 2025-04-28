@@ -32,7 +32,7 @@ import {
     StableCoins,
     TokenVaults,
     WholesaleMarket,
-    FeeReceivers,
+    RevenueRecipients,
     GoldPurchases,
     PaymentKind,
     StableCoinName
@@ -70,7 +70,7 @@ export class StaticService implements OnModuleInit {
     public stableCoins: StableCoins
     public tokenVaults: TokenVaults
     public wholesaleMarket: WholesaleMarket
-    public feeReceivers: FeeReceivers
+    public revenueRecipients: RevenueRecipients
     public goldPurchases: GoldPurchases
 
     constructor(
@@ -159,10 +159,10 @@ export class StaticService implements OnModuleInit {
             .findById<KeyValueRecord<WholesaleMarket>>(createObjectId(SystemId.WholesaleMarket))
         this.wholesaleMarket = wholesaleMarketDoc.value
 
-        const feeReceiversDoc = await this.connection
+        const revenueRecipientsDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<FeeReceivers>>(createObjectId(SystemId.FeeReceivers))
-        this.feeReceivers = feeReceiversDoc.value
+            .findById<KeyValueRecord<RevenueRecipients>>(createObjectId(SystemId.RevenueRecipients))
+        this.revenueRecipients = revenueRecipientsDoc.value
 
         const goldPurchasesDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)

@@ -26,7 +26,7 @@ import {
     TokenVaults,
     WholesaleMarket,
     PaymentKind,
-    FeeReceivers,
+    RevenueRecipients,
     GoldPurchases
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
@@ -822,7 +822,7 @@ export class SystemSeeder implements Seeder {
             paymentKind: PaymentKind.USDC
         }
 
-        const feeReceivers: FeeReceivers = {
+        const revenueRecipients: RevenueRecipients = {
             [ChainKey.Solana]: {
                 [Network.Testnet]: {
                     address: "D2HHp9gtFgs8dKtV6Hg2xgLv998HrwsyaWAeHkfuCJxJ"
@@ -953,9 +953,9 @@ export class SystemSeeder implements Seeder {
                 value: wholesaleMarket
             },
             {
-                _id: createObjectId(SystemId.FeeReceivers),
-                displayId: SystemId.FeeReceivers,
-                value: feeReceivers
+                _id: createObjectId(SystemId.RevenueRecipients),
+                displayId: SystemId.RevenueRecipients,
+                value: revenueRecipients
             },
             {
                 _id: createObjectId(SystemId.GoldPurchases),

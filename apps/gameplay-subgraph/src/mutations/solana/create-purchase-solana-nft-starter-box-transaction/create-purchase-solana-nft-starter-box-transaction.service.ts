@@ -122,12 +122,12 @@ export class CreatePurchaseSolanaNFTStarterBoxTransactionService {
                 // add to the transaction
                 builder = builder.add(transferTokenToVaultTransaction)  
                 // get the fee receiver address
-                const feeReceiverAddress = this.staticService.feeReceivers[user.chainKey][user.network].address
+                const revenueRecipientAddress = this.staticService.revenueRecipients[user.chainKey][user.network].address
                 const { transaction: transferTokenToFeeReceiverTransaction } =
                     await this.solanaMetaplexService.createTransferTokenTransaction({
                         network: user.network,
                         tokenAddress: tokenAddress,
-                        toAddress: feeReceiverAddress,
+                        toAddress: revenueRecipientAddress,
                         amount: feeAmount,
                         decimals: tokenDecimals,
                         fromAddress: user.accountAddress

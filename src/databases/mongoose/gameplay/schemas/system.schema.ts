@@ -995,11 +995,11 @@ export class WholesaleMarket {
 }
 
 @ObjectType({
-    description: "Fee receiver"
+    description: "Revenue recipient"
 })
-export class FeeReceiverData {
+export class RevenueRecipientData {
     @Field(() => String, {
-        description: "Fee receiver address"
+        description: "Revenue recipient address"
     })
         address: string
 }
@@ -1007,26 +1007,26 @@ export class FeeReceiverData {
 @ObjectType({
     description: "Fee receiver"
 })
-export class FeeReceiver {
-    @Field(() => FeeReceiverData, {
-        description: "Fee receiver data"
+export class RevenueRecipient {
+    @Field(() => RevenueRecipientData, {
+        description: "Revenue recipient data"
     })
-    [Network.Testnet]: FeeReceiverData
+    [Network.Testnet]: RevenueRecipientData
 
-    @Field(() => FeeReceiverData, {
-        description: "Fee receiver data"
+    @Field(() => RevenueRecipientData, {
+        description: "Revenue recipient data"
     })
-    [Network.Mainnet]: FeeReceiverData
+    [Network.Mainnet]: RevenueRecipientData
 }
 
 @ObjectType({
-    description: "Fee receiver"
+    description: "Revenue recipients"
 })
-export class FeeReceivers {
-    @Field(() => FeeReceiver, {
-        description: "Fee receiver"
+export class RevenueRecipients {
+    @Field(() => RevenueRecipient, {
+        description: "Revenue recipient"
     })
-    [ChainKey.Solana]: FeeReceiver
+    [ChainKey.Solana]: RevenueRecipient
 }
 
 @ObjectType({

@@ -62,12 +62,12 @@ export class CreateBuyGoldsSolanaTransactionService {
                 })
                 // create a transaction to buy the golds
                 let builder = transactionBuilder()
-                const feeReceiverAddress = this.staticService.feeReceivers[user.chainKey][user.network].address
+                const revenueRecipientAddress = this.staticService.revenueRecipients[user.chainKey][user.network].address
                 const { transaction: transferTokenTransaction } =
                     await this.solanaMetaplexService.createTransferTokenTransaction({
                         network: user.network,
                         tokenAddress,
-                        toAddress: feeReceiverAddress,
+                        toAddress: revenueRecipientAddress,
                         amount: price,
                         decimals,
                         fromAddress: user.accountAddress
