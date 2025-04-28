@@ -7,6 +7,7 @@ import {
     DefaultInfo,
     EnergyRegen,
     FruitInfo,
+    GoldPurchases,
     HoneycombInfo,
     NFTCollections,
     WholesaleMarket
@@ -59,5 +60,9 @@ export class SystemsService {
 
     wholesaleMarket(): WholesaleMarket {
         return this.staticService.wholesaleMarket
+    }
+    
+    goldPurchases(): GoldPurchases {
+        return this.staticService.goldPurchases
     }
 }

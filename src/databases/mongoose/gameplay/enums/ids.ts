@@ -415,6 +415,7 @@ export enum SystemId {
     TokenVaults = "tokenVaults",
     WholesaleMarket = "wholesaleMarket",
     FeeReceivers = "feeReceivers",
+    GoldPurchases = "goldPurchases",
 }
 
 export const GraphQLTypeSystemId = createEnumType(SystemId)

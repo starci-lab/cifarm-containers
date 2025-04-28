@@ -32,11 +32,14 @@ import {
     StableCoins,
     TokenVaults,
     WholesaleMarket,
-    FeeReceivers
+    FeeReceivers,
+    GoldPurchases,
+    PaymentKind,
+    StableCoinName
 } from "@src/databases"
+import { ChainKey, Network } from "@src/env"
 import { Connection } from "mongoose"
 @Injectable()
-
 export class StaticService implements OnModuleInit {
     private readonly logger = new Logger(StaticService.name)
 
@@ -68,6 +71,7 @@ export class StaticService implements OnModuleInit {
     public tokenVaults: TokenVaults
     public wholesaleMarket: WholesaleMarket
     public feeReceivers: FeeReceivers
+    public goldPurchases: GoldPurchases
 
     constructor(
         @InjectMongoose()
@@ -160,6 +164,11 @@ export class StaticService implements OnModuleInit {
             .findById<KeyValueRecord<FeeReceivers>>(createObjectId(SystemId.FeeReceivers))
         this.feeReceivers = feeReceiversDoc.value
 
+        const goldPurchasesDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<GoldPurchases>>(createObjectId(SystemId.GoldPurchases))
+        this.goldPurchases = goldPurchasesDoc.value
+
         // Load collections
         this.placedItemTypes = await this.connection
             .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
@@ -190,7 +199,6 @@ export class StaticService implements OnModuleInit {
         this.flowers = await this.connection.model<FlowerSchema>(FlowerSchema.name).find()
 
         this.logger.verbose("All static data loaded")
-        this.logger.verbose("System data: 10") // hardcoded
         this.logger.verbose(`Animals: ${this.animals.length}`)
         this.logger.verbose(`Crops: ${this.crops.length}`)
         this.logger.verbose(`Buildings: ${this.buildings.length}`)
@@ -201,4 +209,34 @@ export class StaticService implements OnModuleInit {
         this.logger.verbose(`Supplies: ${this.supplies.length}`)
         this.logger.verbose(`Flower: ${this.flowers.length}`)
     }
+
+    public getTokenAddressFromPaymentKind({
+        paymentKind,
+        network,
+        chainKey
+    }: GetTokenAddressFromPaymentKindParams): GetTokenAddressFromPaymentKindResult {
+        switch (paymentKind) {
+        case PaymentKind.USDC: {
+            const { address: tokenAddress, decimals } =
+                    this.stableCoins[StableCoinName.USDC][chainKey][network]
+            return {
+                tokenAddress,
+                decimals
+            }
+        }
+        default:
+            throw new Error(`Invalid payment kind: ${paymentKind}`)
+        }
+    }
+}
+
+export interface GetTokenAddressFromPaymentKindParams {
+    paymentKind: PaymentKind
+    network: Network
+    chainKey: ChainKey
+}
+
+export interface GetTokenAddressFromPaymentKindResult {
+    tokenAddress: string
+    decimals: number
 }

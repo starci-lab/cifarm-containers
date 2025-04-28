@@ -1,0 +1,5 @@
+export * from "./send-buy-golds-solana-transaction.module"
+export * from "./send-buy-golds-solana-transaction.service"
+export * from "./send-buy-golds-solana-transaction.resolver"
+export * from "./send-buy-golds-solana-transaction.dto"
+//export * from "./claim.spec"

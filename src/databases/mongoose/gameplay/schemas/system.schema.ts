@@ -1029,5 +1029,60 @@ export class FeeReceivers {
     [ChainKey.Solana]: FeeReceiver
 }
 
+@ObjectType({
+    description: "Gold purchase option"
+})
+export class GoldPurchaseOption {   
+    @Field(() => Float, {
+        description: "Price"
+    })
+        price: number
+
+    @Field(() => Float, {
+        description: "Amount"
+    })
+        amount: number
+    @Field(() => GraphQLTypePaymentKind, {
+        description: "Payment kind"
+    })
+        paymentKind: PaymentKind
+}
+
+@ObjectType({
+    description: "Gold purchase options"
+})
+export class GoldPurchaseOptions {   
+    @Field(() => [GoldPurchaseOption], {
+        description: "Gold purchase options"
+    })
+        options: Array<GoldPurchaseOption>
+}
+
+
+@ObjectType({
+    description: "Gold purchase"
+})
+export class GoldPurchase {
+    @Field(() => GoldPurchaseOptions, {
+        description: "Gold purchase options"
+    })
+    [Network.Testnet]: GoldPurchaseOptions
+
+    @Field(() => GoldPurchaseOptions, {
+        description: "Gold purchase options"
+    })
+    [Network.Mainnet]: GoldPurchaseOptions
+}
+
+@ObjectType({
+    description: "Gold purchases"
+})
+export class GoldPurchases {
+    @Field(() => GoldPurchase, {
+        description: "Gold purchase"
+    })
+    [ChainKey.Solana]: GoldPurchase
+}
+
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)

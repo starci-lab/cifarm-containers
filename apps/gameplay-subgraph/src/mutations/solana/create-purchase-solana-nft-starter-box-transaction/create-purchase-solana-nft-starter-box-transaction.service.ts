@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, NFTCollectionData, NFTRarity, NFTType, StableCoinName } from "@src/databases"
+import { InjectMongoose, NFTCollectionData, NFTRarity, StableCoinName } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
@@ -72,8 +72,7 @@ export class CreatePurchaseSolanaNFTStarterBoxTransactionService {
                 } else {
                     rarity = NFTRarity.Common
                 }
-                let { nftType } = nftStarterBoxChance
-                nftType = NFTType.DragonFruit
+                const { nftType } = nftStarterBoxChance
                 const nftCollectionData = this.staticService.nftCollections[nftType][user.chainKey][
                     user.network
                 ] as NFTCollectionData

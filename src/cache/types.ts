@@ -29,3 +29,7 @@ export interface UnwrapSolanaMetaplexNFTTransactionCache {
     collectionAddress: string
 }
 
+export interface BuyGoldsSolanaTransactionCache {
+    selectionIndex: number
+}
+

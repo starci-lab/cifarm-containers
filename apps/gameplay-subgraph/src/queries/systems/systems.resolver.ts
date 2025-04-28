@@ -10,7 +10,8 @@ import {
     FruitInfo,
     HoneycombInfo,
     NFTCollections,
-    WholesaleMarket
+    WholesaleMarket,
+    GoldPurchases
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -117,5 +118,14 @@ export class SystemsResolver {
     })
     wholesaleMarket(): WholesaleMarket {
         return this.systemsService.wholesaleMarket()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => GoldPurchases, {
+        name: "goldPurchases",
+        description: "Get the gold purchases"
+    })
+    goldPurchases(): GoldPurchases {
+        return this.systemsService.goldPurchases()
     }
 }

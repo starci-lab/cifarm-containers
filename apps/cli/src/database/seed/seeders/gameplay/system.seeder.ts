@@ -26,7 +26,8 @@ import {
     TokenVaults,
     WholesaleMarket,
     PaymentKind,
-    FeeReceivers
+    FeeReceivers,
+    GoldPurchases
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -832,6 +833,49 @@ export class SystemSeeder implements Seeder {
             }
         }
 
+        const goldPurchases: GoldPurchases = {
+            [ChainKey.Solana]: {
+                [Network.Testnet]: {
+                    options: [
+                        {
+                            amount: 10000,
+                            price: 1,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            amount: 100000,
+                            price: 5,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            amount: 1000000,
+                            price: 25,
+                            paymentKind: PaymentKind.USDC
+                        }
+                    ]
+                },
+                [Network.Mainnet]: {
+                    options: [
+                        {
+                            amount: 10000,
+                            price: 1,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            amount: 100000,
+                            price: 5,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            amount: 1000000,
+                            price: 25,
+                            paymentKind: PaymentKind.USDC
+                        }, 
+                    ]
+                }
+            }
+        }
+
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
@@ -912,6 +956,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.FeeReceivers),
                 displayId: SystemId.FeeReceivers,
                 value: feeReceivers
+            },
+            {
+                _id: createObjectId(SystemId.GoldPurchases),
+                displayId: SystemId.GoldPurchases,
+                value: goldPurchases
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)
