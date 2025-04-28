@@ -83,13 +83,12 @@ export class SendBuyGoldsSolanaTransactionService {
                     amount,
                 })
                 await user.save({ session })
-
-                const signedTx = await this.solanaMetaplexService
-                    .getUmi(user.network)
-                    .identity.signTransaction(tx)
+                // const signedTx = await this.solanaMetaplexService
+                //     .getUmi(user.network)
+                //     .identity.signTransaction(tx)
                 const txHash = await this.solanaMetaplexService
                     .getUmi(user.network)
-                    .rpc.sendTransaction(signedTx)
+                    .rpc.sendTransaction(tx)
                 const latestBlockhash = await this.solanaMetaplexService
                     .getUmi(user.network)
                     .rpc.getLatestBlockhash()
