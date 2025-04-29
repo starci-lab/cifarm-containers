@@ -8,3 +8,12 @@ export class ExperienceCannotBeZeroOrNegativeException extends GameplayException
         )
     }
 }
+
+export class LevelGapIsNotEnoughException extends GameplayException {
+    constructor() {
+        super(
+            "Level gap is not enough",
+            GameplayErrorCode.LevelGapIsNotEnough
+        )
+    }
+}

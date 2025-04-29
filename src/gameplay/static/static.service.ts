@@ -35,7 +35,8 @@ import {
     RevenueRecipients,
     GoldPurchases,
     PaymentKind,
-    StableCoinName
+    StableCoinName,
+    InteractionPermissions
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { Connection } from "mongoose"
@@ -72,6 +73,7 @@ export class StaticService implements OnModuleInit {
     public wholesaleMarket: WholesaleMarket
     public revenueRecipients: RevenueRecipients
     public goldPurchases: GoldPurchases
+    public interactionPermissions: InteractionPermissions
 
     constructor(
         @InjectMongoose()
@@ -168,6 +170,11 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<GoldPurchases>>(createObjectId(SystemId.GoldPurchases))
         this.goldPurchases = goldPurchasesDoc.value
+
+        const interactionPermissionsDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<InteractionPermissions>>(createObjectId(SystemId.InteractionPermissions))
+        this.interactionPermissions = interactionPermissionsDoc.value
 
         // Load collections
         this.placedItemTypes = await this.connection

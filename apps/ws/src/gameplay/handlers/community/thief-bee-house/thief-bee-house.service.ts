@@ -191,12 +191,8 @@ export class ThiefBeeHouseService {
                 if (!inventoryTypeProduct) {
                     throw new WsException("Inventory type not found for bee house")
                 }
-                const animalInfo = this.staticService.beeHouseInfo
                 
-                const { value } = this.thiefService.compute({
-                    thief2: animalInfo.randomness.thief2,
-                    thief3: animalInfo.randomness.thief3
-                })
+                const { value } = this.thiefService.computeBeeHouse()
                 const desiredQuantity = value
                 const actualQuantity = Math.min(
                     desiredQuantity,

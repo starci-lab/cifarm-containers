@@ -172,6 +172,21 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: false })
         lastSolanaNFTStarterBoxRollRarity?: number
+
+    // last online time
+    @Field(() => Date, {
+        nullable: true,
+        description: "The last time the user was online"
+    })
+    @Prop({ type: Date, required: false })
+        lastOnlineTime?: Date  
+
+    // is online
+    @Field(() => Boolean, {
+        description: "Whether the user is online"
+    })
+    @Prop({ type: Boolean, default: false })
+        isOnline: boolean
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

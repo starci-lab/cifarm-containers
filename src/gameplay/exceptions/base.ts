@@ -9,6 +9,7 @@ export enum GameplayErrorCode {
     EnergyNotEnough = "ENERGY_NOT_ENOUGH",
     PhaseNotFound = "PHASE_NOT_FOUND",
     PositionNotAvailable = "POSITION_NOT_AVAILABLE",
+    LevelGapIsNotEnough = "LEVEL_GAP_IS_NOT_ENOUGH",
 }
 
 export class GameplayException extends Error {

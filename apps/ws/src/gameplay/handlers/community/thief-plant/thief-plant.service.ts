@@ -16,7 +16,6 @@ import {
     EnergyService,  
     InventoryService,
     LevelService,
-    PlantInfoLike,
     SyncService,
     ThiefService
 } from "@src/gameplay"
@@ -143,6 +142,19 @@ export class ThiefPlantService {
                     throw new WsException("User not found")
                 }
 
+                // Check thief level gap
+                const neighbor = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(watcherUserId)
+                    .session(session)
+                if (!neighbor) {
+                    throw new WsException("Neighbor not found")
+                }
+                this.thiefService.checkAbleToThief({
+                    user,
+                    neighbor
+                })
+
                 // Save user snapshot for sync later
                 const userSnapshot = user.$clone()
 
@@ -151,21 +163,23 @@ export class ThiefPlantService {
                  ************************************************************/
                 // Get product from static data based on plant
                 let plant: AbstractPlantSchema | undefined
-                let plantInfo: PlantInfoLike
+                let desiredQuantity: number
 
                 switch (placedItemTile.plantInfo.plantType) {
                 case PlantType.Crop: {
                     plant = this.staticService.crops.find(
                         (crop) => crop.id === placedItemTile.plantInfo.crop.toString()
                     )
-                    plantInfo = this.staticService.cropInfo
+                    const { value } = this.thiefService.computeCrop()
+                    desiredQuantity = value
                     break
                 }
                 case PlantType.Flower: {
                     plant = this.staticService.flowers.find(
                         (flower) => flower.id === placedItemTile.plantInfo.flower.toString()
                     )
-                    plantInfo = this.staticService.flowerInfo
+                    const { value } = this.thiefService.computeFlower()
+                    desiredQuantity = value
                     break
                 }
                 }
@@ -241,12 +255,6 @@ export class ThiefPlantService {
                  * ADD HARVESTED PRODUCT TO INVENTORY
                  ************************************************************/
                 // Amount of product to steal
-
-                const { value } = this.thiefService.compute({
-                    thief2: plantInfo.randomness.thief2,
-                    thief3: plantInfo.randomness.thief3
-                })
-                const desiredQuantity = value
                 const actualQuantity = Math.min(
                     desiredQuantity,
                     placedItemTile.plantInfo.harvestQuantityRemaining - placedItemTile.plantInfo.harvestQuantityMin

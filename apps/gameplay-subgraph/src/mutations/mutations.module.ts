@@ -4,7 +4,6 @@ import { HoneycombModule } from "./honeycomb"
 import { PlayerModule } from "./player"
 import { CommunityModule } from "./community"
 import { SolanaModule } from "./solana"
-import { WholesaleMarketModule } from "./wholesale-market"
 
 @Module({
     imports: [
@@ -12,8 +11,7 @@ import { WholesaleMarketModule } from "./wholesale-market"
         PlayerModule,
         HoneycombModule,
         CommunityModule,
-        SolanaModule,
-        WholesaleMarketModule
+        SolanaModule
     ]
 })
 export class MutationsModule {}

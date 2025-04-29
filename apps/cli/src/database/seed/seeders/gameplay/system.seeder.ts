@@ -27,7 +27,8 @@ import {
     WholesaleMarket,
     PaymentKind,
     RevenueRecipients,
-    GoldPurchases
+    GoldPurchases,
+    InteractionPermissions
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -876,6 +877,11 @@ export class SystemSeeder implements Seeder {
             }
         }
 
+        // you can thief from user who has 3 
+        const interactionPermissions: InteractionPermissions = {
+            thiefLevelGapThreshold: 3,
+        }
+
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
@@ -961,6 +967,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.GoldPurchases),
                 displayId: SystemId.GoldPurchases,
                 value: goldPurchases
+            },
+            {
+                _id: createObjectId(SystemId.InteractionPermissions),
+                displayId: SystemId.InteractionPermissions,
+                value: interactionPermissions
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

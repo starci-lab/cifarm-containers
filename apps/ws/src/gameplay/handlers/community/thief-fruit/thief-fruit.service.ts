@@ -145,6 +145,19 @@ export class ThiefFruitService {
                     throw new WsException("User not found")
                 }
 
+                // Check thief level gap
+                const neighbor = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(watcherUserId)
+                    .session(session)
+                if (!neighbor) {
+                    throw new WsException("Neighbor not found")
+                }
+                this.thiefService.checkAbleToThief({
+                    user,
+                    neighbor
+                })
+
                 // Save user snapshot for sync later
                 const userSnapshot = user.$clone()
 
@@ -223,12 +236,7 @@ export class ThiefFruitService {
                  * ADD HARVESTED PRODUCT TO INVENTORY
                  ************************************************************/
                 // Amount of product to steal
-                const fruitInfo = this.staticService.fruitInfo
-                
-                const { value } = this.thiefService.compute({
-                    thief2: fruitInfo.randomness.thief2,
-                    thief3: fruitInfo.randomness.thief3
-                })
+                const { value } = this.thiefService.computeFruit()
                 const desiredQuantity = value
                 const actualQuantity = Math.min(
                     desiredQuantity,

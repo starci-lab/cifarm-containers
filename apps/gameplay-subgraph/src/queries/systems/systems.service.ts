@@ -10,7 +10,10 @@ import {
     GoldPurchases,
     HoneycombInfo,
     NFTCollections,
-    WholesaleMarket
+    WholesaleMarket,
+    BeeHouseInfo,
+    FlowerInfo,
+    InteractionPermissions
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -64,5 +67,17 @@ export class SystemsService {
     
     goldPurchases(): GoldPurchases {
         return this.staticService.goldPurchases
+    }
+
+    beeHouseInfo(): BeeHouseInfo {
+        return this.staticService.beeHouseInfo
+    }
+
+    flowerInfo(): FlowerInfo {
+        return this.staticService.flowerInfo
+    }
+
+    interactionPermissions(): InteractionPermissions {
+        return this.staticService.interactionPermissions
     }
 }

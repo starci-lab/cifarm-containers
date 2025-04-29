@@ -178,10 +178,10 @@ export class FruitWorker extends WorkerHost {
                         return updateYoungFruitPlacedItem()
                     }
                     // update the placed item
+                    const placedItemSnapshot = placedItem.$clone()
                     const synced = updatePlacedItem()
                     await placedItem.save()
                     if (synced) {
-                        const placedItemSnapshot = placedItem.$clone()
                         const updatedSyncedPlacedItem =
                             this.syncService.getPartialUpdatedSyncedPlacedItem({
                                 placedItemSnapshot,

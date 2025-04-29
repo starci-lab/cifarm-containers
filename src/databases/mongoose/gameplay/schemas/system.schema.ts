@@ -1084,5 +1084,15 @@ export class GoldPurchases {
     [ChainKey.Solana]: GoldPurchase
 }
 
+@ObjectType({
+    description: "Interaction permissions"
+})
+export class InteractionPermissions  {
+    @Field(() => Int, {
+        description: "Maximum level difference"
+    })
+        thiefLevelGapThreshold: number
+}
+
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)

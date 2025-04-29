@@ -195,6 +195,19 @@ export class ThiefAnimalService {
                 // Get storage capacity from static data
                 const { storageCapacity } = this.staticService.defaultInfo
 
+                // Check thief level gap
+                const neighbor = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(watcherUserId)
+                    .session(session)
+                if (!neighbor) {
+                    throw new WsException("Neighbor not found")
+                }
+                this.thiefService.checkAbleToThief({
+                    user,
+                    neighbor
+                })
+
                 /************************************************************
                  * DATA MODIFICATION
                  ************************************************************/
@@ -223,12 +236,7 @@ export class ThiefAnimalService {
                  * ADD HARVESTED PRODUCT TO INVENTORY
                  ************************************************************/
                 // Amount of product to steal
-                const animalInfo = this.staticService.animalInfo
-                
-                const { value } = this.thiefService.compute({
-                    thief2: animalInfo.randomness.thief2,
-                    thief3: animalInfo.randomness.thief3
-                })
+                const { value } = this.thiefService.computeAnimal()
                 const desiredQuantity = value
                 const actualQuantity = Math.min(
                     desiredQuantity,

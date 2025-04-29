@@ -10,12 +10,20 @@ import { Namespace, Socket } from "socket.io"
 import { SocketCoreService, SocketLike } from "@src/io"
 import { SocketData } from "./auth.types"
 import { GameplayWebSocketGateway, NAMESPACE } from "../gateway.decorators"
+import { InjectMongoose, UserSchema } from "@src/databases"
+import { Connection } from "mongoose"
+import { DateUtcService } from "@src/date"
 
 @GameplayWebSocketGateway()
 export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
     private readonly logger = new Logger(AuthGateway.name)
 
-    constructor(private readonly socketCoreService: SocketCoreService<SocketData>) {}
+    constructor(
+        private readonly dateUtcService: DateUtcService,
+        @InjectMongoose()
+        private readonly connection: Connection,
+        private readonly socketCoreService: SocketCoreService<SocketData>
+    ) {}
 
     @WebSocketServer()
     private readonly namespace: Namespace
@@ -34,9 +42,25 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         this.logger.verbose(`Client connected: ${socket.id}`)
         this.joinRoom({ socket, userId: user.id, type: RoomType.Player })
         this.joinRoom({ socket, userId: user.id, type: RoomType.Watcher })
+        // update the user's isOnline to true
+        await this.connection
+            .model<UserSchema>(UserSchema.name)
+            .updateOne({ _id: user.id }, { $set: { isOnline: true } })
     }
 
     async handleDisconnect(@ConnectedSocket() socket: Socket) {
+        // when disconnected, update the last online time
+        await this.connection
+            .model<UserSchema>(UserSchema.name)
+            .updateOne(
+                { _id: socket.data.user.id },
+                {
+                    $set: {
+                        lastOnlineTime: this.dateUtcService.getDayjs().toDate(),
+                        isOnline: false
+                    }
+                }
+            )
         this.logger.verbose(`Client disconnected: ${socket.id}`)
     }
 

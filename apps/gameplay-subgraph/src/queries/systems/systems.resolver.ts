@@ -11,7 +11,10 @@ import {
     HoneycombInfo,
     NFTCollections,
     WholesaleMarket,
-    GoldPurchases
+    GoldPurchases,
+    BeeHouseInfo,
+    FlowerInfo,
+    InteractionPermissions
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -127,5 +130,32 @@ export class SystemsResolver {
     })
     goldPurchases(): GoldPurchases {
         return this.systemsService.goldPurchases()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => BeeHouseInfo, {
+        name: "beeHouseInfo",
+        description: "Get the bee house info"
+    })
+    beeHouseInfo(): BeeHouseInfo {
+        return this.systemsService.beeHouseInfo()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => FlowerInfo, {
+        name: "flowerInfo",
+        description: "Get the flower info"
+    })
+    flowerInfo(): FlowerInfo {
+        return this.systemsService.flowerInfo()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => InteractionPermissions, {
+        name: "interactionPermissions",
+        description: "Get the interaction permissions"
+    })
+    interactionPermissions(): InteractionPermissions {
+        return this.systemsService.interactionPermissions()
     }
 }
