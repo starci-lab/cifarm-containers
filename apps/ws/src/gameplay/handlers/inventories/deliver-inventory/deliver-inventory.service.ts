@@ -31,7 +31,7 @@ export class DeliverInventoryService {
 
         try {
             // Using withTransaction to manage the transaction
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY
                  ************************************************************/
@@ -118,11 +118,13 @@ export class DeliverInventoryService {
                     })
                     syncedInventories.push(updatedSyncedInventory)
                 }
+
+                return {
+                    inventories: syncedInventories
+                }
             })
 
-            return {
-                inventories: syncedInventories
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             // Rethrow error to be handled higher up

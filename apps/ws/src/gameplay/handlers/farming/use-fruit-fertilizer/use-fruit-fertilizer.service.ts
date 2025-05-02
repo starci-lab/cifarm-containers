@@ -50,7 +50,7 @@ export class UseFruitFertilizerService {
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY SUPPLY
                  ************************************************************/
@@ -218,13 +218,15 @@ export class UseFruitFertilizerService {
                     success: true,
                     userId
                 }
+
+                return {
+                    action: actionPayload,
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    inventories: syncedInventories
+                }
             })
-            return {
-                action: actionPayload,
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                inventories: syncedInventories
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             if (actionPayload) {

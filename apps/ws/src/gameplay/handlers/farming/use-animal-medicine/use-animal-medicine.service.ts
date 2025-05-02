@@ -43,7 +43,7 @@ export class UseAnimalMedicineService {
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE ANIMAL MEDICINE
                  ************************************************************/
@@ -173,13 +173,15 @@ export class UseAnimalMedicineService {
                     success: true,
                     userId
                 }
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
 

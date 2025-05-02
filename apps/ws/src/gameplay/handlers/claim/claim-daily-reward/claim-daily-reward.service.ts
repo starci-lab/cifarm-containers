@@ -26,7 +26,7 @@ export class ClaimDailyRewardService {
         const mongoSession = await this.connection.startSession()
         let syncedUser: WithStatus<UserSchema> | undefined
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
@@ -95,11 +95,12 @@ export class ClaimDailyRewardService {
                     userSnapshot,
                     userUpdated: user
                 })
-            })
 
-            return {
-                user: syncedUser
-            }
+                return {
+                    user: syncedUser
+                }
+            })
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

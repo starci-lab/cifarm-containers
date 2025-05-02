@@ -40,7 +40,7 @@ export class BuyFruitService {
         let stopBuying: boolean | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE FRUIT
                  ************************************************************/
@@ -192,14 +192,16 @@ export class BuyFruitService {
                 stopBuying =
                     !limitResult.placedItemCountNotExceedLimit ||
                     user.golds < fruit.price
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload,
+                    stopBuying
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload,
-                stopBuying
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
 

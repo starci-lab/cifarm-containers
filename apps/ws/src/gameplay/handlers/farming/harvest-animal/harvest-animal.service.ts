@@ -54,7 +54,7 @@ export class HarvestAnimalService {
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM ANIMAL
                  ************************************************************/
@@ -274,14 +274,16 @@ export class HarvestAnimalService {
                         quantity
                     }
                 }
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    inventories: syncedInventories,
+                    action: actionPayload
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                inventories: syncedInventories,
-                action: actionPayload
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
 

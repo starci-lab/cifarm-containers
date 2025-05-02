@@ -5,6 +5,7 @@ import {
     InventoryKind,
     InventorySchema,
     InventoryType,
+    InventoryTypeId,
     PlacedItemSchema,
     PlantCurrentState,
     PlantType,
@@ -16,7 +17,7 @@ import { InventoryService } from "@src/gameplay/inventory"
 import { Connection } from "mongoose"
 import { HarvestPlantMessage } from "./harvest-plant.dto"
 import { UserLike } from "@src/jwt"
-import { DeepPartial, WithStatus } from "@src/common"
+import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import { EmitActionPayload, ActionName, HarvestPlantData } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
@@ -51,9 +52,20 @@ export class HarvestPlantService {
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 // check if crate is in toolbar
+                const inventoryCrateExisted = await this.connection
+                    .model<InventorySchema>(InventorySchema.name)
+                    .findOne({
+                        user: userId,
+                        inventoryType: createObjectId(InventoryTypeId.Crate),
+                        kind: InventoryKind.Tool
+                    })
+                    .session(session)
 
+                if (!inventoryCrateExisted) {
+                    throw new WsException("Crate not found in toolbar")
+                }   
                 /************************************************************
                  * RETRIEVE USER DATA
                  ************************************************************/
@@ -279,14 +291,16 @@ export class HarvestPlantService {
                         productId: product.id
                     }
                 }
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    inventories: syncedInventories,
+                    action: actionPayload
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                inventories: syncedInventories,
-                action: actionPayload
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
 

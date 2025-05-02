@@ -48,7 +48,7 @@ export class HelpUseBugNetService {
         let watcherUserId: string | undefined
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * CHECK IF YOU HAVE BUG NET IN TOOLBAR
                  ************************************************************/
@@ -177,14 +177,15 @@ export class HelpUseBugNetService {
                     success: true,
                     userId
                 }
-            })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload,
-                watcherUserId
-            }
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload,
+                    watcherUserId
+                }
+            })
+            return result
         } catch (error) {
             this.logger.error(error)
 

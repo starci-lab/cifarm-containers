@@ -46,7 +46,7 @@ export class PlantSeedService {
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE USER DATA
                  ************************************************************/
@@ -225,14 +225,16 @@ export class PlantSeedService {
                     success: true,
                     userId,
                 }
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    inventories: syncedInventories,
+                    action: actionPayload
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                inventories: syncedInventories,
-                action: actionPayload
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
 

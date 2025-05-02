@@ -41,7 +41,7 @@ export class BuyBuildingService {
         let stopBuying: boolean | undefined
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE BUILDING
                  ************************************************************/
@@ -281,14 +281,15 @@ export class BuyBuildingService {
                 stopBuying = !limitResult.placedItemCountNotExceedLimit
                 || !limitResult.selectedPlacedItemCountNotExceedLimit
                 || user.golds < building.price
-            })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload,
-                stopBuying
-            }
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload,
+                    stopBuying
+                }
+            })
+            return result
         } catch (error) {
             this.logger.error(error)
 

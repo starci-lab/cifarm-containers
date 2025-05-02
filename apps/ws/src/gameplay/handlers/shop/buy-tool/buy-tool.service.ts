@@ -34,7 +34,7 @@ export class BuyToolService {
         let syncedUser: WithStatus<UserSchema> | undefined
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE TOOL
                  ************************************************************/
@@ -155,11 +155,13 @@ export class BuyToolService {
                     })
                     syncedInventories.push(syncedInventory)
                 }
+
+                return {
+                    inventories: syncedInventories,
+                    user: syncedUser
+                }
             })
-            return {
-                inventories: syncedInventories,
-                user: syncedUser
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

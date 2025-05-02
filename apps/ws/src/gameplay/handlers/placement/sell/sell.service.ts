@@ -29,7 +29,7 @@ export class SellService {
         let syncedUser: DeepPartial<UserSchema> | undefined
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM
                  ************************************************************/
@@ -177,13 +177,13 @@ export class SellService {
                     success: true,
                     userId,
                 }
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionMessage
+                }
             })
-
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionMessage
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             if (actionMessage) {

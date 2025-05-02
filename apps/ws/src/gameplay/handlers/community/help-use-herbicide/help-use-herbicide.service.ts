@@ -47,7 +47,7 @@ export class HelpUseHerbicideService {
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
         let watcherUserId: string | undefined
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * CHECK IF YOU HAVE HERBICIDE IN TOOLBAR
                  ************************************************************/
@@ -175,14 +175,15 @@ export class HelpUseHerbicideService {
                     success: true,
                     userId
                 }
-            })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload,
-                watcherUserId
-            }
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload,
+                    watcherUserId
+                }
+            })
+            return result
         } catch (error) {
             this.logger.error(error)
 

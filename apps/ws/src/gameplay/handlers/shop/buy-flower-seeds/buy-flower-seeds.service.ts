@@ -34,7 +34,7 @@ export class BuyFlowerSeedsService {
         let syncedUser: WithStatus<UserSchema> | undefined
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE FLOWER
                  ************************************************************/
@@ -144,12 +144,14 @@ export class BuyFlowerSeedsService {
                     })
                     syncedInventories.push(updatedSyncedInventory)
                 }
+
+                return {
+                    user: syncedUser,
+                    inventories: syncedInventories
+                }
             })
 
-            return {
-                user: syncedUser,
-                inventories: syncedInventories
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

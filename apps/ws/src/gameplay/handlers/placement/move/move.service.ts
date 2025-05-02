@@ -29,7 +29,7 @@ export class MoveService {
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
     
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM
                  ************************************************************/
@@ -82,10 +82,13 @@ export class MoveService {
                     placedItemUpdated: placedItem
                 })
                 syncedPlacedItems.push(updatedSyncedPlacedItem)  
+
+                return {
+                    
+                    placedItems: syncedPlacedItems
+                }
             })
-            return {
-                placedItems: syncedPlacedItems
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

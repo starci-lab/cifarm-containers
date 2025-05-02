@@ -4,13 +4,15 @@ import { UpdateSettingsMessage } from "./update-settings.dto"
 import { UserLike } from "@src/jwt"
 import { Connection } from "mongoose"
 import { SyncedResponse } from "../../types"
+import { SyncService } from "@src/gameplay"
 @Injectable()
 export class UpdateSettingsService {
     private readonly logger = new Logger(UpdateSettingsService.name)
 
     constructor(
         @InjectMongoose()
-        private readonly connection: Connection
+        private readonly connection: Connection,
+        private readonly syncService: SyncService
     ) {}
 
     async updateSettings(
@@ -20,20 +22,25 @@ export class UpdateSettingsService {
         // synced variables
         const mongoSession = await this.connection.startSession()
         try {
-            console.log(userId, sound, ambient)
             // Using withTransaction to handle the transaction lifecycle
-            await mongoSession.withTransaction(async (session) => {
-                await this.connection.model<UserSchema>(UserSchema.name).updateOne(
-                    {
-                        _id: userId,
-                    },
-                    {
-                        sound,
-                        ambient
-                    }
-                ).session(session)
+            const result = await mongoSession.withTransaction(async (session) => {
+                const user = await this.connection.model<UserSchema>(UserSchema.name).findById(userId).session(session)
+                const userSnapshot = user.$clone()
+
+                user.sound = sound
+                user.ambient = ambient
+                await user.save({ session })
+
+                const updatedUser = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
+
+                return {
+                    user: updatedUser
+                }
             })
-            return {}
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

@@ -35,7 +35,7 @@ export class UpgradeBuildingService {
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
 
         try {
-            await mongoSession.withTransaction(async () => {
+            const result = await mongoSession.withTransaction(async () => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE PLACED ITEM
                  ************************************************************/
@@ -137,13 +137,15 @@ export class UpgradeBuildingService {
                     placedItem: syncedPlacedItemAction,
                     success: true,
                 }
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

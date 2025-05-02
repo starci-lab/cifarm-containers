@@ -37,7 +37,7 @@ export class MoveInventoryService {
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {
             // Using `withTransaction` for automatic transaction handling
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -179,10 +179,12 @@ export class MoveInventoryService {
                     })
                     syncedInventories.push(updatedSyncedInventory)
                 }
+
+                return {
+                    inventories: syncedInventories,
+                }
             })
-            return {
-                inventories: syncedInventories,
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

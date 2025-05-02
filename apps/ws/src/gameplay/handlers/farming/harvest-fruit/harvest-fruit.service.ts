@@ -54,7 +54,7 @@ export class HarvestFruitService {
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * CHECK IF YOU HAVE CRATE IN TOOLBAR
                  ************************************************************/
@@ -288,14 +288,16 @@ export class HarvestFruitService {
                         quantity
                     }
                 }
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    inventories: syncedInventories,
+                    action: actionPayload
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                inventories: syncedInventories,
-                action: actionPayload
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
 

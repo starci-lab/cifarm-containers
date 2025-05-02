@@ -28,7 +28,7 @@ export class PlaceNFTService {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to handle the transaction lifecycle
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 const placedItem = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
                     .findById(placedItemId)
@@ -74,10 +74,12 @@ export class PlaceNFTService {
                     placedItems: [placedItem]
                 })
                 syncedPlacedItems.push(...createdSyncedPlacedItems)
+
+                return {
+                    placedItems: syncedPlacedItems
+                }
             })
-            return {
-                placedItems: syncedPlacedItems
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

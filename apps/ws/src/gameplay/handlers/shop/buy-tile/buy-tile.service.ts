@@ -35,7 +35,7 @@ export class BuyTileService {
         let stopBuying: boolean | undefined
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE TILE
                  ************************************************************/
@@ -170,14 +170,16 @@ export class BuyTileService {
                     session
                 })
                 stopBuying = !placedItemCountNotExceedLimit || user.golds < tile.price
-            })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload,
-                stopBuying,
-            }
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload,
+                    stopBuying,
+                }
+            })
+            
+            return result
         } catch (error) {
             this.logger.error(error)
 

@@ -40,7 +40,7 @@ export class BuyAnimalService {
         let stopBuying: boolean | undefined
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE ANIMAL
                  ************************************************************/
@@ -230,14 +230,17 @@ export class BuyAnimalService {
                 stopBuying =
                     !limitData.selectedPlacedItemCountNotExceedLimit ||
                     user.golds < animal.price
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload,
+                    stopBuying
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload,
-                stopBuying
-            }
+            return result
+           
         } catch (error) {
             this.logger.error(error)
 

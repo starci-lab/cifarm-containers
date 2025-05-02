@@ -39,7 +39,7 @@ export class RetrieveInventoryService {
         
         try {
             // Using withTransaction to manage the transaction
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE INVENTORY
                  ************************************************************/
@@ -128,10 +128,13 @@ export class RetrieveInventoryService {
                 if (!productId) {
                     throw new WsException("The inventory type is not a product")
                 }
+
+                return {
+                    inventories: syncedInventories
+                }
             })
-            return {
-                inventories: syncedInventories
-            }
+
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

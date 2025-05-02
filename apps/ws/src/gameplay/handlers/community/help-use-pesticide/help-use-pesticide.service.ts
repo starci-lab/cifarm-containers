@@ -48,7 +48,7 @@ export class HelpUsePesticideService {
         let watcherUserId: string | undefined
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * CHECK IF YOU HAVE PESTICIDE IN TOOLBAR
                  ************************************************************/
@@ -177,14 +177,16 @@ export class HelpUsePesticideService {
                     success: true,
                     userId
                 }
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload,
+                    watcherUserId
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload,
-                watcherUserId
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
 

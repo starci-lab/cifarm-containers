@@ -57,7 +57,7 @@ export class ThiefFruitService {
         let watcherUserId: string | undefined
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * CHECK IF YOU HAVE CRATE IN TOOLBAR
                  ************************************************************/
@@ -377,15 +377,17 @@ export class ThiefFruitService {
                         catAssistedSuccess
                     }
                 }
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    inventories: syncedInventories,
+                    action: actionPayload,
+                    watcherUserId
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                inventories: syncedInventories,
-                action: actionPayload,
-                watcherUserId
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
 

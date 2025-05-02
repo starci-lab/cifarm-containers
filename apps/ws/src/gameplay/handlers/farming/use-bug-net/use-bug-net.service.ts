@@ -51,7 +51,7 @@ export class UseBugNetService {
         const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
 
         try {
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE AND VALIDATE BUG NET TOOL
                  ************************************************************/
@@ -187,13 +187,15 @@ export class UseBugNetService {
                     success: true,
                     userId
                 }
+
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    action: actionPayload
+                }
             })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                action: actionPayload
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
 
