@@ -1094,5 +1094,46 @@ export class InteractionPermissions  {
         thiefLevelGapThreshold: number
 }
 
+@ObjectType({
+    description: "Configuration for the cat"
+})
+export class CatInfo {
+    @Field(() => Float, {
+        description: "Chance"
+    })
+        chance: number
+    @Field(() => Float, {
+        description: "Percent quantity bonus"
+    })
+        percentQuantityBonus: number
+}
+
+@ObjectType({
+    description: "Configuration for the dog"
+})
+export class DogInfo {
+    @Field(() => Float, {
+        description: "Chance"
+    })
+        chance: number
+    @Field(() => Float, {
+        description: "Energy reduce"
+    })
+        energyReduce: number
+}
+
+@ObjectType({
+    description: "Configuration for the pet"
+})
+export class PetInfo {
+    @Field(() => CatInfo, {
+        description: "Cat info"
+    })
+        cat: CatInfo
+    @Field(() => DogInfo, {
+        description: "Dog info"
+    })
+        dog: DogInfo
+}
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)

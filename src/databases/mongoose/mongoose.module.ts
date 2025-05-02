@@ -61,7 +61,9 @@ import {
     NFTMetadataSchema,
     NFTMetadataSchemaClass,
     NFTIndexSchema,
-    NFTIndexSchemaClass
+    NFTIndexSchemaClass,
+    FishSchema,
+    FishSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -245,6 +247,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: NFTIndexSchema.name,
                             useFactory: () => NFTIndexSchemaClass
+                        },
+                        {
+                            name: FishSchema.name,
+                            useFactory: () => FishSchemaClass
                         }
                     ],
                     connectionName

@@ -158,6 +158,14 @@ export class PlacedItemTypeSeeder implements Seeder {
                 fruit: createObjectId(FruitId.Pomegranate),
                 sizeX: 2,
                 sizeY: 2
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.FishPond),
+                displayId: PlacedItemTypeId.FishPond,
+                type: PlacedItemType.Building,
+                building: createObjectId(BuildingId.FishPond),
+                sizeX: 3,
+                sizeY: 3
             }
         ]
 

@@ -15,7 +15,8 @@ import {
     KeyValueStoreSeeder,
     PetSeeder,
     FruitSeeder,
-    FlowerSeeder
+    FlowerSeeder,
+    FishSeeder
 } from "./gameplay"
 import { MODULE_OPTIONS_TOKEN } from "./seeders.module-definition"
 import { SeederOptions } from "./types"
@@ -45,6 +46,7 @@ export class SeedersService {
             KeyValueStoreSeeder,
             PetSeeder,
             FruitSeeder,
+            FishSeeder
         ])
     }
 }

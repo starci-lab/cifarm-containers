@@ -155,6 +155,10 @@ export enum BuildingKind {
     BeeHouse = "beeHouse",
     // pet house mean building that can work with pets
     PetHouse = "petHouse",
+    // animal house mean building that can work with animals
+    AnimalHouse = "animalHouse",
+    // fish pond mean building that can work with fish
+    FishPond = "fishPond",
 }
 
 export const GraphQLTypeBuildingKind = createEnumType(BuildingKind)
@@ -171,6 +175,12 @@ registerEnumType(GraphQLTypeBuildingKind, {
         },
         [BuildingKind.PetHouse]: {
             description: "The pet house building",
+        },
+        [BuildingKind.AnimalHouse]: {
+            description: "The animal house building",
+        },
+        [BuildingKind.FishPond]: {
+            description: "The fish pond building",
         },
     },
 })

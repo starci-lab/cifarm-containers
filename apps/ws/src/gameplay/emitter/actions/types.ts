@@ -7,12 +7,17 @@ export interface EmitActionPayload<TData = undefined> {
     action?: ActionName
     success?: boolean
     data?: TData
-    reasonCode?: number
+    reasonCode?: string
 }
 
 export interface ThiefPlantData {
     quantity: number
     productId: string
+    catAssistedSuccess?: boolean
+}
+
+export enum ThiefPlantReasonCode {
+    DogAssisted = "dog_assisted",
 }
 
 export interface ThiefAnimalData {

@@ -25,7 +25,7 @@ export class PetSeeder implements Seeder {
                 unlockLevel: 20,
                 sellPrice: 500,
                 type: PetType.Dog,
-                helpPercentage: 10,
+                helpSuccessExperience: 12,
             },
             {
                 _id: createObjectId(PetId.Cat),
@@ -35,7 +35,7 @@ export class PetSeeder implements Seeder {
                 unlockLevel: 20,
                 sellPrice: 500,
                 type: PetType.Cat,
-                helpPercentage: 10,
+                helpSuccessExperience: 12,
             },
         ]
 

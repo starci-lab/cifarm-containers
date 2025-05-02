@@ -37,6 +37,7 @@ export enum BuildingId {
     Home = "home",
     BeeHouse = "beeHouse",
     PetHouse = "petHouse",
+    FishPond = "fishPond",
 }
  
 export const GraphQLTypeBuildingId = createEnumType(BuildingId)
@@ -59,6 +60,9 @@ registerEnumType(GraphQLTypeBuildingId, {
         },
         [BuildingId.PetHouse]: {
             description: "The pet house id.",
+        },
+        [BuildingId.FishPond]: {
+            description: "The fish pond id.",
         },
     },
 })
@@ -417,6 +421,7 @@ export enum SystemId {
     RevenueRecipients = "revenueRecipients",
     GoldPurchases = "goldPurchases",
     InteractionPermissions = "interactionPermissions",
+    PetInfo = "petInfo",
 }
 
 export const GraphQLTypeSystemId = createEnumType(SystemId)
@@ -475,6 +480,9 @@ registerEnumType(GraphQLTypeSystemId, {
         },
         [SystemId.InteractionPermissions]: {
             description: "The interaction permissions id.",
+        },
+        [SystemId.PetInfo]: {
+            description: "The pet info id.",
         },
     },
 })
@@ -727,6 +735,7 @@ export enum PlacedItemTypeId {
     Banana = "banana",
     Dog = "dog",
     Cat = "cat",
+    FishPond = "fishPond",
     //ga-cha solana nft
     DragonFruit = "dragonFruit",
     Jackfruit = "jackfruit",
@@ -773,9 +782,34 @@ registerEnumType(GraphQLTypePlacedItemTypeId, {
         [PlacedItemTypeId.Banana]: {
             description: "The banana id.",
         },
+        [PlacedItemTypeId.Dog]: {
+            description: "The dog id.",
+        },
+        [PlacedItemTypeId.Cat]: {
+            description: "The cat id.",
+        },
+        [PlacedItemTypeId.FishPond]: {
+            description: "The fish pond id.",
+        },
     },
 })
 
+export enum FishId {
+    SockeyeSalmon = "sockeyeSalmon",
+    Catfish = "catfish",
+}
 
+export const GraphQLTypeFishId = createEnumType(FishId)
 
-
+registerEnumType(GraphQLTypeFishId, {
+    name: "FishId",
+    description: "The fish id.",
+    valuesMap: {
+        [FishId.SockeyeSalmon]: {
+            description: "The sockeye salmon id.",
+        },
+        [FishId.Catfish]: {
+            description: "The catfish id.",
+        },
+    },
+})

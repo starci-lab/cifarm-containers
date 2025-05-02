@@ -8,7 +8,7 @@ import { ActionsModule } from "./actions"
 import { PlacementModule } from "./placement"
 import { NFTModule } from "./nft"
 import { PlayerModule } from "./player"
-
+import { PetsModule } from "./pets"
 @Module({
     imports: [
         FarmingModule,
@@ -19,7 +19,8 @@ import { PlayerModule } from "./player"
         ActionsModule,
         PlacementModule,
         NFTModule,
-        PlayerModule
+        PlayerModule,
+        PetsModule
     ]
 })
 export class HandlersModule {}

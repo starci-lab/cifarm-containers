@@ -67,7 +67,10 @@ export enum ReceiverEventName {
     PlaceNFT = "place_nft",
     ForceSyncPlacedItems = "force_sync_placed_items",
     // Player
-    UpdateSettings = "update_settings"
+    UpdateSettings = "update_settings",
+    // Pets
+    SelectDog = "select_dog",
+    SelectCat = "select_cat"
 }
 
 // sync user

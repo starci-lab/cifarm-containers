@@ -13,18 +13,19 @@ import {
     AbstractPlantSchema
 } from "@src/databases"
 import {
-    EnergyService,  
+    EnergyService,
     InventoryService,
     LevelService,
     SyncService,
-    ThiefService
+    ThiefService,
+    AssistanceService
 } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection, Types } from "mongoose"
 import { ThiefPlantMessage } from "./thief-plant.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, ThiefPlantData } from "../../../emitter"
+import { EmitActionPayload, ActionName, ThiefPlantData, ThiefPlantReasonCode } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
@@ -39,7 +40,8 @@ export class ThiefPlantService {
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
-        private readonly thiefService: ThiefService
+        private readonly thiefService: ThiefService,
+        private readonly assistanceService: AssistanceService
     ) {}
 
     async thiefPlant(
@@ -57,10 +59,7 @@ export class ThiefPlantService {
         let watcherUserId: string | undefined
 
         try {
-            await mongoSession.withTransaction(async (session) => {
-                /************************************************************
-                 * CHECK IF YOU HAVE CRATE IN TOOLBAR
-                 ************************************************************/
+            const result = await mongoSession.withTransaction(async (session) => {
                 const inventoryCrateExisted = await this.connection
                     .model<InventorySchema>(InventorySchema.name)
                     .findOne({
@@ -73,9 +72,6 @@ export class ThiefPlantService {
                 if (!inventoryCrateExisted) {
                     throw new WsException("Crate not found in toolbar")
                 }
-                /************************************************************
-                 * RETRIEVE AND VALIDATE PLACED ITEM TILE
-                 ************************************************************/
                 // Fetch placed item tile
                 const placedItemTile = await this.connection
                     .model<PlacedItemSchema>(PlacedItemSchema.name)
@@ -87,7 +83,8 @@ export class ThiefPlantService {
                 }
 
                 const placedItemType = this.staticService.placedItemTypes.find(
-                    (placedItemType) => placedItemType.id === placedItemTile.placedItemType.toString()
+                    (placedItemType) =>
+                        placedItemType.id === placedItemTile.placedItemType.toString()
                 )
 
                 if (!placedItemType) {
@@ -106,7 +103,11 @@ export class ThiefPlantService {
                     throw new WsException("Plant is not fully mature")
                 }
 
-                if (placedItemTile.plantInfo.thieves.map((thief) => thief.toString()).includes(userId)) {
+                if (
+                    placedItemTile.plantInfo.thieves
+                        .map((thief) => thief.toString())
+                        .includes(userId)
+                ) {
                     throw new WsException("You have already stolen this plant")
                 }
 
@@ -125,10 +126,6 @@ export class ThiefPlantService {
                 if (watcherUserId === userId) {
                     throw new WsException("Cannot steal your own plant")
                 }
-
-                /************************************************************
-                 * RETRIEVE AND VALIDATE USER DATA
-                 ************************************************************/
                 // Get activity data
                 const { energyConsume, experiencesGain } = this.staticService.activities.thiefPlant
 
@@ -157,10 +154,6 @@ export class ThiefPlantService {
 
                 // Save user snapshot for sync later
                 const userSnapshot = user.$clone()
-
-                /************************************************************
-                 * RETRIEVE PRODUCT DATA
-                 ************************************************************/
                 // Get product from static data based on plant
                 let plant: AbstractPlantSchema | undefined
                 let desiredQuantity: number
@@ -227,6 +220,55 @@ export class ThiefPlantService {
                 // Get storage capacity from static data
                 const { storageCapacity } = this.staticService.defaultInfo
 
+                // check assist strength
+                const {
+                    success: dogAssistedSuccess,
+                } = await this.assistanceService.dogDefenseSuccess({
+                    neighborUser: neighbor,
+                    user,
+                    session
+                })
+                if (dogAssistedSuccess) {
+                    actionPayload = {
+                        action: ActionName.ThiefPlant,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefPlantReasonCode.DogAssisted,
+                        userId
+                    }
+                    const placedItemTileSnapshot = placedItemTile.$clone()
+                    placedItemTile.plantInfo.thieves.push(new Types.ObjectId(userId))
+                    await placedItemTile.save({ session })
+                    const updatedSyncedPlacedItems =
+                        this.syncService.getPartialUpdatedSyncedPlacedItem({
+                            placedItemSnapshot: placedItemTileSnapshot,
+                            placedItemUpdated: placedItemTile
+                        })
+                    syncedPlacedItems.push(updatedSyncedPlacedItems)
+                    syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                        userSnapshot,
+                        userUpdated: user
+                    })
+                    await user.save({ session })
+                    await neighbor.save({ session })    
+                    return {
+                        user: syncedUser,
+                        placedItems: syncedPlacedItems,
+                        action: actionPayload,
+                        watcherUserId
+                    }
+                }
+                const {
+                    success: catAssistedSuccess,
+                    placedItemCatUpdated,
+                    percentQuantityBonusAfterComputed
+                } = await this.assistanceService.catAttackSuccess({
+                    user,
+                    session
+                })
+                if (catAssistedSuccess) {
+                    await placedItemCatUpdated.save({ session })
+                }
                 /************************************************************
                  * DATA MODIFICATION
                  ************************************************************/
@@ -255,11 +297,12 @@ export class ThiefPlantService {
                  * ADD HARVESTED PRODUCT TO INVENTORY
                  ************************************************************/
                 // Amount of product to steal
-                const actualQuantity = Math.min(
+                const actualQuantity = Math.floor(Math.min(
                     desiredQuantity,
-                    placedItemTile.plantInfo.harvestQuantityRemaining - placedItemTile.plantInfo.harvestQuantityMin
-                )
-
+                    placedItemTile.plantInfo.harvestQuantityRemaining -
+                        placedItemTile.plantInfo.harvestQuantityMin
+                ) * (1 + (percentQuantityBonusAfterComputed ?? 0)))
+                console.log(actualQuantity)
                 // Get inventory add parameters
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,
@@ -331,18 +374,20 @@ export class ThiefPlantService {
                     userId,
                     data: {
                         quantity: actualQuantity,
-                        productId: product.id
+                        productId: product.id,
+                        catAssistedSuccess
                     }
                 }
-            })
 
-            return {
-                user: syncedUser,
-                placedItems: syncedPlacedItems,
-                inventories: syncedInventories,
-                action: actionPayload,
-                watcherUserId
-            }
+                return {
+                    user: syncedUser,
+                    placedItems: syncedPlacedItems,
+                    inventories: syncedInventories,
+                    action: actionPayload,
+                    watcherUserId
+                }
+            })
+            return result
         } catch (error) {
             this.logger.error(error)
 

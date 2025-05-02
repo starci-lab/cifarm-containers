@@ -28,7 +28,8 @@ import {
     PaymentKind,
     RevenueRecipients,
     GoldPurchases,
-    InteractionPermissions
+    InteractionPermissions,
+    PetInfo
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -882,6 +883,17 @@ export class SystemSeeder implements Seeder {
             thiefLevelGapThreshold: 3,
         }
 
+        const petInfo: PetInfo = {
+            cat: {
+                chance: 0.1, // use 10% chance to assist
+                percentQuantityBonus: 1.25 // 125% bonus towards quantity
+            },
+            dog: {
+                chance: 0.1, // use 10% chance to assist
+                energyReduce: 3 // 3 energy per bite
+            }
+        }
+
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
@@ -972,6 +984,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.InteractionPermissions),
                 displayId: SystemId.InteractionPermissions,
                 value: interactionPermissions
+            },
+            {
+                _id: createObjectId(SystemId.PetInfo),
+                displayId: SystemId.PetInfo,
+                value: petInfo
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

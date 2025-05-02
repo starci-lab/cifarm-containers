@@ -44,7 +44,7 @@ export class BuildingSeeder implements Seeder {
                     unlockLevel: 5,
                     upgradeable: true,
                     maxOwnership: 3,
-                    kind: BuildingKind.Neutral,
+                    kind: BuildingKind.AnimalHouse,
                     sellable: true,
                     sellPrice: 1000,
                     upgrades: [
@@ -74,7 +74,7 @@ export class BuildingSeeder implements Seeder {
                     unlockLevel: 10,
                     upgradeable: true,
                     maxOwnership: 3,
-                    kind: BuildingKind.Neutral,
+                    kind: BuildingKind.AnimalHouse,
                     sellable: true,
                     sellPrice: 1000,
                     upgrades: [
@@ -158,8 +158,36 @@ export class BuildingSeeder implements Seeder {
                         }
                     ],
                 },
-            ]
-        
+                {
+                    _id: createObjectId(BuildingId.FishPond),
+                    displayId: BuildingId.FishPond,
+                    availableInShop: true,
+                    maxUpgrade: 3,
+                    price: 2000,
+                    unlockLevel: 10,
+                    upgradeable: true,
+                    maxOwnership: 3,
+                    kind: BuildingKind.FishPond,
+                    sellable: true,
+                    sellPrice: 1000,
+                    upgrades: [
+                        {
+                            capacity: 3,
+                            upgradeLevel: 1,
+                        },
+                        {
+                            upgradePrice: 1000,
+                            capacity: 5,
+                            upgradeLevel: 2,
+                        },
+                        {
+                            upgradePrice: 2000,
+                            capacity: 10,
+                            upgradeLevel: 3,
+                        }
+                    ]
+                }
+            ] 
             await this.connection.model<BuildingSchema>(BuildingSchema.name).insertMany(data)
         } catch (error) {
             this.logger.error(error)

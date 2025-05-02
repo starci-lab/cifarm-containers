@@ -14,6 +14,7 @@ import { ObjectModule } from "@src/object"
 import { LimitService } from "./limit"
 import { ShipService } from "./ship"
 import { VaultService } from "./vault"
+import { AssistanceService } from "./assistance"
 
 @Module({})
 export class GameplayModule extends ConfigurableModuleClass {
@@ -32,7 +33,8 @@ export class GameplayModule extends ConfigurableModuleClass {
             PositionService,
             SyncService,
             ShipService,
-            VaultService
+            VaultService,
+            AssistanceService
         ]
         if (loadStatic) {
             // services that are loaded if static is enabled

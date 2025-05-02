@@ -8,7 +8,7 @@ import { AbstractSchema } from "./abstract"
 @Schema({ timestamps: true, autoCreate: false })
 export class PetInfoSchema extends AbstractSchema {
     @Field(() => Int, {
-        description: "The count of help of the pet",
+        description: "The count of help of the pet"
     })
     @Prop({ type: Number, default: 0 })
         helpedCount: number

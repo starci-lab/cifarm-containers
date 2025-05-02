@@ -187,6 +187,22 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: Boolean, default: false })
         isOnline: boolean
+
+    // selected dog id
+    @Field(() => ID, {
+        nullable: true,
+        description: "The ID of the selected dog"
+    })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false })
+        selectedPlacedItemDogId?: Types.ObjectId
+
+    // selected cat id
+    @Field(() => ID, {
+        nullable: true,
+        description: "The ID of the selected cat"
+    })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false })
+        selectedPlacedItemCatId?: Types.ObjectId
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)
