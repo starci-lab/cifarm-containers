@@ -15,14 +15,15 @@ import {
     InventoryService,   
     LevelService, 
     SyncService,
-    ThiefService
+    ThiefService,
+    AssistanceService
 } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { Connection, Types } from "mongoose"
 import { ThiefFruitMessage } from "./thief-fruit.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, ThiefFruitData } from "../../../emitter"
+import { EmitActionPayload, ActionName, ThiefFruitData, ThiefFruitReasonCode } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
@@ -37,7 +38,8 @@ export class ThiefFruitService {
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
-        private readonly thiefService: ThiefService
+        private readonly thiefService: ThiefService,
+        private readonly assistanceService: AssistanceService
     ) {}
 
     async thiefFruit(
@@ -208,6 +210,57 @@ export class ThiefFruitService {
                 // Get storage capacity from static data
                 const { storageCapacity } = this.staticService.defaultInfo
 
+                // check assist strength
+                const {
+                    success: dogAssistedSuccess,
+                } = await this.assistanceService.dogDefenseSuccess({
+                    neighborUser: neighbor,
+                    user,
+                    session
+                })
+                if (dogAssistedSuccess) {
+                    actionPayload = {
+                        action: ActionName.ThiefFruit,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefFruitReasonCode.DogAssisted,
+                        userId
+                    }
+                    const placedItemFruitSnapshot = placedItemFruit.$clone()
+                    placedItemFruit.fruitInfo.thieves.push(new Types.ObjectId(userId))
+                    await placedItemFruit.save({ session })
+                    const updatedSyncedPlacedItems =
+                        this.syncService.getPartialUpdatedSyncedPlacedItem({
+                            placedItemSnapshot: placedItemFruitSnapshot,
+                            placedItemUpdated: placedItemFruit
+                        })
+                    syncedPlacedItems.push(updatedSyncedPlacedItems)
+                    syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                        userSnapshot,
+                        userUpdated: user
+                    })
+                    await user.save({ session })
+                    await neighbor.save({ session })    
+                    return {
+                        user: syncedUser,
+                        placedItems: syncedPlacedItems,
+                        action: actionPayload,
+                        watcherUserId
+                    }
+                }
+                const {
+                    success: catAssistedSuccess,
+                    placedItemCatUpdated,
+                    percentQuantityBonusAfterComputed,
+                    plusQuantityAfterComputed
+                } = await this.assistanceService.catAttackSuccess({
+                    user,
+                    session
+                })
+                if (catAssistedSuccess) {
+                    await placedItemCatUpdated.save({ session })
+                }
+
                 /************************************************************
                  * DATA MODIFICATION
                  ************************************************************/
@@ -238,10 +291,14 @@ export class ThiefFruitService {
                 // Amount of product to steal
                 const { value } = this.thiefService.computeFruit()
                 const desiredQuantity = value
-                const actualQuantity = Math.min(
+                let actualQuantity = Math.min(
                     desiredQuantity,
                     placedItemFruit.fruitInfo.harvestQuantityRemaining - placedItemFruit.fruitInfo.harvestQuantityMin
                 )
+                if (catAssistedSuccess) {
+                    actualQuantity += plusQuantityAfterComputed
+                    actualQuantity = Math.floor(actualQuantity * (1 + percentQuantityBonusAfterComputed)) 
+                }
 
                 // Get inventory add parameters
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
@@ -316,7 +373,8 @@ export class ThiefFruitService {
                     userId,
                     data: {
                         quantity: actualQuantity,
-                        productId: product.id
+                        productId: product.id,
+                        catAssistedSuccess
                     }
                 }
             })

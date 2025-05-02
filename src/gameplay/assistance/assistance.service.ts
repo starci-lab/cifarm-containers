@@ -126,11 +126,13 @@ export class AssistanceService {
                 experiences: pet.helpSuccessExperience
             })
             const percentQuantityBonusAfterComputed = this.staticService.petInfo.cat.percentQuantityBonus
+            const plusQuantityAfterComputed = this.staticService.petInfo.cat.plusQuantity
             return {
                 success: true,
                 placedItemCatSnapshot,
                 placedItemCatUpdated: placedItemCat,
-                percentQuantityBonusAfterComputed
+                percentQuantityBonusAfterComputed,
+                plusQuantityAfterComputed
             }
         }
         return {

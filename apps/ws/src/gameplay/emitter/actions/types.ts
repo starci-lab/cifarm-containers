@@ -20,14 +20,24 @@ export enum ThiefPlantReasonCode {
     DogAssisted = "dog_assisted",
 }
 
+export enum ThiefFruitReasonCode {
+    DogAssisted = "dog_assisted",
+}
+
 export interface ThiefAnimalData {
     quantity: number
     productId: string
+    catAssistedSuccess?: boolean
+}
+
+export enum ThiefAnimalReasonCode {
+    DogAssisted = "dog_assisted"
 }
 
 export interface ThiefFruitData {
     quantity: number
     productId: string
+    catAssistedSuccess?: boolean
 }
 
 export interface HarvestPlantData {
@@ -38,16 +48,6 @@ export interface HarvestPlantData {
 export interface HarvestFruitData {
     quantity: number
     productId : string
-}
-
-export interface ThiefFruitData {
-    quantity: number
-    productId: string
-}
-
-export interface ThiefAnimalProductData {
-    quantity: number
-    productId: string
 }
 
 export interface HarvestAnimalData {
@@ -63,6 +63,11 @@ export interface HarvestBeeHouseData {
 export interface ThiefBeeHouseData {
     quantity: number
     productId: string
+    catAssistedSuccess?: boolean
+}
+
+export enum ThiefBeeHouseReasonCode {
+    DogAssisted = "dog_assisted",
 }
 
 export interface DeliverProductData {
@@ -130,3 +135,4 @@ export enum ActionName {
     ThiefBeeHouse = "thief_bee_house",
     BuyPet = "buy_pet"
 }
+

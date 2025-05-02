@@ -28,4 +28,5 @@ export interface CatAttackSuccessResult {
     placedItemCatUpdated?: PlacedItemSchema
     userUpdated?: UserSchema
     percentQuantityBonusAfterComputed?: number
+    plusQuantityAfterComputed?: number
 }

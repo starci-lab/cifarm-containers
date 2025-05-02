@@ -1106,6 +1106,10 @@ export class CatInfo {
         description: "Percent quantity bonus"
     })
         percentQuantityBonus: number
+    @Field(() => Float, {
+        description: "Plus quantity"
+    })
+        plusQuantity: number
 }
 
 @ObjectType({

@@ -886,7 +886,8 @@ export class SystemSeeder implements Seeder {
         const petInfo: PetInfo = {
             cat: {
                 chance: 0.1, // use 10% chance to assist
-                percentQuantityBonus: 1.25 // 125% bonus towards quantity
+                plusQuantity: 1, // plus 1 quantity
+                percentQuantityBonus: 0.5 // 50% bonus towards quantity
             },
             dog: {
                 chance: 0.1, // use 10% chance to assist

@@ -11,7 +11,7 @@ import {
     ProductType,
     UserSchema
 } from "@src/databases"
-import { EnergyService, LevelService, SyncService, ThiefService } from "@src/gameplay"
+import { EnergyService, LevelService, SyncService, ThiefService, AssistanceService } from "@src/gameplay"
 import { StaticService } from "@src/gameplay/static"
 import { InventoryService } from "@src/gameplay/inventory"
 import { Connection, Types } from "mongoose"
@@ -21,7 +21,8 @@ import { createObjectId, DeepPartial, WithStatus } from "@src/common"
 import {
     EmitActionPayload,
     ActionName,
-    ThiefBeeHouseData
+    ThiefBeeHouseData,
+    ThiefBeeHouseReasonCode
 } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
@@ -37,7 +38,8 @@ export class ThiefBeeHouseService {
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
         private readonly thiefService: ThiefService,
-        private readonly inventoryService: InventoryService
+        private readonly inventoryService: InventoryService,
+        private readonly assistanceService: AssistanceService
     ) {}
 
     async thiefBeeHouse(
@@ -83,6 +85,19 @@ export class ThiefBeeHouseService {
                 if (!user) {
                     throw new WsException("User not found")
                 }
+
+                const neighbor = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(watcherUserId)
+                    .session(session)
+
+                if (!neighbor) {
+                    throw new WsException("Neighbor not found")
+                }
+                this.thiefService.checkAbleToThief({
+                    user,
+                    neighbor
+                })
 
                 // Save user snapshot for sync later
                 const userSnapshot = user.$clone()
@@ -136,8 +151,6 @@ export class ThiefBeeHouseService {
                     placedItemType: placedItemBuilding.placedItemType
                 }
 
-                //const placedItemBuildingSnapshot = placedItemBuilding.$clone()
-
                 /************************************************************
                  * VALIDATE ENERGY
                  ************************************************************/
@@ -147,6 +160,57 @@ export class ThiefBeeHouseService {
                     current: user.energy,
                     required: energyConsume
                 })
+
+                // check assist strength
+                const {
+                    success: dogAssistedSuccess,
+                } = await this.assistanceService.dogDefenseSuccess({
+                    neighborUser: neighbor,
+                    user,
+                    session
+                })
+                if (dogAssistedSuccess) {
+                    actionPayload = {
+                        action: ActionName.ThiefBeeHouse,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefBeeHouseReasonCode.DogAssisted,
+                        userId
+                    }
+                    const placedItemBuildingSnapshot = placedItemBuilding.$clone()
+                    placedItemBuilding.beeHouseInfo.thieves.push(new Types.ObjectId(userId))
+                    await placedItemBuilding.save({ session })
+                    const updatedSyncedPlacedItems =
+                        this.syncService.getPartialUpdatedSyncedPlacedItem({
+                            placedItemSnapshot: placedItemBuildingSnapshot,
+                            placedItemUpdated: placedItemBuilding
+                        })
+                    syncedPlacedItems.push(updatedSyncedPlacedItems)
+                    syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                        userSnapshot,
+                        userUpdated: user
+                    })
+                    await user.save({ session })
+                    await neighbor.save({ session })    
+                    return {
+                        user: syncedUser,
+                        placedItems: syncedPlacedItems,
+                        action: actionPayload,
+                        watcherUserId
+                    }
+                }
+                const {
+                    success: catAssistedSuccess,
+                    placedItemCatUpdated,
+                    percentQuantityBonusAfterComputed,
+                    plusQuantityAfterComputed
+                } = await this.assistanceService.catAttackSuccess({
+                    user,
+                    session
+                })
+                if (catAssistedSuccess) {
+                    await placedItemCatUpdated.save({ session })
+                }
 
                 /************************************************************
                  * UPDATE USER ENERGY AND EXPERIENCE
@@ -194,10 +258,14 @@ export class ThiefBeeHouseService {
                 
                 const { value } = this.thiefService.computeBeeHouse()
                 const desiredQuantity = value
-                const actualQuantity = Math.min(
+                let actualQuantity = Math.min(
                     desiredQuantity,
                     placedItemBuilding.beeHouseInfo.harvestQuantityRemaining - placedItemBuilding.beeHouseInfo.harvestQuantityMin
                 )
+                if (catAssistedSuccess) {
+                    actualQuantity += plusQuantityAfterComputed
+                    actualQuantity = Math.floor(actualQuantity * (1 + percentQuantityBonusAfterComputed)) 
+                }
 
                 // Get inventory add parameters
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
@@ -266,7 +334,8 @@ export class ThiefBeeHouseService {
                     userId,
                     data: {
                         quantity: actualQuantity,
-                        productId: product.id
+                        productId: product.id,
+                        catAssistedSuccess
                     }
                 }
             })

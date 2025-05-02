@@ -261,7 +261,8 @@ export class ThiefPlantService {
                 const {
                     success: catAssistedSuccess,
                     placedItemCatUpdated,
-                    percentQuantityBonusAfterComputed
+                    percentQuantityBonusAfterComputed,
+                    plusQuantityAfterComputed
                 } = await this.assistanceService.catAttackSuccess({
                     user,
                     session
@@ -297,12 +298,15 @@ export class ThiefPlantService {
                  * ADD HARVESTED PRODUCT TO INVENTORY
                  ************************************************************/
                 // Amount of product to steal
-                const actualQuantity = Math.floor(Math.min(
+                let actualQuantity = Math.min(
                     desiredQuantity,
                     placedItemTile.plantInfo.harvestQuantityRemaining -
                         placedItemTile.plantInfo.harvestQuantityMin
-                ) * (1 + (percentQuantityBonusAfterComputed ?? 0)))
-                console.log(actualQuantity)
+                )
+                if (catAssistedSuccess) {
+                    actualQuantity += plusQuantityAfterComputed
+                    actualQuantity = Math.floor(actualQuantity * (1 + percentQuantityBonusAfterComputed)) 
+                }
                 // Get inventory add parameters
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
                     connection: this.connection,

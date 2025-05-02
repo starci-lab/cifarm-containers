@@ -15,14 +15,15 @@ import {
     InventoryService,
     LevelService, 
     SyncService,    
-    ThiefService
+    AssistanceService
 } from "@src/gameplay"
+import { ThiefService } from "@src/gameplay/thief"
 import { StaticService } from "@src/gameplay/static"
 import { Connection, Types } from "mongoose"
 import { ThiefAnimalMessage } from "./thief-animal.dto"
 import { UserLike } from "@src/jwt"
 import { createObjectId, DeepPartial, WithStatus } from "@src/common"
-import { EmitActionPayload, ActionName, ThiefAnimalData } from "../../../emitter"
+import { EmitActionPayload, ActionName, ThiefAnimalData, ThiefAnimalReasonCode } from "../../../emitter"
 import { WsException } from "@nestjs/websockets"
 import { SyncedResponse } from "../../types"
 
@@ -37,7 +38,8 @@ export class ThiefAnimalService {
         private readonly levelService: LevelService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
-        private readonly thiefService: ThiefService
+        private readonly thiefService: ThiefService,
+        private readonly assistanceService: AssistanceService
     ) {}
 
     async thiefAnimal(
@@ -208,6 +210,57 @@ export class ThiefAnimalService {
                     neighbor
                 })
 
+                // check assist strength
+                const {
+                    success: dogAssistedSuccess,
+                } = await this.assistanceService.dogDefenseSuccess({
+                    neighborUser: neighbor,
+                    user,
+                    session
+                })
+                if (dogAssistedSuccess) {
+                    actionPayload = {
+                        action: ActionName.ThiefAnimal,
+                        placedItem: syncedPlacedItemAction,
+                        success: false,
+                        reasonCode: ThiefAnimalReasonCode.DogAssisted,
+                        userId
+                    }
+                    const placedItemAnimalSnapshot = placedItemAnimal.$clone()
+                    placedItemAnimal.animalInfo.thieves.push(new Types.ObjectId(userId))
+                    await placedItemAnimal.save({ session })
+                    const updatedSyncedPlacedItems =
+                        this.syncService.getPartialUpdatedSyncedPlacedItem({
+                            placedItemSnapshot: placedItemAnimalSnapshot,
+                            placedItemUpdated: placedItemAnimal
+                        })
+                    syncedPlacedItems.push(updatedSyncedPlacedItems)
+                    syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                        userSnapshot,
+                        userUpdated: user
+                    })
+                    await user.save({ session })
+                    await neighbor.save({ session })    
+                    return {
+                        user: syncedUser,
+                        placedItems: syncedPlacedItems,
+                        action: actionPayload,
+                        watcherUserId
+                    }
+                }
+                const {
+                    success: catAssistedSuccess,
+                    placedItemCatUpdated,
+                    percentQuantityBonusAfterComputed,
+                    plusQuantityAfterComputed
+                } = await this.assistanceService.catAttackSuccess({
+                    user,
+                    session
+                })
+                if (catAssistedSuccess) {
+                    await placedItemCatUpdated.save({ session })
+                }
+
                 /************************************************************
                  * DATA MODIFICATION
                  ************************************************************/
@@ -238,10 +291,14 @@ export class ThiefAnimalService {
                 // Amount of product to steal
                 const { value } = this.thiefService.computeAnimal()
                 const desiredQuantity = value
-                const actualQuantity = Math.min(
+                let actualQuantity = Math.min(
                     desiredQuantity,
                     placedItemAnimal.animalInfo.harvestQuantityRemaining - placedItemAnimal.animalInfo.harvestQuantityMin
                 )
+                if (catAssistedSuccess) {
+                    actualQuantity += plusQuantityAfterComputed
+                    actualQuantity = Math.floor(actualQuantity * (1 + percentQuantityBonusAfterComputed)) 
+                }
 
                 // Get inventory add parameters
                 const { occupiedIndexes, inventories } = await this.inventoryService.getAddParams({
@@ -314,7 +371,8 @@ export class ThiefAnimalService {
                     userId,
                     data: {
                         quantity: actualQuantity,
-                        productId: product.id
+                        productId: product.id,
+                        catAssistedSuccess
                     }
                 }
             })
