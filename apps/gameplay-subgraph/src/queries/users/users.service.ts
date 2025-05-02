@@ -118,6 +118,7 @@ export class UsersService {
                     follower: id
                 })
             const followeeIds = relations.map(({ followee }) => followee)
+            
             const data = await this.connection
                 .model<UserSchema>(UserSchema.name)
                 .find({
@@ -131,6 +132,12 @@ export class UsersService {
                 })
                 .skip(offset)
                 .limit(limit)
+
+            // map relations to object
+            data.map((user) => {
+                user.followed = !!relations.find(({ followee }) => followee.toString() === user.id)
+                return user
+            })
 
             const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
                 _id: { $in: followeeIds },

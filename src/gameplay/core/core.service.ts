@@ -66,6 +66,7 @@ export class CoreService {
         placedItemAnimal.animalInfo.currentHungryTime = 0
         placedItemAnimal.animalInfo.currentState = AnimalCurrentState.Hungry
         placedItemAnimal.animalInfo.harvestQuantityRemaining = 0
+        placedItemAnimal.animalInfo.isQuality = false
 
         return placedItemAnimal
     }
@@ -83,6 +84,7 @@ export class CoreService {
         placedItemFruit.fruitInfo.currentStage = fruitInfo.nextGrowthStageAfterHarvest - 1
         placedItemFruit.fruitInfo.currentStageTimeElapsed = 0
         placedItemFruit.fruitInfo.harvestQuantityRemaining = 0
+        placedItemFruit.fruitInfo.isQuality = false
         // return the placed item fruit
         return placedItemFruit
     }
@@ -104,6 +106,7 @@ export class CoreService {
         placedItemBuilding.beeHouseInfo.harvestQuantityRemaining = 0
         placedItemBuilding.beeHouseInfo.harvestQuantityDesired = 0
         placedItemBuilding.beeHouseInfo.currentState = BeeHouseCurrentState.Normal
+        placedItemBuilding.beeHouseInfo.isQuality = false
         return placedItemBuilding
     }
 

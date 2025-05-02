@@ -7,8 +7,6 @@ import { Connection } from "mongoose"
 import { StaticService, GoldBalanceService } from "@src/gameplay"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
-import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
-import { Producer } from "kafkajs"
 import { UpdateFollowXResponse } from "./update-follow-x.dto"
 
 @Injectable()
@@ -20,8 +18,6 @@ export class UpdateFollowXService {
         private readonly connection: Connection,
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
-        @InjectKafkaProducer()
-        private readonly kafkaProducer: Producer
     ) {}
 
     async updateFollowX({
@@ -31,7 +27,7 @@ export class UpdateFollowXService {
         let user: UserSchema | undefined
         try {
             // Using `withTransaction` for automatic transaction handling
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -78,18 +74,12 @@ export class UpdateFollowXService {
                 // Update user with the new token balance and mark followXAwarded as true
                 user.followXAwarded = true
                 await user.save({ session })
+                return {
+                    success: true,
+                    message: "FollowX updated successfully",
+                }
             })
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncUser,
-                    messages: [{ value: JSON.stringify({ userId, user: user.toJSON() }) }]
-                })
-            ])
-
-            return {
-                success: true,
-                message: "FollowX updated successfully",
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

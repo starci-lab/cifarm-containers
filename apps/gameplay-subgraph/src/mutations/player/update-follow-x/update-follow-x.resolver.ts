@@ -2,11 +2,9 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Mutation, Resolver } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { VoidResolver } from "graphql-scalars"
 import { UpdateFollowXService } from "./update-follow-x.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
-
-
+import { UpdateFollowXResponse } from "./update-follow-x.dto"
 
 @Resolver()
 export class UpdateFollowXResolver {
@@ -16,7 +14,7 @@ export class UpdateFollowXResolver {
 
     
     @UseGuards(GraphQLJwtAuthGuard, GraphQLThrottlerGuard)
-    @Mutation(() => VoidResolver, {
+    @Mutation(() => UpdateFollowXResponse, {
         name: "updateFollowX",
         description: "Update follow X",
         nullable: true

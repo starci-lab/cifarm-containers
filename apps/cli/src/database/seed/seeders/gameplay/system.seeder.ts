@@ -273,9 +273,9 @@ export class SystemSeeder implements Seeder {
             wholesaleMarketCapacity: 50,
             toolCapacity: 8,
             referredLimit: 25,
-            referralRewardQuantity: 50,
-            referredRewardQuantity: 10,
-            followXRewardQuantity: 20,
+            referralRewardQuantity: 4000,
+            referredRewardQuantity: 2000,
+            followXRewardQuantity: 2000,
             tileLimit: 60,
             fruitLimit: 10,
             buildingLimit: 30

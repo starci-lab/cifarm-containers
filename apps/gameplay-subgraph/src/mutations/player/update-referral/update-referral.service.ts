@@ -31,7 +31,7 @@ export class UpdateReferralService {
         let syncedUser: WithStatus<UserSchema> | undefined
         try {
             // Using `withTransaction` for automatic transaction handling
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * RETRIEVE CONFIGURATION DATA
                  ************************************************************/
@@ -132,20 +132,22 @@ export class UpdateReferralService {
                     userSnapshot,
                     userUpdated: user
                 })
-            })
-            await Promise.all([
-                this.kafkaProducer.send({
-                    topic: KafkaTopic.SyncUser,
-                    messages: [
-                        { value: JSON.stringify({ userId, data: syncedUser }) }
-                    ]
-                })
-            ])
 
-            return {
-                success: true,
-                message: "Referral updated successfully",
-            }
+                await Promise.all([
+                    this.kafkaProducer.send({
+                        topic: KafkaTopic.SyncUser,
+                        messages: [
+                            { value: JSON.stringify({ userId, data: syncedUser }) }
+                        ]
+                    })
+                ])
+    
+                return {
+                    success: true,
+                    message: "Referral updated successfully",
+                }
+            })
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error // Rethrow the error after logging

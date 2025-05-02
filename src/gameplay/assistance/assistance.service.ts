@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import {
     DogDefenseSuccessParams,
-    GetAssistanceChanceParams,
     CatAttackSuccessParams,
     DogDefenseSuccessResult,
     CatAttackSuccessResult
