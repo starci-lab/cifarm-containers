@@ -26,6 +26,7 @@ export class PetSeeder implements Seeder {
                 sellPrice: 500,
                 type: PetType.Dog,
                 helpSuccessExperience: 12,
+                sellable: true,
             },
             {
                 _id: createObjectId(PetId.Cat),
@@ -36,6 +37,7 @@ export class PetSeeder implements Seeder {
                 sellPrice: 500,
                 type: PetType.Cat,
                 helpSuccessExperience: 12,
+                sellable: true,
             },
         ]
 

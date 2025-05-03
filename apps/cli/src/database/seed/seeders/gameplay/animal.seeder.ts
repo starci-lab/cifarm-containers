@@ -27,7 +27,7 @@ export class AnimalSeeder implements Seeder {
                 displayId: AnimalId.Chicken,
                 yieldTime: 60 * 60 * 24,
                 offspringPrice: 1000,
-                isNft: false,
+                isNFT: false,
                 growthTime: 60 * 60 * 24 * 3,
                 availableInShop: true,
                 hungerTime: 60 * 60 * 12,
@@ -37,6 +37,7 @@ export class AnimalSeeder implements Seeder {
                 price: 1000,
                 type: AnimalType.Poultry,
                 unlockLevel: 5,
+                sellable: true,
                 sellPrice: 500,
             },
             {
@@ -44,7 +45,7 @@ export class AnimalSeeder implements Seeder {
                 displayId: AnimalId.Cow,
                 yieldTime: 60 * 60 * 24 * 2,
                 offspringPrice: 2500,
-                isNft: false,
+                isNFT: false,
                 growthTime: 60 * 60 * 24 * 7,
                 availableInShop: true,
                 hungerTime: 60 * 60 * 12,
@@ -55,6 +56,7 @@ export class AnimalSeeder implements Seeder {
                 type: AnimalType.Livestock,
                 unlockLevel: 10,
                 sellPrice: 1250,
+                sellable: true,
             }
         ]
         try {

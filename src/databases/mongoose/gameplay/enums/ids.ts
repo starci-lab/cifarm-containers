@@ -414,7 +414,7 @@ export enum SystemId {
     FlowerInfo = "flowerInfo",
     BeeHouseInfo = "beeHouseInfo",
     NFTCollections = "nftCollections",
-    NFTStarterBoxInfo = "nftStarterBoxInfo",
+    NFTBoxInfo = "nftBoxInfo",
     StableCoins = "stableCoins",
     TokenVaults = "tokenVaults",
     WholesaleMarket = "wholesaleMarket",
@@ -460,7 +460,7 @@ registerEnumType(GraphQLTypeSystemId, {
         [SystemId.NFTCollections]: {
             description: "The NFT collections id.",
         },
-        [SystemId.NFTStarterBoxInfo]: {
+        [SystemId.NFTBoxInfo]: {
             description: "The NFT starter box info id.",
         },
         [SystemId.StableCoins]: {

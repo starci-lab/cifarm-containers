@@ -16,7 +16,7 @@ import {
     InjectMongoose,
     NFTCollections,
     NFTRarity,
-    NFTStarterBoxInfo,
+    NFTBoxInfo,
     NFTType,
     ProductId,
     StableCoinName,
@@ -736,7 +736,7 @@ export class SystemSeeder implements Seeder {
             minThievablePercentage: 0.7
         }
 
-        const nftStarterBoxInfo: NFTStarterBoxInfo = {
+        const nftBoxInfo: NFTBoxInfo = {
             chances: [
                 {
                     nftType: NFTType.Jackfruit,
@@ -767,7 +767,8 @@ export class SystemSeeder implements Seeder {
                     epicRarityChance: 0.9
                 }
             ],
-            boxPrice: 0.1, // 0.1 USDC
+            paymentKind: PaymentKind.USDC,
+            boxPrice: 0.5, // 0.5 USDC
             feePercentage: 0.02 // 2% to fee collector, will to the fee collector address
         }
 
@@ -952,9 +953,9 @@ export class SystemSeeder implements Seeder {
                 value: nftCollections
             },
             {
-                _id: createObjectId(SystemId.NFTStarterBoxInfo),
-                displayId: SystemId.NFTStarterBoxInfo,
-                value: nftStarterBoxInfo
+                _id: createObjectId(SystemId.NFTBoxInfo),
+                displayId: SystemId.NFTBoxInfo,
+                value: nftBoxInfo
             },
             {
                 _id: createObjectId(SystemId.StableCoins),

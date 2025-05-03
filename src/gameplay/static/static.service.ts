@@ -28,7 +28,7 @@ import {
     FlowerInfo,
     BeeHouseInfo,
     NFTCollections,
-    NFTStarterBoxInfo,
+    NFTBoxInfo,
     StableCoins,
     TokenVaults,
     WholesaleMarket,
@@ -68,7 +68,7 @@ export class StaticService implements OnModuleInit {
     public flowerInfo: FlowerInfo
     public beeHouseInfo: BeeHouseInfo
     public nftCollections: NFTCollections
-    public nftStarterBoxInfo: NFTStarterBoxInfo
+    public nftBoxInfo: NFTBoxInfo
     public stableCoins: StableCoins
     public tokenVaults: TokenVaults
     public wholesaleMarket: WholesaleMarket
@@ -143,10 +143,10 @@ export class StaticService implements OnModuleInit {
             .findById<KeyValueRecord<NFTCollections>>(createObjectId(SystemId.NFTCollections))
         this.nftCollections = nftCollectionsDoc.value
 
-        const nftStarterBoxInfoDoc = await this.connection
+        const nftBoxInfoDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<NFTStarterBoxInfo>>(createObjectId(SystemId.NFTStarterBoxInfo))
-        this.nftStarterBoxInfo = nftStarterBoxInfoDoc.value
+            .findById<KeyValueRecord<NFTBoxInfo>>(createObjectId(SystemId.NFTBoxInfo))
+        this.nftBoxInfo = nftBoxInfoDoc.value
 
         const stableCoinsDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)

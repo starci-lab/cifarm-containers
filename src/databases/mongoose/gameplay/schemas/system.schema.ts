@@ -858,40 +858,11 @@ export class StableCoins {
     [StableCoinName.USDC]: StableCoin
 }
 
-@ObjectType({
-    description: "Configuration for NFT starter box"
-})
-export class NFTStarterBoxInfo {
-    @Field(() => [NFTStarterBoxChance], {
-        description: "Each chance for a box configuration"
-    })
-        chances: Array<NFTStarterBoxChance>
-
-    @Field(() => Float, {
-        description: "Price for each box"
-    })
-        boxPrice: number
-    
-    @Field(() => Float, {
-        description: "Fee percentage"
-    })
-        feePercentage: number
-}
 
 @ObjectType({
-    description: "Configuration for NFT starter box"
+    description: "Each chance for a NFT box"
 })
-export class NFTStarterBox {
-    @Field(() => NFTStarterBoxInfo, {
-        description: "NFT starter box"
-    })
-        info: NFTStarterBoxInfo
-}
-
-@ObjectType({
-    description: "Each chance for a NFT starter box"
-})
-export class NFTStarterBoxChance {
+export class NFTBoxChance {
     @Field(() => GraphQLTypeNFTType, {
         description: "NFT type"
     })
@@ -912,6 +883,31 @@ export class NFTStarterBoxChance {
         description: "Epic rarity chance"
     })
         epicRarityChance: number
+}
+
+@ObjectType({
+    description: "Configuration for NFT starter box"
+})
+export class NFTBoxInfo {
+    @Field(() => [NFTBoxChance], {
+        description: "Each chance for a box configuration"
+    })
+        chances: Array<NFTBoxChance>
+
+    @Field(() => Float, {
+        description: "Price for each box"
+    })
+        boxPrice: number
+
+    @Field(() => GraphQLTypePaymentKind, {
+        description: "Payment kind"
+    })
+        paymentKind: PaymentKind
+    
+    @Field(() => Float, {
+        description: "Fee percentage"
+    })
+        feePercentage: number
 }
 
 @ObjectType({

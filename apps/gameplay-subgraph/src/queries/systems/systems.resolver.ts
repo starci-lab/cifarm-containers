@@ -14,7 +14,8 @@ import {
     GoldPurchases,
     BeeHouseInfo,
     FlowerInfo,
-    InteractionPermissions
+    InteractionPermissions,
+    NFTBoxInfo
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -34,7 +35,6 @@ export class SystemsResolver {
     activities(): Activities {
         return this.systemsService.activities()
     }
-
     
     @UseGuards(GraphQLThrottlerGuard)
     @Query(() => CropInfo, {
@@ -157,5 +157,14 @@ export class SystemsResolver {
     })
     interactionPermissions(): InteractionPermissions {
         return this.systemsService.interactionPermissions()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => NFTBoxInfo, {
+        name: "nftBoxInfo",
+        description: "Get the nft box info"
+    })
+    nftBoxInfo(): NFTBoxInfo {
+        return this.systemsService.nftBoxInfo()
     }
 }

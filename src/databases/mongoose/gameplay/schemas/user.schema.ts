@@ -164,14 +164,14 @@ export class UserSchema extends AbstractSchema {
         nullable: true
     })
     @Prop({ type: Number, required: false })
-        lastSolanaStarterBoxRollType?: number
+        lastSolanaNFTBoxRollType?: number
 
     @Field(() => Float, {
-        description: "Last time the user rolled the nft starter box rarity",
+        description: "Last time the user rolled the nft box rarity",
         nullable: true
     })
     @Prop({ type: Number, required: false })
-        lastSolanaNFTStarterBoxRollRarity?: number
+        lastSolanaNFTBoxRollRarity?: number
 
     // last online time
     @Field(() => Date, {

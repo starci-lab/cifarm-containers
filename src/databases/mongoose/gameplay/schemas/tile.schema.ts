@@ -25,7 +25,7 @@ export class TileSchema extends AbstractSchema {
         description: "Whether the tile is an NFT"
     })
     @Prop({ type: Boolean, required: true })
-        isNft: boolean
+        isNFT: boolean
 
     @Field(() => Int, { 
         nullable: true,

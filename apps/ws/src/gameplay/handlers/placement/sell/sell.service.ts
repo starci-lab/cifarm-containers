@@ -132,8 +132,26 @@ export class SellService {
                     sellPrice = fruit.sellPrice
                     break
                 }
+                case PlacedItemType.Pet: {
+                    const pet = this.staticService.pets.find(
+                        (pet) => pet.id === placedItemType.pet.toString()
+                    )
+                    if (!pet) {
+                        throw new WsException("Pet not found")
+                    }
+                    if (!pet.sellable) {
+                        throw new WsException("Pet not sellable")
+                    }
+                    if (!pet.sellPrice) {
+                        throw new WsException("Pet sell price not found")
+                    }
+                    sellPrice = pet.sellPrice
+                    break
                 }
-
+                default: {
+                    throw new WsException("Invalid placed item type")
+                }
+                }
                 /************************************************************
                  * RETRIEVE AND UPDATE USER DATA
                  ************************************************************/

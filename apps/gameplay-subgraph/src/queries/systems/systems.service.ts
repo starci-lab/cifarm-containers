@@ -13,7 +13,8 @@ import {
     WholesaleMarket,
     BeeHouseInfo,
     FlowerInfo,
-    InteractionPermissions
+    InteractionPermissions,
+    NFTBoxInfo
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -79,5 +80,9 @@ export class SystemsService {
 
     interactionPermissions(): InteractionPermissions {
         return this.staticService.interactionPermissions
+    }
+
+    nftBoxInfo(): NFTBoxInfo {
+        return this.staticService.nftBoxInfo
     }
 }

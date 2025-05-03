@@ -49,6 +49,12 @@ export class PetSchema extends AbstractSchema {
     })
     @Prop({ type: Number, min: 0 })
         helpSuccessExperience: number
+
+    @Field(() => Boolean, {
+        description: "Whether the pet is sellable"
+    })
+    @Prop({ type: Boolean, required: false })
+        sellable?: boolean
 }
 
 // Generate Mongoose Schema
