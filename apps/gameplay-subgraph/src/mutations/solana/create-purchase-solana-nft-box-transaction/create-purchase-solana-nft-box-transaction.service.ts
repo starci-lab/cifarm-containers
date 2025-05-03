@@ -118,12 +118,13 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 // first season is USDC so that we hardcode the token address
                 const tokenVaultAddress = this.solanaMetaplexService.getVaultUmi(user.network).identity.publicKey.toString()
                 const feeAmount = roundNumber(this.staticService.nftBoxInfo.boxPrice * this.staticService.nftBoxInfo.feePercentage)
+                const tokenAmount = this.staticService.nftBoxInfo.boxPrice - feeAmount
                 const { transaction: transferTokenToVaultTransaction } =
                     await this.solanaMetaplexService.createTransferTokenTransaction({
                         network: user.network,
                         tokenAddress: tokenAddress,
                         toAddress: tokenVaultAddress,
-                        amount: this.staticService.nftBoxInfo.boxPrice - feeAmount,
+                        amount: tokenAmount,
                         decimals: tokenDecimals,
                         fromAddress: user.accountAddress
                     })
@@ -157,6 +158,7 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 const cacheData: PurchaseSolanaNFTBoxTransactionCache = {
                     nftType,
                     rarity,
+                    tokenAmount,
                     nftName
                 }
                 await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction

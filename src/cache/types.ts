@@ -39,4 +39,5 @@ export interface PurchaseSolanaNFTBoxTransactionCache {
     nftType: NFTType
     rarity: NFTRarity
     nftName: string
+    tokenAmount: number
 }

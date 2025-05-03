@@ -14,7 +14,7 @@ import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { StaticService } from "@src/gameplay"
-import { createObjectId, roundNumber } from "@src/common"
+import { createObjectId } from "@src/common"
 import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
 
 @Injectable()
@@ -66,15 +66,11 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                         }
                     })
                 }
-                const { nftType, rarity, nftName } = cachedTx
+                const { nftType, rarity, nftName, tokenAmount } = cachedTx
                 const signedTx = await this.solanaMetaplexService
                     .getUmi(user.network)
                     .identity.signTransaction(tx)
                 // first season is USDC so that we hardcode the token address
-                const feeAmount = roundNumber(
-                    this.staticService.nftBoxInfo.boxPrice *
-                        this.staticService.nftBoxInfo.feePercentage
-                )
                 // update the valut info in the database
                 const vaultInfos = await this.connection
                     .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
@@ -98,8 +94,7 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                                         tokenLocked:
                                             vaultInfos.value[user.chainKey][user.network]
                                                 .tokenLocked +
-                                            (this.staticService.nftBoxInfo.boxPrice -
-                                                feeAmount)
+                                            tokenAmount
                                     }
                                 }
                             }
