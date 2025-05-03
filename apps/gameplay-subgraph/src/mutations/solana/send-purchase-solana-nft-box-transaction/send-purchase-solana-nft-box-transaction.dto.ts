@@ -1,6 +1,10 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
+import { GraphQLTypeNFTRarity } from "@src/databases"
+import { NFTRarity } from "@src/databases"
+import { NFTType } from "@src/databases"
+import { GraphQLTypeNFTType } from "@src/databases"
 import { IResponseLike, ResponseLike } from "@src/graphql"
-import { IsBase58 } from "class-validator"
+import { IsBase58, IsEnum, IsString } from "class-validator"
 
 @InputType({
     description: "Send Purchase Solana NFT Box Transaction request"
@@ -19,6 +23,18 @@ export class SendPurchaseSolanaNFTBoxTransactionResponseData {
     @IsBase58()
     @Field(() => String)
         txHash: string
+
+    @IsEnum(NFTType)
+    @Field(() => GraphQLTypeNFTType, { description: "The NFT type" })
+        nftType: NFTType
+
+    @IsEnum(NFTRarity)
+    @Field(() => GraphQLTypeNFTRarity, { description: "The NFT rarity" })
+        rarity: NFTRarity
+
+    @IsString()
+    @Field(() => String, { description: "The NFT name" })
+        nftName: string
 }
 
 @ObjectType({

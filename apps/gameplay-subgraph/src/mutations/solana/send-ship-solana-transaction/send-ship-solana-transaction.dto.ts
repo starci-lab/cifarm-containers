@@ -17,7 +17,7 @@ export class SendShipSolanaTransactionRequest {
 })
 export class SendShipSolanaTransactionResponseData {
     @IsBase58()
-    @Field(() => String)
+    @Field(() => String, { description: "The transaction hash" })
         txHash: string
 }
 

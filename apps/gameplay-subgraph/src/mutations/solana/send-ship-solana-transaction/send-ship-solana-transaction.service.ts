@@ -189,7 +189,7 @@ export class SendShipSolanaTransactionService {
                     success: true,
                     message: "Ship Solana transaction sent successfully",
                     data: {
-                        txHash: base58.encode(txHash)
+                        txHash: base58.encode(txHash),
                     }
                 }
             })

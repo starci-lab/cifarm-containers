@@ -15,6 +15,7 @@ import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { StaticService } from "@src/gameplay"
 import { createObjectId, roundNumber } from "@src/common"
+import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
 
 @Injectable()
 export class SendPurchaseSolanaNFTBoxTransactionService {
@@ -57,7 +58,7 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                             .transactions.serializeMessage(tx.message)
                     )
                 )
-                const cachedTx = await this.cacheManager.get(cacheKey)
+                const cachedTx = await this.cacheManager.get<PurchaseSolanaNFTBoxTransactionCache>(cacheKey)
                 if (!cachedTx) {
                     throw new GraphQLError("Transaction not found in cache", {
                         extensions: {
@@ -65,6 +66,7 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                         }
                     })
                 }
+                const { nftType, rarity, nftName } = cachedTx
                 const signedTx = await this.solanaMetaplexService
                     .getUmi(user.network)
                     .identity.signTransaction(tx)
@@ -123,7 +125,10 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                     })
                 return {
                     data: {
-                        txHash: base58.encode(txHash)
+                        txHash: base58.encode(txHash),
+                        nftType,
+                        rarity,
+                        nftName
                     },
                     success: true,
                     message: "NFT starter box transaction sent successfully"

@@ -1,3 +1,5 @@
+import { NFTType, NFTRarity } from "@src/databases"
+
 export enum CacheKey {
     DeliverInstantly = "DeliverInstantly",
     PlantLastSchedule = "PlantLastSchedule",
@@ -33,3 +35,8 @@ export interface BuyGoldsSolanaTransactionCache {
     selectionIndex: number
 }
 
+export interface PurchaseSolanaNFTBoxTransactionCache {
+    nftType: NFTType
+    rarity: NFTRarity
+    nftName: string
+}

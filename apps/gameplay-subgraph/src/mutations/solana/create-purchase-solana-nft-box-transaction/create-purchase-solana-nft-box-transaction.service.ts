@@ -5,7 +5,7 @@ import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
 import { CreatePurchaseSolanaNFTBoxTransactionResponse } from "./create-purchase-solana-nft-box-transaction.dto"
-import { SolanaMetaplexService } from "@src/blockchain"
+import { AttributeName, SolanaMetaplexService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
 import { transactionBuilder, publicKey, createNoopSigner } from "@metaplex-foundation/umi"
 import base58 from "bs58"
@@ -14,6 +14,7 @@ import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { roundNumber } from "@src/common"
+import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
 
 @Injectable()
 export class CreatePurchaseSolanaNFTBoxTransactionService {
@@ -87,18 +88,25 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                     save: !isStarterBoxUnset
                 })
 
+                const nftName = `${nftCollectionData.name} #${nextNFTIndex}`
                 const { transaction: mintNFTTransaction } =
                     await this.solanaMetaplexService.createMintNFTTransaction({
                         network: user.network,
                         ownerAddress: user.accountAddress,
-                        attributes: Object.entries(nftCollectionData.rarities[rarity]).map(
-                            ([key, value]) => ({
-                                key,
-                                value
-                            })
-                        ),
+                        attributes: [
+                            ...Object.entries(nftCollectionData.rarities[rarity]).map(
+                                ([key, value]) => ({
+                                    key,
+                                    value
+                                })
+                            ),
+                            {
+                                key: AttributeName.Rarity,
+                                value: rarity
+                            }
+                        ],
                         collectionAddress: nftCollectionData.collectionAddress,
-                        name: `${nftCollectionData.name} #${nextNFTIndex}`,
+                        name: nftName,
                         feePayer: user.accountAddress,
                         uri: nftCollectionData.fruitStages.stages[0].imageUrl
                     })
@@ -145,7 +153,13 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                             .transactions.serializeMessage(transaction.message)
                     )
                 )
-                await this.cacheManager.set(cacheKey, true, 1000 * 60 * 15) // 15 minutes to verify the transaction
+
+                const cacheData: PurchaseSolanaNFTBoxTransactionCache = {
+                    nftType,
+                    rarity,
+                    nftName
+                }
+                await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
                 return {
                     serializedTx: base58.encode(
                         this.solanaMetaplexService
