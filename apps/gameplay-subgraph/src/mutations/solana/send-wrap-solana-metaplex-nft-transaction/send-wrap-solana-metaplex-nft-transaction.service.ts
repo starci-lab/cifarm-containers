@@ -6,7 +6,8 @@ import {
     NFTMetadataSchema,
     NFTType,
     NFTTypeToPlacedItemTypeId,
-    PlacedItemType
+    PlacedItemType,
+    FruitCurrentState
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
@@ -70,8 +71,19 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                         }
                     })
                 }
+                const nftMetadata = await this.connection
+                    .model<NFTMetadataSchema>(NFTMetadataSchema.name)
+                    .findById(cacheData.nftMetadataId)
+                    .session(session)
+                if (!nftMetadata) {
+                    throw new GraphQLError("NFT metadata not found", {
+                        extensions: {
+                            code: "NFT_METADATA_NOT_FOUND"
+                        }
+                    })
+                }
                 const nft = await this.solanaMetaplexService.getNFT({
-                    nftAddress: cacheData.nftAddress,
+                    nftAddress: nftMetadata.nftAddress,
                     network: user.network
                 })
                 if (!nft) {
@@ -88,35 +100,20 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                         }
                     })
                 }
-                // check off-chain if the nft is not valid
-                const foundNFTMetadata = await this.connection
-                    .model<NFTMetadataSchema>(NFTMetadataSchema.name)
-                    .findOne({
-                        nftAddress: cacheData.nftAddress,
-                        user: id
-                    })
-                    .session(session)
-                if (!foundNFTMetadata) {
-                    throw new GraphQLError("NFT metadata not found", {
-                        extensions: {
-                            code: "NFT_METADATA_NOT_FOUND"
-                        }
-                    })
-                }
-                if (foundNFTMetadata.validated) {
+                if (nftMetadata.validated) {
                     throw new GraphQLError("NFT is already validated", {
                         extensions: {
                             code: "NFT_ALREADY_VALIDATED"
                         }
                     })
                 }
-                foundNFTMetadata.validated = true
-                await foundNFTMetadata.save({ session })
+                nftMetadata.validated = true
+                await nftMetadata.save({ session })
                 // thus, base on nft type, we create corresponding off-chain, first is about the fruits
                 let nftType: NFTType
                 for (const _nftType of Object.values(NFTType)) {
                     const found = this.staticService.nftCollections[_nftType][user.chainKey][user.network].collectionAddress  ===
-                            cacheData.collectionAddress
+                            nftMetadata.collectionAddress
                     if (found) {
                         nftType = _nftType
                         break
@@ -152,6 +149,17 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                             }
                         })
                     }   
+                    const currentStage = Number.parseInt(nft.attributes.attributeList.find(
+                        (attribute) => attribute.key === AttributeName.CurrentStage
+                    )?.value) || 0
+                    let currentState: FruitCurrentState
+                    if (currentStage === this.staticService.fruitInfo.growthStages - 1) {
+                        currentState = FruitCurrentState.FullyMatured
+                    } else if (currentStage >= this.staticService.fruitInfo.matureGrowthStage) {
+                        currentState = FruitCurrentState.IsBuggy
+                    } else {
+                        currentState = FruitCurrentState.NeedFertilizer
+                    }
                     await this.connection
                         .model<PlacedItemSchema>(PlacedItemSchema.name)
                         .create([
@@ -173,9 +181,11 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                                     )?.value,
                                     [AttributeName.DiseaseResistance]: nft.attributes.attributeList.find(
                                         (attribute) => attribute.key === AttributeName.DiseaseResistance
-                                    )?.value
+                                    )?.value,
+                                    currentStage,
+                                    currentState
                                 },
-                                [NFT_METADATA]: foundNFTMetadata.id,
+                                [NFT_METADATA]: nftMetadata.id,
                                 isStored: true
                             }
                         ],

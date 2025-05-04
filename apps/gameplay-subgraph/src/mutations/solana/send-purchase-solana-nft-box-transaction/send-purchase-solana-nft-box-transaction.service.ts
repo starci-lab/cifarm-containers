@@ -13,7 +13,6 @@ import base58 from "bs58"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
-import { StaticService } from "@src/gameplay"
 import { createObjectId } from "@src/common"
 import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
 
@@ -26,8 +25,7 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
         private readonly solanaMetaplexService: SolanaMetaplexService,
         @InjectCache()
         private readonly cacheManager: Cache,
-        private readonly sha256Service: Sha256Service,
-        private readonly staticService: StaticService
+        private readonly sha256Service: Sha256Service
     ) {}
 
     async sendPurchaseSolanaNFTBoxTransaction(

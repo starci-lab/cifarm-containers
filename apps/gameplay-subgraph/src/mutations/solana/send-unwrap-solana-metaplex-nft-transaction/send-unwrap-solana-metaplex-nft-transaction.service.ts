@@ -75,8 +75,7 @@ export class SendUnwrapSolanaMetaplexNFTTransactionService {
                 const nftMetadata = await this.connection
                     .model<NFTMetadataSchema>(NFTMetadataSchema.name)
                     .findOne({
-                        nftAddress: cacheData.nftAddress,
-                        collectionAddress: cacheData.collectionAddress
+                        _id: cacheData.nftMetadataId
                     })
                     .session(session)
                 if (!nftMetadata) {

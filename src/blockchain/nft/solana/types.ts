@@ -40,4 +40,13 @@ export interface CreateFreezeNFTTransactionResponse {
     transaction: TransactionBuilder
 }
 
+export interface CreateUpgradeNFTTransactionParams extends WithFeePayer {
+    nftAddress: string
+    collectionAddress: string
+    attributes: Array<Attribute>
+}
+
+export interface CreateUpgradeNFTTransactionResponse {
+    transaction: TransactionBuilder
+}
 

@@ -83,16 +83,15 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                     network,
                     feePayer: accountAddress
                 })
-                builder = builder.add(freezeTransaction)
                 
+                builder = builder.add(freezeTransaction)
                 const transaction = await builder
                     .useV0()
                     .setFeePayer(createNoopSigner(publicKey(user.accountAddress)))
                     .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
-                    
                 // create a nft metadata to track the nft status
                 // recall the validate to set the frozen status to true
-                const foundNFTMetadata = await this.connection
+                let foundNFTMetadata = await this.connection
                     .model<NFTMetadataSchema>(NFTMetadataSchema.name)
                     .findOne({
                         nftAddress,
@@ -100,7 +99,7 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                         user: id
                     }).session(session)
                 if (!foundNFTMetadata) {
-                    await this.connection
+                    const [nftMetadata] = await this.connection
                         .model<NFTMetadataSchema>(NFTMetadataSchema.name)
                         .create([{
                             nftAddress,
@@ -109,6 +108,7 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                             validated: false,
                             nftName: nft.name,
                         }], { session })
+                    foundNFTMetadata = nftMetadata
                 }
                 // store the transaction in the cache
                 const cacheKey = this.sha256Service.hash(
@@ -119,8 +119,7 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                     )
                 )     
                 const cacheData: WrapSolanaMetaplexNFTTransactionCache = {
-                    nftAddress,
-                    collectionAddress,
+                    nftMetadataId: foundNFTMetadata._id.toString(),
                 }
                 await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes
                 return {

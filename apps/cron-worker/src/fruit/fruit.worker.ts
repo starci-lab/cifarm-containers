@@ -171,7 +171,7 @@ export class FruitWorker extends WorkerHost {
                             return false
                         }
 
-                        const isMature = placedItem.fruitInfo.currentStage >= matureGrowthStage - 1
+                        const isMature = placedItem.fruitInfo.currentStage >= matureGrowthStage
                         if (isMature) {
                             return updateMatureFruitPlacedItem()
                         }

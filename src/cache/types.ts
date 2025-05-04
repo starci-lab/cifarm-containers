@@ -22,13 +22,11 @@ export enum CacheKey {
 }
 
 export interface WrapSolanaMetaplexNFTTransactionCache {
-    nftAddress: string
-    collectionAddress: string
+    nftMetadataId: string
 }
 
 export interface UnwrapSolanaMetaplexNFTTransactionCache {
-    nftAddress: string
-    collectionAddress: string
+    nftMetadataId: string
 }
 
 export interface BuyGoldsSolanaTransactionCache {

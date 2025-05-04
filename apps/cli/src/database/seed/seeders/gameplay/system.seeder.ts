@@ -184,7 +184,7 @@ export class SystemSeeder implements Seeder {
             },
             nextGrowthStageAfterHarvest: 3,
             growthStages: 5,
-            matureGrowthStage: 3,
+            matureGrowthStage: 2,
             minThievablePercentage: 0.7
         }
         const defaultInfo: DefaultInfo = {

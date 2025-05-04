@@ -29,7 +29,9 @@ import {
     CreateMintNFTTransactionResponse,
     CreateTransferTokenTransactionParams,
     CreateTransferTokenTransactionResponse,
-    CreateUnfreezeNFTTransactionResponse
+    CreateUnfreezeNFTTransactionResponse,
+    CreateUpgradeNFTTransactionParams,
+    CreateUpgradeNFTTransactionResponse
 } from "./types"
 import {
     transferTokens,
@@ -154,12 +156,6 @@ export class SolanaMetaplexService {
                             key: AttributeName.Rarity,
                             value: "common"
                         },
-                        {
-                            key: AttributeName.Data,
-                            value: JSON.stringify({
-                                currentStage: 1
-                            })
-                        },
                         // growth acceleration when the nft is planted
                         {
                             key: AttributeName.GrowthAcceleration,
@@ -235,6 +231,7 @@ export class SolanaMetaplexService {
             asset,
             authority: createNoopSigner(umi.identity.publicKey),
             collection,
+            updateAuthority: umi.identity.publicKey,
             owner: ownerAddress ? publicKey(ownerAddress) : umi.identity.publicKey,
             name,
             payer: feePayer ? createNoopSigner(publicKey(feePayer)) : createNoopSigner(umi.identity.publicKey),
@@ -288,6 +285,27 @@ export class SolanaMetaplexService {
         })
         return { transaction }
     }
+
+    public async createUpgradeNFTTransaction({
+        network = Network.Testnet,
+        nftAddress,
+        collectionAddress,
+        feePayer,
+        attributes
+    }: CreateUpgradeNFTTransactionParams): Promise<CreateUpgradeNFTTransactionResponse> {
+        const umi = this.umis[network]
+        const transaction = updatePlugin(umi, {
+            asset: publicKey(nftAddress),
+            collection: publicKey(collectionAddress),
+            authority: createNoopSigner(publicKey(umi.identity.publicKey)),
+            plugin: {
+                type: "Attributes",
+                attributeList: attributes
+            },
+            payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity
+        })
+        return { transaction }
+    }   
 
     public async createFreezeNFTTransaction({
         network = Network.Testnet,
@@ -414,11 +432,11 @@ export interface TransferNftResponse {
 export enum AttributeName {
     Stars = "stars",
     Rarity = "rarity",
-    Data = "data",
     GrowthAcceleration = "growthAcceleration",
     QualityYield = "qualityYield",
     DiseaseResistance = "diseaseResistance",
-    HarvestYieldBonus = "harvestYieldBonus"
+    HarvestYieldBonus = "harvestYieldBonus",
+    CurrentStage = "currentStage",
 }
 
 export enum AttributeTypeValue {
