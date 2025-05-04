@@ -47,6 +47,9 @@ export class FruitWorker extends WorkerHost {
                     "fruitInfo.currentState": {
                         $nin: [FruitCurrentState.NeedFertilizer, FruitCurrentState.FullyMatured]
                     },
+                    isStored: {
+                        $ne: true
+                    },
                     createdAt: {
                         $lte: this.dateUtcService.getDayjs(utcTime).toDate()
                     }

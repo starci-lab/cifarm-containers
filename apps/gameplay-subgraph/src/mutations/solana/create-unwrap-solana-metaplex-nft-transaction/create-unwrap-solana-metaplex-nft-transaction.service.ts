@@ -15,6 +15,7 @@ import { publicKey, createNoopSigner, transactionBuilder } from "@metaplex-found
 import { InjectCache, UnwrapSolanaMetaplexNFTTransactionCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { StaticService } from "@src/gameplay"
+import { S3Service } from "@src/s3"
 @Injectable()
 export class CreateUnwrapSolanaMetaplexNFTTransactionService {
     private readonly logger = new Logger(CreateUnwrapSolanaMetaplexNFTTransactionService.name)
@@ -25,6 +26,7 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
         private readonly solanaMetaplexService: SolanaMetaplexService,
         private readonly sha256Service: Sha256Service,
         private readonly staticService: StaticService,
+        private readonly s3Service: S3Service,
         @InjectCache()
         private readonly cacheManager: Cache
     ) {}

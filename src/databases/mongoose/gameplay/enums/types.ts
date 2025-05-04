@@ -8,7 +8,7 @@ export enum ProductType {
     Crop = "crop",
     Fruit = "fruit",
     Flower = "flower",
-    BeeHouse = "beeHouse",
+    BeeHouse = "beeHouse"
 }
 
 export const GraphQLTypeProductType = createEnumType(ProductType)
@@ -18,21 +18,21 @@ registerEnumType(GraphQLTypeProductType, {
     description: "The type of product",
     valuesMap: {
         [ProductType.Animal]: {
-            description: "The animal product",
+            description: "The animal product"
         },
         [ProductType.Crop]: {
-            description: "The crop product",
+            description: "The crop product"
         },
         [ProductType.Fruit]: {
-            description: "The fruit product",
+            description: "The fruit product"
         },
         [ProductType.Flower]: {
-            description: "The flower product",
+            description: "The flower product"
         },
         [ProductType.BeeHouse]: {
-            description: "The bee house product",
-        },
-    },
+            description: "The bee house product"
+        }
+    }
 })
 
 // Animal Type Enum
@@ -48,12 +48,12 @@ registerEnumType(GraphQLTypeAnimalType, {
     description: "The type of animal",
     valuesMap: {
         [AnimalType.Poultry]: {
-            description: "The poultry animal",
+            description: "The poultry animal"
         },
         [AnimalType.Livestock]: {
-            description: "The livestock animal",
-        },
-    },
+            description: "The livestock animal"
+        }
+    }
 })
 
 // Inventory Type Enum
@@ -61,7 +61,7 @@ export enum InventoryType {
     Seed = "seed",
     Product = "product",
     Supply = "supply",
-    Tool = "tool",
+    Tool = "tool"
 }
 
 export const GraphQLTypeInventoryType = createEnumType(InventoryType)
@@ -71,18 +71,18 @@ registerEnumType(GraphQLTypeInventoryType, {
     description: "The type of inventory",
     valuesMap: {
         [InventoryType.Seed]: {
-            description: "The seed inventory",
+            description: "The seed inventory"
         },
         [InventoryType.Product]: {
-            description: "The product inventory",
+            description: "The product inventory"
         },
         [InventoryType.Supply]: {
-            description: "The supply inventory",
+            description: "The supply inventory"
         },
         [InventoryType.Tool]: {
-            description: "The tool inventory",
-        },
-    },
+            description: "The tool inventory"
+        }
+    }
 })
 
 // Placed Item Type Enum
@@ -91,7 +91,7 @@ export enum PlacedItemType {
     Building = "building",
     Animal = "animal",
     Fruit = "fruit",
-    Pet = "pet",
+    Pet = "pet"
 }
 
 export const GraphQLTypePlacedItemType = createEnumType(PlacedItemType)
@@ -101,21 +101,21 @@ registerEnumType(GraphQLTypePlacedItemType, {
     description: "The type of placed item",
     valuesMap: {
         [PlacedItemType.Tile]: {
-            description: "The tile placed item",
+            description: "The tile placed item"
         },
         [PlacedItemType.Building]: {
-            description: "The building placed item",
+            description: "The building placed item"
         },
         [PlacedItemType.Animal]: {
-            description: "The animal placed item",
+            description: "The animal placed item"
         },
         [PlacedItemType.Fruit]: {
-            description: "The fruit placed item",
+            description: "The fruit placed item"
         },
         [PlacedItemType.Pet]: {
-            description: "The pet placed item",
-        },
-    },
+            description: "The pet placed item"
+        }
+    }
 })
 
 // Inventory Kind
@@ -133,18 +133,18 @@ registerEnumType(GraphQLTypeInventoryKind, {
     description: "The kind of inventory",
     valuesMap: {
         [InventoryKind.Storage]: {
-            description: "The storage inventory",
+            description: "The storage inventory"
         },
         [InventoryKind.Tool]: {
-            description: "The tool inventory",
+            description: "The tool inventory"
         },
         [InventoryKind.Delivery]: {
-            description: "The delivery inventory",
+            description: "The delivery inventory"
         },
         [InventoryKind.WholesaleMarket]: {
-            description: "The wholesale market inventory",
-        },
-    },
+            description: "The wholesale market inventory"
+        }
+    }
 })
 
 // Building Kind
@@ -158,7 +158,7 @@ export enum BuildingKind {
     // animal house mean building that can work with animals
     AnimalHouse = "animalHouse",
     // fish pond mean building that can work with fish
-    FishPond = "fishPond",
+    FishPond = "fishPond"
 }
 
 export const GraphQLTypeBuildingKind = createEnumType(BuildingKind)
@@ -168,30 +168,28 @@ registerEnumType(GraphQLTypeBuildingKind, {
     description: "The kind of building",
     valuesMap: {
         [BuildingKind.Neutral]: {
-            description: "The neutral building",
+            description: "The neutral building"
         },
         [BuildingKind.BeeHouse]: {
-            description: "The bee house building",
+            description: "The bee house building"
         },
         [BuildingKind.PetHouse]: {
-            description: "The pet house building",
+            description: "The pet house building"
         },
         [BuildingKind.AnimalHouse]: {
-            description: "The animal house building",
+            description: "The animal house building"
         },
         [BuildingKind.FishPond]: {
-            description: "The fish pond building",
-        },
-    },
+            description: "The fish pond building"
+        }
+    }
 })
-
-
 
 // Supply Type Enum
 export enum SupplyType {
     Fertilizer = "fertilizer",
     AnimalFeed = "animalFeed",
-    FruitFertilizer = "fruitFertilizer",
+    FruitFertilizer = "fruitFertilizer"
 }
 
 export const GraphQLTypeSupplyType = createEnumType(SupplyType)
@@ -201,15 +199,15 @@ registerEnumType(GraphQLTypeSupplyType, {
     description: "The type of supply",
     valuesMap: {
         [SupplyType.Fertilizer]: {
-            description: "The fertilizer supply",
+            description: "The fertilizer supply"
         },
         [SupplyType.AnimalFeed]: {
-            description: "The animal feed supply",
+            description: "The animal feed supply"
         },
         [SupplyType.FruitFertilizer]: {
-            description: "The fruit fertilizer supply",
-        },
-    },
+            description: "The fruit fertilizer supply"
+        }
+    }
 })
 
 // Plant Type Enum
@@ -225,19 +223,19 @@ registerEnumType(GraphQLTypePlantType, {
     description: "The type of plant",
     valuesMap: {
         crop: {
-            description: "The crop plant",
+            description: "The crop plant"
         },
         flower: {
-            description: "The flower plant",
-        },
-    },
+            description: "The flower plant"
+        }
+    }
 })
 
 // Pet Type Enum
 export enum PetType {
     Cat = "cat",
     Dog = "dog"
-}   
+}
 
 export const GraphQLTypePetType = createEnumType(PetType)
 
@@ -246,19 +244,19 @@ registerEnumType(GraphQLTypePetType, {
     description: "The type of pet",
     valuesMap: {
         [PetType.Cat]: {
-            description: "The cat pet",
+            description: "The cat pet"
         },
         [PetType.Dog]: {
-            description: "The dog pet",
-        },
-    },
+            description: "The dog pet"
+        }
+    }
 })
 
 export enum NFTType {
     DragonFruit = "dragonFruit",
     Jackfruit = "jackfruit",
     Rambutan = "rambutan",
-    Pomegranate = "pomegranate",
+    Pomegranate = "pomegranate"
 }
 
 export const GraphQLTypeNFTType = createEnumType(NFTType)
@@ -268,31 +266,41 @@ registerEnumType(GraphQLTypeNFTType, {
     description: "The type of NFT",
     valuesMap: {
         [NFTType.DragonFruit]: {
-            description: "The dragon fruit NFT",
+            description: "The dragon fruit NFT"
         },
         [NFTType.Jackfruit]: {
-            description: "The jackfruit NFT",
+            description: "The jackfruit NFT"
         },
         [NFTType.Rambutan]: {
-            description: "The rambutan NFT",
+            description: "The rambutan NFT"
         },
         [NFTType.Pomegranate]: {
-            description: "The pomegranate NFT",
-        },
-    },
+            description: "The pomegranate NFT"
+        }
+    }
 })
 
 export const NFTTypeToPlacedItemTypeId: Record<NFTType, PlacedItemTypeId> = {
     [NFTType.DragonFruit]: PlacedItemTypeId.DragonFruit,
     [NFTType.Jackfruit]: PlacedItemTypeId.Jackfruit,
     [NFTType.Rambutan]: PlacedItemTypeId.Rambutan,
-    [NFTType.Pomegranate]: PlacedItemTypeId.Pomegranate,
-}   
+    [NFTType.Pomegranate]: PlacedItemTypeId.Pomegranate
+}
+
+export const placedItemTypeIdToNFTType: Partial<Record<PlacedItemTypeId, NFTType>> = Object.entries(
+    NFTTypeToPlacedItemTypeId
+).reduce(
+    (acc, [key, value]) => {
+        acc[value] = key as NFTType
+        return acc
+    },
+    {} as Partial<Record<PlacedItemTypeId, NFTType>>
+)
 
 export enum NFTRarity {
     Common = "common",
     Rare = "rare",
-    Epic = "epic",
+    Epic = "epic"
 }
 
 export const GraphQLTypeNFTRarity = createEnumType(NFTRarity)
@@ -302,27 +310,27 @@ registerEnumType(GraphQLTypeNFTRarity, {
     description: "The rarity of NFT",
     valuesMap: {
         [NFTRarity.Common]: {
-            description: "The common rarity",
+            description: "The common rarity"
         },
         [NFTRarity.Rare]: {
-            description: "The rare rarity",
+            description: "The rare rarity"
         },
         [NFTRarity.Epic]: {
-            description: "The epic rarity",
-        },
-    },
+            description: "The epic rarity"
+        }
+    }
 })
 
 // Stable Coin Name Enum
 export enum StableCoinName {
     USDC = "usdc",
-    USDT = "usdt",
+    USDT = "usdt"
 }
 
 export enum PaymentKind {
     USDC = "usdc",
     USDT = "usdt",
-    Token = "token",
+    Token = "token"
 }
 
 export const GraphQLTypePaymentKind = createEnumType(PaymentKind)
@@ -332,14 +340,13 @@ registerEnumType(GraphQLTypePaymentKind, {
     description: "The kind of wholesale market payment",
     valuesMap: {
         [PaymentKind.USDC]: {
-            description: "Wholesale market payment in USDC",
+            description: "Wholesale market payment in USDC"
         },
         [PaymentKind.USDT]: {
-            description: "Wholesale market payment in USDT",
+            description: "Wholesale market payment in USDT"
         },
         [PaymentKind.Token]: {
-            description: "Wholesale market payment in token",
-        },
-    },
+            description: "Wholesale market payment in token"
+        }
+    }
 })
-

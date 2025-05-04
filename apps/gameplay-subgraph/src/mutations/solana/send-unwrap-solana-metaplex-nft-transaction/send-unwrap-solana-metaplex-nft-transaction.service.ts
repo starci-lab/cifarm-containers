@@ -1,12 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, NFTMetadataSchema, PlacedItemSchema } from "@src/databases"
+import { InjectMongoose, NFTCollectionData, NFTMetadataSchema, PlacedItemSchema, placedItemTypeIdToNFTType } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import {
     SendUnwrapSolanaMetaplexNFTTransactionRequest,
     SendUnwrapSolanaMetaplexNFTTransactionResponse
 } from "./send-unwrap-solana-metaplex-nft-transaction.dto"
-import { SolanaMetaplexService } from "@src/blockchain"
+import { MetaplexNFTMetadata, SolanaMetaplexService } from "@src/blockchain"
 import { GraphQLError } from "graphql"
 import { UserSchema } from "@src/databases"
 import base58 from "bs58"
@@ -14,7 +14,8 @@ import { Sha256Service } from "@src/crypto"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { UnwrapSolanaMetaplexNFTTransactionCache } from "@src/cache"
-
+import { StaticService } from "@src/gameplay"
+import { S3Service } from "@src/s3"
 @Injectable()
 export class SendUnwrapSolanaMetaplexNFTTransactionService {
     private readonly logger = new Logger(SendUnwrapSolanaMetaplexNFTTransactionService.name)
@@ -24,6 +25,8 @@ export class SendUnwrapSolanaMetaplexNFTTransactionService {
         private readonly connection: Connection,
         private readonly solanaMetaplexService: SolanaMetaplexService,
         private readonly sha256Service: Sha256Service,
+        private readonly staticService: StaticService,
+        private readonly s3Service: S3Service,
         @InjectCache()
         private readonly cacheManager: Cache
     ) {}
@@ -115,6 +118,18 @@ export class SendUnwrapSolanaMetaplexNFTTransactionService {
                         _id: placedItem.id
                     })
                     .session(session)
+
+                const placedItemType = this.staticService.placedItemTypes.find(
+                    (placedItemType) => placedItemType.id === placedItem.placedItemType.toString()
+                )
+                const nftCollectionData = this.staticService.nftCollections[
+                    placedItemTypeIdToNFTType[placedItemType.displayId]
+                ][user.chainKey][
+                    user.network
+                ] as NFTCollectionData
+                const s3Json = await this.s3Service.getJson<MetaplexNFTMetadata>(nftMetadata.nftAddress)
+                s3Json.data.image = nftCollectionData.fruitStages.stages[placedItem.fruitInfo.currentStage].imageUrl
+                await s3Json.save()
 
                 // Sign and send transaction
                 const signedTx = await this.solanaMetaplexService

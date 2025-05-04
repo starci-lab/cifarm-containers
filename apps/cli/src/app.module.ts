@@ -9,10 +9,14 @@ import { HoneycombModule as BaseHoneycombModule } from "@src/honeycomb"
 import { NFTModule } from "./nft"
 import { FarcasterModule as FarcasterCoreModule } from "@src/farcaster"
 import { FarcasterModule } from "./farcaster"
+import { S3Module } from "@src/s3"
 
 @Module({
     imports: [
         EnvModule.forRoot(),
+        S3Module.register({
+            isGlobal: true
+        }),
         BlockchainModule.register({
             isGlobal: true
         }),

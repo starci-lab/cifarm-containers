@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core"
 import { envConfig } from "./env.config"
-import { NodeEnv, RedisType } from "./env.types"
+import { NodeEnv, RedisType } from "./types"
 import { ConfigOnlyModule } from "./config-only.module"
 
 export const isProduction = (): boolean => {

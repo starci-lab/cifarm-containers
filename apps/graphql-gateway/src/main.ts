@@ -9,9 +9,11 @@ import { NestExpressApplication } from "@nestjs/platform-express"
 const bootstrap = async () => {
     const app = await NestFactory.create<NestExpressApplication>(AppModule)
     app.useLogger(new IdLogger(app.get(IdService)))
-    app.enableCors({
-        origin: envConfig().cors.graphql,
-    })
+    app.enableCors(
+        // {
+        // origin: envConfig().cors.graphql,
+        // }
+    )
     // trust proxy from the gateway to the subgraphs
     app.set("trust proxy", "loopback")
     //peform a retry if the app fails to listen

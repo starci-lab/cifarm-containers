@@ -7,7 +7,8 @@ import {
     Brokers,
     MongoDatabase,
     IoAdapterType,
-} from "./env.types"
+    S3Provider
+} from "./types"
 import {
     DEFAULT_CACHE_TIMEOUT_MS,
     DEFAULT_HEALTH_PORT,
@@ -173,6 +174,15 @@ export const envConfig = () => ({
         apiKey: process.env.FARCASTER_API_KEY,
         signerUuid: process.env.FARCASTER_SIGNER_UUID
     },
+    s3: {
+        [S3Provider.DigitalOcean1]: {
+            bucketName: process.env.S3_DIGITALOCEAN1_BUCKET_NAME,
+            endpoint: process.env.S3_DIGITALOCEAN1_ENDPOINT,
+            region: process.env.S3_DIGITALOCEAN1_REGION,
+            accessKeyId: process.env.S3_DIGITALOCEAN1_ACCESS_KEY_ID,
+            secretAccessKey: process.env.S3_DIGITALOCEAN1_SECRET_ACCESS_KEY,
+        }
+    },
     secrets: {
         salt: process.env.SALT,
         jwt: {
@@ -189,7 +199,7 @@ export const envConfig = () => ({
             secretApiKey: process.env.PINATA_SECRET_API_KEY,
             jwtToken: process.env.PINATA_JWT_TOKEN,
             gatewayUrl: process.env.PINATA_GATEWAY_URL,
-        }
+        },
     },
     chainCredentials: {
         [ChainKey.Solana]: {

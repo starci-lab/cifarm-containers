@@ -86,19 +86,6 @@ export class ThiefBeeHouseService {
                     throw new WsException("User not found")
                 }
 
-                const neighbor = await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .findById(watcherUserId)
-                    .session(session)
-
-                if (!neighbor) {
-                    throw new WsException("Neighbor not found")
-                }
-                this.thiefService.checkAbleToThief({
-                    user,
-                    neighbor
-                })
-
                 // Save user snapshot for sync later
                 const userSnapshot = user.$clone()
 
@@ -120,6 +107,19 @@ export class ThiefBeeHouseService {
                 if (watcherUserId === userId) {
                     throw new WsException("Cannot steal your own bee house")
                 }
+                const neighbor = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(watcherUserId)
+                    .session(session)
+
+                if (!neighbor) {
+                    throw new WsException("Neighbor not found")
+                }
+                this.thiefService.checkAbleToThief({
+                    user,
+                    neighbor
+                })
+
                 const placedItemBuildingSnapshot = placedItemBuilding.$clone()
 
                 const placedItemType = this.staticService.placedItemTypes.find(

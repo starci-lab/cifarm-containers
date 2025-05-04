@@ -1,7 +1,7 @@
 import { ObjectType, Field, Int, Float } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { AttributeName } from "@src/blockchain/nft/solana/solana-metaplex.service"
+import { AttributeName } from "@src/blockchain"
 
 @ObjectType({
     description: "The schema for tile information"

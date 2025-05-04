@@ -1,30 +1,35 @@
 import { CommandRunner, SubCommand, Option } from "nest-commander"
 import { Logger } from "@nestjs/common"
 import { Network } from "@src/env"
-import { MetaplexCollectionMetadata, SolanaMetaplexService } from "@src/blockchain"
-import { readFileSync } from "fs"
+import { SolanaMetaplexService } from "@src/blockchain"
 
-@SubCommand({ name: "create-solana-metaplex-collection", description: "Create the Solana metaplex collection" })
+@SubCommand({
+    name: "create-solana-metaplex-collection",
+    description: "Create the Solana metaplex collection"
+})
 export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
     private readonly logger = new Logger(CreateSolanaMetaplexCollectionCommand.name)
 
-    constructor(
-        private readonly solanaMetaplexService: SolanaMetaplexService,
-    ) {
+    constructor(private readonly solanaMetaplexService: SolanaMetaplexService) {
         super()
     }
 
-    async run(_: Array<string>, options: CreateSolanaMetaplexCollectionCommandOptions): Promise<void> {
+    async run(
+        _: Array<string>,
+        options: CreateSolanaMetaplexCollectionCommandOptions
+    ): Promise<void> {
         this.logger.debug("Creating new Solana metaplex collection...")
-        const { name, network, metadataFilePath } = options
+        const { name, network, uri } = options
         try {
-            const metadata = readFileSync(metadataFilePath, "utf-8")
-            const parsedMetadata = JSON.parse(metadata) as MetaplexCollectionMetadata 
-            const { collectionAddress, signature } = await this.solanaMetaplexService.createCollection({
-                network,
-                name,
-                metadata: parsedMetadata
-            })
+            const { collectionAddress, signature } =
+                await this.solanaMetaplexService.createCollection({
+                    network,
+                    name,
+                    metadata: {
+                        name,
+                        image: uri
+                    }
+                })
             this.logger.debug(`Collection created: ${collectionAddress}`)
             this.logger.debug(`Transaction signature: ${signature}`)
         } catch (error) {
@@ -51,17 +56,17 @@ export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
     }
 
     @Option({
-        flags: "-m, --metadata-file-path <metadata-file-path>",
-        description: "Path to the metadata file",
-        defaultValue: "./apps/cli/src/nft/create-solana-metaplex-collection/metadata.json"
+        flags: "-u, --uri <uri>",
+        description: "URI of the metadata file",
+        defaultValue: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon-fruit-collection-data.json"
     })
-    parseMetadata(metadataFilePath: string): string {
-        return metadataFilePath
+    parseURI(uri: string): string {
+        return uri
     }
 }
 
 export interface CreateSolanaMetaplexCollectionCommandOptions {
     network: Network
     name: string
-    metadataFilePath: string
+    uri: string
 }

@@ -333,23 +333,23 @@ export class SystemSeeder implements Seeder {
                             stages: [
                                 {
                                     stage: 0,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_1.png"
                                 },
                                 {
                                     stage: 1,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_2.png"
                                 },
                                 {
                                     stage: 2,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_3.png"
                                 },
                                 {
                                     stage: 3,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_4.png"
                                 },
                                 {
                                     stage: 4,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_5.png"
                                 }
                             ]
                         },
@@ -376,28 +376,28 @@ export class SystemSeeder implements Seeder {
                     },
                     [Network.Mainnet]: {
                         name: "Dragon Fruit",
-                        collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                        collectionAddress: "HJWgeQ1DBRkVhbPnJMh5kNKAngjBsoUmwZFRmPHa8Xy3",
                         fruitStages: {
                             stages: [
                                 {
                                     stage: 0,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiejyz3mz2stomjhqbss7nqibxcuslz4e6y2ej5adfhhdsyinadeh4"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_1.png"
                                 },
                                 {
                                     stage: 1,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigf55pd26jj5wqvvhib7hvpwig3eqos6kuflibq3jnnknzidfodwu"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_2.png"
                                 },
                                 {
                                     stage: 2,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiaiwbynjjl4mmx6gw7sv45qntdmtwabepxhigeztralick2sttnm4"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_3.png"
                                 },
                                 {
                                     stage: 3,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreief3tohlrqmd7azlhwcqtcu3b3y647b2kdrzfxzjvmd3j3ohxkhuy"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_4.png"
                                 },
                                 {
                                     stage: 4,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihanv6yjccq67p4tx7hzdo2sfdceot76h7y3wytjsshx6kyin22ye"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_5.png"
                                 }
                             ]
                         },
@@ -433,23 +433,23 @@ export class SystemSeeder implements Seeder {
                             stages: [
                                 {
                                     stage: 0,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiak2uhq3p7i7opwdnqrmslkmxdbliuzmwmw6riie6okurhypkjjcq"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_1.png"
                                 },
                                 {
                                     stage: 1,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreids4ezcjpym3xf3hwelnobtl5744cbdebal566bqtq36bo3cupnti"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_2.png"
                                 },
                                 {
                                     stage: 2,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigwig65u5amdczpgigbu4cauksmlravhkavi2mruqhdvobjv3frpa"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_3.png"
                                 },
                                 {
                                     stage: 3,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreibv7hz23vx5lhrpveooivkrmddd63uz75nqjfwzclfolqqzwlupwm"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_4.png"
                                 },
                                 {
                                     stage: 4,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreicjj3agbxozskonq646i5i6q6srlp6pami7dlxl4mvqok5y6ldocm"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_5.png"
                                 }
                             ]
                         },
@@ -476,28 +476,28 @@ export class SystemSeeder implements Seeder {
                     },
                     [Network.Mainnet]: {
                         name: "Jackfruit",
-                        collectionAddress: "2Ap4nT8Pby5LUEB7TvbwsLUnr1q7NBBCoLQZR4Ei3dNh",
+                        collectionAddress: "7ek9uoCatAvTo4dbgUpeUjsDgDhCXwFPuizDwkTnYpvD",
                         fruitStages: {
                             stages: [
                                 {
                                     stage: 0,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreiak2uhq3p7i7opwdnqrmslkmxdbliuzmwmw6riie6okurhypkjjcq"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_1.png"
                                 },
                                 {
                                     stage: 1,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreids4ezcjpym3xf3hwelnobtl5744cbdebal566bqtq36bo3cupnti"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_2.png"
                                 },
                                 {
                                     stage: 2,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigwig65u5amdczpgigbu4cauksmlravhkavi2mruqhdvobjv3frpa"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_3.png"
                                 },
                                 {
                                     stage: 3,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreibv7hz23vx5lhrpveooivkrmddd63uz75nqjfwzclfolqqzwlupwm"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_3.png"
                                 },
                                 {
-                                    stage: 4,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreicjj3agbxozskonq646i5i6q6srlp6pami7dlxl4mvqok5y6ldocm"
+                                    stage: 4,   
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_5.png"
                                 }
                             ]
                         },
@@ -533,23 +533,23 @@ export class SystemSeeder implements Seeder {
                             stages: [
                                 {
                                     stage: 0,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreicg5i2jjhwnp4bxgzqml5ziugsezjcylbd5taqlaohh63rpbvczqa"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_1.png"
                                 },
                                 {
                                     stage: 1,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreibps4efh5i4jhqgy5jaeokmuhynu653ay2seqxqjmrsbccyzqrksa"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_2.png"
                                 },
                                 {
                                     stage: 2,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreidmh3ntrfbraqgmubvk3g7ov54otm4wth456yr3uwegmmdvjvhkb4"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_3.png"
                                 },
                                 {
                                     stage: 3,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreih7sl3efh4zegtttut3c5l25ywa2ux3afbzyxoo346o54nd6xz2nq"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_4.png"
                                 },
                                 {
                                     stage: 4,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreidg53fkyp2ho4f4v62rqb7awrdktu465la3lk6q63aketivkbyf2u"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_5.png"
                                 }
                             ]
                         },
@@ -576,28 +576,28 @@ export class SystemSeeder implements Seeder {
                     },
                     [Network.Mainnet]: {
                         name: "Pomegranate",
-                        collectionAddress: "CRUwWJr8eAPaHoj7kA5WrpKMSiotV9vdMxdXUJLZfe9b",
+                        collectionAddress: "d1CTVb2B4fPkbQi6FVgZAWVvWbaHPNruwncoAjcejpL",
                         fruitStages: {
                             stages: [
                                 {
                                     stage: 0,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreicg5i2jjhwnp4bxgzqml5ziugsezjcylbd5taqlaohh63rpbvczqa"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_1.png"
                                 },
                                 {
                                     stage: 1,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreibps4efh5i4jhqgy5jaeokmuhynu653ay2seqxqjmrsbccyzqrksa"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_2.png"
                                 },
                                 {
                                     stage: 2,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreidmh3ntrfbraqgmubvk3g7ov54otm4wth456yr3uwegmmdvjvhkb4"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_3.png"
                                 },
                                 {
                                     stage: 3,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreih7sl3efh4zegtttut3c5l25ywa2ux3afbzyxoo346o54nd6xz2nq"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_4.png"
                                 },
                                 {
                                     stage: 4,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreidg53fkyp2ho4f4v62rqb7awrdktu465la3lk6q63aketivkbyf2u"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_5.png"
                                 }
                             ]
                         },
@@ -633,23 +633,23 @@ export class SystemSeeder implements Seeder {
                             stages: [
                                 {
                                     stage: 0,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreifojfrzhqvcuo35qkdwtjhiz73v65narov2ecx677jvn4szb5evba"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_1.png"
                                 },
                                 {
                                     stage: 1,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigr6ytjpxmces34mql4x5ibknb7r3w73qxg5shvsclpoakeq2fwmy"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_2.png"
                                 },
                                 {
                                     stage: 2,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreich2uoijlel36l23b4jdo3gt3jp532wew6gromq66z7ng7dyzhv6i"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_3.png"
                                 },
                                 {
                                     stage: 3,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihbhc6ertoa4aibh2bay7lfqor6w7dcof6jfhedk6iqiemghnm5ai"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_4.png"
                                 },
                                 {
                                     stage: 4,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreifodqo5eicqvcq25mydbnkpvo4yymengndqw3izmdjttq2tqy5beu"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_5.png"
                                 }
                             ]
                         },
@@ -676,28 +676,28 @@ export class SystemSeeder implements Seeder {
                     },
                     [Network.Mainnet]: {
                         name: "Rambutan",
-                        collectionAddress: "4rM1G8YE7JxJPWuENSv1X5gkn6PYEJ8Wuc6bS8DZBz8K",
+                        collectionAddress: "B8pPptqT3vKeVmMDqkz1EoBr5fGFymJVeVCUPLgYe1kV",
                         fruitStages: {
                             stages: [
                                 {
                                     stage: 0,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreifojfrzhqvcuo35qkdwtjhiz73v65narov2ecx677jvn4szb5evba"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_1.png"
                                 },
                                 {
                                     stage: 1,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreigr6ytjpxmces34mql4x5ibknb7r3w73qxg5shvsclpoakeq2fwmy"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_2.png"
                                 },
                                 {
                                     stage: 2,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreich2uoijlel36l23b4jdo3gt3jp532wew6gromq66z7ng7dyzhv6i"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_3.png"
                                 },
                                 {
                                     stage: 3,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreihbhc6ertoa4aibh2bay7lfqor6w7dcof6jfhedk6iqiemghnm5ai"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_4.png"
                                 },
                                 {
                                     stage: 4,
-                                    imageUrl: "https://amethyst-magnetic-opossum-945.mypinata.cloud/ipfs/bafkreifodqo5eicqvcq25mydbnkpvo4yymengndqw3izmdjttq2tqy5beu"
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_5.png"
                                 }
                             ]
                         },
@@ -792,7 +792,7 @@ export class SystemSeeder implements Seeder {
                         decimals: 6
                     },
                     [Network.Mainnet]: {
-                        address: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+                        address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
                         decimals: 6
                     }
                 }
@@ -843,7 +843,7 @@ export class SystemSeeder implements Seeder {
                     address: "D2HHp9gtFgs8dKtV6Hg2xgLv998HrwsyaWAeHkfuCJxJ"
                 },
                 [Network.Mainnet]: {
-                    address: "D2HHp9gtFgs8dKtV6Hg2xgLv998HrwsyaWAeHkfuCJxJ"
+                    address: "8xqsA3rsyXesnrGTimQM7CamXLoptskrN6L423buggsZ"
                 }
             }
         }
@@ -888,7 +888,47 @@ export class SystemSeeder implements Seeder {
                         }, 
                     ]
                 }
-            }
+            },
+            [ChainKey.Sui]: {
+                [Network.Testnet]: {
+                    options: [
+                        {
+                            amount: 10000,
+                            price: 1,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            amount: 100000,
+                            price: 5,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            amount: 1000000,
+                            price: 25,
+                            paymentKind: PaymentKind.USDC
+                        }
+                    ]
+                },
+                [Network.Mainnet]: {
+                    options: [
+                        {
+                            amount: 10000,
+                            price: 1,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            amount: 100000,
+                            price: 5,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            amount: 1000000,
+                            price: 25,
+                            paymentKind: PaymentKind.USDC
+                        }, 
+                    ]
+                }
+            },
         }
 
         // you can thief from user who has 3 

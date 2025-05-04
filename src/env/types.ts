@@ -125,3 +125,7 @@ export enum IoAdapterType {
     Cluster = "cluster",
     RedisStream = "redis-stream"
 }
+
+export enum S3Provider {
+    DigitalOcean1 = "digitalocean1",
+}

@@ -1078,6 +1078,11 @@ export class GoldPurchases {
         description: "Gold purchase"
     })
     [ChainKey.Solana]: GoldPurchase
+
+    @Field(() => GoldPurchase, {
+        description: "Gold purchase"
+    })
+    [ChainKey.Sui]: GoldPurchase
 }
 
 @ObjectType({

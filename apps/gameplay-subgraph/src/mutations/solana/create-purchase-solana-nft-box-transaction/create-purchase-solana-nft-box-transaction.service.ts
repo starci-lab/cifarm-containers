@@ -15,6 +15,7 @@ import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { roundNumber } from "@src/common"
 import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
+import { S3Service } from "@src/s3"
 
 @Injectable()
 export class CreatePurchaseSolanaNFTBoxTransactionService {
@@ -25,6 +26,7 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
         private readonly solanaMetaplexService: SolanaMetaplexService,
         private readonly staticService: StaticService,
         private readonly nftDatabaseService: NFTDatabaseService,
+        private readonly s3Service: S3Service,
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service
@@ -79,17 +81,9 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 ] as NFTCollectionData
 
                 let builder = transactionBuilder()
-                // all nft has a rarity normal for equally distributed
-                const nextNFTIndex = await this.nftDatabaseService.getNextNFTIndex({
-                    network: user.network,
-                    chainKey: user.chainKey,
-                    collectionAddress: nftCollectionData.collectionAddress,
-                    session,
-                    save: !isStarterBoxUnset
-                })
-
-                const nftName = `${nftCollectionData.name} #${nextNFTIndex}`
-                const { transaction: mintNFTTransaction } =
+                const nftName = nftCollectionData.name
+                const currentStage = 0
+                const { transaction: mintNFTTransaction, nftName: actualNFTName } =
                     await this.solanaMetaplexService.createMintNFTTransaction({
                         network: user.network,
                         ownerAddress: user.accountAddress,
@@ -101,6 +95,10 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                                 })
                             ),
                             {
+                                key: AttributeName.CurrentStage,
+                                value: currentStage.toString()
+                            },
+                            {
                                 key: AttributeName.Rarity,
                                 value: rarity
                             }
@@ -108,9 +106,11 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                         collectionAddress: nftCollectionData.collectionAddress,
                         name: nftName,
                         feePayer: user.accountAddress,
-                        uri: nftCollectionData.fruitStages.stages[0].imageUrl
+                        metadata: {
+                            name: nftName,
+                            image: nftCollectionData.fruitStages.stages[currentStage].imageUrl
+                        }
                     })
-
                 builder = builder.add(mintNFTTransaction)
                 //get the stable coin address
                 const { address: tokenAddress, decimals: tokenDecimals } =
@@ -159,7 +159,7 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                     nftType,
                     rarity,
                     tokenAmount,
-                    nftName
+                    nftName: actualNFTName
                 }
                 await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
                 return {

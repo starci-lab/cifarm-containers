@@ -20,18 +20,23 @@ import {
     AssetV1,
     updatePlugin
 } from "@metaplex-foundation/mpl-core"
-import { WithFeePayer, WithNetwork } from "../../types"
 import base58 from "bs58"
-import { PinataService } from "@src/pinata"
 import {
+    CreateCollectionParams,
+    CreateCollectionResponse,
+    CreateFreezeNFTTransactionParams,
     CreateFreezeNFTTransactionResponse,
     CreateMintNFTTransactionParams,
     CreateMintNFTTransactionResponse,
     CreateTransferTokenTransactionParams,
     CreateTransferTokenTransactionResponse,
+    CreateUnfreezeNFTTransactionParams,
     CreateUnfreezeNFTTransactionResponse,
     CreateUpgradeNFTTransactionParams,
-    CreateUpgradeNFTTransactionResponse
+    CreateUpgradeNFTTransactionResponse,
+    GetNFTParams,
+    TransferNftParams,
+    TransferNftResponse
 } from "./types"
 import {
     transferTokens,
@@ -39,6 +44,7 @@ import {
     mplToolbox,
 } from "@metaplex-foundation/mpl-toolbox"
 import { computeRaw } from "@src/common"
+import { S3Service } from "@src/s3"
 
 const getUmi = (network: Network) => {
     const umi = createUmi(solanaHttpRpcUrl(ChainKey.Solana, network)).use(mplCore())
@@ -55,7 +61,7 @@ const getUmi = (network: Network) => {
 @Injectable()
 export class SolanaMetaplexService {
     private umis: Record<Network, Umi>
-    constructor(private pinataService: PinataService) {
+    constructor(private readonly s3Service: S3Service) {
         // Constructor logic here
         this.umis = {
             [Network.Mainnet]: getUmi(Network.Mainnet),
@@ -83,12 +89,14 @@ export class SolanaMetaplexService {
     }: CreateCollectionParams): Promise<CreateCollectionResponse> {
         const umi = this.umis[network]
         // Logic to create a collection on Solana
-        const metadataUri = await this.pinataService.pinata.upload.public.json(metadata)
         const collection = generateSigner(umi)
+        const uri = await this.s3Service.uploadJson(collection.publicKey.toString(), metadata)
+        //const uri = await this.s3Service.uploadJson(collection.publicKey.toString(), metadata)
         const { signature } = await metaplexCreateCollection(umi, {
             collection,
             name,
-            uri: this.pinataService.getUrl(metadataUri.cid)
+            updateAuthority: umi.identity.publicKey,
+            uri
         }).sendAndConfirm(umi)
         return {
             collectionAddress: collection.publicKey,
@@ -99,90 +107,11 @@ export class SolanaMetaplexService {
     public async getNFT({
         network = Network.Mainnet,
         nftAddress
-    }: getNFTParams): Promise<AssetV1 | null> {
+    }: GetNFTParams): Promise<AssetV1 | null> {
         try {
             return await fetchAsset(this.umis[network], nftAddress)
         } catch {
             return null
-        }
-    }
-
-    public async mintNft({
-        network = Network.Mainnet,
-        name,
-        collectionAddress,
-        ownerAddress,
-        metadata
-    }: MintNftParams): Promise<MintNFTResponse> {
-        const umi = this.umis[network]
-        // Logic to create a collection on Solana
-        const metadataUri = await this.pinataService.pinata.upload.public.json(metadata)
-        const asset = generateSigner(umi)
-        const collection = await fetchCollection(umi, collectionAddress)
-        const { signature } = await create(umi, {
-            asset,
-            collection,
-            owner: ownerAddress ? publicKey(ownerAddress) : umi.identity.publicKey,
-            name,
-            uri: this.pinataService.getUrl(metadataUri.cid),
-            plugins: [
-                {
-                    type: "Royalties",
-                    basisPoints: 500,
-                    creators: [
-                        {
-                            address: umi.identity.publicKey,
-                            percentage: 100
-                        }
-                    ],
-                    ruleSet: ruleSet("None") // Compatibility rule set
-                },
-                {
-                    type: "PermanentFreezeDelegate",
-                    frozen: false,
-                    authority: {
-                        type: "Owner",
-                        address: umi.identity.publicKey
-                    }
-                },
-                {
-                    type: "Attributes",
-                    attributeList: [
-                        {
-                            key: AttributeName.Stars,
-                            value: "1"
-                        },
-                        {
-                            key: AttributeName.Rarity,
-                            value: "common"
-                        },
-                        // growth acceleration when the nft is planted
-                        {
-                            key: AttributeName.GrowthAcceleration,
-                            value: "100" // 10% growth speedup
-                        },
-                        // quality yield chance when the nft is harvested
-                        {
-                            key: AttributeName.QualityYield,
-                            value: "100" // 10% quality yield chance
-                        },
-                        // disease resistance when the nft is planted
-                        {
-                            key: AttributeName.DiseaseResistance,
-                            value: "100" // 10% disease resistance
-                        },
-                        // harvest yield bonus when the nft is harvested
-                        {
-                            key: AttributeName.HarvestYieldBonus,
-                            value: "100" // 10% yield bonus
-                        }
-                    ]
-                }
-            ]
-        }).sendAndConfirm(umi)
-        return {
-            nftAddress: asset.publicKey,
-            signature: base58.encode(signature)
         }
     }
 
@@ -222,20 +151,20 @@ export class SolanaMetaplexService {
         attributes,
         collectionAddress,
         name,
-        uri
+        metadata
     }: CreateMintNFTTransactionParams): Promise<CreateMintNFTTransactionResponse> {
         const umi = this.umis[network]
         const asset = generateSigner(umi)
+        const uri = await this.s3Service.uploadJson(asset.publicKey.toString(), metadata)
         const collection = await fetchCollection(umi, collectionAddress)
+        const nftName = `${name} #${asset.publicKey.toString().slice(0, 5)}`
         const tx = create(umi, {
             asset,
             authority: createNoopSigner(umi.identity.publicKey),
             collection,
-            updateAuthority: umi.identity.publicKey,
             owner: ownerAddress ? publicKey(ownerAddress) : umi.identity.publicKey,
-            name,
+            name: nftName,
             payer: feePayer ? createNoopSigner(publicKey(feePayer)) : createNoopSigner(umi.identity.publicKey),
-            // no uri required since solana store attributes on-chain
             uri,
             plugins: [
                 {
@@ -263,7 +192,7 @@ export class SolanaMetaplexService {
                 }
             ]
         })
-        return { transaction: tx, nftAddress: asset.publicKey }
+        return { transaction: tx, nftAddress: asset.publicKey, nftName }
     }
 
     public async createUnfreezeNFTTransaction({
@@ -341,104 +270,4 @@ export class SolanaMetaplexService {
         }).sendAndConfirm(umi)
         return { signature: base58.encode(signature) }
     }
-}
-
-export interface CreateFreezeNFTTransactionParams extends WithFeePayer {
-    nftAddress: string
-    collectionAddress?: string
-}
-
-export interface CreateCollectionParams extends WithNetwork {
-    name: string
-    metadata: MetaplexCollectionMetadata
-}
-
-export interface TransferNftParams extends WithNetwork {
-    nftAddress: string
-    toAddress: string
-    collectionAddress: string
-}
-
-export interface MintNftParams extends WithNetwork {
-    name: string
-    collectionAddress: string
-    metadata: MetaplexNFTMetadata
-    ownerAddress?: string
-}
-
-export interface MetaplexCollectionMetadata {
-    name: string
-    description: string
-    image: string
-    external_url?: string
-    properties?: {
-        files?: Array<{
-            uri: string
-            type: string
-        }>
-        category?: string
-    }
-    attributes?: Array<{
-        trait_type: string
-        value: string | number
-    }>
-    animation_url?: string
-    youtube_url?: string
-}
-
-export interface CreateUnfreezeNFTTransactionParams extends WithFeePayer {
-    nftAddress: string
-    collectionAddress?: string
-}
-
-export interface CreateCollectionResponse {
-    collectionAddress: string
-    signature: string
-}
-
-export interface MetaplexNFTMetadata {
-    name: string
-    description: string
-    image: string
-    external_url?: string
-    properties?: {
-        files?: Array<{
-            uri: string
-            type: string
-        }>
-        category?: string
-    }
-    attributes?: Array<{
-        trait_type: string
-        value: string | number
-    }>
-    animation_url?: string
-    youtube_url?: string
-}
-
-export interface MintNFTResponse {
-    nftAddress: string
-    signature: string
-}
-
-export interface getNFTParams extends WithNetwork {
-    nftAddress: string
-}
-
-export interface TransferNftResponse {
-    signature: string
-}
-
-export enum AttributeName {
-    Stars = "stars",
-    Rarity = "rarity",
-    GrowthAcceleration = "growthAcceleration",
-    QualityYield = "qualityYield",
-    DiseaseResistance = "diseaseResistance",
-    HarvestYieldBonus = "harvestYieldBonus",
-    CurrentStage = "currentStage",
-}
-
-export enum AttributeTypeValue {
-    Fruit = "fruit"
 }

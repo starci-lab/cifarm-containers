@@ -1,5 +1,5 @@
 export * from "./env.config"
 export * from "./env.module"
-export * from "./env.utils"
-export * from "./env.types"
+export * from "./utils"
+export * from "./types"
 export * from "./env.constants"
