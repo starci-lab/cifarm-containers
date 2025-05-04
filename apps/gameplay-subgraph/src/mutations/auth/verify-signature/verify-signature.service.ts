@@ -53,7 +53,7 @@ export class VerifySignatureService {
         const mongoSession = await this.connection.startSession()
 
         try {
-            const result = await mongoSession.withTransaction(async (mongoSession) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 /************************************************************
                  * VALIDATE MESSAGE AND SIGNATURE
                  ************************************************************/
@@ -82,7 +82,7 @@ export class VerifySignatureService {
                 let user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findOne({ accountAddress, chainKey, network })
-                    .session(mongoSession)
+                    .session(session)
 
                 if (!user) {
                     /************************************************************
@@ -106,7 +106,7 @@ export class VerifySignatureService {
                                     golds
                                 }
                             ],
-                            { session: mongoSession, ordered: true }
+                            { session, ordered: true }
                         )
 
                     userRaw.id = userRaw._id.toString()
@@ -125,7 +125,7 @@ export class VerifySignatureService {
                                 ...positions.home
                             }
                         ],
-                        { session: mongoSession, ordered: true }
+                        { session, ordered: true }
                     )
 
                     // create tiles
@@ -142,17 +142,18 @@ export class VerifySignatureService {
                         .model<PlacedItemSchema>(PlacedItemSchema.name)
                         .create(tilePartials, { session: mongoSession, ordered: true })
 
-                    // create banana fruit
+                    // create banana fruits
+                    const bananaFruitPartials: Array<DeepPartial<PlacedItemSchema>> = positions.bananaFruits.map(
+                        (bananaFruit) => ({
+                            placedItemType: createObjectId(PlacedItemTypeId.Banana).toString(),
+                            user: user.id,
+                            fruitInfo: {},
+                            ...bananaFruit
+                        })
+                    )
                     await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
-                        [
-                            {
-                                placedItemType: createObjectId(PlacedItemTypeId.Banana).toString(),
-                                fruitInfo: {},
-                                user: user.id,
-                                ...positions.bananaFruit
-                            }
-                        ],
-                        { session: mongoSession }
+                        bananaFruitPartials,
+                        { session: mongoSession, ordered: true }
                     )
 
                     // create bee house
@@ -168,7 +169,7 @@ export class VerifySignatureService {
                                 ...positions.beeHouse
                             }
                         ],
-                        { session: mongoSession }
+                        { session, ordered: true }
                     )
 
                     // create coop
@@ -183,20 +184,21 @@ export class VerifySignatureService {
                                 ...positions.coop
                             }
                         ],
-                        { session: mongoSession }
+                        { session }
                     )
 
-                    // create chicken
+                    // create chickens
+                    const chickenPartials: Array<DeepPartial<PlacedItemSchema>> = positions.chickens.map(
+                        (chicken) => ({
+                            placedItemType: createObjectId(PlacedItemTypeId.Chicken).toString(),
+                            animalInfo: {},
+                            user: user.id,
+                            ...chicken
+                        })
+                    )
                     await this.connection.model<PlacedItemSchema>(PlacedItemSchema.name).create(
-                        [
-                            {
-                                placedItemType: createObjectId(PlacedItemTypeId.Chicken).toString(),
-                                animalInfo: {},
-                                user: user.id,
-                                ...positions.chicken
-                            }
-                        ],
-                        { session: mongoSession }
+                        chickenPartials,
+                        { session, ordered: true }
                     )
 
                     /************************************************************
@@ -212,7 +214,7 @@ export class VerifySignatureService {
                             default: false,
                             givenAsDefault: true
                         })
-                        .session(mongoSession)
+                        .session(session)
 
                     for (const tool of tools) {
                         const inventoryType = await this.connection
@@ -221,7 +223,7 @@ export class VerifySignatureService {
                                 type: InventoryType.Tool,
                                 tool: tool.id
                             })
-                            .session(mongoSession)
+                            .session(session)
 
                         if (!inventoryType) {
                             throw new WsException("Inventory tool type not found")
@@ -239,7 +241,7 @@ export class VerifySignatureService {
                     if (toolInventories.length > 0) {
                         await this.connection
                             .model<InventorySchema>(InventorySchema.name)
-                            .create(toolInventories, { session: mongoSession, ordered: true })
+                            .create(toolInventories, { session, ordered: true })
                     }
 
                     /************************************************************
@@ -251,7 +253,7 @@ export class VerifySignatureService {
                             type: InventoryType.Seed,
                             crop: createObjectId(defaultCropId)
                         })
-                        .session(mongoSession)
+                        .session(session)
 
                     if (!inventoryType) {
                         throw new WsException("Inventory seed type not found")
@@ -267,7 +269,7 @@ export class VerifySignatureService {
                                 index: 0
                             }
                         ],
-                        { session: mongoSession, ordered: true }
+                        { session, ordered: true }
                     )
                 }
 
@@ -289,7 +291,7 @@ export class VerifySignatureService {
                             user: user.id
                         }
                     ],
-                    { session: mongoSession }
+                    { session }
                 )
 
                 return {

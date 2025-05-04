@@ -424,20 +424,20 @@ export class Positions {
     })
         beeHouse: Position
 
-    @Field(() => Position, {
-        description: "Default position for the banana fruit"
+    @Field(() => [Position], {
+        description: "Default positions for the banana fruits"
     })
-        bananaFruit: Position
+        bananaFruits: Array<Position>
 
     @Field(() => Position, {
         description: "Default position for the coop"
     })
         coop: Position
 
-    @Field(() => Position, {
-        description: "Default position for the chicken"
+    @Field(() => [Position], {
+        description: "Default positions for the chickens"
     })
-        chicken: Position
+        chickens: Array<Position>
 }
 
 @ObjectType({

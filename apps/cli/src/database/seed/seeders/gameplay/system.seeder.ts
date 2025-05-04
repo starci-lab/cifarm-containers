@@ -246,25 +246,37 @@ export class SystemSeeder implements Seeder {
                     }
                 ],
                 home: {
-                    x: 5,
-                    y: 1
+                    x: 6,
+                    y: 0
                 },
                 beeHouse: {
                     x: -1,
                     y: -4
                 },
-                bananaFruit: {
-                    x: 3,
-                    y: 3
-                },
+                bananaFruits: [
+                    {
+                        x: 5,
+                        y: 3
+                    },
+                    {
+                        x: 7,
+                        y: 5
+                    },
+                ],
                 coop: {
                     x: -4,
                     y: -3
                 },
-                chicken: {
-                    x: -4,
-                    y: 1
-                }
+                chickens: [
+                    {
+                        x: -4,
+                        y: 1
+                    },
+                    {
+                        x: -3,
+                        y: 2
+                    },
+                ]
             },
             defaultCropId: CropId.Turnip,
             defaultSeedQuantity: 10,
