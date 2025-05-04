@@ -120,6 +120,18 @@ export class HelpUseBugNetService {
                     throw new WsException("User not found")
                 }
 
+                const neighbor = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(watcherUserId)
+                    .session(session)
+                if (!neighbor) {
+                    throw new WsException("Neighbor not found")
+                }
+
+                if (neighbor.network !== user.network) {
+                    throw new WsException("Cannot help neighbor in different network")
+                }
+
                 // Save user snapshot for sync later
                 const userSnapshot = user.$clone()
 

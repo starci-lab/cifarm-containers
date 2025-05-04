@@ -57,6 +57,7 @@ export class UsersService {
         // if text length > 5, we know that is it a full-text search, remove all other filters
         const isFullTextSearch = this.isFullTextSearch(searchString)
         try {
+            const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id).session(mongoSession)
             const data = await this.connection
                 .model<UserSchema>(UserSchema.name)
                 .find({
@@ -66,10 +67,12 @@ export class UsersService {
                         { username: { $regex: new RegExp(searchString, "i") } },
                         { accountAddress: { $regex: new RegExp(searchString, "i") } }
                     ],
+                    network: user.network,
                     ...this.getStatusFilter(status, isFullTextSearch)
                 })
                 .skip(offset)
                 .limit(limit)
+                .session(mongoSession)
 
             // transform data to determine if user is following or not
             const userIds = data.map(({ id }) => id)
@@ -79,7 +82,7 @@ export class UsersService {
                 .find({
                     follower: id,
                     followee: { $in: userIds }
-                })
+                }).session(mongoSession)
             // map relations to object
             data.map((user) => {
                 user.followed = !!relations.find(({ followee }) => followee.toString() === user.id)
@@ -92,8 +95,9 @@ export class UsersService {
                     { username: { $regex: new RegExp(searchString, "i") } },
                     { accountAddress: { $regex: new RegExp(searchString, "i") } }
                 ],
+                network: user.network,
                 ...this.getStatusFilter(status, isFullTextSearch)
-            })
+            }).session(mongoSession)
 
             return {
                 data,
@@ -112,11 +116,13 @@ export class UsersService {
         // if text length > 5, we know that is it a full-text search, remove all other filters
         const isFullTextSearch = this.isFullTextSearch(searchString)
         try {
+            const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id).session(mongoSession)
+            
             const relations = await this.connection
                 .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
                 .find({
                     follower: id
-                })
+                }).session(mongoSession)
             const followeeIds = relations.map(({ followee }) => followee)
             
             const data = await this.connection
@@ -128,10 +134,12 @@ export class UsersService {
                         { username: { $regex: new RegExp(searchString, "i") } },
                         { accountAddress: { $regex: new RegExp(searchString, "i") } }
                     ],
+                    network: user.network,
                     ...this.getStatusFilter(status, isFullTextSearch)
                 })
                 .skip(offset)
                 .limit(limit)
+                .session(mongoSession)
 
             // map relations to object
             data.map((user) => {
@@ -146,8 +154,9 @@ export class UsersService {
                     { username: { $regex: new RegExp(searchString, "i") } },
                     { accountAddress: { $regex: new RegExp(searchString, "i") } }
                 ],
+                network: user.network,
                 ...this.getStatusFilter(status, isFullTextSearch)
-            })
+            }).session(mongoSession)
 
             return {
                 data,

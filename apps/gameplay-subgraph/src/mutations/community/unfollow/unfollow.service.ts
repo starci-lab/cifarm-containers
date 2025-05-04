@@ -45,6 +45,14 @@ export class UnfollowService {
                     })
                 }
 
+                if (user.network !== followee.network) {
+                    throw new GraphQLError("Cannot unfollow neighbor in different network", {
+                        extensions: {
+                            code: "CANNOT_UNFOLLOW_NEIGHBOR_IN_DIFFERENT_NETWORK"
+                        }
+                    })
+                }
+
                 const following = await this.connection
                     .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
                     .exists({

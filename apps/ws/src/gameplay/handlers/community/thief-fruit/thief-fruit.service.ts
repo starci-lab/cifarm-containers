@@ -155,6 +155,11 @@ export class ThiefFruitService {
                 if (!neighbor) {
                     throw new WsException("Neighbor not found")
                 }
+
+                if (neighbor.network !== user.network) {
+                    throw new WsException("Cannot help neighbor in different network")
+                }
+
                 this.thiefService.checkAbleToThief({
                     user,
                     neighbor

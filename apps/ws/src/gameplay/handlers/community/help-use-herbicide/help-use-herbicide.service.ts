@@ -92,6 +92,15 @@ export class HelpUseHerbicideService {
                     throw new WsException("Cannot help your own tile")
                 }
 
+                const neighbor = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(watcherUserId)
+                    .session(session)
+
+                if (!neighbor) {
+                    throw new WsException("Neighbor not found")
+                }
+
                 // Validate tile has seed growth info
                 if (!placedItemTile.plantInfo) {
                     throw new WsException("Tile is not planted")
@@ -117,6 +126,10 @@ export class HelpUseHerbicideService {
 
                 if (!user) {
                     throw new WsException("User not found")
+                }
+       
+                if (neighbor.network !== user.network) {
+                    throw new WsException("Cannot help neighbor in different network")
                 }
 
                 // Save user snapshot for sync later

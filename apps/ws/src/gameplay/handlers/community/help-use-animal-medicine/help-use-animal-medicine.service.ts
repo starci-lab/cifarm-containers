@@ -93,6 +93,15 @@ export class HelpUseAnimalMedicineService {
                     throw new WsException("Cannot help your own animal")
                 }
 
+                const neighbor = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(watcherUserId)
+                    .session(session)
+
+                if (!neighbor) {
+                    throw new WsException("Neighbor not found")
+                }
+
                 // Validate animal has animal info
                 if (!placedItemAnimal.animalInfo) {
                     throw new WsException("Placed item is not an animal")
@@ -118,6 +127,10 @@ export class HelpUseAnimalMedicineService {
 
                 if (!user) {
                     throw new WsException("User not found")
+                }
+                
+                if (neighbor.network !== user.network) {
+                    throw new WsException("Cannot help neighbor in different network")
                 }
 
                 // Save user snapshot for sync later
