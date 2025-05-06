@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
 import { ChainKey, GraphQLTypeChainKey, GraphQLTypeNetwork, Network } from "@src/env"
 import { Schema as MongooseSchema, Types } from "mongoose"
+import { OauthProviderName } from "../enums"
 
 @ObjectType({
     description: "The schema for user data"
@@ -203,6 +204,18 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false })
         selectedPlacedItemCatId?: Types.ObjectId
+
+    @Field(() => String, {
+        description: "The email of the user"
+    })
+    @Prop({ type: String, required: true, unique: true })
+        email: string
+
+    @Field(() => String, {
+        description: "The google id of the user"
+    })
+    @Prop({ type: String, required: true, unique: true })
+        oauthProvider: OauthProviderName
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

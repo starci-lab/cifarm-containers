@@ -201,6 +201,22 @@ export const envConfig = () => ({
             gatewayUrl: process.env.PINATA_GATEWAY_URL,
         },
     },
+    firebase: {
+        credential: {
+            // we use _ in env variables to avoid special characters
+            type: process.env.FIREBASE_CREDENTIAL_TYPE,
+            projectId: process.env.FIREBASE_CREDENTIAL_PROJECT_ID,
+            privateKeyId: process.env.FIREBASE_CREDENTIAL_PRIVATE_KEY_ID,
+            privateKey: process.env.FIREBASE_CREDENTIAL_PRIVATE_KEY,
+            clientEmail: process.env.FIREBASE_CREDENTIAL_CLIENT_EMAIL,
+            clientId: process.env.FIREBASE_CREDENTIAL_CLIENT_ID,
+            authUri: process.env.FIREBASE_CREDENTIAL_AUTH_URI,
+            tokenUri: process.env.FIREBASE_CREDENTIAL_TOKEN_URI,
+            authProviderX509CertUrl: process.env.FIREBASE_CREDENTIAL_AUTH_PROVIDER_X509_CERT_URL,
+            clientX509CertUrl: process.env.FIREBASE_CREDENTIAL_CLIENT_X509_CERT_URL,
+            universeDomain: process.env.FIREBASE_CREDENTIAL_UNIVERSE_DOMAIN,
+        },
+    },
     chainCredentials: {
         [ChainKey.Solana]: {
             honeycombAuthority: {

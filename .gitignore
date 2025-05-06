@@ -68,3 +68,5 @@ db
 *.secret.yaml
 
 *.yaml
+
+firebase-cert.json

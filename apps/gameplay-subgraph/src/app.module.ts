@@ -18,7 +18,7 @@ import { IdModule } from "@src/id"
 import { ThrottlerModule } from "@src/throttler"
 import { BlockchainDatabaseModule } from "@src/blockchain-database"
 import { S3Module } from "@src/s3"
-
+import { FirebaseAdminModule } from "@src/firebase-admin"
 @Module({
     imports: [
         IdModule.register({
@@ -55,6 +55,9 @@ import { S3Module } from "@src/s3"
         }),
         ThrottlerModule.forRoot(),
         BlockchainDatabaseModule.register({
+            isGlobal: true
+        }),
+        FirebaseAdminModule.register({
             isGlobal: true
         }),
         S3Module.register({
