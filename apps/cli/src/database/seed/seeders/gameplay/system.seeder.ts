@@ -29,7 +29,10 @@ import {
     RevenueRecipients,
     GoldPurchases,
     InteractionPermissions,
-    PetInfo
+    PetInfo,
+    TokenType,
+    Tokens,
+    TokenKey
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -329,6 +332,7 @@ export class SystemSeeder implements Seeder {
                     [Network.Testnet]: {
                         name: "Dragon Fruit",
                         collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -377,6 +381,7 @@ export class SystemSeeder implements Seeder {
                     [Network.Mainnet]: {
                         name: "Dragon Fruit",
                         collectionAddress: "HJWgeQ1DBRkVhbPnJMh5kNKAngjBsoUmwZFRmPHa8Xy3",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -429,6 +434,7 @@ export class SystemSeeder implements Seeder {
                     [Network.Testnet]: {
                         name: "Jackfruit",
                         collectionAddress: "2Ap4nT8Pby5LUEB7TvbwsLUnr1q7NBBCoLQZR4Ei3dNh",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_collection.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -477,6 +483,7 @@ export class SystemSeeder implements Seeder {
                     [Network.Mainnet]: {
                         name: "Jackfruit",
                         collectionAddress: "7ek9uoCatAvTo4dbgUpeUjsDgDhCXwFPuizDwkTnYpvD",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_collection.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -529,6 +536,7 @@ export class SystemSeeder implements Seeder {
                     [Network.Testnet]: {
                         name: "Pomegranate",
                         collectionAddress: "CRUwWJr8eAPaHoj7kA5WrpKMSiotV9vdMxdXUJLZfe9b",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_collection.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -577,6 +585,7 @@ export class SystemSeeder implements Seeder {
                     [Network.Mainnet]: {
                         name: "Pomegranate",
                         collectionAddress: "d1CTVb2B4fPkbQi6FVgZAWVvWbaHPNruwncoAjcejpL",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_collection.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -629,6 +638,7 @@ export class SystemSeeder implements Seeder {
                     [Network.Testnet]: {
                         name: "Rambutan",
                         collectionAddress: "4rM1G8YE7JxJPWuENSv1X5gkn6PYEJ8Wuc6bS8DZBz8K",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_collection.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -677,6 +687,7 @@ export class SystemSeeder implements Seeder {
                     [Network.Mainnet]: {
                         name: "Rambutan",
                         collectionAddress: "B8pPptqT3vKeVmMDqkz1EoBr5fGFymJVeVCUPLgYe1kV",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_collection.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -948,6 +959,161 @@ export class SystemSeeder implements Seeder {
             }
         }
 
+        const tokens: Tokens = {
+            [TokenKey.Native]: {
+                [ChainKey.Solana]: {
+                    [Network.Testnet]: {
+                        tokenType: TokenType.Native,
+                        tokenAddress: "native",
+                        name: "Solana",
+                        symbol: "SOL",
+                        decimals: 9,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/solana.svg",
+                    },
+                    [Network.Mainnet]: {
+                        tokenType: TokenType.Native,
+                        tokenAddress: "native",
+                        name: "Solana",
+                        symbol: "SOL",
+                        decimals: 9,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/solana.svg",
+                    }
+                },
+                [ChainKey.Sui]: {
+                    [Network.Testnet]: {
+                        tokenType: TokenType.Native,
+                        tokenAddress: "native",
+                        name: "Solana",
+                        symbol: "SOL",
+                        decimals: 9,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/solana.svg",
+                    },
+                    [Network.Mainnet]: {
+                        tokenType: TokenType.Native,
+                        tokenAddress: "native",
+                        name: "Solana",
+                        symbol: "SOL",
+                        decimals: 9,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/solana.svg",
+                    }
+                }
+            },
+            [TokenKey.USDC]: {
+                [ChainKey.Solana]: {
+                    [Network.Testnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        name: "USD Coin",
+                        symbol: "USDC",
+                        decimals: 6,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/usdc.svg",
+                    },
+                    [Network.Mainnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        name: "USD Coin",
+                        symbol: "USDC",
+                        decimals: 6,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/usdc.svg",
+                    }
+                },
+                [ChainKey.Sui]: {
+                    [Network.Testnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        name: "USD Coin",
+                        symbol: "USDC",
+                        decimals: 6,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/usdc.svg",
+                    },
+                    [Network.Mainnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        name: "USD Coin",
+                        symbol: "USDC",
+                        decimals: 6,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/usdc.svg",
+                    }
+                }
+            },
+            [TokenKey.USDT]: {
+                [ChainKey.Solana]: {
+                    [Network.Testnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+                        name: "USD Tether",
+                        symbol: "USDT",
+                        decimals: 6,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/usdt.svg",
+                    },
+                    [Network.Mainnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+                        name: "USD Tether",
+                        symbol: "USDT",
+                        decimals: 6,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/usdt.svg",
+                    }
+                },
+                [ChainKey.Sui]: {
+                    [Network.Testnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "0x2::sui::SUI",
+                        name: "USD Tether",
+                        symbol: "USDT",
+                        decimals: 6,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/usdt.svg",
+                    },
+                    [Network.Mainnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "0x2::sui::SUI",
+                        name: "USD Tether",
+                        symbol: "USDT",
+                        decimals: 6,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/usdt.svg",
+                    }
+                }
+            },
+            [TokenKey.CIFARM]: {
+                [ChainKey.Solana]: {
+                    [Network.Testnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "CIFARM_TOKEN_ADDRESS",
+                        name: "CIFARM",
+                        symbol: "CIFARM",
+                        decimals: 9,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/cifarm.png",
+                    },
+                    [Network.Mainnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "CIFARM_TOKEN_ADDRESS",
+                        name: "CIFARM",
+                        symbol: "CIFARM",
+                        decimals: 9,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/cifarm.png",
+                    }
+                },
+                [ChainKey.Sui]: {
+                    [Network.Testnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "CIFARM_TOKEN_ADDRESS",
+                        name: "CIFARM",
+                        symbol: "CIFARM",
+                        decimals: 9,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/cifarm.png",
+                    },
+                    [Network.Mainnet]: {
+                        tokenType: TokenType.Standard,
+                        tokenAddress: "CIFARM_TOKEN_ADDRESS",
+                        name: "CIFARM",
+                        symbol: "CIFARM",
+                        decimals: 9,
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/cifarm.png",
+                    }
+                }
+            }
+        }
+
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
@@ -1043,6 +1209,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.PetInfo),
                 displayId: SystemId.PetInfo,
                 value: petInfo
+            },
+            {
+                _id: createObjectId(SystemId.Tokens),
+                displayId: SystemId.Tokens,
+                value: tokens
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

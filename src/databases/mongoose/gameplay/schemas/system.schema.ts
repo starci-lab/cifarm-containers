@@ -11,7 +11,10 @@ import {
     GraphQLTypeNFTType,
     StableCoinName,
     PaymentKind,
-    GraphQLTypePaymentKind
+    GraphQLTypePaymentKind,
+    TokenType,
+    GraphQLTypeTokenType,
+    TokenKey
 } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
@@ -748,6 +751,11 @@ export class NFTCollectionData {
     })
         collectionAddress: string
 
+    @Field(() => String, {
+        description: "Collection image URL"
+    })
+        imageUrl: string
+
     @Field(() => NFTRarities, {
         description: "NFT rarities"
     })
@@ -1140,5 +1148,106 @@ export class PetInfo {
     })
         dog: DogInfo
 }
+
+@ObjectType({
+    description: "Configuration for token data"
+})
+export class TokenData {
+    @Field(() => String, {
+        description: "Token name"
+    })
+        name: string
+    
+    @Field(() => GraphQLTypeTokenType, {
+        description: "Token type"
+    })
+        tokenType: TokenType
+
+    // token address will be "native" for native tokens
+    @Field(() => String, {
+        description: "Token address",
+        nullable: true
+    })
+        tokenAddress?: string
+
+    @Field(() => String, {
+        description: "Token symbol"
+    })
+        symbol: string
+
+    @Field(() => Int, {
+        description: "Token decimals"
+    })
+        decimals: number
+
+    @Field(() => String, {
+        description: "Token image URL",
+        nullable: true
+    })
+        imageUrl?: string
+}
+
+@ObjectType({
+    description: "Configuration for token"
+})
+export class TokenWrapped {
+    @Field(() => TokenData, {
+        description: "Testnet token data",
+        nullable: true
+    })
+    [Network.Testnet]?: TokenData
+
+    @Field(() => TokenData, {
+        description: "Mainnet token data",
+        nullable: true
+    })
+    [Network.Mainnet]?: TokenData
+}
+
+@ObjectType({
+    description: "Token"
+})
+export class Token {
+    @Field(() => TokenWrapped, {
+        description: "Token wrapped",
+        nullable: true
+    })
+    [ChainKey.Solana]?: TokenWrapped
+
+    @Field(() => TokenWrapped, {
+        description: "Token wrapped",
+        nullable: true
+    })
+    [ChainKey.Sui]?: TokenWrapped
+}
+@ObjectType({
+    description: "Configuration for tokens"
+})
+export class Tokens {
+    @Field(() => Token, {
+        description: "Token",
+        nullable: true
+    })
+    [TokenKey.Native]?: Token
+
+    @Field(() => Token, {
+        description: "Token",
+        nullable: true
+    })
+    [TokenKey.USDC]?: Token
+
+    @Field(() => Token, {
+        description: "Token",
+        nullable: true
+    })
+    [TokenKey.USDT]?: Token
+
+    @Field(() => Token, {
+        description: "Token",
+        nullable: true
+    })
+    [TokenKey.CIFARM]?: Token
+}
+
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)

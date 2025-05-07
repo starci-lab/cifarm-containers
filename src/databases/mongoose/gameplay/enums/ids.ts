@@ -422,6 +422,7 @@ export enum SystemId {
     GoldPurchases = "goldPurchases",
     InteractionPermissions = "interactionPermissions",
     PetInfo = "petInfo",
+    Tokens = "tokens"
 }
 
 export const GraphQLTypeSystemId = createEnumType(SystemId)
@@ -484,6 +485,9 @@ registerEnumType(GraphQLTypeSystemId, {
         [SystemId.PetInfo]: {
             description: "The pet info id.",
         },
+        [SystemId.Tokens]: {
+            description: "Tokens."
+        }
     },
 })
 

@@ -37,7 +37,8 @@ import {
     PaymentKind,
     StableCoinName,
     InteractionPermissions,
-    PetInfo
+    PetInfo,
+    Tokens
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { Connection } from "mongoose"
@@ -76,6 +77,7 @@ export class StaticService implements OnModuleInit {
     public goldPurchases: GoldPurchases
     public interactionPermissions: InteractionPermissions
     public petInfo: PetInfo
+    public tokens: Tokens
 
     constructor(
         @InjectMongoose()
@@ -182,6 +184,11 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<PetInfo>>(createObjectId(SystemId.PetInfo))
         this.petInfo = petInfoDoc.value
+
+        const tokensDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<Tokens>>(createObjectId(SystemId.Tokens))
+        this.tokens = tokensDoc.value
 
         // Load collections
         this.placedItemTypes = await this.connection

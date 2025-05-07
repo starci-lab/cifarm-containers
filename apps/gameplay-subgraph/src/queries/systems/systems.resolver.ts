@@ -15,7 +15,8 @@ import {
     BeeHouseInfo,
     FlowerInfo,
     InteractionPermissions,
-    NFTBoxInfo
+    NFTBoxInfo,
+    Tokens
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -166,5 +167,14 @@ export class SystemsResolver {
     })
     nftBoxInfo(): NFTBoxInfo {
         return this.systemsService.nftBoxInfo()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => Tokens, {
+        name: "tokens",
+        description: "Get the tokens"
+    })
+    tokens(): Tokens {
+        return this.systemsService.tokens()
     }
 }

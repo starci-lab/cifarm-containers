@@ -14,7 +14,8 @@ import {
     BeeHouseInfo,
     FlowerInfo,
     InteractionPermissions,
-    NFTBoxInfo
+    NFTBoxInfo,
+    Tokens
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -84,5 +85,9 @@ export class SystemsService {
 
     nftBoxInfo(): NFTBoxInfo {
         return this.staticService.nftBoxInfo
+    }
+
+    tokens(): Tokens {
+        return this.staticService.tokens
     }
 }

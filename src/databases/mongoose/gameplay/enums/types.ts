@@ -370,3 +370,31 @@ registerEnumType(GraphQLTypeOauthProviderName, {
         }
     }
 })
+
+export enum TokenType {
+    Native = "native",
+    Standard = "standard"
+}
+
+export const GraphQLTypeTokenType = createEnumType(TokenType)
+
+registerEnumType(GraphQLTypeTokenType, {
+    name: "TokenType",
+    description: "The type of token",
+    valuesMap: {
+        [TokenType.Native]: {
+            description: "The native token"
+        },
+        [TokenType.Standard]: {
+            description: "The standard token"
+        }
+    }
+})
+
+export enum TokenKey {
+    Native = "native",
+    USDC = "usdc",
+    USDT = "usdt",
+    CIFARM = "cifarm",
+}
+
