@@ -742,6 +742,11 @@ export class NFTRarities {
     description: "Configuration for NFT collection data"
 })
 export class NFTCollectionData {
+    @Field(() => ID, {
+        description: "Placed item type id"
+    })
+        placedItemTypeId: Types.ObjectId
+
     @Field(() => String, {
         description: "Collection name"
     })

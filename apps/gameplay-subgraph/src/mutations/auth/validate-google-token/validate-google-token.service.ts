@@ -7,6 +7,7 @@ import { FirebaseAdminService } from "@src/firebase-admin"
 import { InjectMongoose, OauthProviderName, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { JwtService } from "@src/jwt"
+import { Network } from "@src/env"
 
 @Injectable()
 export class ValidateGoogleTokenService {
@@ -20,7 +21,7 @@ export class ValidateGoogleTokenService {
     ) {}
 
     public async validateGoogleToken({
-        token
+        token, network = Network.Testnet
     }: ValidateGoogleTokenRequest): Promise<ValidateGoogleTokenResponse> {
         const mongoSession = await this.connection.startSession()
         try {
@@ -40,7 +41,8 @@ export class ValidateGoogleTokenService {
                                 email: decodedToken.email,
                                 oauthProvider: OauthProviderName.Google,
                                 username: userInfo.displayName,
-                                avatarUrl: userInfo.photoURL
+                                avatarUrl: userInfo.photoURL,
+                                network
                             }
                         ],
                         { session }

@@ -64,9 +64,9 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                         }
                     })
                 }
-                const { nftType, rarity, nftName, tokenAmount } = cachedTx
+                const { nftType, rarity, nftName, tokenAmount, chainKey, network } = cachedTx
                 const signedTx = await this.solanaMetaplexService
-                    .getUmi(user.network)
+                    .getUmi(network)
                     .identity.signTransaction(tx)
                 // first season is USDC so that we hardcode the token address
                 // update the valut info in the database
@@ -87,10 +87,10 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                         },
                         {
                             value: {
-                                [user.chainKey]: {
-                                    [user.network]: {
+                                [chainKey]: {
+                                    [network]: {
                                         tokenLocked:
-                                            vaultInfos.value[user.chainKey][user.network]
+                                            vaultInfos.value[chainKey][network]
                                                 .tokenLocked +
                                             tokenAmount
                                     }
@@ -101,13 +101,13 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                     .session(session)
                 //console.log(signedTx.signatures.length)
                 const txHash = await this.solanaMetaplexService
-                    .getUmi(user.network)
+                    .getUmi(network)
                     .rpc.sendTransaction(signedTx)
                 const latestBlockhash = await this.solanaMetaplexService
-                    .getUmi(user.network)
+                    .getUmi(network)
                     .rpc.getLatestBlockhash()
                 await this.solanaMetaplexService
-                    .getUmi(user.network)
+                    .getUmi(network)
                     .rpc.confirmTransaction(txHash, {
                         commitment: "finalized",
                         strategy: {

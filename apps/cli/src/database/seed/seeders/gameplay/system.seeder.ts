@@ -32,7 +32,8 @@ import {
     PetInfo,
     TokenType,
     Tokens,
-    TokenKey
+    TokenKey,
+    PlacedItemTypeId
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -330,6 +331,7 @@ export class SystemSeeder implements Seeder {
             [NFTType.DragonFruit]: {
                 [ChainKey.Solana]: {
                     [Network.Testnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.DragonFruit),
                         name: "Dragon Fruit",
                         collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
                         imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
@@ -379,6 +381,7 @@ export class SystemSeeder implements Seeder {
                         }
                     },
                     [Network.Mainnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.DragonFruit),
                         name: "Dragon Fruit",
                         collectionAddress: "HJWgeQ1DBRkVhbPnJMh5kNKAngjBsoUmwZFRmPHa8Xy3",
                         imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
@@ -432,6 +435,7 @@ export class SystemSeeder implements Seeder {
             [NFTType.Jackfruit]: {
                 [ChainKey.Solana]: {
                     [Network.Testnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Jackfruit),
                         name: "Jackfruit",
                         collectionAddress: "2Ap4nT8Pby5LUEB7TvbwsLUnr1q7NBBCoLQZR4Ei3dNh",
                         imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_collection.png",
@@ -481,6 +485,7 @@ export class SystemSeeder implements Seeder {
                         }
                     },
                     [Network.Mainnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Jackfruit),
                         name: "Jackfruit",
                         collectionAddress: "7ek9uoCatAvTo4dbgUpeUjsDgDhCXwFPuizDwkTnYpvD",
                         imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_collection.png",
@@ -534,6 +539,7 @@ export class SystemSeeder implements Seeder {
             [NFTType.Pomegranate]: {
                 [ChainKey.Solana]: {
                     [Network.Testnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Pomegranate),
                         name: "Pomegranate",
                         collectionAddress: "CRUwWJr8eAPaHoj7kA5WrpKMSiotV9vdMxdXUJLZfe9b",
                         imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_collection.png",
@@ -583,6 +589,7 @@ export class SystemSeeder implements Seeder {
                         }
                     },
                     [Network.Mainnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Pomegranate),
                         name: "Pomegranate",
                         collectionAddress: "d1CTVb2B4fPkbQi6FVgZAWVvWbaHPNruwncoAjcejpL",
                         imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_collection.png",
@@ -636,6 +643,7 @@ export class SystemSeeder implements Seeder {
             [NFTType.Rambutan]: {
                 [ChainKey.Solana]: {
                     [Network.Testnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Rambutan),
                         name: "Rambutan",
                         collectionAddress: "4rM1G8YE7JxJPWuENSv1X5gkn6PYEJ8Wuc6bS8DZBz8K",
                         imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_collection.png",
@@ -685,6 +693,7 @@ export class SystemSeeder implements Seeder {
                         }
                     },
                     [Network.Mainnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Rambutan),
                         name: "Rambutan",
                         collectionAddress: "B8pPptqT3vKeVmMDqkz1EoBr5fGFymJVeVCUPLgYe1kV",
                         imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_collection.png",
@@ -1002,7 +1011,7 @@ export class SystemSeeder implements Seeder {
                 [ChainKey.Solana]: {
                     [Network.Testnet]: {
                         tokenType: TokenType.Standard,
-                        tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        tokenAddress: "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
                         name: "USD Coin",
                         symbol: "USDC",
                         decimals: 6,

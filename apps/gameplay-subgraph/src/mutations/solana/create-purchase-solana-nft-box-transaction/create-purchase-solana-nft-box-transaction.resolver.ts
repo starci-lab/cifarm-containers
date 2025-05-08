@@ -1,10 +1,13 @@
 import { Logger, UseGuards } from "@nestjs/common"
-import { Mutation, Resolver } from "@nestjs/graphql"
+import { Mutation, Resolver, Args } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
 import { CreatePurchaseSolanaNFTBoxTransactionService } from "./create-purchase-solana-nft-box-transaction.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
-import { CreatePurchaseSolanaNFTBoxTransactionResponse } from "./create-purchase-solana-nft-box-transaction.dto"
+import {
+    CreatePurchaseSolanaNFTBoxTransactionRequest,
+    CreatePurchaseSolanaNFTBoxTransactionResponse
+} from "./create-purchase-solana-nft-box-transaction.dto"
 
 @Resolver()
 export class CreatePurchaseSolanaNFTBoxTransactionResolver {
@@ -18,9 +21,13 @@ export class CreatePurchaseSolanaNFTBoxTransactionResolver {
         name: "createPurchaseSolanaNFTBoxTransaction",
         description: "Create Purchase Solana NFT Box Transaction"
     })
-    public async createPurchaseSolanaNFTBoxTransaction(@GraphQLUser() user: UserLike) {
+    public async createPurchaseSolanaNFTBoxTransaction(
+        @GraphQLUser() user: UserLike,
+        @Args("request") request: CreatePurchaseSolanaNFTBoxTransactionRequest
+    ) {
         return this.createPurchaseSolanaNftBoxTransactionService.createPurchaseSolanaNFTBoxTransaction(
-            user
+            user,
+            request
         )
     }
 }
