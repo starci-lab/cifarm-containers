@@ -1,6 +1,5 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
-import { GraphQLTypeChainKey, Network, ChainKey } from "@src/env"
-import { GraphQLTypeNetwork } from "@src/env"
+import { GraphQLTypeChainKey, ChainKey } from "@src/env"
 import { IResponseLike, ResponseLike } from "@src/graphql"
 import { IsBase58, IsEnum, IsOptional } from "class-validator"
 
@@ -13,14 +12,6 @@ export class CreatePurchaseSolanaNFTBoxTransactionRequest {
         description: "The account address of the user"
     })
         accountAddress: string
-
-    @IsOptional()
-    @IsEnum(Network)
-    @Field(() => GraphQLTypeNetwork, {
-        description: "The network of the user",
-        nullable: true
-    })
-        network?: Network
 
     @IsOptional()
     @IsEnum(ChainKey)

@@ -151,3 +151,22 @@ export interface CreateUpgradeNFTTransactionResponse {
     transaction: TransactionBuilder
 }
 
+export interface CreateTransferSolTransactionParams extends WithFeePayer {
+    fromAddress: string
+    toAddress: string
+    amount: number
+}
+
+export interface CreateTransferSolTransactionResponse {
+    transaction: TransactionBuilder
+}
+
+export interface CreateComputeBudgetTransactionsParams extends WithNetwork {
+    computeUnitLimit?: number
+    computeUnitPrice?: number
+}
+
+export interface CreateComputeBudgetTransactionsResponse {
+    limitTransaction: TransactionBuilder
+    priceTransaction: TransactionBuilder
+}

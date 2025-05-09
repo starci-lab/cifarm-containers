@@ -7,6 +7,7 @@ import {
     generateSigner,
     keypairIdentity,
     publicKey,
+    sol,
     Umi
 } from "@metaplex-foundation/umi"
 import {
@@ -24,10 +25,14 @@ import base58 from "bs58"
 import {
     CreateCollectionParams,
     CreateCollectionResponse,
+    CreateComputeBudgetTransactionsParams,
+    CreateComputeBudgetTransactionsResponse,
     CreateFreezeNFTTransactionParams,
     CreateFreezeNFTTransactionResponse,
     CreateMintNFTTransactionParams,
     CreateMintNFTTransactionResponse,
+    CreateTransferSolTransactionParams,
+    CreateTransferSolTransactionResponse,
     CreateTransferTokenTransactionParams,
     CreateTransferTokenTransactionResponse,
     CreateUnfreezeNFTTransactionParams,
@@ -42,6 +47,9 @@ import {
     transferTokens,
     findAssociatedTokenPda,
     mplToolbox,
+    transferSol,
+    setComputeUnitLimit,
+    setComputeUnitPrice,
 } from "@metaplex-foundation/mpl-toolbox"
 import { computeRaw } from "@src/common"
 import { S3Service } from "@src/s3"
@@ -115,6 +123,33 @@ export class SolanaMetaplexService {
         }
     }
 
+    public async createComputeBudgetTransactions({
+        network = Network.Mainnet,
+        computeUnitLimit = 600_000,
+        computeUnitPrice = 1
+    }: CreateComputeBudgetTransactionsParams): Promise<CreateComputeBudgetTransactionsResponse> {
+        const umi = this.umis[network]
+        const limitTransaction = setComputeUnitLimit(umi, { units: computeUnitLimit })
+        const priceTransaction = setComputeUnitPrice(umi, { microLamports: computeUnitPrice })
+        return { limitTransaction, priceTransaction }
+    }
+
+    public async createTransferSolTransaction({
+        network = Network.Mainnet,
+        fromAddress,
+        toAddress,
+        amount
+    }: CreateTransferSolTransactionParams): Promise<CreateTransferSolTransactionResponse> { 
+        const umi = this.umis[network]
+        const tx = transferSol(umi, {
+            source: createNoopSigner(publicKey(fromAddress)),
+            destination: publicKey(toAddress),
+            amount: sol(amount)
+        })
+        return { transaction: tx }
+    }
+
+
     public async createTransferTokenTransaction({
         network = Network.Mainnet,
         tokenAddress,
@@ -155,9 +190,11 @@ export class SolanaMetaplexService {
     }: CreateMintNFTTransactionParams): Promise<CreateMintNFTTransactionResponse> {
         const umi = this.umis[network]
         const asset = generateSigner(umi)
-        const uri = await this.s3Service.uploadJson(asset.publicKey.toString(), metadata)
         const collection = await fetchCollection(umi, collectionAddress)
         const nftName = `${name} #${asset.publicKey.toString().slice(0, 5)}`
+        // override the name in the metadata
+        metadata.name = nftName
+        const uri = await this.s3Service.uploadJson(asset.publicKey.toString(), metadata)
         const tx = create(umi, {
             asset,
             authority: createNoopSigner(umi.identity.publicKey),

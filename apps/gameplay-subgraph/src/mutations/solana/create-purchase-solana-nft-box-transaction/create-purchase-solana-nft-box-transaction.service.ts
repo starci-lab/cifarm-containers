@@ -17,7 +17,8 @@ import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { roundNumber } from "@src/common"
 import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
-import { ChainKey, Network } from "@src/env"
+import { ChainKey } from "@src/env"
+import { setComputeUnitLimit, setComputeUnitPrice } from "@metaplex-foundation/mpl-toolbox"
 
 @Injectable()
 export class CreatePurchaseSolanaNFTBoxTransactionService {
@@ -36,7 +37,6 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
         { id }: UserLike,
         {
             accountAddress,
-            network = Network.Testnet,
             chainKey = ChainKey.Solana
         }: CreatePurchaseSolanaNFTBoxTransactionRequest
     ): Promise<CreatePurchaseSolanaNFTBoxTransactionResponse> {
@@ -52,13 +52,6 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                     throw new GraphQLError("User not found")
                 }
 
-                if (user.network !== network) {
-                    throw new GraphQLError("Network mismatch", {
-                        extensions: {
-                            code: "NETWORK_MISMATCH"
-                        }
-                    })
-                }
                 const isStarterBoxUnset = !(
                     user.lastSolanaNFTBoxRollRarity && user.lastSolanaNFTBoxRollType
                 )
@@ -87,15 +80,19 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 }
                 const { nftType } = NFTBoxChance
                 const nftCollectionData = this.staticService.nftCollections[nftType][chainKey][
-                    network
+                    user.network
                 ] as NFTCollectionData
 
-                let builder = transactionBuilder()
+                const { limitTransaction, priceTransaction } =
+                    await this.solanaMetaplexService.createComputeBudgetTransactions({
+                        network: user.network
+                    })
+                let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
                 const nftName = nftCollectionData.name
                 const currentStage = 0
                 const { transaction: mintNFTTransaction, nftName: actualNFTName } =
                     await this.solanaMetaplexService.createMintNFTTransaction({
-                        network,
+                        network: user.network,
                         ownerAddress: accountAddress,
                         attributes: [
                             ...Object.entries(nftCollectionData.rarities[rarity]).map(
@@ -124,7 +121,7 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 builder = builder.add(mintNFTTransaction)
                 //get the stable coin address
                 const { tokenAddress, decimals: tokenDecimals } =
-                    this.staticService.tokens[StableCoinName.USDC][chainKey][network]
+                    this.staticService.tokens[StableCoinName.USDC][chainKey][user.network]
                 // first season is USDC so that we hardcode the token address
                 const tokenVaultAddress = this.solanaMetaplexService
                     .getVaultUmi(user.network)
@@ -136,7 +133,7 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 const tokenAmount = this.staticService.nftBoxInfo.boxPrice - feeAmount
                 const { transaction: transferTokenToVaultTransaction } =
                     await this.solanaMetaplexService.createTransferTokenTransaction({
-                        network,
+                        network: user.network,
                         tokenAddress: tokenAddress,
                         toAddress: tokenVaultAddress,
                         amount: tokenAmount,
@@ -144,13 +141,19 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                         fromAddress: accountAddress
                     })
                 // add to the transaction
-                builder = builder.add(transferTokenToVaultTransaction)
+                builder = builder.add(transferTokenToVaultTransaction).add(
+                    setComputeUnitLimit(this.solanaMetaplexService.getUmi(user.network), { units: 600_000 })
+                ).add(
+                    setComputeUnitPrice(this.solanaMetaplexService.getUmi(user.network), {
+                        microLamports: 1
+                    })
+                )
                 // get the fee receiver address
                 const revenueRecipientAddress =
-                    this.staticService.revenueRecipients[ChainKey.Solana][network].address
+                    this.staticService.revenueRecipients[ChainKey.Solana][user.network].address
                 const { transaction: transferTokenToFeeReceiverTransaction } =
                     await this.solanaMetaplexService.createTransferTokenTransaction({
-                        network,
+                        network: user.network,
                         tokenAddress: tokenAddress,
                         toAddress: revenueRecipientAddress,
                         amount: feeAmount,
@@ -161,7 +164,7 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 const transaction = await builder
                     .useV0()
                     .setFeePayer(createNoopSigner(publicKey(accountAddress)))
-                    .buildAndSign(this.solanaMetaplexService.getUmi(network))
+                    .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
                 // store the transaction in the cache
                 const cacheKey = this.sha256Service.hash(
                     base58.encode(
@@ -177,7 +180,7 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                     rarity,
                     tokenAmount,
                     nftName: actualNFTName,
-                    network
+                    network: user.network
                 }
                 await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
                 return {

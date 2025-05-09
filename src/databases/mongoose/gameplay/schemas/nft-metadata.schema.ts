@@ -1,9 +1,8 @@
-import { Field, ID, ObjectType } from "@nestjs/graphql"
+import { Field, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { Schema as MongooseSchema, Types } from "mongoose"
-import { UserSchema } from "./user.schema"
-import { USER } from "../constants"
+import { ChainKey, GraphQLTypeChainKey, GraphQLTypeNetwork } from "@src/env"
+import { Network } from "@src/env"
 
 @ObjectType({
     description: "The nft metadata"
@@ -23,11 +22,11 @@ export class NFTMetadataSchema extends AbstractSchema {
     @Prop({ type: String, required: false })
         collectionAddress?: string
 
-    @Field(() => ID, {
-        description: "The user who owns this nft"
+    @Field(() => GraphQLTypeNetwork, {
+        description: "The network of the nft"
     })
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name, index: true })
-    [USER]: UserSchema | Types.ObjectId
+    @Prop({ type: String, enum: Network, required: true })
+        network: Network
 
     @Field(() => Boolean, {
         description: "Whether the nft has been validated"
@@ -40,6 +39,12 @@ export class NFTMetadataSchema extends AbstractSchema {
     })
     @Prop({ type: String, required: true })
         nftName: string
+
+    @Field(() => GraphQLTypeChainKey, {
+        description: "The chain key of the nft"
+    })
+    @Prop({ type: String, enum: ChainKey, required: true })
+        chainKey: ChainKey
 }
 
 // Generate Mongoose Schema

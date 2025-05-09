@@ -15,7 +15,7 @@ import { publicKey, createNoopSigner, transactionBuilder } from "@metaplex-found
 import { InjectCache, UnwrapSolanaMetaplexNFTTransactionCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { StaticService } from "@src/gameplay"
-import { S3Service } from "@src/s3"
+
 @Injectable()
 export class CreateUnwrapSolanaMetaplexNFTTransactionService {
     private readonly logger = new Logger(CreateUnwrapSolanaMetaplexNFTTransactionService.name)
@@ -26,7 +26,6 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
         private readonly solanaMetaplexService: SolanaMetaplexService,
         private readonly sha256Service: Sha256Service,
         private readonly staticService: StaticService,
-        private readonly s3Service: S3Service,
         @InjectCache()
         private readonly cacheManager: Cache
     ) {}
@@ -56,6 +55,7 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
                     nftAddress,
                     network: user.network
                 })
+                const accountAddress = nft.owner
                 if (!nft) {
                     throw new GraphQLError("NFT not found on blockchain", {
                         extensions: {
@@ -73,13 +73,17 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
                 }
 
                 // Create unfreeze transaction
-                let builder = transactionBuilder()
+                const { limitTransaction, priceTransaction } =
+                    await this.solanaMetaplexService.createComputeBudgetTransactions({
+                        network: user.network
+                    })
+                let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
                 const { transaction: unfreezeTransaction } =
                     await this.solanaMetaplexService.createUnfreezeNFTTransaction({
                         nftAddress,
                         collectionAddress,
                         network: user.network,
-                        feePayer: user.accountAddress
+                        feePayer: accountAddress
                     })
                 builder = builder.add(unfreezeTransaction)
 
@@ -88,7 +92,8 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
                     .model<NFTMetadataSchema>(NFTMetadataSchema.name)
                     .findOne({
                         nftAddress,
-                        user: id
+                        network: user.network,
+                        collectionAddress
                     })
                     .session(session)
                 if (!nftMetadata) {
@@ -159,14 +164,14 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
                         nftAddress,
                         collectionAddress,
                         network: user.network,
-                        feePayer: user.accountAddress,
+                        feePayer: accountAddress,
                         attributes 
                     })
                 builder = builder.add(upgradeTransaction)
 
                 const transaction = await builder
                     .useV0()
-                    .setFeePayer(createNoopSigner(publicKey(user.accountAddress)))
+                    .setFeePayer(createNoopSigner(publicKey(accountAddress)))
                     .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
 
                 // Store transaction in cache
