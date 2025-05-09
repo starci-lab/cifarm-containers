@@ -34,7 +34,7 @@ export class CreateBuyGoldsSolanaTransactionService {
 
     async createBuyGoldsSolanaTransaction(
         { id }: UserLike,
-        { selectionIndex }: CreateBuyGoldsSolanaTransactionRequest
+        { selectionIndex, accountAddress }: CreateBuyGoldsSolanaTransactionRequest
     ): Promise<CreateBuyGoldsSolanaTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
@@ -61,7 +61,11 @@ export class CreateBuyGoldsSolanaTransactionService {
                     chainKey: user.chainKey
                 })
                 // create a transaction to buy the golds
-                let builder = transactionBuilder()
+                const { limitTransaction, priceTransaction } =
+                    await this.solanaMetaplexService.createComputeBudgetTransactions({
+                        network: user.network
+                    })
+                let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
                 const revenueRecipientAddress = this.staticService.revenueRecipients[user.chainKey][user.network].address
                 const { transaction: transferTokenTransaction } =
                     await this.solanaMetaplexService.createTransferTokenTransaction({
@@ -70,12 +74,12 @@ export class CreateBuyGoldsSolanaTransactionService {
                         toAddress: revenueRecipientAddress,
                         amount: price,
                         decimals,
-                        fromAddress: user.accountAddress
+                        fromAddress: accountAddress
                     })
                 builder = builder.add(transferTokenTransaction)
                 const transaction = await builder
                     .useV0()
-                    .setFeePayer(createNoopSigner(publicKey(user.accountAddress)))
+                    .setFeePayer(createNoopSigner(publicKey(accountAddress)))
                     .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
                 // store the transaction in the cache
                 const cacheKey = this.sha256Service.hash(

@@ -55,7 +55,7 @@ export class ValidateGoogleTokenService {
                 if (!user) {
                     const energy = this.energyService.getMaxEnergy()
 
-                    const { defaultCropId, defaultSeedQuantity, positions } =
+                    const { defaultCropId, defaultSeedQuantity, positions, golds } =
                         this.staticService.defaultInfo
 
                     const [userRaw] = await this.connection
@@ -67,6 +67,7 @@ export class ValidateGoogleTokenService {
                                     oauthProvider: OauthProviderName.Google,
                                     username: userInfo.displayName,
                                     avatarUrl: userInfo.photoURL,
+                                    golds,
                                     network,
                                     energy
                                 }

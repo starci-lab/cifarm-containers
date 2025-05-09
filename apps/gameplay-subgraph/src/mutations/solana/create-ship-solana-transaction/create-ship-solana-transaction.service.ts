@@ -9,7 +9,10 @@ import {
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
-import { CreateShipSolanaTransactionResponse } from "./create-ship-solana-transaction.dto"
+import {
+    CreateShipSolanaTransactionRequest,
+    CreateShipSolanaTransactionResponse
+} from "./create-ship-solana-transaction.dto"
 import { SolanaMetaplexService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
 import { InjectCache } from "@src/cache"
@@ -22,6 +25,7 @@ import { createNoopSigner } from "@metaplex-foundation/umi"
 import { publicKey } from "@metaplex-foundation/umi"
 import { transactionBuilder } from "@metaplex-foundation/umi"
 import base58 from "bs58"
+
 @Injectable()
 export class CreateShipSolanaTransactionService {
     private readonly logger = new Logger(CreateShipSolanaTransactionService.name)
@@ -37,9 +41,10 @@ export class CreateShipSolanaTransactionService {
         private readonly vaultService: VaultService
     ) {}
 
-    async createShipSolanaTransaction({
-        id
-    }: UserLike): Promise<CreateShipSolanaTransactionResponse> {
+    async createShipSolanaTransaction(
+        { id }: UserLike,
+        { accountAddress }: CreateShipSolanaTransactionRequest
+    ): Promise<CreateShipSolanaTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to handle the transaction lifecycle
@@ -48,7 +53,6 @@ export class CreateShipSolanaTransactionService {
                     userId: id,
                     session
                 })
-                console.log(Object.values(inventoryMap).flatMap((data) => data.inventories.map((inventory) => inventory.id)))
                 const enoughs = Object.values(inventoryMap).every((data) => data.enough)
                 if (!enoughs) {
                     throw new GraphQLError("Not enough items", {
@@ -93,24 +97,28 @@ export class CreateShipSolanaTransactionService {
                 const { address: tokenAddress, decimals: tokenDecimals } =
                     this.staticService.stableCoins[StableCoinName.USDC][user.chainKey][user.network]
                 // create a tx to transfer token from the vault to the user
-                let builder = transactionBuilder()
+
+                const { limitTransaction, priceTransaction } =
+                    await this.solanaMetaplexService.createComputeBudgetTransactions({
+                        network: user.network
+                    })
+                let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
 
                 const { transaction: transferTokenTransaction } =
                     await this.solanaMetaplexService.createTransferTokenTransaction({
                         network: user.network,
                         tokenAddress,
-                        toAddress: user.accountAddress,
+                        toAddress: accountAddress,
                         amount: paidAmount,
                         decimals: tokenDecimals,
                         fromAddress: tokenVaultAddress
                     })
 
-                // add to the transaction
                 builder = builder.add(transferTokenTransaction)
 
                 const transaction = await builder
                     .useV0()
-                    .setFeePayer(createNoopSigner(publicKey(user.accountAddress)))
+                    .setFeePayer(createNoopSigner(publicKey(accountAddress)))
                     .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
 
                 // store the transaction in the cache

@@ -10,6 +10,10 @@ export class CreateBuyGoldsSolanaTransactionRequest {
     @Min(0)
     @Field(() => Int)
         selectionIndex: number
+
+    @IsBase58()
+    @Field(() => String)
+        accountAddress: string
 }
 
 @ObjectType({
