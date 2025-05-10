@@ -992,18 +992,18 @@ export class SystemSeeder implements Seeder {
                     [Network.Testnet]: {
                         tokenType: TokenType.Native,
                         tokenAddress: "native",
-                        name: "Solana",
-                        symbol: "SOL",
+                        name: "Sui",
+                        symbol: "SUI",
                         decimals: 9,
-                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/solana.svg",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/sui.svg",
                     },
                     [Network.Mainnet]: {
                         tokenType: TokenType.Native,
                         tokenAddress: "native",
-                        name: "Solana",
-                        symbol: "SOL",
+                        name: "Sui",
+                        symbol: "SUI",
                         decimals: 9,
-                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/solana.svg",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/sui.svg",
                     }
                 }
             },
