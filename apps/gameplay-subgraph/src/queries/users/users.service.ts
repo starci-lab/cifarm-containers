@@ -65,7 +65,7 @@ export class UsersService {
                     ...this.getLevelFilter(levelStart, levelEnd, isFullTextSearch),
                     $or: [
                         { username: { $regex: new RegExp(searchString, "i") } },
-                        { accountAddress: { $regex: new RegExp(searchString, "i") } }
+                        { email: { $regex: new RegExp(searchString, "i") } }
                     ],
                     network: user.network,
                     ...this.getStatusFilter(status, isFullTextSearch)
@@ -93,7 +93,7 @@ export class UsersService {
                 ...this.getLevelFilter(levelStart, levelEnd, isFullTextSearch),
                 $or: [
                     { username: { $regex: new RegExp(searchString, "i") } },
-                    { accountAddress: { $regex: new RegExp(searchString, "i") } }
+                    { email: { $regex: new RegExp(searchString, "i") } }
                 ],
                 network: user.network,
                 ...this.getStatusFilter(status, isFullTextSearch)
@@ -132,7 +132,7 @@ export class UsersService {
                     ...this.getLevelFilter(levelStart, levelEnd, isFullTextSearch),
                     $or: [
                         { username: { $regex: new RegExp(searchString, "i") } },
-                        { accountAddress: { $regex: new RegExp(searchString, "i") } }
+                        { email: { $regex: new RegExp(searchString, "i") } }
                     ],
                     network: user.network,
                     ...this.getStatusFilter(status, isFullTextSearch)
@@ -152,7 +152,7 @@ export class UsersService {
                 ...this.getLevelFilter(levelStart, levelEnd, isFullTextSearch),
                 $or: [
                     { username: { $regex: new RegExp(searchString, "i") } },
-                    { accountAddress: { $regex: new RegExp(searchString, "i") } }
+                    { email: { $regex: new RegExp(searchString, "i") } }
                 ],
                 network: user.network,
                 ...this.getStatusFilter(status, isFullTextSearch)

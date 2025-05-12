@@ -214,7 +214,7 @@ export class UserSchema extends AbstractSchema {
     @Field(() => String, {
         description: "The google id of the user"
     })
-    @Prop({ type: String, required: true, unique: true })
+    @Prop({ type: String, required: true })
         oauthProvider: OauthProviderName
 }
 

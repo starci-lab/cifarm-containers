@@ -6,7 +6,9 @@ import { IoRedisFactory } from "./ioredis.factory"
 import { getIoRedisToken } from "./ioredis.utils"
 import { MODULE_OPTIONS_TOKEN } from "./ioredis.module-definition"
 
-export const createIoRedisFactoryProvider = (type: RedisType = RedisType.Cache): Provider => ({
+export const createIoRedisFactoryProvider = (
+    type: RedisType = RedisType.Cache
+): Provider => ({
     provide: getIoRedisToken(type),
     inject: [IoRedisFactory, MODULE_OPTIONS_TOKEN],
     useFactory: async (
