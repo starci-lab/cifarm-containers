@@ -17,13 +17,14 @@ import {
     TILE_INFO,
     PLANT_INFO,
     PET_INFO,
-    NFT_METADATA
+    NFT_METADATA,
+    TERRAIN_INFO
 } from "../constants"
 import { FruitInfoSchema, FruitInfoSchemaClass } from "./fruit-info.schema"
 import { BeeHouseInfoSchema, BeeHouseInfoSchemaClass } from "./bee-house-info.schema"
 import { PetInfoSchema, PetInfoSchemaClass } from "./pet-info.schema"
 import { NFTMetadataSchema } from "./nft-metadata.schema"
-
+import { TerrainInfoSchema, TerrainInfoSchemaClass } from "./terrain-info.schema"
 @ObjectType({
     description: "The schema for items placed on the farm"
 })
@@ -87,6 +88,13 @@ export class PlacedItemSchema extends AbstractSchema {
     })
     @Prop({ type: FruitInfoSchemaClass, required: false })
     [FRUIT_INFO]?: FruitInfoSchema
+
+    @Field(() => TerrainInfoSchema, { 
+        nullable: true,
+        description: "The terrain info associated with this placed item, if applicable"
+    })
+    @Prop({ type: TerrainInfoSchemaClass, required: false })
+    [TERRAIN_INFO]?: TerrainInfoSchema
 
     @Field(() => BeeHouseInfoSchema, { 
         nullable: true,

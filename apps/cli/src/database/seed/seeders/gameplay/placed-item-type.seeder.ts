@@ -7,7 +7,8 @@ import {
     PlacedItemTypeSchema,
     InjectMongoose,
     FruitId,
-    PetId
+    PetId,
+    TerrainId
 } from "@src/databases"
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
@@ -166,7 +167,47 @@ export class PlacedItemTypeSeeder implements Seeder {
                 building: createObjectId(BuildingId.FishPond),
                 sizeX: 3,
                 sizeY: 3
-            }
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.SmallStone),
+                displayId: PlacedItemTypeId.SmallStone,
+                type: PlacedItemType.Terrain,
+                terrain: createObjectId(TerrainId.SmallStone),
+                sizeX: 1,
+                sizeY: 1
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.SmallGrassPatch),
+                displayId: PlacedItemTypeId.SmallGrassPatch,
+                type: PlacedItemType.Terrain,
+                terrain: createObjectId(TerrainId.SmallGrassPatch),
+                sizeX: 1,   
+                sizeY: 1
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.OakTree),
+                displayId: PlacedItemTypeId.OakTree,
+                type: PlacedItemType.Terrain,
+                terrain: createObjectId(TerrainId.OakTree),
+                sizeX: 2,
+                sizeY: 2
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.PineTree),
+                displayId: PlacedItemTypeId.PineTree,
+                type: PlacedItemType.Terrain,
+                terrain: createObjectId(TerrainId.PineTree),
+                sizeX: 2,
+                sizeY: 2
+            },
+            {
+                _id: createObjectId(PlacedItemTypeId.MapleTree),
+                displayId: PlacedItemTypeId.MapleTree,
+                type: PlacedItemType.Terrain,
+                terrain: createObjectId(TerrainId.MapleTree),
+                sizeX: 2,
+                sizeY: 2
+            },
         ]
 
         await this.connection

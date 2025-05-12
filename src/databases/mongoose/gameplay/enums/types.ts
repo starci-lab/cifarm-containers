@@ -91,7 +91,8 @@ export enum PlacedItemType {
     Building = "building",
     Animal = "animal",
     Fruit = "fruit",
-    Pet = "pet"
+    Pet = "pet",
+    Terrain = "terrain"
 }
 
 export const GraphQLTypePlacedItemType = createEnumType(PlacedItemType)
@@ -114,6 +115,9 @@ registerEnumType(GraphQLTypePlacedItemType, {
         },
         [PlacedItemType.Pet]: {
             description: "The pet placed item"
+        },
+        [PlacedItemType.Terrain]: {
+            description: "The terrain placed item"
         }
     }
 })
@@ -398,3 +402,34 @@ export enum TokenKey {
     CIFARM = "cifarm",
 }
 
+export enum TerrainType {
+    Stone = "stone",
+    GrassPatch = "grassPatch",
+    OakTree = "oakTree",
+    PineTree = "pineTree",
+    MapleTree = "mapleTree",
+}
+
+export const GraphQLTypeTerrainType = createEnumType(TerrainType)
+
+registerEnumType(GraphQLTypeTerrainType, {
+    name: "TerrainType",
+    description: "The type of terrain",
+    valuesMap: {
+        [TerrainType.Stone]: {
+            description: "The stone terrain"
+        },
+        [TerrainType.GrassPatch]: {
+            description: "The grass patch terrain"
+        },
+        [TerrainType.OakTree]: {
+            description: "The oak tree terrain"
+        },
+        [TerrainType.PineTree]: {
+            description: "The pine tree terrain"
+        },
+        [TerrainType.MapleTree]: {
+            description: "The maple tree terrain"
+        }
+    }
+})

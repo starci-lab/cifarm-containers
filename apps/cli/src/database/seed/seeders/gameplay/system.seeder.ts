@@ -280,7 +280,37 @@ export class SystemSeeder implements Seeder {
                         x: -3,
                         y: 2
                     },
-                ]
+                ],
+                smallStones: [
+                    {
+                        x: 12,
+                        y: 12
+                    }
+                ],
+                smallGrassPatches: [
+                    {
+                        x: 13,
+                        y: 14
+                    }
+                ],
+                oakTrees: [
+                    {
+                        x: 15,
+                        y: 16
+                    }
+                ],
+                pineTrees: [
+                    {
+                        x: 15,
+                        y: 18
+                    }
+                ],
+                mapleTrees: [
+                    {
+                        x: 18,
+                        y: 15
+                    }
+                ]    
             },
             defaultCropId: CropId.Turnip,
             defaultSeedQuantity: 10,

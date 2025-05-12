@@ -6,10 +6,10 @@ import { BuildingSchema } from "./building.schema"
 import { AnimalSchema } from "./animal.schema"
 import { Schema as MongooseSchema, Types } from "mongoose"
 import { TileSchema } from "./tile.schema"
-import { ANIMAL, BUILDING, FRUIT, PET, TILE } from "../constants"
+import { ANIMAL, BUILDING, FRUIT, PET, TERRAIN, TILE } from "../constants"
 import { PetSchema } from "./pet.schema"
 import { FruitSchema } from "./fruit.schema"
-
+import { TerrainSchema } from "./terrain.schema"
 @ObjectType({
     description: "The placed item type schema"
 })
@@ -17,7 +17,7 @@ import { FruitSchema } from "./fruit.schema"
     timestamps: true,
     collection: "placed-item-types",
 })
-export class PlacedItemTypeSchema extends AbstractSchema {
+export class    PlacedItemTypeSchema extends AbstractSchema {
     @Field(() => GraphQLTypePlacedItemTypeId, {
         description: "The display ID of the placed item type"
     })
@@ -64,6 +64,13 @@ export class PlacedItemTypeSchema extends AbstractSchema {
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: FruitSchema.name })
     [FRUIT]?: FruitSchema | Types.ObjectId
+
+    @Field(() => ID, { 
+        nullable: true,
+        description: "The terrain associated with this placed item type, if applicable"
+    })
+    @Prop({ type: MongooseSchema.Types.ObjectId, required: false, ref: TerrainSchema.name })
+    [TERRAIN]?: TerrainSchema | Types.ObjectId
 
     @Field(() => Int, {
         description: "The width of the placed item in grid cells"

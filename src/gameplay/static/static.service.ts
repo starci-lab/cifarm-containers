@@ -38,7 +38,8 @@ import {
     StableCoinName,
     InteractionPermissions,
     PetInfo,
-    Tokens
+    Tokens,
+    TerrainSchema
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { Connection } from "mongoose"
@@ -78,7 +79,8 @@ export class StaticService implements OnModuleInit {
     public interactionPermissions: InteractionPermissions
     public petInfo: PetInfo
     public tokens: Tokens
-
+    public terrains: Array<TerrainSchema>
+    
     constructor(
         @InjectMongoose()
         private readonly connection: Connection
@@ -219,6 +221,8 @@ export class StaticService implements OnModuleInit {
 
         this.flowers = await this.connection.model<FlowerSchema>(FlowerSchema.name).find()
 
+        this.terrains = await this.connection.model<TerrainSchema>(TerrainSchema.name).find()
+
         this.logger.verbose("All static data loaded")
         this.logger.verbose(`Animals: ${this.animals.length}`)
         this.logger.verbose(`Crops: ${this.crops.length}`)
@@ -228,7 +232,8 @@ export class StaticService implements OnModuleInit {
         this.logger.verbose(`Pets: ${this.pets.length}`)
         this.logger.verbose(`Fruits: ${this.fruits.length}`)
         this.logger.verbose(`Supplies: ${this.supplies.length}`)
-        this.logger.verbose(`Flower: ${this.flowers.length}`)
+        this.logger.verbose(`Flowers: ${this.flowers.length}`)
+        this.logger.verbose(`Terrains: ${this.terrains.length}`)
     }
 
     public getTokenAddressFromPaymentKind({

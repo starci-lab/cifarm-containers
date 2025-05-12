@@ -441,6 +441,31 @@ export class Positions {
         description: "Default positions for the chickens"
     })
         chickens: Array<Position>
+
+    @Field(() => [Position], {
+        description: "Default positions for the small stones"
+    })
+        smallStones: Array<Position>
+
+    @Field(() => [Position], {
+        description: "Default positions for the small grass patches"
+    })
+        smallGrassPatches: Array<Position>
+
+    @Field(() => [Position], {
+        description: "Default positions for the oak trees"
+    })
+        oakTrees: Array<Position>
+
+    @Field(() => [Position], {
+        description: "Default positions for the pine trees"
+    })
+        pineTrees: Array<Position>
+
+    @Field(() => [Position], {
+        description: "Default positions for the maple trees"
+    })
+        mapleTrees: Array<Position>
 }
 
 @ObjectType({

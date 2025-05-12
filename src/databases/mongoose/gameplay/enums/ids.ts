@@ -745,6 +745,12 @@ export enum PlacedItemTypeId {
     Jackfruit = "jackfruit",
     Rambutan = "rambutan",
     Pomegranate = "pomegranate",
+    //
+    SmallStone = "smallStone",
+    SmallGrassPatch = "smallGrassPatch",
+    OakTree = "oakTree",
+    PineTree = "pineTree",
+    MapleTree = "mapleTree",
 }
 
 export const GraphQLTypePlacedItemTypeId = createEnumType(PlacedItemTypeId)
@@ -795,6 +801,21 @@ registerEnumType(GraphQLTypePlacedItemTypeId, {
         [PlacedItemTypeId.FishPond]: {
             description: "The fish pond id.",
         },
+        [PlacedItemTypeId.SmallStone]: {
+            description: "The small stone id.",
+        },
+        [PlacedItemTypeId.SmallGrassPatch]: {
+            description: "The small grass patch id.",
+        },
+        [PlacedItemTypeId.OakTree]: {
+            description: "The oak tree id.",
+        },
+        [PlacedItemTypeId.PineTree]: {
+            description: "The pine tree id.",
+        },
+        [PlacedItemTypeId.MapleTree]: {
+            description: "The maple tree id.",
+        },
     },
 })
 
@@ -817,3 +838,37 @@ registerEnumType(GraphQLTypeFishId, {
         },
     },
 })
+
+export enum TerrainId {
+    SmallStone = "smallStone",
+    SmallGrassPatch = "smallGrassPatch",
+    OakTree = "oakTree",
+    PineTree = "pineTree",
+    MapleTree = "mapleTree",
+}
+
+export const GraphQLTypeTerrainId = createEnumType(TerrainId)
+
+registerEnumType(GraphQLTypeTerrainId, {
+    name: "TerrainId",
+    description: "The terrain id.",
+    valuesMap: {
+        [TerrainId.SmallStone]: {
+            description: "The small stone id.",
+        },
+        [TerrainId.SmallGrassPatch]: {    
+            description: "The small grass patch id.",
+        },
+        [TerrainId.OakTree]: {
+            description: "The oak tree id.",
+        },
+        [TerrainId.PineTree]: {
+            description: "The pine tree id.",
+        },
+        [TerrainId.MapleTree]: {
+            description: "The maple tree id.",
+        },
+    },
+})
+
+

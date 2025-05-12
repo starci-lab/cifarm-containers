@@ -65,7 +65,11 @@ import {
     FishSchema,
     FishSchemaClass,
     OathProviderSchemaClass,
-    OathProviderSchema
+    OathProviderSchema,
+    TerrainSchema,
+    TerrainSchemaClass,
+    TerrainInfoSchema,
+    TerrainInfoSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -255,8 +259,16 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => FishSchemaClass
                         },
                         {
+                            name: TerrainInfoSchema.name,
+                            useFactory: () => TerrainInfoSchemaClass
+                        },
+                        {
                             name: OathProviderSchema.name,
                             useFactory: () => OathProviderSchemaClass
+                        },
+                        {
+                            name: TerrainSchema.name,
+                            useFactory: () => TerrainSchemaClass
                         }
                     ],
                     connectionName

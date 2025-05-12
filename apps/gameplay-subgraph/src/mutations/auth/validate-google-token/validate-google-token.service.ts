@@ -158,11 +158,72 @@ export class ValidateGoogleTokenService {
                             placedItemType: createObjectId(PlacedItemTypeId.Chicken).toString(),
                             animalInfo: {},
                             user: user.id,
+                            terrainInfo: {},
                             ...chicken
                         }))
                     await this.connection
                         .model<PlacedItemSchema>(PlacedItemSchema.name)
                         .create(chickenPartials, { session, ordered: true })
+
+                    // create small stones
+                    const smallStonePartials: Array<DeepPartial<PlacedItemSchema>> =
+                        positions.smallStones.map((smallStone) => ({
+                            placedItemType: createObjectId(PlacedItemTypeId.SmallStone).toString(),
+                            user: user.id,
+                            terrainInfo: {},
+                            ...smallStone
+                        }))
+                    await this.connection
+                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                        .create(smallStonePartials, { session, ordered: true })
+
+                    // create small grass patches
+                    const smallGrassPatchPartials: Array<DeepPartial<PlacedItemSchema>> =
+                        positions.smallGrassPatches.map((smallGrassPatch) => ({
+                            placedItemType: createObjectId(PlacedItemTypeId.SmallGrassPatch).toString(),
+                            user: user.id,
+                            terrainInfo: {},
+                            ...smallGrassPatch
+                        }))
+                    await this.connection
+                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                        .create(smallGrassPatchPartials, { session, ordered: true })
+
+                    // create oak trees
+                    const oakTreePartials: Array<DeepPartial<PlacedItemSchema>> =
+                        positions.oakTrees.map((oakTree) => ({
+                            placedItemType: createObjectId(PlacedItemTypeId.OakTree).toString(),
+                            user: user.id,
+                            terrainInfo: {},
+                            ...oakTree
+                        }))
+                    await this.connection
+                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                        .create(oakTreePartials, { session, ordered: true })
+
+                    // create pine trees
+                    const pineTreePartials: Array<DeepPartial<PlacedItemSchema>> =
+                        positions.pineTrees.map((pineTree) => ({
+                            placedItemType: createObjectId(PlacedItemTypeId.PineTree).toString(),
+                            user: user.id,
+                            terrainInfo: {},
+                            ...pineTree
+                        }))
+                    await this.connection
+                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                        .create(pineTreePartials, { session, ordered: true })
+
+                    // create maple trees
+                    const mapleTreePartials: Array<DeepPartial<PlacedItemSchema>> =
+                        positions.mapleTrees.map((mapleTree) => ({
+                            placedItemType: createObjectId(PlacedItemTypeId.MapleTree).toString(),
+                            user: user.id,
+                            terrainInfo: {},
+                            ...mapleTree
+                        }))
+                    await this.connection
+                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                        .create(mapleTreePartials, { session, ordered: true })
 
                     /************************************************************
                      * CREATE DEFAULT TOOLS
