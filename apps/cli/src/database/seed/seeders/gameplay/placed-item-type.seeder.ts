@@ -53,7 +53,6 @@ export class PlacedItemTypeSeeder implements Seeder {
                 sizeX: 1,
                 sizeY: 1
             },
-
             // Buildings
             {
                 _id: createObjectId(PlacedItemTypeId.Home),
