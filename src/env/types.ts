@@ -9,6 +9,7 @@ export enum Container {
     CronScheduler = "cronScheduler",
     TelegramBot = "telegramBot",
     Cli = "cli",
+    SocialAuth = "socialAuth",
 }
 
 export enum NodeEnv {

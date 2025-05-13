@@ -8,8 +8,8 @@ export class GoogleOAuthService {
 
     constructor() {
         this.oauthClient = new OAuth2Client(
-            envConfig().googleCloudOAuth.clientId,
-            envConfig().googleCloudOAuth.clientSecret
+            envConfig().googleCloud.oauth.clientId,
+            envConfig().googleCloud.oauth.clientSecret
         )
     }
 

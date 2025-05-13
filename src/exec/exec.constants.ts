@@ -29,5 +29,9 @@ export const containerMap : Record<Container, ContainerInfo> = {
     [Container.TelegramBot]: {
         image: "cifarm/telegram-bot",
         dockerfile: "./apps/telegram-bot/Dockerfile"
-    }     
+    },
+    [Container.SocialAuth]: {
+        image: "cifarm/social-auth",
+        dockerfile: "./apps/social-auth/Dockerfile"
+    }
 }

@@ -94,6 +94,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/farcaster-bot/tsconfig.app.json"
       }
+    },
+    "social-auth": {
+      "type": "application",
+      "root": "apps/social-auth",
+      "entryFile": "main",
+      "sourceRoot": "apps/social-auth/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/social-auth/tsconfig.app.json"
+      }
     }
   }
 }

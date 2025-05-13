@@ -99,6 +99,15 @@ export const envConfig = () => ({
             healthCheckPort: process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT
                 ? Number.parseInt(process.env.TELEGRAM_BOT_HEALTH_CHECK_PORT)
                 : DEFAULT_HEALTH_PORT
+        },
+        [Container.SocialAuth]: {
+            host: process.env.SOCIAL_AUTH_HOST ?? LOCALHOST,
+            port: process.env.SOCIAL_AUTH_PORT
+                ? Number.parseInt(process.env.SOCIAL_AUTH_PORT)
+                : DEFAULT_PORT,
+            healthCheckPort: process.env.SOCIAL_AUTH_HEALTH_CHECK_PORT
+                ? Number.parseInt(process.env.SOCIAL_AUTH_HEALTH_CHECK_PORT)
+                : DEFAULT_HEALTH_PORT
         }
     },
     databases: {
@@ -217,9 +226,19 @@ export const envConfig = () => ({
             universeDomain: process.env.FIREBASE_CREDENTIAL_UNIVERSE_DOMAIN,
         },
     },
-    googleCloudOAuth: {
-        clientId: process.env.GOOGLE_CLOUD_OAUTH_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLOUD_OAUTH_CLIENT_SECRET,
+    googleCloud: {
+        oauth: {
+            clientId: process.env.GOOGLE_CLOUD_OAUTH_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLOUD_OAUTH_CLIENT_SECRET,
+            redirectUri: process.env.GOOGLE_CLOUD_OAUTH_REDIRECT_URI,
+        }
+    },
+    xApi: {
+        oauth: {
+            clientId: process.env.X_OAUTH_CLIENT_ID,
+            clientSecret: process.env.X_OAUTH_CLIENT_SECRET,
+            redirectUri: process.env.X_OAUTH_REDIRECT_URI,
+        }
     },
     chainCredentials: {
         [ChainKey.Solana]: {
