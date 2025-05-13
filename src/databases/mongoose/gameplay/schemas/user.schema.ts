@@ -212,10 +212,11 @@ export class UserSchema extends AbstractSchema {
         email: string
 
     @Field(() => String, {
-        description: "The google id of the user"
+        description: "The google id of the user",
+        nullable: true
     })
-    @Prop({ type: String, required: true })
-        oauthProvider: OauthProviderName
+    @Prop({ type: String, required: false })
+        oauthProvider?: OauthProviderName
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

@@ -3,10 +3,10 @@ import { RefreshModule } from "./refresh"
 import { RequestMessageModule } from "./request-message"
 import { VerifySignatureModule } from "./verify-signature"
 import { GenerateSignatureModule } from "./generate-signature"
-import { ValidateGoogleTokenModule } from "./validate-google-token"
+import { AuthenticateGoogleModule } from "./authenticate-google"
 @Module({
     imports: [
-        ValidateGoogleTokenModule,
+        AuthenticateGoogleModule,
         GenerateSignatureModule,
         RequestMessageModule,
         VerifySignatureModule,

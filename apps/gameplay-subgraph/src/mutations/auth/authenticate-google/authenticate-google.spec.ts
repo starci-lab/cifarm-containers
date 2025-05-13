@@ -1,6 +1,6 @@
 // npx jest apps/gameplay-service/src/auth/generate-signature/generate-signature.spec.ts
 
-import { GenerateSignatureService } from "./validate-google-token.service"
+import { AuthenticateGoogleService } from "./authenticate-google.service"
 import { GameplayConnectionService, TestingInfraModule } from "@src/testing"
 import { Test } from "@nestjs/testing"
 import { Cache } from "cache-manager"
@@ -9,8 +9,8 @@ import { Network, ChainKey } from "@src/env"
 import { isUUID } from "class-validator"  // Assuming you'd want to check if the message is a valid UUID.
 import { RequestMessageService } from "../request-message"
 
-describe("GenerateSignatureService", () => {
-    let service: GenerateSignatureService
+describe("AuthenticateGoogleService", () => {
+    let service: AuthenticateGoogleService
     let cache: Cache
     let gameplayConnectionService: GameplayConnectionService
 

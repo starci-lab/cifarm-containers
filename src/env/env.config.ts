@@ -217,6 +217,10 @@ export const envConfig = () => ({
             universeDomain: process.env.FIREBASE_CREDENTIAL_UNIVERSE_DOMAIN,
         },
     },
+    googleCloudOAuth: {
+        clientId: process.env.GOOGLE_CLOUD_OAUTH_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLOUD_OAUTH_CLIENT_SECRET,
+    },
     chainCredentials: {
         [ChainKey.Solana]: {
             honeycombAuthority: {

@@ -20,6 +20,7 @@ export class JwtModule extends ConfigurableModuleClass {
         const dynamicModule = super.register(options)
 
         return {
+            global: options.isGlobal,
             ...dynamicModule,
             imports: [PassportModule, ...imports],
             providers: [...dynamicModule.providers, JwtStrategy, NestJwtService, JwtService],

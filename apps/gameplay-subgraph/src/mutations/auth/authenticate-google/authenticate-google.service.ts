@@ -1,9 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
-    ValidateGoogleTokenRequest,
-    ValidateGoogleTokenResponse
-} from "./validate-google-token.dto"
-import { FirebaseAdminService } from "@src/firebase-admin"
+    AuthenticateGoogleRequest,
+    AuthenticateGoogleTokenResponse
+} from "./authenticate-google.dto"
 import {
     InjectMongoose,
     InventoryType,
@@ -23,33 +22,32 @@ import { Network } from "@src/env"
 import { createObjectId, DeepPartial } from "@src/common"
 import { GraphQLError } from "graphql"
 import { EnergyService, StaticService } from "@src/gameplay"
+import { GoogleOAuthService } from "@src/google-cloud"
 
 @Injectable()
-export class ValidateGoogleTokenService {
-    private readonly logger = new Logger(ValidateGoogleTokenService.name)
+export class AuthenticateGoogleService {
+    private readonly logger = new Logger(AuthenticateGoogleService.name)
 
     constructor(
-        private readonly firebaseAdminService: FirebaseAdminService,
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly jwtService: JwtService,
         private readonly energyService: EnergyService,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly googleOAuthService: GoogleOAuthService
     ) {}
 
-    public async validateGoogleToken({
-        token,
-        network = Network.Testnet
-    }: ValidateGoogleTokenRequest): Promise<ValidateGoogleTokenResponse> {
+    public async authenticateGoogle({
+        network = Network.Testnet,
+        token
+    }: AuthenticateGoogleRequest): Promise<AuthenticateGoogleTokenResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             const result = await mongoSession.withTransaction(async (session) => {
-                const decodedToken = await this.firebaseAdminService.validateToken(token)
-                // get user info from google
-                const userInfo = await this.firebaseAdminService.getUser(decodedToken.uid)
+                const payload = await this.googleOAuthService.verifyToken(token)
                 // create account if not exists
                 let user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
-                    email: decodedToken.email,
+                    email: payload.email,
                     oauthProvider: OauthProviderName.Google
                 })
                 if (!user) {
@@ -63,10 +61,10 @@ export class ValidateGoogleTokenService {
                         .create(
                             [
                                 {
-                                    email: decodedToken.email,
+                                    email: payload.email,
                                     oauthProvider: OauthProviderName.Google,
-                                    username: userInfo.displayName,
-                                    avatarUrl: userInfo.photoURL,
+                                    username: payload.name,
+                                    avatarUrl: payload.picture,
                                     golds,
                                     network,
                                     energy

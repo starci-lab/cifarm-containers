@@ -1,0 +1,1 @@
+export * from "./is-google-oath-token.validator"
