@@ -357,7 +357,8 @@ registerEnumType(GraphQLTypePaymentKind, {
 
 export enum OauthProviderName {
     Google = "google",
-    Apple = "apple"
+    Facebook = "facebook",
+    X = "x"
 }
 
 export const GraphQLTypeOauthProviderName = createEnumType(OauthProviderName)
@@ -369,8 +370,11 @@ registerEnumType(GraphQLTypeOauthProviderName, {
         [OauthProviderName.Google]: {
             description: "The google oauth provider"
         },
-        [OauthProviderName.Apple]: {
-            description: "The apple oauth provider"
+        [OauthProviderName.Facebook]: {
+            description: "The facebook oauth provider"
+        },
+        [OauthProviderName.X]: {
+            description: "The x oauth provider"
         }
     }
 })

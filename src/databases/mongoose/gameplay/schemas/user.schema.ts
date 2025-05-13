@@ -206,17 +206,25 @@ export class UserSchema extends AbstractSchema {
         selectedPlacedItemCatId?: Types.ObjectId
 
     @Field(() => String, {
-        description: "The email of the user"
+        description: "The email of the user",
+        nullable: true
     })
-    @Prop({ type: String, required: true, unique: true })
-        email: string
+    @Prop({ type: String, required: false })
+        email?: string
 
     @Field(() => String, {
-        description: "The google id of the user",
+        description: "The oauth provider of the user",
         nullable: true
     })
     @Prop({ type: String, required: false })
         oauthProvider?: OauthProviderName
+
+    @Field(() => String, {
+        description: "The oauth provider id of the user",
+        nullable: true
+    })
+    @Prop({ type: String, required: false })
+        oauthProviderId?: string
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

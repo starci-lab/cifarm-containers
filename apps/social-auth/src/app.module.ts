@@ -6,7 +6,9 @@ import { IdModule } from "@src/id"
 import { XApiModule } from "@src/x-api"
 import { FacebookModule as FacebookCoreModule } from "@src/facebook"
 import { AuthModule } from "./auth"
-
+import { GameplayModule } from "@src/gameplay"
+import { JwtModule } from "@src/jwt"
+import { InitializationModule } from "./initialization"
 @Module({
     imports: [
         MongooseModule.forRoot(),
@@ -22,6 +24,15 @@ import { AuthModule } from "./auth"
             isGlobal: true
         }),
         XApiModule.register({
+            isGlobal: true
+        }),
+        GameplayModule.register({
+            isGlobal: true
+        }),
+        JwtModule.register({
+            isGlobal: true
+        }),
+        InitializationModule.register({
             isGlobal: true
         }),
         AuthModule

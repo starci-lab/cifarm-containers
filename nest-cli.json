@@ -92,7 +92,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/farcaster-bot/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/farcaster-bot/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/farcaster-bot/tsconfig.app.json",
+        "webpackConfigPath": "apps/farcaster-bot/webpack.config.js"
       }
     },
     "social-auth": {
@@ -101,7 +103,9 @@
       "entryFile": "main",
       "sourceRoot": "apps/social-auth/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/social-auth/tsconfig.app.json"
+        "webpack": true,
+        "tsConfigPath": "apps/social-auth/tsconfig.app.json",
+        "webpackConfigPath": "apps/social-auth/webpack.config.js"
       }
     }
   }

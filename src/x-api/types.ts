@@ -1,8 +1,11 @@
+import { Network } from "@src/env"
+
 export type UserXLike = {
     email: string
-    name: string
+    username: string
     picture: string
     id: string
+    network: Network    
 }
 
 

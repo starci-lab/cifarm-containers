@@ -360,4 +360,12 @@ export const envConfig = () => ({
     productionUrl: process.env.PRODUCTION_URL,
     // e2e debugging
     e2eEnabled: process.env.E2E_ENABLED === "true",
+    webApps: {
+        [Network.Mainnet]: {
+            url: process.env.WEB_APP_URL_MAINNET
+        },
+        [Network.Testnet]: {
+            url: process.env.WEB_APP_URL_TESTNET
+        }
+    }
 })
