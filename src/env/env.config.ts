@@ -233,6 +233,13 @@ export const envConfig = () => ({
             redirectUri: process.env.GOOGLE_CLOUD_OAUTH_REDIRECT_URI,
         }
     },
+    facebook: {
+        oauth: {
+            clientId: process.env.FACEBOOK_OAUTH_CLIENT_ID,
+            clientSecret: process.env.FACEBOOK_OAUTH_CLIENT_SECRET,
+            redirectUri: process.env.FACEBOOK_OAUTH_REDIRECT_URI,
+        }
+    },
     xApi: {
         oauth: {
             clientId: process.env.X_OAUTH_CLIENT_ID,
