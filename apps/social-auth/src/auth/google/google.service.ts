@@ -26,6 +26,7 @@ export class GoogleService {
                 // create account if not exists
                 let user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
                     oauthProviderId: _user.id,
+                    network: _user.network,
                     oauthProvider: OauthProviderName.Google
                 })  
                 if (!user) {
@@ -42,7 +43,7 @@ export class GoogleService {
                                     email: _user.email,
                                     oauthProviderId: _user.id,
                                     oauthProvider: OauthProviderName.Google,
-                                    username: _user.name,
+                                    username: _user.username,
                                     avatarUrl: _user.picture,
                                     golds,
                                     network: _user.network,

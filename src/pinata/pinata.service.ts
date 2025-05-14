@@ -7,8 +7,8 @@ export class PinataService {
     public pinata: PinataSDK
     constructor() {
         this.pinata = new PinataSDK({
-            pinataJwt: envConfig().secrets.pinata.jwtToken,
-            pinataGateway: envConfig().secrets.pinata.gatewayUrl,
+            pinataJwt: envConfig().pinata.jwtToken,
+            pinataGateway: envConfig().pinata.gatewayUrl,
         })
     }
 

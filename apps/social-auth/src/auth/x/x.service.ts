@@ -24,6 +24,7 @@ export class XService {
                 // create account if not exists
                 let user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
                     providerId: _user.id,
+                    network: _user.network,
                     oauthProvider: OauthProviderName.X
                 })  
                 if (!user) {

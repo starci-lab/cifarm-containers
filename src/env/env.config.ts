@@ -192,23 +192,27 @@ export const envConfig = () => ({
             secretAccessKey: process.env.S3_DIGITALOCEAN1_SECRET_ACCESS_KEY,
         }
     },
-    secrets: {
-        salt: process.env.SALT,
-        jwt: {
-            secret: process.env.JWT_SECRET,
-            accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION ?? "15m",
-            refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION ?? "30d"
+    crypto: {
+        cipher: {
+            secret: process.env.CIPHER_SECRET,
         },
-        admin: {
-            username: process.env.ADMIN_USERNAME,
-            password: process.env.ADMIN_PASSWORD
+        bcrypt: {
+            salt: process.env.BCRYPT_SALT,
         },
-        pinata: {
-            apiKey: process.env.PINATA_API_KEY,
-            secretApiKey: process.env.PINATA_SECRET_API_KEY,
-            jwtToken: process.env.PINATA_JWT_TOKEN,
-            gatewayUrl: process.env.PINATA_GATEWAY_URL,
-        },
+    },
+    session: {
+        secret: process.env.SESSION_SECRET,
+    },
+    jwt: {
+        secret: process.env.JWT_SECRET,
+        accessTokenExpiration: process.env.JWT_ACCESS_TOKEN_EXPIRATION ?? "15m",
+        refreshTokenExpiration: process.env.JWT_REFRESH_TOKEN_EXPIRATION ?? "30d"
+    },
+    pinata: {
+        apiKey: process.env.PINATA_API_KEY,
+        secretApiKey: process.env.PINATA_SECRET_API_KEY,
+        jwtToken: process.env.PINATA_JWT_TOKEN,
+        gatewayUrl: process.env.PINATA_GATEWAY_URL,
     },
     firebase: {
         credential: {

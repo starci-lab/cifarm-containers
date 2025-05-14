@@ -26,6 +26,7 @@ export class FacebookService {
                 // create account if not exists
                 let user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
                     oauthProviderId: _user.id,
+                    network: _user.network,
                     oauthProvider: OauthProviderName.Facebook
                 })  
                 if (!user) {

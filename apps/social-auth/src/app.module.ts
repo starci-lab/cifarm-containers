@@ -9,6 +9,7 @@ import { AuthModule } from "./auth"
 import { GameplayModule } from "@src/gameplay"
 import { JwtModule } from "@src/jwt"
 import { InitializationModule } from "./initialization"
+import { CryptoModule } from "@src/crypto"
 @Module({
     imports: [
         MongooseModule.forRoot(),
@@ -27,6 +28,9 @@ import { InitializationModule } from "./initialization"
             isGlobal: true
         }),
         GameplayModule.register({
+            isGlobal: true
+        }),
+        CryptoModule.register({
             isGlobal: true
         }),
         JwtModule.register({

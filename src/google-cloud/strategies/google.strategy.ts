@@ -1,15 +1,22 @@
 import { envConfig, Network } from "@src/env"
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable } from "@nestjs/common"
 import { PassportStrategy } from "@nestjs/passport"
 import { Profile, Strategy, VerifyCallback } from "passport-google-oauth20"
 import { UserGoogleLike } from "../types"
+import { SerializationService } from "@src/crypto"
 import { Request } from "express"
+
+interface GoogleAuthState {
+    network: Network
+}
 
 @Injectable()
 export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
-    private readonly logger = new Logger(GoogleAuthStrategy.name)
-    constructor() {
+    constructor(
+        private readonly serializationService: SerializationService
+    ) {
         super({
+            // google console auth
             clientID: envConfig().googleCloud.oauth.clientId,
             clientSecret: envConfig().googleCloud.oauth.clientSecret,
             callbackURL: envConfig().googleCloud.oauth.redirectUri,
@@ -18,29 +25,36 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
         })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async authenticate(req: Request, options: any) {
+        let state = undefined
+        if (!req.query.state) {
+            state = this.serializationService.serializeToBase64<GoogleAuthState>({
+                network: req.query.network as Network || Network.Testnet
+            })
+        }
+        super.authenticate(req, {
+            ...options,
+            state
+        })
+    }
+
+
     async validate(
         req: Request,
         accessToken: string,
         refreshToken: string,
         profile: Profile,
-        done: VerifyCallback
+        done: VerifyCallback,
     ) {
-        let network: Network = Network.Testnet
-        if (req.query.state) {
-            try {
-                const stateObj = JSON.parse(decodeURIComponent(req.query.state as string))
-                network = stateObj.network ?? Network.Testnet
-            } catch (error: unknown) {
-                this.logger.error(error)
-            }
-        }
-        const { name, emails, photos, id } = profile
+        const state = this.serializationService.deserializeFromBase64<GoogleAuthState>(req.query.state as string)
+        const { emails, photos, id, displayName } = profile
         const user: UserGoogleLike = {
             id,
             email: emails[0].value,
-            name: name.givenName,
+            username: displayName,
             picture: photos[0].value,
-            network
+            network: state.network,
         }
         done(null, user)
     }

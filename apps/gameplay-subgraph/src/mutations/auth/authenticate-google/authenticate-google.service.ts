@@ -63,7 +63,7 @@ export class AuthenticateGoogleService {
                                 {
                                     email: payload.email,
                                     oauthProvider: OauthProviderName.Google,
-                                    username: payload.name,
+                                    username: payload,
                                     avatarUrl: payload.picture,
                                     golds,
                                     network,

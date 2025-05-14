@@ -16,7 +16,7 @@ export class UserSchema extends AbstractSchema {
     @Field(() => String, {
         description: "The username of the user"
     })
-    @Prop({ type: String, required: true, unique: true, length: 100 })
+    @Prop({ type: String, required: true, length: 100 })
         username: string
 
     @Field(() => GraphQLTypeChainKey, {

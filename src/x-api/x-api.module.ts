@@ -12,7 +12,7 @@ export class XApiModule extends ConfigurableModuleClass {
         return {
             global: options.isGlobal,
             ...dynamicModule,
-            imports: [PassportModule],
+            imports: [PassportModule.register({ session: true})],
             providers: [...dynamicModule.providers, ...strategies, ...services],
             exports: services
         }

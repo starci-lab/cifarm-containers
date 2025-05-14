@@ -18,8 +18,8 @@ export class JwtService {
     public async generateAuthCredentials(payload: UserLike): Promise<AuthCredentials> {
         const [accessToken, refreshToken] = await Promise.all([
             this.jwtService.signAsync(payload, {
-                secret: envConfig().secrets.jwt.secret,
-                expiresIn: envConfig().secrets.jwt.accessTokenExpiration
+                secret: envConfig().jwt.secret,
+                expiresIn: envConfig().jwt.accessTokenExpiration
             }),
             v4()
         ])
@@ -35,7 +35,7 @@ export class JwtService {
     public async verifyToken(token: string): Promise<UserLike | null> {
         try {
             return await this.jwtService.verifyAsync(token, {
-                secret: envConfig().secrets.jwt.secret
+                secret: envConfig().jwt.secret
             })
         } catch (ex) {
             this.logger.error(ex)
@@ -54,7 +54,7 @@ export class JwtService {
 
     private async getExpiredAt(): Promise<Date> {
         try {
-            const expiresIn = envConfig().secrets.jwt.refreshTokenExpiration
+            const expiresIn = envConfig().jwt.refreshTokenExpiration
             const expiresInMs = ms(expiresIn as StringValue)
             return this.dateUtcService.getDayjs().add(expiresInMs, "millisecond").toDate()
         } catch (ex) {

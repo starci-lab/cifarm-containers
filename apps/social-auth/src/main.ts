@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module"
-import { envConfig } from "@src/env"
+import { envConfig, isProduction } from "@src/env"
 import { HealthCheckDependency, HealthCheckModule } from "@src/health-check"
 import { IdLogger } from "@src/id"
 import { NestExpressApplication } from "@nestjs/platform-express"
@@ -19,13 +19,11 @@ const bootstrap = async () => {
     app.set("trust proxy", "loopback")  
     app.use(
         session({
-            secret: "demo",
+            secret: envConfig().session.secret,
             resave: false,
             saveUninitialized: false,
-            cookie: {
-                maxAge: 1000 * 60 * 60 * 24 * 30,
-            },
-        })
+            cookie: { secure: isProduction() }, // Use `secure: true` in production with HTTPS
+        }),
     )
     app.use(passport.initialize())
     app.use(passport.session())
