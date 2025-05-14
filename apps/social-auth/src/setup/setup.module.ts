@@ -1,13 +1,13 @@
 import { DynamicModule, Module } from "@nestjs/common"
-import { InitializationService } from "./initialization.service"
-import { ConfigurableModuleClass, OPTIONS_TYPE } from "./initialization.module-definition"
+import { SetupService } from "./setup.service"
+import { ConfigurableModuleClass, OPTIONS_TYPE } from "./setup.module-definition"
 @Module({
-    providers: [InitializationService]
+    providers: [SetupService]
 })
-export class InitializationModule extends ConfigurableModuleClass {
+export class SetupModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         const dynamicModule = super.register(options)
-        const services = [InitializationService]
+        const services = [SetupService]
         return {
             global: options.isGlobal,
             ...dynamicModule,

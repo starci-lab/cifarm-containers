@@ -1,5 +1,4 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InitializationService } from "../../initialization"
 import { UserGoogleLike } from "@src/google-cloud"
 import { UserSchema } from "@src/databases/mongoose/gameplay/schemas/user.schema"
 import { OauthProviderName } from "@src/databases/mongoose/gameplay/enums/types"
@@ -7,12 +6,12 @@ import { Connection } from "mongoose"
 import { EnergyService, StaticService } from "@src/gameplay"
 import { envConfig } from "@src/env"
 import { InjectMongoose } from "@src/databases"
-
+import { SetupService } from "../../setup"
 @Injectable()
 export class GoogleService {
     private readonly logger = new Logger(GoogleService.name)
     constructor(
-        private readonly initializationService: InitializationService,
+        private readonly setupService: SetupService,
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
@@ -29,7 +28,9 @@ export class GoogleService {
                     network: _user.network,
                     oauthProvider: OauthProviderName.Google
                 })  
+                let create = false
                 if (!user) {
+                    create = true
                     const energy = this.energyService.getMaxEnergy()
 
                     const { golds } =
@@ -55,10 +56,11 @@ export class GoogleService {
                     user = userRaw
                     user.id = userRaw._id
                 }
-                const { accessToken, refreshToken } = await this.initializationService.initialize({
+                const { accessToken, refreshToken } = await this.setupService.setup({
                     user,
                     session,
-                    connection: this.connection
+                    connection: this.connection,
+                    create
                 })
 
                 // return the redirect url

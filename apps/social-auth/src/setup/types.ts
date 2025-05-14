@@ -1,13 +1,15 @@
 import { UserSchema } from "@src/databases"
 import { ClientSession, Connection } from "mongoose"
 
-export interface InitializeParams {
+export interface SetupParams {
     user: UserSchema,
     session: ClientSession,
-    connection: Connection
+    connection: Connection,
+    // whether to create user related objects or not
+    create: boolean
 }
 
-export interface InitializeResponse {
+export interface SetupResponse {
     accessToken: string,
     refreshToken: string
 }

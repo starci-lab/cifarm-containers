@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InitializationService } from "../../initialization"
+import { SetupService } from "../../setup"
 import { UserSchema, InjectMongoose, OauthProviderName } from "@src/databases"
 import { Connection } from "mongoose"
 import { EnergyService, StaticService } from "@src/gameplay"
@@ -10,7 +10,7 @@ import { UserXLike } from "@src/x-api"
 export class XService {
     private readonly logger = new Logger(XService.name)
     constructor(
-        private readonly initializationService: InitializationService,
+        private readonly setupService: SetupService,
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly energyService: EnergyService,
@@ -27,7 +27,9 @@ export class XService {
                     network: _user.network,
                     oauthProvider: OauthProviderName.X
                 })  
+                let create = false
                 if (!user) {
+                    create = true
                     const energy = this.energyService.getMaxEnergy()
 
                     const { golds } =
@@ -52,10 +54,11 @@ export class XService {
                     user = userRaw
                     user.id = userRaw._id
                 }
-                const { accessToken, refreshToken } = await this.initializationService.initialize({
+                const { accessToken, refreshToken } = await this.setupService.setup({
                     user,
                     session,
-                    connection: this.connection
+                    connection: this.connection,
+                    create
                 })
 
                 // return the redirect url

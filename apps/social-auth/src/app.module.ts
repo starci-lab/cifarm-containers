@@ -8,8 +8,8 @@ import { FacebookModule as FacebookCoreModule } from "@src/facebook"
 import { AuthModule } from "./auth"
 import { GameplayModule } from "@src/gameplay"
 import { JwtModule } from "@src/jwt"
-import { InitializationModule } from "./initialization"
 import { CryptoModule } from "@src/crypto"
+import { SetupModule } from "./setup"
 @Module({
     imports: [
         MongooseModule.forRoot(),
@@ -36,7 +36,7 @@ import { CryptoModule } from "@src/crypto"
         JwtModule.register({
             isGlobal: true
         }),
-        InitializationModule.register({
+        SetupModule.register({
             isGlobal: true
         }),
         AuthModule
