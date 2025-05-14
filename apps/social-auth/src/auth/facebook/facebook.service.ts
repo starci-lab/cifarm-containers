@@ -40,10 +40,9 @@ export class FacebookService {
                         .create(
                             [
                                 {
-                                    email: _user.email,
                                     oauthProviderId: _user.id,
                                     oauthProvider: OauthProviderName.Facebook,
-                                    username: _user.name,
+                                    username: _user.username,
                                     avatarUrl: _user.picture,
                                     golds,
                                     network: _user.network,

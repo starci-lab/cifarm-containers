@@ -48,14 +48,14 @@ export class XAuthStrategy extends PassportStrategy(Strategy) {
         profile: TwitterProfile,
         done: (error: Error | null, user?: UserXLike) => void
     ) {
-        //const state = this.serializationService.deserializeFromBase64<XAuthState>(req.query.state as string)
+        const state = this.serializationService.deserializeFromBase64<XAuthState>(req.query.state as string)
         const { username, displayName, photos, id } = profile
         const user: UserXLike = {
             id,
             email: username,
             username: displayName,
             picture: photos[0].value,
-            network: Network.Testnet
+            network: state.network
         }
         done(null, user)
     }
