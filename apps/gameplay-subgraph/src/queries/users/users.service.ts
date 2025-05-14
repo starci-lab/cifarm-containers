@@ -21,14 +21,10 @@ export class UsersService {
 
     async user(id: string): Promise<UserSchema> {
         return await this.connection.model<UserSchema>(UserSchema.name).findById(id)
-    }
+    }   
 
-    private isFullTextSearch(searchString?: string) {
-        return searchString?.length > 5
-    }
-
-    private getStatusFilter(status?: NeighborsSearchStatus, isFullTextSearch?: boolean) {
-        if (!status || status === NeighborsSearchStatus.All || isFullTextSearch) {
+    private getStatusFilter(status?: NeighborsSearchStatus, useAdvancedSearch?: boolean) {
+        if (!status || status === NeighborsSearchStatus.All || useAdvancedSearch) {
             return {}
         }
         if (status === NeighborsSearchStatus.Online) {
@@ -51,24 +47,22 @@ export class UsersService {
 
     async neighbors(
         { id }: UserLike,
-        { limit, offset, searchString, status, levelStart, levelEnd }: NeighborsRequest
+        { limit, offset, searchString, status, levelStart, levelEnd, useAdvancedSearch }: NeighborsRequest
     ): Promise<NeighborsResponse> {
         const mongoSession = await this.connection.startSession()
-        // if text length > 5, we know that is it a full-text search, remove all other filters
-        const isFullTextSearch = this.isFullTextSearch(searchString)
         try {
             const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id).session(mongoSession)
             const data = await this.connection
                 .model<UserSchema>(UserSchema.name)
                 .find({
                     _id: { $ne: id },
-                    ...this.getLevelFilter(levelStart, levelEnd, isFullTextSearch),
+                    ...this.getLevelFilter(levelStart, levelEnd, useAdvancedSearch),
                     $or: [
                         { username: { $regex: new RegExp(searchString, "i") } },
                         { email: { $regex: new RegExp(searchString, "i") } }
                     ],
                     network: user.network,
-                    ...this.getStatusFilter(status, isFullTextSearch)
+                    ...this.getStatusFilter(status, useAdvancedSearch)
                 })
                 .skip(offset)
                 .limit(limit)
@@ -90,13 +84,13 @@ export class UsersService {
             })
             const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
                 _id: { $ne: id },
-                ...this.getLevelFilter(levelStart, levelEnd, isFullTextSearch),
+                ...this.getLevelFilter(levelStart, levelEnd, useAdvancedSearch),
                 $or: [
                     { username: { $regex: new RegExp(searchString, "i") } },
                     { email: { $regex: new RegExp(searchString, "i") } }
                 ],
                 network: user.network,
-                ...this.getStatusFilter(status, isFullTextSearch)
+                ...this.getStatusFilter(status, useAdvancedSearch)
             }).session(mongoSession)
 
             return {
@@ -110,11 +104,9 @@ export class UsersService {
 
     async followees(
         { id }: UserLike,
-        { limit, offset, searchString, status, levelStart, levelEnd }: FolloweesRequest
+        { limit, offset, searchString, status, levelStart, levelEnd, useAdvancedSearch }: FolloweesRequest
     ): Promise<FolloweesResponse> {
         const mongoSession = await this.connection.startSession()
-        // if text length > 5, we know that is it a full-text search, remove all other filters
-        const isFullTextSearch = this.isFullTextSearch(searchString)
         try {
             const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id).session(mongoSession)
             
@@ -129,13 +121,16 @@ export class UsersService {
                 .model<UserSchema>(UserSchema.name)
                 .find({
                     _id: { $in: followeeIds },
-                    ...this.getLevelFilter(levelStart, levelEnd, isFullTextSearch),
+                    ...this.getLevelFilter(levelStart, levelEnd, useAdvancedSearch),
                     $or: [
+                        //fully option, search as you want
                         { username: { $regex: new RegExp(searchString, "i") } },
-                        { email: { $regex: new RegExp(searchString, "i") } }
+                        { email: { $regex: new RegExp(searchString, "i") } },
+                        { id: { $regex: new RegExp(searchString, "i") } },
+                        { oauthProviderId: { $regex: new RegExp(searchString, "i") } }
                     ],
                     network: user.network,
-                    ...this.getStatusFilter(status, isFullTextSearch)
+                    ...this.getStatusFilter(status, useAdvancedSearch)
                 })
                 .skip(offset)
                 .limit(limit)
@@ -149,13 +144,16 @@ export class UsersService {
 
             const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
                 _id: { $in: followeeIds },
-                ...this.getLevelFilter(levelStart, levelEnd, isFullTextSearch),
+                ...this.getLevelFilter(levelStart, levelEnd, useAdvancedSearch),
                 $or: [
+                    //fully option, search as you want
                     { username: { $regex: new RegExp(searchString, "i") } },
-                    { email: { $regex: new RegExp(searchString, "i") } }
+                    { email: { $regex: new RegExp(searchString, "i") } },
+                    { id: { $regex: new RegExp(searchString, "i") } },
+                    { oauthProviderId: { $regex: new RegExp(searchString, "i") } }
                 ],
                 network: user.network,
-                ...this.getStatusFilter(status, isFullTextSearch)
+                ...this.getStatusFilter(status, useAdvancedSearch)
             }).session(mongoSession)
 
             return {

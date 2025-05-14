@@ -2,7 +2,7 @@ import { Field, InputType, Int, ObjectType, registerEnumType } from "@nestjs/gra
 import { createEnumType } from "@src/common"
 import { UserSchema } from "@src/databases"
 import { IPaginatedResponse, PaginatedRequest, PaginatedResponse } from "@src/graphql"
-import { IsEnum, IsInt, IsOptional, IsString } from "class-validator"
+import { IsBoolean, IsEnum, IsInt, IsOptional, IsString } from "class-validator"
 
 export enum NeighborsSearchStatus {
     All = "all",
@@ -52,6 +52,11 @@ export class NeighborsRequest extends PaginatedRequest {
         description: "The search status"
     })
         status?: NeighborsSearchStatus
+
+    @IsBoolean()
+    @IsOptional()
+    @Field(() => Boolean, { nullable: true, description: "The use advanced search" })
+        useAdvancedSearch?: boolean
 }
 
 @ObjectType()
@@ -82,6 +87,11 @@ export class FolloweesRequest extends PaginatedRequest {
         description: "The search status"
     })
         status?: NeighborsSearchStatus
+
+    @IsBoolean()
+    @IsOptional()
+    @Field(() => Boolean, { nullable: true, description: "The use advanced search" })
+        useAdvancedSearch?: boolean
 }
 
 @ObjectType()

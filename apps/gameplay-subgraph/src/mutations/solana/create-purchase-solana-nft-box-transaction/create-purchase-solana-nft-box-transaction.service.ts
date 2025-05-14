@@ -18,7 +18,6 @@ import { Sha256Service } from "@src/crypto"
 import { roundNumber } from "@src/common"
 import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
 import { ChainKey } from "@src/env"
-import { setComputeUnitLimit, setComputeUnitPrice } from "@metaplex-foundation/mpl-toolbox"
 
 @Injectable()
 export class CreatePurchaseSolanaNFTBoxTransactionService {
@@ -141,13 +140,7 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                         fromAddress: accountAddress
                     })
                 // add to the transaction
-                builder = builder.add(transferTokenToVaultTransaction).add(
-                    setComputeUnitLimit(this.solanaMetaplexService.getUmi(user.network), { units: 600_000 })
-                ).add(
-                    setComputeUnitPrice(this.solanaMetaplexService.getUmi(user.network), {
-                        microLamports: 1
-                    })
-                )
+                builder = builder.add(transferTokenToVaultTransaction)
                 // get the fee receiver address
                 const revenueRecipientAddress =
                     this.staticService.revenueRecipients[ChainKey.Solana][user.network].address
