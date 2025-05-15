@@ -68,6 +68,7 @@ export enum ReceiverEventName {
     ForceSyncPlacedItems = "force_sync_placed_items",
     // Player
     UpdateSettings = "update_settings",
+    UpdateProfile = "update_profile",
     // Pets
     SelectDog = "select_dog",
     SelectCat = "select_cat"
