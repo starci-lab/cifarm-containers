@@ -126,6 +126,10 @@ export class SortInventoriesService {
 
             InventoryTypeId.Strawberry,
             InventoryTypeId.StrawberryQuality,
+
+            // flowers
+            InventoryTypeId.Daisy,
+            InventoryTypeId.DaisyQuality,
           
             // --- fruits ---
             InventoryTypeId.Apple,

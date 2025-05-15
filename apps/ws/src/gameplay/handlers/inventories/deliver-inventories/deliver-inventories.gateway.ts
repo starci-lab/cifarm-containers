@@ -11,18 +11,18 @@ import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
 import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
-import { DeliverInventoryMessage } from "./deliver-inventory.dto"
-import { DeliverInventoryService } from "./deliver-inventory.service"
+import { DeliverInventoriesMessage } from "./deliver-inventories.dto"
+import { DeliverInventoriesService } from "./deliver-inventories.service"
 import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
 
 @GameplayWebSocketGateway()
-export class DeliverInventoryGateway implements OnGatewayInit {
-    private readonly logger = new Logger(DeliverInventoryGateway.name)
+export class DeliverInventoriesGateway implements OnGatewayInit {
+    private readonly logger = new Logger(DeliverInventoriesGateway.name)
 
     constructor(
-        private readonly deliverInventoryService: DeliverInventoryService,
+        private readonly deliverInventoriesService: DeliverInventoriesService,
         private readonly emitterService: EmitterService
     ) {}
 
@@ -31,19 +31,19 @@ export class DeliverInventoryGateway implements OnGatewayInit {
 
     afterInit() {
         this.logger.verbose(
-            `Initialized gateway with name: ${DeliverInventoryGateway.name}, namespace: ${NAMESPACE}`
+            `Initialized gateway with name: ${DeliverInventoriesGateway.name}, namespace: ${NAMESPACE}`
         )
     }
 
     
     @UseGuards(WsThrottlerGuard)
-    @SubscribeMessage(ReceiverEventName.DeliverInventory)
-    public async deliverInventory(
+    @SubscribeMessage(ReceiverEventName.DeliverInventories)
+    public async deliverInventories(
         @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: DeliverInventoryMessage,
+        @MessageBody() payload: DeliverInventoriesMessage,
         @WsUser() user: UserLike
     ) {
-        const syncedResponse = await this.deliverInventoryService.deliverInventory(user, payload)
+        const syncedResponse = await this.deliverInventoriesService.deliverInventories(user, payload)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse

@@ -49,9 +49,8 @@ export enum ReceiverEventName {
     ThiefAnimal = "thief_animal",
     ThiefFruit = "thief_fruit",
     // Delivery features
-    DeliverInventory = "deliver_inventory",
-    DeliverAdditionalInventory = "deliver_additional_inventory",
-    RetrieveInventory = "retrieve_inventory",
+    DeliverInventories = "deliver_inventories",
+    RetrieveInventories = "retrieve_inventories",
     MoveInventory = "move_inventory",
     MoveInventoryWholesaleMarket = "move_inventory_wholesale_market",
     ClaimDailyReward = "claim_daily_reward",
