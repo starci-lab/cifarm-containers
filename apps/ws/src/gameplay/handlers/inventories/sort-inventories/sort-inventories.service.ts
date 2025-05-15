@@ -46,7 +46,7 @@ export class SortInventoriesService {
                 })
                 const deliveryResult = await this.sortInventoriesForSpecificKind({
                     id: userId,
-                    kind: InventoryKind.Delivery,
+                    kind: InventoryKind.Tool,
                     session
                 })
                 return {
@@ -160,37 +160,18 @@ export class SortInventoriesService {
             InventoryTypeId.FruitFertilizer,
             InventoryTypeId.AnimalFeed,
         ]
-
-        const priorityIndex = new Map<InventoryTypeId, number>()
-        priorityInventoryTypeIds.forEach((typeId, idx) => {
-            if (!priorityIndex.has(typeId)) {
-                priorityIndex.set(typeId, idx)
-            }
-        })
-
-        // 3) Now sort the master list from staticService
-        const priorityInventoryTypes = this.staticService.inventoryTypes.slice()
-            .sort((prev, next) => {
-                const ia = priorityIndex.has(prev.displayId)
-                    ? priorityIndex.get(prev.displayId)!
-                    : priorityInventoryTypeIds.length
-                const ib = priorityIndex.has(next.displayId)
-                    ? priorityIndex.get(next.displayId)!
-                    : priorityInventoryTypeIds.length
-                return ia - ib
-            })
         // thus, we try to design a sort algorithm that will sort the inventories based on the inventoryTypesPriorities array
         // first, we will try to merge the inventories that have the same type and put them into an map
         const inventoriesMap: Partial<Record<InventoryTypeId, Array<InventorySchema>>> = {}
                 
         for (const inventory of inventories) {
             let hasThatType = false
-            for (const inventoryType of priorityInventoryTypes) {
-                if (inventory.inventoryType === createObjectId(inventoryType.id)) {
-                    if (!inventoriesMap[inventoryType.id]) {
-                        inventoriesMap[inventoryType.id] = []
+            for (const inventoryTypeId of priorityInventoryTypeIds) {
+                if (inventory.inventoryType.toString() === createObjectId(inventoryTypeId).toString()) {
+                    if (!inventoriesMap[inventoryTypeId]) {
+                        inventoriesMap[inventoryTypeId] = []
                     }
-                    inventoriesMap[inventoryType.id].push(inventory)
+                    inventoriesMap[inventoryTypeId].push(inventory)
                     hasThatType = true
                 }
             }
@@ -204,33 +185,57 @@ export class SortInventoriesService {
         }
 
         let currentIndex = 0
-        for (const inventoryType of Object.keys(inventoriesMap)) {
-            const inventories = inventoriesMap[inventoryType]
-            const { removedInventoryIds, updatedInventories } = this.inventoryService.mergeInventories({
-                inventories,
-                inventoryType: priorityInventoryTypes.find((type) => type.id === inventoryType)!
-            })
-            for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
-                inventoryUpdated.index = currentIndex
-                currentIndex++
-                // sync the inventories
-                const updatedSyncedFoundInventory = this.syncService.getPartialUpdatedSyncedInventory({
-                    inventorySnapshot,
-                    inventoryUpdated
-                })
-                syncedInventories.push(updatedSyncedFoundInventory) 
-                await inventoryUpdated.save({ session })
-            }
+        for (const inventoryTypeId of Object.keys(inventoriesMap)) {
+            const inventories = inventoriesMap[inventoryTypeId]
 
-            for (const inventoryId of removedInventoryIds) {
-                const deletedSyncedInventory = this.syncService.getDeletedSyncedInventories({
-                    inventoryIds: [inventoryId]
+            const inventoryType = this.staticService.inventoryTypes.find((inventoryType) => inventoryTypeId === inventoryType.displayId)
+            if (!inventoryType) {
+                throw new GraphQLError(`Inventory type ${inventoryTypeId} not found in the inventoryTypesPriorities array`, {
+                    extensions: {
+                        code: "INVENTORY_TYPE_PRIORITY_NOT_FOUND",
+                    }
                 })
-                syncedInventories.push(...deletedSyncedInventory)
             }
-            await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
-                _id: { $in: removedInventoryIds }
-            }).session(session)
+            if (!inventoryType.stackable) {
+                for (const inventory of inventories) {
+                    const inventorySnapshot = inventory.$clone()
+                    inventory.index = currentIndex
+                    currentIndex++
+                    // sync the inventories
+                    const updatedSyncedFoundInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                        inventorySnapshot,
+                        inventoryUpdated: inventory
+                    })
+                    syncedInventories.push(updatedSyncedFoundInventory) 
+                    await inventory.save({ session })
+                }
+            } else {
+                const { removedInventoryIds, updatedInventories } = this.inventoryService.mergeInventories({
+                    inventories,
+                    inventoryType
+                })
+                for (const { inventorySnapshot, inventoryUpdated } of updatedInventories) {
+                    inventoryUpdated.index = currentIndex
+                    currentIndex++
+                    // sync the inventories
+                    const updatedSyncedFoundInventory = this.syncService.getPartialUpdatedSyncedInventory({
+                        inventorySnapshot,
+                        inventoryUpdated
+                    })
+                    syncedInventories.push(updatedSyncedFoundInventory) 
+                    await inventoryUpdated.save({ session })
+                }
+
+                for (const inventoryId of removedInventoryIds) {
+                    const deletedSyncedInventory = this.syncService.getDeletedSyncedInventories({
+                        inventoryIds: [inventoryId]
+                    })
+                    syncedInventories.push(...deletedSyncedInventory)
+                }
+                await this.connection.model<InventorySchema>(InventorySchema.name).deleteMany({
+                    _id: { $in: removedInventoryIds }
+                }).session(session)
+            }
         }
         return {
             inventories: syncedInventories,
