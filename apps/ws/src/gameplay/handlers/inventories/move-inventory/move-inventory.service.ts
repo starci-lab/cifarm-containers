@@ -32,7 +32,6 @@ export class MoveInventoryService {
             inventoryId
         }: MoveInventoryMessage): Promise<SyncedResponse> {
         const mongoSession = await this.connection.startSession()
-        console.log(isTool, index, inventoryId)
         // synced variables
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
         try {

@@ -17,3 +17,12 @@ export class InventoryCapacityExceededException extends GameplayException {
         )
     }
 }
+
+export class InventoryNotStackableException extends GameplayException {
+    constructor() {
+        super(
+            "Inventory not stackable",
+            GameplayErrorCode.InventoryNotStackable
+        )
+    }
+}

@@ -1,0 +1,5 @@
+export * from "./delete-inventory.dto"
+export * from "./delete-inventory.module"
+export * from "./delete-inventory.service"
+export * from "./delete-inventory.gateway"
+//export * from "./claim.spec"

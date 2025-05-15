@@ -81,3 +81,14 @@ export interface RemoveResult {
     updatedInventories: Array<InventoryUpdate>
 }
 
+
+export interface MergeInventoriesParams {
+    inventories: Array<InventorySchema>
+    inventoryType: InventoryTypeSchema
+}
+
+export interface MergeInventoriesResult {
+    updatedInventories: Array<InventoryUpdate>
+    removedInventoryIds: Array<string>
+}
+

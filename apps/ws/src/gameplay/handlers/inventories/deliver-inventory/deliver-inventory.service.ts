@@ -25,7 +25,6 @@ export class DeliverInventoryService {
         { inventoryId }: DeliverInventoryMessage
     ): Promise<SyncedResponse> {
         const mongoSession = await this.connection.startSession()
-
         // synced variables
         const syncedInventories: Array<WithStatus<InventorySchema>> = []
 

@@ -10,6 +10,7 @@ export enum GameplayErrorCode {
     PhaseNotFound = "PHASE_NOT_FOUND",
     PositionNotAvailable = "POSITION_NOT_AVAILABLE",
     LevelGapIsNotEnough = "LEVEL_GAP_IS_NOT_ENOUGH",
+    InventoryNotStackable = "INVENTORY_NOT_STACKABLE"
 }
 
 export class GameplayException extends Error {

@@ -71,7 +71,10 @@ export enum ReceiverEventName {
     UpdateProfile = "update_profile",
     // Pets
     SelectDog = "select_dog",
-    SelectCat = "select_cat"
+    SelectCat = "select_cat",
+    // Inventories
+    SortInventories = "sort_inventories",
+    DeleteInventory = "delete_inventory"
 }
 
 // sync user

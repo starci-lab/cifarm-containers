@@ -1,0 +1,5 @@
+//export * from "./sort-inventories.dto"
+export * from "./sort-inventories.module"
+export * from "./sort-inventories.service"
+export * from "./sort-inventories.gateway"
+//export * from "./claim.spec"

@@ -8,14 +8,14 @@ import {
     GetAddParamsResult,
     GetUnoccupiedIndexesParams,
     InventoryUpdate,
+    MergeInventoriesParams,
+    MergeInventoriesResult,
     RemoveParams,
     RemoveResult,
     RemoveSingleParams,
     RemoveSingleResult
 } from "./types"
-import {
-    InventoryCapacityExceededException,
-} from "../exceptions"
+import { InventoryCapacityExceededException, InventoryNotStackableException } from "../exceptions"
 
 @Injectable()
 export class InventoryService {
@@ -137,7 +137,6 @@ export class InventoryService {
         return { inventories, occupiedIndexes }
     }
 
-
     public async getUnoccupiedIndexes({
         connection,
         userId,
@@ -161,18 +160,15 @@ export class InventoryService {
         return unoccupiedIndexes
     }
 
-    public removeSingle({
-        inventory,
-        quantity
-    }: RemoveSingleParams): RemoveSingleResult {
+    public removeSingle({ inventory, quantity }: RemoveSingleParams): RemoveSingleResult {
         const inventorySnapshot = inventory.$clone()
         inventory.quantity -= quantity
         if (inventory.quantity > 0) {
             return {
                 updatedInventory: {
                     inventorySnapshot,
-                    inventoryUpdated: inventory,
-                },
+                    inventoryUpdated: inventory
+                }
             }
         }
         return {
@@ -181,11 +177,7 @@ export class InventoryService {
         }
     }
 
-    public remove({
-        inventories,
-        quantity,
-        inventoryType,
-    }: RemoveParams): RemoveResult {
+    public remove({ inventories, quantity, inventoryType }: RemoveParams): RemoveResult {
         const updatedInventories: Array<InventoryUpdate> = []
         const removedInventoryIds: Array<string> = []
 
@@ -195,7 +187,9 @@ export class InventoryService {
 
         if (inventoryType.stackable === false) {
             //remove base on the quantity
-            const removedInventoryIds = sortedInventories.slice(0, quantity).map((inventory) => inventory.id)
+            const removedInventoryIds = sortedInventories
+                .slice(0, quantity)
+                .map((inventory) => inventory.id)
             return { removedInventoryIds, updatedInventories }
         }
         // loop through the inventories and add the quantity to the inventory
@@ -215,5 +209,41 @@ export class InventoryService {
             }
         }
         return { removedInventoryIds, updatedInventories }
+    }
+
+    public mergeInventories({
+        inventories,
+        inventoryType
+    }: MergeInventoriesParams): MergeInventoriesResult {
+        const updatedInventories: Array<InventoryUpdate> = []
+        const removedInventoryIds: Array<string> = []
+        const totalQuantity = inventories.reduce((acc, inventory) => acc + inventory.quantity, 0)
+        if (!inventoryType.stackable) {
+            throw new InventoryNotStackableException()
+        }
+        const maxStack = inventoryType.maxStack
+        // we try to get the number of new inventories to be created
+        const numNewInventories = Math.ceil(totalQuantity / maxStack)
+        const lastNewInventoryQuantity = totalQuantity % maxStack
+
+        // we try to get the last inventory that has the same type
+        for (let index = 0; index < inventories.length; index++) {
+            const inventory = inventories[index]
+            if (index < numNewInventories) {
+                const inventorySnapshot = inventory.$clone()
+                if (index === numNewInventories - 1) {
+                    inventory.quantity = lastNewInventoryQuantity
+                } else {
+                    inventory.quantity = maxStack
+                }
+                updatedInventories.push({
+                    inventorySnapshot,
+                    inventoryUpdated: inventory
+                })
+            } else {
+                removedInventoryIds.push(inventory.id)
+            }
+        }
+        return { updatedInventories, removedInventoryIds }
     }
 }

@@ -44,7 +44,7 @@ export class InventorySchema extends AbstractSchema {
         description: "The inventory type reference"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, required: true, ref: InventoryTypeSchema.name })
-    [INVENTORY_TYPE]: InventoryTypeSchema | string
+    [INVENTORY_TYPE]: InventoryTypeSchema | Types.ObjectId
 }
 
 export const InventorySchemaClass = SchemaFactory.createForClass(InventorySchema)
