@@ -15,7 +15,8 @@ import {
     FlowerInfo,
     InteractionPermissions,
     NFTBoxInfo,
-    Tokens
+    Tokens,
+    PetInfo
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -89,5 +90,9 @@ export class SystemsService {
 
     tokens(): Tokens {
         return this.staticService.tokens
+    }
+
+    petInfo(): PetInfo {
+        return this.staticService.petInfo
     }
 }

@@ -16,7 +16,8 @@ import {
     FlowerInfo,
     InteractionPermissions,
     NFTBoxInfo,
-    Tokens
+    Tokens,
+    PetInfo
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -176,5 +177,14 @@ export class SystemsResolver {
     })
     tokens(): Tokens {
         return this.systemsService.tokens()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => PetInfo, {
+        name: "petInfo",
+        description: "Get the pet info"
+    })
+    petInfo(): PetInfo {
+        return this.systemsService.petInfo()
     }
 }
