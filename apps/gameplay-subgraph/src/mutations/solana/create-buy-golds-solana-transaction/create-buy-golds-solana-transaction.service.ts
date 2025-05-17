@@ -12,7 +12,6 @@ import { SolanaMetaplexService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
 import { transactionBuilder, publicKey, createNoopSigner } from "@metaplex-foundation/umi"
 import base58 from "bs58"
-import { NFTDatabaseService } from "@src/blockchain-database"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
@@ -26,7 +25,6 @@ export class CreateBuyGoldsSolanaTransactionService {
         private readonly connection: Connection,
         private readonly solanaMetaplexService: SolanaMetaplexService,
         private readonly staticService: StaticService,
-        private readonly nftDatabaseService: NFTDatabaseService,
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service

@@ -53,6 +53,7 @@ export class GameplayModule extends ConfigurableModuleClass {
         }
 
         return {
+            global: options.isGlobal,
             ...dynamicModule,
             imports,
             providers: [...dynamicModule.providers, ...providers],
