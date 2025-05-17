@@ -12,7 +12,8 @@ export type ComputeFruitResult = ComputeResult
 
 export type ComputeBeeHouseResult = ComputeResult
 export type ComputeFlowerResult = ComputeResult
-export interface CheckAbleToThiefParams {
+
+export interface CheckLevelGapParams {
     user: UserSchema
     neighbor: UserSchema
 }

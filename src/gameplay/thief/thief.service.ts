@@ -1,5 +1,12 @@
 import { Inject, Injectable } from "@nestjs/common"
-import { ComputeFruitResult, ComputeAnimalResult, ComputeCropResult, CheckAbleToThiefParams, ComputeFlowerResult, ComputeBeeHouseResult } from "./types"
+import {
+    ComputeFruitResult,
+    ComputeAnimalResult,
+    ComputeCropResult,
+    ComputeFlowerResult,
+    ComputeBeeHouseResult,
+    CheckLevelGapParams
+} from "./types"
 import { MODULE_OPTIONS_TOKEN } from "../gameplay.module-definition"
 import { GameplayOptions } from "../gameplay.types"
 import { StaticService } from "../static"
@@ -76,10 +83,7 @@ export class ThiefService {
         }
     }
 
-    public checkAbleToThief({
-        user,
-        neighbor
-    }: CheckAbleToThiefParams) {
+    public checkLevelGap({ user, neighbor }: CheckLevelGapParams) {
         const { thiefLevelGapThreshold } = this.staticService.interactionPermissions
         if (user.level < neighbor.level - thiefLevelGapThreshold) {
             throw new LevelGapIsNotEnoughException()

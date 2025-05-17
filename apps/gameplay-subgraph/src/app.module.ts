@@ -18,9 +18,6 @@ import { IdModule } from "@src/id"
 import { ThrottlerModule } from "@src/throttler"
 import { BlockchainDatabaseModule } from "@src/blockchain-database"
 import { S3Module } from "@src/s3"
-//import { GoogleCloudModule } from "@src/google-cloud"
-import { FirebaseAdminModule } from "@src/firebase-admin"
-import { GoogleCloudModule } from "@src/google-cloud"
 @Module({
     imports: [
         IdModule.register({
@@ -59,13 +56,7 @@ import { GoogleCloudModule } from "@src/google-cloud"
         BlockchainDatabaseModule.register({
             isGlobal: true
         }),
-        FirebaseAdminModule.register({
-            isGlobal: true
-        }),
         S3Module.register({
-            isGlobal: true
-        }),
-        GoogleCloudModule.register({
             isGlobal: true
         }),
         //functional modules

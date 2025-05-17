@@ -210,7 +210,7 @@ export class ThiefAnimalService {
                     throw new WsException("Cannot help neighbor in different network")
                 }
 
-                this.thiefService.checkAbleToThief({
+                this.thiefService.checkLevelGap({
                     user,
                     neighbor
                 })
