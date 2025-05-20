@@ -33,11 +33,11 @@ export class CreatePurchaseSolanaNFTBoxesTransactionRequest {
     description: "Create Purchase Solana NFT Box Transaction response data"
 })
 export class CreatePurchaseSolanaNFTBoxesTransactionResponseData {
-    @IsBase58()
-    @Field(() => String, {
-        description: "The serialized transaction"
+    @IsBase58({ each: true })
+    @Field(() => [String], {
+        description: "The serialized transactions"
     })
-        serializedTx: string
+        serializedTxs: Array<string>
 }
 
 @ObjectType({

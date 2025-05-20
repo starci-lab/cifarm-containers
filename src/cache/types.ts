@@ -38,7 +38,7 @@ export interface ExtendedNFTBox { nftName: string, nftType: NFTType, rarity: NFT
 export interface PurchaseSolanaNFTBoxTransactionCache {
     nftBoxes: Array<ExtendedNFTBox>
     chainKey: ChainKey
-    tokenAmount: number
     network: Network    
+    tokenAmount: number
 }
 

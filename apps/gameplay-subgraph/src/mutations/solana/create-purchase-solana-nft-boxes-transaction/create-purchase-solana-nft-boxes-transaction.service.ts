@@ -61,13 +61,16 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                 }
 
                 const nftBoxes = await this.createNFTBoxesArr(user.nftBoxVector, quantity)
-                const { limitTransaction, priceTransaction } =
+                const serializedTxs: Array<string> = []
+                const cacheKeys: Array<string> = []
+                const extendedNFTBoxes: Array<ExtendedNFTBox> = []
+                let totalTokenAmount = 0
+                for (const nftBox of nftBoxes) {
+                    const { limitTransaction, priceTransaction } =
                     await this.solanaMetaplexService.createComputeBudgetTransactions({
                         network: user.network
                     })
-                let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
-                const extendedNFTBoxes: Array<ExtendedNFTBox> = []
-                for (const nftBox of nftBoxes) {
+                    let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
                     const nftCollectionData = this.staticService.nftCollections[nftBox.nftType][chainKey][
                         user.network
                     ] as NFTCollectionData
@@ -108,70 +111,76 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                         nftType: nftBox.nftType,
                         rarity: nftBox.rarity
                     })
-                }   
-               
-                //get the stable coin address
-                const { tokenAddress, decimals: tokenDecimals } =
-                    this.staticService.tokens[StableCoinName.USDC][chainKey][user.network]
-                // first season is USDC so that we hardcode the token address
-                const tokenVaultAddress = this.solanaMetaplexService
-                    .getVaultUmi(user.network)
-                    .identity.publicKey.toString()
-                const feeAmount = roundNumber(
-                    this.staticService.nftBoxInfo.boxPrice *
-                        this.staticService.nftBoxInfo.feePercentage
-                ) * quantity
-                const tokenAmount = this.staticService.nftBoxInfo.boxPrice * quantity - feeAmount
-                const { transaction: transferTokenToVaultTransaction } =
-                    await this.solanaMetaplexService.createTransferTokenTransaction({
-                        network: user.network,
-                        tokenAddress: tokenAddress,
-                        toAddress: tokenVaultAddress,
-                        amount: tokenAmount,
-                        decimals: tokenDecimals,
-                        fromAddress: accountAddress
-                    })
-                // add to the transaction
-                builder = builder.add(transferTokenToVaultTransaction)
-                // get the fee receiver address
-                const revenueRecipientAddress =
-                    this.staticService.revenueRecipients[ChainKey.Solana][user.network].address
-                const { transaction: transferTokenToFeeReceiverTransaction } =
-                    await this.solanaMetaplexService.createTransferTokenTransaction({
-                        network: user.network,
-                        tokenAddress: tokenAddress,
-                        toAddress: revenueRecipientAddress,
-                        amount: feeAmount,
-                        decimals: tokenDecimals,
-                        fromAddress: accountAddress
-                    })
-                builder = builder.add(transferTokenToFeeReceiverTransaction)
-                const transaction = await builder
-                    .useV0()
-                    .setFeePayer(createNoopSigner(publicKey(accountAddress)))
-                    .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
-                // store the transaction in the cache
-                const cacheKey = this.sha256Service.hash(
-                    base58.encode(
-                        this.solanaMetaplexService
-                            .getUmi(user.network)
-                            .transactions.serializeMessage(transaction.message)
+                    //get the stable coin address
+                    const { tokenAddress, decimals: tokenDecimals } =
+                this.staticService.tokens[StableCoinName.USDC][chainKey][user.network]
+                    // first season is USDC so that we hardcode the token address
+                    const tokenVaultAddress = this.solanaMetaplexService
+                        .getVaultUmi(user.network)
+                        .identity.publicKey.toString()
+                    const feeAmount = roundNumber(
+                        this.staticService.nftBoxInfo.boxPrice *
+                    this.staticService.nftBoxInfo.feePercentage
                     )
-                )
+                    const tokenAmount = this.staticService.nftBoxInfo.boxPrice - feeAmount
+                    totalTokenAmount += tokenAmount
+                    const { transaction: transferTokenToVaultTransaction } =
+                await this.solanaMetaplexService.createTransferTokenTransaction({
+                    network: user.network,
+                    tokenAddress: tokenAddress,
+                    toAddress: tokenVaultAddress,
+                    amount: tokenAmount,
+                    decimals: tokenDecimals,
+                    fromAddress: accountAddress
+                })
+                    // add to the transaction
+                    builder = builder.add(transferTokenToVaultTransaction)
+                    // get the fee receiver address
+                    const revenueRecipientAddress =
+                this.staticService.revenueRecipients[ChainKey.Solana][user.network].address
+                    const { transaction: transferTokenToFeeReceiverTransaction } =
+                await this.solanaMetaplexService.createTransferTokenTransaction({
+                    network: user.network,
+                    tokenAddress: tokenAddress,
+                    toAddress: revenueRecipientAddress,
+                    amount: feeAmount,
+                    decimals: tokenDecimals,
+                    fromAddress: accountAddress
+                })
+                    builder = builder.add(transferTokenToFeeReceiverTransaction)
+                    const transaction = await builder
+                        .useV0()
+                        .setFeePayer(createNoopSigner(publicKey(accountAddress)))
+                        .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
+                    serializedTxs.push(
+                        base58.encode(
+                            this.solanaMetaplexService
+                                .getUmi(user.network)
+                                .transactions.serialize(transaction)
+                        )
+                    )
+                    // store the transaction in the cache
+                    const cacheKey = this.sha256Service.hash(
+                        base58.encode(
+                            this.solanaMetaplexService
+                                .getUmi(user.network)
+                                .transactions.serializeMessage(transaction.message)
+                        )
+                    )
+                    cacheKeys.push(cacheKey)
+                }    
+
+                const finalCacheKey = this.sha256Service.hash(cacheKeys.join(""))
 
                 const cacheData: PurchaseSolanaNFTBoxTransactionCache = {
                     nftBoxes: extendedNFTBoxes,
                     chainKey,
-                    tokenAmount,
+                    tokenAmount: totalTokenAmount,
                     network: user.network
                 }
-                await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
+                await this.cacheManager.set(finalCacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
                 return {
-                    serializedTx: base58.encode(
-                        this.solanaMetaplexService
-                            .getUmi(user.network)
-                            .transactions.serialize(transaction)
-                    )
+                    serializedTxs
                 }
             })
             return {
@@ -195,18 +204,10 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
     
         for (let i = 0; i < numberOfBoxes; i++) {
             const hashedVector = this.sha256Service.hash(`${vector}-${i}`)
-    
-            // Sum all characters in the hex hash string (convert each hex char to int)
-            const sum = [...hashedVector].reduce((acc, char) => acc + parseInt(char, 16), 0)
-    
-            // Normalize sum into a value within 0-999
-            const computedValue = sum % 1000
-    
-            // NFT Type determination: use 2 last digits to determine the nft type
-            const computedNFTType = (computedValue % 100) / 100
-            // Rarity determination: use 2 first digits to determine the rarity
-            const computedRarity = Math.floor(computedValue / 100) / 100
-    
+            
+            const computedNFTType = parseInt(hashedVector[0], 16) / 16
+            const computedRarity = parseInt(hashedVector[1], 16) / 16
+            
             const nftBoxChance = this.staticService.nftBoxInfo.chances.find((chance) =>
                 computedNFTType >= chance.startChance && computedNFTType < chance.endChance
             )
@@ -218,14 +219,13 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
             const nftType: NFTType = nftBoxChance.nftType
     
             let rarity: NFTRarity
-            if (computedRarity < nftBoxChance.rareRarityChance) {
-                rarity = NFTRarity.Rare
-            } else if (computedRarity < nftBoxChance.epicRarityChance) {
+            if (computedRarity > nftBoxChance.epicRarityChance) {
                 rarity = NFTRarity.Epic
+            } else if (computedRarity > nftBoxChance.rareRarityChance) {
+                rarity = NFTRarity.Rare
             } else {
                 rarity = NFTRarity.Common
             }
-    
             nftBoxes.push({
                 nftType,
                 rarity

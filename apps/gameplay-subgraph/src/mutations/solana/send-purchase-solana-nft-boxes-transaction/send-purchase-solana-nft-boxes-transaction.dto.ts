@@ -1,5 +1,5 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
-import { NFTRarity, NFTType } from "@src/databases"
+import { GraphQLTypeNFTRarity, GraphQLTypeNFTType, NFTRarity, NFTType } from "@src/databases"
 import { IResponseLike, ResponseLike } from "@src/graphql"
 import { IsBase58 } from "class-validator"
 
@@ -8,9 +8,9 @@ import { IsBase58 } from "class-validator"
 })
 export class SendPurchaseSolanaNFTBoxesTransactionRequest {
     // the tx signed by the user
-    @IsBase58()
-    @Field(() => String)
-        serializedTx: string
+    @IsBase58({ each: true })
+    @Field(() => [String])
+        serializedTxs: Array<string>
 }
 
 @ObjectType({
@@ -20,10 +20,10 @@ export class GraphQLExtendedNFTBox {
     @Field(() => String, { description: "The NFT name" })
         nftName: string
 
-    @Field(() => NFTType, { description: "The NFT type" })
+    @Field(() => GraphQLTypeNFTType, { description: "The NFT type" })
         nftType: NFTType
 
-    @Field(() => NFTRarity, { description: "The NFT rarity" })
+    @Field(() => GraphQLTypeNFTRarity, { description: "The NFT rarity" })
         rarity: NFTRarity   
 }
 
