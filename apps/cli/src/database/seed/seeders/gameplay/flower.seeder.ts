@@ -34,6 +34,19 @@ export class FlowerSeeder implements Seeder {
                     honeyYieldCoefficient: 2.5,
                     honeyQualityChancePlus: 0
                 },
+                {
+                    _id: createObjectId(FlowerId.Sunflower),
+                    displayId: FlowerId.Sunflower,
+                    price: 50,
+                    growthStageDuration: 300,
+                    unlockLevel: 1,
+                    basicHarvestExperiences: 6,
+                    qualityHarvestExperiences: 12,
+                    harvestQuantity: 20,
+                    availableInShop: true,
+                    honeyYieldCoefficient: 2.5,
+                    honeyQualityChancePlus: 0
+                }
             ]
 
             await this.connection.model<FlowerSchema>(FlowerSchema.name).insertMany(data)

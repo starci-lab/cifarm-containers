@@ -593,6 +593,182 @@ export class InventoryTypeSeeder implements Seeder {
                 placeable: false,
                 product: createObjectId(ProductId.PomegranateQuality),
                 type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Pumpkin),
+                displayId: InventoryTypeId.Pumpkin,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.Pumpkin),
+                type: InventoryType.Product
+            },  
+            {
+                _id: createObjectId(InventoryTypeId.Cauliflower),
+                displayId: InventoryTypeId.Cauliflower,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.Cauliflower),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.CauliflowerQuality),
+                displayId: InventoryTypeId.CauliflowerQuality,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.CauliflowerQuality),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Tomato),
+                displayId: InventoryTypeId.Tomato,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.Tomato),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.TomatoQuality),
+                displayId: InventoryTypeId.TomatoQuality,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.TomatoQuality),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Eggplant),
+                displayId: InventoryTypeId.Eggplant,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.Eggplant),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.EggplantQuality),
+                displayId: InventoryTypeId.EggplantQuality,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.EggplantQuality),
+                type: InventoryType.Product
+            },  
+            {
+                _id: createObjectId(InventoryTypeId.Pea),
+                displayId: InventoryTypeId.Pea,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.Pea),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.PeaQuality),
+                displayId: InventoryTypeId.PeaQuality,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.PeaQuality),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.Sunflower),
+                displayId: InventoryTypeId.Sunflower,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.Sunflower),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.SunflowerQuality),
+                displayId: InventoryTypeId.SunflowerQuality,
+                asTool: false,
+                deliverable: true,
+                maxStack: 64,
+                placeable: false,
+                product: createObjectId(ProductId.SunflowerQuality),
+                type: InventoryType.Product
+            },
+            {
+                _id: createObjectId(InventoryTypeId.SunflowerSeed),
+                displayId: InventoryTypeId.SunflowerSeed,
+                asTool: false,
+                deliverable: false,
+                maxStack: 64,
+                placeable: false,
+                seedType: PlantType.Flower,
+                type: InventoryType.Seed,
+                flower: createObjectId(FlowerId.Sunflower)
+            },
+            {
+                _id: createObjectId(InventoryTypeId.PumpkinSeed),
+                displayId: InventoryTypeId.PumpkinSeed,
+                asTool: false,
+                deliverable: false,
+                maxStack: 64,
+                seedType: PlantType.Crop,
+                placeable: false,
+                type: InventoryType.Seed,
+                crop: createObjectId(CropId.Pumpkin)
+            },
+            {
+                _id: createObjectId(InventoryTypeId.CauliflowerSeed),
+                displayId: InventoryTypeId.CauliflowerSeed,
+                asTool: false,
+                deliverable: false,
+                maxStack: 64,
+                seedType: PlantType.Crop,
+                placeable: false,
+                type: InventoryType.Seed,
+                crop: createObjectId(CropId.Cauliflower)
+            },
+            {
+                _id: createObjectId(InventoryTypeId.TomatoSeed),
+                displayId: InventoryTypeId.TomatoSeed,
+                asTool: false,
+                deliverable: false,
+                maxStack: 64,
+                seedType: PlantType.Crop,
+                placeable: false,
+                type: InventoryType.Seed,
+                crop: createObjectId(CropId.Tomato)
+            },
+            {
+                _id: createObjectId(InventoryTypeId.EggplantSeed),
+                displayId: InventoryTypeId.EggplantSeed,
+                asTool: false,
+                deliverable: false,
+                maxStack: 64,
+                seedType: PlantType.Crop,
+                placeable: false,
+                type: InventoryType.Seed,
+                crop: createObjectId(CropId.Eggplant)
+            },
+            {
+                _id: createObjectId(InventoryTypeId.PeaSeed),
+                displayId: InventoryTypeId.PeaSeed,
+                asTool: false,
+                deliverable: false,
+                maxStack: 64,
+                seedType: PlantType.Crop,
+                placeable: false,
+                type: InventoryType.Seed,
+                crop: createObjectId(CropId.Pea)
             }
         ]
 

@@ -77,6 +77,11 @@ export enum CropId {
     Cucumber = "cucumber",
     BellPepper = "bellPepper",
     Strawberry = "strawberry",
+    Pumpkin = "pumpkin",
+    Cauliflower = "cauliflower",
+    Tomato = "tomato",
+    Eggplant = "eggplant",
+    Pea = "pea",
 }
 
 export const GraphQLTypeCropId = createEnumType(CropId)
@@ -109,12 +114,28 @@ registerEnumType(GraphQLTypeCropId, {
         [CropId.Strawberry]: {
             description: "The strawberry id.",
         },
+        [CropId.Pumpkin]: {
+            description: "The pumpkin id.",
+        },
+        [CropId.Cauliflower]: {
+            description: "The cauliflower id.",
+        },
+        [CropId.Tomato]: {
+            description: "The tomato id.",
+        },
+        [CropId.Eggplant]: {
+            description: "The eggplant id.",
+        },
+        [CropId.Pea]: {
+            description: "The pea id.",
+        },
     },
 })
 
 // Flower Enum
 export enum FlowerId {
     Daisy = "daisy",
+    Sunflower = "sunflower",
 }
 
 export const GraphQLTypeFlowerId = createEnumType(FlowerId)
@@ -125,6 +146,9 @@ registerEnumType(GraphQLTypeFlowerId, {
     valuesMap: {
         [FlowerId.Daisy]: {
             description: "The daisy id.",
+        },
+        [FlowerId.Sunflower]: {
+            description: "The sunflower id.",
         },
     },
 })
@@ -150,6 +174,18 @@ registerEnumType(GraphQLTypeFruitId, {
         },
         [FruitId.Apple]: {
             description: "The apple id.",
+        },
+        [FruitId.DragonFruit]: {
+            description: "The dragon fruit id.",
+        },
+        [FruitId.Jackfruit]: {
+            description: "The jackfruit id.",
+        },
+        [FruitId.Rambutan]: {
+            description: "The rambutan id.",
+        },
+        [FruitId.Pomegranate]: {
+            description: "The pomegranate id.",
         },
     },
 })
@@ -313,6 +349,24 @@ export enum ProductId {
     RambutanQuality = "rambutanQuality",    
     Pomegranate = "pomegranate",
     PomegranateQuality = "pomegranateQuality",
+    Pumpkin = "pumpkin",
+    PumpkinQuality = "pumpkinQuality",
+    Cauliflower = "cauliflower",
+    CauliflowerQuality = "cauliflowerQuality",
+    Tomato = "tomato",
+    TomatoQuality = "tomatoQuality",
+    Eggplant = "eggplant",
+    EggplantQuality = "eggplantQuality",
+    Pea = "pea",
+    PeaQuality = "peaQuality",
+    Sunflower = "sunflower",
+    SunflowerQuality = "sunflowerQuality",
+    SunflowerSeed = "sunflowerSeed",
+    PeaSeed = "peaSeed",
+    PumpkinSeed = "pumpkinSeed",
+    CauliflowerSeed = "cauliflowerSeed",
+    TomatoSeed = "tomatoSeed",
+    EggplantSeed = "eggplantSeed",
 }
 
 export const GraphQLTypeProductId = createEnumType(ProductId)    
@@ -398,6 +452,90 @@ registerEnumType(GraphQLTypeProductId, {
         },
         [ProductId.StrawberryQuality]: {
             description: "The strawberry quality id.",
+        },
+        [ProductId.Honey]: {
+            description: "The honey id.",
+        },
+        [ProductId.HoneyQuality]: {
+            description: "The honey quality id.",
+        },
+        [ProductId.DragonFruit]: {
+            description: "The dragon fruit id.",
+        },
+        [ProductId.DragonFruitQuality]: {
+            description: "The dragon fruit quality id.",
+        },
+        [ProductId.Jackfruit]: {
+            description: "The jackfruit id.",
+        },
+        [ProductId.JackfruitQuality]: {
+            description: "The jackfruit quality id.",
+        },
+        [ProductId.Rambutan]: {
+            description: "The rambutan id.",
+        },
+        [ProductId.RambutanQuality]: {
+            description: "The rambutan quality id.",
+        },
+        [ProductId.Pomegranate]: {
+            description: "The pomegranate id.",
+        },
+        [ProductId.PomegranateQuality]: {
+            description: "The pomegranate quality id.",
+        },
+        [ProductId.Pumpkin]: {
+            description: "The pumpkin id.",
+        },
+        [ProductId.PumpkinQuality]: {
+            description: "The pumpkin quality id.",
+        },
+        [ProductId.Cauliflower]: {
+            description: "The cauliflower id.",
+        },
+        [ProductId.CauliflowerQuality]: {
+            description: "The cauliflower quality id.",
+        },
+        [ProductId.Tomato]: {
+            description: "The tomato id.",
+        },
+        [ProductId.TomatoQuality]: {
+            description: "The tomato quality id.",
+        },
+        [ProductId.Eggplant]: {
+            description: "The eggplant id.",
+        },
+        [ProductId.EggplantQuality]: {
+            description: "The eggplant quality id.",
+        },
+        [ProductId.Pea]: {
+            description: "The pea id.",
+        },
+        [ProductId.PeaQuality]: {
+            description: "The pea quality id.",
+        },
+        [ProductId.Sunflower]: {
+            description: "The sunflower id.",
+        },
+        [ProductId.SunflowerQuality]: {
+            description: "The sunflower quality id.",
+        },
+        [ProductId.SunflowerSeed]: {
+            description: "The sunflower seed id.",
+        },
+        [ProductId.PumpkinSeed]: {
+            description: "The pumpkin seed id.",
+        },
+        [ProductId.CauliflowerSeed]: {
+            description: "The cauliflower seed id.",
+        },
+        [ProductId.TomatoSeed]: {
+            description: "The tomato seed id.",
+        },
+        [ProductId.EggplantSeed]: {
+            description: "The eggplant seed id.",
+        },
+        [ProductId.PeaSeed]: {
+            description: "The pea seed id.",
         },
     },
 })
@@ -584,6 +722,24 @@ export enum InventoryTypeId {
     RambutanQuality = "rambutanQuality",
     Pomegranate = "pomegranate",
     PomegranateQuality = "pomegranateQuality",
+    Pumpkin = "pumpkin",
+    PumpkinQuality = "pumpkinQuality",
+    Cauliflower = "cauliflower",
+    CauliflowerQuality = "cauliflowerQuality",
+    Tomato = "tomato",
+    TomatoQuality = "tomatoQuality",
+    Eggplant = "eggplant",
+    EggplantQuality = "eggplantQuality",
+    Pea = "pea",
+    PeaQuality = "peaQuality",
+    Sunflower = "sunflower",
+    SunflowerQuality = "sunflowerQuality",
+    SunflowerSeed = "sunflowerSeed",
+    PeaSeed = "peaSeed",
+    PumpkinSeed = "pumpkinSeed",
+    CauliflowerSeed = "cauliflowerSeed",
+    TomatoSeed = "tomatoSeed",
+    EggplantSeed = "eggplantSeed",
 }
 
 export const GraphQLTypeInventoryTypeId = createEnumType(InventoryTypeId)
@@ -720,6 +876,90 @@ registerEnumType(GraphQLTypeInventoryTypeId, {
         },
         [InventoryTypeId.StrawberryQuality]: {
             description: "The strawberry quality id.",
+        },
+        [InventoryTypeId.Honey]: {
+            description: "The honey id.",
+        },
+        [InventoryTypeId.HoneyQuality]: {
+            description: "The honey quality id.",
+        },
+        [InventoryTypeId.DragonFruit]: {
+            description: "The dragon fruit id.",
+        },
+        [InventoryTypeId.DragonFruitQuality]: {
+            description: "The dragon fruit quality id.",
+        },
+        [InventoryTypeId.Jackfruit]: {
+            description: "The jackfruit id.",
+        },
+        [InventoryTypeId.JackfruitQuality]: {
+            description: "The jackfruit quality id.",
+        },
+        [InventoryTypeId.Rambutan]: {
+            description: "The rambutan id.",
+        },
+        [InventoryTypeId.RambutanQuality]: {
+            description: "The rambutan quality id.",
+        },
+        [InventoryTypeId.Pomegranate]: {
+            description: "The pomegranate id.",
+        },
+        [InventoryTypeId.PomegranateQuality]: {
+            description: "The pomegranate quality id.",
+        },
+        [InventoryTypeId.Pumpkin]: {
+            description: "The pumpkin id.",
+        },
+        [InventoryTypeId.PumpkinQuality]: {
+            description: "The pumpkin quality id.",
+        },
+        [InventoryTypeId.Cauliflower]: {
+            description: "The cauliflower id.",
+        },
+        [InventoryTypeId.CauliflowerQuality]: {
+            description: "The cauliflower quality id.",
+        },
+        [InventoryTypeId.Tomato]: {
+            description: "The tomato id.",
+        },
+        [InventoryTypeId.TomatoQuality]: {
+            description: "The tomato quality id.",
+        },
+        [InventoryTypeId.Eggplant]: {
+            description: "The eggplant id.",
+        },
+        [InventoryTypeId.EggplantQuality]: {
+            description: "The eggplant quality id.",
+        },
+        [InventoryTypeId.Pea]: {    
+            description: "The pea id.",
+        },
+        [InventoryTypeId.PeaQuality]: {
+            description: "The pea quality id.",
+        },
+        [InventoryTypeId.Sunflower]: {
+            description: "The sunflower id.",
+        },
+        [InventoryTypeId.SunflowerQuality]: {
+            description: "The sunflower quality id.",
+        },
+        [InventoryTypeId.SunflowerSeed]: {
+            description: "The sunflower seed id.",
+        },
+        [InventoryTypeId.PumpkinSeed]: {
+            description: "The pumpkin seed id.",
+        },
+        [InventoryTypeId.CauliflowerSeed]: {
+            description: "The cauliflower seed id.",
+        },
+        [InventoryTypeId.TomatoSeed]: {
+            description: "The tomato seed id.",
+        },
+        [InventoryTypeId.EggplantSeed]: {
+            description: "The eggplant seed id.",
+        },
+        [InventoryTypeId.PeaSeed]: {
+            description: "The pea seed id.",
         },
     },
 })
