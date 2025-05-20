@@ -5,9 +5,9 @@ import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
 import {
-    SendPurchaseSolanaNFTBoxTransactionResponse,
-    SendPurchaseSolanaNFTBoxTransactionRequest
-} from "./send-purchase-solana-nft-box-transaction.dto"
+    SendPurchaseSolanaNFTBoxesTransactionResponse,
+    SendPurchaseSolanaNFTBoxesTransactionRequest
+} from "./send-purchase-solana-nft-boxes-transaction.dto"
 import { SolanaMetaplexService } from "@src/blockchain"
 import base58 from "bs58"
 import { InjectCache } from "@src/cache"
@@ -17,8 +17,8 @@ import { createObjectId } from "@src/common"
 import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
 
 @Injectable()
-export class SendPurchaseSolanaNFTBoxTransactionService {
-    private readonly logger = new Logger(SendPurchaseSolanaNFTBoxTransactionService.name)
+export class SendPurchaseSolanaNFTBoxesTransactionService {
+    private readonly logger = new Logger(SendPurchaseSolanaNFTBoxesTransactionService.name)
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
@@ -28,10 +28,10 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
         private readonly sha256Service: Sha256Service
     ) {}
 
-    async sendPurchaseSolanaNFTBoxTransaction(
+    async sendPurchaseSolanaNFTBoxesTransaction(
         { id }: UserLike,
-        { serializedTx }: SendPurchaseSolanaNFTBoxTransactionRequest
-    ): Promise<SendPurchaseSolanaNFTBoxTransactionResponse> {
+        { serializedTx }: SendPurchaseSolanaNFTBoxesTransactionRequest
+    ): Promise<SendPurchaseSolanaNFTBoxesTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to handle the transaction lifecycle
@@ -43,8 +43,7 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                 if (!user) {
                     throw new GraphQLError("User not found")
                 }
-                user.lastSolanaNFTBoxRollRarity = undefined
-                user.lastSolanaNFTBoxRollType = undefined
+                user.nftBoxVector = undefined
                 await user.save({ session })
                 const tx = this.solanaMetaplexService
                     .getUmi(user.network)
@@ -64,7 +63,7 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                         }
                     })
                 }
-                const { nftType, rarity, nftName, tokenAmount, chainKey, network } = cachedTx
+                const { nftBoxes, chainKey, tokenAmount, network } = cachedTx
                 const signedTx = await this.solanaMetaplexService
                     .getUmi(network)
                     .identity.signTransaction(tx)
@@ -119,9 +118,7 @@ export class SendPurchaseSolanaNFTBoxTransactionService {
                 return {
                     data: {
                         txHash: base58.encode(txHash),
-                        nftType,
-                        rarity,
-                        nftName
+                        nftBoxes
                     },
                     success: true,
                     message: "NFT starter box transaction sent successfully"

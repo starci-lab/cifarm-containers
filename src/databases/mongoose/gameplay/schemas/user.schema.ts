@@ -160,20 +160,27 @@ export class UserSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0.5 })
         ambient: number
 
-    @Field(() => Float, {
-        description: "Last time the user rolled the solana starter box type",
+    // @Field(() => Float, {
+    //     description: "Last time the user rolled the solana starter box type",
+    //     nullable: true
+    // })
+    // @Prop({ type: Number, required: false })
+    //     lastSolanaNFTBoxRollType?: number
+
+    // @Field(() => Float, {
+    //     description: "Last time the user rolled the nft box rarity",
+    //     nullable: true
+    // })
+    // @Prop({ type: Number, required: false })
+    //     lastSolanaNFTBoxRollRarity?: 
+    
+    @Field(() => String, {
+        description: "The string to determine the",
         nullable: true
     })
-    @Prop({ type: Number, required: false })
-        lastSolanaNFTBoxRollType?: number
-
-    @Field(() => Float, {
-        description: "Last time the user rolled the nft box rarity",
-        nullable: true
-    })
-    @Prop({ type: Number, required: false })
-        lastSolanaNFTBoxRollRarity?: number
-
+    @Prop({ type: String, required: false })
+        nftBoxVector?: string
+        
     // last online time
     @Field(() => Date, {
         nullable: true,
@@ -225,6 +232,13 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: String, required: false })
         oauthProviderId?: string
+
+    @Field(() => Float, {
+        description: "The credits of the user",
+        nullable: true
+    })
+    @Prop({ type: Number, required: false })
+        credits?: number
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

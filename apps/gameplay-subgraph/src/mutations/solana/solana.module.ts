@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
-import { CreatePurchaseSolanaNFTBoxTransactionModule } from "./create-purchase-solana-nft-box-transaction"
-import { SendPurchaseSolanaNFTBoxTransactionModule } from "./send-purchase-solana-nft-box-transaction"
+import { CreatePurchaseSolanaNFTBoxesTransactionModule } from "./create-purchase-solana-nft-boxes-transaction"
+import { SendPurchaseSolanaNFTBoxesTransactionModule } from "./send-purchase-solana-nft-boxes-transaction"
 import { CreateShipSolanaTransactionModule } from "./create-ship-solana-transaction"
 import { SendShipSolanaTransactionModule } from "./send-ship-solana-transaction"
 import { CreateWrapSolanaMetaplexNFTTransactionModule } from "./create-wrap-solana-metaplex-nft-transaction"
@@ -11,8 +11,8 @@ import { CreateBuyGoldsSolanaTransactionModule } from "./create-buy-golds-solana
 import { SendBuyGoldsSolanaTransactionModule } from "./send-buy-golds-solana-transaction"
 @Module({
     imports: [
-        CreatePurchaseSolanaNFTBoxTransactionModule,
-        SendPurchaseSolanaNFTBoxTransactionModule,
+        CreatePurchaseSolanaNFTBoxesTransactionModule,
+        SendPurchaseSolanaNFTBoxesTransactionModule,
         CreateShipSolanaTransactionModule,
         SendShipSolanaTransactionModule,
         CreateWrapSolanaMetaplexNFTTransactionModule,

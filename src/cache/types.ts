@@ -1,4 +1,4 @@
-import { NFTType, NFTRarity } from "@src/databases"
+import { NFTRarity, NFTType } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 
 export enum CacheKey {
@@ -34,11 +34,11 @@ export interface BuyGoldsSolanaTransactionCache {
     selectionIndex: number
 }
 
+export interface ExtendedNFTBox { nftName: string, nftType: NFTType, rarity: NFTRarity }
 export interface PurchaseSolanaNFTBoxTransactionCache {
-    nftType: NFTType
-    rarity: NFTRarity
-    nftName: string
+    nftBoxes: Array<ExtendedNFTBox>
     chainKey: ChainKey
     tokenAmount: number
     network: Network    
 }
+

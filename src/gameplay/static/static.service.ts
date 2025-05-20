@@ -39,7 +39,8 @@ import {
     InteractionPermissions,
     PetInfo,
     Tokens,
-    TerrainSchema
+    TerrainSchema,
+    Referral
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { Connection } from "mongoose"
@@ -80,6 +81,7 @@ export class StaticService implements OnModuleInit {
     public petInfo: PetInfo
     public tokens: Tokens
     public terrains: Array<TerrainSchema>
+    public referral: Referral
     
     constructor(
         @InjectMongoose()
@@ -191,6 +193,11 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<Tokens>>(createObjectId(SystemId.Tokens))
         this.tokens = tokensDoc.value
+
+        const referralDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<Referral>>(createObjectId(SystemId.Referral))
+        this.referral = referralDoc.value
 
         // Load collections
         this.placedItemTypes = await this.connection

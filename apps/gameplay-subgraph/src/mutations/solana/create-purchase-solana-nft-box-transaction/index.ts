@@ -1,5 +1,0 @@
-export * from "./create-purchase-solana-nft-box-transaction.module"
-export * from "./create-purchase-solana-nft-box-transaction.service"
-export * from "./create-purchase-solana-nft-box-transaction.resolver"
-export * from "./create-purchase-solana-nft-box-transaction.dto"
-//export * from "./claim.spec"

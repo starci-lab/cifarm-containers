@@ -33,7 +33,8 @@ import {
     TokenType,
     Tokens,
     TokenKey,
-    PlacedItemTypeId
+    PlacedItemTypeId,
+    Referral
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -1247,6 +1248,12 @@ export class SystemSeeder implements Seeder {
             }
         }
 
+        const referral: Referral = {
+            creditsPerSuccessfulReferral: 5,
+            creditsWhenJoiningWithReferral: 20,
+            creditsWhenYourReferralInviteSomeone: 2
+        }
+
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
@@ -1347,6 +1354,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.Tokens),
                 displayId: SystemId.Tokens,
                 value: tokens
+            },
+            {
+                _id: createObjectId(SystemId.Referral),
+                displayId: SystemId.Referral,
+                value: referral
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

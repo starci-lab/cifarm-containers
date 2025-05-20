@@ -1,13 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, NFTCollectionData, NFTRarity, StableCoinName } from "@src/databases"
+import { InjectMongoose, NFTCollectionData, NFTRarity, NFTType, StableCoinName } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
 import {
-    CreatePurchaseSolanaNFTBoxTransactionResponse,
-    CreatePurchaseSolanaNFTBoxTransactionRequest
-} from "./create-purchase-solana-nft-box-transaction.dto"
+    CreatePurchaseSolanaNFTBoxesTransactionResponse,
+    CreatePurchaseSolanaNFTBoxesTransactionRequest
+} from "./create-purchase-solana-nft-boxes-transaction.dto"
 import { AttributeName, SolanaMetaplexService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
 import { transactionBuilder, publicKey, createNoopSigner } from "@metaplex-foundation/umi"
@@ -16,12 +16,12 @@ import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { roundNumber } from "@src/common"
-import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
+import { PurchaseSolanaNFTBoxTransactionCache, ExtendedNFTBox } from "@src/cache"
 import { ChainKey } from "@src/env"
-
+import { v4 as uuidv4 } from "uuid"
 @Injectable()
-export class CreatePurchaseSolanaNFTBoxTransactionService {
-    private readonly logger = new Logger(CreatePurchaseSolanaNFTBoxTransactionService.name)
+export class CreatePurchaseSolanaNFTBoxesTransactionService {
+    private readonly logger = new Logger(CreatePurchaseSolanaNFTBoxesTransactionService.name)
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
@@ -32,13 +32,14 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
         private readonly sha256Service: Sha256Service
     ) {}
 
-    async createPurchaseSolanaNFTBoxTransaction(
+    async createPurchaseSolanaNFTBoxesTransaction(
         { id }: UserLike,
         {
             accountAddress,
-            chainKey = ChainKey.Solana
-        }: CreatePurchaseSolanaNFTBoxTransactionRequest
-    ): Promise<CreatePurchaseSolanaNFTBoxTransactionResponse> {
+            chainKey = ChainKey.Solana,
+            quantity
+        }: CreatePurchaseSolanaNFTBoxesTransactionRequest
+    ): Promise<CreatePurchaseSolanaNFTBoxesTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to handle the transaction lifecycle
@@ -52,49 +53,33 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 }
 
                 const isStarterBoxUnset = !(
-                    user.lastSolanaNFTBoxRollRarity && user.lastSolanaNFTBoxRollType
+                    user.nftBoxVector
                 )
                 if (isStarterBoxUnset) {
-                    user.lastSolanaNFTBoxRollRarity = Math.random()
-                    user.lastSolanaNFTBoxRollType = Math.random()
+                    user.nftBoxVector = uuidv4()
                     await user.save({ session })
                 }
-                const NFTBoxChances = this.staticService.nftBoxInfo.chances
-                const NFTBoxChance = NFTBoxChances.find((chance) => {
-                    return (
-                        user.lastSolanaNFTBoxRollRarity >= chance.startChance &&
-                        user.lastSolanaNFTBoxRollRarity < chance.endChance
-                    )
-                })
-                if (!NFTBoxChance) {
-                    throw new GraphQLError("NFT starter box chance not found")
-                }
-                let rarity: NFTRarity
-                if (user.lastSolanaNFTBoxRollType < NFTBoxChance.rareRarityChance) {
-                    rarity = NFTRarity.Rare
-                } else if (user.lastSolanaNFTBoxRollType < NFTBoxChance.epicRarityChance) {
-                    rarity = NFTRarity.Epic
-                } else {
-                    rarity = NFTRarity.Common
-                }
-                const { nftType } = NFTBoxChance
-                const nftCollectionData = this.staticService.nftCollections[nftType][chainKey][
-                    user.network
-                ] as NFTCollectionData
 
+                const nftBoxes = await this.createNFTBoxesArr(user.nftBoxVector, quantity)
                 const { limitTransaction, priceTransaction } =
                     await this.solanaMetaplexService.createComputeBudgetTransactions({
                         network: user.network
                     })
                 let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
-                const nftName = nftCollectionData.name
-                const currentStage = 0
-                const { transaction: mintNFTTransaction, nftName: actualNFTName } =
+                const extendedNFTBoxes: Array<ExtendedNFTBox> = []
+                for (const nftBox of nftBoxes) {
+                    const nftCollectionData = this.staticService.nftCollections[nftBox.nftType][chainKey][
+                        user.network
+                    ] as NFTCollectionData
+
+                    const nftName = nftCollectionData.name
+                    const currentStage = 0
+                    const { transaction: mintNFTTransaction, nftName: actualNFTName } =
                     await this.solanaMetaplexService.createMintNFTTransaction({
                         network: user.network,
                         ownerAddress: accountAddress,
                         attributes: [
-                            ...Object.entries(nftCollectionData.rarities[rarity]).map(
+                            ...Object.entries(nftCollectionData.rarities[nftBox.rarity]).map(
                                 ([key, value]) => ({
                                     key,
                                     value
@@ -106,7 +91,7 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                             },
                             {
                                 key: AttributeName.Rarity,
-                                value: rarity
+                                value: nftBox.rarity
                             }
                         ],
                         collectionAddress: nftCollectionData.collectionAddress,
@@ -117,7 +102,14 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                             image: nftCollectionData.fruitStages.stages[currentStage].imageUrl
                         }
                     })
-                builder = builder.add(mintNFTTransaction)
+                    builder = builder.add(mintNFTTransaction)
+                    extendedNFTBoxes.push({
+                        nftName: actualNFTName,
+                        nftType: nftBox.nftType,
+                        rarity: nftBox.rarity
+                    })
+                }   
+               
                 //get the stable coin address
                 const { tokenAddress, decimals: tokenDecimals } =
                     this.staticService.tokens[StableCoinName.USDC][chainKey][user.network]
@@ -128,8 +120,8 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 const feeAmount = roundNumber(
                     this.staticService.nftBoxInfo.boxPrice *
                         this.staticService.nftBoxInfo.feePercentage
-                )
-                const tokenAmount = this.staticService.nftBoxInfo.boxPrice - feeAmount
+                ) * quantity
+                const tokenAmount = this.staticService.nftBoxInfo.boxPrice * quantity - feeAmount
                 const { transaction: transferTokenToVaultTransaction } =
                     await this.solanaMetaplexService.createTransferTokenTransaction({
                         network: user.network,
@@ -168,11 +160,9 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
                 )
 
                 const cacheData: PurchaseSolanaNFTBoxTransactionCache = {
-                    nftType,
+                    nftBoxes: extendedNFTBoxes,
                     chainKey,
-                    rarity,
                     tokenAmount,
-                    nftName: actualNFTName,
                     network: user.network
                 }
                 await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
@@ -196,4 +186,57 @@ export class CreatePurchaseSolanaNFTBoxTransactionService {
             await mongoSession.endSession()
         }
     }
+
+    private async createNFTBoxesArr(
+        vector: string,
+        numberOfBoxes: number
+    ): Promise<Array<NFTBox>> {
+        const nftBoxes: Array<NFTBox> = []
+    
+        for (let i = 0; i < numberOfBoxes; i++) {
+            const hashedVector = this.sha256Service.hash(`${vector}-${i}`)
+    
+            // Sum all characters in the hex hash string (convert each hex char to int)
+            const sum = [...hashedVector].reduce((acc, char) => acc + parseInt(char, 16), 0)
+    
+            // Normalize sum into a value within 0-999
+            const computedValue = sum % 1000
+    
+            // NFT Type determination: use 2 last digits to determine the nft type
+            const computedNFTType = (computedValue % 100) / 100
+            // Rarity determination: use 2 first digits to determine the rarity
+            const computedRarity = Math.floor(computedValue / 100) / 100
+    
+            const nftBoxChance = this.staticService.nftBoxInfo.chances.find((chance) =>
+                computedNFTType >= chance.startChance && computedNFTType < chance.endChance
+            )
+    
+            if (!nftBoxChance) {
+                throw new GraphQLError("NFT starter box chance not found")
+            }
+    
+            const nftType: NFTType = nftBoxChance.nftType
+    
+            let rarity: NFTRarity
+            if (computedRarity < nftBoxChance.rareRarityChance) {
+                rarity = NFTRarity.Rare
+            } else if (computedRarity < nftBoxChance.epicRarityChance) {
+                rarity = NFTRarity.Epic
+            } else {
+                rarity = NFTRarity.Common
+            }
+    
+            nftBoxes.push({
+                nftType,
+                rarity
+            })
+        }
+    
+        return nftBoxes
+    }
+}
+
+export interface NFTBox {
+    nftType: NFTType
+    rarity: NFTRarity
 }

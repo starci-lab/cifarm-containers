@@ -7,6 +7,7 @@ import { EnergyService, StaticService } from "@src/gameplay"
 import { envConfig } from "@src/env"
 import { InjectMongoose } from "@src/databases"
 import { SetupService } from "../../setup"
+import { DeepPartial } from "@src/common"
 @Injectable()
 export class GoogleService {
     private readonly logger = new Logger(GoogleService.name)
@@ -26,7 +27,7 @@ export class GoogleService {
                 let user = await this.connection.model<UserSchema>(UserSchema.name).findOne({
                     oauthProviderId: _user.id,
                     network: _user.network,
-                    oauthProvider: OauthProviderName.Google
+                    oauthProvider: OauthProviderName.Google,
                 })  
                 let create = false
                 if (!user) {
@@ -35,6 +36,38 @@ export class GoogleService {
 
                     const { golds } =
                         this.staticService.defaultInfo
+
+                    // if referralUserId is provided, add credits
+                    let creditsChange: DeepPartial<UserSchema> = {}
+                    if (_user.referralUserId) {
+                        creditsChange = {
+                            credits: this.staticService.referral.creditsWhenJoiningWithReferral,
+                            referralUserId: _user.referralUserId
+                        }
+                        // the referral user should also get credits
+                        const referralUser = await this.connection.model<UserSchema>(UserSchema.name).findOne({
+                            id: _user.referralUserId,
+                            network: _user.network,
+                        })
+                        // check if the referral user exists
+                        if (referralUser) {
+                            referralUser.credits += this.staticService.referral.creditsWhenYourReferralInviteSomeone
+                            await referralUser.save({ session })
+
+                            // check if the referral user has a referral user
+                            if (referralUser.referralUserId) {
+                                // also the referal user of the referral user should get credits
+                                const referralUserReferralUser = await this.connection.model<UserSchema>(UserSchema.name).findOne({
+                                    oauthProviderId: referralUser.referralUserId,
+                                    network: _user.network,
+                                })
+                                if (referralUserReferralUser) {
+                                    referralUserReferralUser.credits += this.staticService.referral.creditsWhenYourReferralInviteSomeone
+                                    await referralUserReferralUser.save({ session })
+                                }
+                            }
+                        }
+                    }
 
                     const [userRaw] = await this.connection
                         .model<UserSchema>(UserSchema.name)
@@ -48,7 +81,8 @@ export class GoogleService {
                                     avatarUrl: _user.picture,
                                     golds,
                                     network: _user.network,
-                                    energy
+                                    energy,
+                                    ...creditsChange
                                 }
                             ],
                             { session }

@@ -1279,5 +1279,27 @@ export class Tokens {
     [TokenKey.CIFARM]?: Token
 }
 
+@ObjectType({
+    description: "Configuration for referral"
+})
+export class Referral {
+    @Field(() => Float, {
+        description: "Credits per successful referral"
+    })
+        creditsPerSuccessfulReferral: number
+    @Field(() => Float, {
+        description: "Credits when joining with a referral"
+    })
+        creditsWhenJoiningWithReferral: number
+    @Field(() => Float, {
+        description: "Credits when your referral invites someone"
+    })
+        creditsWhenYourReferralInviteSomeone: number
+}
+
+
+
+
+
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)

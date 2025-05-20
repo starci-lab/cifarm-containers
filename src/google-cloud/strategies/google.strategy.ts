@@ -8,6 +8,7 @@ import { Request } from "express"
 
 interface GoogleAuthState {
     network: Network
+    referralUserId?: string
 }
 
 @Injectable()
@@ -30,7 +31,8 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
         let state = undefined
         if (!req.query.state) {
             state = this.serializationService.serializeToBase64<GoogleAuthState>({
-                network: req.query.network as Network || Network.Testnet
+                network: req.query.network as Network || Network.Testnet,
+                referralUserId: req.query.referralUserId as string
             })
         }
         super.authenticate(req, {
@@ -55,6 +57,7 @@ export class GoogleAuthStrategy extends PassportStrategy(Strategy) {
             username: displayName,
             picture: photos[0].value,
             network: state.network,
+            referralUserId: state.referralUserId
         }
         done(null, user)
     }

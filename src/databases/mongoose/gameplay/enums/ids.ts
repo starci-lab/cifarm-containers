@@ -560,7 +560,8 @@ export enum SystemId {
     GoldPurchases = "goldPurchases",
     InteractionPermissions = "interactionPermissions",
     PetInfo = "petInfo",
-    Tokens = "tokens"
+    Tokens = "tokens",
+    Referral = "referral",
 }
 
 export const GraphQLTypeSystemId = createEnumType(SystemId)
@@ -625,6 +626,9 @@ registerEnumType(GraphQLTypeSystemId, {
         },
         [SystemId.Tokens]: {
             description: "Tokens."
+        },
+        [SystemId.Referral]: {
+            description: "The referral id.",
         }
     },
 })

@@ -6,6 +6,7 @@ export type UserGoogleLike = {
     picture: string
     id: string
     network: Network
+    referralUserId?: string
 }
 
 
