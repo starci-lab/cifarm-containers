@@ -207,7 +207,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
             
             const computedNFTType = parseInt(hashedVector[0], 16) / 16
             const computedRarity = parseInt(hashedVector[1], 16) / 16
-            
+
             const nftBoxChance = this.staticService.nftBoxInfo.chances.find((chance) =>
                 computedNFTType >= chance.startChance && computedNFTType < chance.endChance
             )
@@ -231,7 +231,6 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                 rarity
             })
         }
-    
         return nftBoxes
     }
 }
