@@ -10,7 +10,7 @@ services:
       - MONGODB_CFG_PRIMARY_HOST=mongodb-cfg-primary
       - MONGODB_CFG_REPLICA_SET_NAME=cfgreplicaset
       - MONGODB_REPLICA_SET_KEY=replicasetkey
-      - MONGODB_ROOT_PASSWORD=Cuong_A
+      - MONGODB_ROOT_PASSWORD=Cuong123_A
     ports:
       - "27018:27017"
 
@@ -22,7 +22,7 @@ services:
       - MONGODB_CFG_PRIMARY_HOST=mongodb-cfg-primary
       - MONGODB_CFG_REPLICA_SET_NAME=cfgreplicaset
       - MONGODB_REPLICA_SET_KEY=replicasetkey
-      - MONGODB_ROOT_PASSWORD=Cuong_A
+      - MONGODB_ROOT_PASSWORD=Cuong123_A
 
   mongodb-shard0-primary:
     image: docker.io/bitnami/mongodb-sharded:8.0
@@ -30,7 +30,7 @@ services:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-shard0-primary
       - MONGODB_SHARDING_MODE=shardsvr
       - MONGODB_MONGOS_HOST=mongodb-sharded
-      - MONGODB_ROOT_PASSWORD=Cuong_A
+      - MONGODB_ROOT_PASSWORD=Cuong123_A
       - MONGODB_REPLICA_SET_MODE=primary
       - MONGODB_REPLICA_SET_KEY=replicasetkey
       - MONGODB_REPLICA_SET_NAME=shard0
@@ -45,7 +45,7 @@ services:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-shard0-secondary
       - MONGODB_REPLICA_SET_MODE=secondary
       - MONGODB_PRIMARY_HOST=mongodb-shard0-primary
-      - MONGODB_PRIMARY_ROOT_PASSWORD=Cuong_A
+      - MONGODB_PRIMARY_ROOT_PASSWORD=Cuong123_A
       - MONGODB_REPLICA_SET_KEY=replicasetkey
       - MONGODB_SHARDING_MODE=shardsvr
       - MONGODB_REPLICA_SET_NAME=shard0
@@ -58,7 +58,7 @@ services:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-shard1-primary
       - MONGODB_SHARDING_MODE=shardsvr
       - MONGODB_MONGOS_HOST=mongodb-sharded
-      - MONGODB_ROOT_PASSWORD=Cuong_A
+      - MONGODB_ROOT_PASSWORD=Cuong123_A
       - MONGODB_REPLICA_SET_MODE=primary
       - MONGODB_REPLICA_SET_KEY=replicasetkey
       - MONGODB_REPLICA_SET_NAME=shard1
@@ -73,7 +73,7 @@ services:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-shard1-secondary
       - MONGODB_REPLICA_SET_MODE=secondary
       - MONGODB_PRIMARY_HOST=mongodb-shard1-primary
-      - MONGODB_PRIMARY_ROOT_PASSWORD=Cuong_A
+      - MONGODB_PRIMARY_ROOT_PASSWORD=Cuong123_A
       - MONGODB_REPLICA_SET_KEY=replicasetkey
       - MONGODB_SHARDING_MODE=shardsvr
       - MONGODB_REPLICA_SET_NAME=shard1
@@ -86,7 +86,7 @@ services:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-shard2-primary
       - MONGODB_SHARDING_MODE=shardsvr
       - MONGODB_MONGOS_HOST=mongodb-sharded
-      - MONGODB_ROOT_PASSWORD=Cuong_A
+      - MONGODB_ROOT_PASSWORD=Cuong123_A
       - MONGODB_REPLICA_SET_MODE=primary
       - MONGODB_REPLICA_SET_KEY=replicasetkey
       - MONGODB_REPLICA_SET_NAME=shard2
@@ -101,7 +101,7 @@ services:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-shard2-secondary
       - MONGODB_REPLICA_SET_MODE=secondary
       - MONGODB_PRIMARY_HOST=mongodb-shard2-primary
-      - MONGODB_PRIMARY_ROOT_PASSWORD=Cuong_A
+      - MONGODB_PRIMARY_ROOT_PASSWORD=Cuong123_A
       - MONGODB_REPLICA_SET_KEY=replicasetkey
       - MONGODB_SHARDING_MODE=shardsvr
       - MONGODB_REPLICA_SET_NAME=shard2
@@ -113,7 +113,7 @@ services:
     environment:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-cfg-primary
       - MONGODB_SHARDING_MODE=configsvr
-      - MONGODB_ROOT_PASSWORD=Cuong_A
+      - MONGODB_ROOT_PASSWORD=Cuong123_A
       - MONGODB_REPLICA_SET_MODE=primary
       - MONGODB_REPLICA_SET_KEY=replicasetkey
       - MONGODB_REPLICA_SET_NAME=cfgreplicaset
@@ -128,7 +128,7 @@ services:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-cfg-secondary
       - MONGODB_REPLICA_SET_MODE=secondary
       - MONGODB_PRIMARY_HOST=mongodb-cfg-primary
-      - MONGODB_PRIMARY_ROOT_PASSWORD=Cuong_A
+      - MONGODB_PRIMARY_ROOT_PASSWORD=Cuong123_A
       - MONGODB_REPLICA_SET_KEY=replicasetkey
       - MONGODB_REPLICA_SET_NAME=cfgreplicaset
       - MONGODB_SHARDING_MODE=configsvr
