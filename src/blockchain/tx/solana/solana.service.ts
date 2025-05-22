@@ -11,7 +11,7 @@ import {
     Umi
 } from "@metaplex-foundation/umi"
 import {
-    createCollection as metaplexCreateCollection,
+    createCollection as metaplexCreateSolanaCollection,
     mplCore,
     create,
     fetchCollection,
@@ -23,22 +23,22 @@ import {
 } from "@metaplex-foundation/mpl-core"
 import base58 from "bs58"
 import {
-    CreateCollectionParams,
-    CreateCollectionResponse,
-    CreateComputeBudgetTransactionsParams,
-    CreateComputeBudgetTransactionsResponse,
-    CreateFreezeNFTTransactionParams,
-    CreateFreezeNFTTransactionResponse,
-    CreateMintNFTTransactionParams,
-    CreateMintNFTTransactionResponse,
-    CreateTransferSolTransactionParams,
-    CreateTransferSolTransactionResponse,
-    CreateTransferTokenTransactionParams,
-    CreateTransferTokenTransactionResponse,
-    CreateUnfreezeNFTTransactionParams,
-    CreateUnfreezeNFTTransactionResponse,
-    CreateUpgradeNFTTransactionParams,
-    CreateUpgradeNFTTransactionResponse,
+    CreateSolanaCollectionParams,
+    CreateSolanaCollectionResponse,
+    CreateSolanaComputeBudgetTransactionsParams,
+    CreateSolanaComputeBudgetTransactionsResponse,
+    CreateSolanaFreezeNFTTransactionParams,
+    CreateSolanaFreezeNFTTransactionResponse,
+    CreateSolanaMintNFTTransactionParams,
+    CreateSolanaMintNFTTransactionResponse,
+    CreateSolanaTransferSolTransactionParams,
+    CreateSolanaTransferSolTransactionResponse,
+    CreateSolanaTransferTokenTransactionParams,
+    CreateSolanaTransferTokenTransactionResponse,
+    CreateSolanaUnfreezeNFTTransactionParams,
+    CreateSolanaUnfreezeNFTTransactionResponse,
+    CreateSolanaUpgradeNFTTransactionParams,
+    CreateSolanaUpgradeNFTTransactionResponse,
     GetNFTParams,
     TransferNftParams,
     TransferNftResponse
@@ -67,7 +67,7 @@ const getUmi = (network: Network) => {
 }
 
 @Injectable()
-export class SolanaMetaplexService {
+export class SolanaService {
     private umis: Record<Network, Umi>
     constructor(private readonly s3Service: S3Service) {
         // Constructor logic here
@@ -94,13 +94,13 @@ export class SolanaMetaplexService {
         network = Network.Mainnet,
         name,
         metadata
-    }: CreateCollectionParams): Promise<CreateCollectionResponse> {
+    }: CreateSolanaCollectionParams): Promise<CreateSolanaCollectionResponse> {
         const umi = this.umis[network]
         // Logic to create a collection on Solana
         const collection = generateSigner(umi)
         const uri = await this.s3Service.uploadJson(collection.publicKey.toString(), metadata)
         //const uri = await this.s3Service.uploadJson(collection.publicKey.toString(), metadata)
-        const { signature } = await metaplexCreateCollection(umi, {
+        const { signature } = await metaplexCreateSolanaCollection(umi, {
             collection,
             name,
             updateAuthority: umi.identity.publicKey,
@@ -127,7 +127,7 @@ export class SolanaMetaplexService {
         network = Network.Mainnet,
         computeUnitLimit = 600_000,
         computeUnitPrice = 1
-    }: CreateComputeBudgetTransactionsParams): Promise<CreateComputeBudgetTransactionsResponse> {
+    }: CreateSolanaComputeBudgetTransactionsParams): Promise<CreateSolanaComputeBudgetTransactionsResponse> {
         const umi = this.umis[network]
         const limitTransaction = setComputeUnitLimit(umi, { units: computeUnitLimit })
         const priceTransaction = setComputeUnitPrice(umi, { microLamports: computeUnitPrice })
@@ -139,7 +139,7 @@ export class SolanaMetaplexService {
         fromAddress,
         toAddress,
         amount
-    }: CreateTransferSolTransactionParams): Promise<CreateTransferSolTransactionResponse> { 
+    }: CreateSolanaTransferSolTransactionParams): Promise<CreateSolanaTransferSolTransactionResponse> { 
         const umi = this.umis[network]
         const tx = transferSol(umi, {
             source: createNoopSigner(publicKey(fromAddress)),
@@ -157,7 +157,7 @@ export class SolanaMetaplexService {
         amount,
         fromAddress,
         decimals = 6
-    }: CreateTransferTokenTransactionParams): Promise<CreateTransferTokenTransactionResponse> {
+    }: CreateSolanaTransferTokenTransactionParams): Promise<CreateSolanaTransferTokenTransactionResponse> {
         const umi = this.umis[network]
         const splToken = publicKey(tokenAddress)
         // Find the associated token account for the SPL Token on the senders wallet.
@@ -187,7 +187,7 @@ export class SolanaMetaplexService {
         collectionAddress,
         name,
         metadata
-    }: CreateMintNFTTransactionParams): Promise<CreateMintNFTTransactionResponse> {
+    }: CreateSolanaMintNFTTransactionParams): Promise<CreateSolanaMintNFTTransactionResponse> {
         const umi = this.umis[network]
         const asset = generateSigner(umi)
         const collection = await fetchCollection(umi, collectionAddress)
@@ -237,7 +237,7 @@ export class SolanaMetaplexService {
         nftAddress,
         collectionAddress,
         feePayer
-    }: CreateUnfreezeNFTTransactionParams): Promise<CreateUnfreezeNFTTransactionResponse> {
+    }: CreateSolanaUnfreezeNFTTransactionParams): Promise<CreateSolanaUnfreezeNFTTransactionResponse> {
         const umi = this.umis[network]
         const transaction = updatePlugin(umi, {
             asset: publicKey(nftAddress),
@@ -258,7 +258,7 @@ export class SolanaMetaplexService {
         collectionAddress,
         feePayer,
         attributes
-    }: CreateUpgradeNFTTransactionParams): Promise<CreateUpgradeNFTTransactionResponse> {
+    }: CreateSolanaUpgradeNFTTransactionParams): Promise<CreateSolanaUpgradeNFTTransactionResponse> {
         const umi = this.umis[network]
         const transaction = updatePlugin(umi, {
             asset: publicKey(nftAddress),
@@ -278,7 +278,7 @@ export class SolanaMetaplexService {
         nftAddress,
         collectionAddress,
         feePayer
-    }: CreateFreezeNFTTransactionParams): Promise<CreateFreezeNFTTransactionResponse> {
+    }: CreateSolanaFreezeNFTTransactionParams): Promise<CreateSolanaFreezeNFTTransactionResponse> {
         const umi = this.umis[network]
         const transaction = updatePlugin(umi, {
             asset: publicKey(nftAddress),

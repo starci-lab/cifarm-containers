@@ -9,7 +9,7 @@ import {
     SendBuyGoldsSolanaTransactionRequest,
     SendBuyGoldsSolanaTransactionResponse
 } from "./send-buy-golds-solana-transaction.dto"
-import { SolanaMetaplexService } from "@src/blockchain"
+import { SolanaService } from "@src/blockchain"
 import { GoldBalanceService, StaticService } from "@src/gameplay"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
@@ -25,7 +25,7 @@ export class SendBuyGoldsSolanaTransactionService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly solanaMetaplexService: SolanaMetaplexService,
+        private readonly solanaService: SolanaService,
         private readonly staticService: StaticService,
         private readonly goldBalanceService: GoldBalanceService,    
         @InjectCache()
@@ -49,12 +49,12 @@ export class SendBuyGoldsSolanaTransactionService {
                 if (!user) {
                     throw new Error("User not found")
                 }
-                const tx = this.solanaMetaplexService
+                const tx = this.solanaService
                     .getUmi(user.network)
                     .transactions.deserialize(base58.decode(serializedTx))
                 const cacheKey = this.sha256Service.hash(
                     base58.encode(
-                        this.solanaMetaplexService
+                        this.solanaService
                             .getUmi(user.network)
                             .transactions.serializeMessage(tx.message)
                     )
@@ -83,16 +83,16 @@ export class SendBuyGoldsSolanaTransactionService {
                     amount,
                 })
                 await user.save({ session })
-                // const signedTx = await this.solanaMetaplexService
+                // const signedTx = await this.solanaService
                 //     .getUmi(user.network)
                 //     .identity.signTransaction(tx)
-                const txHash = await this.solanaMetaplexService
+                const txHash = await this.solanaService
                     .getUmi(user.network)
                     .rpc.sendTransaction(tx)
-                const latestBlockhash = await this.solanaMetaplexService
+                const latestBlockhash = await this.solanaService
                     .getUmi(user.network)
                     .rpc.getLatestBlockhash()
-                await this.solanaMetaplexService
+                await this.solanaService
                     .getUmi(user.network)
                     .rpc.confirmTransaction(txHash, {
                         commitment: "finalized",

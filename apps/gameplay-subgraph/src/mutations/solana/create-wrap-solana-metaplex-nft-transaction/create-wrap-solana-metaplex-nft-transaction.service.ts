@@ -6,7 +6,7 @@ import {
     CreateWrapSolanaMetaplexNFTTransactionRequest,
     CreateWrapSolanaMetaplexNFTTransactionResponse
 } from "./create-wrap-solana-metaplex-nft-transaction.dto"
-import { SolanaMetaplexService } from "@src/blockchain"
+import { SolanaService } from "@src/blockchain"
 import { GraphQLError } from "graphql"
 import { UserSchema } from "@src/databases"
 import base58 from "bs58"
@@ -23,7 +23,7 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly solanaMetaplexService: SolanaMetaplexService,
+        private readonly solanaService: SolanaService,
         private readonly sha256Service: Sha256Service,
         @InjectCache()
         private readonly cacheManager: Cache
@@ -51,7 +51,7 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                         }
                     })
                 }
-                const nft = await this.solanaMetaplexService.getNFT({
+                const nft = await this.solanaService.getNFT({
                     nftAddress,
                     network: user.network
                 })
@@ -72,14 +72,14 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                 }
 
                 const { limitTransaction, priceTransaction } =
-                    await this.solanaMetaplexService.createComputeBudgetTransactions({
+                    await this.solanaService.createComputeBudgetTransactions({
                         network: user.network
                     })
                 let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
 
                 // create a versionel transaction to free the nft from the collection
                 const { transaction: freezeTransaction } =
-                    await this.solanaMetaplexService.createFreezeNFTTransaction({
+                    await this.solanaService.createFreezeNFTTransaction({
                         nftAddress,
                         collectionAddress,
                         network: user.network,
@@ -90,7 +90,7 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                 const transaction = await builder
                     .useV0()
                     .setFeePayer(createNoopSigner(publicKey(accountAddress)))
-                    .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
+                    .buildAndSign(this.solanaService.getUmi(user.network))
                 // create a nft metadata to track the nft status
                 // recall the validate to set the frozen status to true
                 let foundNFTMetadata = await this.connection
@@ -121,7 +121,7 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                 // store the transaction in the cache
                 const cacheKey = this.sha256Service.hash(
                     base58.encode(
-                        this.solanaMetaplexService
+                        this.solanaService
                             .getUmi(user.network)
                             .transactions.serializeMessage(transaction.message)
                     )
@@ -135,7 +135,7 @@ export class CreateWrapSolanaMetaplexNFTTransactionService {
                     success: true,
                     data: {
                         serializedTx: base58.encode(
-                            this.solanaMetaplexService
+                            this.solanaService
                                 .getUmi(user.network)
                                 .transactions.serialize(transaction)
                         )

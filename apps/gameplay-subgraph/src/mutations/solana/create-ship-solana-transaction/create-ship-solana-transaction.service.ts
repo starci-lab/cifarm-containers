@@ -13,7 +13,7 @@ import {
     CreateShipSolanaTransactionRequest,
     CreateShipSolanaTransactionResponse
 } from "./create-ship-solana-transaction.dto"
-import { SolanaMetaplexService } from "@src/blockchain"
+import { SolanaService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
@@ -32,7 +32,7 @@ export class CreateShipSolanaTransactionService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly solanaMetaplexService: SolanaMetaplexService,
+        private readonly solanaService: SolanaService,
         private readonly staticService: StaticService,
         @InjectCache()
         private readonly cacheManager: Cache,
@@ -91,7 +91,7 @@ export class CreateShipSolanaTransactionService {
                     vaultInfoData: vaultInfos.value[user.chainKey][user.network]
                 })
                 // get the stable coin address
-                const tokenVaultAddress = this.solanaMetaplexService
+                const tokenVaultAddress = this.solanaService
                     .getVaultUmi(user.network)
                     .identity.publicKey.toString()
                 const { address: tokenAddress, decimals: tokenDecimals } =
@@ -99,13 +99,13 @@ export class CreateShipSolanaTransactionService {
                 // create a tx to transfer token from the vault to the user
 
                 const { limitTransaction, priceTransaction } =
-                    await this.solanaMetaplexService.createComputeBudgetTransactions({
+                    await this.solanaService.createComputeBudgetTransactions({
                         network: user.network
                     })
                 let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
 
                 const { transaction: transferTokenTransaction } =
-                    await this.solanaMetaplexService.createTransferTokenTransaction({
+                    await this.solanaService.createTransferTokenTransaction({
                         network: user.network,
                         tokenAddress,
                         toAddress: accountAddress,
@@ -119,12 +119,12 @@ export class CreateShipSolanaTransactionService {
                 const transaction = await builder
                     .useV0()
                     .setFeePayer(createNoopSigner(publicKey(accountAddress)))
-                    .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
+                    .buildAndSign(this.solanaService.getUmi(user.network))
 
                 // store the transaction in the cache
                 const cacheKey = this.sha256Service.hash(
                     base58.encode(
-                        this.solanaMetaplexService
+                        this.solanaService
                             .getUmi(user.network)
                             .transactions.serializeMessage(transaction.message)
                     )
@@ -132,7 +132,7 @@ export class CreateShipSolanaTransactionService {
                 await this.cacheManager.set(cacheKey, true, 1000 * 60 * 15) // 15 minutes
                 return {
                     serializedTx: base58.encode(
-                        this.solanaMetaplexService
+                        this.solanaService
                             .getUmi(user.network)
                             .transactions.serialize(transaction)
                     )

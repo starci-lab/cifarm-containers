@@ -1,7 +1,7 @@
 import { CommandRunner, SubCommand, Option } from "nest-commander"
 import { Logger } from "@nestjs/common"
 import { Network } from "@src/env"
-import { SolanaMetaplexService } from "@src/blockchain"
+import { SolanaService } from "@src/blockchain"
 
 @SubCommand({
     name: "transfer-solana-metaplex-nft",
@@ -10,7 +10,7 @@ import { SolanaMetaplexService } from "@src/blockchain"
 export class TransferSolanaMetaplexNFTCommand extends CommandRunner {
     private readonly logger = new Logger(TransferSolanaMetaplexNFTCommand.name)
 
-    constructor(private readonly solanaMetaplexService: SolanaMetaplexService) {
+    constructor(private readonly SolanaService: SolanaService) {
         super()
     }
 
@@ -18,7 +18,7 @@ export class TransferSolanaMetaplexNFTCommand extends CommandRunner {
         this.logger.debug("Transferring Solana metaplex NFT...")
         const { network, nftAddress, toAddress, collectionAddress } = options
         try {
-            const { signature } = await this.solanaMetaplexService.transferNft({
+            const { signature } = await this.SolanaService.transferNft({
                 network,
                 nftAddress,
                 toAddress,

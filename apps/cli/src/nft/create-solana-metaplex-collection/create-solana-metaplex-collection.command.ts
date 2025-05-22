@@ -1,7 +1,7 @@
 import { CommandRunner, SubCommand, Option } from "nest-commander"
 import { Logger } from "@nestjs/common"
 import { Network } from "@src/env"
-import { SolanaMetaplexService } from "@src/blockchain"
+import { SolanaService } from "@src/blockchain"
 
 @SubCommand({
     name: "create-solana-metaplex-collection",
@@ -10,7 +10,7 @@ import { SolanaMetaplexService } from "@src/blockchain"
 export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
     private readonly logger = new Logger(CreateSolanaMetaplexCollectionCommand.name)
 
-    constructor(private readonly solanaMetaplexService: SolanaMetaplexService) {
+    constructor(private readonly SolanaService: SolanaService) {
         super()
     }
 
@@ -22,7 +22,7 @@ export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
         const { name, network, uri } = options
         try {
             const { collectionAddress, signature } =
-                await this.solanaMetaplexService.createCollection({
+                await this.SolanaService.createCollection({
                     network,
                     name,
                     metadata: {

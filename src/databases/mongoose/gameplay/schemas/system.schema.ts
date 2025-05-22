@@ -767,6 +767,12 @@ export class NFTRarities {
     description: "Configuration for NFT collection data"
 })
 export class NFTCollectionData {
+    @Field(() => String, {
+        description: "Sui treasury cap address",
+        nullable: true
+    })
+    @Prop({ type: String, required: false })
+        suiNFTTreasuryCapId?: string
     @Field(() => ID, {
         description: "Placed item type id"
     })
@@ -821,6 +827,11 @@ export class NFTCollection {
         description: "NFT collection"
     })
     [ChainKey.Solana]: NFTCollectionWrapped
+
+    @Field(() => NFTCollectionWrapped, {
+        description: "NFT collection"
+    })
+    [ChainKey.Sui]: NFTCollectionWrapped
 }
 
 @ObjectType({

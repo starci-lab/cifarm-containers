@@ -6,7 +6,7 @@ import {
     CreateUnwrapSolanaMetaplexNFTTransactionRequest,
     CreateUnwrapSolanaMetaplexNFTTransactionResponse
 } from "./create-unwrap-solana-metaplex-nft-transaction.dto"
-import { AttributeName, SolanaMetaplexService } from "@src/blockchain"
+import { AttributeName, SolanaService } from "@src/blockchain"
 import { GraphQLError } from "graphql"
 import { UserSchema } from "@src/databases"
 import base58 from "bs58"
@@ -23,7 +23,7 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly solanaMetaplexService: SolanaMetaplexService,
+        private readonly solanaService: SolanaService,
         private readonly sha256Service: Sha256Service,
         private readonly staticService: StaticService,
         @InjectCache()
@@ -51,7 +51,7 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
                 }
 
                 // Get NFT from blockchain
-                const nft = await this.solanaMetaplexService.getNFT({
+                const nft = await this.solanaService.getNFT({
                     nftAddress,
                     network: user.network
                 })
@@ -74,12 +74,12 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
 
                 // Create unfreeze transaction
                 const { limitTransaction, priceTransaction } =
-                    await this.solanaMetaplexService.createComputeBudgetTransactions({
+                    await this.solanaService.createComputeBudgetTransactions({
                         network: user.network
                     })
                 let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
                 const { transaction: unfreezeTransaction } =
-                    await this.solanaMetaplexService.createUnfreezeNFTTransaction({
+                    await this.solanaService.createUnfreezeNFTTransaction({
                         nftAddress,
                         collectionAddress,
                         network: user.network,
@@ -160,7 +160,7 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
                 }
                 // Create upgrade transaction
                 const { transaction: upgradeTransaction } =
-                    await this.solanaMetaplexService.createUpgradeNFTTransaction({
+                    await this.solanaService.createUpgradeNFTTransaction({
                         nftAddress,
                         collectionAddress,
                         network: user.network,
@@ -172,12 +172,12 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
                 const transaction = await builder
                     .useV0()
                     .setFeePayer(createNoopSigner(publicKey(accountAddress)))
-                    .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
+                    .buildAndSign(this.solanaService.getUmi(user.network))
 
                 // Store transaction in cache
                 const cacheKey = this.sha256Service.hash(
                     base58.encode(
-                        this.solanaMetaplexService
+                        this.solanaService
                             .getUmi(user.network)
                             .transactions.serializeMessage(transaction.message)
                     )
@@ -192,7 +192,7 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
                 return {
                     data: {
                         serializedTx: base58.encode(
-                            this.solanaMetaplexService
+                            this.solanaService
                                 .getUmi(user.network)
                                 .transactions.serialize(transaction)
                         )

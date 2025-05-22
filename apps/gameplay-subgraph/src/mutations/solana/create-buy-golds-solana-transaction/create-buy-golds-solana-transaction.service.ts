@@ -8,7 +8,7 @@ import {
     CreateBuyGoldsSolanaTransactionRequest,
     CreateBuyGoldsSolanaTransactionResponse
 } from "./create-buy-golds-solana-transaction.dto"
-import { SolanaMetaplexService } from "@src/blockchain"
+import { SolanaService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
 import { transactionBuilder, publicKey, createNoopSigner } from "@metaplex-foundation/umi"
 import base58 from "bs58"
@@ -23,7 +23,7 @@ export class CreateBuyGoldsSolanaTransactionService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly solanaMetaplexService: SolanaMetaplexService,
+        private readonly solanaService: SolanaService,
         private readonly staticService: StaticService,
         @InjectCache()
         private readonly cacheManager: Cache,
@@ -60,13 +60,13 @@ export class CreateBuyGoldsSolanaTransactionService {
                 })
                 // create a transaction to buy the golds
                 const { limitTransaction, priceTransaction } =
-                    await this.solanaMetaplexService.createComputeBudgetTransactions({
+                    await this.solanaService.createComputeBudgetTransactions({
                         network: user.network
                     })
                 let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
                 const revenueRecipientAddress = this.staticService.revenueRecipients[user.chainKey][user.network].address
                 const { transaction: transferTokenTransaction } =
-                    await this.solanaMetaplexService.createTransferTokenTransaction({
+                    await this.solanaService.createTransferTokenTransaction({
                         network: user.network,
                         tokenAddress,
                         toAddress: revenueRecipientAddress,
@@ -78,11 +78,11 @@ export class CreateBuyGoldsSolanaTransactionService {
                 const transaction = await builder
                     .useV0()
                     .setFeePayer(createNoopSigner(publicKey(accountAddress)))
-                    .buildAndSign(this.solanaMetaplexService.getUmi(user.network))
+                    .buildAndSign(this.solanaService.getUmi(user.network))
                 // store the transaction in the cache
                 const cacheKey = this.sha256Service.hash(
                     base58.encode(
-                        this.solanaMetaplexService
+                        this.solanaService
                             .getUmi(user.network)
                             .transactions.serializeMessage(transaction.message)
                     )
@@ -94,7 +94,7 @@ export class CreateBuyGoldsSolanaTransactionService {
                 await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
                 return {
                     serializedTx: base58.encode(
-                        this.solanaMetaplexService
+                        this.solanaService
                             .getUmi(user.network)
                             .transactions.serialize(transaction)
                     )

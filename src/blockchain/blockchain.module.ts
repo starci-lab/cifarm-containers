@@ -1,7 +1,7 @@
 import { DynamicModule, Module } from "@nestjs/common"
 import { AuthModule } from "./auth"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./blockchain.module-definition"
-import { NFTModule } from "./nft"
+import { TxModule } from "./tx"
 import { SpecialModule } from "./special"
 import { TokenModule } from "./token"
 import { CoreModule } from "./core"
@@ -18,7 +18,7 @@ export class BlockchainModule extends ConfigurableModuleClass {
         const exports: Array<DynamicModule> = []
 
         const authDynamicModule = AuthModule.register({ isGlobal })
-        const nftDynamicModule = NFTModule.register({ isGlobal })
+        const txDynamicModule = TxModule.register({ isGlobal })
         const specialDynamicModule = SpecialModule.register({ isGlobal })
         const tokenDynamicModule = TokenModule.register({ isGlobal })
         const coreDynamicModule = CoreModule.register({ isGlobal })
@@ -30,8 +30,8 @@ export class BlockchainModule extends ConfigurableModuleClass {
                 }))
         }
         
-        imports.push(authDynamicModule, nftDynamicModule, specialDynamicModule, tokenDynamicModule, coreDynamicModule)
-        exports.push(authDynamicModule, nftDynamicModule, specialDynamicModule, tokenDynamicModule, coreDynamicModule)
+        imports.push(authDynamicModule, txDynamicModule, specialDynamicModule, tokenDynamicModule, coreDynamicModule)
+        exports.push(authDynamicModule, txDynamicModule, specialDynamicModule, tokenDynamicModule, coreDynamicModule)
 
         return {
             ...dynamicModule,

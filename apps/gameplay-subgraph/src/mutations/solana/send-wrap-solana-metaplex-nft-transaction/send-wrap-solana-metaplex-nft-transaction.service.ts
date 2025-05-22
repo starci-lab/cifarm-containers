@@ -15,7 +15,7 @@ import {
     SendWrapSolanaMetaplexNFTTransactionRequest,
     SendWrapSolanaMetaplexNFTTransactionResponse
 } from "./send-wrap-solana-metaplex-nft-transaction.dto"
-import { AttributeName, SolanaMetaplexService } from "@src/blockchain"
+import { AttributeName, SolanaService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
 import { InjectCache, WrapSolanaMetaplexNFTTransactionCache } from "@src/cache"
 import { Cache } from "cache-manager"
@@ -30,7 +30,7 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly solanaMetaplexService: SolanaMetaplexService,
+        private readonly solanaService: SolanaService,
         private readonly staticService: StaticService,
         @InjectCache()
         private readonly cacheManager: Cache,
@@ -53,12 +53,12 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                 if (!user) {
                     throw new Error("User not found")
                 }
-                const tx = this.solanaMetaplexService
+                const tx = this.solanaService
                     .getUmi(user.network)
                     .transactions.deserialize(base58.decode(serializedTx))
                 const cacheKey = this.sha256Service.hash(
                     base58.encode(
-                        this.solanaMetaplexService
+                        this.solanaService
                             .getUmi(user.network)
                             .transactions.serializeMessage(tx.message)
                     )
@@ -82,7 +82,7 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                         }
                     })
                 }
-                const nft = await this.solanaMetaplexService.getNFT({
+                const nft = await this.solanaService.getNFT({
                     nftAddress: nftMetadata.nftAddress,
                     network: user.network
                 })
@@ -200,16 +200,16 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                         }
                     })
                 }   
-                const signedTx = await this.solanaMetaplexService
+                const signedTx = await this.solanaService
                     .getUmi(user.network)
                     .identity.signTransaction(tx)
-                const txHash = await this.solanaMetaplexService
+                const txHash = await this.solanaService
                     .getUmi(user.network)
                     .rpc.sendTransaction(signedTx)
-                const latestBlockhash = await this.solanaMetaplexService
+                const latestBlockhash = await this.solanaService
                     .getUmi(user.network)
                     .rpc.getLatestBlockhash()
-                await this.solanaMetaplexService
+                await this.solanaService
                     .getUmi(user.network)
                     .rpc.confirmTransaction(txHash, {
                         commitment: "finalized",

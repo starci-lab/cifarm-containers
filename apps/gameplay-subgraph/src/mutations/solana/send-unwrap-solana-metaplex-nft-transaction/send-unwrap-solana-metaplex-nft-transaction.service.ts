@@ -6,7 +6,7 @@ import {
     SendUnwrapSolanaMetaplexNFTTransactionRequest,
     SendUnwrapSolanaMetaplexNFTTransactionResponse
 } from "./send-unwrap-solana-metaplex-nft-transaction.dto"
-import { MetaplexNFTMetadata, SolanaMetaplexService } from "@src/blockchain"
+import { MetaplexNFTMetadata, SolanaService } from "@src/blockchain"
 import { GraphQLError } from "graphql"
 import { UserSchema } from "@src/databases"
 import base58 from "bs58"
@@ -23,7 +23,7 @@ export class SendUnwrapSolanaMetaplexNFTTransactionService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly solanaMetaplexService: SolanaMetaplexService,
+        private readonly solanaService: SolanaService,
         private readonly sha256Service: Sha256Service,
         private readonly staticService: StaticService,
         private readonly s3Service: S3Service,
@@ -52,13 +52,13 @@ export class SendUnwrapSolanaMetaplexNFTTransactionService {
                     })
                 }
 
-                const tx = this.solanaMetaplexService
+                const tx = this.solanaService
                     .getUmi(user.network)
                     .transactions.deserialize(base58.decode(serializedTx))
 
                 const cacheKey = this.sha256Service.hash(
                     base58.encode(
-                        this.solanaMetaplexService
+                        this.solanaService
                             .getUmi(user.network)
                             .transactions.serializeMessage(tx.message)
                     )
@@ -132,16 +132,16 @@ export class SendUnwrapSolanaMetaplexNFTTransactionService {
                 await s3Json.save()
 
                 // Sign and send transaction
-                const signedTx = await this.solanaMetaplexService
+                const signedTx = await this.solanaService
                     .getUmi(user.network)
                     .identity.signTransaction(tx)
-                const txHash = await this.solanaMetaplexService
+                const txHash = await this.solanaService
                     .getUmi(user.network)
                     .rpc.sendTransaction(signedTx)
-                const latestBlockhash = await this.solanaMetaplexService
+                const latestBlockhash = await this.solanaService
                     .getUmi(user.network)
                     .rpc.getLatestBlockhash()
-                await this.solanaMetaplexService
+                await this.solanaService
                     .getUmi(user.network)
                     .rpc.confirmTransaction(txHash, {
                         commitment: "finalized",

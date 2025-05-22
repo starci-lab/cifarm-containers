@@ -2,12 +2,12 @@ import { Attribute } from "@metaplex-foundation/mpl-core"
 import { TransactionBuilder } from "@metaplex-foundation/umi"
 import { WithFeePayer, WithNetwork } from "@src/blockchain/types"
 
-export interface CreateFreezeNFTTransactionParams extends WithFeePayer {
+export interface CreateSolanaFreezeNFTTransactionParams extends WithFeePayer {
     nftAddress: string
     collectionAddress?: string
 }
 
-export interface CreateCollectionParams extends WithNetwork {
+export interface CreateSolanaCollectionParams extends WithNetwork {
     name: string
     metadata: MetaplexCollectionMetadata
 }
@@ -45,12 +45,12 @@ export interface MetaplexCollectionMetadata {
     youtube_url?: string
 }
 
-export interface CreateUnfreezeNFTTransactionParams extends WithFeePayer {
+export interface CreateSolanaUnfreezeNFTTransactionParams extends WithFeePayer {
     nftAddress: string
     collectionAddress?: string
 }
 
-export interface CreateCollectionResponse {
+export interface CreateSolanaCollectionResponse {
     collectionAddress: string
     signature: string
 }
@@ -88,40 +88,27 @@ export interface TransferNftResponse {
     signature: string
 }
 
-export enum AttributeName {
-    Stars = "stars",
-    Rarity = "rarity",
-    GrowthAcceleration = "growthAcceleration",
-    QualityYield = "qualityYield",
-    DiseaseResistance = "diseaseResistance",
-    HarvestYieldBonus = "harvestYieldBonus",
-    CurrentStage = "currentStage",
-}
-
-export enum AttributeTypeValue {
-    Fruit = "fruit"
-}
-
 export interface TransactionResponse {
     serializedTx: string
 }   
 
 // mint nft - request and response
-export interface CreateMintNFTTransactionParams extends WithFeePayer {
+export interface CreateSolanaMintNFTTransactionParams extends WithFeePayer {
     name: string
     metadata: MetaplexNFTMetadata
     collectionAddress: string
     ownerAddress?: string
     attributes: Array<Attribute>
 }
-export interface CreateMintNFTTransactionResponse {
+
+export interface CreateSolanaMintNFTTransactionResponse {
     transaction: TransactionBuilder
     nftAddress: string
     nftName: string
 }
 
 // transfer token 2022 - request and response
-export interface CreateTransferTokenTransactionParams extends WithFeePayer {
+export interface CreateSolanaTransferTokenTransactionParams extends WithFeePayer {
     tokenAddress: string
     toAddress: string
     amount: number
@@ -129,44 +116,44 @@ export interface CreateTransferTokenTransactionParams extends WithFeePayer {
     decimals?: number
 }
 
-export interface CreateTransferTokenTransactionResponse {
+export interface CreateSolanaTransferTokenTransactionResponse {
     transaction: TransactionBuilder
 }
 
-export interface CreateUnfreezeNFTTransactionResponse {
+export interface CreateSolanaUnfreezeNFTTransactionResponse {
     transaction: TransactionBuilder
 }
 
-export interface CreateFreezeNFTTransactionResponse {
+export interface CreateSolanaFreezeNFTTransactionResponse {
     transaction: TransactionBuilder
 }
 
-export interface CreateUpgradeNFTTransactionParams extends WithFeePayer {
+export interface CreateSolanaUpgradeNFTTransactionParams extends WithFeePayer {
     nftAddress: string
     collectionAddress: string
     attributes: Array<Attribute>
 }
 
-export interface CreateUpgradeNFTTransactionResponse {
+export interface CreateSolanaUpgradeNFTTransactionResponse {
     transaction: TransactionBuilder
 }
 
-export interface CreateTransferSolTransactionParams extends WithFeePayer {
+export interface CreateSolanaTransferSolTransactionParams extends WithFeePayer {
     fromAddress: string
     toAddress: string
     amount: number
 }
 
-export interface CreateTransferSolTransactionResponse {
+export interface CreateSolanaTransferSolTransactionResponse {
     transaction: TransactionBuilder
 }
 
-export interface CreateComputeBudgetTransactionsParams extends WithNetwork {
+export interface CreateSolanaComputeBudgetTransactionsParams extends WithNetwork {
     computeUnitLimit?: number
     computeUnitPrice?: number
 }
 
-export interface CreateComputeBudgetTransactionsResponse {
+export interface CreateSolanaComputeBudgetTransactionsResponse {
     limitTransaction: TransactionBuilder
     priceTransaction: TransactionBuilder
 }

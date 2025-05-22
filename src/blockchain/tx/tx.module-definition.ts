@@ -1,8 +1,8 @@
 import { ConfigurableModuleBuilder } from "@nestjs/common"
-import { NFTModuleOptions } from "./types"
+import { TxModuleOptions } from "./types"
 
 export const { ConfigurableModuleClass, MODULE_OPTIONS_TOKEN, OPTIONS_TYPE } =
-    new ConfigurableModuleBuilder<NFTModuleOptions>()
+    new ConfigurableModuleBuilder<TxModuleOptions>()
         .setExtras(
             {
                 isGlobal: false

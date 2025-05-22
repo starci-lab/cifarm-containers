@@ -5,10 +5,10 @@ import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
 import {
-    CreatePurchaseSolanaNFTBoxesTransactionResponse,
-    CreatePurchaseSolanaNFTBoxesTransactionRequest
-} from "./create-purchase-solana-nft-boxes-transaction.dto"
-import { AttributeName, SolanaService } from "@src/blockchain"
+    CreatePurchaseSuiNFTBoxesTransactionResponse,
+    CreatePurchaseSuiNFTBoxesTransactionRequest
+} from "./create-purchase-sui-nft-boxes-transaction.dto"
+import { AttributeName } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
 import { transactionBuilder, publicKey, createNoopSigner } from "@metaplex-foundation/umi"
 import base58 from "bs58"
@@ -16,30 +16,33 @@ import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { roundNumber } from "@src/common"
-import { PurchaseSolanaNFTBoxTransactionCache, ExtendedNFTBox } from "@src/cache"
+import { ExtendedNFTBox } from "@src/cache"
 import { ChainKey } from "@src/env"
 import { v4 as uuidv4 } from "uuid"
+import { SuiService } from "@src/blockchain"
+import { Transaction } from "@mysten/sui/transactions"
+
 @Injectable()
-export class CreatePurchaseSolanaNFTBoxesTransactionService {
-    private readonly logger = new Logger(CreatePurchaseSolanaNFTBoxesTransactionService.name)
+export class CreatePurchaseSuiNFTBoxesTransactionService {
+    private readonly logger = new Logger(CreatePurchaseSuiNFTBoxesTransactionService.name)
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly solanaService: SolanaService,
+        private readonly suiService: SuiService,
         private readonly staticService: StaticService,
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service
     ) {}
 
-    async createPurchaseSolanaNFTBoxesTransaction(
+    async createPurchaseSuiNFTBoxesTransaction(
         { id }: UserLike,
         {
             accountAddress,
-            chainKey = ChainKey.Solana,
+            chainKey = ChainKey.Sui,
             quantity
-        }: CreatePurchaseSolanaNFTBoxesTransactionRequest
-    ): Promise<CreatePurchaseSolanaNFTBoxesTransactionResponse> {
+        }: CreatePurchaseSuiNFTBoxesTransactionRequest
+    ): Promise<CreatePurchaseSuiNFTBoxesTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to handle the transaction lifecycle
@@ -59,28 +62,20 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     user.nftBoxVector = uuidv4()
                     await user.save({ session })
                 }
-
                 const nftBoxes = await this.createNFTBoxesArr(user.nftBoxVector, quantity)
                 const serializedTxs: Array<string> = []
                 const cacheKeys: Array<string> = []
                 const extendedNFTBoxes: Array<ExtendedNFTBox> = []
                 let totalTokenAmount = 0
                 for (const nftBox of nftBoxes) {
-                    const { limitTransaction, priceTransaction } =
-                    await this.solanaService.createComputeBudgetTransactions({
-                        network: user.network
-                    })
-                    let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
+                    const transaction = new Transaction()
+                    // nft collection data
                     const nftCollectionData = this.staticService.nftCollections[nftBox.nftType][chainKey][
                         user.network
                     ] as NFTCollectionData
-
-                    const nftName = nftCollectionData.name
                     const currentStage = 0
-                    const { transaction: mintNFTTransaction, nftName: actualNFTName } =
-                    await this.solanaService.createMintNFTTransaction({
-                        network: user.network,
-                        ownerAddress: accountAddress,
+                    // get the current stage
+                    this.suiService.createMintNFTTransaction({
                         attributes: [
                             ...Object.entries(nftCollectionData.rarities[nftBox.rarity]).map(
                                 ([key, value]) => ({
@@ -97,17 +92,18 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                                 value: nftBox.rarity
                             }
                         ],
+                        ownerAddress: accountAddress,
                         collectionAddress: nftCollectionData.collectionAddress,
-                        name: nftName,
-                        feePayer: accountAddress,
                         metadata: {
-                            name: nftName,
-                            image: nftCollectionData.fruitStages.stages[currentStage].imageUrl
-                        }
+                            name: nftCollectionData.name,
+                            image: nftCollectionData.fruitStages.stages[currentStage].imageUrl,
+                            description: "",
+                        },
+                        nftTreasuryCapId: nftCollectionData.suiNFTTreasuryCapId,
+                        name: nftCollectionData.name,
                     })
-                    builder = builder.add(mintNFTTransaction)
                     extendedNFTBoxes.push({
-                        nftName: actualNFTName,
+                        nftName: nftCollectionData.name,
                         nftType: nftBox.nftType,
                         rarity: nftBox.rarity
                     })
@@ -115,7 +111,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     const { tokenAddress, decimals: tokenDecimals } =
                 this.staticService.tokens[StableCoinName.USDC][chainKey][user.network]
                     // first season is USDC so that we hardcode the token address
-                    const tokenVaultAddress = this.solanaService
+                    const tokenVaultAddress = this.s
                         .getVaultUmi(user.network)
                         .identity.publicKey.toString()
                     const feeAmount = roundNumber(
@@ -125,7 +121,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     const tokenAmount = this.staticService.nftBoxInfo.boxPrice - feeAmount
                     totalTokenAmount += tokenAmount
                     const { transaction: transferTokenToVaultTransaction } =
-                await this.solanaService.createTransferTokenTransaction({
+                await this.SuiMetaplexService.createTransferTokenTransaction({
                     network: user.network,
                     tokenAddress: tokenAddress,
                     toAddress: tokenVaultAddress,
@@ -137,9 +133,9 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     builder = builder.add(transferTokenToVaultTransaction)
                     // get the fee receiver address
                     const revenueRecipientAddress =
-                this.staticService.revenueRecipients[ChainKey.Solana][user.network].address
+                this.staticService.revenueRecipients[ChainKey.Sui][user.network].address
                     const { transaction: transferTokenToFeeReceiverTransaction } =
-                await this.solanaService.createTransferTokenTransaction({
+                await this.SuiMetaplexService.createTransferTokenTransaction({
                     network: user.network,
                     tokenAddress: tokenAddress,
                     toAddress: revenueRecipientAddress,
@@ -151,10 +147,10 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     const transaction = await builder
                         .useV0()
                         .setFeePayer(createNoopSigner(publicKey(accountAddress)))
-                        .buildAndSign(this.solanaService.getUmi(user.network))
+                        .buildAndSign(this.SuiMetaplexService.getUmi(user.network))
                     serializedTxs.push(
                         base58.encode(
-                            this.solanaService
+                            this.SuiMetaplexService
                                 .getUmi(user.network)
                                 .transactions.serialize(transaction)
                         )
@@ -162,7 +158,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     // store the transaction in the cache
                     const cacheKey = this.sha256Service.hash(
                         base58.encode(
-                            this.solanaService
+                            this.SuiMetaplexService
                                 .getUmi(user.network)
                                 .transactions.serializeMessage(transaction.message)
                         )
@@ -172,7 +168,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
 
                 const finalCacheKey = this.sha256Service.hash(cacheKeys.join(""))
 
-                const cacheData: PurchaseSolanaNFTBoxTransactionCache = {
+                const cacheData: PurchaseSuiNFTBoxTransactionCache = {
                     nftBoxes: extendedNFTBoxes,
                     chainKey,
                     tokenAmount: totalTokenAmount,

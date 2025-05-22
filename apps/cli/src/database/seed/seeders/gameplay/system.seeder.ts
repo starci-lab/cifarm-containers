@@ -555,6 +555,109 @@ export class SystemSeeder implements Seeder {
                             }
                         }
                     }
+                },
+                [ChainKey.Sui]: {
+                    [Network.Testnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.DragonFruit),
+                        name: "Dragon Fruit",
+                        collectionAddress: "0x79e4e48462d9f8bc43cf1c2a4bd9720946017c07a0d3b69915e9be8a8346eabb::dragon_fruit",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
+                        suiNFTTreasuryCapId: "0x1a2cbab2e5954bd970e76650aab28dc3ac46edfb214ae44648d2e6403ded0db3",
+                        fruitStages: {
+                            stages: [
+                                {
+                                    stage: 0,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_1.png"
+                                },
+                                {
+                                    stage: 1,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_2.png"
+                                },
+                                {
+                                    stage: 2,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_3.png"
+                                },
+                                {
+                                    stage: 3,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_4.png"
+                                },
+                                {
+                                    stage: 4,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_5.png"
+                                }
+                            ]
+                        },
+                        rarities: {
+                            [NFTRarity.Common]: {
+                                [AttributeName.GrowthAcceleration]: 100,
+                                [AttributeName.QualityYield]: 100,
+                                [AttributeName.DiseaseResistance]: 100,
+                                [AttributeName.HarvestYieldBonus]: 100
+                            },
+                            [NFTRarity.Rare]: {
+                                [AttributeName.GrowthAcceleration]: 200,
+                                [AttributeName.QualityYield]: 200,
+                                [AttributeName.DiseaseResistance]: 200,
+                                [AttributeName.HarvestYieldBonus]: 200
+                            },
+                            [NFTRarity.Epic]: {
+                                [AttributeName.GrowthAcceleration]: 300,
+                                [AttributeName.QualityYield]: 300,
+                                [AttributeName.DiseaseResistance]: 300,
+                                [AttributeName.HarvestYieldBonus]: 300
+                            }
+                        }
+                    },
+                    [Network.Mainnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.DragonFruit),
+                        name: "Dragon Fruit",
+                        collectionAddress: "0x79e4e48462d9f8bc43cf1c2a4bd9720946017c07a0d3b69915e9be8a8346eabb::dragon_fruit",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
+                        fruitStages: {
+                            stages: [
+                                {
+                                    stage: 0,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_1.png"
+                                },
+                                {
+                                    stage: 1,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_2.png"
+                                },
+                                {
+                                    stage: 2,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_3.png"
+                                },
+                                {
+                                    stage: 3,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_4.png"
+                                },
+                                {
+                                    stage: 4,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_stage_5.png"
+                                }
+                            ]
+                        },
+                        rarities: {
+                            [NFTRarity.Common]: {
+                                [AttributeName.GrowthAcceleration]: 100,
+                                [AttributeName.QualityYield]: 100,
+                                [AttributeName.DiseaseResistance]: 100,
+                                [AttributeName.HarvestYieldBonus]: 100
+                            },
+                            [NFTRarity.Rare]: {
+                                [AttributeName.GrowthAcceleration]: 200,
+                                [AttributeName.QualityYield]: 200,
+                                [AttributeName.DiseaseResistance]: 200,
+                                [AttributeName.HarvestYieldBonus]: 200
+                            },
+                            [NFTRarity.Epic]: {
+                                [AttributeName.GrowthAcceleration]: 300,
+                                [AttributeName.QualityYield]: 300,
+                                [AttributeName.DiseaseResistance]: 300,
+                                [AttributeName.HarvestYieldBonus]: 300
+                            }
+                        }
+                    }
                 }
             },
             [NFTType.Jackfruit]: {
@@ -634,6 +737,109 @@ export class SystemSeeder implements Seeder {
                                 },
                                 {
                                     stage: 4,   
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_5.png"
+                                }
+                            ]
+                        },
+                        rarities: {
+                            [NFTRarity.Common]: {
+                                [AttributeName.GrowthAcceleration]: 100,
+                                [AttributeName.QualityYield]: 100,
+                                [AttributeName.DiseaseResistance]: 100,
+                                [AttributeName.HarvestYieldBonus]: 100
+                            },
+                            [NFTRarity.Rare]: {
+                                [AttributeName.GrowthAcceleration]: 200,
+                                [AttributeName.QualityYield]: 200,
+                                [AttributeName.DiseaseResistance]: 200,
+                                [AttributeName.HarvestYieldBonus]: 200
+                            },
+                            [NFTRarity.Epic]: {
+                                [AttributeName.GrowthAcceleration]: 300,
+                                [AttributeName.QualityYield]: 300,
+                                [AttributeName.DiseaseResistance]: 300,
+                                [AttributeName.HarvestYieldBonus]: 300
+                            }
+                        }
+                    }
+                },
+                [ChainKey.Sui]: {
+                    [Network.Testnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Jackfruit),
+                        name: "Jackfruit",
+                        collectionAddress: "0x79e4e48462d9f8bc43cf1c2a4bd9720946017c07a0d3b69915e9be8a8346eabb::jackfruit_collection",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
+                        suiNFTTreasuryCapId: "0xb2e711caca11e977ba09ff7c3691a3dffa6312bf2eed2dff5325e259d93c3b6c",
+                        fruitStages: {
+                            stages: [
+                                {
+                                    stage: 0,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_1.png"
+                                },
+                                {
+                                    stage: 1,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_2.png"
+                                },
+                                {
+                                    stage: 2,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_3.png"
+                                },
+                                {
+                                    stage: 3,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_4.png"
+                                },
+                                {
+                                    stage: 4,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_5.png"
+                                }
+                            ]
+                        },
+                        rarities: {
+                            [NFTRarity.Common]: {
+                                [AttributeName.GrowthAcceleration]: 100,
+                                [AttributeName.QualityYield]: 100,
+                                [AttributeName.DiseaseResistance]: 100,
+                                [AttributeName.HarvestYieldBonus]: 100
+                            },
+                            [NFTRarity.Rare]: {
+                                [AttributeName.GrowthAcceleration]: 200,
+                                [AttributeName.QualityYield]: 200,
+                                [AttributeName.DiseaseResistance]: 200,
+                                [AttributeName.HarvestYieldBonus]: 200
+                            },
+                            [NFTRarity.Epic]: {
+                                [AttributeName.GrowthAcceleration]: 300,
+                                [AttributeName.QualityYield]: 300,
+                                [AttributeName.DiseaseResistance]: 300,
+                                [AttributeName.HarvestYieldBonus]: 300
+                            }
+                        }
+                    },
+                    [Network.Mainnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Jackfruit),
+                        name: "Jackfruit",
+                        collectionAddress: "0x79e4e48462d9f8bc43cf1c2a4bd9720946017c07a0d3b69915e9be8a8346eabb::jackfruit_collection",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
+                        fruitStages: {
+                            stages: [
+                                {
+                                    stage: 0,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_1.png"
+                                },
+                                {
+                                    stage: 1,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_2.png"
+                                },
+                                {
+                                    stage: 2,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_3.png"
+                                },
+                                {
+                                    stage: 3,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_4.png"
+                                },
+                                {
+                                    stage: 4,
                                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_stage_5.png"
                                 }
                             ]
@@ -763,7 +969,111 @@ export class SystemSeeder implements Seeder {
                             }
                         }
                     }
-                }
+                },
+                [ChainKey.Sui]: {
+                    [Network.Testnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Pomegranate),
+                        name: "Pomegranate",
+                        suiNFTTreasuryCapId: "0x3837c4827451e2cf253477f86e48b3d83b9939b49e16dd22369c2d0aa1e5fef6",
+                        collectionAddress: "0x79e4e48462d9f8bc43cf1c2a4bd9720946017c07a0d3b69915e9be8a8346eabb::pomegranate_collection",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_collection.png",
+                        fruitStages: {
+                            stages: [
+                                {
+                                    stage: 0,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_1.png"
+                                },
+                                {
+                                    stage: 1,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_2.png"
+                                },
+                                {
+                                    stage: 2,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_3.png"
+                                },
+                                {
+                                    stage: 3,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_4.png"
+                                },
+                                {
+                                    stage: 4,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_5.png"
+                                }
+                            ]
+                        },
+                        rarities: {
+                            [NFTRarity.Common]: {
+                                [AttributeName.GrowthAcceleration]: 100,
+                                [AttributeName.QualityYield]: 100,
+                                [AttributeName.DiseaseResistance]: 100,
+                                [AttributeName.HarvestYieldBonus]: 100
+                            },
+                            [NFTRarity.Rare]: {
+                                [AttributeName.GrowthAcceleration]: 200,
+                                [AttributeName.QualityYield]: 200,
+                                [AttributeName.DiseaseResistance]: 200,
+                                [AttributeName.HarvestYieldBonus]: 200
+                            },
+                            [NFTRarity.Epic]: {
+                                [AttributeName.GrowthAcceleration]: 300,
+                                [AttributeName.QualityYield]: 300,
+                                [AttributeName.DiseaseResistance]: 300,
+                                [AttributeName.HarvestYieldBonus]: 300
+                            }
+                        }
+                    },
+                    [Network.Mainnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Pomegranate),
+                        name: "Pomegranate",
+                        suiNFTTreasuryCapId: "0x3837c4827451e2cf253477f86e48b3d83b9939b49e16dd22369c2d0aa1e5fef6",
+                        collectionAddress: "0x79e4e48462d9f8bc43cf1c2a4bd9720946017c07a0d3b69915e9be8a8346eabb::pomegranate_collection",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_collection.png",
+                        fruitStages: {
+                            stages: [
+                                {
+                                    stage: 0,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_1.png"
+                                },
+                                {
+                                    stage: 1,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_2.png"
+                                },
+                                {
+                                    stage: 2,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_3.png"
+                                },
+                                {
+                                    stage: 3,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_4.png"
+                                },
+                                {
+                                    stage: 4,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_stage_5.png"
+                                }
+                            ]
+                        },
+                        rarities: {
+                            [NFTRarity.Common]: {
+                                [AttributeName.GrowthAcceleration]: 100,
+                                [AttributeName.QualityYield]: 100,
+                                [AttributeName.DiseaseResistance]: 100,
+                                [AttributeName.HarvestYieldBonus]: 100
+                            },
+                            [NFTRarity.Rare]: {
+                                [AttributeName.GrowthAcceleration]: 200,
+                                [AttributeName.QualityYield]: 200,
+                                [AttributeName.DiseaseResistance]: 200,
+                                [AttributeName.HarvestYieldBonus]: 200
+                            },
+                            [NFTRarity.Epic]: {
+                                [AttributeName.GrowthAcceleration]: 300,
+                                [AttributeName.QualityYield]: 300,
+                                [AttributeName.DiseaseResistance]: 300,
+                                [AttributeName.HarvestYieldBonus]: 300
+                            }
+                        }
+                    }
+                },
             },
             [NFTType.Rambutan]: {
                 [ChainKey.Solana]: {
@@ -867,8 +1177,112 @@ export class SystemSeeder implements Seeder {
                             }
                         }
                     }
+                },
+                [ChainKey.Sui]: {
+                    [Network.Testnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Rambutan),
+                        name: "Rambutan",
+                        suiNFTTreasuryCapId: "0x0dbf45589b5b78de7759f730f816fb53240c5c77d9dbede0c30d36250319c33e",
+                        collectionAddress: "0x79e4e48462d9f8bc43cf1c2a4bd9720946017c07a0d3b69915e9be8a8346eabb::rambutan_collection",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_collection.png",
+                        fruitStages: {
+                            stages: [
+                                {
+                                    stage: 0,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_1.png"
+                                },
+                                {
+                                    stage: 1,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_2.png"
+                                },
+                                {
+                                    stage: 2,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_3.png"
+                                },
+                                {
+                                    stage: 3,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_4.png"
+                                },
+                                {
+                                    stage: 4,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_5.png"
+                                }
+                            ]
+                        },
+                        rarities: {
+                            [NFTRarity.Common]: {
+                                [AttributeName.GrowthAcceleration]: 100,
+                                [AttributeName.QualityYield]: 100,
+                                [AttributeName.DiseaseResistance]: 100,
+                                [AttributeName.HarvestYieldBonus]: 100
+                            },
+                            [NFTRarity.Rare]: {
+                                [AttributeName.GrowthAcceleration]: 200,
+                                [AttributeName.QualityYield]: 200,
+                                [AttributeName.DiseaseResistance]: 200,
+                                [AttributeName.HarvestYieldBonus]: 200
+                            },
+                            [NFTRarity.Epic]: {
+                                [AttributeName.GrowthAcceleration]: 300,
+                                [AttributeName.QualityYield]: 300,
+                                [AttributeName.DiseaseResistance]: 300,
+                                [AttributeName.HarvestYieldBonus]: 300
+                            }
+                        }
+                    },
+                    [Network.Mainnet]: {
+                        placedItemTypeId: createObjectId(PlacedItemTypeId.Rambutan),
+                        name: "Rambutan",
+                        suiNFTTreasuryCapId: "0x0dbf45589b5b78de7759f730f816fb53240c5c77d9dbede0c30d36250319c33e",
+                        collectionAddress: "0x79e4e48462d9f8bc43cf1c2a4bd9720946017c07a0d3b69915e9be8a8346eabb::rambutan_collection",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_collection.png",
+                        fruitStages: {
+                            stages: [
+                                {
+                                    stage: 0,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_1.png"
+                                },
+                                {
+                                    stage: 1,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_2.png"
+                                },
+                                {
+                                    stage: 2,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_3.png"
+                                },
+                                {
+                                    stage: 3,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_4.png"
+                                },
+                                {
+                                    stage: 4,
+                                    imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_stage_5.png"
+                                }
+                            ]
+                        },
+                        rarities: {
+                            [NFTRarity.Common]: {
+                                [AttributeName.GrowthAcceleration]: 100,
+                                [AttributeName.QualityYield]: 100,
+                                [AttributeName.DiseaseResistance]: 100,
+                                [AttributeName.HarvestYieldBonus]: 100
+                            },
+                            [NFTRarity.Rare]: {
+                                [AttributeName.GrowthAcceleration]: 200,
+                                [AttributeName.QualityYield]: 200,
+                                [AttributeName.DiseaseResistance]: 200,
+                                [AttributeName.HarvestYieldBonus]: 200
+                            },
+                            [NFTRarity.Epic]: {
+                                [AttributeName.GrowthAcceleration]: 300,
+                                [AttributeName.QualityYield]: 300,
+                                [AttributeName.DiseaseResistance]: 300,
+                                [AttributeName.HarvestYieldBonus]: 300
+                            }
+                        }
+                    }
                 }
-            }
+            },
         }
 
         const honeycombInfo: HoneycombInfo = {
