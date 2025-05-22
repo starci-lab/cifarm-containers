@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, NFTCollectionData, NFTRarity, NFTType, StableCoinName } from "@src/databases"
+import { InjectMongoose, NFTCollectionData, NFTRarity, NFTType } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
@@ -10,12 +10,9 @@ import {
 } from "./create-purchase-sui-nft-boxes-transaction.dto"
 import { AttributeName } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
-import { transactionBuilder, publicKey, createNoopSigner } from "@metaplex-foundation/umi"
-import base58 from "bs58"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
-import { roundNumber } from "@src/common"
 import { ExtendedNFTBox } from "@src/cache"
 import { ChainKey } from "@src/env"
 import { v4 as uuidv4 } from "uuid"
@@ -64,9 +61,7 @@ export class CreatePurchaseSuiNFTBoxesTransactionService {
                 }
                 const nftBoxes = await this.createNFTBoxesArr(user.nftBoxVector, quantity)
                 const serializedTxs: Array<string> = []
-                const cacheKeys: Array<string> = []
                 const extendedNFTBoxes: Array<ExtendedNFTBox> = []
-                let totalTokenAmount = 0
                 for (const nftBox of nftBoxes) {
                     const transaction = new Transaction()
                     // nft collection data
@@ -75,7 +70,8 @@ export class CreatePurchaseSuiNFTBoxesTransactionService {
                     ] as NFTCollectionData
                     const currentStage = 0
                     // get the current stage
-                    this.suiService.createMintNFTTransaction({
+                    await this.suiService.createMintNFTTransaction({
+                        transaction,
                         attributes: [
                             ...Object.entries(nftCollectionData.rarities[nftBox.rarity]).map(
                                 ([key, value]) => ({
@@ -102,79 +98,83 @@ export class CreatePurchaseSuiNFTBoxesTransactionService {
                         nftTreasuryCapId: nftCollectionData.suiNFTTreasuryCapId,
                         name: nftCollectionData.name,
                     })
+                    
                     extendedNFTBoxes.push({
                         nftName: nftCollectionData.name,
                         nftType: nftBox.nftType,
                         rarity: nftBox.rarity
                     })
+
                     //get the stable coin address
-                    const { tokenAddress, decimals: tokenDecimals } =
-                this.staticService.tokens[StableCoinName.USDC][chainKey][user.network]
-                    // first season is USDC so that we hardcode the token address
-                    const tokenVaultAddress = this.s
-                        .getVaultUmi(user.network)
-                        .identity.publicKey.toString()
-                    const feeAmount = roundNumber(
-                        this.staticService.nftBoxInfo.boxPrice *
-                    this.staticService.nftBoxInfo.feePercentage
-                    )
-                    const tokenAmount = this.staticService.nftBoxInfo.boxPrice - feeAmount
-                    totalTokenAmount += tokenAmount
-                    const { transaction: transferTokenToVaultTransaction } =
-                await this.SuiMetaplexService.createTransferTokenTransaction({
-                    network: user.network,
-                    tokenAddress: tokenAddress,
-                    toAddress: tokenVaultAddress,
-                    amount: tokenAmount,
-                    decimals: tokenDecimals,
-                    fromAddress: accountAddress
-                })
-                    // add to the transaction
-                    builder = builder.add(transferTokenToVaultTransaction)
-                    // get the fee receiver address
-                    const revenueRecipientAddress =
-                this.staticService.revenueRecipients[ChainKey.Sui][user.network].address
-                    const { transaction: transferTokenToFeeReceiverTransaction } =
-                await this.SuiMetaplexService.createTransferTokenTransaction({
-                    network: user.network,
-                    tokenAddress: tokenAddress,
-                    toAddress: revenueRecipientAddress,
-                    amount: feeAmount,
-                    decimals: tokenDecimals,
-                    fromAddress: accountAddress
-                })
-                    builder = builder.add(transferTokenToFeeReceiverTransaction)
-                    const transaction = await builder
-                        .useV0()
-                        .setFeePayer(createNoopSigner(publicKey(accountAddress)))
-                        .buildAndSign(this.SuiMetaplexService.getUmi(user.network))
-                    serializedTxs.push(
-                        base58.encode(
-                            this.SuiMetaplexService
-                                .getUmi(user.network)
-                                .transactions.serialize(transaction)
-                        )
-                    )
+                    //     const { tokenAddress, decimals: tokenDecimals } =
+                    // this.staticService.tokens[StableCoinName.USDC][chainKey][user.network]
+                    //     // first season is USDC so that we hardcode the token address
+                    //     const tokenVaultAddress = this.s
+                    //         .getVaultUmi(user.network)
+                    //         .identity.publicKey.toString()
+                    //     const feeAmount = roundNumber(
+                    //         this.staticService.nftBoxInfo.boxPrice *
+                    //     this.staticService.nftBoxInfo.feePercentage
+                    //     )
+                    //     const tokenAmount = this.staticService.nftBoxInfo.boxPrice - feeAmount
+                    //     totalTokenAmount += tokenAmount
+                    //     const { transaction: transferTokenToVaultTransaction } =
+                    // await this.SuiMetaplexService.createTransferTokenTransaction({
+                    //     network: user.network,
+                    //     tokenAddress: tokenAddress,
+                    //     toAddress: tokenVaultAddress,
+                    //     amount: tokenAmount,
+                    //     decimals: tokenDecimals,
+                    //     fromAddress: accountAddress
+                    // })
+                    //     // add to the transaction
+                    //     builder = builder.add(transferTokenToVaultTransaction)
+                    //     // get the fee receiver address
+                    //     const revenueRecipientAddress =
+                    // this.staticService.revenueRecipients[ChainKey.Sui][user.network].address
+                    //     const { transaction: transferTokenToFeeReceiverTransaction } =
+                    // await this.SuiMetaplexService.createTransferTokenTransaction({
+                    //     network: user.network,
+                    //     tokenAddress: tokenAddress,
+                    //     toAddress: revenueRecipientAddress,
+                    //     amount: feeAmount,
+                    //     decimals: tokenDecimals,
+                    //     fromAddress: accountAddress
+                    // })
+                    //     builder = builder.add(transferTokenToFeeReceiverTransaction)
+                    //     const transaction = await builder
+                    //         .useV0()
+                    //         .setFeePayer(createNoopSigner(publicKey(accountAddress)))
+                    //         .buildAndSign(this.SuiMetaplexService.getUmi(user.network))
+                    //     serializedTxs.push(
+                    //         base58.encode(
+                    //             this.SuiMetaplexService
+                    //                 .getUmi(user.network)
+                    //                 .transactions.serialize(transaction)
+                    //         )
+                    //     )
                     // store the transaction in the cache
-                    const cacheKey = this.sha256Service.hash(
-                        base58.encode(
-                            this.SuiMetaplexService
-                                .getUmi(user.network)
-                                .transactions.serializeMessage(transaction.message)
-                        )
-                    )
-                    cacheKeys.push(cacheKey)
+                    // const cacheKey = this.sha256Service.hash(
+                    //     base58.encode(
+                    //         this.SuiMetaplexService
+                    //             .getUmi(user.network)
+                    //             .transactions.serializeMessage(transaction.message)
+                    //     )
+                    // )
+                    // cacheKeys.push(cacheKey)
+                    const serializedTx = await transaction.toJSON()
+                    serializedTxs.push(serializedTx)
                 }    
 
-                const finalCacheKey = this.sha256Service.hash(cacheKeys.join(""))
+                // const finalCacheKey = this.sha256Service.hash(cacheKeys.join(""))
 
-                const cacheData: PurchaseSuiNFTBoxTransactionCache = {
-                    nftBoxes: extendedNFTBoxes,
-                    chainKey,
-                    tokenAmount: totalTokenAmount,
-                    network: user.network
-                }
-                await this.cacheManager.set(finalCacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
+                // const cacheData: PurchaseSuiNFTBoxTransactionCache = {
+                //     nftBoxes: extendedNFTBoxes,
+                //     chainKey,
+                //     tokenAmount: totalTokenAmount,
+                //     network: user.network
+                // }
+                // await this.cacheManager.set(finalCacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
                 return {
                     serializedTxs
                 }

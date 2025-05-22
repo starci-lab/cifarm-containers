@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common"
-import { CreatePurchaseSolanaNFTBoxesTransactionService } from "./create-purchase-sui-nft-boxes-transaction.service"
-import { CreatePurchaseSolanaNFTBoxesTransactionResolver } from "./create-purchase-sui-nft-boxes-transaction.resolver"
+import { CreatePurchaseSuiNFTBoxesTransactionService } from "./create-purchase-sui-nft-boxes-transaction.service"
+import { CreatePurchaseSuiNFTBoxesTransactionResolver } from "./create-purchase-sui-nft-boxes-transaction.resolver"
 
 @Module({
     providers: [
-        CreatePurchaseSolanaNFTBoxesTransactionService,
-        CreatePurchaseSolanaNFTBoxesTransactionResolver
+        CreatePurchaseSuiNFTBoxesTransactionService,
+        CreatePurchaseSuiNFTBoxesTransactionResolver
     ]
 })
-export class CreatePurchaseSolanaNFTBoxesTransactionModule {}
+export class CreatePurchaseSuiNFTBoxesTransactionModule {}

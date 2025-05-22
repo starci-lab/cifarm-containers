@@ -2,30 +2,30 @@ import { Logger, UseGuards } from "@nestjs/common"
 import { Mutation, Resolver, Args } from "@nestjs/graphql"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
 import { GraphQLUser } from "@src/decorators"
-import { CreatePurchaseSolanaNFTBoxesTransactionService } from "./create-purchase-sui-nft-boxes-transaction.service"
+import { CreatePurchaseSuiNFTBoxesTransactionService } from "./create-purchase-sui-nft-boxes-transaction.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
 import {
-    CreatePurchaseSolanaNFTBoxesTransactionRequest,
-    CreatePurchaseSolanaNFTBoxesTransactionResponse
+    CreatePurchaseSuiNFTBoxesTransactionRequest,
+    CreatePurchaseSuiNFTBoxesTransactionResponse
 } from "./create-purchase-sui-nft-boxes-transaction.dto"
 
 @Resolver()
-export class CreatePurchaseSolanaNFTBoxesTransactionResolver {
-    private readonly logger = new Logger(CreatePurchaseSolanaNFTBoxesTransactionResolver.name)
+export class CreatePurchaseSuiNFTBoxesTransactionResolver {
+    private readonly logger = new Logger(CreatePurchaseSuiNFTBoxesTransactionResolver.name)
     constructor(
-        private readonly createPurchaseSolanaNftBoxesTransactionService: CreatePurchaseSolanaNFTBoxesTransactionService
+        private readonly createPurchaseSuiNftBoxesTransactionService: CreatePurchaseSuiNFTBoxesTransactionService
     ) {}
 
     @UseGuards(GraphQLJwtAuthGuard, GraphQLThrottlerGuard)
-    @Mutation(() => CreatePurchaseSolanaNFTBoxesTransactionResponse, {
-        name: "createPurchaseSolanaNFTBoxesTransaction",
-        description: "Create Purchase Solana NFT Boxes Transaction"
+    @Mutation(() => CreatePurchaseSuiNFTBoxesTransactionResponse, {
+        name: "createPurchaseSuiNFTBoxesTransaction",
+        description: "Create Purchase Sui NFT Boxes Transaction"
     })
-    public async createPurchaseSolanaNFTBoxesTransaction(
+    public async createPurchaseSuiNFTBoxesTransaction(
         @GraphQLUser() user: UserLike,
-        @Args("request") request: CreatePurchaseSolanaNFTBoxesTransactionRequest
+        @Args("request") request: CreatePurchaseSuiNFTBoxesTransactionRequest
     ) {
-        return this.createPurchaseSolanaNftBoxesTransactionService.createPurchaseSolanaNFTBoxesTransaction(
+        return this.createPurchaseSuiNftBoxesTransactionService.createPurchaseSuiNFTBoxesTransaction(
             user,
             request
         )

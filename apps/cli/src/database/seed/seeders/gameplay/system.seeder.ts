@@ -1568,7 +1568,7 @@ export class SystemSeeder implements Seeder {
                 [ChainKey.Sui]: {
                     [Network.Testnet]: {
                         tokenType: TokenType.Standard,
-                        tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        tokenAddress: "0xa1ec7fc00a6f40db9693ad1415d0c193ad3906494428cf252621037bd7117e29::usdc::USDC",
                         name: "USD Coin",
                         symbol: "USDC",
                         decimals: 6,
@@ -1576,7 +1576,7 @@ export class SystemSeeder implements Seeder {
                     },
                     [Network.Mainnet]: {
                         tokenType: TokenType.Standard,
-                        tokenAddress: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                        tokenAddress: "0xa1ec7fc00a6f40db9693ad1415d0c193ad3906494428cf252621037bd7117e29::usdc::USDC",
                         name: "USD Coin",
                         symbol: "USDC",
                         decimals: 6,
