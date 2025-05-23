@@ -11,6 +11,7 @@ export enum AttributeName {
     DiseaseResistance = "diseaseResistance",
     HarvestYieldBonus = "harvestYieldBonus",
     CurrentStage = "currentStage",
+    WrapperUserId = "wrapperUserId"
 }
 
 export enum AttributeTypeValue {

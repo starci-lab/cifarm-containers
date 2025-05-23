@@ -16,7 +16,8 @@ import {
     InteractionPermissions,
     NFTBoxInfo,
     Tokens,
-    PetInfo
+    PetInfo,
+    Referral
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -94,5 +95,9 @@ export class SystemsService {
 
     petInfo(): PetInfo {
         return this.staticService.petInfo
+    }
+
+    referral(): Referral {
+        return this.staticService.referral
     }
 }

@@ -17,7 +17,8 @@ import {
     InteractionPermissions,
     NFTBoxInfo,
     Tokens,
-    PetInfo
+    PetInfo,
+    Referral
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -186,5 +187,14 @@ export class SystemsResolver {
     })
     petInfo(): PetInfo {
         return this.systemsService.petInfo()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => Referral, {
+        name: "referral",
+        description: "Get the referral"
+    })
+    referral(): Referral {
+        return this.systemsService.referral()
     }
 }

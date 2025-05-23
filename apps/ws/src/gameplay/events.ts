@@ -15,7 +15,8 @@ export enum EmitterEventName {
     // method to indicate whether the user can continue buying items
     StopBuying = "stop_buying",
     // force sync placed items
-    ForceSyncPlacedItemsResponsed = "force_sync_placed_items_responsed"
+    ForceSyncPlacedItemsResponsed = "force_sync_placed_items_responsed",
+    Disconnected = "disconnected"
 }
 
 export enum ReceiverEventName {

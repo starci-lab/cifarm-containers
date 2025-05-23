@@ -468,7 +468,7 @@ export class InventoryTypeSeeder implements Seeder {
             {
                 _id: createObjectId(InventoryTypeId.Strawberry),
                 displayId: InventoryTypeId.Strawberry,
-                stackable: false,
+                stackable: true,
                 asTool: true,
                 deliverable: false,
                 placeable: false,
@@ -478,7 +478,7 @@ export class InventoryTypeSeeder implements Seeder {
             {
                 _id: createObjectId(InventoryTypeId.StrawberryQuality),
                 displayId: InventoryTypeId.StrawberryQuality,
-                stackable: false,
+                stackable: true,
                 asTool: true,
                 deliverable: false,
                 placeable: false,
@@ -488,11 +488,14 @@ export class InventoryTypeSeeder implements Seeder {
             {
                 _id: createObjectId(InventoryTypeId.StrawberrySeed),
                 displayId: InventoryTypeId.StrawberrySeed,
-                stackable: false,
                 asTool: true,
+                stackable: true,
                 deliverable: false,
                 placeable: false,
-                type: InventoryType.Seed
+                seedType: PlantType.Crop,
+                crop: createObjectId(CropId.Strawberry),
+                type: InventoryType.Seed,
+                maxStack: 64,
             },
             {
                 _id: createObjectId(InventoryTypeId.Honey),

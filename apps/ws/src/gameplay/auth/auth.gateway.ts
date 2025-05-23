@@ -13,6 +13,7 @@ import { GameplayWebSocketGateway, NAMESPACE } from "../gateway.decorators"
 import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { DateUtcService } from "@src/date"
+import { EmitterEventName } from "../events"
 
 @GameplayWebSocketGateway()
 export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit {
@@ -68,8 +69,18 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         return Array.from(this.namespace.sockets.values())
     }
 
-    public joinRoom({ socket, userId, type = RoomType.Player }: JoinRoomNameParams) {
-        socket.join(this.getRoomName({ userId, type }))
+    public async joinRoom({ socket, userId, type = RoomType.Player }: JoinRoomNameParams) {
+        const roomName = this.getRoomName({ userId, type })
+        if (type === RoomType.Player) {
+            // if someone is already in the room, disconnect them
+            const sockets = await this.namespace.in(roomName).fetchSockets()
+            for (const _socket of sockets) {
+                // emit last message
+                _socket.emit(EmitterEventName.Disconnected)
+                _socket.disconnect()
+            }
+        }
+        socket.join(roomName)
     }
 
     // method to leave the watching room

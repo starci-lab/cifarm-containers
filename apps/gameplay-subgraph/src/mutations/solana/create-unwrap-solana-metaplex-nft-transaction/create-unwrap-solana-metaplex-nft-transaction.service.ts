@@ -158,6 +158,12 @@ export class CreateUnwrapSolanaMetaplexNFTTransactionService {
                     break
                 }
                 }
+                // check if the object id is already in the attributes
+                const objectIdAttribute = attributes.find(attribute => attribute.key === AttributeName.WrapperUserId)
+                // if found, we need to remove it
+                if (objectIdAttribute) {
+                    attributes.splice(attributes.indexOf(objectIdAttribute), 1)
+                }
                 // Create upgrade transaction
                 const { transaction: upgradeTransaction } =
                     await this.solanaService.createUpgradeNFTTransaction({

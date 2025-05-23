@@ -97,6 +97,11 @@ export class SortInventoriesService {
             InventoryTypeId.CucumberSeed,
             InventoryTypeId.BellPepperSeed,
             InventoryTypeId.StrawberrySeed,
+            InventoryTypeId.PumpkinSeed,
+            InventoryTypeId.CauliflowerSeed,
+            InventoryTypeId.TomatoSeed,
+            InventoryTypeId.EggplantSeed,
+            InventoryTypeId.PeaSeed,
 
             // flowers
             InventoryTypeId.DaisySeed,
@@ -123,6 +128,21 @@ export class SortInventoriesService {
 
             InventoryTypeId.BellPepper,
             InventoryTypeId.BellPepperQuality,
+            
+            InventoryTypeId.Pumpkin,
+            InventoryTypeId.PumpkinQuality,
+
+            InventoryTypeId.Cauliflower,
+            InventoryTypeId.CauliflowerQuality,
+
+            InventoryTypeId.Tomato,
+            InventoryTypeId.TomatoQuality,
+
+            InventoryTypeId.Eggplant,
+            InventoryTypeId.EggplantQuality,
+
+            InventoryTypeId.Pea,
+            InventoryTypeId.PeaQuality,
 
             InventoryTypeId.Strawberry,
             InventoryTypeId.StrawberryQuality,
@@ -149,6 +169,7 @@ export class SortInventoriesService {
 
             InventoryTypeId.Pomegranate,
             InventoryTypeId.PomegranateQuality,
+            
           
             // --- ANIMAL PRODUCTS & FEED ---
             InventoryTypeId.AnimalFeed,

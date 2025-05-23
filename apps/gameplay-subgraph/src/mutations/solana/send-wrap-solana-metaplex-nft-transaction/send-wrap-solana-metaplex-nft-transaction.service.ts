@@ -35,7 +35,7 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service,
-    ) {}
+    ) { }
 
     async sendWrapSolanaMetaplexNFTTransaction(
         { id }: UserLike,
@@ -112,8 +112,8 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                 // thus, base on nft type, we create corresponding off-chain, first is about the fruits
                 let nftType: NFTType
                 for (const _nftType of Object.values(NFTType)) {
-                    const found = this.staticService.nftCollections[_nftType][nftMetadata.chainKey][user.network].collectionAddress  ===
-                            nftMetadata.collectionAddress
+                    const found = this.staticService.nftCollections[_nftType][nftMetadata.chainKey][user.network].collectionAddress ===
+                        nftMetadata.collectionAddress
                     if (found) {
                         nftType = _nftType
                         break
@@ -148,7 +148,7 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                                 code: "PLACED_ITEM_TYPE_NOT_FOUND"
                             }
                         })
-                    }   
+                    }
                     const currentStage = Number.parseInt(nft.attributes.attributeList.find(
                         (attribute) => attribute.key === AttributeName.CurrentStage
                     )?.value) || 0
@@ -199,7 +199,7 @@ export class SendWrapSolanaMetaplexNFTTransactionService {
                             code: "NFT_TYPE_NOT_SUPPORTED"
                         }
                     })
-                }   
+                }
                 const signedTx = await this.solanaService
                     .getUmi(user.network)
                     .identity.signTransaction(tx)
