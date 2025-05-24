@@ -10,7 +10,7 @@ import {
     SendBuyGoldsSolanaTransactionResponse
 } from "./send-buy-golds-solana-transaction.dto"
 import { SolanaService } from "@src/blockchain"
-import { GoldBalanceService, StaticService } from "@src/gameplay"
+import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
@@ -18,6 +18,8 @@ import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
 import base58 from "bs58"
 import { BuyGoldsSolanaTransactionCache } from "@src/cache"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
 
 @Injectable()
 export class SendBuyGoldsSolanaTransactionService {
@@ -27,10 +29,13 @@ export class SendBuyGoldsSolanaTransactionService {
         private readonly connection: Connection,
         private readonly solanaService: SolanaService,
         private readonly staticService: StaticService,
-        private readonly goldBalanceService: GoldBalanceService,    
+        private readonly goldBalanceService: GoldBalanceService,  
+        @InjectKafkaProducer()  
+        private readonly kafkaProducer: Producer,
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service,
+        private readonly syncService: SyncService
     ) {}
 
     async sendBuyGoldsSolanaTransaction(
@@ -76,6 +81,7 @@ export class SendBuyGoldsSolanaTransactionService {
                         }
                     })
                 }
+                const userSnapshot = user.$clone()
                 const { amount } = option
                 // add the amount to the user's gold balance
                 this.goldBalanceService.add({
@@ -102,6 +108,21 @@ export class SendBuyGoldsSolanaTransactionService {
                             lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
                         }
                     })
+                const data = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
+                await this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId: user.id,
+                                data
+                            })
+                        }
+                    ]
+                })
                 return {
                     success: true,
                     message: "Ship Solana transaction sent successfully",

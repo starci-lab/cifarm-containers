@@ -19,7 +19,8 @@ import {
     Tokens,
     PetInfo,
     Referral,
-    NFTConversion
+    NFTConversion,
+    EnergyPurchases
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -206,5 +207,14 @@ export class SystemsResolver {
     })
     nftConversion(): NFTConversion {
         return this.systemsService.nftConversion()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => EnergyPurchases, {
+        name: "energyPurchases",
+        description: "Get the energy purchases"
+    })
+    energyPurchases(): EnergyPurchases {
+        return this.systemsService.energyPurchases()
     }
 }

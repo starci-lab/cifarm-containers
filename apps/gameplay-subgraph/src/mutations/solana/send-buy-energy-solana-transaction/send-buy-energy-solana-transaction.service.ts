@@ -9,13 +9,16 @@ import {
     SendBuyEnergySolanaTransactionResponse
 } from "./send-buy-energy-solana-transaction.dto"
 import { SolanaService } from "@src/blockchain"
-import { StaticService } from "@src/gameplay"
+import { StaticService, SyncService } from "@src/gameplay"
 import base58 from "bs58"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { BuyEnergySolanaTransactionCache } from "@src/cache"
 import { EnergyService } from "@src/gameplay"
+import { KafkaTopic } from "@src/brokers"
+import { Producer } from "kafkajs"
+import { InjectKafkaProducer } from "@src/brokers"
 @Injectable()
 export class SendBuyEnergySolanaTransactionService {
     private readonly logger = new Logger(SendBuyEnergySolanaTransactionService.name)
@@ -25,10 +28,13 @@ export class SendBuyEnergySolanaTransactionService {
         private readonly solanaService: SolanaService,
         private readonly staticService: StaticService,
         private readonly energyService: EnergyService,
+        @InjectKafkaProducer()
+        private readonly kafkaProducer: Producer,
+        private readonly syncService: SyncService,
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service
-    ) {}
+    ) { }
 
     async sendBuyEnergySolanaTransaction(
         { id }: UserLike,
@@ -76,14 +82,16 @@ export class SendBuyEnergySolanaTransactionService {
                 const { percentage } = option
                 // add the amount to the user's gold balance
                 const maxEnergy = this.energyService.getMaxEnergy(user.level)
-                const newEnergy = Math.min(maxEnergy, Math.floor(maxEnergy * percentage / 100))
-                if (newEnergy <= user.energy) {
+                if (user.energyFull) {
                     throw new GraphQLError("Energy is already at the maximum limit", {
                         extensions: {
                             code: "ENERGY_ALREADY_AT_THE_MAXIMUM_LIMIT"
                         }
                     })
                 }
+                const newEnergy = Math.min(maxEnergy, user.energy + Math.floor((maxEnergy * percentage) / 100))
+
+                const userSnapshot = user.$clone()
                 this.energyService.add({
                     user,
                     quantity: newEnergy - user.energy
@@ -108,6 +116,21 @@ export class SendBuyEnergySolanaTransactionService {
                             lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
                         }
                     })
+                const data = this.syncService.getPartialUpdatedSyncedUser({
+                    userSnapshot,
+                    userUpdated: user
+                })
+                await this.kafkaProducer.send({
+                    topic: KafkaTopic.SyncUser,
+                    messages: [
+                        {
+                            value: JSON.stringify({
+                                userId: user.id,
+                                data
+                            })
+                        }
+                    ]
+                })
                 return {
                     success: true,
                     message: "Ship Solana transaction sent successfully",

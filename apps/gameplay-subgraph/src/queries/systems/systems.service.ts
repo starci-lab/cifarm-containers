@@ -18,7 +18,8 @@ import {
     Tokens,
     PetInfo,
     Referral,
-    NFTConversion
+    NFTConversion,
+    EnergyPurchases
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -104,5 +105,9 @@ export class SystemsService {
 
     nftConversion(): NFTConversion {
         return this.staticService.nftConversion
+    }
+
+    energyPurchases(): EnergyPurchases {
+        return this.staticService.energyPurchases
     }
 }
