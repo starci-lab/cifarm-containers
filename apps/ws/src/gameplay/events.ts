@@ -16,7 +16,7 @@ export enum EmitterEventName {
     StopBuying = "stop_buying",
     // force sync placed items
     ForceSyncPlacedItemsResponsed = "force_sync_placed_items_responsed",
-    Disconnected = "disconnected"
+    YourAccountHasBeenLoggedInFromAnotherDevice = "your_account_has_been_logged_in_from_another_device"
 }
 
 export enum ReceiverEventName {

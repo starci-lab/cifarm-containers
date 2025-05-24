@@ -192,7 +192,7 @@ export class SolanaService {
         const collection = await fetchCollection(umi, collectionAddress)
         const asset = await fetchAsset(umi, nftAddress)
         const tx = burn(umi, {
-            asset,
+            asset, 
             collection,
             authority: createNoopSigner(publicKey(feePayer)),
             payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity,

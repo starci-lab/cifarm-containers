@@ -107,7 +107,7 @@ export class SendPurchaseSolanaNFTBoxesTransactionService {
                 //console.log(signedTx.signatures.length)
                 // sign the transactions
                 const txHashes: Array<TransactionSignature> = []
-                await Promise.any(txs.map(async (tx) => {
+                await Promise.all(txs.map(async (tx) => {
                     const signedTx = await this.solanaService
                         .getUmi(network)
                         .identity.signTransaction(tx)
@@ -118,7 +118,7 @@ export class SendPurchaseSolanaNFTBoxesTransactionService {
                     txHashes.push(txHash)
                     return signedTx
                 }))
-                const txHash = txHashes[0]
+                const txHash = txHashes.at(-1)
                 const latestBlockhash = await this.solanaService
                     .getUmi(network)
                     .rpc.getLatestBlockhash()

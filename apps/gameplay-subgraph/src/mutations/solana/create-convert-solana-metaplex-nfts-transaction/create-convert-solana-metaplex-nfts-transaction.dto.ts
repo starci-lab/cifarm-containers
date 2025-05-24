@@ -15,6 +15,10 @@ export class CreateConvertSolanaMetaplexNFTsTransactionRequest {
 
     @IsEnum(NFTType)
     @Field(() => GraphQLTypeNFTType)
+        burnNFTType: NFTType
+
+    @IsEnum(NFTType)
+    @Field(() => GraphQLTypeNFTType)
         nftType: NFTType
 
     @IsBase58()

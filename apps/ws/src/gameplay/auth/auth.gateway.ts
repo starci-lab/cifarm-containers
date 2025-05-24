@@ -76,9 +76,9 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
             const sockets = await this.namespace.in(roomName).fetchSockets()
             for (const _socket of sockets) {
                 // emit last message
-                _socket.emit(EmitterEventName.Disconnected)
+                _socket.emit(EmitterEventName.YourAccountHasBeenLoggedInFromAnotherDevice)
                 _socket.disconnect()
-            }
+            }  
         }
         socket.join(roomName)
     }

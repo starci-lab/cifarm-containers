@@ -28,14 +28,15 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
         @InjectCache()
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service,
-    ) {}
+    ) { }
 
     async createConvertSolanaMetaplexNFTsTransaction(
         { id }: UserLike,
-        { 
-            convertNFTAddresses, 
-            nftType, 
-            accountAddress, 
+        {
+            convertNFTAddresses,
+            burnNFTType,
+            nftType,
+            accountAddress,
             chainKey = ChainKey.Solana
         }: CreateConvertSolanaMetaplexNFTsTransactionRequest
     ): Promise<CreateConvertSolanaMetaplexNFTsTransactionResponse> {
@@ -69,30 +70,36 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
                 const serializedTxs: Array<string> = []
                 const cacheKeys: Array<string> = []
                 const convertedNFTs: Array<ConvertedNFT> = []
+                const burnNFTCollectionData = this.staticService.nftCollections[burnNFTType][chainKey][
+                    user.network
+                ] as NFTCollectionData
                 for (let i = 0; i < nftConverted; i++) {
                     // create a transaction to buy the golds
                     const { limitTransaction, priceTransaction } =
-                    await this.solanaService.createComputeBudgetTransactions({
-                        network: user.network
-                    })
+                        await this.solanaService.createComputeBudgetTransactions({
+                            network: user.network
+                        })
                     let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
                     // burn the nfts
+
                     for (let iConvert = 0; iConvert < conversionRate; iConvert++) {
                         const { transaction: createBurnNFTTransaction } =
-                        await this.solanaService.createBurnNFTTransaction({
-                            network: user.network,
-                            nftAddress: convertNFTAddresses[i * conversionRate + iConvert],
-                            collectionAddress: convertNFTAddresses[1],
-                            feePayer: accountAddress
-                        })
+                            await this.solanaService.createBurnNFTTransaction({
+                                network: user.network,
+                                nftAddress: convertNFTAddresses[i * conversionRate + iConvert],
+                                collectionAddress: burnNFTCollectionData.collectionAddress,
+                                feePayer: accountAddress
+                            })
                         builder = builder.add(createBurnNFTTransaction)
                     }
 
                     // mint the nft based on the nft type
+
                     const nftCollectionData = this.staticService.nftCollections[nftType][chainKey][
                         user.network
                     ] as NFTCollectionData
-                    const { transaction: createMintNFTTransaction, nftAddress, nftName } =
+                    const nftName = nftCollectionData.name
+                    const { transaction: createMintNFTTransaction, nftAddress, nftName: actualNFTName } =
                         await this.solanaService.createMintNFTTransaction({
                             network: user.network,
                             attributes: [
@@ -116,12 +123,12 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
                             feePayer: accountAddress,
                             name: nftCollectionData.name,
                             metadata: {
-                                name: nftCollectionData.name,
-                                image: nftCollectionData.imageUrl
+                                name: nftName,
+                                image: nftCollectionData.fruitStages.stages[0].imageUrl
                             }
                         })
                     builder = builder.add(createMintNFTTransaction)
-                    convertedNFTs.push({ nftName, nftType, rarity: NFTRarity.Common, nftAddress })
+                    convertedNFTs.push({ nftName: actualNFTName, nftType, rarity: NFTRarity.Common, nftAddress })
                     const transaction = await builder
                         .useV0()
                         .setFeePayer(createNoopSigner(publicKey(accountAddress)))
@@ -141,7 +148,7 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
                     ))
                     cacheKeys.push(cacheKey)
                 }
-                
+
                 const finalCacheKey = this.sha256Service.hash(cacheKeys.join(""))
                 const cacheData: ConvertSolanaMetaplexNFTsTransactionCache = {
                     convertedNFTs,

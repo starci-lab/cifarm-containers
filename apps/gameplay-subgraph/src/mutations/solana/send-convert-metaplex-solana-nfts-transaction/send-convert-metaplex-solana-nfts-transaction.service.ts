@@ -69,18 +69,23 @@ export class SendConvertSolanaMetaplexNFTsTransactionService {
                 }
                 const { convertedNFTs, network } = cachedTx
                 const txHashes: Array<TransactionSignature> = []
-                await Promise.any(txs.map(async (tx) => {
-                    const signedTx = await this.solanaService
-                        .getUmi(network)
-                        .identity.signTransaction(tx)
-                    // send the transactions
-                    const txHash = await this.solanaService
-                        .getUmi(network)
-                        .rpc.sendTransaction(signedTx)
-                    txHashes.push(txHash)
-                    return signedTx
+                await Promise.all(txs.map(async (tx) => {
+                    try {
+                        const signedTx = await this.solanaService
+                            .getUmi(network)
+                            .identity.signTransaction(tx)
+                        // send the transactions
+                        const txHash = await this.solanaService
+                            .getUmi(network)
+                            .rpc.sendTransaction(signedTx)
+                        txHashes.push(txHash)
+                        return signedTx
+                    } catch (error) {
+                        this.logger.error(error)
+                        throw error
+                    }
                 }))
-                const txHash = txHashes[0]
+                const txHash = txHashes.at(-1)
                 const latestBlockhash = await this.solanaService
                     .getUmi(network)
                     .rpc.getLatestBlockhash()

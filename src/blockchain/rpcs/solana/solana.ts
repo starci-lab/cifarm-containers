@@ -9,7 +9,8 @@ export const solanaHttpRpcUrl = (network: Network) => {
         break
     }
     case Network.Testnet: {
-        rpcUrl = clusterApiUrl("devnet")
+        rpcUrl = "https://compatible-proud-brook.solana-devnet.quiknode.pro/594f2e2b5607c2b261998e63247a445dce1d347a/"
+        //clusterApiUrl("devnet")
         break
     }
     }
