@@ -34,6 +34,10 @@ export interface BuyGoldsSolanaTransactionCache {
     selectionIndex: number
 }
 
+export interface BuyEnergySolanaTransactionCache {
+    selectionIndex: number
+}
+
 export interface ConvertMetaplexNFTSolanaTransactionCache {
     nftName: string
     nftType: NFTType

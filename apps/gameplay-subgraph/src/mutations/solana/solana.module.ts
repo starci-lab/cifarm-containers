@@ -11,6 +11,8 @@ import { CreateBuyGoldsSolanaTransactionModule } from "./create-buy-golds-solana
 import { SendBuyGoldsSolanaTransactionModule } from "./send-buy-golds-solana-transaction"
 import { CreateConvertSolanaMetaplexNFTsTransactionModule } from "./create-convert-solana-metaplex-nfts-transaction"
 import { SendConvertSolanaMetaplexNFTsTransactionModule } from "./send-convert-metaplex-solana-nfts-transaction"
+import { CreateBuyEnergySolanaTransactionModule } from "./create-buy-energy-solana-transaction"
+import { SendBuyEnergySolanaTransactionModule } from "./send-buy-energy-solana-transaction"
 
 @Module({
     imports: [
@@ -25,7 +27,9 @@ import { SendConvertSolanaMetaplexNFTsTransactionModule } from "./send-convert-m
         CreateBuyGoldsSolanaTransactionModule,
         SendBuyGoldsSolanaTransactionModule,
         CreateConvertSolanaMetaplexNFTsTransactionModule,
-        SendConvertSolanaMetaplexNFTsTransactionModule
+        SendConvertSolanaMetaplexNFTsTransactionModule,
+        CreateBuyEnergySolanaTransactionModule,
+        SendBuyEnergySolanaTransactionModule
     ]
 })
 export class SolanaModule {}

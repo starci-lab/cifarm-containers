@@ -35,7 +35,8 @@ import {
     TokenKey,
     PlacedItemTypeId,
     Referral,
-    NFTConversion
+    NFTConversion,
+    EnergyPurchases
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -1673,6 +1674,57 @@ export class SystemSeeder implements Seeder {
             conversionRate: 2
         }
 
+        const energyPurchases: EnergyPurchases = {
+            [ChainKey.Solana]: {
+                [Network.Testnet]: {
+                    options: [ 
+                        {
+                            percentage: 25,
+                            price: 2,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            percentage: 50,
+                            price: 4,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            percentage: 100,
+                            price: 6,
+                            paymentKind: PaymentKind.USDC
+                        }
+                    ]
+                },
+                [Network.Mainnet]: {
+                    options: [
+                        {
+                            percentage: 25,
+                            price: 2,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            percentage: 50,
+                            price: 4,
+                            paymentKind: PaymentKind.USDC
+                        },
+                        {
+                            percentage: 100,
+                            price: 6,
+                            paymentKind: PaymentKind.USDC
+                        }
+                    ]
+                }
+            },
+            [ChainKey.Sui]: {
+                [Network.Testnet]: {
+                    options: []
+                },
+                [Network.Mainnet]: {
+                    options: []
+                }
+            }
+        }
+
         const data: Array<Partial<SystemSchema>> = [
             {
                 _id: createObjectId(SystemId.Activities),
@@ -1783,6 +1835,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.NFTConversion),
                 displayId: SystemId.NFTConversion,
                 value: nftConversion
+            },
+            {
+                _id: createObjectId(SystemId.EnergyPurchases),
+                displayId: SystemId.EnergyPurchases,
+                value: energyPurchases
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

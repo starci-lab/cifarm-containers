@@ -41,7 +41,8 @@ import {
     Tokens,
     TerrainSchema,
     Referral,
-    NFTConversion
+    NFTConversion,
+    EnergyPurchases
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { Connection } from "mongoose"
@@ -78,6 +79,7 @@ export class StaticService implements OnModuleInit {
     public wholesaleMarket: WholesaleMarket
     public revenueRecipients: RevenueRecipients
     public goldPurchases: GoldPurchases
+    public energyPurchases: EnergyPurchases
     public interactionPermissions: InteractionPermissions
     public petInfo: PetInfo
     public tokens: Tokens
@@ -180,6 +182,11 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<GoldPurchases>>(createObjectId(SystemId.GoldPurchases))
         this.goldPurchases = goldPurchasesDoc.value
+
+        const energyPurchasesDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<EnergyPurchases>>(createObjectId(SystemId.EnergyPurchases))
+        this.energyPurchases = energyPurchasesDoc.value
 
         const interactionPermissionsDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)

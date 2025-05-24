@@ -1318,5 +1318,66 @@ export class NFTConversion {
         conversionRate: number
 }
 
+@ObjectType({
+    description: "Energy purchase option"
+})
+export class EnergyPurchaseOption {   
+    @Field(() => Float, {
+        description: "Price"
+    })
+        price: number
+
+    @Field(() => Float, {
+        description: "Percentage"
+    })
+        percentage: number
+    @Field(() => GraphQLTypePaymentKind, {
+        description: "Payment kind"
+    })
+        paymentKind: PaymentKind
+}
+
+@ObjectType({
+    description: "Energy purchase options"
+})
+export class EnergyPurchaseOptions {   
+    @Field(() => [EnergyPurchaseOption], {
+        description: "Energy purchase options"
+    })
+        options: Array<EnergyPurchaseOption>
+}
+
+
+@ObjectType({
+    description: "Energy purchase"
+})
+export class EnergyPurchase {
+    @Field(() => EnergyPurchaseOptions, {
+        description: "Energy purchase options"
+    })
+    [Network.Testnet]: EnergyPurchaseOptions
+
+    @Field(() => EnergyPurchaseOptions, {
+        description: "Energy purchase options"
+    })
+    [Network.Mainnet]: EnergyPurchaseOptions
+}
+
+@ObjectType({
+    description: "Energy purchases"
+})
+export class EnergyPurchases {
+    @Field(() => EnergyPurchase, {
+        description: "Energy purchase"
+    })
+    [ChainKey.Solana]: EnergyPurchase
+
+    @Field(() => GoldPurchase, {
+        description: "Gold purchase"
+    })
+    [ChainKey.Sui]: EnergyPurchase
+}
+
+
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)

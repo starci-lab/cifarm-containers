@@ -545,6 +545,7 @@ export enum SystemId {
     CropInfo = "cropInfo",
     AnimalInfo = "animalInfo",
     FruitInfo = "fruitInfo",
+    EnergyPurchases = "energyPurchases",
     DefaultInfo = "defaultInfo",
     EnergyRegen = "energyRegen",
     DailyRewardInfo = "dailyRewardInfo",

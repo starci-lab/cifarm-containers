@@ -1,13 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { GoldPurchaseOption, InjectMongoose } from "@src/databases"
+import { EnergyPurchaseOption, InjectMongoose } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
 import {
-    CreateBuyGoldsSolanaTransactionRequest,
-    CreateBuyGoldsSolanaTransactionResponse
-} from "./create-buy-golds-solana-transaction.dto"
+    CreateBuyEnergySolanaTransactionRequest,
+    CreateBuyEnergySolanaTransactionResponse
+} from "./create-buy-energy-solana-transaction.dto"
 import { SolanaService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
 import { transactionBuilder, publicKey, createNoopSigner } from "@metaplex-foundation/umi"
@@ -15,11 +15,11 @@ import base58 from "bs58"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
-import { BuyGoldsSolanaTransactionCache } from "@src/cache"
+import { BuyEnergySolanaTransactionCache } from "@src/cache"
 
 @Injectable()
-export class CreateBuyGoldsSolanaTransactionService {
-    private readonly logger = new Logger(CreateBuyGoldsSolanaTransactionService.name)
+export class CreateBuyEnergySolanaTransactionService {
+    private readonly logger = new Logger(CreateBuyEnergySolanaTransactionService.name)
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
@@ -30,10 +30,10 @@ export class CreateBuyGoldsSolanaTransactionService {
         private readonly sha256Service: Sha256Service
     ) {}
 
-    async createBuyGoldsSolanaTransaction(
+    async createBuyEnergySolanaTransaction(
         { id }: UserLike,
-        { selectionIndex, accountAddress }: CreateBuyGoldsSolanaTransactionRequest
-    ): Promise<CreateBuyGoldsSolanaTransactionResponse> {
+        { selectionIndex, accountAddress }: CreateBuyEnergySolanaTransactionRequest
+    ): Promise<CreateBuyEnergySolanaTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to handle the transaction lifecycle
@@ -46,9 +46,9 @@ export class CreateBuyGoldsSolanaTransactionService {
                     throw new GraphQLError("User not found")
                 }
                 const option =
-                    this.staticService.goldPurchases[user.chainKey][user.network].options[
+                    this.staticService.energyPurchases[user.chainKey][user.network].options[
                         selectionIndex
-                    ] as GoldPurchaseOption
+                    ] as EnergyPurchaseOption
                 if (!option) {
                     throw new GraphQLError("Invalid selection index")
                 }
@@ -88,13 +88,13 @@ export class CreateBuyGoldsSolanaTransactionService {
                     )
                 )
 
-                const cacheData: BuyGoldsSolanaTransactionCache = {
+                const cacheData: BuyEnergySolanaTransactionCache = {
                     selectionIndex
                 }
                 await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
                 return {
                     success: true,
-                    message: "Golds purchased transaction created successfully",
+                    message: "Energy purchased transaction created successfully",
                     data: {
                         serializedTx: base58.encode(
                             this.solanaService
