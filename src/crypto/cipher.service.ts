@@ -6,15 +6,18 @@ import * as crypto from "crypto"
 export class CipherService {
     private readonly algorithm = "aes-256-cbc"
     private readonly key = crypto
-        .createHash("sha256")
-        .update(envConfig().crypto.cipher.secret)
-        .digest() // 32 bytes for aes-256
+        .pbkdf2Sync(envConfig().crypto.cipher.secret, "salt", 100000, 32, "sha256")
 
     encrypt(plainText: string, iv: Buffer): string {
         const cipher = crypto.createCipheriv(this.algorithm, this.key, iv)
         let encrypted = cipher.update(plainText, "utf8", "base64")
         encrypted += cipher.final("base64")
         return encrypted
+    }
+
+    generateIv(string: string = ""): Buffer {
+        // create hash vs pbkdf2
+        return crypto.pbkdf2Sync(string, envConfig().crypto.cipher.ivSalt, 100000, 16, "sha256")
     }
 
     decrypt(cipherText: string, iv: Buffer): string {

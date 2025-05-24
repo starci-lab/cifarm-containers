@@ -10,6 +10,8 @@ import { NFTModule } from "./nft"
 import { FarcasterModule as FarcasterCoreModule } from "@src/farcaster"
 import { FarcasterModule } from "./farcaster"
 import { S3Module } from "@src/s3"
+import { CryptoModule } from "@src/crypto"
+import { EncryptModule } from "./encrypt"
 
 @Module({
     imports: [
@@ -33,6 +35,10 @@ import { S3Module } from "@src/s3"
         FarcasterCoreModule.register({
             isGlobal: true
         }),
+        CryptoModule.register({
+            isGlobal: true
+        }),
+        EncryptModule,
         FarcasterModule,
         DatabaseModule,
         DockerModule,
