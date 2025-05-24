@@ -1308,9 +1308,15 @@ export class Referral {
         creditsWhenYourReferralInviteSomeone: number
 }
 
-
-
-
+@ObjectType({
+    description: "Configuration for NFT conversion"
+})
+export class NFTConversion {
+    @Field(() => Int, {
+        description: "Conversion rate"
+    })
+        conversionRate: number
+}
 
 // Generate the Mongoose schema class
 export const SystemSchemaClass = SchemaFactory.createForClass(SystemSchema)

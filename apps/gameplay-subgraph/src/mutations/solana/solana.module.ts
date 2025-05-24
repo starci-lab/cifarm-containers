@@ -9,6 +9,9 @@ import { SendUnwrapSolanaMetaplexNFTTransactionModule } from "./send-unwrap-sola
 import { CreateUnwrapSolanaMetaplexNFTTransactionModule } from "./create-unwrap-solana-metaplex-nft-transaction"
 import { CreateBuyGoldsSolanaTransactionModule } from "./create-buy-golds-solana-transaction"
 import { SendBuyGoldsSolanaTransactionModule } from "./send-buy-golds-solana-transaction"
+import { CreateConvertSolanaMetaplexNFTsTransactionModule } from "./create-convert-solana-metaplex-nfts-transaction"
+import { SendConvertSolanaMetaplexNFTsTransactionModule } from "./send-convert-metaplex-solana-nfts-transaction"
+
 @Module({
     imports: [
         CreatePurchaseSolanaNFTBoxesTransactionModule,
@@ -21,6 +24,8 @@ import { SendBuyGoldsSolanaTransactionModule } from "./send-buy-golds-solana-tra
         CreateUnwrapSolanaMetaplexNFTTransactionModule,
         CreateBuyGoldsSolanaTransactionModule,
         SendBuyGoldsSolanaTransactionModule,
+        CreateConvertSolanaMetaplexNFTsTransactionModule,
+        SendConvertSolanaMetaplexNFTsTransactionModule
     ]
 })
 export class SolanaModule {}

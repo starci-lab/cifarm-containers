@@ -34,11 +34,25 @@ export interface BuyGoldsSolanaTransactionCache {
     selectionIndex: number
 }
 
-export interface ExtendedNFTBox { nftName: string, nftType: NFTType, rarity: NFTRarity }
+export interface ConvertMetaplexNFTSolanaTransactionCache {
+    nftName: string
+    nftType: NFTType
+    rarity: NFTRarity
+    nftAddress: string
+}
+
+export interface ExtendedNFTBox { nftName: string, nftType: NFTType, rarity: NFTRarity, nftAddress: string }
 export interface PurchaseSolanaNFTBoxTransactionCache {
     nftBoxes: Array<ExtendedNFTBox>
     chainKey: ChainKey
     network: Network    
     tokenAmount: number
+}
+
+export interface ConvertedNFT { nftName: string, nftType: NFTType, rarity: NFTRarity, nftAddress: string }
+export interface ConvertSolanaMetaplexNFTsTransactionCache {
+    convertedNFTs: Array<ConvertedNFT>
+    chainKey: ChainKey
+    network: Network 
 }
 

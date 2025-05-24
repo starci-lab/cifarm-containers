@@ -19,10 +19,13 @@ import {
     transferV1,
     fetchAsset,
     AssetV1,
-    updatePlugin
+    updatePlugin,
+    burn
 } from "@metaplex-foundation/mpl-core"
 import base58 from "bs58"
 import {
+    CreateSolanaBurnNFTTransactionParams,
+    CreateSolanaBurnNFTTransactionResponse,
     CreateSolanaCollectionParams,
     CreateSolanaCollectionResponse,
     CreateSolanaComputeBudgetTransactionsParams,
@@ -179,6 +182,24 @@ export class SolanaService {
         return { transaction: tx }
     }
 
+    public async createBurnNFTTransaction({
+        network = Network.Mainnet,
+        nftAddress,
+        collectionAddress,
+        feePayer
+    }: CreateSolanaBurnNFTTransactionParams): Promise<CreateSolanaBurnNFTTransactionResponse> {
+        const umi = this.umis[network]
+        const collection = await fetchCollection(umi, collectionAddress)
+        const asset = await fetchAsset(umi, nftAddress)
+        const tx = burn(umi, {
+            asset,
+            collection,
+            authority: createNoopSigner(publicKey(feePayer)),
+            payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity,
+        })  
+        return { transaction: tx }
+    }
+
     public async createMintNFTTransaction({
         network = Network.Mainnet,
         ownerAddress,
@@ -307,4 +328,5 @@ export class SolanaService {
         }).sendAndConfirm(umi)
         return { signature: base58.encode(signature) }
     }
+    
 }

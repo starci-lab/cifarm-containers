@@ -34,7 +34,8 @@ import {
     Tokens,
     TokenKey,
     PlacedItemTypeId,
-    Referral
+    Referral,
+    NFTConversion
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -1667,6 +1668,10 @@ export class SystemSeeder implements Seeder {
             creditsWhenJoiningWithReferral: 20,
             creditsWhenYourReferralInviteSomeone: 2
         }
+        
+        const nftConversion: NFTConversion = {
+            conversionRate: 2
+        }
 
         const data: Array<Partial<SystemSchema>> = [
             {
@@ -1773,6 +1778,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.Referral),
                 displayId: SystemId.Referral,
                 value: referral
+            },
+            {
+                _id: createObjectId(SystemId.NFTConversion),
+                displayId: SystemId.NFTConversion,
+                value: nftConversion
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

@@ -4,9 +4,9 @@ import { IResponseLike, ResponseLike } from "@src/graphql"
 import { IsBase58 } from "class-validator"
 
 @InputType({
-    description: "Send Purchase Solana NFT Boxes Transaction request"
+    description: "Send Convert Metaplex NFTs Solana Transaction request"
 })
-export class SendPurchaseSolanaNFTBoxesTransactionRequest {
+export class SendConvertSolanaMetaplexNFTsTransactionRequest {
     // the tx signed by the user
     @IsBase58({ each: true })
     @Field(() => [String])
@@ -14,9 +14,9 @@ export class SendPurchaseSolanaNFTBoxesTransactionRequest {
 }
 
 @ObjectType({
-    description: "Extended NFT Box"
+    description: "Converted NFT"
 })
-export class GraphQLExtendedNFTBox {
+export class GraphQLConvertedNFT {
     @Field(() => String, { description: "The NFT name" })
         nftName: string
 
@@ -31,24 +31,24 @@ export class GraphQLExtendedNFTBox {
 }
 
 @ObjectType({
-    description: "Send Purchase Solana NFT Boxes Transaction response data"
+    description: "Send Convert Metaplex NFT Solana Transaction response data"
 })
-export class SendPurchaseSolanaNFTBoxesTransactionResponseData {
-    @IsBase58()
+export class SendConvertSolanaMetaplexNFTsTransactionResponseData {
+    @IsBase58({ each: true })
     @Field(() => String)
         txHash: string
 
-    @Field(() => [GraphQLExtendedNFTBox], { description: "The NFT type" })
-        nftBoxes: Array<GraphQLExtendedNFTBox> 
+    @Field(() => [GraphQLConvertedNFT], { description: "The converted NFTs" })
+        convertedNFTs: Array<GraphQLConvertedNFT> 
 }
 
 @ObjectType({
-    description: "Send Purchase Solana NFT Boxes Transaction response"
+    description: "Send Convert Metaplex NFTs Solana Transaction response"
 })
-export class SendPurchaseSolanaNFTBoxesTransactionResponse
+export class SendConvertSolanaMetaplexNFTsTransactionResponse
     extends ResponseLike
-    implements IResponseLike<SendPurchaseSolanaNFTBoxesTransactionResponseData>
+    implements IResponseLike<SendConvertSolanaMetaplexNFTsTransactionResponseData>
 {
-    @Field(() => SendPurchaseSolanaNFTBoxesTransactionResponseData)
-        data: SendPurchaseSolanaNFTBoxesTransactionResponseData
+    @Field(() => SendConvertSolanaMetaplexNFTsTransactionResponseData)
+        data: SendConvertSolanaMetaplexNFTsTransactionResponseData
 }

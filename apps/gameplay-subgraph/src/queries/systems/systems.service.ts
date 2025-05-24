@@ -17,7 +17,8 @@ import {
     NFTBoxInfo,
     Tokens,
     PetInfo,
-    Referral
+    Referral,
+    NFTConversion
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -99,5 +100,9 @@ export class SystemsService {
 
     referral(): Referral {
         return this.staticService.referral
+    }
+
+    nftConversion(): NFTConversion {
+        return this.staticService.nftConversion
     }
 }

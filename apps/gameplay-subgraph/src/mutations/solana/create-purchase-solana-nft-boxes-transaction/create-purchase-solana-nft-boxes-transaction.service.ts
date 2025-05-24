@@ -77,7 +77,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
 
                     const nftName = nftCollectionData.name
                     const currentStage = 0
-                    const { transaction: mintNFTTransaction, nftName: actualNFTName } =
+                    const { transaction: mintNFTTransaction, nftName: actualNFTName, nftAddress } =
                     await this.solanaService.createMintNFTTransaction({
                         network: user.network,
                         ownerAddress: accountAddress,
@@ -109,7 +109,8 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     extendedNFTBoxes.push({
                         nftName: actualNFTName,
                         nftType: nftBox.nftType,
-                        rarity: nftBox.rarity
+                        rarity: nftBox.rarity,
+                        nftAddress: nftAddress
                     })
                     //get the stable coin address
                     const { tokenAddress, decimals: tokenDecimals } =

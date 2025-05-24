@@ -40,7 +40,8 @@ import {
     PetInfo,
     Tokens,
     TerrainSchema,
-    Referral
+    Referral,
+    NFTConversion
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { Connection } from "mongoose"
@@ -82,6 +83,7 @@ export class StaticService implements OnModuleInit {
     public tokens: Tokens
     public terrains: Array<TerrainSchema>
     public referral: Referral
+    public nftConversion: NFTConversion
     
     constructor(
         @InjectMongoose()
@@ -198,6 +200,11 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<Referral>>(createObjectId(SystemId.Referral))
         this.referral = referralDoc.value
+
+        const nftConversionDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<NFTConversion>>(createObjectId(SystemId.NFTConversion))
+        this.nftConversion = nftConversionDoc.value
 
         // Load collections
         this.placedItemTypes = await this.connection

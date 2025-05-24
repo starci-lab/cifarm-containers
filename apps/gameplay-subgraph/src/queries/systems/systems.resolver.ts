@@ -18,7 +18,8 @@ import {
     NFTBoxInfo,
     Tokens,
     PetInfo,
-    Referral
+    Referral,
+    NFTConversion
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -196,5 +197,14 @@ export class SystemsResolver {
     })
     referral(): Referral {
         return this.systemsService.referral()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => NFTConversion, {
+        name: "nftConversion",
+        description: "Get the nft conversion"
+    })
+    nftConversion(): NFTConversion {
+        return this.systemsService.nftConversion()
     }
 }

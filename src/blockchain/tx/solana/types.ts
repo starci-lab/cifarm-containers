@@ -157,3 +157,12 @@ export interface CreateSolanaComputeBudgetTransactionsResponse {
     limitTransaction: TransactionBuilder
     priceTransaction: TransactionBuilder
 }
+
+export interface CreateSolanaBurnNFTTransactionResponse {
+    transaction: TransactionBuilder
+}
+
+export interface CreateSolanaBurnNFTTransactionParams extends WithFeePayer {
+    nftAddress: string
+    collectionAddress: string
+}

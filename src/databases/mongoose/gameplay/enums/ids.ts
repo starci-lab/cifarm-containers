@@ -562,6 +562,7 @@ export enum SystemId {
     PetInfo = "petInfo",
     Tokens = "tokens",
     Referral = "referral",
+    NFTConversion = "nftConversion",
 }
 
 export const GraphQLTypeSystemId = createEnumType(SystemId)
@@ -629,7 +630,10 @@ registerEnumType(GraphQLTypeSystemId, {
         },
         [SystemId.Referral]: {
             description: "The referral id.",
-        }
+        },
+        [SystemId.NFTConversion]: {
+            description: "The NFT conversion id.",
+        },
     },
 })
 
