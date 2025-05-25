@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, NFTCollectionData, NFTRarity, NFTType, StableCoinName } from "@src/databases"
+import { InjectMongoose, NFTCollectionData, NFTRarity, NFTType } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { UserSchema } from "@src/databases"
@@ -18,6 +18,7 @@ import { Sha256Service } from "@src/crypto"
 import { roundNumber } from "@src/common"
 import { PurchaseSolanaNFTBoxTransactionCache, ExtendedNFTBox } from "@src/cache"
 import { v4 as uuidv4 } from "uuid"
+import { ChainKey } from "@src/env"
 @Injectable()
 export class CreatePurchaseSolanaNFTBoxesTransactionService {
     private readonly logger = new Logger(CreatePurchaseSolanaNFTBoxesTransactionService.name)
@@ -112,7 +113,11 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     })
                     //get the stable coin address
                     const { tokenAddress, decimals: tokenDecimals } =
-                this.staticService.tokens[StableCoinName.USDC][user.network]
+                this.staticService.getTokenAddressFromPaymentKind({
+                    paymentKind: this.staticService.nftBoxInfo.paymentKind,
+                    network: user.network,
+                    chainKey: ChainKey.Solana
+                })
                     // first season is USDC so that we hardcode the token address
                     const tokenVaultAddress = this.solanaService
                         .getVaultUmi(user.network)

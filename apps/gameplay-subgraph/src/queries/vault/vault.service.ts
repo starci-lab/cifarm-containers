@@ -16,21 +16,20 @@ export class GraphQLVaultService {
         private readonly connection: Connection
     ) {}
 
-    async vaultCurrent({ network, chainKey }: VaultCurrentRequest): Promise<VaultCurrentResponse> {
+    async vaultCurrent({ network }: VaultCurrentRequest): Promise<VaultCurrentResponse> {
         const { value: vaultInfos } = await this.connection
             .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
             .findById<KeyValueRecord<VaultInfos>>(createObjectId(KeyValueStoreId.VaultInfos))
 
         const paidAmount = await this.vaultService.computePaidAmount({
             network,
-            chainKey,
-            vaultInfoData: vaultInfos[chainKey][network]
+            vaultInfoData: vaultInfos[network]
         })
 
         return {
             paidAmount,
-            paidCount: vaultInfos[chainKey][network].paidCount || 0,
-            tokenLocked: vaultInfos[chainKey][network].tokenLocked || 0
+            paidCount: vaultInfos[network].paidCount || 0,
+            tokenLocked: vaultInfos[network].tokenLocked || 0
         }
     }
 }

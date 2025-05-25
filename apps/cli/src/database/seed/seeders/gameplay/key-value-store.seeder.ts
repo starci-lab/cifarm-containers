@@ -5,7 +5,7 @@ import { Seeder } from "nestjs-seeder"
 import { InjectMongoose, KeyValueStoreId, KeyValueStoreSchema } from "@src/databases"
 import { createObjectId, DeepPartial } from "@src/common"
 import { Connection } from "mongoose"
-import { ChainKey, Network } from "@src/env"
+import { Network } from "@src/env"
 dayjs.extend(utc)
 
 @Injectable()
@@ -60,16 +60,14 @@ export class KeyValueStoreSeeder implements Seeder {
                 _id: createObjectId(KeyValueStoreId.VaultInfos),
                 displayId: KeyValueStoreId.VaultInfos,
                 value: {
-                    [ChainKey.Solana]: {
-                        [Network.Mainnet]: {
-                            paidCount: 0,
-                            tokenLocked: 0,
-                        },
-                        [Network.Testnet]: {
-                            paidCount: 0,
-                            tokenLocked: 0,
-                        },
-                    }
+                    [Network.Mainnet]: {
+                        paidCount: 0,
+                        tokenLocked: 0,
+                    },
+                    [Network.Testnet]: {
+                        paidCount: 0,
+                        tokenLocked: 0,
+                    },
                 }
             }
         ]

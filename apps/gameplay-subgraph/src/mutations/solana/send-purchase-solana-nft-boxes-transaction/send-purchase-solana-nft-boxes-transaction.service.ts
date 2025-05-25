@@ -114,22 +114,21 @@ export class SendPurchaseSolanaNFTBoxesTransactionService {
                         .getUmi(network)
                         .rpc.sendTransaction(signedTx)
                     txHashes.push(txHash)
-                    return signedTx
+                    const latestBlockhash = await this.solanaService
+                        .getUmi(network)
+                        .rpc.getLatestBlockhash()
+                    await this.solanaService
+                        .getUmi(network)
+                        .rpc.confirmTransaction(txHash, {
+                            commitment: "finalized",
+                            strategy: {
+                                type: "blockhash",
+                                blockhash: latestBlockhash.blockhash,
+                                lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+                            }
+                        })
                 }))
                 const txHash = txHashes.at(-1)
-                const latestBlockhash = await this.solanaService
-                    .getUmi(network)
-                    .rpc.getLatestBlockhash()
-                await this.solanaService
-                    .getUmi(network)
-                    .rpc.confirmTransaction(txHash, {
-                        commitment: "finalized",
-                        strategy: {
-                            type: "blockhash",
-                            blockhash: latestBlockhash.blockhash,
-                            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
-                        }
-                    })
                 return {
                     data: {
                         txHash: base58.encode(txHash),

@@ -124,7 +124,7 @@ export class SendUnwrapSolanaMetaplexNFTTransactionService {
                 )
                 const nftCollectionData = this.staticService.nftCollections[
                     placedItemTypeIdToNFTType[placedItemType.displayId]
-                ][nftMetadata.chainKey][
+                ][
                     user.network
                 ] as NFTCollectionData
                 const s3Json = await this.s3Service.getJson<MetaplexNFTMetadata>(nftMetadata.nftAddress)

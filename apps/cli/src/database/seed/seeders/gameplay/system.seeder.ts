@@ -456,7 +456,7 @@ export class SystemSeeder implements Seeder {
                 [Network.Testnet]: {
                     placedItemTypeId: createObjectId(PlacedItemTypeId.DragonFruit),
                     name: "Dragon Fruit",
-                    collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
+                    collectionAddress: "365jHCcxRigSHZQe99joKnbbFGWhPWsCr3wC7P3jGDmf",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/dragon-fruit.png",
                     fruitStages: {
                         stages: [
@@ -528,7 +528,7 @@ export class SystemSeeder implements Seeder {
                 [Network.Testnet]: {
                     placedItemTypeId: createObjectId(PlacedItemTypeId.Jackfruit),
                     name: "Jackfruit",
-                    collectionAddress: "2Ap4nT8Pby5LUEB7TvbwsLUnr1q7NBBCoLQZR4Ei3dNh",
+                    collectionAddress: "3Fu3Z6gAFNHcSasFa3XBgDmpyT1JdAGfgy61hsYUqzcu",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/jackfruit.png",
                     fruitStages: {
                         stages: [
@@ -600,7 +600,7 @@ export class SystemSeeder implements Seeder {
                 [Network.Testnet]: {
                     placedItemTypeId: createObjectId(PlacedItemTypeId.Pomegranate),
                     name: "Pomegranate",
-                    collectionAddress: "CRUwWJr8eAPaHoj7kA5WrpKMSiotV9vdMxdXUJLZfe9b",
+                    collectionAddress: "3QHjGDB9Jc812xLT2JmpnKKL3z6Nod6XGarrZVFk2AEV",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/pomegranate.png",
                     fruitStages: {
                         stages: [
@@ -672,7 +672,7 @@ export class SystemSeeder implements Seeder {
                 [Network.Testnet]: {
                     placedItemTypeId: createObjectId(PlacedItemTypeId.Rambutan),
                     name: "Rambutan",
-                    collectionAddress: "4rM1G8YE7JxJPWuENSv1X5gkn6PYEJ8Wuc6bS8DZBz8K",
+                    collectionAddress: "2PiEZzrHQEVd3KTsGGrNDiV2vyXuPsNNt3pAFM1huK6s",
                     imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_collection.png",
                     fruitStages: {
                         stages: [

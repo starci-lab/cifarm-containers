@@ -1,6 +1,6 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
 import { IResponseLike, ResponseLike } from "@src/graphql"
-import { IsBase58 } from "class-validator"
+import { IsBase58, IsString } from "class-validator"
 
 @InputType({
     description: "Create Ship Solana Inventories Transaction request"
@@ -9,6 +9,10 @@ export class CreateShipSolanaTransactionRequest {
     @IsBase58()
     @Field(() => String)
         accountAddress: string
+
+    @IsString()
+    @Field(() => String)
+        bulkId: string
 }
 
 @ObjectType({

@@ -16,7 +16,7 @@ import {
 } from "./send-ship-solana-transaction.dto"
 import { SolanaService } from "@src/blockchain"
 import { StaticService, VaultService } from "@src/gameplay"
-import { InjectCache } from "@src/cache"
+import { InjectCache, CreateShipSolanaTransactionCacheData } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { ShipService, InventoryService } from "@src/gameplay"
@@ -67,7 +67,7 @@ export class SendShipSolanaTransactionService {
                             .transactions.serializeMessage(tx.message)
                     )
                 )
-                const cachedTx = await this.cacheManager.get(cacheKey)
+                const cachedTx = await this.cacheManager.get<CreateShipSolanaTransactionCacheData>(cacheKey)
                 if (!cachedTx) {
                     throw new GraphQLError("Transaction not found in cache", {
                         extensions: {
@@ -77,13 +77,14 @@ export class SendShipSolanaTransactionService {
                 }
                 const { inventoryMap } = await this.shipService.partitionInventories({
                     userId: id,
-                    session
+                    session,
+                    bulkId: cachedTx.bulkId
                 })
                 const inventoryEntries = Object.entries(inventoryMap)
                 // we try to delete the inventories
                 for (const [productId, { inventories, requiredQuantity }] of inventoryEntries) {
                     const product = this.staticService.products.find(
-                        (product) => product.id === productId.toString()
+                        (product) => product.id === productId
                     )
                     if (!product) {
                         throw new GraphQLError("Product not found", {
@@ -149,7 +150,7 @@ export class SendShipSolanaTransactionService {
                         {
                             value: {
                                 [user.network]: {
-                                    paidCount: vaultInfos.value[user.network].paidCount + 1,
+                                    paidCount: (vaultInfos.value[user.network].paidCount ?? 0) + 1,
                                     tokenLocked: vaultInfos.value[user.network].tokenLocked - paidAmount,
                                     currentMaxPaidAmount:
                                         (vaultInfos.value[user.network].currentMaxPaidAmount ??

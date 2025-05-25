@@ -4,7 +4,6 @@ import {
     KeyValueRecord,
     KeyValueStoreId,
     KeyValueStoreSchema,
-    StableCoinName,
     VaultInfos
 } from "@src/databases"
 import { Connection } from "mongoose"
@@ -15,7 +14,7 @@ import {
 } from "./create-ship-solana-transaction.dto"
 import { SolanaService } from "@src/blockchain"
 import { StaticService } from "@src/gameplay"
-import { InjectCache } from "@src/cache"
+import { CreateShipSolanaTransactionCacheData, InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { ShipService, VaultService } from "@src/gameplay"
@@ -25,6 +24,7 @@ import { createNoopSigner } from "@metaplex-foundation/umi"
 import { publicKey } from "@metaplex-foundation/umi"
 import { transactionBuilder } from "@metaplex-foundation/umi"
 import base58 from "bs58"
+import { ChainKey } from "@src/env"
 
 @Injectable()
 export class CreateShipSolanaTransactionService {
@@ -43,7 +43,7 @@ export class CreateShipSolanaTransactionService {
 
     async createShipSolanaTransaction(
         { id }: UserLike,
-        { accountAddress }: CreateShipSolanaTransactionRequest
+        { accountAddress, bulkId }: CreateShipSolanaTransactionRequest
     ): Promise<CreateShipSolanaTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
@@ -51,7 +51,8 @@ export class CreateShipSolanaTransactionService {
             const result = await mongoSession.withTransaction(async (session) => {
                 const { inventoryMap } = await this.shipService.partitionInventories({
                     userId: id,
-                    session
+                    session,
+                    bulkId
                 })
                 const enoughs = Object.values(inventoryMap).every((data) => data.enough)
                 if (!enoughs) {
@@ -88,13 +89,17 @@ export class CreateShipSolanaTransactionService {
                 const paidAmount = await this.vaultService.computePaidAmount({
                     network: user.network,
                     vaultInfoData: vaultInfos.value[user.network]
-                })  
+                })
                 // get the stable coin address
                 const tokenVaultAddress = this.solanaService
                     .getVaultUmi(user.network)
                     .identity.publicKey.toString()
-                const { address: tokenAddress, decimals: tokenDecimals } =
-                    this.staticService.tokens[StableCoinName.USDC][user.network]
+                const { tokenAddress, decimals: tokenDecimals } =
+                this.staticService.getTokenAddressFromPaymentKind({
+                    paymentKind: this.staticService.nftBoxInfo.paymentKind,
+                    network: user.network,
+                    chainKey: ChainKey.Solana,
+                })
                 // create a tx to transfer token from the vault to the user
 
                 const { limitTransaction, priceTransaction } =
@@ -128,20 +133,23 @@ export class CreateShipSolanaTransactionService {
                             .transactions.serializeMessage(transaction.message)
                     )
                 )
-                await this.cacheManager.set(cacheKey, true, 1000 * 60 * 15) // 15 minutes
+                const cacheData: CreateShipSolanaTransactionCacheData = {
+                    bulkId
+                }
+                await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes
                 return {
-                    serializedTx: base58.encode(
-                        this.solanaService
-                            .getUmi(user.network)
-                            .transactions.serialize(transaction)
-                    )
+                    success: true,
+                    message: "Ship Solana transaction created successfully",
+                    data: {
+                        serializedTx: base58.encode(
+                            this.solanaService
+                                .getUmi(user.network)
+                                .transactions.serialize(transaction)
+                        )
+                    }
                 }
             })
-            return {
-                success: true,
-                message: "Ship Solana transaction created successfully",
-                data: result
-            }
+            return result
         } catch (error) {
             this.logger.error(error)
             throw error

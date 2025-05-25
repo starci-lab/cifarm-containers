@@ -1,5 +1,5 @@
 import { InputType, Field, ObjectType, Float, Int } from "@nestjs/graphql"
-import { ChainKey, GraphQLTypeChainKey, GraphQLTypeNetwork, Network } from "@src/env"
+import { GraphQLTypeNetwork, Network } from "@src/env"
 import { IsEnum, IsInt, Min } from "class-validator"
 
 @InputType({
@@ -9,10 +9,6 @@ export class VaultCurrentRequest {
     @IsEnum(Network)
     @Field(() => GraphQLTypeNetwork, { description: "The network to check" })
         network: Network
-
-    @IsEnum(ChainKey)
-    @Field(() => GraphQLTypeChainKey, { description: "The chain to check" })
-        chainKey: ChainKey
 }
 
 @ObjectType({

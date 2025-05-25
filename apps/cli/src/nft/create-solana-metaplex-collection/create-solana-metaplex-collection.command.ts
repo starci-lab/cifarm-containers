@@ -22,7 +22,6 @@ export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
         this.logger.debug("Creating new Solana metaplex collection...")
         const { network, nftType } = options
         const { name, uri } = this.getMetadata(nftType)
-        console.log(name, uri)
         try {
             const { collectionAddress, signature } =
                 await this.solanaService.createCollection({

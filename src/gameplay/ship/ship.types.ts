@@ -4,6 +4,7 @@ import { ClientSession } from "mongoose"
 export interface PartitionInventoriesParams {
     userId: string
     session: ClientSession
+    bulkId: string
 }
 
 

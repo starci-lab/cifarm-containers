@@ -9,7 +9,7 @@ import {
 import { StaticService } from "../static"
 import { InjectMongoose, InventoryKind, InventorySchema, InventoryType } from "@src/databases"
 import { Connection } from "mongoose"
-import { GraphQLError } from "graphql"
+import { BulkNotFoundException, ProductNotFoundException } from "../exceptions"
 
 @Injectable()
 export class ShipService {
@@ -19,70 +19,79 @@ export class ShipService {
         private readonly staticService: StaticService,
         @InjectMongoose()
         private readonly connection: Connection
-    ) {}
+    ) { }
 
     public async partitionInventories({
         userId,
-        session
+        session,
+        bulkId
     }: PartitionInventoriesParams): Promise<PartitionInventoriesResult> {
         const wholesaleMarket = this.staticService.wholesaleMarket
-        const productInventoryTypeIds = this.staticService.inventoryTypes.filter(
-            (inventoryType) => inventoryType.type === InventoryType.Product
-        ).map((inventoryType) => inventoryType.id)
+        const productInventoryTypeIds = this.staticService.inventoryTypes
+            .filter(type => type.type === InventoryType.Product)
+            .map(type => type.id)
+    
         const inventories = await this.connection
             .model<InventorySchema>(InventorySchema.name)
             .find({
                 user: userId,
-                inventoryType: {
-                    $in: productInventoryTypeIds
-                },
+                inventoryType: { $in: productInventoryTypeIds },
                 kind: InventoryKind.Storage
             })
             .session(session)
+    
+        const bulk = wholesaleMarket.bulks.find(b => b.bulkId === bulkId)
+        if (!bulk) {
+            throw new BulkNotFoundException()
+        }
+    
+        // create map to quickly search
+        const inventoryTypeMap = new Map(
+            this.staticService.inventoryTypes.map(type => [type.id.toString(), type])
+        )
+        const productMap = new Map(
+            this.staticService.products.map(product => [product.id.toString(), product])
+        )
+    
+        // prepare inventoryMap for each productId
         const inventoryMap: Record<string, InventoryMapData> = {}
-        for (const product of wholesaleMarket.products) {
-            const inventoryMapData: InventoryMapData = {
+    
+        for (const product of bulk.products) {
+            inventoryMap[product.productId.toString()] = {
                 inventories: [],
                 totalQuantity: 0,
                 enough: false,
                 requiredQuantity: product.quantity
             }
-            // find the inventory of the product
-            for (const inventory of inventories) {
-                const inventoryType = this.staticService.inventoryTypes.find(
-                    (inventoryType) => inventoryType.id === inventory.inventoryType.toString()
-                )
-                if (!inventoryType) {
-                    throw new GraphQLError("Inventory type not found", {
-                        extensions: {
-                            code: "INVENTORY_TYPE_NOT_FOUND"
-                        }
-                    })
-                }
-                const foundProduct = this.staticService.products.find(
-                    (product) => 
-                        inventoryType.type === InventoryType.Product &&
-                        inventoryType.product.toString() === product.id
-                )
-                if (!foundProduct) {
-                    throw new GraphQLError("Product not found", {
-                        extensions: {
-                            code: "PRODUCT_NOT_FOUND"
-                        }
-                    })
-                }
-                if (foundProduct.id === product.productId.toString()) {
-                    inventoryMapData.inventories.push(inventory)
-                    inventoryMapData.totalQuantity += inventory.quantity
-                }
-            }
-            if (inventoryMapData.totalQuantity >= product.quantity) {
-                inventoryMapData.enough = true
-            }
-            inventoryMap[product.productId.toString()] = inventoryMapData
         }
+    
+        for (const inventory of inventories) {
+            const inventoryType = inventoryTypeMap.get(inventory.inventoryType.toString())
+            if (!inventoryType || inventoryType.type !== InventoryType.Product) {
+                continue
+            }
+    
+            const product = productMap.get(inventoryType.product?.toString())
+            if (!product) {
+                throw new ProductNotFoundException()
+            }
+    
+            const productId = product.id.toString()
+            const mapData = inventoryMap[productId]
+            if (mapData) {
+                mapData.inventories.push(inventory)
+                mapData.totalQuantity += inventory.quantity
+            }
+        }
+    
+        // check if the inventory is enough
+        for (const productId in inventoryMap) {
+            const mapData = inventoryMap[productId]
+            mapData.enough = mapData.totalQuantity >= mapData.requiredQuantity
+        }
+    
         return {
             inventoryMap
         }
-    }
+    }   
 }

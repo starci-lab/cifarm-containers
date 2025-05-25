@@ -14,10 +14,10 @@ export class VaultService {
         network
     }: ComputePaidAmountParams) {
         const { maxPaidAmount, vaultPaidPercentage } = this.staticService.tokenVaults[network] as TokenVault
-        return Math.min(
+        return roundNumber(Math.min(
             vaultInfoData.currentMaxPaidAmount ?? maxPaidAmount,
-            roundNumber(vaultInfoData.tokenLocked * vaultPaidPercentage)
-        )
+            vaultInfoData.tokenLocked * vaultPaidPercentage
+        ))
     }
 }
 
