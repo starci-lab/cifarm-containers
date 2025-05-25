@@ -87,15 +87,14 @@ export class CreateShipSolanaTransactionService {
                 // compute the paid amount
                 const paidAmount = await this.vaultService.computePaidAmount({
                     network: user.network,
-                    chainKey: user.chainKey,
-                    vaultInfoData: vaultInfos.value[user.chainKey][user.network]
-                })
+                    vaultInfoData: vaultInfos.value[user.network]
+                })  
                 // get the stable coin address
                 const tokenVaultAddress = this.solanaService
                     .getVaultUmi(user.network)
                     .identity.publicKey.toString()
                 const { address: tokenAddress, decimals: tokenDecimals } =
-                    this.staticService.stableCoins[StableCoinName.USDC][user.chainKey][user.network]
+                    this.staticService.tokens[StableCoinName.USDC][user.network]
                 // create a tx to transfer token from the vault to the user
 
                 const { limitTransaction, priceTransaction } =

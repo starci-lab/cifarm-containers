@@ -73,7 +73,7 @@ export class SendBuyEnergySolanaTransactionService {
                 const { selectionIndex } = cachedTx
                 // add the energy to the user
                 const option =
-                    this.staticService.energyPurchases[user.chainKey][user.network].options[
+                    this.staticService.energyPurchases[user.network].options[
                         selectionIndex
                     ] as EnergyPurchaseOption
                 if (!option) {
@@ -88,7 +88,7 @@ export class SendBuyEnergySolanaTransactionService {
                             code: "ENERGY_ALREADY_AT_THE_MAXIMUM_LIMIT"
                         }
                     })
-                }
+                }   
                 const newEnergy = Math.min(maxEnergy, user.energy + Math.floor((maxEnergy * percentage) / 100))
 
                 const userSnapshot = user.$clone()

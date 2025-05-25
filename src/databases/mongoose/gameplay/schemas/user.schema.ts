@@ -1,7 +1,7 @@
 import { Field, Float, ID, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { ChainKey, GraphQLTypeChainKey, GraphQLTypeNetwork, Network } from "@src/env"
+import { GraphQLTypeNetwork, Network } from "@src/env"
 import { Schema as MongooseSchema, Types } from "mongoose"
 import { OauthProviderName } from "../enums"
 
@@ -18,17 +18,6 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: String, required: true, length: 100 })
         username: string
-
-    @Field(() => GraphQLTypeChainKey, {
-        description: "The blockchain chain key of the user"
-    })
-    @Prop({
-        type: String,
-        required: true,
-        enum: ChainKey,
-        default: ChainKey.Solana
-    })
-        chainKey: ChainKey
 
     @Field(() => GraphQLTypeNetwork, {
         description: "The blockchain network of the user"
@@ -160,20 +149,6 @@ export class UserSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0.5 })
         ambient: number
 
-    // @Field(() => Float, {
-    //     description: "Last time the user rolled the solana starter box type",
-    //     nullable: true
-    // })
-    // @Prop({ type: Number, required: false })
-    //     lastSolanaNFTBoxRollType?: number
-
-    // @Field(() => Float, {
-    //     description: "Last time the user rolled the nft box rarity",
-    //     nullable: true
-    // })
-    // @Prop({ type: Number, required: false })
-    //     lastSolanaNFTBoxRollRarity?: 
-    
     @Field(() => String, {
         description: "The string to determine the",
         nullable: true

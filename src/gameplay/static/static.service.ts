@@ -29,13 +29,11 @@ import {
     BeeHouseInfo,
     NFTCollections,
     NFTBoxInfo,
-    StableCoins,
     TokenVaults,
     WholesaleMarket,
     RevenueRecipients,
     GoldPurchases,
     PaymentKind,
-    StableCoinName,
     InteractionPermissions,
     PetInfo,
     Tokens,
@@ -74,7 +72,6 @@ export class StaticService implements OnModuleInit {
     public beeHouseInfo: BeeHouseInfo
     public nftCollections: NFTCollections
     public nftBoxInfo: NFTBoxInfo
-    public stableCoins: StableCoins
     public tokenVaults: TokenVaults
     public wholesaleMarket: WholesaleMarket
     public revenueRecipients: RevenueRecipients
@@ -157,11 +154,6 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<NFTBoxInfo>>(createObjectId(SystemId.NFTBoxInfo))
         this.nftBoxInfo = nftBoxInfoDoc.value
-
-        const stableCoinsDoc = await this.connection
-            .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<StableCoins>>(createObjectId(SystemId.StableCoins))
-        this.stableCoins = stableCoinsDoc.value
 
         const tokenVaultsDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)
@@ -257,15 +249,16 @@ export class StaticService implements OnModuleInit {
         this.logger.verbose(`Terrains: ${this.terrains.length}`)
     }
 
+    // only solana
     public getTokenAddressFromPaymentKind({
         paymentKind,
         network,
-        chainKey
+        chainKey    
     }: GetTokenAddressFromPaymentKindParams): GetTokenAddressFromPaymentKindResult {
         switch (paymentKind) {
         case PaymentKind.USDC: {
-            const { address: tokenAddress, decimals } =
-                    this.stableCoins[StableCoinName.USDC][chainKey][network]
+            const { tokenAddress, decimals } =
+                    this.tokens.usdc[chainKey][network]
             return {
                 tokenAddress,
                 decimals

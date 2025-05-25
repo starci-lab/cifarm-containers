@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common"
 import { StaticService } from "../static"
 import { ComputePaidAmountParams } from "./types"
 import { roundNumber } from "@src/common"
-import { TokenVaultData } from "@src/databases"
+import { TokenVault } from "@src/databases"
 @Injectable()
 export class VaultService {
     constructor(
@@ -10,13 +10,10 @@ export class VaultService {
     ) {}
     
     public async computePaidAmount({
-        network,
-        chainKey,
-        vaultInfoData
+        vaultInfoData,
+        network
     }: ComputePaidAmountParams) {
-        const { maxPaidAmount, vaultPaidPercentage } = this.staticService.tokenVaults[
-            chainKey
-        ][network] as TokenVaultData
+        const { maxPaidAmount, vaultPaidPercentage } = this.staticService.tokenVaults[network] as TokenVault
         return Math.min(
             vaultInfoData.currentMaxPaidAmount ?? maxPaidAmount,
             roundNumber(vaultInfoData.tokenLocked * vaultPaidPercentage)

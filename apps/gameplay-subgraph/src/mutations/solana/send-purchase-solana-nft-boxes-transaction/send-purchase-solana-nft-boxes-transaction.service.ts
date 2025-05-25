@@ -71,7 +71,7 @@ export class SendPurchaseSolanaNFTBoxesTransactionService {
                         }
                     })
                 }
-                const { nftBoxes, chainKey, tokenAmount, network } = cachedTx
+                const { nftBoxes, tokenAmount, network } = cachedTx
 
                 // first season is USDC so that we hardcode the token address
                 // update the valut info in the database
@@ -92,13 +92,11 @@ export class SendPurchaseSolanaNFTBoxesTransactionService {
                         },
                         {
                             value: {
-                                [chainKey]: {
-                                    [network]: {
-                                        tokenLocked:
-                                            vaultInfos.value[chainKey][network]
-                                                .tokenLocked +
+                                [network]: {
+                                    tokenLocked:
+                                        vaultInfos.value[network]
+                                            .tokenLocked +
                                             tokenAmount
-                                    }
                                 }
                             }
                         }

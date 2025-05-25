@@ -9,7 +9,6 @@ import {
     NFTType,
     NFTRarity,
     GraphQLTypeNFTType,
-    StableCoinName,
     PaymentKind,
     GraphQLTypePaymentKind,
     TokenType,
@@ -807,7 +806,7 @@ export class NFTCollectionData {
 @ObjectType({
     description: "Configuration for NFT collections"
 })
-export class NFTCollectionWrapped {
+export class NFTCollection {
     @Field(() => NFTCollectionData, {
         description: "Testnet collection address"
     })
@@ -817,21 +816,6 @@ export class NFTCollectionWrapped {
         description: "Mainnet collection address"
     })
     [Network.Mainnet]: NFTCollectionData
-}
-
-@ObjectType({
-    description: "Configuration for NFT collections wrapper"
-})
-export class NFTCollection {
-    @Field(() => NFTCollectionWrapped, {
-        description: "NFT collection"
-    })
-    [ChainKey.Solana]: NFTCollectionWrapped
-
-    @Field(() => NFTCollectionWrapped, {
-        description: "NFT collection"
-    })
-    [ChainKey.Sui]: NFTCollectionWrapped
 }
 
 @ObjectType({
@@ -857,56 +841,6 @@ export class NFTCollections {
     })
     [NFTType.Jackfruit]: NFTCollection
 }
-
-@ObjectType({
-    description: "Stable coin data"
-})
-export class StableCoinData {
-    @Field(() => String, {
-        description: "Stable coin address"
-    })
-        address: string
-    @Field(() => Int, {
-        description: "Stable coin decimals"
-    })
-        decimals: number
-}
-
-@ObjectType({
-    description: "Stable coin"
-})
-export class StableCoinWrapped {
-    @Field(() => StableCoinData, {
-        description: "Stable coin data"
-    })
-    [Network.Testnet]: StableCoinData
-
-    @Field(() => StableCoinData, {
-        description: "Stable coin data"
-    })
-    [Network.Mainnet]: StableCoinData
-}
-
-@ObjectType({
-    description: "Stable coin"
-})
-export class StableCoin {
-    @Field(() => StableCoinWrapped, {
-        description: "Stable coin"
-    })
-    [ChainKey.Solana]: StableCoinWrapped
-}
-
-@ObjectType({
-    description: "Configuration for stable coins"
-})
-export class StableCoins {
-    @Field(() => StableCoin, {
-        description: "Stable coin"
-    })
-    [StableCoinName.USDC]: StableCoin
-}
-
 
 @ObjectType({
     description: "Each chance for a NFT box"
@@ -960,9 +894,9 @@ export class NFTBoxInfo {
 }
 
 @ObjectType({
-    description: "Token vault data"
+    description: "Token vault"
 })
-export class TokenVaultData {   
+export class TokenVault {   
     @Field(() => Float, {
         description: "Max paid amount"
     })
@@ -982,26 +916,16 @@ export class TokenVaultData {
 @ObjectType({
     description: "Token vault"
 })
-export class TokenVault {
-    @Field(() => TokenVaultData, {
-        description: "Token vault data"
-    })
-    [Network.Testnet]: TokenVaultData
-
-    @Field(() => TokenVaultData, {
-        description: "Stable coin data"
-    })
-    [Network.Mainnet]: TokenVaultData
-}
-
-@ObjectType({
-    description: "Token vault"
-})
 export class TokenVaults {
     @Field(() => TokenVault, {
-        description: "Token vault wrapped"
+        description: "Token vault"
     })
-    [ChainKey.Solana]: TokenVault
+    [Network.Testnet]: TokenVault
+
+    @Field(() => TokenVault, {
+        description: "Token vault"
+    })
+    [Network.Mainnet]: TokenVault
 }
 
 @ObjectType({
@@ -1020,48 +944,43 @@ export class WholesaleMarketProduct {
 }
 
 @ObjectType({
-    description: "Configuration for wholesale market"
+    description: "Wholesale market bulk"
 })
-export class WholesaleMarket {
+export class WholesaleMarketBulk {
     @Field(() => [WholesaleMarketProduct], {
-        description: "Wholesale market products"
+        description: "Wholesale market bulk products"
     })
         products: Array<WholesaleMarketProduct>
 
-    @Field(() => Int, {
-        description: "Wholesale market price"
+    @Field(() => Float, {
+        description: "Wholesale market bulk price"
     })
         price: number
 
     @Field(() => GraphQLTypePaymentKind, {
-        description: "Wholesale market payment kind"
+        description: "Wholesale market bulk payment kind"
     })
         paymentKind: PaymentKind
 }
 
 @ObjectType({
+    description: "Configuration for wholesale market"
+})
+export class WholesaleMarket {
+    @Field(() => [WholesaleMarketBulk], {
+        description: "Wholesale market bulk"
+    })
+        bulks: Array<WholesaleMarketBulk>
+}
+
+@ObjectType({
     description: "Revenue recipient"
 })
-export class RevenueRecipientData {
+export class RevenueRecipient {
     @Field(() => String, {
         description: "Revenue recipient address"
     })
         address: string
-}
-
-@ObjectType({
-    description: "Fee receiver"
-})
-export class RevenueRecipient {
-    @Field(() => RevenueRecipientData, {
-        description: "Revenue recipient data"
-    })
-    [Network.Testnet]: RevenueRecipientData
-
-    @Field(() => RevenueRecipientData, {
-        description: "Revenue recipient data"
-    })
-    [Network.Mainnet]: RevenueRecipientData
 }
 
 @ObjectType({
@@ -1071,7 +990,12 @@ export class RevenueRecipients {
     @Field(() => RevenueRecipient, {
         description: "Revenue recipient"
     })
-    [ChainKey.Solana]: RevenueRecipient
+    [Network.Testnet]: RevenueRecipient
+
+    @Field(() => RevenueRecipient, {
+        description: "Revenue recipient"
+    })
+    [Network.Mainnet]: RevenueRecipient
 }
 
 @ObjectType({
@@ -1094,29 +1018,13 @@ export class GoldPurchaseOption {
 }
 
 @ObjectType({
-    description: "Gold purchase options"
+    description: "Gold purchase"
 })
-export class GoldPurchaseOptions {   
+export class GoldPurchase {
     @Field(() => [GoldPurchaseOption], {
         description: "Gold purchase options"
     })
         options: Array<GoldPurchaseOption>
-}
-
-
-@ObjectType({
-    description: "Gold purchase"
-})
-export class GoldPurchase {
-    @Field(() => GoldPurchaseOptions, {
-        description: "Gold purchase options"
-    })
-    [Network.Testnet]: GoldPurchaseOptions
-
-    @Field(() => GoldPurchaseOptions, {
-        description: "Gold purchase options"
-    })
-    [Network.Mainnet]: GoldPurchaseOptions
 }
 
 @ObjectType({
@@ -1126,12 +1034,12 @@ export class GoldPurchases {
     @Field(() => GoldPurchase, {
         description: "Gold purchase"
     })
-    [ChainKey.Solana]: GoldPurchase
+    [Network.Testnet]: GoldPurchase
 
     @Field(() => GoldPurchase, {
         description: "Gold purchase"
     })
-    [ChainKey.Sui]: GoldPurchase
+    [Network.Mainnet]: GoldPurchase
 }
 
 @ObjectType({
@@ -1340,27 +1248,11 @@ export class EnergyPurchaseOption {
 @ObjectType({
     description: "Energy purchase options"
 })
-export class EnergyPurchaseOptions {   
+export class EnergyPurchase {   
     @Field(() => [EnergyPurchaseOption], {
         description: "Energy purchase options"
     })
         options: Array<EnergyPurchaseOption>
-}
-
-
-@ObjectType({
-    description: "Energy purchase"
-})
-export class EnergyPurchase {
-    @Field(() => EnergyPurchaseOptions, {
-        description: "Energy purchase options"
-    })
-    [Network.Testnet]: EnergyPurchaseOptions
-
-    @Field(() => EnergyPurchaseOptions, {
-        description: "Energy purchase options"
-    })
-    [Network.Mainnet]: EnergyPurchaseOptions
 }
 
 @ObjectType({
@@ -1370,12 +1262,12 @@ export class EnergyPurchases {
     @Field(() => EnergyPurchase, {
         description: "Energy purchase"
     })
-    [ChainKey.Solana]: EnergyPurchase
+    [Network.Testnet]: EnergyPurchase
 
-    @Field(() => GoldPurchase, {
-        description: "Gold purchase"
+    @Field(() => EnergyPurchase, {
+        description: "Energy purchase"
     })
-    [ChainKey.Sui]: EnergyPurchase
+    [Network.Mainnet]: EnergyPurchase
 }
 
 

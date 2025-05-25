@@ -73,7 +73,7 @@ export class SendBuyGoldsSolanaTransactionService {
                     })
                 }
                 const { selectionIndex } = cachedTx
-                const option = this.staticService.goldPurchases[user.chainKey][user.network].options[selectionIndex] as GoldPurchaseOption
+                const option = this.staticService.goldPurchases[user.network].options[selectionIndex] as GoldPurchaseOption
                 if (!option) {
                     throw new GraphQLError("Invalid selection index", {
                         extensions: {

@@ -17,7 +17,6 @@ import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { roundNumber } from "@src/common"
 import { PurchaseSolanaNFTBoxTransactionCache, ExtendedNFTBox } from "@src/cache"
-import { ChainKey } from "@src/env"
 import { v4 as uuidv4 } from "uuid"
 @Injectable()
 export class CreatePurchaseSolanaNFTBoxesTransactionService {
@@ -36,7 +35,6 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
         { id }: UserLike,
         {
             accountAddress,
-            chainKey = ChainKey.Solana,
             quantity
         }: CreatePurchaseSolanaNFTBoxesTransactionRequest
     ): Promise<CreatePurchaseSolanaNFTBoxesTransactionResponse> {
@@ -71,7 +69,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                         network: user.network
                     })
                     let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
-                    const nftCollectionData = this.staticService.nftCollections[nftBox.nftType][chainKey][
+                    const nftCollectionData = this.staticService.nftCollections[nftBox.nftType][
                         user.network
                     ] as NFTCollectionData
 
@@ -114,7 +112,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     })
                     //get the stable coin address
                     const { tokenAddress, decimals: tokenDecimals } =
-                this.staticService.tokens[StableCoinName.USDC][chainKey][user.network]
+                this.staticService.tokens[StableCoinName.USDC][user.network]
                     // first season is USDC so that we hardcode the token address
                     const tokenVaultAddress = this.solanaService
                         .getVaultUmi(user.network)
@@ -138,7 +136,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     builder = builder.add(transferTokenToVaultTransaction)
                     // get the fee receiver address
                     const revenueRecipientAddress =
-                this.staticService.revenueRecipients[ChainKey.Solana][user.network].address
+                this.staticService.revenueRecipients[user.network].address
                     const { transaction: transferTokenToFeeReceiverTransaction } =
                 await this.solanaService.createTransferTokenTransaction({
                     network: user.network,
@@ -175,7 +173,6 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
 
                 const cacheData: PurchaseSolanaNFTBoxTransactionCache = {
                     nftBoxes: extendedNFTBoxes,
-                    chainKey,
                     tokenAmount: totalTokenAmount,
                     network: user.network
                 }

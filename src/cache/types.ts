@@ -1,5 +1,5 @@
 import { NFTRarity, NFTType } from "@src/databases"
-import { ChainKey, Network } from "@src/env"
+import { Network } from "@src/env"
 
 export enum CacheKey {
     DeliverInstantly = "DeliverInstantly",
@@ -48,7 +48,6 @@ export interface ConvertMetaplexNFTSolanaTransactionCache {
 export interface ExtendedNFTBox { nftName: string, nftType: NFTType, rarity: NFTRarity, nftAddress: string }
 export interface PurchaseSolanaNFTBoxTransactionCache {
     nftBoxes: Array<ExtendedNFTBox>
-    chainKey: ChainKey
     network: Network    
     tokenAmount: number
 }
@@ -56,7 +55,6 @@ export interface PurchaseSolanaNFTBoxTransactionCache {
 export interface ConvertedNFT { nftName: string, nftType: NFTType, rarity: NFTRarity, nftAddress: string }
 export interface ConvertSolanaMetaplexNFTsTransactionCache {
     convertedNFTs: Array<ConvertedNFT>
-    chainKey: ChainKey
     network: Network 
 }
 

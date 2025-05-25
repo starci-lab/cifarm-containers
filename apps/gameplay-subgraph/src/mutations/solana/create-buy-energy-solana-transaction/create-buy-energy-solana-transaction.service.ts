@@ -16,6 +16,7 @@ import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
 import { BuyEnergySolanaTransactionCache } from "@src/cache"
+import { ChainKey } from "@src/env"
 
 @Injectable()
 export class CreateBuyEnergySolanaTransactionService {
@@ -46,7 +47,7 @@ export class CreateBuyEnergySolanaTransactionService {
                     throw new GraphQLError("User not found")
                 }
                 const option =
-                    this.staticService.energyPurchases[user.chainKey][user.network].options[
+                    this.staticService.energyPurchases[user.network].options[
                         selectionIndex
                     ] as EnergyPurchaseOption
                 if (!option) {
@@ -56,7 +57,7 @@ export class CreateBuyEnergySolanaTransactionService {
                 const { tokenAddress, decimals } = this.staticService.getTokenAddressFromPaymentKind({
                     paymentKind,
                     network: user.network,
-                    chainKey: user.chainKey
+                    chainKey: ChainKey.Solana
                 })
                 // create a transaction to buy the golds
                 const { limitTransaction, priceTransaction } =
@@ -64,7 +65,7 @@ export class CreateBuyEnergySolanaTransactionService {
                         network: user.network
                     })
                 let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
-                const revenueRecipientAddress = this.staticService.revenueRecipients[user.chainKey][user.network].address
+                const revenueRecipientAddress = this.staticService.revenueRecipients[user.network].address
                 const { transaction: transferTokenTransaction } =
                     await this.solanaService.createTransferTokenTransaction({
                         network: user.network,

@@ -1,9 +1,7 @@
 import { Field, InputType, ObjectType } from "@nestjs/graphql"
 import { GraphQLTypeNFTType, NFTType } from "@src/databases"
-import { ChainKey } from "@src/env"
-import { GraphQLTypeChainKey } from "@src/env"
 import { IResponseLike, ResponseLike } from "@src/graphql"
-import { IsBase58, IsEnum, IsOptional } from "class-validator"
+import { IsBase58, IsEnum } from "class-validator"
 
 @InputType({
     description: "Create Convert Solana Metaplex NFTs Transaction request"
@@ -24,14 +22,6 @@ export class CreateConvertSolanaMetaplexNFTsTransactionRequest {
     @IsBase58()
     @Field(() => String)
         accountAddress: string
-
-    @IsOptional()
-    @IsEnum(ChainKey)
-    @Field(() => GraphQLTypeChainKey, {
-        description: "The chain key of the transaction",
-        nullable: true
-    })
-        chainKey?: ChainKey
 }
 
 @ObjectType({

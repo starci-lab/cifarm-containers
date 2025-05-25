@@ -138,8 +138,7 @@ export class SendShipSolanaTransactionService {
                 }
                 const paidAmount = await this.vaultService.computePaidAmount({
                     network: user.network,
-                    chainKey: user.chainKey,
-                    vaultInfoData: vaultInfos.value[user.chainKey][user.network]
+                    vaultInfoData: vaultInfos.value[user.network]
                 })
                 await this.connection
                     .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
@@ -149,15 +148,13 @@ export class SendShipSolanaTransactionService {
                         },
                         {
                             value: {
-                                [user.chainKey]: {
-                                    [user.network]: {
-                                        paidCount: vaultInfos.value[user.chainKey][user.network].paidCount + 1,
-                                        tokenLocked: vaultInfos.value[user.chainKey][user.network].tokenLocked - paidAmount,
-                                        currentMaxPaidAmount:
-                                                (vaultInfos.value[user.chainKey][user.network].currentMaxPaidAmount ??
-                                                    this.staticService.tokenVaults[user.chainKey][user.network].maxPaidAmount) *
-                                                (1 - this.staticService.tokenVaults[user.chainKey][user.network].maxPaidDecreasePercentage)
-                                    }
+                                [user.network]: {
+                                    paidCount: vaultInfos.value[user.network].paidCount + 1,
+                                    tokenLocked: vaultInfos.value[user.network].tokenLocked - paidAmount,
+                                    currentMaxPaidAmount:
+                                        (vaultInfos.value[user.network].currentMaxPaidAmount ??
+                                            this.staticService.tokenVaults[user.network].maxPaidAmount) *
+                                        (1 - this.staticService.tokenVaults[user.network].maxPaidDecreasePercentage)
                                 }
                             }
                         }

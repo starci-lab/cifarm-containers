@@ -15,7 +15,6 @@ import base58 from "bs58"
 import { InjectCache, ConvertedNFT, ConvertSolanaMetaplexNFTsTransactionCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
-import { ChainKey } from "@src/env"
 
 @Injectable()
 export class CreateConvertSolanaMetaplexNFTsTransactionService {
@@ -36,8 +35,7 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
             convertNFTAddresses,
             burnNFTType,
             nftType,
-            accountAddress,
-            chainKey = ChainKey.Solana
+            accountAddress
         }: CreateConvertSolanaMetaplexNFTsTransactionRequest
     ): Promise<CreateConvertSolanaMetaplexNFTsTransactionResponse> {
         const mongoSession = await this.connection.startSession()
@@ -70,7 +68,7 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
                 const serializedTxs: Array<string> = []
                 const cacheKeys: Array<string> = []
                 const convertedNFTs: Array<ConvertedNFT> = []
-                const burnNFTCollectionData = this.staticService.nftCollections[burnNFTType][chainKey][
+                const burnNFTCollectionData = this.staticService.nftCollections[burnNFTType][
                     user.network
                 ] as NFTCollectionData
                 for (let i = 0; i < nftConverted; i++) {
@@ -95,7 +93,7 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
 
                     // mint the nft based on the nft type
 
-                    const nftCollectionData = this.staticService.nftCollections[nftType][chainKey][
+                    const nftCollectionData = this.staticService.nftCollections[nftType][
                         user.network
                     ] as NFTCollectionData
                     const nftName = nftCollectionData.name
@@ -152,7 +150,6 @@ export class CreateConvertSolanaMetaplexNFTsTransactionService {
                 const finalCacheKey = this.sha256Service.hash(cacheKeys.join(""))
                 const cacheData: ConvertSolanaMetaplexNFTsTransactionCache = {
                     convertedNFTs,
-                    chainKey,
                     network: user.network
                 }
                 await this.cacheManager.set(finalCacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
