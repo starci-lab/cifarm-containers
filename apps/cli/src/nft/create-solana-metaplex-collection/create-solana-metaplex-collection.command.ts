@@ -2,6 +2,7 @@ import { CommandRunner, SubCommand, Option } from "nest-commander"
 import { Logger } from "@nestjs/common"
 import { Network } from "@src/env"
 import { SolanaService } from "@src/blockchain"
+import { NFTType } from "@src/databases"
 
 @SubCommand({
     name: "create-solana-metaplex-collection",
@@ -10,7 +11,7 @@ import { SolanaService } from "@src/blockchain"
 export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
     private readonly logger = new Logger(CreateSolanaMetaplexCollectionCommand.name)
 
-    constructor(private readonly SolanaService: SolanaService) {
+    constructor(private readonly solanaService: SolanaService) {
         super()
     }
 
@@ -19,16 +20,15 @@ export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
         options: CreateSolanaMetaplexCollectionCommandOptions
     ): Promise<void> {
         this.logger.debug("Creating new Solana metaplex collection...")
-        const { name, network, uri } = options
+        const { network, nftType } = options
+        const { name, uri } = this.getMetadata(nftType)
+        console.log(name, uri)
         try {
             const { collectionAddress, signature } =
-                await this.SolanaService.createCollection({
+                await this.solanaService.createCollection({
                     network,
                     name,
-                    metadata: {
-                        name,
-                        image: uri
-                    }
+                    uri
                 })
             this.logger.debug(`Collection created: ${collectionAddress}`)
             this.logger.debug(`Transaction signature: ${signature}`)
@@ -47,26 +47,43 @@ export class CreateSolanaMetaplexCollectionCommand extends CommandRunner {
     }
 
     @Option({
-        flags: "--name <name>",
-        description: "Name of the collection",
-        defaultValue: "Dragon Fruit"
+        flags: "-nt, --nft-type <nft-type>",
+        description: "Type of the NFT",
+        defaultValue: NFTType.DragonFruit
     })
-    parseName(name: string): string {
-        return name
+    parseNFTType(nftType: string): NFTType {
+        return nftType as NFTType
     }
 
-    @Option({
-        flags: "-u, --uri <uri>",
-        description: "URI of the metadata file",
-        defaultValue: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon-fruit-collection-data.json"
-    })
-    parseURI(uri: string): string {
-        return uri
+    getMetadata(nftType: NFTType): Metadata {
+        const metadataMap: Record<NFTType, Metadata> = {
+            [NFTType.DragonFruit]: {
+                name: "Dragon Fruit",
+                uri: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/dragon-fruit-metadata.json"
+            },
+            [NFTType.Jackfruit]: {
+                name: "Jackfruit",
+                uri: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/jackfruit-metadata.json"
+            },
+            [NFTType.Rambutan]: {
+                name: "Rambutan",
+                uri: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/rambutan-metadata.json"
+            },
+            [NFTType.Pomegranate]: {
+                name: "Pomegranate",
+                uri: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/pomegranate-metadata.json"
+            }
+        }
+        return metadataMap[nftType]
     }
 }
 
 export interface CreateSolanaMetaplexCollectionCommandOptions {
     network: Network
+    nftType: NFTType
+}
+
+export interface Metadata {
     name: string
     uri: string
 }

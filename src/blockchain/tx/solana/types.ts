@@ -9,7 +9,7 @@ export interface CreateSolanaFreezeNFTTransactionParams extends WithFeePayer {
 
 export interface CreateSolanaCollectionParams extends WithNetwork {
     name: string
-    metadata: MetaplexCollectionMetadata
+    uri: string
 }
 
 export interface TransferNftParams extends WithNetwork {

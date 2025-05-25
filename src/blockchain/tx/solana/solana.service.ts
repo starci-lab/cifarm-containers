@@ -100,18 +100,30 @@ export class SolanaService {
     public async createCollection({
         network = Network.Mainnet,
         name,
-        metadata
+        uri
     }: CreateSolanaCollectionParams): Promise<CreateSolanaCollectionResponse> {
         const umi = this.umis[network]
         // Logic to create a collection on Solana
         const collection = generateSigner(umi)
-        const uri = await this.s3Service.uploadJson(collection.publicKey.toString(), metadata)
         //const uri = await this.s3Service.uploadJson(collection.publicKey.toString(), metadata)
         const { signature } = await metaplexCreateSolanaCollection(umi, {
             collection,
             name,
             updateAuthority: umi.identity.publicKey,
-            uri
+            uri,
+            plugins: [
+                {
+                    type: "Royalties",
+                    basisPoints: 500,
+                    creators: [
+                        {
+                            address: umi.identity.publicKey,
+                            percentage: 100
+                        }
+                    ],
+                    ruleSet: ruleSet("None")
+                }
+            ]
         }).sendAndConfirm(umi)
         return {
             collectionAddress: collection.publicKey,

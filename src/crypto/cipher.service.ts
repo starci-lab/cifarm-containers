@@ -9,6 +9,7 @@ export class CipherService {
 
     constructor() {
         this.algorithm = "aes-256-cbc"
+        console.log(envConfig().crypto.cipher.secret)
         this.key = pbkdf2Sync(envConfig().crypto.cipher.secret, "salt", 100000, 32, "sha256")
     }
     
