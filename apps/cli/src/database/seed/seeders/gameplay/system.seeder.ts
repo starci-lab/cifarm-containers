@@ -816,6 +816,40 @@ export class SystemSeeder implements Seeder {
         const wholesaleMarket: WholesaleMarket = {
             bulks: [
                 {
+                    bulkName: "Greeting Bulk",
+                    bulkId: "greeting-bulk",
+                    products: [
+                        {
+                            productId: createObjectId(ProductId.Apple),
+                            quantity: 20,
+                        },
+                        {
+                            productId: createObjectId(ProductId.Banana),
+                            quantity: 20,
+                        },
+                        {
+                            productId: createObjectId(ProductId.Tomato),
+                            quantity: 20,
+                        },
+                        {
+                            productId: createObjectId(ProductId.Eggplant),
+                            quantity: 20,
+                        },
+                        {
+                            productId: createObjectId(ProductId.Milk),
+                            quantity: 20,
+                        },
+                        {
+                            productId: createObjectId(ProductId.Egg),
+                            quantity: 20,
+                        },
+                    ],
+                    price: 0.5,
+                    paymentKind: PaymentKind.USDC
+                },
+                {
+                    bulkName: "Basic NFTs Bulk",
+                    bulkId: "basic-nfts-bulk",
                     products: [
                         {
                             productId: createObjectId(ProductId.DragonFruitQuality),

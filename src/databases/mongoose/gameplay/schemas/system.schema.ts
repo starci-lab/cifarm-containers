@@ -947,6 +947,16 @@ export class WholesaleMarketProduct {
     description: "Wholesale market bulk"
 })
 export class WholesaleMarketBulk {
+    @Field(() => ID, {
+        description: "Wholesale market bulk id"
+    })
+        bulkId: string
+
+    @Field(() => String, {
+        description: "Wholesale market bulk name"
+    })
+        bulkName: string    
+
     @Field(() => [WholesaleMarketProduct], {
         description: "Wholesale market bulk products"
     })
