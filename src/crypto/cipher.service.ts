@@ -1,28 +1,38 @@
 import { Injectable } from "@nestjs/common"
 import { envConfig } from "@src/env"
-import * as crypto from "crypto"
+import { randomBytes, pbkdf2Sync, createCipheriv, createDecipheriv } from "crypto"
 
 @Injectable()
 export class CipherService {
-    private readonly algorithm = "aes-256-cbc"
-    private readonly key = crypto
-        .pbkdf2Sync(envConfig().crypto.cipher.secret, "salt", 100000, 32, "sha256")
+    private readonly algorithm: string
+    private readonly key: Buffer
 
-    encrypt(plainText: string, iv: Buffer): string {
-        const cipher = crypto.createCipheriv(this.algorithm, this.key, iv)
+    constructor() {
+        this.algorithm = "aes-256-cbc"
+        this.key = pbkdf2Sync(envConfig().crypto.cipher.secret, "salt", 100000, 32, "sha256")
+    }
+    
+    encrypt(plainText: string): string {
+        const iv = randomBytes(16) // 16 bytes for AES-CBC
+        const cipher = createCipheriv(this.algorithm, this.key, iv)
         let encrypted = cipher.update(plainText, "utf8", "base64")
         encrypted += cipher.final("base64")
-        return encrypted
+    
+        // Combine IV and encrypted text (base64-encode both)
+        const ivBase64 = iv.toString("base64")
+        return `${ivBase64}:${encrypted}`
     }
-
-    generateIv(string: string = ""): Buffer {
-        // create hash vs pbkdf2
-        return crypto.pbkdf2Sync(string, envConfig().crypto.cipher.ivSalt, 100000, 16, "sha256")
-    }
-
-    decrypt(cipherText: string, iv: Buffer): string {
-        const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv)
-        let decrypted = decipher.update(cipherText, "base64", "utf8")
+    
+    decrypt(cipherText: string): string {
+        // Split the IV and the encrypted content
+        const [ivBase64, encrypted] = cipherText.split(":")
+        if (!ivBase64 || !encrypted) {
+            throw new Error("Invalid cipher text format")
+        }
+    
+        const iv = Buffer.from(ivBase64, "base64")
+        const decipher = createDecipheriv(this.algorithm, this.key, iv)
+        let decrypted = decipher.update(encrypted, "base64", "utf8")
         decrypted += decipher.final("utf8")
         return decrypted
     }

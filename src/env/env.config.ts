@@ -195,7 +195,6 @@ export const envConfig = () => ({
     crypto: {
         cipher: {
             secret: process.env.CIPHER_SECRET,
-            ivSalt: process.env.CIPHER_IV_SALT,
         },
         bcrypt: {
             salt: process.env.BCRYPT_SALT,

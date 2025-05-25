@@ -14,11 +14,9 @@ export class EncryptToBase64Command extends CommandRunner {
 
     async run(_: Array<string>, options?: EncryptToBase64CommandOptions): Promise<void> {
         this.logger.debug("Encrypting the text to base64...")
-        const { text, password } = options
-        const iv = this.cipherService.generateIv(password)
+        const { text } = options
         try {
-            const encryptedText = this.cipherService.encrypt(text, iv)
-            console.log(password)
+            const encryptedText = this.cipherService.encrypt(text)
             this.logger.debug(`Encrypted text: ${encryptedText}`)
         } catch (error) {
             this.logger.error(`Failed to encrypt the text: ${error.message}`)
@@ -33,18 +31,8 @@ export class EncryptToBase64Command extends CommandRunner {
     parseText(text: string): string {
         return text
     }
-
-    @Option({
-        flags: "-p, --password <password>",
-        description: "Password",
-        required: false
-    })
-    parsePassword(password: string): string {
-        return password
-    }
 }
 
 export interface EncryptToBase64CommandOptions {
     text: string
-    password: string
 }

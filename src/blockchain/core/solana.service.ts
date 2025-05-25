@@ -3,11 +3,14 @@ import { Connection, Keypair, sendAndConfirmTransaction, Transaction } from "@so
 import { ChainKey, Network } from "@src/env"
 import { decode } from "bs58"
 import { solanaHttpRpcUrl } from "../rpcs"
+import { CipherService } from "@src/crypto"
 
 @Injectable()
 export class SolanaCoreService {
     private connections: Record<Network, Connection>
-    constructor() {
+    constructor(
+        private readonly cipherService: CipherService
+    ) {
         this.connections = {
             [Network.Mainnet]: new Connection(solanaHttpRpcUrl(ChainKey.Solana, Network.Mainnet)),
             [Network.Testnet]: new Connection(solanaHttpRpcUrl(ChainKey.Solana, Network.Testnet))
@@ -19,8 +22,9 @@ export class SolanaCoreService {
     }
 
     // get public key from private key
-    public getKeypair(privateKeyBase58: string) {
-        return Keypair.fromSecretKey(decode(privateKeyBase58))
+    public getKeypair(encryptedPrivateKey: string) {
+        const privateKey = this.cipherService.decrypt(encryptedPrivateKey)
+        return Keypair.fromSecretKey(decode(privateKey))
     }
 
     // sign and send transaction

@@ -56,28 +56,31 @@ import {
 } from "@metaplex-foundation/mpl-toolbox"
 import { computeRaw } from "@src/common"
 import { S3Service } from "@src/s3"
+import { CipherService } from "@src/crypto"
 
-const getUmi = (network: Network) => {
-    const umi = createUmi(solanaHttpRpcUrl(ChainKey.Solana, network)).use(mplCore())
-    const signer = umi.eddsa.createKeypairFromSecretKey(
-        base58.decode(
-            envConfig().chainCredentials[ChainKey.Solana].metaplexAuthority[network]
-                .privateKey
-        )
-    )
-    umi.use(keypairIdentity(signer)).use(mplToolbox())
-    return umi
-}
 
 @Injectable()
 export class SolanaService {
     private umis: Record<Network, Umi>
-    constructor(private readonly s3Service: S3Service) {
+    constructor(private readonly s3Service: S3Service, private readonly cipherService: CipherService) {
         // Constructor logic here
         this.umis = {
-            [Network.Mainnet]: getUmi(Network.Mainnet),
-            [Network.Testnet]: getUmi(Network.Testnet)
+            [Network.Mainnet]: this.createUmi(Network.Mainnet),
+            [Network.Testnet]: this.createUmi(Network.Testnet)
         }
+    }
+
+    private createUmi(network: Network): Umi {
+        const umi = createUmi(solanaHttpRpcUrl(ChainKey.Solana, network)).use(mplCore())
+        const signer = umi.eddsa.createKeypairFromSecretKey(
+            base58.decode(
+                this.cipherService.decrypt(
+                    envConfig().chainCredentials[ChainKey.Solana].metaplexAuthority[network].privateKey
+                )   
+            )
+        )
+        umi.use(keypairIdentity(signer)).use(mplToolbox())
+        return umi
     }
 
     public getUmi(network: Network): Umi {
@@ -87,7 +90,8 @@ export class SolanaService {
     public getVaultUmi(network: Network): Umi {
         const umi = createUmi(solanaHttpRpcUrl(ChainKey.Solana, network)).use(mplCore())
         const signer = umi.eddsa.createKeypairFromSecretKey(
-            base58.decode(envConfig().chainCredentials[ChainKey.Solana].vault[network].privateKey)
+            base58.decode(this.cipherService.decrypt(envConfig().chainCredentials[ChainKey.Solana].vault[network].privateKey)
+            )
         )
         umi.use(keypairIdentity(signer)).use(mplToolbox())
         return umi
@@ -142,7 +146,7 @@ export class SolanaService {
         fromAddress,
         toAddress,
         amount
-    }: CreateSolanaTransferSolTransactionParams): Promise<CreateSolanaTransferSolTransactionResponse> { 
+    }: CreateSolanaTransferSolTransactionParams): Promise<CreateSolanaTransferSolTransactionResponse> {
         const umi = this.umis[network]
         const tx = transferSol(umi, {
             source: createNoopSigner(publicKey(fromAddress)),
@@ -192,11 +196,11 @@ export class SolanaService {
         const collection = await fetchCollection(umi, collectionAddress)
         const asset = await fetchAsset(umi, nftAddress)
         const tx = burn(umi, {
-            asset, 
+            asset,
             collection,
             authority: createNoopSigner(publicKey(feePayer)),
             payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity,
-        })  
+        })
         return { transaction: tx }
     }
 
@@ -292,7 +296,7 @@ export class SolanaService {
             payer: feePayer ? createNoopSigner(publicKey(feePayer)) : umi.identity
         })
         return { transaction }
-    }   
+    }
 
     public async createFreezeNFTTransaction({
         network = Network.Testnet,
@@ -328,5 +332,5 @@ export class SolanaService {
         }).sendAndConfirm(umi)
         return { signature: base58.encode(signature) }
     }
-    
+
 }

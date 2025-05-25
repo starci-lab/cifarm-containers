@@ -12,12 +12,11 @@ export class DecryptFromBase64Command extends CommandRunner {
         super()
     }
 
-    async run(_: Array<string>, options?: DecryptToBase64CommandOptions): Promise<void> {
+    async run(_: Array<string>, options?: DecryptFromBase64CommandOptions): Promise<void> {
         this.logger.debug("Decrypting the text from base64...")
-        const { text, password } = options
-        const iv = this.cipherService.generateIv(password)
+        const { text } = options
         try {
-            const decryptedText = this.cipherService.decrypt(text, iv)
+            const decryptedText = this.cipherService.decrypt(text)
             this.logger.debug(`Decrypted text: ${decryptedText}`)
         } catch (error) {
             this.logger.error(`Failed to decrypt the text: ${error.message}`)
@@ -32,18 +31,8 @@ export class DecryptFromBase64Command extends CommandRunner {
     parseText(text: string): string {
         return text
     }
-
-    @Option({
-        flags: "-p, --password <password>",
-        description: "Password",
-        required: false
-    })
-    parsePassword(password: string): string {
-        return password
-    }
 }
 
-export interface DecryptToBase64CommandOptions {
+export interface DecryptFromBase64CommandOptions {
     text: string
-    password: string
 }
