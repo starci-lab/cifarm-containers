@@ -461,7 +461,7 @@ export class SystemSeeder implements Seeder {
                         placedItemTypeId: createObjectId(PlacedItemTypeId.DragonFruit),
                         name: "Dragon Fruit",
                         collectionAddress: "8NC9J5AJZg3jmXnzopeiwwv9NJToLwnJjiPsJKFRdgKz",
-                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/dragon-fruit.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -510,8 +510,8 @@ export class SystemSeeder implements Seeder {
                     [Network.Mainnet]: {
                         placedItemTypeId: createObjectId(PlacedItemTypeId.DragonFruit),
                         name: "Dragon Fruit",
-                        collectionAddress: "HJWgeQ1DBRkVhbPnJMh5kNKAngjBsoUmwZFRmPHa8Xy3",
-                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/dragon_fruit_collection.png",
+                        collectionAddress: "Bz2d2c3j5prkiTwSaPnJmMvhf2mQGS2LJWci3QD1mYYn",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/dragon-fruit.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -668,7 +668,7 @@ export class SystemSeeder implements Seeder {
                         placedItemTypeId: createObjectId(PlacedItemTypeId.Jackfruit),
                         name: "Jackfruit",
                         collectionAddress: "2Ap4nT8Pby5LUEB7TvbwsLUnr1q7NBBCoLQZR4Ei3dNh",
-                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_collection.png",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/jackfruit.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -717,8 +717,8 @@ export class SystemSeeder implements Seeder {
                     [Network.Mainnet]: {
                         placedItemTypeId: createObjectId(PlacedItemTypeId.Jackfruit),
                         name: "Jackfruit",
-                        collectionAddress: "7ek9uoCatAvTo4dbgUpeUjsDgDhCXwFPuizDwkTnYpvD",
-                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/jackfruit_collection.png",
+                        collectionAddress: "5fyfT1qh1xq8MUtUG2VTERNwpQE45L8AYvBWcmQfZe3m",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/jackfruit.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -875,7 +875,7 @@ export class SystemSeeder implements Seeder {
                         placedItemTypeId: createObjectId(PlacedItemTypeId.Pomegranate),
                         name: "Pomegranate",
                         collectionAddress: "CRUwWJr8eAPaHoj7kA5WrpKMSiotV9vdMxdXUJLZfe9b",
-                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_collection.png",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/pomegranate.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -924,8 +924,8 @@ export class SystemSeeder implements Seeder {
                     [Network.Mainnet]: {
                         placedItemTypeId: createObjectId(PlacedItemTypeId.Pomegranate),
                         name: "Pomegranate",
-                        collectionAddress: "d1CTVb2B4fPkbQi6FVgZAWVvWbaHPNruwncoAjcejpL",
-                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/pomegranate_collection.png",
+                        collectionAddress: "5Wkwa8TmvQrAnubA9RJfCaJC44QafJbsYgoMfdMu23BA",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/pomegranate.png",
                         fruitStages: {
                             stages: [
                                 {
@@ -1132,8 +1132,8 @@ export class SystemSeeder implements Seeder {
                     [Network.Mainnet]: {
                         placedItemTypeId: createObjectId(PlacedItemTypeId.Rambutan),
                         name: "Rambutan",
-                        collectionAddress: "B8pPptqT3vKeVmMDqkz1EoBr5fGFymJVeVCUPLgYe1kV",
-                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/rambutan_collection.png",
+                        collectionAddress: "ECWpmdiBbAk4JcXnhbrSCnTMia7M8hf4gtfnfD7Q8jM5",
+                        imageUrl: "https://cifarm.sgp1.cdn.digitaloceanspaces.com/collection-metadata/rambutan.png",
                         fruitStages: {
                             stages: [
                                 {
