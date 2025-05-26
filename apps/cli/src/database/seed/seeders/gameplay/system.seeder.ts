@@ -803,12 +803,12 @@ export class SystemSeeder implements Seeder {
         const tokenVaults = {
             [Network.Testnet]: {
                 maxPaidAmount: 5,
-                maxPaidDecreasePercentage: 0.01,
+                maxPaidDecreasePercentage: 0.0001,
                 vaultPaidPercentage: 0.05
             },
             [Network.Mainnet]: {
                 maxPaidAmount: 5,
-                maxPaidDecreasePercentage: 0.01,
+                maxPaidDecreasePercentage: 0.0001,
                 vaultPaidPercentage: 0.05
             }
         }

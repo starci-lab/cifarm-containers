@@ -23,6 +23,11 @@ export class KeyValueStoreSchema extends AbstractSchema {
     })
     @Prop({ type: Object, required: true })
         value: object
+
+    // version to ensure the data is override or not
+    @Field(() => Int)
+    @Prop({ type: Number, default: 0 })
+        version: number
 }
 
 // Generate Mongoose Schema

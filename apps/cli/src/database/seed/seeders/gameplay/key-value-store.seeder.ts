@@ -15,46 +15,51 @@ export class KeyValueStoreSeeder implements Seeder {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection
-    ) {}
+    ) { }
 
     public async seed(): Promise<void> {
         this.logger.debug("Seeding key value store...")
-        
+
         const data: Array<DeepPartial<KeyValueStoreSchema>> = [
             {
                 _id: createObjectId(KeyValueStoreId.EnergyRegenerationLastSchedule),
                 displayId: KeyValueStoreId.EnergyRegenerationLastSchedule,
                 value: {
                     date: dayjs().utc().toDate()
-                }
+                },
+                version: 1
             },
             {
                 _id: createObjectId(KeyValueStoreId.AnimalLastSchedule),
                 displayId: KeyValueStoreId.AnimalLastSchedule,
                 value: {
                     date: dayjs().utc().toDate()
-                }
+                },
+                version: 1
             },
             {
                 _id: createObjectId(KeyValueStoreId.FruitLastSchedule),
                 displayId: KeyValueStoreId.FruitLastSchedule,
                 value: {
                     date: dayjs().utc().toDate()
-                }
+                },
+                version: 1
             },
             {
                 _id: createObjectId(KeyValueStoreId.PlantLastSchedule),
                 displayId: KeyValueStoreId.PlantLastSchedule,
-                value: {    
+                value: {
                     date: dayjs().utc().toDate()
-                }
+                },
+                version: 1
             },
             {
                 _id: createObjectId(KeyValueStoreId.BeeHouseLastSchedule),
                 displayId: KeyValueStoreId.BeeHouseLastSchedule,
-                value: {    
+                value: {
                     date: dayjs().utc().toDate()
-                }
+                },
+                version: 1
             },
             {
                 _id: createObjectId(KeyValueStoreId.VaultInfos),
@@ -62,20 +67,23 @@ export class KeyValueStoreSeeder implements Seeder {
                 value: {
                     [Network.Mainnet]: {
                         paidCount: 0,
-                        tokenLocked: 0,
+                        tokenLocked: 0
                     },
                     [Network.Testnet]: {
                         paidCount: 0,
-                        tokenLocked: 0,
+                        tokenLocked: 0
                     },
-                }
+                },
+                version: 1
             }
         ]
 
         // Check each entry and only insert if it doesn't exist
         for (const entry of data) {
             const existingEntry = await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).findById(entry._id)
-            if (!existingEntry) {
+            if (!existingEntry || existingEntry.version !== entry.version) {
+                // delete the existing entry if it exists
+                await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).deleteOne({ _id: entry._id })
                 await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).create(entry)
                 this.logger.debug(`Created new key-value store entry: ${entry.displayId}`)
             } else {
@@ -85,6 +93,6 @@ export class KeyValueStoreSeeder implements Seeder {
     }
 
     public async drop(): Promise<void> {
-        await this.connection.model(KeyValueStoreSchema.name).deleteMany({})
+        //await this.connection.model(KeyValueStoreSchema.name).deleteMany({})
     }
 }
