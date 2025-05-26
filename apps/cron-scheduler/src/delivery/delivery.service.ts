@@ -4,14 +4,11 @@ import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import { BulkJobOptions, Queue } from "bullmq"
 import { v4 } from "uuid"
 import { DeliveryJobData } from "./delivery.dto"
-import {
-    OnEventLeaderElected,
-    OnEventLeaderLost
-} from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
 import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
-
+import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
+import { OnEvent } from "@nestjs/event-emitter"
 @Injectable()
 export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
@@ -19,12 +16,12 @@ export class DeliveryService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEventLeaderElected()
+    @OnEvent(LeaderElectedEvent)
     handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEventLeaderLost()
+    @OnEvent(LeaderLostEvent)
     handleLeaderLost() {
         this.isLeader = false
     }
@@ -41,6 +38,7 @@ export class DeliveryService {
     @Cron("0,15,30,45 * * * *", { utcOffset: 7 })
     //@Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     public async process() {
+        this.logger.log("Processing delivery...")
         if (!this.isLeader) {
             return
         }

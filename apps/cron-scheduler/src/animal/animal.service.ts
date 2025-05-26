@@ -14,7 +14,6 @@ import {
 import { BulkJobOptions, Queue } from "bullmq"
 import { v4 } from "uuid"
 import { AnimalJobData } from "./animal.dto"
-import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
@@ -23,6 +22,8 @@ import { ANIMAL_CACHE_SPEED_UP, AnimalCacheSpeedUpData } from "./animal.e2e"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
 import { StaticService } from "@src/gameplay"
+import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
+import { OnEvent } from "@nestjs/event-emitter"
 @Injectable()
 export class AnimalService {
     private readonly logger = new Logger(AnimalService.name)
@@ -39,12 +40,12 @@ export class AnimalService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEventLeaderElected()
+    @OnEvent(LeaderElectedEvent)
     handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEventLeaderLost()
+    @OnEvent(LeaderLostEvent)
     handleLeaderLost() {
         this.isLeader = false
     }

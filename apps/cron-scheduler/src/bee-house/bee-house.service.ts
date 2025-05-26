@@ -14,7 +14,6 @@ import {
 import { BulkJobOptions, Queue } from "bullmq"
 import { v4 } from "uuid"
 import { BeeHouseJobData } from "./bee-house.dto"
-import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 import { DateUtcService } from "@src/date"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
@@ -22,7 +21,8 @@ import { BEE_HOUSE_CACHE_SPEED_UP, BeeHouseCacheSpeedUpData } from "./bee-house.
 import { e2eEnabled } from "@src/env"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-
+import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
+import { OnEvent } from "@nestjs/event-emitter"
 @Injectable()
 export class BeeHouseService {
     private readonly logger = new Logger(BeeHouseService.name)
@@ -38,12 +38,12 @@ export class BeeHouseService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEventLeaderElected()
+    @OnEvent(LeaderElectedEvent)
     handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEventLeaderLost()
+    @OnEvent(LeaderLostEvent)
     handleLeaderLost() {
         this.isLeader = false
     }
