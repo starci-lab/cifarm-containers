@@ -29,7 +29,7 @@ export class RefreshService {
                 // Fetch the session with the provided refresh token
                 const sessionData = await this.connection
                     .model<SessionSchema>(SessionSchema.name)
-                    .findOne({ refreshToken })
+                    .findOne({ refreshToken, isActive: true })
                     .session(session)
 
                 if (!sessionData) {

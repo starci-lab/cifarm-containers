@@ -7,6 +7,5 @@ import { LogoutService } from "./logout.service"
         LogoutResolver,
         LogoutService
     ],
-    exports: [LogoutService]
 })
 export class LogoutModule {} 

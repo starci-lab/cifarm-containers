@@ -28,7 +28,7 @@ export class GoogleService {
                     oauthProviderId: _user.id,
                     network: _user.network,
                     oauthProvider: OauthProviderName.Google,
-                })  
+                }).session(session)
                 let create = false
                 if (!user) {
                     create = true

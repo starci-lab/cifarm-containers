@@ -15,27 +15,25 @@ export class LogoutService {
 
     public async logout({ refreshToken }: LogoutRequest): Promise<LogoutResponse> {
         const mongoSession = await this.connection.startSession()
-
         try {
-
-            console.log("refreshToken", refreshToken)
-            // check if the refresh token is valid
-            const session = await this.connection
-                .model<SessionSchema>(SessionSchema.name)
-                .findOne({ refreshToken })
-
-            if (!session) {
-                throw new GraphQLError("Invalid refresh token or already logged out")
-            }
-
             await mongoSession.withTransaction(async (session) => {
+                // check if the refresh token is valid
+                const _session = await this.connection
+                    .model<SessionSchema>(SessionSchema.name)
+                    .findOne({ refreshToken, isActive: true }).session(session)
+                if (!_session) {
+                    throw new GraphQLError("Invalid refresh token or already logged out", {
+                        extensions: {
+                            code: "INVALID_REFRESH_TOKEN",
+                        },
+                    })
+                }
                 // Remove the session with the provided refresh token
                 await this.connection
                     .model<SessionSchema>(SessionSchema.name)
-                    .deleteOne({ refreshToken })
+                    .updateOne({ refreshToken }, { $set: { isActive: false } })
                     .session(session)
             })
-
             return {
                 success: true,
                 message: "User logged out successfully",

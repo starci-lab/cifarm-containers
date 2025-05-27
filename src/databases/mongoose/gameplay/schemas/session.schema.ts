@@ -32,6 +32,12 @@ export class SessionSchema extends AbstractSchema {
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name })
         user: UserSchema
+
+    @Field(() => Boolean, {
+        description: "Whether the session is active"
+    })
+    @Prop({ type: Boolean, default: true })
+        isActive: boolean
 }
 
 export const SessionSchemaClass = SchemaFactory.createForClass(SessionSchema)
