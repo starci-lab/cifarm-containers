@@ -15,7 +15,7 @@ export class DeliveryService {
 
     // Flag to determine if the current instance is the leader
     private isLeader = false
-
+    
     @OnEvent(LeaderElectedEvent)
     handleLeaderElected() {
         this.isLeader = true
@@ -33,12 +33,25 @@ export class DeliveryService {
         private readonly dateUtcService: DateUtcService
     ) {}
 
-    
+    @Cron("*/1 * * * * *")
+    async logDeliveryStatus() {
+        if (!this.isLeader) {
+            this.logger.debug("Instance is not the leader. Delivery process will not run.")
+        } else {
+            this.logger.debug("Instance is the leader. Ready to process delivery if scheduled.")
+        }
+    }
+
     // deliver at 00:00, 15:00, 30:00, 45:00 each hour UTC+7
-    @Cron("0,15,30,45 * * * *", { utcOffset: 7 })
+    @Cron("0,15,30,45 * * * *")
     //@Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     public async process() {
-        this.logger.log("Processing delivery...")
+        // log the current and next scheduled delivery time
+        const now = this.dateUtcService.getDayjs()
+        const nextRun = this.dateUtcService.getNextCronRunUtc([0, 15, 30, 45])
+        this.logger.verbose(`Processing delivery at ${now.toISOString()} UTC`)
+        this.logger.verbose(`Next scheduled delivery: ${nextRun.toISOString()} UTC`)
+
         if (!this.isLeader) {
             return
         }
@@ -75,7 +88,6 @@ export class DeliveryService {
                 opts: bullData[BullQueueName.Delivery].opts
             }))
 
-            this.logger.verbose(`Adding ${batches.length} batches to the queue.`)
             await this.deliveryQueue.addBulk(batches)
         } catch (error) {
             this.logger.error(error)

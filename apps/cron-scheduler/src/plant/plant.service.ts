@@ -51,6 +51,15 @@ export class PlantService {
     }
 
     @Cron("*/1 * * * * *")
+    async logPlantStatus() {
+        if (!this.isLeader) {
+            this.logger.debug("Instance is not the leader. Plant process will not run.")
+        } else {
+            this.logger.debug("Instance is the leader. Ready to process plant if scheduled.")
+        }
+    }
+
+    @Cron("*/1 * * * * *")
     async process() {
         if (!this.isLeader) {
             return
@@ -124,10 +133,8 @@ export class PlantService {
                     },
                     opts: bullData[BullQueueName.Plant].opts
                 }))
-                const jobs = await this.plantQueue.addBulk(batches)
-                this.logger.verbose(
-                    `Added ${jobs.at(0).name} jobs to the plant queue. Time: ${time}`
-                )
+                await this.plantQueue.addBulk(batches)
+
             }
 
             await this.connection

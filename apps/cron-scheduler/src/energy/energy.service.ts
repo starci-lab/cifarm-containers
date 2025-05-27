@@ -50,6 +50,15 @@ export class EnergyService {
     }
 
     @Cron("*/1 * * * * *")
+    async logEnergyStatus() {
+        if (!this.isLeader) {
+            this.logger.debug("Instance is not the leader. Energy process will not run.")
+        } else {
+            this.logger.debug("Instance is the leader. Ready to process energy if scheduled.")
+        }
+    }
+
+    @Cron("*/1 * * * * *")
     async process() {
         if (!this.isLeader) {
             return
@@ -111,10 +120,7 @@ export class EnergyService {
                 opts: bullData[BullQueueName.Energy].opts
             }))
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
-            const jobs = await this.EnergyQueue.addBulk(batches)
-            this.logger.verbose(
-                `Added ${jobs.at(0).name} jobs to the regen energy queue. Time: ${time}`
-            )
+            await this.EnergyQueue.addBulk(batches)
 
             await this.connection
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)

@@ -51,6 +51,15 @@ export class AnimalService {
     }
 
     @Cron("*/1 * * * * *")
+    async logAnimalStatus() {
+        if (!this.isLeader) {
+            this.logger.debug("Instance is not the leader. Animal process will not run.")
+        } else {
+            this.logger.debug("Instance is the leader. Ready to process animal if scheduled.")
+        }
+    }
+
+    @Cron("*/1 * * * * *")
     async process() {
         if (!this.isLeader) {
             return
@@ -116,9 +125,8 @@ export class AnimalService {
                 opts: bullData[BullQueueName.Animal].opts
             }))
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
-            const jobs = await this.animalQueue.addBulk(batches)
-            this.logger.verbose(`Added ${jobs.at(0).name} jobs to the animal queue. Time: ${time}`)
-            
+            await this.animalQueue.addBulk(batches)
+
             await this.connection
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                 .updateOne(

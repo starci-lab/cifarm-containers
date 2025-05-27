@@ -7,7 +7,7 @@ import {
     WebSocketServer
 } from "@nestjs/websockets"
 import { Namespace, Socket } from "socket.io"
-import { SocketCoreService, SocketLike } from "@src/io"
+import { SocketCoreService, SocketLike, TypedSocket } from "@src/io"
 import { SocketData } from "./auth.types"
 import { GameplayWebSocketGateway, NAMESPACE } from "../gateway.decorators"
 import { InjectMongoose, UserSchema } from "@src/databases"
@@ -49,7 +49,11 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
             .updateOne({ _id: user.id }, { $set: { isOnline: true } })
     }
 
-    async handleDisconnect(@ConnectedSocket() socket: Socket) {
+    async handleDisconnect(@ConnectedSocket() socket: TypedSocket<SocketData>) {
+        // if socket is disconnected before user is set, do nothing
+        if (!socket.data.user) {
+            return
+        }
         // when disconnected, update the last online time
         await this.connection
             .model<UserSchema>(UserSchema.name)

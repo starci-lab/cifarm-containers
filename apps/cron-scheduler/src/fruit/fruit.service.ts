@@ -50,6 +50,16 @@ export class FruitService {
         this.isLeader = false
     }
 
+    
+    @Cron("*/1 * * * * *")
+    async logFruitStatus() {
+        if (!this.isLeader) {
+            this.logger.debug("Instance is not the leader. Fruit process will not run.")
+        } else {
+            this.logger.debug("Instance is the leader. Ready to process fruit if scheduled.")
+        }
+    }
+
     @Cron("*/1 * * * * *")
     async process() {
         if (!this.isLeader) {
@@ -127,10 +137,7 @@ export class FruitService {
                     },
                     opts: bullData[BullQueueName.Fruit].opts
                 }))
-                const jobs = await this.fruitQueue.addBulk(batches)
-                this.logger.verbose(
-                    `Added ${jobs.at(0).name} jobs to the fruit queue. Time: ${time}`
-                )
+                await this.fruitQueue.addBulk(batches)
             }
 
             await this.connection

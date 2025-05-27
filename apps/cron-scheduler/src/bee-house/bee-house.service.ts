@@ -49,6 +49,15 @@ export class BeeHouseService {
     }
 
     @Cron("*/1 * * * * *")
+    async logBeeHouseStatus() {
+        if (!this.isLeader) {
+            this.logger.debug("Instance is not the leader. Bee house process will not run.")
+        } else {
+            this.logger.debug("Instance is the leader. Ready to process bee house if scheduled.")
+        }
+    }
+
+    @Cron("*/1 * * * * *")
     async process() {
         if (!this.isLeader) {
             return
@@ -86,7 +95,6 @@ export class BeeHouseService {
                     KeyValueRecord<BeeHouseLastSchedule>
                 >(createObjectId(KeyValueStoreId.BeeHouseLastSchedule))
 
-            this.logger.debug(`Found ${count} bee houses that need to be processed`)
             if (count !== 0) {
                 //split into 10000 per batch
                 const batchSize = bullData[BullQueueName.BeeHouse].batchSize
@@ -119,10 +127,7 @@ export class BeeHouseService {
                     },
                     opts: bullData[BullQueueName.BeeHouse].opts
                 }))
-                const jobs = await this.beeHouseQueue.addBulk(batches)
-                this.logger.verbose(
-                    `Added ${jobs.at(0).name} jobs to the bee house queue. Time: ${time}`
-                )
+                await this.beeHouseQueue.addBulk(batches)
             }
 
             await this.connection
