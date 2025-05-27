@@ -50,15 +50,6 @@ export class PlantService {
     }
 
     @Cron("*/1 * * * * *")
-    async logPlantStatus() {
-        if (!this.isLeader) {
-            this.logger.debug("Instance is not the leader. Plant process will not run.")
-        } else {
-            this.logger.debug("Instance is the leader. Ready to process plant if scheduled.")
-        }
-    }
-
-    @Cron("*/1 * * * * *")
     async process() {
         if (!this.isLeader) {
             return
@@ -98,7 +89,7 @@ export class PlantService {
                 .findById<KeyValueRecord<PlantLastSchedule>>(
                     createObjectId(KeyValueStoreId.PlantLastSchedule)
                 )
-
+            this.logger.verbose(`Found ${count} crops that need to be grown`)
             // this.logger.debug(`Found ${count} crops that need to be grown`)
             if (count !== 0) {
                 //split into 10000 per batch

@@ -1,7 +1,7 @@
 import { DynamicModule, Module, Provider } from "@nestjs/common"
 import { ConfigurableModuleClass, OPTIONS_TYPE } from "./io.module-definition"
 import { IoAdapterType, MongoDatabase, RedisType } from "@src/env"
-import { MongoDbModule, RedisModule } from "@src/native"
+import { IoRedisModule, MongoDbModule } from "@src/native"
 import { NestExport, NestImport, NestProvider } from "@src/common"
 import { WS_ADAPTER_FACTORY } from "./io.constants"
 import { ClusterIoAdapterFactory, MongoDbIoAdapterFactory, RedisIoAdapterFactory, RedisStreamIoAdapterFactory } from "./adapters"
@@ -28,7 +28,7 @@ export class IoModule extends ConfigurableModuleClass {
         case IoAdapterType.Redis: {
             if (!options.useGlobalNativeImports) {
                 imports.push(
-                    RedisModule.register({
+                    IoRedisModule.register({
                         type: RedisType.Adapter
                     })
                 )
@@ -70,7 +70,7 @@ export class IoModule extends ConfigurableModuleClass {
         case IoAdapterType.RedisStream: {
             if (!options.useGlobalNativeImports) {
                 imports.push(
-                    RedisModule.register({
+                    IoRedisModule.register({
                         type: RedisType.Adapter
                     })
                 )

@@ -49,15 +49,6 @@ export class EnergyService {
     }
 
     @Cron("*/1 * * * * *")
-    async logEnergyStatus() {
-        if (!this.isLeader) {
-            this.logger.debug("Instance is not the leader. Energy process will not run.")
-        } else {
-            this.logger.debug("Instance is the leader. Ready to process energy if scheduled.")
-        }
-    }
-
-    @Cron("*/1 * * * * *")
     async process() {
         if (!this.isLeader) {
             return
@@ -82,6 +73,7 @@ export class EnergyService {
                 >(createObjectId(KeyValueStoreId.EnergyRegenerationLastSchedule))
                 .session(mongoSession)
 
+            this.logger.verbose(`Found ${count} users that need energy regeneration`)
             if (count === 0) {
                 //no user needs energy regeneration
                 return

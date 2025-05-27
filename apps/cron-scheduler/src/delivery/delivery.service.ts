@@ -33,25 +33,6 @@ export class DeliveryService {
         private readonly dateUtcService: DateUtcService
     ) {}
 
-    @Cron("*/1 * * * * *")
-    async logDeliveryStatus() {
-        if (!this.isLeader) {
-            this.logger.debug("Instance is not the leader. Delivery process will not run.")
-        } else {
-            this.logger.debug("Instance is the leader. Ready to process delivery if scheduled.")
-        }
-    }
-
-    @Cron("*/1 * * * * *")
-    async logNextDelivery() {
-        // log the current and next scheduled delivery time
-        const now = this.dateUtcService.getDayjs()
-        const nextRun = this.dateUtcService.getNextCronRunUtc([0, 15, 30, 45])
-        const diff = nextRun.diff(now, "seconds")
-        // log the difference between the current time and the next scheduled delivery time in seconds  
-        this.logger.verbose(`Next delivery: ${nextRun.toISOString()} UTC, ${diff} seconds`)
-    }
-
     // deliver at 00:00, 15:00, 30:00, 45:00 each hour UTC+7
     @Cron("0,15,30,45 * * * *")
     //@Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
@@ -73,6 +54,7 @@ export class DeliveryService {
                 .model<UserSchema>(UserSchema.name)
                 .countDocuments()
                 .session(mongoSession)
+            this.logger.verbose(`Found ${count} users that need delivery`)
             if (!count) {
                 return
             }

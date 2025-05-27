@@ -49,16 +49,6 @@ export class FruitService {
         this.isLeader = false
     }
 
-    
-    @Cron("*/1 * * * * *")
-    async logFruitStatus() {
-        if (!this.isLeader) {
-            this.logger.debug("Instance is not the leader. Fruit process will not run.")
-        } else {
-            this.logger.debug("Instance is the leader. Ready to process fruit if scheduled.")
-        }
-    }
-
     @Cron("*/1 * * * * *")
     async process() {
         if (!this.isLeader) {
@@ -95,6 +85,7 @@ export class FruitService {
             //         id: KeyValueStoreId.FruitGrowthLastSchedule
             //     }
             // })
+            this.logger.verbose(`Found ${count} fruits that need to be grown`)
             const {
                 value: { date }
             } = await this.connection

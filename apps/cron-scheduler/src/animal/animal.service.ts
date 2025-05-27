@@ -51,15 +51,6 @@ export class AnimalService {
     }
 
     @Cron("*/1 * * * * *")
-    async logAnimalStatus() {
-        if (!this.isLeader) {
-            this.logger.debug("Instance is not the leader. Animal process will not run.")
-        } else {
-            this.logger.debug("Instance is the leader. Ready to process animal if scheduled.")
-        }
-    }
-
-    @Cron("*/1 * * * * *")
     async process() {
         if (!this.isLeader) {
             return
@@ -89,6 +80,8 @@ export class AnimalService {
                     KeyValueRecord<AnimalLastSchedule>
                 >(createObjectId(KeyValueStoreId.AnimalLastSchedule))
                 .session(mongoSession)
+            this.logger.verbose(`Found ${count} animals that need to be processed`)
+
             if (count === 0) {
                 // this.logger.verbose("No animals to grow")
                 return

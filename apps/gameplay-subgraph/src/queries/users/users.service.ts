@@ -9,22 +9,27 @@ import {
     NeighborsSearchStatus
 } from "./users.dto"
 import { UserLike } from "@src/jwt"
-
+import { StaticService } from "@src/gameplay"
 @Injectable()
 export class UsersService {
     private readonly logger = new Logger(UsersService.name)
 
     constructor(
         @InjectMongoose()
-        private readonly connection: Connection
-    ) {}
+        private readonly connection: Connection,
+        private readonly staticService: StaticService
+    ) { }
 
     async user(id: string): Promise<UserSchema> {
         return await this.connection.model<UserSchema>(UserSchema.name).findById(id)
-    }   
+    }
 
-    private getStatusFilter(status?: NeighborsSearchStatus, useAdvancedSearch?: boolean) {
-        if (!status || status === NeighborsSearchStatus.All || useAdvancedSearch) {
+    private getStatusFilter({ status, useAdvancedSearch, isFullTextSearch }: GetStatusFilterParams) {
+        // do not add this fillter if full text search or advanced search is used
+        if (isFullTextSearch || !useAdvancedSearch) {
+            return {}
+        }
+        if (!status || status === NeighborsSearchStatus.All) {
             return {}
         }
         if (status === NeighborsSearchStatus.Online) {
@@ -34,14 +39,54 @@ export class UsersService {
         }
     }
 
-    private getLevelFilter(levelStart?: number, levelEnd?: number, isFullTextSearch?: boolean) {
-        if (!levelStart && !levelEnd || isFullTextSearch) {
+    private isFullTextSearch(searchString?: string) {
+        return searchString && searchString.length > 8
+    }
+
+    private getLevelFilter(
+        { userLevel, levelStart, levelEnd, isFullTextSearch, useAdvancedSearch }: GetLevelFilterParams
+    ) {
+        // do not add this fillter if full text search or advanced search is used
+        if (isFullTextSearch || !useAdvancedSearch) {
             return {}
         }
-        return { level: { 
-            ...(levelStart ? { $gte: levelStart } : {}),
-            ...(levelEnd ? { $lte: levelEnd } : {})
+        if (!levelStart && !levelEnd) {
+            return {
+                level: {
+                    $gte: userLevel - this.staticService.interactionPermissions.thiefLevelGapThreshold,
+                    $lte: userLevel + this.staticService.interactionPermissions.thiefLevelGapThreshold
+                }
+            }
         }
+        return {
+            level: {
+                ...(levelStart ? { $gte: levelStart } : {}),
+                ...(levelEnd ? { $lte: levelEnd } : {})
+            }
+        }
+    }
+
+    private getSearchFilter({ searchString, isFullTextSearch }: GetSearchFilterParams) {
+        if (isFullTextSearch) {
+            return {
+                $or: [
+                    { username: searchString },
+                    { email: searchString },
+                    { id: searchString },
+                    { oauthProviderId: searchString }
+                ]
+            }
+        }
+        if (!searchString) {
+            return {}
+        }
+        return {
+            $or: [
+                { username: { $regex: new RegExp(searchString, "i") } },
+                { email: { $regex: new RegExp(searchString, "i") } },
+                { id: { $regex: new RegExp(searchString, "i") } },
+                { oauthProviderId: { $regex: new RegExp(searchString, "i") } }
+            ]
         }
     }
 
@@ -56,13 +101,10 @@ export class UsersService {
                 .model<UserSchema>(UserSchema.name)
                 .find({
                     _id: { $ne: id },
-                    ...this.getLevelFilter(levelStart, levelEnd, useAdvancedSearch),
-                    $or: [
-                        { username: { $regex: new RegExp(searchString, "i") } },
-                        { email: { $regex: new RegExp(searchString, "i") } }
-                    ],
+                    ...this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch: this.isFullTextSearch(searchString), useAdvancedSearch }),
+                    ...this.getSearchFilter({ searchString, isFullTextSearch: this.isFullTextSearch(searchString) }),
                     network: user.network,
-                    ...this.getStatusFilter(status, useAdvancedSearch)
+                    ...this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch: this.isFullTextSearch(searchString) })
                 })
                 .skip(offset)
                 .limit(limit)
@@ -84,13 +126,10 @@ export class UsersService {
             })
             const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
                 _id: { $ne: id },
-                ...this.getLevelFilter(levelStart, levelEnd, useAdvancedSearch),
-                $or: [
-                    { username: { $regex: new RegExp(searchString, "i") } },
-                    { email: { $regex: new RegExp(searchString, "i") } }
-                ],
+                ...this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch: this.isFullTextSearch(searchString), useAdvancedSearch }),
+                ...this.getSearchFilter({ searchString, isFullTextSearch: this.isFullTextSearch(searchString) }),
                 network: user.network,
-                ...this.getStatusFilter(status, useAdvancedSearch)
+                ...this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch: this.isFullTextSearch(searchString) })
             }).session(mongoSession)
 
             return {
@@ -109,28 +148,22 @@ export class UsersService {
         const mongoSession = await this.connection.startSession()
         try {
             const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id).session(mongoSession)
-            
+
             const relations = await this.connection
                 .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
                 .find({
                     follower: id
                 }).session(mongoSession)
             const followeeIds = relations.map(({ followee }) => followee)
-            
+
             const data = await this.connection
                 .model<UserSchema>(UserSchema.name)
                 .find({
                     _id: { $in: followeeIds },
-                    ...this.getLevelFilter(levelStart, levelEnd, useAdvancedSearch),
-                    $or: [
-                        //fully option, search as you want
-                        { username: { $regex: new RegExp(searchString, "i") } },
-                        { email: { $regex: new RegExp(searchString, "i") } },
-                        { id: { $regex: new RegExp(searchString, "i") } },
-                        { oauthProviderId: { $regex: new RegExp(searchString, "i") } }
-                    ],
+                    ...this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch: this.isFullTextSearch(searchString) }),
+                    ...this.getSearchFilter({ searchString, isFullTextSearch: this.isFullTextSearch(searchString) }),
                     network: user.network,
-                    ...this.getStatusFilter(status, useAdvancedSearch)
+                    ...this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch: this.isFullTextSearch(searchString) })
                 })
                 .skip(offset)
                 .limit(limit)
@@ -144,16 +177,10 @@ export class UsersService {
 
             const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
                 _id: { $in: followeeIds },
-                ...this.getLevelFilter(levelStart, levelEnd, useAdvancedSearch),
-                $or: [
-                    //fully option, search as you want
-                    { username: { $regex: new RegExp(searchString, "i") } },
-                    { email: { $regex: new RegExp(searchString, "i") } },
-                    { id: { $regex: new RegExp(searchString, "i") } },
-                    { oauthProviderId: { $regex: new RegExp(searchString, "i") } }
-                ],
+                ...this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch: this.isFullTextSearch(searchString) }),
+                ...this.getSearchFilter({ searchString, isFullTextSearch: this.isFullTextSearch(searchString) }),
                 network: user.network,
-                ...this.getStatusFilter(status, useAdvancedSearch)
+                ...this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch: this.isFullTextSearch(searchString) })
             }).session(mongoSession)
 
             return {
@@ -164,4 +191,23 @@ export class UsersService {
             await mongoSession.endSession()
         }
     }
+}
+
+export interface GetLevelFilterParams {
+    userLevel: number,
+    levelStart?: number,
+    levelEnd?: number,
+    isFullTextSearch?: boolean,
+    useAdvancedSearch?: boolean
+}
+
+export interface GetSearchFilterParams {
+    searchString?: string,
+    isFullTextSearch?: boolean,
+}
+
+export interface GetStatusFilterParams {
+    status?: NeighborsSearchStatus,
+    useAdvancedSearch?: boolean,
+    isFullTextSearch?: boolean
 }

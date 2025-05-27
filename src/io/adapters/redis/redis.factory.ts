@@ -1,5 +1,5 @@
 import { INestApplication, Injectable } from "@nestjs/common"
-import { InjectRedis, RedisClientOrCluster } from "@src/native"
+import { InjectIoRedis, IoRedisClientOrCluster } from "@src/native"
 import { RedisIoAdapter } from "./redis.adapter"
 import { RedisType } from "@src/env"
 import { IoAdapterFactory } from "../../io.types"
@@ -7,8 +7,8 @@ import { IoAdapterFactory } from "../../io.types"
 @Injectable()
 export class RedisIoAdapterFactory implements IoAdapterFactory {
     constructor(
-        @InjectRedis(RedisType.Adapter)
-        private readonly redisClientOrCluster: RedisClientOrCluster,
+        @InjectIoRedis(RedisType.Adapter)
+        private readonly redisClientOrCluster: IoRedisClientOrCluster,
     ) {}
 
     public createAdapter(app: INestApplication) {

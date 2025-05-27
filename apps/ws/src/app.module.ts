@@ -1,6 +1,6 @@
 import { Module, ValidationPipe } from "@nestjs/common"
 import { DefaultNamespaceModule } from "./default"
-import { Container, envConfig, EnvModule } from "@src/env"
+import { Container, envConfig, EnvModule, RedisType } from "@src/env"
 import { CacheModule } from "@src/cache"
 import { IoModule } from "@src/io"
 import { CryptoModule } from "@src/crypto"
@@ -15,6 +15,7 @@ import { APP_PIPE } from "@nestjs/core"
 import { GameplayModule } from "@src/gameplay"
 import { ObjectModule } from "@src/object"
 import { ThrottlerModule } from "@src/throttler"
+import { IoRedisModule } from "@src/native"
 @Module({
     imports: [
         IdModule.register({
@@ -49,6 +50,10 @@ import { ThrottlerModule } from "@src/throttler"
             useGlobalImports: true
         }),
         ScheduleModule.forRoot(),
+        IoRedisModule.register({
+            type: RedisType.Adapter,
+            isGlobal: true
+        }),
         IoModule.register({
             useGlobalImports: true,
             adapter: envConfig().containers[Container.Ws].adapter,
