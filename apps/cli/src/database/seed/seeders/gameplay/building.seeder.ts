@@ -49,17 +49,17 @@ export class BuildingSeeder implements Seeder {
                     sellPrice: 1000,
                     upgrades: [
                         {
-                            capacity: 3,
+                            capacity: 2,
                             upgradeLevel: 1,
                         },
                         {
-                            upgradePrice: 1000,
-                            capacity: 5,
+                            upgradePrice: 2000,
+                            capacity: 4,
                             upgradeLevel: 2,
                         },
                         {
-                            upgradePrice: 2000,
-                            capacity: 10,
+                            upgradePrice: 4000,
+                            capacity: 6,
                             upgradeLevel: 3,
                         }
                     ]
@@ -70,26 +70,26 @@ export class BuildingSeeder implements Seeder {
                     availableInShop: true,
                     animalContainedType: AnimalType.Livestock,
                     maxUpgrade: 3,
-                    price: 2000,
+                    price: 4000,
                     unlockLevel: 10,
                     upgradeable: true,
                     maxOwnership: 3,
                     kind: BuildingKind.AnimalHouse,
                     sellable: true,
-                    sellPrice: 1000,
+                    sellPrice: 2000,
                     upgrades: [
                         {
-                            capacity: 3,
+                            capacity: 2,
                             upgradeLevel: 1,
                         },
                         {
-                            upgradePrice: 1000,
-                            capacity: 5,
+                            upgradePrice: 4000,
+                            capacity: 4,
                             upgradeLevel: 2,
                         },
                         {
-                            upgradePrice: 2000,
-                            capacity: 10,
+                            upgradePrice: 8000,
+                            capacity: 6,
                             upgradeLevel: 3,
                         }
                     ],
