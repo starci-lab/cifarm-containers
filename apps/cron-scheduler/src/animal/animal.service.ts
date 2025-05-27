@@ -22,8 +22,8 @@ import { ANIMAL_CACHE_SPEED_UP, AnimalCacheSpeedUpData } from "./animal.e2e"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
 import { StaticService } from "@src/gameplay"
-import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
-import { OnEvent } from "@nestjs/event-emitter"
+import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
+
 @Injectable()
 export class AnimalService {
     private readonly logger = new Logger(AnimalService.name)
@@ -40,12 +40,12 @@ export class AnimalService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEvent(LeaderElectedEvent)
+    @OnEventLeaderElected()
     handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEvent(LeaderLostEvent)
+    @OnEventLeaderLost()
     handleLeaderLost() {
         this.isLeader = false
     }

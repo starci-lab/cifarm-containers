@@ -7,8 +7,8 @@ import { DeliveryJobData } from "./delivery.dto"
 import { DateUtcService } from "@src/date"
 import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
-import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
-import { OnEvent } from "@nestjs/event-emitter"
+import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
+
 @Injectable()
 export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
@@ -16,12 +16,12 @@ export class DeliveryService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
     
-    @OnEvent(LeaderElectedEvent)
+    @OnEventLeaderElected()
     handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEvent(LeaderLostEvent)
+    @OnEventLeaderLost()
     handleLeaderLost() {
         this.isLeader = false
     }
@@ -42,19 +42,25 @@ export class DeliveryService {
         }
     }
 
+    @Cron("*/1 * * * * *")
+    async logNextDelivery() {
+        // log the current and next scheduled delivery time
+        const now = this.dateUtcService.getDayjs()
+        const nextRun = this.dateUtcService.getNextCronRunUtc([0, 15, 30, 45])
+        const diff = nextRun.diff(now, "seconds")
+        // log the difference between the current time and the next scheduled delivery time in seconds  
+        this.logger.verbose(`Next delivery: ${nextRun.toISOString()} UTC, ${diff} seconds`)
+    }
+
     // deliver at 00:00, 15:00, 30:00, 45:00 each hour UTC+7
     @Cron("0,15,30,45 * * * *")
     //@Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     public async process() {
-        // log the current and next scheduled delivery time
-        const now = this.dateUtcService.getDayjs()
-        const nextRun = this.dateUtcService.getNextCronRunUtc([0, 15, 30, 45])
-        this.logger.verbose(`Processing delivery at ${now.toISOString()} UTC`)
-        this.logger.verbose(`Next scheduled delivery: ${nextRun.toISOString()} UTC`)
-
+        this.logger.verbose("Processing delivery")
         if (!this.isLeader) {
             return
         }
+        this.logger.verbose("Delivery process started.")
         await this.deliver()
     }
 

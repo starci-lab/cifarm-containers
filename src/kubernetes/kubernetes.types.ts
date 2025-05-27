@@ -10,10 +10,12 @@ export interface LeaderElectionOptions {
     // lease name
     leaseName: string
     // renew interval
-    renewInterval?: number
+    renewalInterval?: number
     // await leadership
     awaitLeadership?: boolean
-    // use minikube for development
-    useMinikubeForDevelopment?: boolean
+    // log at level
+    logAtLevel?: "log" | "debug"
+    // namespace
+    namespace?: string
 }
 

@@ -16,7 +16,7 @@ import { FruitModule } from "./fruit"
 import { GameplayModule } from "@src/gameplay"
 import { IdModule } from "@src/id"
 import { BeeHouseModule } from "./bee-house"
-import { LeaderElectionModule } from "@aurory/nestjs-k8s-leader-election"
+import { KubernetesModule } from "@src/kubernetes"
 
 @Module({
     imports: [
@@ -29,7 +29,8 @@ import { LeaderElectionModule } from "@aurory/nestjs-k8s-leader-election"
         BullModule.forRoot(),
         MongooseModule.forRoot(),
         EventEmitterModule.forRoot({
-            global: true
+            global: true,
+            maxListeners: 100
         }),
         GameplayModule.register({
             isGlobal: true
@@ -44,12 +45,16 @@ import { LeaderElectionModule } from "@aurory/nestjs-k8s-leader-election"
             isGlobal: true,
         }),
         ScheduleModule.forRoot(),
-        LeaderElectionModule.forRoot({
-            leaseName: "cron-scheduler-leader-election",
-            logAtLevel: "debug",
-            namespace: envConfig().kubernetes.namespace,
-            renewalInterval: 10000,
-            awaitLeadership: true,
+        KubernetesModule.register({
+            isGlobal: true,
+            leaderElection: {
+                enabled: true,
+                leaseName: "cron-scheduler-leader-election",
+                logAtLevel: "log",
+                namespace: envConfig().kubernetes.namespace,
+                renewalInterval: 10000,
+                awaitLeadership: true,
+            }
         }),
         AnimalModule,
         DeliveryModule,

@@ -40,6 +40,7 @@ export enum ReceiverEventName {
     HarvestFruit = "harvest_fruit",
     UseBugNet = "use_bug_net",
     UseFruitFertilizer = "use_fruit_fertilizer",
+    RemovePlant = "remove_plant",
     // Community features
     HelpUseHerbicide = "help_use_herbicide",
     HelpUsePesticide = "help_use_pesticide",

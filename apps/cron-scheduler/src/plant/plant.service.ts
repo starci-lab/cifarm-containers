@@ -22,8 +22,7 @@ import { e2eEnabled } from "@src/env"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
 import { StaticService } from "@src/gameplay"
-import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
-import { OnEvent } from "@nestjs/event-emitter"
+import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 @Injectable()
 export class PlantService {
     private readonly logger = new Logger(PlantService.name)
@@ -40,12 +39,12 @@ export class PlantService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEvent(LeaderElectedEvent)
+    @OnEventLeaderElected()
     handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEvent(LeaderLostEvent)
+    @OnEventLeaderLost()
     handleLeaderLost() {
         this.isLeader = false
     }

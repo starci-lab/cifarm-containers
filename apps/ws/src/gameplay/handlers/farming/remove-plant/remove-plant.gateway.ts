@@ -11,18 +11,18 @@ import { UserLike } from "@src/jwt"
 import { WsUser } from "@src/decorators"
 import { ReceiverEventName } from "../../../events"
 import { EmitterService } from "../../../emitter"
-import { PlantSeedMessage } from "./plant-seed.dto"
-import { PlantSeedService } from "./remove-plan.service"
 import { WsThrottlerGuard } from "@src/throttler"
 import { UseGuards } from "@nestjs/common"
 import { GameplayWebSocketGateway, NAMESPACE } from "../../../gateway.decorators"
+import { RemovePlantMessage } from "./remove-plant.dto"
+import { RemovePlantService } from "./remove-plant.service"
 
 @GameplayWebSocketGateway()
-export class PlantSeedGateway implements OnGatewayInit {
-    private readonly logger = new Logger(PlantSeedGateway.name)
+export class RemovePlantGateway implements OnGatewayInit {
+    private readonly logger = new Logger(RemovePlantGateway.name)
 
     constructor(
-        private readonly plantSeedService: PlantSeedService,
+        private readonly removePlantService: RemovePlantService,
         private readonly emitterService: EmitterService
     ) {}
 
@@ -31,19 +31,19 @@ export class PlantSeedGateway implements OnGatewayInit {
 
     afterInit() {
         this.logger.verbose(
-            `Initialized gateway with name: ${PlantSeedGateway.name}, namespace: ${NAMESPACE}`
+            `Initialized gateway with name: ${RemovePlantGateway.name}, namespace: ${NAMESPACE}`
         )
     }
 
     
     @UseGuards(WsThrottlerGuard)
-    @SubscribeMessage(ReceiverEventName.PlantSeed)
-    public async plantSeed(
+    @SubscribeMessage(ReceiverEventName.RemovePlant)
+    public async removePlant(
         @ConnectedSocket() socket: Socket,
-        @MessageBody() payload: PlantSeedMessage,
+        @MessageBody() payload: RemovePlantMessage,
         @WsUser() user: UserLike
     ) {
-        const syncedResponse = await this.plantSeedService.plantSeed(user, payload)
+        const syncedResponse = await this.removePlantService.removePlant(user, payload)
         console.log(syncedResponse)
         this.emitterService.syncResponse({
             userId: user.id,

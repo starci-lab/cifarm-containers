@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common"
-import { PlantSeedService } from "./remove-plan.service"
-import { PlantSeedGateway } from "./remove-plant.gateway"
+import { RemovePlantService } from "./remove-plant.service"
+import { RemovePlantGateway } from "./remove-plant.gateway"
 
 @Module({
-    providers: [PlantSeedService, PlantSeedGateway],
+    providers: [RemovePlantService, RemovePlantGateway],
 })
-export class PlantSeedModule {} 
+export class RemovePlantModule {} 

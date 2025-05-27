@@ -21,8 +21,8 @@ import { BEE_HOUSE_CACHE_SPEED_UP, BeeHouseCacheSpeedUpData } from "./bee-house.
 import { e2eEnabled } from "@src/env"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
-import { OnEvent } from "@nestjs/event-emitter"
+import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
+
 @Injectable()
 export class BeeHouseService {
     private readonly logger = new Logger(BeeHouseService.name)
@@ -38,12 +38,12 @@ export class BeeHouseService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEvent(LeaderElectedEvent)
+    @OnEventLeaderElected()
     handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEvent(LeaderLostEvent)
+    @OnEventLeaderLost()
     handleLeaderLost() {
         this.isLeader = false
     }

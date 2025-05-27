@@ -13,7 +13,7 @@ import { UseFruitFertilizerModule } from "./use-fruit-fertilizer"
 import { HarvestFruitModule } from "./harvest-fruit"
 import { UpgradeBuildingModule } from "./upgrade-building"
 import { HarvestBeeHouseModule } from "./harvest-bee-house"
-
+import { RemovePlantModule } from "./remove-plant"
 @Module({
     imports: [
         UseWateringCanModule,
@@ -25,6 +25,7 @@ import { HarvestBeeHouseModule } from "./harvest-bee-house"
         HarvestAnimalModule,
         HarvestPlantModule,
         HarvestBeeHouseModule,
+        RemovePlantModule,
         PlantSeedModule,
         UseBugNetModule,
         UseFruitFertilizerModule,

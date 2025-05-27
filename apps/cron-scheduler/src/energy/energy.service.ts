@@ -20,15 +20,14 @@ import { ENERGY_CACHE_SPEED_UP, EnergyCacheSpeedUpData } from "./energy.e2e"
 import { e2eEnabled } from "@src/env"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-import { LeaderElectedEvent, LeaderLostEvent } from "@aurory/nestjs-k8s-leader-election"
-import { OnEvent } from "@nestjs/event-emitter"
+import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 // use different name to avoid conflict with the EnergyService exported from the gameplay module
 @Injectable()
 export class EnergyService {
     private readonly logger = new Logger(EnergyService.name)
 
     constructor(
-        @InjectQueue(bullData[BullQueueName.Energy].name) private readonly EnergyQueue: Queue,
+        @InjectQueue(bullData[BullQueueName.Energy].name) private readonly energyQueue: Queue,
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService,
@@ -39,12 +38,12 @@ export class EnergyService {
     // Flag to determine if the current instance is the leader
     private isLeader = false
 
-    @OnEvent(LeaderElectedEvent)
+    @OnEventLeaderElected()
     handleLeaderElected() {
         this.isLeader = true
     }
 
-    @OnEvent(LeaderLostEvent)
+    @OnEventLeaderLost()
     handleLeaderLost() {
         this.isLeader = false
     }
@@ -120,7 +119,7 @@ export class EnergyService {
                 opts: bullData[BullQueueName.Energy].opts
             }))
             //this.logger.verbose(`Adding ${batches.length} batches to the queue`)
-            await this.EnergyQueue.addBulk(batches)
+            await this.energyQueue.addBulk(batches)
 
             await this.connection
                 .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
