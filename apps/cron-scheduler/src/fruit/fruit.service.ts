@@ -22,7 +22,7 @@ import { e2eEnabled } from "@src/env"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
 import { StaticService } from "@src/gameplay"
-import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
+
 @Injectable()
 export class FruitService {
     private readonly logger = new Logger(FruitService.name)
@@ -36,24 +36,8 @@ export class FruitService {
         private readonly staticService: StaticService
     ) {}
 
-    // Flag to determine if the current instance is the leader
-    private isLeader = false
-
-    @OnEventLeaderElected()
-    handleLeaderElected() {
-        this.isLeader = true
-    }
-
-    @OnEventLeaderLost()
-    handleLeaderLost() {
-        this.isLeader = false
-    }
-
     @Cron("*/1 * * * * *")
     async process() {
-        if (!this.isLeader) {
-            return
-        }
         const mongoSession = await this.connection.startSession()
         try {
             const utcNow = this.dateUtcService.getDayjs()

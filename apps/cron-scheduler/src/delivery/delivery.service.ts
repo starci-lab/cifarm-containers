@@ -7,24 +7,10 @@ import { DeliveryJobData } from "./delivery.dto"
 import { DateUtcService } from "@src/date"
 import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
-import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 
 @Injectable()
 export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
-
-    // Flag to determine if the current instance is the leader
-    private isLeader = false
-    
-    @OnEventLeaderElected()
-    handleLeaderElected() {
-        this.isLeader = true
-    }
-
-    @OnEventLeaderLost()
-    handleLeaderLost() {
-        this.isLeader = false
-    }
 
     constructor(
         @InjectQueue(BullQueueName.Delivery) private readonly deliveryQueue: Queue,
@@ -37,11 +23,6 @@ export class DeliveryService {
     @Cron("0,15,30,45 * * * *")
     //@Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7
     public async process() {
-        this.logger.verbose("Processing delivery")
-        if (!this.isLeader) {
-            return
-        }
-        this.logger.verbose("Delivery process started.")
         await this.deliver()
     }
 
@@ -58,7 +39,6 @@ export class DeliveryService {
             if (!count) {
                 return
             }
-
             const batchSize = bullData[BullQueueName.Delivery].batchSize
             const batchCount = Math.ceil(count / batchSize)
 

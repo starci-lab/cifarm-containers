@@ -21,7 +21,6 @@ import { BEE_HOUSE_CACHE_SPEED_UP, BeeHouseCacheSpeedUpData } from "./bee-house.
 import { e2eEnabled } from "@src/env"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 
 @Injectable()
 export class BeeHouseService {
@@ -34,26 +33,9 @@ export class BeeHouseService {
         private readonly cacheManager: Cache,
         private readonly dateUtcService: DateUtcService
     ) {}
-
-    // Flag to determine if the current instance is the leader
-    private isLeader = false
-
-    @OnEventLeaderElected()
-    handleLeaderElected() {
-        this.isLeader = true
-    }
-
-    @OnEventLeaderLost()
-    handleLeaderLost() {
-        this.isLeader = false
-    }
-
+   
     @Cron("*/1 * * * * *")
     async process() {
-        if (!this.isLeader) {
-            return
-        }
-
         const mongoSession = await this.connection.startSession()
 
         try {

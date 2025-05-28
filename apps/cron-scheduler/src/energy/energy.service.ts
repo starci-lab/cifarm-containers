@@ -20,7 +20,6 @@ import { ENERGY_CACHE_SPEED_UP, EnergyCacheSpeedUpData } from "./energy.e2e"
 import { e2eEnabled } from "@src/env"
 import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
-import { OnEventLeaderElected, OnEventLeaderLost } from "@src/kubernetes"
 // use different name to avoid conflict with the EnergyService exported from the gameplay module
 @Injectable()
 export class EnergyService {
@@ -35,24 +34,8 @@ export class EnergyService {
         private readonly cacheManager: Cache
     ) {}
 
-    // Flag to determine if the current instance is the leader
-    private isLeader = false
-
-    @OnEventLeaderElected()
-    handleLeaderElected() {
-        this.isLeader = true
-    }
-
-    @OnEventLeaderLost()
-    handleLeaderLost() {
-        this.isLeader = false
-    }
-
     @Cron("*/1 * * * * *")
     async process() {
-        if (!this.isLeader) {
-            return
-        }
         const mongoSession = await this.connection.startSession()
         
         try {
