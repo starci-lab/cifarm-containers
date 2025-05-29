@@ -2,37 +2,37 @@ docker network create redis-cluster-network
 
 docker run -d --name redis-node-0 --net redis-cluster-network `
   -v redis-cluster_data-0:/bitnami/redis/data `
-  -e REDIS_PASSWORD=Cuong_A `
+  -e REDIS_PASSWORD=Cuong123_A `
   -e REDIS_NODES="redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" `
   -p 6379:6379 docker.io/bitnami/redis-cluster:7.4
 
 docker run -d --name redis-node-1 --net redis-cluster-network `
   -v redis-cluster_data-1:/bitnami/redis/data `
-  -e REDIS_PASSWORD=Cuong_A `
+  -e REDIS_PASSWORD=Cuong123_A `
   -e REDIS_NODES="redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" `
   -p 6380:6379 docker.io/bitnami/redis-cluster:7.4
 
 docker run -d --name redis-node-2 --net redis-cluster-network `
   -v redis-cluster_data-2:/bitnami/redis/data `
-  -e REDIS_PASSWORD=Cuong_A `
+  -e REDIS_PASSWORD=Cuong123_A `
   -e REDIS_NODES="redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" `
   -p 6381:6379 docker.io/bitnami/redis-cluster:7.4
 
 docker run -d --name redis-node-3 --net redis-cluster-network `
   -v redis-cluster_data-3:/bitnami/redis/data `
-  -e REDIS_PASSWORD=Cuong_A `
+  -e REDIS_PASSWORD=Cuong123_A `
   -e REDIS_NODES="redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" `
   -p 6382:6379 docker.io/bitnami/redis-cluster:7.4
 
 docker run -d --name redis-node-4 --net redis-cluster-network `
   -v redis-cluster_data-4:/bitnami/redis/data `
-  -e REDIS_PASSWORD=Cuong_A `
+  -e REDIS_PASSWORD=Cuong123_A `
   -e REDIS_NODES="redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" `
   -p 6383:6379 docker.io/bitnami/redis-cluster:7.4
 
 docker run -d --name redis-node-5 --net redis-cluster-network `
   -v redis-cluster_data-5:/bitnami/redis/data `
-  -e REDIS_PASSWORD=Cuong_A `
+  -e REDIS_PASSWORD=Cuong123_A `
   -e REDIS_CLUSTER_REPLICAS=1 `
   -e REDIS_NODES="redis-node-0 redis-node-1 redis-node-2 redis-node-3 redis-node-4 redis-node-5" `
   -e REDIS_CLUSTER_CREATOR=yes `

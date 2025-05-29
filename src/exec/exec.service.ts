@@ -23,11 +23,6 @@ export class ExecService {
             shell: this.shell,
         })
 
-        // Listen to stdout data events and log them
-        subprocess.stdout.on("data", (data) => {
-            this.logger.verbose(data.toString()) // Make sure to convert Buffer to string
-        })
-
         // Execute the command
         const { stdout, stderr } = await subprocess
 

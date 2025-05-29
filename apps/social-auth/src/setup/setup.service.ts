@@ -261,6 +261,7 @@ export class SetupService {
                 {
                     refreshToken,
                     expiredAt,
+                    isActive: true,
                     user: user.id
                 }
             ],

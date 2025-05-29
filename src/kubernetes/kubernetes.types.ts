@@ -17,5 +17,17 @@ export interface LeaderElectionOptions {
     logAtLevel?: "log" | "debug"
     // namespace
     namespace?: string
+    // maximum number of retries for operations
+    maxRetries?: number
+    // base delay for exponential backoff (ms)
+    baseDelay?: number
+    // maximum delay for exponential backoff (ms)
+    maxDelay?: number
+    // timeout for watch health check (ms)
+    watchHealthTimeout?: number
+    // maximum number of circuit breaker failures before opening
+    maxCircuitBreakerFailures?: number
+    // circuit breaker timeout before attempting reset (ms)
+    circuitBreakerTimeout?: number
 }
 

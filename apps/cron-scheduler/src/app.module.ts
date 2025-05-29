@@ -3,7 +3,7 @@ import { Module } from "@nestjs/common"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { ScheduleModule } from "@nestjs/schedule"
 import { BullModule } from "@src/bull"
-import { envConfig, EnvModule } from "@src/env"
+import { EnvModule } from "@src/env"
 import { EnergyModule } from "./energy"
 import { AnimalModule } from "./animal"
 import { PlantModule } from "./plant"
@@ -16,7 +16,6 @@ import { FruitModule } from "./fruit"
 import { GameplayModule } from "@src/gameplay"
 import { IdModule } from "@src/id"
 import { BeeHouseModule } from "./bee-house"
-import { KubernetesModule } from "@src/kubernetes"
 
 @Module({
     imports: [
@@ -25,7 +24,9 @@ import { KubernetesModule } from "@src/kubernetes"
             name: "Cron Scheduler"
         }),
         EnvModule.forRoot(),
-        ScheduleModule.forRoot(),
+        ScheduleModule.forRoot({
+            timeouts: true,
+        }),
         BullModule.forRoot(),
         MongooseModule.forRoot(),
         EventEmitterModule.forRoot({
@@ -45,17 +46,6 @@ import { KubernetesModule } from "@src/kubernetes"
             isGlobal: true,
         }),
         ScheduleModule.forRoot(),
-        KubernetesModule.register({
-            isGlobal: true,
-            leaderElection: {
-                enabled: true,
-                leaseName: "cron-scheduler-leader-election",
-                logAtLevel: "log",
-                namespace: envConfig().kubernetes.namespace,
-                renewalInterval: 10000,
-                awaitLeadership: true,
-            }
-        }),
         AnimalModule,
         DeliveryModule,
         EnergyModule,
