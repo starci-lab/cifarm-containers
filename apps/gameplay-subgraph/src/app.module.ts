@@ -18,6 +18,9 @@ import { IdModule } from "@src/id"
 import { ThrottlerModule } from "@src/throttler"
 import { BlockchainDatabaseModule } from "@src/blockchain-database"
 import { S3Module } from "@src/s3"
+import { ElasticsearchModule } from "@src/elasticsearch"
+import { MigrateModule } from "./migrate"
+
 @Module({
     imports: [
         IdModule.register({
@@ -38,6 +41,9 @@ import { S3Module } from "@src/s3"
             isGlobal: true
         }),
         KafkaModule.register({
+            isGlobal: true
+        }),
+        ElasticsearchModule.register({
             isGlobal: true
         }),
         BlockchainModule.register({
@@ -61,7 +67,8 @@ import { S3Module } from "@src/s3"
         }),
         //functional modules
         QueriesModule,
-        MutationsModule
+        MutationsModule,
+        MigrateModule
     ],
     providers: [
         {
