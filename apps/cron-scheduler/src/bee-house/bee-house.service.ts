@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
@@ -23,7 +23,7 @@ import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
 
 @Injectable()
-export class BeeHouseService {
+export class BeeHouseService implements OnModuleInit {
     private readonly logger = new Logger(BeeHouseService.name)
     constructor(
         @InjectQueue(BullQueueName.BeeHouse) private readonly beeHouseQueue: Queue,
@@ -33,7 +33,12 @@ export class BeeHouseService {
         private readonly cacheManager: Cache,
         private readonly dateUtcService: DateUtcService
     ) {}
-   
+
+    public async onModuleInit() {
+        // clear all jobs in the queue
+        await this.beeHouseQueue.drain(true)
+    }
+
     @Cron("*/1 * * * * *")
     async process() {
         const mongoSession = await this.connection.startSession()

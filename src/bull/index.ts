@@ -1,5 +1,5 @@
 export * from "./types"
-export * from "./bull.constants"
+export * from "./constants"
 export * from "./bull.module"
 export * from "./utils"
 export * from "./bull.decorators"

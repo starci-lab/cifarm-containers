@@ -1,5 +1,5 @@
 import { InjectQueue } from "@nestjs/bullmq"
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName } from "@src/bull"
 import {
@@ -22,7 +22,7 @@ import { Connection } from "mongoose"
 import { createObjectId } from "@src/common"
 // use different name to avoid conflict with the EnergyService exported from the gameplay module
 @Injectable()
-export class EnergyService {
+export class EnergyService implements OnModuleInit {
     private readonly logger = new Logger(EnergyService.name)
 
     constructor(
@@ -33,6 +33,11 @@ export class EnergyService {
         @InjectCache()
         private readonly cacheManager: Cache
     ) {}
+
+    public async onModuleInit() {
+        // clear all jobs in the queue
+        await this.energyQueue.drain(true)
+    }
 
     @Cron("*/1 * * * * *")
     async process() {

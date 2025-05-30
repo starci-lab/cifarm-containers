@@ -22,5 +22,5 @@ export interface RegisterQueueOptions {
 }
 
 export type WithPing<T> = Partial<T> & {
-    isPing?: boolean
+    ping?: boolean
 }

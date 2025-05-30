@@ -9,7 +9,6 @@ import { Connection } from "mongoose"
 import { EnergyService, StaticService, SyncService } from "@src/gameplay"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
-import { envConfig } from "@src/env"
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
     private readonly logger = new Logger(EnergyWorker.name)
@@ -28,11 +27,6 @@ export class EnergyWorker extends WorkerHost {
     }
 
     public override async process(job: Job<EnergyJobData>): Promise<void> {
-        // if job is not processed in 15s, it will be removed
-        if (job.timestamp + envConfig().cron.timeout < Date.now()) {
-            this.logger.warn(`Job ${job.id} is taking too long to process, removing it`)
-            return
-        }
         const { time, skip, take, utcTime } = job.data
 
         const users = await this.connection

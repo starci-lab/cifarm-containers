@@ -20,7 +20,6 @@ import { Producer } from "kafkajs"
 import { createObjectId, WithStatus } from "@src/common"
 import { BeeHouseJobData } from "@apps/cron-scheduler"
 import { SyncPlacedItemsPayload } from "@apps/ws"
-import { envConfig } from "@src/env"
 
 @Processor(bullData[BullQueueName.BeeHouse].name)
 export class BeeHouseWorker extends WorkerHost {
@@ -40,11 +39,6 @@ export class BeeHouseWorker extends WorkerHost {
     }
 
     public override async process(job: Job<BeeHouseJobData>): Promise<void> {
-        // if job is not processed in 15s, it will be removed
-        if (job.timestamp + envConfig().cron.timeout < Date.now()) {
-            this.logger.warn(`Job ${job.id} is taking too long to process, removing it`)
-            return
-        }
         try {
             this.logger.verbose(`Processing job: ${job.id}`)
             const { time, skip, take, utcTime } = job.data

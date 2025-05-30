@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import { BulkJobOptions, Queue } from "bullmq"
@@ -9,7 +9,7 @@ import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 
 @Injectable()
-export class DeliveryService {
+export class DeliveryService implements OnModuleInit {
     private readonly logger = new Logger(DeliveryService.name)
 
     constructor(
@@ -19,12 +19,17 @@ export class DeliveryService {
         private readonly dateUtcService: DateUtcService
     ) {}
 
+    public async onModuleInit() {
+        // clear all jobs in the queue
+        await this.deliveryQueue.drain()
+    }
+
     // ping the server every 10 seconds
     @Cron("*/10 * * * * *")
     public async ping() {
         this.logger.verbose("Pinging queue")
         await this.deliveryQueue.add(v4(), {
-            isPing: true
+            ping: true
         })
     }
     
