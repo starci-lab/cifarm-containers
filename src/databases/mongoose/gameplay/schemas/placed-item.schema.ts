@@ -18,7 +18,8 @@ import {
     PLANT_INFO,
     PET_INFO,
     NFT_METADATA,
-    TERRAIN_INFO
+    TERRAIN_INFO,
+    USER
 } from "../constants"
 import { FruitInfoSchema, FruitInfoSchemaClass } from "./fruit-info.schema"
 import { BeeHouseInfoSchema, BeeHouseInfoSchemaClass } from "./bee-house-info.schema"
@@ -46,7 +47,7 @@ export class PlacedItemSchema extends AbstractSchema {
         description: "The user who owns this placed item"
     })
     @Prop({ type: MongooseSchema.Types.ObjectId, ref: UserSchema.name, index: true })
-        user: UserSchema | Types.ObjectId
+    [USER]: UserSchema | Types.ObjectId
 
     @Field(() => ID, {
         description: "The type of the placed item"
@@ -127,3 +128,28 @@ export class PlacedItemSchema extends AbstractSchema {
 
 // Generate Mongoose Schema
 export const PlacedItemSchemaClass = SchemaFactory.createForClass(PlacedItemSchema)
+
+PlacedItemSchemaClass.index({
+    [PLACED_ITEM_TYPE]: 1,
+    "plantInfo.currentState": 1,
+    createdAt: -1,  // vì bạn sort DESC
+})
+
+PlacedItemSchemaClass.index({
+    placedItemType: 1,
+    "fruitInfo.currentState": 1,
+    isStored: 1,
+    createdAt: -1,
+})
+
+PlacedItemSchemaClass.index({
+    placedItemType: 1,
+    "animalInfo.currentState": 1,
+    createdAt: 1,
+})
+
+PlacedItemSchemaClass.index({
+    placedItemType: 1,
+    "beeHouseInfo.currentState": 1,
+    createdAt: -1,
+})

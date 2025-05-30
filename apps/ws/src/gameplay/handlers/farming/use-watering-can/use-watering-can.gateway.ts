@@ -40,7 +40,6 @@ export class UseWateringCanGateway implements OnGatewayInit {
         @WsUser() user: UserLike
     ) {
         const syncedResponse = await this.useWateringCanService.useWateringCan(user, payload)
-        console.log(syncedResponse)
         this.emitterService.syncResponse({
             userId: user.id,
             syncedResponse

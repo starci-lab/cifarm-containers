@@ -217,3 +217,8 @@ export class UserSchema extends AbstractSchema {
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)
+
+UserSchemaClass.index({
+    energyFull: 1,
+    createdAt: -1,
+})

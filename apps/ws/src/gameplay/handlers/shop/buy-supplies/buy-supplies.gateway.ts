@@ -48,6 +48,6 @@ export class BuySuppliesGateway implements OnGatewayInit {
             userId: user.id,
             syncedResponse
         })
-        socket.emit(EmitterEventName.SuppliesBought, payload)
+        socket.emit(EmitterEventName.BuySuppliesResponsed, payload)
     }
 } 

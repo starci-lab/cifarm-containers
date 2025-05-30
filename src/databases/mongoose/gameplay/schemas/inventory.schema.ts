@@ -8,11 +8,11 @@ import { Schema as MongooseSchema, Types } from "mongoose"
 import { InventoryKind, GraphQLTypeInventoryKind } from "../enums"
 
 @ObjectType({
-    description: "The schema for inventory items"
+    description: "The schema for inventory items",
 })
 @Schema({
     timestamps: true,
-    collection: "inventories"
+    collection: "inventories",
 })
 export class InventorySchema extends AbstractSchema {
     @Field(() => Int, { 
