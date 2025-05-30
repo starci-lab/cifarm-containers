@@ -20,6 +20,7 @@ import { Producer } from "kafkajs"
 import { createObjectId, WithStatus } from "@src/common"
 import { BeeHouseJobData } from "@apps/cron-scheduler"
 import { SyncPlacedItemsPayload } from "@apps/ws"
+import { envConfig } from "@src/env"
 
 @Processor(bullData[BullQueueName.BeeHouse].name)
 export class BeeHouseWorker extends WorkerHost {
@@ -39,6 +40,11 @@ export class BeeHouseWorker extends WorkerHost {
     }
 
     public override async process(job: Job<BeeHouseJobData>): Promise<void> {
+        // if job is not processed in 15s, it will be removed
+        if (job.timestamp + envConfig().cron.timeout < Date.now()) {
+            this.logger.warn(`Job ${job.id} is taking too long to process, removing it`)
+            return
+        }
         try {
             this.logger.verbose(`Processing job: ${job.id}`)
             const { time, skip, take, utcTime } = job.data
@@ -79,127 +85,131 @@ export class BeeHouseWorker extends WorkerHost {
             for (const placedItem of placedItems) {
                 const promise = async () => {
                     try {
-                        const upgrade = upgrades.find(
-                            (upgrade) =>
-                                upgrade.upgradeLevel === placedItem.buildingInfo.currentUpgrade
-                        )
-                        if (!upgrade) {
-                            throw new Error("Bee house upgrade not found")
-                        }
-                        const { honeyMultiplier } = upgrade
+                        const session = await this.connection.startSession()
+                        await session.withTransaction(async () => {
+                            const upgrade = upgrades.find(
+                                (upgrade) =>
+                                    upgrade.upgradeLevel === placedItem.buildingInfo.currentUpgrade
+                            )
+                            if (!upgrade) {
+                                throw new Error("Bee house upgrade not found")
+                            }
+                            const { honeyMultiplier } = upgrade
 
-                        const updatePlacedItem = async (): Promise<boolean> => {
-                            placedItem.beeHouseInfo.currentYieldTime += time
-                            if (placedItem.beeHouseInfo.currentYieldTime >= beeHouseYieldTime) {
-                                const placedItemType = this.staticService.placedItemTypes.find(
-                                    (placedItemType) =>
-                                        placedItemType.displayId === PlacedItemTypeId.BeeHouse
-                                )
-                                if (!placedItemType) {
-                                    throw new Error("Bee house type not found")
-                                }
-                                let totalHoneyYieldCoefficient = building.baseHoneyYieldCoefficient
-                                let totalHoneyQualityChancePlus = 0
-                                // check how many flower tile are adjacent to the bee house
-                                const adjacentPositions = this.positionService.getAdjacentPositions(
-                                    {
-                                        position: {
-                                            x: placedItem.x,
-                                            y: placedItem.y
-                                        },
-                                        placedItemType
-                                    }
-                                )
-                                // check if the adjacent positions are flower tile
-                                const placedItemTypeTiles =
-                                    this.staticService.placedItemTypes.filter(
+                            const updatePlacedItem = async (): Promise<boolean> => {
+                                placedItem.beeHouseInfo.currentYieldTime += time
+                                if (placedItem.beeHouseInfo.currentYieldTime >= beeHouseYieldTime) {
+                                    const placedItemType = this.staticService.placedItemTypes.find(
                                         (placedItemType) =>
-                                            placedItemType.type === PlacedItemType.Tile
+                                            placedItemType.displayId === PlacedItemTypeId.BeeHouse
                                     )
-                                const placedItemTiles = await this.connection
-                                    .model<PlacedItemSchema>(PlacedItemSchema.name)
-                                    .find({
-                                        placedItemType: {
-                                            $in: placedItemTypeTiles.map(
-                                                (placedItemType) => placedItemType._id
-                                            )
-                                        },
-                                        plantInfo: {
-                                            $ne: null
-                                        },
-                                        "plantInfo.currentState": {
-                                            $in: [PlantCurrentState.FullyMatured]
-                                        },
-                                        "plantInfo.plantType": {
-                                            $in: [PlantType.Flower]
-                                        },
-                                        $or: adjacentPositions.map(position => ({
-                                            x: position.x,
-                                            y: position.y
-                                        }))
+                                    if (!placedItemType) {
+                                        throw new Error("Bee house type not found")
+                                    }
+                                    let totalHoneyYieldCoefficient = building.baseHoneyYieldCoefficient
+                                    let totalHoneyQualityChancePlus = 0
+                                    // check how many flower tile are adjacent to the bee house
+                                    const adjacentPositions = this.positionService.getAdjacentPositions(
+                                        {
+                                            position: {
+                                                x: placedItem.x,
+                                                y: placedItem.y
+                                            },
+                                            placedItemType
+                                        }
+                                    )
+                                    // check if the adjacent positions are flower tile
+                                    const placedItemTypeTiles =
+                                        this.staticService.placedItemTypes.filter(
+                                            (placedItemType) =>
+                                                placedItemType.type === PlacedItemType.Tile
+                                        )
+                                    const placedItemTiles = await this.connection
+                                        .model<PlacedItemSchema>(PlacedItemSchema.name)
+                                        .find({
+                                            placedItemType: {
+                                                $in: placedItemTypeTiles.map(
+                                                    (placedItemType) => placedItemType._id
+                                                )
+                                            },
+                                            plantInfo: {
+                                                $ne: null
+                                            },
+                                            "plantInfo.currentState": {
+                                                $in: [PlantCurrentState.FullyMatured]
+                                            },
+                                            "plantInfo.plantType": {
+                                                $in: [PlantType.Flower]
+                                            },
+                                            $or: adjacentPositions.map(position => ({
+                                                x: position.x,
+                                                y: position.y
+                                            }))
+                                        })
+                                    for (const placedItemTile of placedItemTiles) {
+                                        const placedItemTileType = this.staticService.placedItemTypes.find(
+                                            (placedItemType) => placedItemType.id === placedItemTile.placedItemType.toString()
+                                        )
+                                        if (!placedItemTileType) {
+                                            throw new Error("Placed item tile type not found")
+                                        }
+                                        const flower = this.staticService.flowers.find(
+                                            (flower) => placedItemTile.plantInfo.plantType === PlantType.Flower
+                                            && flower.id === placedItemTile.plantInfo.flower.toString()
+                                        )
+
+                                        if (!flower) {
+                                            throw new Error("Flower not found")
+                                        }
+                                        totalHoneyYieldCoefficient += flower.honeyYieldCoefficient
+                                        totalHoneyQualityChancePlus += flower.honeyQualityChancePlus
+                                    }
+
+                                    const { minThievablePercentage } = this.staticService.beeHouseInfo
+                                    placedItem.beeHouseInfo.currentState = BeeHouseCurrentState.Yield
+                                    const desiredHarvestQuantity = Math.floor(
+                                        totalHoneyYieldCoefficient * honeyMultiplier
+                                    )
+                                    placedItem.beeHouseInfo.harvestQuantityRemaining = desiredHarvestQuantity
+                                    placedItem.beeHouseInfo.harvestQuantityDesired = desiredHarvestQuantity
+                                    placedItem.beeHouseInfo.harvestQuantityMin = Math.floor(desiredHarvestQuantity * minThievablePercentage)
+
+                                    if (Math.random() < totalHoneyQualityChancePlus) {
+                                        placedItem.beeHouseInfo.isQuality = true
+                                    }
+                                    placedItem.beeHouseInfo.currentYieldTime = 0
+                                    return true
+                                }
+                                return false
+                            }
+                            // update the placed item
+                            const placedItemSnapshot = placedItem.$clone()
+                            const synced = await updatePlacedItem()
+                            await placedItem.save()
+                            if (synced) {
+                                const updatedSyncedPlacedItem =
+                                    this.syncService.getPartialUpdatedSyncedPlacedItem({
+                                        placedItemSnapshot,
+                                        placedItemUpdated: placedItem
                                     })
-                                for (const placedItemTile of placedItemTiles) {
-                                    const placedItemTileType = this.staticService.placedItemTypes.find(
-                                        (placedItemType) => placedItemType.id === placedItemTile.placedItemType.toString()
-                                    )
-                                    if (!placedItemTileType) {
-                                        throw new Error("Placed item tile type not found")
-                                    }
-                                    const flower = this.staticService.flowers.find(
-                                        (flower) => placedItemTile.plantInfo.plantType === PlantType.Flower
-                                        && flower.id === placedItemTile.plantInfo.flower.toString()
-                                    )
-
-                                    if (!flower) {
-                                        throw new Error("Flower not found")
-                                    }
-                                    totalHoneyYieldCoefficient += flower.honeyYieldCoefficient
-                                    totalHoneyQualityChancePlus += flower.honeyQualityChancePlus
+                                syncedPlacedItems.push(updatedSyncedPlacedItem)
+                                const syncedPlacedItemsPayload: SyncPlacedItemsPayload = {
+                                    data: [updatedSyncedPlacedItem],
+                                    userId: placedItem.user.toString()
                                 }
-
-                                const { minThievablePercentage } = this.staticService.beeHouseInfo
-                                placedItem.beeHouseInfo.currentState = BeeHouseCurrentState.Yield
-                                const desiredHarvestQuantity = Math.floor(
-                                    totalHoneyYieldCoefficient * honeyMultiplier
-                                )
-                                placedItem.beeHouseInfo.harvestQuantityRemaining = desiredHarvestQuantity
-                                placedItem.beeHouseInfo.harvestQuantityDesired = desiredHarvestQuantity
-                                placedItem.beeHouseInfo.harvestQuantityMin = Math.floor(desiredHarvestQuantity * minThievablePercentage)
-
-                                if (Math.random() < totalHoneyQualityChancePlus) {
-                                    placedItem.beeHouseInfo.isQuality = true
-                                }
-                                placedItem.beeHouseInfo.currentYieldTime = 0
-                                return true
-                            }
-                            return false
-                        }
-                        // update the placed item
-                        const placedItemSnapshot = placedItem.$clone()
-                        const synced = await updatePlacedItem()
-                        await placedItem.save()
-                        if (synced) {
-                            const updatedSyncedPlacedItem =
-                                this.syncService.getPartialUpdatedSyncedPlacedItem({
-                                    placedItemSnapshot,
-                                    placedItemUpdated: placedItem
+                                await this.kafkaProducer.send({
+                                    topic: KafkaTopic.SyncPlacedItems,
+                                    messages: [
+                                        {
+                                            value: JSON.stringify(syncedPlacedItemsPayload)
+                                        }
+                                    ]
                                 })
-                            syncedPlacedItems.push(updatedSyncedPlacedItem)
-                            const syncedPlacedItemsPayload: SyncPlacedItemsPayload = {
-                                data: [updatedSyncedPlacedItem],
-                                userId: placedItem.user.toString()
                             }
-                            await this.kafkaProducer.send({
-                                topic: KafkaTopic.SyncPlacedItems,
-                                messages: [
-                                    {
-                                        value: JSON.stringify(syncedPlacedItemsPayload)
-                                    }
-                                ]
-                            })
-                        }
+                        })
+                        await session.endSession()
                     } catch (error) {
-                        this.logger.error(error)
+                        this.logger.error(`Error processing bee house ${placedItem._id}:`, error)
                     }
                 }
                 promises.push(promise())

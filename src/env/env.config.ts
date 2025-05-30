@@ -371,5 +371,8 @@ export const envConfig = () => ({
         [Network.Testnet]: {
             url: process.env.WEB_APP_URL_TESTNET
         }
+    },
+    cron: {
+        timeout: Number.parseInt(process.env.CRON_TIMEOUT ?? "15000")
     }
 })

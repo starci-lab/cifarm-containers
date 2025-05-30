@@ -5,6 +5,8 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { bullData, BullQueueName } from "@src/bull"
 import { WithStatus } from "@src/common"
 import { InjectMongoose, InventoryKind, InventorySchema, UserSchema } from "@src/databases"
+import { DateUtcService } from "@src/date"
+import { envConfig } from "@src/env"
 import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { Producer } from "kafkajs"
@@ -22,22 +24,30 @@ export class DeliveryWorker extends WorkerHost {
         private readonly goldBalanceService: GoldBalanceService,
         private readonly staticService: StaticService,
         private readonly syncService: SyncService,
+        private readonly dateUtcService: DateUtcService,
     ) {
         super()
     }
 
     public override async process(job: Job<DeliveryJobData>): Promise<void> {
+        if (job.timestamp + envConfig().cron.timeout < Date.now()) {
+            this.logger.warn(`Job ${job.id} is taking too long to process, removing it`)
+            return
+        }   
         try {
-            this.logger.verbose(`Processing delivery job: ${job.id}`)
-
-            const { skip, take } = job.data
-
+            const { skip, take, utcTime } = job.data
             const users = await this.connection
                 .model<UserSchema>(UserSchema.name)
-                .find()
+                .find({
+                    createdAt: {
+                        $lte: this.dateUtcService.getDayjs(utcTime).toDate()
+                    }
+                })
                 .skip(skip)
                 .limit(take)
+                .sort({ createdAt: "desc" })
 
+            console.log(`Processing delivery job: ${job.id} with ${users.length} users`)
             if (!users.length) {
                 return
             }

@@ -9,7 +9,7 @@ import { Connection } from "mongoose"
 import { EnergyService, StaticService, SyncService } from "@src/gameplay"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
-
+import { envConfig } from "@src/env"
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
     private readonly logger = new Logger(EnergyWorker.name)
@@ -28,7 +28,11 @@ export class EnergyWorker extends WorkerHost {
     }
 
     public override async process(job: Job<EnergyJobData>): Promise<void> {
-        this.logger.verbose(`Processing job: ${job.id}`)
+        // if job is not processed in 15s, it will be removed
+        if (job.timestamp + envConfig().cron.timeout < Date.now()) {
+            this.logger.warn(`Job ${job.id} is taking too long to process, removing it`)
+            return
+        }
         const { time, skip, take, utcTime } = job.data
 
         const users = await this.connection
@@ -47,42 +51,45 @@ export class EnergyWorker extends WorkerHost {
         const promises: Array<Promise<void>> = []
         for (const user of users) {
             const promise = async () => {
-                const updateUser = () => {
+                const session = await this.connection.startSession()
+                await session.withTransaction(async () => {
+                    const updateUser = () => {
                     // skip if the user's energy is full
-                    if (user.energyFull) {
+                        if (user.energyFull) {
+                            return false
+                        }
+                        // Add time to the user's energy
+                        user.energyRegenTime += time
+                        if (user.energyRegenTime >= energyRegenTime) {
+                        //console.log("Energy regen time", user.energyRegenTime)
+                            user.energy += 1
+                            // Reset the timer
+                            user.energyRegenTime = 0
+                            // Check if the user's energy is full
+                            user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
+                            return true 
+                        }
                         return false
                     }
-                    // Add time to the user's energy
-                    user.energyRegenTime += time
-                    if (user.energyRegenTime >= energyRegenTime) {
-                        //console.log("Energy regen time", user.energyRegenTime)
-                        user.energy += 1
-                        // Reset the timer
-                        user.energyRegenTime = 0
-                        // Check if the user's energy is full
-                        user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
-                        return true 
+                    const userSnapshot = user.$clone()
+                    const synced = updateUser()
+                    await user.save()
+                    if (synced) {
+                        const data = this.syncService.getPartialUpdatedSyncedUser({
+                            userSnapshot,
+                            userUpdated: user
+                        })
+                        await this.kafkaProducer.send({
+                            topic: KafkaTopic.SyncUser,
+                            messages: [
+                                { value: JSON.stringify({
+                                    userId: user.id,
+                                    data
+                                }) }
+                            ]
+                        })
                     }
-                    return false
-                }
-                const userSnapshot = user.$clone()
-                const synced = updateUser()
-                await user.save()
-                if (synced) {
-                    const data = this.syncService.getPartialUpdatedSyncedUser({
-                        userSnapshot,
-                        userUpdated: user
-                    })
-                    await this.kafkaProducer.send({
-                        topic: KafkaTopic.SyncUser,
-                        messages: [
-                            { value: JSON.stringify({
-                                userId: user.id,
-                                data
-                            }) }
-                        ]
-                    })
-                }
+                })
             }
             promises.push(promise())
         }

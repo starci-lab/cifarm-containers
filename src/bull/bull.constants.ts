@@ -1,8 +1,7 @@
 import { BullQueueData, BullQueueName } from "./bull.types"
 import { formatWithBraces } from "./bull.utils"
-
+import { envConfig } from "@src/env"
 export const queueOptions = {
-    JOB_AGE: 24 * 3600, // 24 hours
     COMPLETE_JOB_COUNT: 1000, // keep up to 1000 jobs
     FAILED_JOB_COUNT: 5000, // keep up to 1000 jobs
 }
@@ -14,11 +13,11 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("plant"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.FAILED_JOB_COUNT
             },
         }
@@ -29,11 +28,11 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("animal"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.FAILED_JOB_COUNT
             },
         }
@@ -44,11 +43,11 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("delivery"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.FAILED_JOB_COUNT
             },
         }
@@ -59,11 +58,11 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("energy"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.FAILED_JOB_COUNT
             },
         }
@@ -74,11 +73,11 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("fruit"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.FAILED_JOB_COUNT
             },
         }
@@ -89,11 +88,11 @@ export const bullData: Record<BullQueueName, BullQueueData>  = {
         prefix: formatWithBraces("beehouse"),
         opts: {
             removeOnComplete: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.COMPLETE_JOB_COUNT
             },
             removeOnFail: {
-                age: queueOptions.JOB_AGE,
+                age: envConfig().cron.timeout / 1000,
                 count: queueOptions.FAILED_JOB_COUNT
             },
         }

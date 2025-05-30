@@ -16,7 +16,7 @@ import { Connection } from "mongoose"
 import { Producer } from "kafkajs"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { SyncPlacedItemsPayload } from "@apps/ws"
-
+import { envConfig } from "@src/env"
 @Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost {
     private readonly logger = new Logger(AnimalWorker.name)
@@ -35,6 +35,11 @@ export class AnimalWorker extends WorkerHost {
     }
 
     public override async process(job: Job<AnimalJobData>): Promise<void> {
+        // if job is not processed in 15s, it will be removed
+        if (job.timestamp + envConfig().cron.timeout < Date.now()) {
+            this.logger.warn(`Job ${job.id} is taking too long to process, removing it`)
+            return
+        }
         try {
             const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
 
@@ -77,114 +82,122 @@ export class AnimalWorker extends WorkerHost {
                     diseaseResistance: placedItem.animalInfo.diseaseResistance
                 })
                 const promise = async () => {
-                    const updatePlacedItem = () => {
-                        const placedItemType = this.staticService.placedItemTypes.find(
-                            (placedItemType) =>
-                                placedItemType.id === placedItem.placedItemType.toString()
-                        )
-                        const animal = this.staticService.animals.find(
-                            (animal) => animal.id === placedItemType.animal.toString()
-                        )
-                        if (!animal) {
-                            throw new Error(`Animal not found: ${placedItemType.animal}`)
-                        }
-                        // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
-                        const updateAdultAnimalPlacedItem = (): boolean => {
-                            // If animal is adult, add time to the animal yield
-                            placedItem.animalInfo.currentYieldTime += time * (1 + growthAcceleration)
+                    try {
+                        const session = await this.connection.startSession()
+                        await session.withTransaction(async () => {
+                            const updatePlacedItem = () => {
+                                const placedItemType = this.staticService.placedItemTypes.find(
+                                    (placedItemType) =>
+                                        placedItemType.id === placedItem.placedItemType.toString()
+                                )
+                                const animal = this.staticService.animals.find(
+                                    (animal) => animal.id === placedItemType.animal.toString()
+                                )
+                                if (!animal) {
+                                    throw new Error(`Animal not found: ${placedItemType.animal}`)
+                                }
+                                // adultAnimalInfoChanges is a function that returns the changes in animalInfo if animal is adult
+                                const updateAdultAnimalPlacedItem = (): boolean => {
+                                    // If animal is adult, add time to the animal yield
+                                    placedItem.animalInfo.currentYieldTime += time * (1 + growthAcceleration)
 
-                            // if animal grow to half of the yield time, it may get sick and immunized
-                            if (
-                                placedItem.animalInfo.currentYieldTime >=
-                                    Math.floor(animal.yieldTime / 2) &&
-                                !placedItem.animalInfo.immunized
-                            ) {
-                                if (Math.random() < sickChance) {
-                                    if (Math.random() > diseaseResistance) {
-                                        placedItem.animalInfo.currentState = AnimalCurrentState.Sick
+                                    // if animal grow to half of the yield time, it may get sick and immunized
+                                    if (
+                                        placedItem.animalInfo.currentYieldTime >=
+                                        Math.floor(animal.yieldTime / 2) &&
+                                        !placedItem.animalInfo.immunized
+                                    ) {
+                                        if (Math.random() < sickChance) {
+                                            if (Math.random() > diseaseResistance) {
+                                                placedItem.animalInfo.currentState = AnimalCurrentState.Sick
+                                            }
+                                        }
+                                        placedItem.animalInfo.immunized = true
+                                        // if animal yield time is more than or equal the yield time, it will yield
                                     }
+                                    if (placedItem.animalInfo.currentYieldTime >= animal.yieldTime) {
+                                        placedItem.animalInfo.currentYieldTime = 0
+                                        placedItem.animalInfo.harvestQuantityDesired = animal.harvestQuantity * (1 + harvestYieldBonus)
+                                        placedItem.animalInfo.harvestQuantityMin = Math.floor(placedItem.animalInfo.harvestQuantityDesired * this.staticService.animalInfo.minThievablePercentage)
+                                        //if sick, the harvest quantity is the average of min and max harvest quantity
+                                        if (
+                                            placedItem.animalInfo.currentState === AnimalCurrentState.Sick
+                                        ) {
+                                            placedItem.animalInfo.harvestQuantityRemaining = Math.floor(
+                                                (placedItem.animalInfo.harvestQuantityMin + placedItem.animalInfo.harvestQuantityDesired) / 2
+                                            )
+                                        } else {
+                                            // if not sick, the harvest quantity is the max harvest quantity
+                                            placedItem.animalInfo.harvestQuantityRemaining =
+                                                placedItem.animalInfo.harvestQuantityDesired
+                                        }
+                                        placedItem.animalInfo.currentState = AnimalCurrentState.Yield
+
+                                        if (Math.random() < qualityYield) {
+                                            placedItem.animalInfo.isQuality = true
+                                        }
+                                        return true
+                                    }
+                                    return false
                                 }
-                                placedItem.animalInfo.immunized = true
-                                // if animal yield time is more than or equal the yield time, it will yield
-                            }
-                            if (placedItem.animalInfo.currentYieldTime >= animal.yieldTime) {
-                                placedItem.animalInfo.currentYieldTime = 0
-                                placedItem.animalInfo.harvestQuantityDesired = animal.harvestQuantity * (1 + harvestYieldBonus)
-                                placedItem.animalInfo.harvestQuantityMin = Math.floor(placedItem.animalInfo.harvestQuantityDesired * this.staticService.animalInfo.minThievablePercentage)
-                                //if sick, the harvest quantity is the average of min and max harvest quantity
-                                if (
-                                    placedItem.animalInfo.currentState === AnimalCurrentState.Sick
-                                ) {
-                                    placedItem.animalInfo.harvestQuantityRemaining = Math.floor(
-                                        (placedItem.animalInfo.harvestQuantityMin + placedItem.animalInfo.harvestQuantityDesired) / 2
-                                    )
-                                } else {
-                                    // if not sick, the harvest quantity is the max harvest quantity
-                                    placedItem.animalInfo.harvestQuantityRemaining =
-                                        placedItem.animalInfo.harvestQuantityDesired
+
+                                // growthAnimalInfoChanges is a function that returns the changes in animalInfo if animal is not adult
+                                const updateBabyAnimalPlacedItem = (): boolean => {
+                                    // Add time to the animal growth and hunger
+                                    placedItem.animalInfo.currentGrowthTime += time
+                                    placedItem.animalInfo.currentHungryTime += time
+
+                                    // check if animal is enough to be adult
+                                    if (placedItem.animalInfo.currentGrowthTime >= animal.growthTime) {
+                                        placedItem.animalInfo.isAdult = true
+                                        placedItem.animalInfo.currentState = AnimalCurrentState.Hungry
+                                        return true
+                                    }
+
+                                    // check if animal is hungry
+                                    if (placedItem.animalInfo.currentHungryTime >= animal.hungerTime) {
+                                        placedItem.animalInfo.currentHungryTime = 0
+                                        placedItem.animalInfo.currentState = AnimalCurrentState.Hungry
+                                        return true
+                                    }
+                                    return false
                                 }
-                                placedItem.animalInfo.currentState = AnimalCurrentState.Yield
 
-                                if (Math.random() < qualityYield) {
-                                    placedItem.animalInfo.isQuality = true
+                                // If animal is adult, call adultAnimalInfoChanges, else call growthAnimalInfoChanges
+                                if (placedItem.animalInfo.isAdult) {
+                                    return updateAdultAnimalPlacedItem()
                                 }
-                                return true
+                                return updateBabyAnimalPlacedItem()
                             }
-                            return false
-                        }
-
-                        // growthAnimalInfoChanges is a function that returns the changes in animalInfo if animal is not adult
-                        const updateBabyAnimalPlacedItem = (): boolean => {
-                            // Add time to the animal growth and hunger
-                            placedItem.animalInfo.currentGrowthTime += time
-                            placedItem.animalInfo.currentHungryTime += time
-
-                            // check if animal is enough to be adult
-                            if (placedItem.animalInfo.currentGrowthTime >= animal.growthTime) {
-                                placedItem.animalInfo.isAdult = true
-                                placedItem.animalInfo.currentState = AnimalCurrentState.Hungry
-                                return true
-                            }
-
-                            // check if animal is hungry
-                            if (placedItem.animalInfo.currentHungryTime >= animal.hungerTime) {
-                                placedItem.animalInfo.currentHungryTime = 0
-                                placedItem.animalInfo.currentState = AnimalCurrentState.Hungry
-                                return true
-                            }
-                            return false
-                        }
-
-                        // If animal is adult, call adultAnimalInfoChanges, else call growthAnimalInfoChanges
-                        if (placedItem.animalInfo.isAdult) {
-                            return updateAdultAnimalPlacedItem()
-                        }
-                        return updateBabyAnimalPlacedItem()
-                    }
-                    const placedItemSnapshot = placedItem.$clone()
-                    const synced = updatePlacedItem()
-                    await placedItem.save()
-                    if (synced) {
-                        const updatedSyncedPlacedItem =
-                            this.syncService.getPartialUpdatedSyncedPlacedItem({
-                                placedItemSnapshot,
-                                placedItemUpdated: placedItem
-                            })
-                        syncedPlacedItems.push(updatedSyncedPlacedItem)
+                            const placedItemSnapshot = placedItem.$clone()
+                            const synced = updatePlacedItem()
+                            await placedItem.save()
+                            if (synced) {
+                                const updatedSyncedPlacedItem =
+                                    this.syncService.getPartialUpdatedSyncedPlacedItem({
+                                        placedItemSnapshot,
+                                        placedItemUpdated: placedItem
+                                    })
+                                syncedPlacedItems.push(updatedSyncedPlacedItem)
                         
-                        // create a payload for the kafka producer
-                        const syncedPlacedItemsPayload: SyncPlacedItemsPayload = {
-                            data: [updatedSyncedPlacedItem],
-                            userId: placedItem.user.toString()
-                        }
-                        await this.kafkaProducer.send({
-                            topic: KafkaTopic.SyncPlacedItems,
-                            messages: [
-                                {
-                                    value: JSON.stringify(syncedPlacedItemsPayload)
+                                // create a payload for the kafka producer
+                                const syncedPlacedItemsPayload: SyncPlacedItemsPayload = {
+                                    data: [updatedSyncedPlacedItem],
+                                    userId: placedItem.user.toString()
                                 }
-                            ]
+                                await this.kafkaProducer.send({
+                                    topic: KafkaTopic.SyncPlacedItems,
+                                    messages: [
+                                        {
+                                            value: JSON.stringify(syncedPlacedItemsPayload)
+                                        }
+                                    ]
+                                })
+                            }
                         })
+                        await session.endSession()
+                    } catch (error) {
+                        this.logger.error(`Error processing animal ${placedItem._id}:`, error)
                     }
                 }
                 promises.push(promise())
