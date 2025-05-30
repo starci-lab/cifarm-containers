@@ -7,6 +7,7 @@ import { bullData, BullQueueName } from "@src/bull"
 import { WithStatus } from "@src/common"
 import { FruitCurrentState, InjectMongoose, PlacedItemSchema, PlacedItemType } from "@src/databases"
 import { DateUtcService } from "@src/date"
+import { envConfig } from "@src/env"
 import { CoreService, StaticService, SyncService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { Producer } from "kafkajs"
@@ -30,6 +31,10 @@ export class FruitWorker extends WorkerHost {
     }
 
     public override async process(job: Job<FruitJobData>): Promise<void> {
+        if (job.timestamp && (Date.now() - job.timestamp) > envConfig().cron.timeout) {
+            this.logger.warn(`Removed old job: ${job.id}`)
+            return
+        }   
         this.logger.verbose(`Processing job: ${job.id}`)
         const { time, skip, take, utcTime } = job.data
         try {

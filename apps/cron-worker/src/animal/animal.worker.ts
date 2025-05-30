@@ -16,6 +16,7 @@ import { Connection } from "mongoose"
 import { Producer } from "kafkajs"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { SyncPlacedItemsPayload } from "@apps/ws"
+import { envConfig } from "@src/env"
 @Processor(bullData[BullQueueName.Animal].name)
 export class AnimalWorker extends WorkerHost {
     private readonly logger = new Logger(AnimalWorker.name)
@@ -34,6 +35,10 @@ export class AnimalWorker extends WorkerHost {
     }
 
     public override async process(job: Job<AnimalJobData>): Promise<void> {
+        if (job.timestamp && (Date.now() - job.timestamp) > envConfig().cron.timeout) {
+            this.logger.warn(`Removed old job: ${job.id}`)
+            return
+        }  
         try {
             const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
 

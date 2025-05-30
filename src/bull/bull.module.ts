@@ -13,7 +13,7 @@ export class BullModule extends ConfigurableModuleClass {
         const queueName = options.queueName || BullQueueName.Plant
         // register the queue
         const registerQueueDynamicModule = NestBullModule.registerQueue({
-            name: bullData[queueName].name,
+            name: `${bullData[queueName].name}`,
             prefix: bullData[queueName].prefix
         })
         return {

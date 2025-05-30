@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
@@ -24,7 +24,7 @@ import { createObjectId } from "@src/common"
 import { StaticService } from "@src/gameplay"
 
 @Injectable()
-export class PlantService implements OnModuleInit {
+export class PlantService  {
     private readonly logger = new Logger(PlantService.name)
     constructor(
         @InjectQueue(BullQueueName.Plant) private readonly plantQueue: Queue,
@@ -36,15 +36,9 @@ export class PlantService implements OnModuleInit {
         private readonly staticService: StaticService
     ) {}
 
-    public async onModuleInit() {
-        // clear all jobs in the queue
-        await this.plantQueue.drain(true)
-    }
-
     @Cron("*/1 * * * * *")
     async process() {
         const mongoSession = await this.connection.startSession()
-
         try {
             const utcNow = this.dateUtcService.getDayjs()
             // Create a query runner

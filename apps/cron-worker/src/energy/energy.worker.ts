@@ -9,6 +9,7 @@ import { Connection } from "mongoose"
 import { EnergyService, StaticService, SyncService } from "@src/gameplay"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
+import { envConfig } from "@src/env"
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
     private readonly logger = new Logger(EnergyWorker.name)
@@ -27,8 +28,11 @@ export class EnergyWorker extends WorkerHost {
     }
 
     public override async process(job: Job<EnergyJobData>): Promise<void> {
+        if (job.timestamp && (Date.now() - job.timestamp) > envConfig().cron.timeout) {
+            this.logger.warn(`Removed old job: ${job.id}`)
+            return
+        }  
         const { time, skip, take, utcTime } = job.data
-
         const users = await this.connection
             .model<UserSchema>(UserSchema.name)
             .find({

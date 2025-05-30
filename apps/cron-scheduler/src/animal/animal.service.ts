@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { bullData, BullQueueName, InjectQueue } from "@src/bull"
 import {
@@ -24,7 +24,7 @@ import { createObjectId } from "@src/common"
 import { StaticService } from "@src/gameplay"
 
 @Injectable()
-export class AnimalService implements OnModuleInit {
+export class AnimalService {
     private readonly logger = new Logger(AnimalService.name)
     constructor(
         @InjectQueue(BullQueueName.Animal) private readonly animalQueue: Queue,
@@ -33,13 +33,8 @@ export class AnimalService implements OnModuleInit {
         private readonly dateUtcService: DateUtcService,
         @InjectCache()
         private readonly cacheManager: Cache,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
     ) {}
-
-    public async onModuleInit() {
-        // clear all jobs in the queue
-        await this.animalQueue.drain(true)
-    }
 
     @Cron("*/1 * * * * *")
     async process() {

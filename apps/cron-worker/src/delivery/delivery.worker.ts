@@ -6,6 +6,7 @@ import { bullData, BullQueueName } from "@src/bull"
 import { WithStatus } from "@src/common"
 import { InjectMongoose, InventoryKind, InventorySchema, UserSchema } from "@src/databases"
 import { DateUtcService } from "@src/date"
+import { envConfig } from "@src/env"
 import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { Job } from "bullmq"
 import { Producer } from "kafkajs"
@@ -29,6 +30,10 @@ export class DeliveryWorker extends WorkerHost {
     }
 
     public override async process(job: Job<DeliveryJobData>): Promise<void> {
+        if (job.timestamp && (Date.now() - job.timestamp) > envConfig().cron.timeout) {
+            this.logger.warn(`Removed old job: ${job.id}`)
+            return
+        }   
         if (job.data.ping) {
             this.logger.warn(`Scheduler ping received. Job ${job.id} completed.`)
             return

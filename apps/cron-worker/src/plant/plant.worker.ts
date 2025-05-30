@@ -18,6 +18,7 @@ import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
 import { WithStatus } from "@src/common"
 import { SyncPlacedItemsPayload } from "@apps/ws"
+import { envConfig } from "@src/env"
 @Processor(bullData[BullQueueName.Plant].name)
 export class PlantWorker extends WorkerHost {
     private readonly logger = new Logger(PlantWorker.name)
@@ -36,6 +37,10 @@ export class PlantWorker extends WorkerHost {
     }
 
     public override async process(job: Job<CropJobData>): Promise<void> {
+        if (job.timestamp && (Date.now() - job.timestamp) > envConfig().cron.timeout) {
+            this.logger.warn(`Removed old job: ${job.id}`)
+            return
+        }
         try {
             this.logger.verbose(`Processing job: ${job.id}`)
             const { time, skip, take, utcTime } = job.data
