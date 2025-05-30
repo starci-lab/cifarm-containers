@@ -96,11 +96,11 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Pomegranate),   
                 displayId: FruitId.Pomegranate,
                 price: 5000,
-                youngGrowthStageDuration: 60 * 60 * 24, // 24 hours
-                matureGrowthStageDuration: 60 * 60 * 12, // 12 hours
+                youngGrowthStageDuration: 60 * 60 * 18, // 18 hours
+                matureGrowthStageDuration: 60 * 60 * 9, // 9 hours
                 fertilizerTime: 60 * 60 * 8, // 8 hour
-                basicHarvestExperiences: 36,
-                qualityHarvestExperiences: 72,
+                basicHarvestExperiences: 24,
+                qualityHarvestExperiences: 48,
                 harvestQuantity: 20,
                 availableInShop: false,
                 sellable: false,
