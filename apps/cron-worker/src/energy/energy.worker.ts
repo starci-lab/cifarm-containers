@@ -28,7 +28,7 @@ export class EnergyWorker extends WorkerHost {
     }
 
     public override async process(job: Job<EnergyJobData>): Promise<void> {
-        if (job.timestamp && (Date.now() - job.timestamp) > envConfig().cron.timeout) {
+        if ((Date.now() - job.timestamp) > envConfig().cron.timeout) {
             this.logger.warn(`Removed old job: ${job.id}`)
             return
         }  

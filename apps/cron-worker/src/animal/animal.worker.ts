@@ -35,7 +35,7 @@ export class AnimalWorker extends WorkerHost {
     }
 
     public override async process(job: Job<AnimalJobData>): Promise<void> {
-        if (job.timestamp && (Date.now() - job.timestamp) > envConfig().cron.timeout) {
+        if ((Date.now() - job.timestamp) > envConfig().cron.timeout) {
             this.logger.warn(`Removed old job: ${job.id}`)
             return
         }  
