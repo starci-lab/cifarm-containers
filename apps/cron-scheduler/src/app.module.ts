@@ -11,7 +11,7 @@ import { DeliveryModule } from "./delivery"
 import { CacheModule } from "@src/cache"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
-import { KafkaModule } from "@src/brokers"
+//import { KafkaModule } from "@src/brokers"
 import { FruitModule } from "./fruit"
 import { GameplayModule } from "@src/gameplay"
 import { IdModule } from "@src/id"
@@ -42,9 +42,9 @@ import { BeeHouseModule } from "./bee-house"
         CacheModule.register({
             isGlobal: true
         }),
-        KafkaModule.register({
-            isGlobal: true,
-        }),
+        // KafkaModule.register({
+        //     isGlobal: true,
+        // }),
         ScheduleModule.forRoot(),
         AnimalModule,
         DeliveryModule,

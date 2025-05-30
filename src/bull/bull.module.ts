@@ -1,6 +1,6 @@
 import { BullModule as NestBullModule } from "@nestjs/bullmq"
 import { bullData } from "./bull.constants"
-import { BullQueueName, RegisterQueueOptions } from "./bull.types"
+import { BullQueueName, RegisterQueueOptions } from "./types"
 import { DynamicModule, Module } from "@nestjs/common"
 import { ConfigurableModuleClass } from "./bull.module-definition"
 import { OPTIONS_TYPE } from "@src/brokers"

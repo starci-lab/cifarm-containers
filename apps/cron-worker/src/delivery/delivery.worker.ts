@@ -34,6 +34,10 @@ export class DeliveryWorker extends WorkerHost {
             this.logger.warn(`Job ${job.id} is taking too long to process, removing it`)
             return
         }   
+        if (job.data.isPing) {
+            this.logger.warn(`Server ping received. Job ${job.id} completed.`)
+            return
+        }
         try {
             const { skip, take, utcTime } = job.data
             const users = await this.connection
@@ -47,7 +51,6 @@ export class DeliveryWorker extends WorkerHost {
                 .limit(take)
                 .sort({ createdAt: "desc" })
 
-            console.log(`Processing delivery job: ${job.id} with ${users.length} users`)
             if (!users.length) {
                 return
             }
@@ -56,11 +59,10 @@ export class DeliveryWorker extends WorkerHost {
             // use for-each to add async function to promises array
             users.forEach((user) => {
                 const promise = async () => {
-                    let syncedUser: WithStatus<UserSchema>
-                    const syncedInventories: Array<WithStatus<InventorySchema>> = []
                     const mongoSession = await this.connection.startSession()
                     try {
                         await mongoSession.withTransaction(async (session) => {
+                            const syncedInventories: Array<WithStatus<InventorySchema>> = []          
                             const userSnapshot = user.$clone()
                             // Get delivering inventories
                             const deliveringInventories = await this.connection
@@ -114,35 +116,35 @@ export class DeliveryWorker extends WorkerHost {
                             syncedInventories.push(...deletedInventories)
                             // update user's balance
                             await user.save({ session })
-                            syncedUser = this.syncService.getPartialUpdatedSyncedUser({
+                            const syncedUser = this.syncService.getPartialUpdatedSyncedUser({
                                 userSnapshot,
                                 userUpdated: user
                             })
-                        })
-                        Promise.all([
-                            syncedUser &&
-                            this.kafkaProducer.send({
-                                topic: KafkaTopic.SyncUser,
-                                messages: [
-                                    { value: JSON.stringify({
-                                        userId: user.id,
-                                        data: syncedUser
-                                    }) 
-                                    }
-                                ]
-                            }),
-                            syncedInventories.length > 0 &&
-                            this.kafkaProducer.send({
-                                topic: KafkaTopic.SyncInventories,
-                                messages: [
-                                    { value: JSON.stringify({
-                                        userId: user.id,
-                                        data: syncedInventories
-                                    }) 
-                                    }
-                                ]
-                            }),
-                        ])
+                            Promise.all([
+                                syncedUser &&
+                                this.kafkaProducer.send({
+                                    topic: KafkaTopic.SyncUser,
+                                    messages: [
+                                        { value: JSON.stringify({
+                                            userId: user.id,
+                                            data: syncedUser
+                                        }) 
+                                        }
+                                    ]
+                                }),
+                                syncedInventories.length > 0 &&
+                                this.kafkaProducer.send({
+                                    topic: KafkaTopic.SyncInventories,
+                                    messages: [
+                                        { value: JSON.stringify({
+                                            userId: user.id,
+                                            data: syncedInventories
+                                        }) 
+                                        }
+                                    ]
+                                }),
+                            ])
+                        })       
                     } catch (error) {
                         this.logger.error(error)
                         throw error

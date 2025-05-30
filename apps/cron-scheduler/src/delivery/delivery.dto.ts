@@ -1,16 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger"
-import { IsInt } from "class-validator"
+import { WithPing } from "@src/bull"
 
-export class DeliveryJobData {
-    @IsInt()
-    @ApiProperty({ description: "Time to deliver products" })
-        utcTime: number
-
-    @IsInt()
-    @ApiProperty({ description: "Skip number" })
-        skip: number
-
-    @IsInt()
-    @ApiProperty({ description: "Take number" })
-        take: number
-}
+export type DeliveryJobData = WithPing<{
+    utcTime?: number
+    skip?: number
+    take?: number
+}>

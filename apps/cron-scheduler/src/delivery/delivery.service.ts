@@ -13,12 +13,21 @@ export class DeliveryService {
     private readonly logger = new Logger(DeliveryService.name)
 
     constructor(
-        @InjectQueue(BullQueueName.Delivery) private readonly deliveryQueue: Queue,
+        @InjectQueue(BullQueueName.Delivery) private readonly deliveryQueue: Queue<DeliveryJobData>,
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly dateUtcService: DateUtcService
     ) {}
 
+    // ping the server every 10 seconds
+    @Cron("*/10 * * * * *")
+    public async ping() {
+        this.logger.verbose("Pinging queue")
+        await this.deliveryQueue.add(v4(), {
+            isPing: true
+        })
+    }
+    
     // deliver at 00:00, 15:00, 30:00, 45:00 each hour UTC+7
     @Cron("0,15,30,45 * * * *")
     //@Cron("0 0 * * *", { utcOffset: 7 }) // 00:00 UTC+7

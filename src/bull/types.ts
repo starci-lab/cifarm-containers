@@ -6,7 +6,7 @@ export enum BullQueueName {
     Energy = "energy",
     Fruit = "fruit",
     BeeHouse = "beeHouse",
-    Plant = "plant"
+    Plant = "plant",
 }
 
 export interface BullQueueData {
@@ -19,4 +19,8 @@ export interface BullQueueData {
 export interface RegisterQueueOptions {
     queueName?: BullQueueName
     isGlobal?: boolean
+}
+
+export type WithPing<T> = Partial<T> & {
+    isPing?: boolean
 }

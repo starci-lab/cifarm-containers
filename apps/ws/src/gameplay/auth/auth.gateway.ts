@@ -50,22 +50,31 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
     }
 
     async handleDisconnect(@ConnectedSocket() socket: TypedSocket<SocketData>) {
-        // if socket is disconnected before user is set, do nothing
         if (!socket.data.user) {
             return
         }
-        // when disconnected, update the last online time
-        await this.connection
-            .model<UserSchema>(UserSchema.name)
-            .updateOne(
-                { _id: socket.data.user.id },
-                {
-                    $set: {
-                        lastOnlineTime: this.dateUtcService.getDayjs().toDate(),
-                        isOnline: false
-                    }
-                }
-            )
+        const session = await this.connection.startSession()
+        try {
+        // if socket is disconnected before user is set, do nothing
+            await session.withTransaction(async () => {
+                // when disconnected, update the last online time
+                await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .updateOne(
+                        { _id: socket.data.user.id },
+                        {
+                            $set: {
+                                lastOnlineTime: this.dateUtcService.getDayjs().toDate(),
+                                isOnline: false
+                            }
+                        }
+                    ).session(session)
+            })
+        } catch (error) {
+            this.logger.error(error)
+        } finally {
+            await session.endSession()
+        }
         this.logger.verbose(`Client disconnected: ${socket.id}`)
     }
 

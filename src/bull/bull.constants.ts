@@ -1,5 +1,5 @@
-import { BullQueueData, BullQueueName } from "./bull.types"
-import { formatWithBraces } from "./bull.utils"
+import { BullQueueData, BullQueueName } from "./types"
+import { formatWithBraces } from "./utils"
 import { envConfig } from "@src/env"
 export const queueOptions = {
     COMPLETE_JOB_COUNT: 1000, // keep up to 1000 jobs

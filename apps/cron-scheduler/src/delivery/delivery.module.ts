@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common"
 import { BullModule, BullQueueName } from "@src/bull"
 import { DeliveryService } from "./delivery.service"
-import { DeliveryConsumer } from "./delivery.consumer"
+// import { DeliveryConsumer } from "./delivery.consumer"
 
 @Module({
     imports: [
@@ -9,6 +9,6 @@ import { DeliveryConsumer } from "./delivery.consumer"
             queueName: BullQueueName.Delivery
         })
     ],
-    providers: [DeliveryService, DeliveryConsumer]
+    providers: [DeliveryService]
 })
 export class DeliveryModule {}
