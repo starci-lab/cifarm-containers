@@ -10,6 +10,10 @@ import {
 } from "./users.dto"
 import { UserLike } from "@src/jwt"
 import { StaticService } from "@src/gameplay"
+import { ElasticsearchService } from "@nestjs/elasticsearch"
+import { createIndexName } from "@src/elasticsearch"
+import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types"
+
 @Injectable()
 export class UsersService {
     private readonly logger = new Logger(UsersService.name)
@@ -17,7 +21,8 @@ export class UsersService {
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
-        private readonly staticService: StaticService
+        private readonly staticService: StaticService,
+        private readonly elasticsearchService: ElasticsearchService
     ) { }
 
     async user(id: string): Promise<UserSchema> {
@@ -25,17 +30,26 @@ export class UsersService {
     }
 
     private getStatusFilter({ status, useAdvancedSearch, isFullTextSearch }: GetStatusFilterParams) {
-        // do not add this fillter if full text search or advanced search is used
+        // Skip filter if full text search OR advanced search disabled
         if (isFullTextSearch || !useAdvancedSearch) {
             return {}
         }
+      
         if (!status || status === NeighborsSearchStatus.All) {
             return {}
         }
-        if (status === NeighborsSearchStatus.Online) {
-            return { isOnline: true }
-        } else if (status === NeighborsSearchStatus.Offline) {
-            return { isOnline: false }
+      
+        // Build filter for isOnline field
+        return {
+            bool: {
+                must: [
+                    {
+                        match: {
+                            isOnline: status === NeighborsSearchStatus.Online,
+                        },
+                    },
+                ],
+            },
         }
     }
 
@@ -43,50 +57,73 @@ export class UsersService {
         return searchString && searchString.length > 8
     }
 
-    private getLevelFilter(
-        { userLevel, levelStart, levelEnd, isFullTextSearch, useAdvancedSearch }: GetLevelFilterParams
-    ) {
-        // do not add this fillter if full text search or advanced search is used
+    private getLevelFilter({
+        userLevel,
+        levelStart,
+        levelEnd,
+        isFullTextSearch,
+        useAdvancedSearch
+    }: GetLevelFilterParams): Partial<QueryDslQueryContainer> {
+        
+        // skip if full-text or advanced search not used
         if (isFullTextSearch || !useAdvancedSearch) {
             return {}
         }
+      
+        // if no explicit range provided, apply default gap around userLevel
         if (!levelStart && !levelEnd) {
+            const gap = this.staticService.interactionPermissions.thiefLevelGapThreshold
+      
             return {
-                level: {
-                    $gte: userLevel - this.staticService.interactionPermissions.thiefLevelGapThreshold,
-                    $lte: userLevel + this.staticService.interactionPermissions.thiefLevelGapThreshold
+                range: {
+                    level: {
+                        gte: userLevel - gap,
+                        lte: userLevel + gap,
+                    }
                 }
             }
         }
+      
+        // apply range with given start/end
         return {
-            level: {
-                ...(levelStart ? { $gte: levelStart } : {}),
-                ...(levelEnd ? { $lte: levelEnd } : {})
+            range: {
+                level: {
+                    ...(levelStart !== undefined ? { gte: levelStart } : {}),
+                    ...(levelEnd !== undefined ? { lte: levelEnd } : {})
+                }
             }
         }
     }
 
-    private getSearchFilter({ searchString, isFullTextSearch }: GetSearchFilterParams) {
-        if (isFullTextSearch) {
-            return {
-                $or: [
-                    { username: searchString },
-                    { email: searchString },
-                    { id: searchString },
-                    { oauthProviderId: searchString }
-                ]
-            }
-        }
+    private getSearchFilter({ searchString, isFullTextSearch }: GetSearchFilterParams): Partial<QueryDslQueryContainer> {
         if (!searchString) {
             return {}
         }
-        return {
-            $or: [
-                { username: { $regex: new RegExp(searchString, "i") } },
-                { email: { $regex: new RegExp(searchString, "i") } },
-                { id: { $regex: new RegExp(searchString, "i") } },
-                { oauthProviderId: { $regex: new RegExp(searchString, "i") } }
-            ]
+      
+        if (isFullTextSearch) {
+            // Full-text search: use multi_match for analyzed fields
+            return {
+                multi_match: {
+                    query: searchString,
+                    fields: ["username", "email", "id", "oauthProviderId"],
+                    type: "best_fields", // or 'phrase', 'most_fields' depending on need
+                    fuzziness: "AUTO",   // optional: fuzzy search
+                },
+            }
+        } else {
+            // For "non-fulltext" (like regex), approximate with wildcard queries
+            // ES does not support regex like MongoDB, so wildcard is closest
+            return {
+                bool: {
+                    should: [
+                        { wildcard: { username: `*${searchString.toLowerCase()}*` } },
+                        { wildcard: { email: `*${searchString.toLowerCase()}*` } },
+                        { wildcard: { id: `*${searchString.toLowerCase()}*` } },
+                        { wildcard: { oauthProviderId: `*${searchString.toLowerCase()}*` } },
+                    ],
+                    minimum_should_match: 1,
+                },
+            }
         }
     }
 
@@ -94,50 +131,61 @@ export class UsersService {
         { id }: UserLike,
         { limit, offset, searchString, status, levelStart, levelEnd, useAdvancedSearch }: NeighborsRequest
     ): Promise<NeighborsResponse> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id).session(mongoSession)
-            const data = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .find({
-                    _id: { $ne: id },
-                    ...this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch: this.isFullTextSearch(searchString), useAdvancedSearch }),
-                    ...this.getSearchFilter({ searchString, isFullTextSearch: this.isFullTextSearch(searchString) }),
-                    network: user.network,
-                    ...this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch: this.isFullTextSearch(searchString) })
-                })
-                .skip(offset)
-                .limit(limit)
-                .session(mongoSession)
-
-            // transform data to determine if user is following or not
-            const userIds = data.map(({ id }) => id)
-            // get all relations
-            const relations = await this.connection
-                .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                .find({
-                    follower: id,
-                    followee: { $in: userIds }
-                }).session(mongoSession)
-            // map relations to object
-            data.map((user) => {
-                user.followed = !!relations.find(({ followee }) => followee.toString() === user.id)
-                return user
-            })
-            const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
-                _id: { $ne: id },
-                ...this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch: this.isFullTextSearch(searchString), useAdvancedSearch }),
-                ...this.getSearchFilter({ searchString, isFullTextSearch: this.isFullTextSearch(searchString) }),
-                network: user.network,
-                ...this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch: this.isFullTextSearch(searchString) })
-            }).session(mongoSession)
-
-            return {
-                data,
-                count
+        const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id)
+    
+        const isFullTextSearch = this.isFullTextSearch(searchString)
+    
+        // Get each filter, return null if filter is empty
+        const levelFilter = this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch, useAdvancedSearch })
+        const searchFilter = this.getSearchFilter({ searchString, isFullTextSearch })
+        const statusFilter = this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch })
+    
+        // Array of queries, remove null or empty objects
+        const mustClauses: QueryDslQueryContainer[] = [
+            { match: { network: user.network } },
+            levelFilter && Object.keys(levelFilter).length > 0 ? levelFilter : null,
+            searchFilter && Object.keys(searchFilter).length > 0 ? searchFilter : null,
+            statusFilter && Object.keys(statusFilter).length > 0 ? statusFilter : null,
+        ].filter((q): q is QueryDslQueryContainer => !!q) // lọc null và kiểu guard
+    
+        // flatten if there is bool.must inside the filter
+        const flattenedMust: QueryDslQueryContainer[] = []
+    
+        for (const clause of mustClauses) {
+            if ("bool" in clause && clause.bool?.must) {
+                if (Array.isArray(clause.bool.must)) {
+                    flattenedMust.push(...clause.bool.must)
+                } else {
+                    flattenedMust.push(clause.bool.must)
+                }
+            } else {
+                flattenedMust.push(clause)
             }
-        } finally {
-            await mongoSession.endSession()
+        }
+    
+        const finalQuery: QueryDslQueryContainer = {
+            bool: {
+                must: flattenedMust
+            }
+        }
+    
+        // Search
+        const result = await this.elasticsearchService.search<UserSchema>({
+            index: createIndexName(UserSchema.name),
+            query: finalQuery,
+            from: offset,
+            size: limit,
+        })
+    
+        // Count
+        const count = await this.elasticsearchService.count({
+            index: createIndexName(UserSchema.name),
+            query: finalQuery,
+        })
+    
+        return {
+            data: result.hits.hits.map((hit) => hit._source),
+            count: count.count,
         }
     }
 
@@ -145,50 +193,84 @@ export class UsersService {
         { id }: UserLike,
         { limit, offset, searchString, status, levelStart, levelEnd, useAdvancedSearch }: FolloweesRequest
     ): Promise<FolloweesResponse> {
-        const mongoSession = await this.connection.startSession()
-        try {
-            const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id).session(mongoSession)
-
-            const relations = await this.connection
-                .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                .find({
-                    follower: id
-                }).session(mongoSession)
-            const followeeIds = relations.map(({ followee }) => followee)
-
-            const data = await this.connection
-                .model<UserSchema>(UserSchema.name)
-                .find({
-                    _id: { $in: followeeIds },
-                    ...this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch: this.isFullTextSearch(searchString) }),
-                    ...this.getSearchFilter({ searchString, isFullTextSearch: this.isFullTextSearch(searchString) }),
-                    network: user.network,
-                    ...this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch: this.isFullTextSearch(searchString) })
-                })
-                .skip(offset)
-                .limit(limit)
-                .session(mongoSession)
-
-            // map relations to object
-            data.map((user) => {
-                user.followed = !!relations.find(({ followee }) => followee.toString() === user.id)
-                return user
-            })
-
-            const count = await this.connection.model<UserSchema>(UserSchema.name).countDocuments({
-                _id: { $in: followeeIds },
-                ...this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch: this.isFullTextSearch(searchString) }),
-                ...this.getSearchFilter({ searchString, isFullTextSearch: this.isFullTextSearch(searchString) }),
-                network: user.network,
-                ...this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch: this.isFullTextSearch(searchString) })
-            }).session(mongoSession)
-
+        // Lấy user từ MongoDB (cần user level và network)
+        const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id)
+    
+        // Lấy danh sách followee IDs từ MongoDB
+        const relations = await this.connection
+            .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
+            .find({ follower: id })
+            .select("followee")
+        const followeeIds = relations.map(({ followee }) => followee.toString())
+    
+        if (followeeIds.length === 0) {
+            // No followee, return immediately
             return {
-                data,
-                count
+                data: [],
+                count: 0,
             }
-        } finally {
-            await mongoSession.endSession()
+        }
+    
+        const isFullTextSearch = this.isFullTextSearch(searchString)
+    
+        // Create query filter for followees: filter _id must be in followeeIds
+        const followeeIdsQuery: QueryDslQueryContainer = {
+            ids: {
+                values: followeeIds,
+            }
+        }
+    
+        // Get other filters
+        const levelFilter = this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch, useAdvancedSearch })
+        const searchFilter = this.getSearchFilter({ searchString, isFullTextSearch })
+        const statusFilter = this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch })
+    
+        // Combine filters
+        const mustClauses: QueryDslQueryContainer[] = [
+            followeeIdsQuery,
+            { match: { network: user.network } },
+            levelFilter && Object.keys(levelFilter).length > 0 ? levelFilter : null,
+            searchFilter && Object.keys(searchFilter).length > 0 ? searchFilter : null,
+            statusFilter && Object.keys(statusFilter).length > 0 ? statusFilter : null,
+        ].filter((q): q is QueryDslQueryContainer => !!q)
+    
+        // flatten if there is bool.must inside the filter
+        const flattenedMust: QueryDslQueryContainer[] = []
+        for (const clause of mustClauses) {
+            if ("bool" in clause && clause.bool?.must) {
+                if (Array.isArray(clause.bool.must)) {
+                    flattenedMust.push(...clause.bool.must)
+                } else {
+                    flattenedMust.push(clause.bool.must)
+                }
+            } else {
+                flattenedMust.push(clause)
+            }
+        }
+    
+        const finalQuery: QueryDslQueryContainer = {
+            bool: {
+                must: flattenedMust
+            }
+        }
+    
+        // Search in ES
+        const result = await this.elasticsearchService.search<UserSchema>({
+            index: createIndexName(UserSchema.name),
+            query: finalQuery,
+            from: offset,
+            size: limit,
+        })
+    
+        // Count tổng
+        const count = await this.elasticsearchService.count({
+            index: createIndexName(UserSchema.name),
+            query: finalQuery,
+        })
+    
+        return {
+            data: result.hits.hits.map((hit) => hit._source),
+            count: count.count,
         }
     }
 }

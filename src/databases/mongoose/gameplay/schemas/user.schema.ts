@@ -30,12 +30,6 @@ export class UserSchema extends AbstractSchema {
     })
         network: Network
 
-    @Field(() => String, {
-        description: "The blockchain account address of the user"
-    })
-    @Prop({ type: String, length: 100 })
-        accountAddress: string
-
     @Field(() => Int, {
         description: "The amount of gold currency the user has"
     })

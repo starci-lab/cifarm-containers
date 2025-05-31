@@ -83,8 +83,8 @@ export class BeeHouseWorker extends WorkerHost {
             const syncedPlacedItems: Array<WithStatus<PlacedItemSchema>> = []
             for (const placedItem of placedItems) {
                 const promise = async () => {
+                    const session = await this.connection.startSession()
                     try {
-                        const session = await this.connection.startSession()
                         await session.withTransaction(async () => {
                             const upgrade = upgrades.find(
                                 (upgrade) =>
@@ -206,9 +206,10 @@ export class BeeHouseWorker extends WorkerHost {
                                 })
                             }
                         })
-                        await session.endSession()
                     } catch (error) {
                         this.logger.error(`Error processing bee house ${placedItem._id}:`, error)
+                    } finally {
+                        await session.endSession()
                     }
                 }
                 promises.push(promise())

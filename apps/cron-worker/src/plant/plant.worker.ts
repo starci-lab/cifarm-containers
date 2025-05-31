@@ -87,8 +87,8 @@ export class PlantWorker extends WorkerHost {
                     diseaseResistance: placedItem.tileInfo.diseaseResistance
                 })
                 const promise = async () => {
+                    const session = await this.connection.startSession()
                     try {
-                        const session = await this.connection.startSession()
                         await session.withTransaction(async () => {
                             let plant: AbstractPlantSchema
                             if (placedItem.plantInfo.plantType === PlantType.Crop) {
@@ -208,6 +208,8 @@ export class PlantWorker extends WorkerHost {
                         })
                     } catch (error) {
                         this.logger.error(error)
+                    } finally {
+                        await session.endSession()
                     }
                 }
                 promises.push(promise())

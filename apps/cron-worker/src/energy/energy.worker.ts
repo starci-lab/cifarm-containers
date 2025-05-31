@@ -50,44 +50,50 @@ export class EnergyWorker extends WorkerHost {
         for (const user of users) {
             const promise = async () => {
                 const session = await this.connection.startSession()
-                await session.withTransaction(async () => {
-                    const updateUser = () => {
-                    // skip if the user's energy is full
-                        if (user.energyFull) {
+                try {
+                    await session.withTransaction(async () => {
+                        const updateUser = () => {
+                            // skip if the user's energy is full
+                            if (user.energyFull) {
+                                return false
+                            }
+                            // Add time to the user's energy
+                            user.energyRegenTime += time
+                            if (user.energyRegenTime >= energyRegenTime) {
+                                //console.log("Energy regen time", user.energyRegenTime)
+                                user.energy += 1
+                                // Reset the timer
+                                user.energyRegenTime = 0
+                                // Check if the user's energy is full
+                                user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
+                                return true 
+                            }
                             return false
                         }
-                        // Add time to the user's energy
-                        user.energyRegenTime += time
-                        if (user.energyRegenTime >= energyRegenTime) {
-                        //console.log("Energy regen time", user.energyRegenTime)
-                            user.energy += 1
-                            // Reset the timer
-                            user.energyRegenTime = 0
-                            // Check if the user's energy is full
-                            user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
-                            return true 
+                        const userSnapshot = user.$clone()
+                        const synced = updateUser()
+                        await user.save()
+                        if (synced) {
+                            const data = this.syncService.getPartialUpdatedSyncedUser({
+                                userSnapshot,
+                                userUpdated: user
+                            })
+                            await this.kafkaProducer.send({
+                                topic: KafkaTopic.SyncUser,
+                                messages: [
+                                    { value: JSON.stringify({
+                                        userId: user.id,
+                                        data
+                                    }) }
+                                ]
+                            })
                         }
-                        return false
-                    }
-                    const userSnapshot = user.$clone()
-                    const synced = updateUser()
-                    await user.save()
-                    if (synced) {
-                        const data = this.syncService.getPartialUpdatedSyncedUser({
-                            userSnapshot,
-                            userUpdated: user
-                        })
-                        await this.kafkaProducer.send({
-                            topic: KafkaTopic.SyncUser,
-                            messages: [
-                                { value: JSON.stringify({
-                                    userId: user.id,
-                                    data
-                                }) }
-                            ]
-                        })
-                    }
-                })
+                    })
+                } catch (error) {
+                    this.logger.error(error)
+                } finally {
+                    await session.endSession()
+                }
             }
             promises.push(promise())
         }

@@ -81,8 +81,8 @@ export class AnimalWorker extends WorkerHost {
                     diseaseResistance: placedItem.animalInfo.diseaseResistance
                 })
                 const promise = async () => {
+                    const session = await this.connection.startSession()
                     try {
-                        const session = await this.connection.startSession()
                         await session.withTransaction(async () => {
                             const updatePlacedItem = () => {
                                 const placedItemType = this.staticService.placedItemTypes.find(
@@ -194,9 +194,10 @@ export class AnimalWorker extends WorkerHost {
                                 })
                             }
                         })
-                        await session.endSession()
                     } catch (error) {
                         this.logger.error(`Error processing animal ${placedItem._id}:`, error)
+                    } finally {
+                        await session.endSession()
                     }
                 }
                 promises.push(promise())
