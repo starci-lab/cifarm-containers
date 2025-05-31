@@ -12,8 +12,9 @@ import { UserLike } from "@src/jwt"
 import { StaticService } from "@src/gameplay"
 import { ElasticsearchService } from "@nestjs/elasticsearch"
 import { createIndexName } from "@src/elasticsearch"
-import { QueryDslQueryContainer } from "@elastic/elasticsearch/lib/api/types"
-
+import { QueryDslQueryContainer, SortCombinations } from "@elastic/elasticsearch/lib/api/types"
+import { GraphQLError } from "graphql"
+import { DeepPartial } from "@src/common"
 @Injectable()
 export class UsersService {
     private readonly logger = new Logger(UsersService.name)
@@ -34,11 +35,11 @@ export class UsersService {
         if (isFullTextSearch || !useAdvancedSearch) {
             return {}
         }
-      
+
         if (!status || status === NeighborsSearchStatus.All) {
             return {}
         }
-      
+
         // Build filter for isOnline field
         return {
             bool: {
@@ -64,16 +65,16 @@ export class UsersService {
         isFullTextSearch,
         useAdvancedSearch
     }: GetLevelFilterParams): Partial<QueryDslQueryContainer> {
-        
+
         // skip if full-text or advanced search not used
         if (isFullTextSearch || !useAdvancedSearch) {
             return {}
         }
-      
+
         // if no explicit range provided, apply default gap around userLevel
         if (!levelStart && !levelEnd) {
             const gap = this.staticService.interactionPermissions.thiefLevelGapThreshold
-      
+
             return {
                 range: {
                     level: {
@@ -83,7 +84,7 @@ export class UsersService {
                 }
             }
         }
-      
+
         // apply range with given start/end
         return {
             range: {
@@ -95,11 +96,14 @@ export class UsersService {
         }
     }
 
-    private getSearchFilter({ searchString, isFullTextSearch }: GetSearchFilterParams): Partial<QueryDslQueryContainer> {
+    private getSearchFilter({
+        searchString,
+        isFullTextSearch
+    }: GetSearchFilterParams): Partial<QueryDslQueryContainer> {
         if (!searchString) {
             return {}
         }
-      
+
         if (isFullTextSearch) {
             // Full-text search: use multi_match for analyzed fields
             return {
@@ -127,30 +131,57 @@ export class UsersService {
         }
     }
 
+    private sortDefault(user: DeepPartial<UserSchema>): Array<SortCombinations> {
+        return [
+            {
+                _script: {
+                    type: "number",
+                    script: {
+                        source: "Math.abs(doc['level'].value - params.userLevel)",
+                        params: { userLevel: user.level ?? 1 }
+                    },
+                    order: "asc"
+                }
+            },
+            {
+                followed: { 
+                    order: "desc", 
+                    unmapped_type: "boolean" 
+                } 
+            },
+            {
+                lastOnlineTime: {
+                    order: "asc",
+                    unmapped_type: "date"
+                }
+            }
+        ]
+    }
+
     async neighbors(
         { id }: UserLike,
         { limit, offset, searchString, status, levelStart, levelEnd, useAdvancedSearch }: NeighborsRequest
     ): Promise<NeighborsResponse> {
         const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id)
-    
+
         const isFullTextSearch = this.isFullTextSearch(searchString)
-    
+        
         // Get each filter, return null if filter is empty
         const levelFilter = this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch, useAdvancedSearch })
         const searchFilter = this.getSearchFilter({ searchString, isFullTextSearch })
         const statusFilter = this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch })
-    
+
         // Array of queries, remove null or empty objects
-        const mustClauses: QueryDslQueryContainer[] = [
+        const mustClauses: Array<QueryDslQueryContainer> = [
             { match: { network: user.network } },
             levelFilter && Object.keys(levelFilter).length > 0 ? levelFilter : null,
             searchFilter && Object.keys(searchFilter).length > 0 ? searchFilter : null,
             statusFilter && Object.keys(statusFilter).length > 0 ? statusFilter : null,
-        ].filter((q): q is QueryDslQueryContainer => !!q) // lọc null và kiểu guard
-    
+        ].filter((query): query is QueryDslQueryContainer => !!query) // lọc null và kiểu guard
+
         // flatten if there is bool.must inside the filter
-        const flattenedMust: QueryDslQueryContainer[] = []
-    
+        const flattenedMust: Array<QueryDslQueryContainer> = []
+
         for (const clause of mustClauses) {
             if ("bool" in clause && clause.bool?.must) {
                 if (Array.isArray(clause.bool.must)) {
@@ -162,29 +193,46 @@ export class UsersService {
                 flattenedMust.push(clause)
             }
         }
-    
+
         const finalQuery: QueryDslQueryContainer = {
             bool: {
                 must: flattenedMust
             }
         }
-    
+
+        const sort = this.sortDefault(user)
+
         // Search
         const result = await this.elasticsearchService.search<UserSchema>({
             index: createIndexName(UserSchema.name),
             query: finalQuery,
             from: offset,
             size: limit,
+            sort
         })
-    
+
+        const followees = await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).find({
+            follower: id,
+            followee: { $in: result.hits.hits.map((hit) => hit._source.id) }
+        })
+
+        const data: Array<UserSchema> = result.hits.hits.map((hit) => {
+            const followee = followees.find((followee) => followee.followee.toString() === hit._source.id)
+            if (!hit._source) {
+                throw new GraphQLError("User not found")
+            }
+            hit._source.followed = !!followee
+            return hit._source
+        })
+
         // Count
         const count = await this.elasticsearchService.count({
             index: createIndexName(UserSchema.name),
             query: finalQuery,
         })
-    
+
         return {
-            data: result.hits.hits.map((hit) => hit._source),
+            data,
             count: count.count,
         }
     }
@@ -195,14 +243,14 @@ export class UsersService {
     ): Promise<FolloweesResponse> {
         // Lấy user từ MongoDB (cần user level và network)
         const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id)
-    
+
         // Lấy danh sách followee IDs từ MongoDB
         const relations = await this.connection
             .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
             .find({ follower: id })
             .select("followee")
         const followeeIds = relations.map(({ followee }) => followee.toString())
-    
+
         if (followeeIds.length === 0) {
             // No followee, return immediately
             return {
@@ -210,32 +258,32 @@ export class UsersService {
                 count: 0,
             }
         }
-    
+
         const isFullTextSearch = this.isFullTextSearch(searchString)
-    
+
         // Create query filter for followees: filter _id must be in followeeIds
         const followeeIdsQuery: QueryDslQueryContainer = {
             ids: {
                 values: followeeIds,
             }
         }
-    
+
         // Get other filters
         const levelFilter = this.getLevelFilter({ userLevel: user.level, levelStart, levelEnd, isFullTextSearch, useAdvancedSearch })
         const searchFilter = this.getSearchFilter({ searchString, isFullTextSearch })
         const statusFilter = this.getStatusFilter({ status, useAdvancedSearch, isFullTextSearch })
-    
+
         // Combine filters
-        const mustClauses: QueryDslQueryContainer[] = [
+        const mustClauses: Array<QueryDslQueryContainer> = [
             followeeIdsQuery,
             { match: { network: user.network } },
             levelFilter && Object.keys(levelFilter).length > 0 ? levelFilter : null,
             searchFilter && Object.keys(searchFilter).length > 0 ? searchFilter : null,
             statusFilter && Object.keys(statusFilter).length > 0 ? statusFilter : null,
-        ].filter((q): q is QueryDslQueryContainer => !!q)
-    
+        ].filter((query): query is QueryDslQueryContainer => !!query)
+
         // flatten if there is bool.must inside the filter
-        const flattenedMust: QueryDslQueryContainer[] = []
+        const flattenedMust: Array<QueryDslQueryContainer> = []
         for (const clause of mustClauses) {
             if ("bool" in clause && clause.bool?.must) {
                 if (Array.isArray(clause.bool.must)) {
@@ -247,29 +295,46 @@ export class UsersService {
                 flattenedMust.push(clause)
             }
         }
-    
+
+        const sort = this.sortDefault(user)
+
         const finalQuery: QueryDslQueryContainer = {
             bool: {
                 must: flattenedMust
             }
         }
-    
+
         // Search in ES
         const result = await this.elasticsearchService.search<UserSchema>({
             index: createIndexName(UserSchema.name),
             query: finalQuery,
             from: offset,
             size: limit,
+            sort
         })
-    
+
+        const followees = await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).find({
+            follower: id,
+            followee: { $in: result.hits.hits.map((hit) => hit._source.id) }
+        })
+
+        const data: Array<UserSchema> = result.hits.hits.map((hit) => {
+            const followee = followees.find((followee) => followee.followee.toString() === hit._source.id)
+            if (!hit._source) {
+                throw new GraphQLError("User not found")
+            }
+            hit._source.followed = !!followee
+            return hit._source
+        })  
+
         // Count tổng
         const count = await this.elasticsearchService.count({
             index: createIndexName(UserSchema.name),
             query: finalQuery,
         })
-    
+
         return {
-            data: result.hits.hits.map((hit) => hit._source),
+            data,
             count: count.count,
         }
     }

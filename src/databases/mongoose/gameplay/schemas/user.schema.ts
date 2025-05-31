@@ -127,7 +127,8 @@ export class UserSchema extends AbstractSchema {
         followXAwarded: boolean
 
     @Field(() => Boolean, {
-        description: "Whether the current user is followed by the requesting user"
+        description: "Whether the current user is followed by the requesting user",
+        nullable: true
     })
         followed?: boolean
 

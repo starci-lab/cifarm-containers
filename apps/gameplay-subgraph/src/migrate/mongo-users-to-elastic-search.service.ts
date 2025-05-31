@@ -15,7 +15,7 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly elasticSearchService: ElasticsearchService
-    ) {}
+    ) { }
 
     async onModuleInit() {
         try {
@@ -57,20 +57,31 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
             this.changeStream = this.connection.model<UserSchema>(UserSchema.name).watch()
             this.changeStream.on("change", async (change: ChangeStreamDocument<UserSchema>) => {
                 try {
-                    this.logger.warn("Change detected:", JSON.stringify(change))
-                    if (change.operationType === "insert" || change.operationType === "update") {
+                    if (change.operationType === "insert") {
                         const user = change.fullDocument
                         const userObject = _.cloneDeep(user)
-                        delete userObject._id
+                        userObject.id = user._id.toString()
                         await this.elasticSearchService.index({
                             index: createIndexName(this.collectionName),
                             id: user._id.toString(),
                             body: userObject as unknown as Record<string, string>,
                         })
+                    } else if (change.operationType === "update") {
+                        const { _seq_no: seqNo } = await this.elasticSearchService.get({
+                            index: createIndexName(this.collectionName),
+                            id: change.documentKey._id,
+                        })
+
+                        await this.elasticSearchService.update({
+                            index: createIndexName(this.collectionName),
+                            id: change.documentKey._id,
+                            if_seq_no: seqNo,
+                            doc: change.updateDescription.updatedFields,
+                        })
                     } else if (change.operationType === "delete") {
                         await this.elasticSearchService.delete({
                             index: createIndexName(this.collectionName),
-                            id: (change.documentKey._id as string).toString(),
+                            id: change.documentKey._id,
                         })
                     }
                 } catch (error) {
