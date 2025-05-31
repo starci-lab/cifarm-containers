@@ -16,7 +16,7 @@ import { FruitModule } from "./fruit"
 import { GameplayModule } from "@src/gameplay"
 import { IdModule } from "@src/id"
 import { BeeHouseModule } from "./bee-house"
-
+import { MigrateModule } from "./migrate"
 @Module({
     imports: [
         IdModule.register({
@@ -48,6 +48,7 @@ import { BeeHouseModule } from "./bee-house"
         ScheduleModule.forRoot(),
         AnimalModule,
         DeliveryModule,
+        MigrateModule,
         EnergyModule,
         FruitModule,
         BeeHouseModule,

@@ -19,7 +19,6 @@ import { ThrottlerModule } from "@src/throttler"
 import { BlockchainDatabaseModule } from "@src/blockchain-database"
 import { S3Module } from "@src/s3"
 import { ElasticsearchModule } from "@src/elasticsearch"
-import { MigrateModule } from "./migrate"
 
 @Module({
     imports: [
@@ -67,8 +66,7 @@ import { MigrateModule } from "./migrate"
         }),
         //functional modules
         QueriesModule,
-        MutationsModule,
-        MigrateModule
+        MutationsModule
     ],
     providers: [
         {

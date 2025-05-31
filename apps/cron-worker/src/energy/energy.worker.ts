@@ -72,7 +72,7 @@ export class EnergyWorker extends WorkerHost {
                         }
                         const userSnapshot = user.$clone()
                         const synced = updateUser()
-                        await user.save()
+                        await user.save({ session })
                         if (synced) {
                             const data = this.syncService.getPartialUpdatedSyncedUser({
                                 userSnapshot,

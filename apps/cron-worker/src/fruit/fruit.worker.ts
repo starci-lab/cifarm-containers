@@ -191,7 +191,7 @@ export class FruitWorker extends WorkerHost {
                             // update the placed item
                             const placedItemSnapshot = placedItem.$clone()
                             const synced = updatePlacedItem()
-                            await placedItem.save()
+                            await placedItem.save({ session })
                             if (synced) {
                                 const updatedSyncedPlacedItem =
                                     this.syncService.getPartialUpdatedSyncedPlacedItem({

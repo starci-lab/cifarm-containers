@@ -183,7 +183,7 @@ export class PlantWorker extends WorkerHost {
                             const placedItemSnapshot = placedItem.$clone()
                             // update the placed item
                             const synced = updatePlacedItem()
-                            await placedItem.save()
+                            await placedItem.save({ session })
                             if (synced) {
                                 const updatedSyncedPlacedItem =
                                 this.syncService.getPartialUpdatedSyncedPlacedItem({
