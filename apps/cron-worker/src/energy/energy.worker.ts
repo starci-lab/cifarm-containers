@@ -65,10 +65,9 @@ export class EnergyWorker extends WorkerHost {
                                 // Reset the timer
                                 user.energyRegenTime = 0
                                 // Check if the user's energy is full
-                                user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level)
-                                return true 
+                                user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level) 
                             }
-                            return false
+                            return true
                         }
                         const userSnapshot = user.$clone()
                         const synced = updateUser()

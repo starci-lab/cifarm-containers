@@ -179,6 +179,10 @@ export class UsersService {
             statusFilter && Object.keys(statusFilter).length > 0 ? statusFilter : null,
         ].filter((query): query is QueryDslQueryContainer => !!query) // lọc null và kiểu guard
 
+        // must not be the same user
+        const mustNotClauses: Array<QueryDslQueryContainer> = [
+            { term: { id: user.id } }
+        ]
         // flatten if there is bool.must inside the filter
         const flattenedMust: Array<QueryDslQueryContainer> = []
 
@@ -196,7 +200,8 @@ export class UsersService {
 
         const finalQuery: QueryDslQueryContainer = {
             bool: {
-                must: flattenedMust
+                must: flattenedMust,
+                must_not: mustNotClauses
             }
         }
 
@@ -282,6 +287,10 @@ export class UsersService {
             statusFilter && Object.keys(statusFilter).length > 0 ? statusFilter : null,
         ].filter((query): query is QueryDslQueryContainer => !!query)
 
+        // must not be the same user
+        const mustNotClauses: Array<QueryDslQueryContainer> = [
+            { term: { id: user.id } }
+        ]
         // flatten if there is bool.must inside the filter
         const flattenedMust: Array<QueryDslQueryContainer> = []
         for (const clause of mustClauses) {
@@ -300,7 +309,8 @@ export class UsersService {
 
         const finalQuery: QueryDslQueryContainer = {
             bool: {
-                must: flattenedMust
+                must: flattenedMust,
+                must_not: mustNotClauses
             }
         }
 

@@ -99,6 +99,14 @@ export class AnimalWorker extends WorkerHost {
                                 const updateAdultAnimalPlacedItem = (): boolean => {
                                     // If animal is adult, add time to the animal yield
                                     placedItem.animalInfo.currentYieldTime += time * (1 + growthAcceleration)
+                                    placedItem.animalInfo.currentHungryTime += time
+
+                                    // check if animal is hungry
+                                    if (placedItem.animalInfo.currentHungryTime >= animal.hungerTime) {
+                                        placedItem.animalInfo.currentHungryTime = 0
+                                        placedItem.animalInfo.currentState = AnimalCurrentState.Hungry
+                                        return true
+                                    }
 
                                     // if animal grow to half of the yield time, it may get sick and immunized
                                     if (
