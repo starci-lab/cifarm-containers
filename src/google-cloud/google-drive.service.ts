@@ -4,10 +4,10 @@ import { Auth, drive_v3 } from "googleapis"
 import { Readable } from "stream"
 
 @Injectable()
-export class GoogleDriverService {
+export class GoogleDriveService {
     private readonly auth: Auth.GoogleAuth
     private readonly drive: drive_v3.Drive
-    private readonly logger = new Logger(GoogleDriverService.name)
+    private readonly logger = new Logger(GoogleDriveService.name)
     constructor() {
         this.auth = new Auth.GoogleAuth({
             credentials: {

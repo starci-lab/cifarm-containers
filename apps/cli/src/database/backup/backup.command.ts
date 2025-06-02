@@ -4,7 +4,7 @@ import { InjectMongoose } from "@src/databases"
 import { Connection } from "mongoose"
 import { ExecService } from "@src/exec"
 import path from "path"
-import { GoogleDriverService } from "@src/google-cloud"
+import { GoogleDriveService } from "@src/google-cloud"
 import fs from "fs/promises"
 import { Readable } from "stream"
 import { envConfig } from "@src/env"
@@ -17,7 +17,7 @@ export class BackupCommand extends CommandRunner {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly execService: ExecService,
-        private readonly googleDriverService: GoogleDriverService
+        private readonly googleDriveService: GoogleDriveService
     ) {
         super()
     }
@@ -64,7 +64,7 @@ export class BackupCommand extends CommandRunner {
             })
         )
         // upload folder with files
-        await this.googleDriverService.uploadFolder({
+        await this.googleDriveService.uploadFolder({
             folderName: backupFolderName,
             files: backupFiles,
         })
