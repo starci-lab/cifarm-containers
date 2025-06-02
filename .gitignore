@@ -70,3 +70,5 @@ db
 *.yaml
 
 firebase-cert.json
+
+.backups

@@ -1,12 +1,13 @@
 import { Command, CommandRunner } from "nest-commander"
 import { SeedCommand } from "./seed"
 import { Logger } from "@nestjs/common"
+import { BackupCommand } from "./backup"
 
 @Command({
     name: "database",
     aliases: ["db"],
     description: "manage database actions",
-    subCommands: [ SeedCommand ]
+    subCommands: [ SeedCommand, BackupCommand ]
 })
 export class DatabaseCommand extends CommandRunner {
     private readonly logger = new Logger(DatabaseCommand.name)

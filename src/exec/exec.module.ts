@@ -8,8 +8,9 @@ import { ExecDockerCoreService } from "./exec-docker-core.service"
 export class ExecModule extends ConfigurableModuleClass {
     static register(options: typeof OPTIONS_TYPE = {}): DynamicModule {
         // define the providers and exports
-        const providers: Array<Provider> = [ExecService]
-        const exports: Array<Provider> = []
+        const originServices = [ExecService]
+        const providers: Array<Provider> = [...originServices]
+        const exports: Array<Provider> = [...originServices]
 
         // if the redisCluster is enabled and running in docker
         const docker = options?.docker
@@ -42,6 +43,7 @@ export class ExecModule extends ConfigurableModuleClass {
 
         const dynamicModule = super.register(options)
         return {
+            global: options.isGlobal,
             ...dynamicModule,
             providers: [...dynamicModule.providers, ...providers],
             exports

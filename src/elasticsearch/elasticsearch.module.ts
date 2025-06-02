@@ -38,6 +38,10 @@ export class ElasticsearchModule extends ConfigurableModuleClass {
             module = NestElasticsearchModule.registerAsync({
                 useFactory: async () => ({
                     node: envConfig().elasticsearch.url,
+                    auth: {
+                        username: envConfig().elasticsearch.username,
+                        password: envConfig().elasticsearch.password,
+                    },
                 }),
             })
         }

@@ -12,7 +12,8 @@ import { FarcasterModule } from "./farcaster"
 import { S3Module } from "@src/s3"
 import { CryptoModule } from "@src/crypto"
 import { EncryptModule } from "./encrypt"
-
+import { MongooseModule } from "@src/databases"
+import { GoogleCloudModule } from "@src/google-cloud"
 @Module({
     imports: [
         EnvModule.forRoot(),
@@ -22,15 +23,19 @@ import { EncryptModule } from "./encrypt"
         BlockchainModule.register({
             isGlobal: true
         }),
+        MongooseModule.forRoot(),
         BaseHoneycombModule.register({
             isGlobal: true,
             useGlobalImports: true,
         }), 
+        GoogleCloudModule.register({
+            isGlobal: true
+        }),
         ExecModule.register({
+            isGlobal: true,
             docker: {
                 core: true
-            },
-            isGlobal: true
+            }
         }),
         FarcasterCoreModule.register({
             isGlobal: true

@@ -235,6 +235,13 @@ export const envConfig = () => ({
             clientId: process.env.GOOGLE_CLOUD_OAUTH_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLOUD_OAUTH_CLIENT_SECRET,
             redirectUri: process.env.GOOGLE_CLOUD_OAUTH_REDIRECT_URI,
+        },
+        credentials: {
+            clientEmail: process.env.GOOGLE_CLOUD_CREDENTIALS_CLIENT_EMAIL,
+            privateKey: process.env.GOOGLE_CLOUD_CREDENTIALS_PRIVATE_KEY,
+        },
+        driver: {
+            folderId: process.env.GOOGLE_CLOUD_DRIVER_FOLDER_ID,
         }
     },
     facebook: {
