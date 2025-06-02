@@ -11,8 +11,8 @@ export class GoogleDriverService {
     constructor() {
         this.auth = new Auth.GoogleAuth({
             credentials: {
-                client_email: envConfig().googleCloud.credentials.clientEmail,
-                private_key: envConfig().googleCloud.credentials.privateKey
+                client_email: envConfig().googleCloud.driver.clientEmail,
+                private_key: envConfig().googleCloud.driver.privateKey
             },
             scopes: ["https://www.googleapis.com/auth/drive"]
         })
