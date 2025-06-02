@@ -29,6 +29,13 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
                         match_all: {}
                     }
                 })
+                const data = await this.elasticSearchService.search({
+                    index: createIndexName(this.collectionName),
+                    query: {
+                        match_all: {}
+                    }
+                })
+                console.log(data)
             } else {
                 await this.elasticSearchService.indices.create({
                     index: createIndexName(this.collectionName),
@@ -67,16 +74,11 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
                             body: userObject as unknown as Record<string, string>,
                         })
                     } else if (change.operationType === "update") {
-                        const { _seq_no: seqNo } = await this.elasticSearchService.get({
+                        await this.elasticSearchService.update<UserSchema>({
                             index: createIndexName(this.collectionName),
                             id: change.documentKey._id,
-                        })
-
-                        await this.elasticSearchService.update({
-                            index: createIndexName(this.collectionName),
-                            id: change.documentKey._id,
-                            if_seq_no: seqNo,
                             doc: change.updateDescription.updatedFields,
+                            retry_on_conflict: 20,
                         })
                     } else if (change.operationType === "delete") {
                         await this.elasticSearchService.delete({

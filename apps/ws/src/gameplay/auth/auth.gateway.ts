@@ -24,7 +24,7 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly socketCoreService: SocketCoreService<SocketData>
-    ) {}
+    ) { }
 
     @WebSocketServer()
     private readonly namespace: Namespace
@@ -37,16 +37,20 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
 
     //process authentication
     public async handleConnection(@ConnectedSocket() socket: Socket) {
-        const user = await this.socketCoreService.authenticate(socket)
-        if (!user) return
-        // join the room, indicate observering this user
-        this.logger.verbose(`Client connected: ${socket.id}`)
-        this.joinRoom({ socket, userId: user.id, type: RoomType.Player })
-        this.joinRoom({ socket, userId: user.id, type: RoomType.Watcher })
-        // update the user's isOnline to true
-        await this.connection
-            .model<UserSchema>(UserSchema.name)
-            .updateOne({ _id: user.id }, { $set: { isOnline: true } })
+        try {
+            const user = await this.socketCoreService.authenticate(socket)
+            if (!user) return
+            // join the room, indicate observering this user
+            this.logger.verbose(`Client connected: ${socket.id}`)
+            this.joinRoom({ socket, userId: user.id, type: RoomType.Player })
+            this.joinRoom({ socket, userId: user.id, type: RoomType.Watcher })
+            // update the user's isOnline to true
+            await this.connection
+                .model<UserSchema>(UserSchema.name)
+                .updateOne({ _id: user.id }, { $set: { isOnline: true } })
+        } catch (error) {
+            this.logger.error(error)
+        }
     }
 
     async handleDisconnect(@ConnectedSocket() socket: TypedSocket<SocketData>) {
@@ -55,7 +59,7 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
         }
         const session = await this.connection.startSession()
         try {
-        // if socket is disconnected before user is set, do nothing
+            // if socket is disconnected before user is set, do nothing
             await session.withTransaction(async () => {
                 // when disconnected, update the last online time
                 await this.connection
@@ -91,7 +95,7 @@ export class AuthGateway implements OnGatewayConnection, OnGatewayDisconnect, On
                 // emit last message
                 _socket.emit(EmitterEventName.YourAccountHasBeenLoggedInFromAnotherDevice)
                 _socket.disconnect()
-            }  
+            }
         }
         socket.join(roomName)
     }

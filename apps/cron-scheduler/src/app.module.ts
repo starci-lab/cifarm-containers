@@ -1,5 +1,4 @@
 import { Module } from "@nestjs/common"
-//import { AnimalModule } from "./animal"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { ScheduleModule } from "@nestjs/schedule"
 import { BullModule } from "@src/bull"
@@ -11,12 +10,12 @@ import { DeliveryModule } from "./delivery"
 import { CacheModule } from "@src/cache"
 import { DateModule } from "@src/date"
 import { MongooseModule } from "@src/databases"
-//import { KafkaModule } from "@src/brokers"
 import { FruitModule } from "./fruit"
 import { GameplayModule } from "@src/gameplay"
 import { IdModule } from "@src/id"
 import { BeeHouseModule } from "./bee-house"
 import { MigrateModule } from "./migrate"
+import { ElasticsearchModule } from "@src/elasticsearch"
 @Module({
     imports: [
         IdModule.register({
@@ -26,6 +25,9 @@ import { MigrateModule } from "./migrate"
         EnvModule.forRoot(),
         ScheduleModule.forRoot({
             timeouts: true,
+        }),
+        ElasticsearchModule.register({
+            isGlobal: true
         }),
         BullModule.forRoot(),
         MongooseModule.forRoot(),
@@ -42,9 +44,6 @@ import { MigrateModule } from "./migrate"
         CacheModule.register({
             isGlobal: true
         }),
-        // KafkaModule.register({
-        //     isGlobal: true,
-        // }),
         ScheduleModule.forRoot(),
         AnimalModule,
         DeliveryModule,

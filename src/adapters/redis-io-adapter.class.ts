@@ -15,7 +15,9 @@ export class RedisIoAdapter extends IoAdapter {
 
         await Promise.all([pubClient.connect(), subClient.connect()])
 
-        this.adapterConstructor = createAdapter(pubClient, subClient)
+        this.adapterConstructor = createAdapter(pubClient, subClient, {
+            requestsTimeout: 10000,
+        })
     }
 
     createIOServer(port: number, options?: ServerOptions) {

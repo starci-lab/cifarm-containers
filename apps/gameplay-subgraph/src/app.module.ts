@@ -42,9 +42,6 @@ import { ElasticsearchModule } from "@src/elasticsearch"
         KafkaModule.register({
             isGlobal: true
         }),
-        ElasticsearchModule.register({
-            isGlobal: true
-        }),
         BlockchainModule.register({
             isGlobal: true
         }),
@@ -62,6 +59,9 @@ import { ElasticsearchModule } from "@src/elasticsearch"
             isGlobal: true
         }),
         S3Module.register({
+            isGlobal: true
+        }),
+        ElasticsearchModule.register({
             isGlobal: true
         }),
         //functional modules

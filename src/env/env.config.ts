@@ -378,6 +378,7 @@ export const envConfig = () => ({
     elasticsearch: {
         url: process.env.ELASTICSEARCH_URL ?? "http://localhost:9200",
         username: process.env.ELASTICSEARCH_USERNAME ?? "elastic",
-        password: process.env.ELASTICSEARCH_PASSWORD ?? "bitnami",
+        password: process.env.ELASTICSEARCH_PASSWORD ?? "b2wMmCLDOJ",
+        requireTLS: process.env.ELASTICSEARCH_REQUIRE_TLS === "true"
     }
 })
