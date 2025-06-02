@@ -21,6 +21,18 @@ RUN npx nest build cli
 # Production Stage (final image)
 FROM node:${NODE_VERSION}-alpine AS production
 
+# Download and install MongoDB Database Tools
+RUN apk add --no-cache \
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing \
+    mongodb-tools \
+ && chmod +x /usr/bin/mongo* || true
+
+# Set the path to the MongoDB Database Tools
+ENV PATH="/usr/bin:/usr/local/bin:${PATH}"
+
+# Verify installation
+RUN mongodump --version
+
 WORKDIR /usr/src/app
 
 # Copy only the build output and proto files

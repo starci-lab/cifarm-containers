@@ -6,14 +6,14 @@ import { ExecOptions } from "./exec.types"
 @Injectable()
 export class ExecService {
     private readonly logger = new Logger(ExecService.name)
-    private readonly shell: "powershell.exe" | "/bin/bash"
+    private readonly shell: "powershell.exe" | "/bin/sh"
 
     constructor(
         @Inject(MODULE_OPTIONS_TOKEN)
         private readonly options: ExecOptions
     ) {
         const platform = process.platform
-        this.shell = platform === "win32" ? "powershell.exe" : "/bin/bash"
+        this.shell = platform === "win32" ? "powershell.exe" : "/bin/sh"
     }
     public async exec(command: string, args: Array<string> = []): Promise<string> {
         // Log the command if debug is enabled
@@ -22,7 +22,6 @@ export class ExecService {
         const subprocess = execa(command, args, {
             shell: this.shell,
         })
-
         // Execute the command
         const { stdout, stderr } = await subprocess
 

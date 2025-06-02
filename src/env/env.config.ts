@@ -242,6 +242,9 @@ export const envConfig = () => ({
             folderId: process.env.GOOGLE_CLOUD_DRIVER_FOLDER_ID,
         }
     },
+    backup: {
+        dir: process.env.BACKUP_DIR,
+    },
     facebook: {
         oauth: {
             clientId: process.env.FACEBOOK_OAUTH_CLIENT_ID,

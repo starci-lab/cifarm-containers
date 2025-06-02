@@ -30,8 +30,15 @@ export class BackupCommand extends CommandRunner {
         const uri = `mongodb://${envConfig().databases.mongo.gameplay.username}:${envConfig().databases.mongo.gameplay.password}@${host}:${port}/?authSource=admin&readPreference=primary`
         // get the backup folder name
         const backupFolderName = `cifarm-${new Date().toISOString().replace(/[:.]/g, "-")}`
-        const backupFolderPath = path.join(process.cwd(), ".backups", backupFolderName)
-        await this.execService.exec(`mongodump --uri="${uri}" --out="${backupFolderPath}" --db="${dbName}" --gzip --quiet`)
+        const backupDir = envConfig().backup.dir || path.join(process.cwd(), ".backups")
+        const backupFolderPath = path.join(backupDir, backupFolderName) 
+        await this.execService.exec("mongodump", [
+            `--uri="${uri}"`,
+            `--out="${backupFolderPath}"`,
+            `--db="${dbName}"`,
+            "--gzip",
+            "--quiet"
+        ])
         // read all files in the backup folder
         const dataBaseBackupFolderPath = path.join(backupFolderPath, dbName)
         const files = await fs.readdir(dataBaseBackupFolderPath)
