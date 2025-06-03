@@ -88,23 +88,11 @@ export class PlantLastSchedule {
     description: "Vault info"
 })
 export class VaultInfo {
-    @Field(() => Int, {
-        description: "The number of times the vault has been paid",
-        defaultValue: 0
-    })
-        paidCount: number
-
     @Field(() => Float, {
         description: "The number of tokens locked in the vault",
         defaultValue: 0
     })
         tokenLocked: number
-
-    @Field(() => Float, {
-        description: "The current max paid amount",
-        nullable: true
-    })
-        currentMaxPaidAmount?: number
 }
 
 @ObjectType({

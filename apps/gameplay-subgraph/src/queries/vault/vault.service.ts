@@ -28,7 +28,6 @@ export class GraphQLVaultService {
 
         return {
             paidAmount,
-            paidCount: vaultInfos[network].paidCount || 0,
             tokenLocked: vaultInfos[network].tokenLocked || 0
         }
     }

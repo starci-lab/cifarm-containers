@@ -66,15 +66,13 @@ export class KeyValueStoreSeeder implements Seeder {
                 displayId: KeyValueStoreId.VaultInfos,
                 value: {
                     [Network.Mainnet]: {
-                        paidCount: 0,
                         tokenLocked: 0
                     },
                     [Network.Testnet]: {
-                        paidCount: 0,
                         tokenLocked: 0
                     },
                 },
-                version: 1
+                version: 4
             }
         ]
 

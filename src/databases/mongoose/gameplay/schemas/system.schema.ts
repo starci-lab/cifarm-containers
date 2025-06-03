@@ -903,11 +903,6 @@ export class TokenVault {
         maxPaidAmount: number
 
     @Field(() => Float, {
-        description: "Max paid decrease"
-    })
-        maxPaidDecreasePercentage: number
-
-    @Field(() => Float, {
         description: "Vault paid percentage"
     })
         vaultPaidPercentage: number
