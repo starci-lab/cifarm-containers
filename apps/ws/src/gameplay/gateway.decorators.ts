@@ -7,6 +7,7 @@ export const config = (): GatewayMetadata => ({
         origin: envConfig().cors.ws,
         credentials: true,
     },
+    transports: ["websocket"],
     namespace: NAMESPACE,
 })
 

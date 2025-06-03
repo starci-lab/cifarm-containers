@@ -29,13 +29,12 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
                         match_all: {}
                     }
                 })
-                const data = await this.elasticSearchService.search({
+                await this.elasticSearchService.search({
                     index: createIndexName(this.collectionName),
                     query: {
                         match_all: {}
                     }
                 })
-                console.log(data)
             } else {
                 await this.elasticSearchService.indices.create({
                     index: createIndexName(this.collectionName),
@@ -52,10 +51,9 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
             for (const userChunk of usersChunks) {
                 for (const user of userChunk) {
                     const userObject = user.toJSON()
-                    delete userObject._id
                     await this.elasticSearchService.index({
                         index: createIndexName(this.collectionName),
-                        id: user._id.toString(),
+                        id: userObject.id,
                         body: userObject as unknown as Record<string, string>,
                     })
                 }
@@ -65,12 +63,14 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
             this.changeStream.on("change", async (change: ChangeStreamDocument<UserSchema>) => {
                 try {
                     if (change.operationType === "insert") {
+                        this.logger.warn(JSON.stringify(change))
                         const user = change.fullDocument
                         const userObject = _.cloneDeep(user)
-                        userObject.id = user._id.toString()
+                        userObject.id = userObject._id.toString()
+                        delete userObject._id
                         await this.elasticSearchService.index({
                             index: createIndexName(this.collectionName),
-                            id: user._id.toString(),
+                            id: userObject.id,
                             body: userObject as unknown as Record<string, string>,
                         })
                     } else if (change.operationType === "update") {

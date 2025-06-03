@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { UnfollowRequest } from "./unfollow.dto"
-import { InjectMongoose, UserFollowRelationSchema, UserSchema } from "@src/databases"
+import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
@@ -20,11 +20,11 @@ export class UnfollowService {
     ): Promise<void> {
         const mongoSession = await this.connection.startSession()
         try {
-            await mongoSession.withTransaction(async (mongoSession) => {
+            await mongoSession.withTransaction(async (session) => {
                 const followee = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(followeeUserId)
-                    .session(mongoSession)
+                    .session(session)
                 if (!followee) {
                     throw new GraphQLError("Followee not found", {
                         extensions: {
@@ -32,11 +32,10 @@ export class UnfollowService {
                         }
                     })
                 }
-
                 const user = await this.connection
                     .model<UserSchema>(UserSchema.name)
                     .findById(userId)
-                    .session(mongoSession)
+                    .session(session)
                 if (!user) {
                     throw new GraphQLError("User not found", {
                         extensions: {
@@ -44,7 +43,6 @@ export class UnfollowService {
                         }
                     })
                 }
-
                 if (user.network !== followee.network) {
                     throw new GraphQLError("Cannot unfollow neighbor in different network", {
                         extensions: {
@@ -52,31 +50,16 @@ export class UnfollowService {
                         }
                     })
                 }
-
-                const following = await this.connection
-                    .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                    .exists({
-                        followee: followeeUserId,
-                        follower: userId
-                    })
-                    .session(mongoSession)
-
-                if (!following) {
+                if (!user.followeeUserIds.map(id => id.toString()).includes(followeeUserId)) {
                     throw new GraphQLError("Not following", {
                         extensions: {
                             code: "NOT_FOLLOWING"
                         }
                     })
                 }
-
                 // delete the follow relation
-                await this.connection
-                    .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                    .deleteOne({
-                        followee: followeeUserId,
-                        follower: userId
-                    })
-                    .session(mongoSession)
+                user.followeeUserIds = user.followeeUserIds.filter(id => id.toString() !== followeeUserId)
+                await user.save({ session })
             })
             // No return value needed for void
         } catch (error) {

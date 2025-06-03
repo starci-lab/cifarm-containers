@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, UserFollowRelationSchema, UserSchema } from "@src/databases"
+import { InjectMongoose, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import {
     FolloweesRequest,
@@ -15,6 +15,8 @@ import { createIndexName } from "@src/elasticsearch"
 import { QueryDslQueryContainer, SortCombinations } from "@elastic/elasticsearch/lib/api/types"
 import { GraphQLError } from "graphql"
 import { DeepPartial } from "@src/common"
+import _ from "lodash"
+
 @Injectable()
 export class UsersService {
     private readonly logger = new Logger(UsersService.name)
@@ -120,10 +122,13 @@ export class UsersService {
             return {
                 bool: {
                     should: [
-                        { wildcard: { username: `*${searchString.toLowerCase()}*` } },
-                        { wildcard: { email: `*${searchString.toLowerCase()}*` } },
-                        { wildcard: { id: `*${searchString.toLowerCase()}*` } },
-                        { wildcard: { oauthProviderId: `*${searchString.toLowerCase()}*` } },
+                        {
+                            query_string: {
+                                query: `*${searchString.toLowerCase()}*`,
+                                fields: ["username", "email", "id", "oauthProviderId"],
+                                analyze_wildcard: true,
+                            },
+                        },
                     ],
                     minimum_should_match: 1,
                 },
@@ -216,18 +221,14 @@ export class UsersService {
             sort
         })
 
-        const followees = await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).find({
-            follower: id,
-            followee: { $in: result.hits.hits.map((hit) => hit._source.id) }
-        })
-
         const data: Array<UserSchema> = result.hits.hits.map((hit) => {
-            const followee = followees.find((followee) => followee.followee.toString() === hit._source.id)
+            const followee = user.followeeUserIds.map((followee) => followee.toString()).includes(hit._source.id)
             if (!hit._source) {
                 throw new GraphQLError("User not found")
             }
-            hit._source.followed = !!followee
-            return hit._source
+            const source = _.cloneDeep(hit._source)
+            source.followed = followee
+            return source
         })
 
         // Count
@@ -249,12 +250,8 @@ export class UsersService {
         // Lấy user từ MongoDB (cần user level và network)
         const user = await this.connection.model<UserSchema>(UserSchema.name).findById(id)
 
-        // Lấy danh sách followee IDs từ MongoDB
-        const relations = await this.connection
-            .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-            .find({ follower: id })
-            .select("followee")
-        const followeeIds = relations.map(({ followee }) => followee.toString())
+        // Get followee IDs from the user's followee list
+        const followeeIds = user.followeeUserIds.map((followee) => followee.toString())
 
         if (followeeIds.length === 0) {
             // No followee, return immediately
@@ -323,21 +320,17 @@ export class UsersService {
             sort
         })
 
-        const followees = await this.connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).find({
-            follower: id,
-            followee: { $in: result.hits.hits.map((hit) => hit._source.id) }
-        })
-
         const data: Array<UserSchema> = result.hits.hits.map((hit) => {
-            const followee = followees.find((followee) => followee.followee.toString() === hit._source.id)
+            const followee = user.followeeUserIds.map((followee) => followee.toString()).includes(hit._source.id)
             if (!hit._source) {
                 throw new GraphQLError("User not found")
             }
-            hit._source.followed = !!followee
-            return hit._source
+            const source = _.cloneDeep(hit._source)
+            source.followed = followee
+            return source
         })  
 
-        // Count tổng
+        // Count total followees
         const count = await this.elasticsearchService.count({
             index: createIndexName(UserSchema.name),
             query: finalQuery,

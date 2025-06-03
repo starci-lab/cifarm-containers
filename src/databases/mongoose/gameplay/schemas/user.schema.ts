@@ -209,6 +209,13 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: false })
         credits?: number
+
+    @Field(() => [ID], {
+        description: "The IDs of users that the user is following",
+        nullable: true
+    })
+    @Prop({ type: [MongooseSchema.Types.ObjectId], required: false })
+        followeeUserIds: Array<Types.ObjectId>
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

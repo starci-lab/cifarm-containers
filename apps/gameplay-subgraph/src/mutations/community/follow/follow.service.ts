@@ -5,10 +5,9 @@ import {
     SystemId,
     KeyValueRecord,
     SystemSchema,
-    UserFollowRelationSchema,
     UserSchema
 } from "@src/databases"
-import { Connection } from "mongoose"
+import { Connection, Types } from "mongoose"
 import { FollowRequest, FollowResponse } from "./follow.dto"
 import { createObjectId } from "@src/common"
 import { UserLike } from "@src/jwt"
@@ -25,7 +24,7 @@ export class FollowService {
         
         try {
             // Using withTransaction to handle the transaction lifecycle
-            await mongoSession.withTransaction(async (session) => {
+            const result = await mongoSession.withTransaction(async (session) => {
                 const {
                     value: { followeeLimit }
                 } = await this.connection
@@ -37,36 +36,6 @@ export class FollowService {
                     throw new GraphQLError("Cannot follow self", {
                         extensions: {
                             code: "CANNOT_FOLLOW_SELF",
-                        }
-                    })
-                }
-
-                const followee = await this.connection
-                    .model<UserSchema>(UserSchema.name)
-                    .findById(followeeUserId)
-                    .session(session)
-
-                if (!followee) {
-                    throw new GraphQLError("Followee not found", {
-                        extensions: {
-                            code: "FOLLOWEE_NOT_FOUND",
-                        }
-                    })
-                }
-
-                // Check if user is already following the followee
-                const following = await this.connection
-                    .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                    .exists({
-                        followee: followeeUserId,
-                        follower: userId
-                    })
-                    .session(session)
-
-                if (following) {
-                    throw new GraphQLError("Already following", {
-                        extensions: {
-                            code: "ALREADY_FOLLOWING",
                         }
                     })
                 }
@@ -83,6 +52,28 @@ export class FollowService {
                         }
                     })
                 }
+
+                const followee = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(followeeUserId)
+                    .session(session)
+
+                if (!followee) {
+                    throw new GraphQLError("Followee not found", {
+                        extensions: {
+                            code: "FOLLOWEE_NOT_FOUND",
+                        }
+                    })
+                }
+                
+                if (user.followeeUserIds.map(id => id.toString()).includes(followeeUserId)) {
+                    throw new GraphQLError("Already following", {
+                        extensions: {
+                            code: "ALREADY_FOLLOWING",
+                        }
+                    })
+                }
+
                 if (user.network !== followee.network) {
                     throw new GraphQLError("Cannot follow neighbor in different network", {
                         extensions: {
@@ -90,33 +81,24 @@ export class FollowService {
                         }
                     })
                 }
-                // Check if the user has reached the followee limit
-                const followeeCount = await this.connection
-                    .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                    .countDocuments({
-                        follower: userId
-                    })
-                    .session(session)
-
-                if (followeeCount >= followeeLimit) {
+                // Check if the user has reached the followee limit  
+                if (user.followeeUserIds.length >= followeeLimit) {
                     throw new GraphQLError("Followee limit reached", {
                         extensions: {
                             code: "FOLLOWEE_LIMIT_REACHED",
                         }
                     })
                 }
-
-                // Create the follow relation
-                await this.connection
-                    .model<UserFollowRelationSchema>(UserFollowRelationSchema.name)
-                    .create([{ followee: followeeUserId, follower: userId }], { session })
-
+                // Add the followee to the user's followee list
+                user.followeeUserIds.push(new Types.ObjectId(followeeUserId))
+                await user.save({ session })
                 // No return value needed for void
+                return {
+                    success: true,
+                    message: "Followed successfully",
+                }
             })
-            return {
-                success: true,
-                message: "Followed successfully",
-            }
+            return result
             // No return value needed for void
         } catch (error) {
             this.logger.error(error)

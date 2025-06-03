@@ -44,8 +44,6 @@ import {
     SupplySchemaClass,
     ToolSchema,
     ToolSchemaClass,
-    UserFollowRelationSchemaClass,
-    UserFollowRelationSchema,
     PetSchema,
     PetSchemaClass,
     FruitSchemaClass,
@@ -145,10 +143,6 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => InventoryTypeSchemaClass
                         },
                         {
-                            name: UserFollowRelationSchema.name,
-                            useFactory: () => UserFollowRelationSchemaClass
-                        },
-                        {
                             name: PetSchema.name,
                             useFactory: () => PetSchemaClass
                         },
@@ -186,12 +180,6 @@ export class MongooseModule extends ConfigurableModuleClass {
                                     })
                                     await connection.model<InventorySchema>(InventorySchema.name).deleteMany({
                                         user: { $in: ids }
-                                    })
-                                    await connection.model<UserFollowRelationSchema>(UserFollowRelationSchema.name).deleteMany({
-                                        $or: [
-                                            { followee: { $in: ids } },
-                                            { follower: { $in: ids } }
-                                        ]
                                     })
                                     next()
                                 })
