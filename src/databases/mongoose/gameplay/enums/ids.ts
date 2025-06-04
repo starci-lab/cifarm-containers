@@ -555,8 +555,6 @@ export enum SystemId {
     NFTCollections = "nftCollections",
     NFTBoxInfo = "nftBoxInfo",
     StableCoins = "stableCoins",
-    TokenVaults = "tokenVaults",
-    WholesaleMarket = "wholesaleMarket",
     RevenueRecipients = "revenueRecipients",
     GoldPurchases = "goldPurchases",
     InteractionPermissions = "interactionPermissions",
@@ -607,12 +605,6 @@ registerEnumType(GraphQLTypeSystemId, {
         },
         [SystemId.StableCoins]: {
             description: "The stable coins id.",
-        },
-        [SystemId.TokenVaults]: {
-            description: "The token vaults id.",
-        },
-        [SystemId.WholesaleMarket]: {
-            description: "The wholesale market id.",
         },
         [SystemId.RevenueRecipients]: {
             description: "The revenue recipients id.",
@@ -1120,4 +1112,19 @@ registerEnumType(GraphQLTypeTerrainId, {
     },
 })
 
+export enum SeasonId {
+    Season1 = "season1",
+}
+
+export const GraphQLTypeSeasonId = createEnumType(SeasonId)
+
+registerEnumType(GraphQLTypeSeasonId, {
+    name: "SeasonId",
+    description: "The season id.",
+    valuesMap: {
+        [SeasonId.Season1]: {
+            description: "The season 1 id.",
+        },
+    },
+})
 

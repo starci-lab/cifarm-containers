@@ -4,6 +4,7 @@ import { AbstractSchema } from "./abstract"
 import { GraphQLTypeNetwork, Network } from "@src/env"
 import { Schema as MongooseSchema, Types } from "mongoose"
 import { OauthProviderName } from "../enums"
+import { TutorialSchema, TutorialSchemaClass } from "./tutorial.schema"
 
 @ObjectType({
     description: "The schema for user data"
@@ -36,7 +37,7 @@ export class UserSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0 })
         golds: number
 
-    @Field(() => String, { 
+    @Field(() => String, {
         nullable: true,
         description: "The URL to the user's avatar image"
     })
@@ -79,21 +80,21 @@ export class UserSchema extends AbstractSchema {
     @Prop({ type: Number, default: 0 })
         dailyRewardStreak: number
 
-    @Field(() => Date, { 
+    @Field(() => Date, {
         nullable: true,
         description: "The last time the user claimed a daily reward"
     })
     @Prop({ type: Date, required: false })
         dailyRewardLastClaimTime?: Date
 
-    @Field(() => Date, { 
+    @Field(() => Date, {
         nullable: true,
         description: "The last time the user claimed a honeycomb daily reward"
     })
     @Prop({ type: Date, required: false })
         honeycombDailyRewardLastClaimTime?: Date
 
-    @Field(() => Date, { 
+    @Field(() => Date, {
         nullable: true,
         description: "The last time the user used a spin"
     })
@@ -107,7 +108,7 @@ export class UserSchema extends AbstractSchema {
         spinCount: number
 
     // referral id
-    @Field(() => ID, { 
+    @Field(() => ID, {
         nullable: true,
         description: "The ID of the user who referred this user"
     })
@@ -119,7 +120,7 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false })
         referredUserIds: Array<Types.ObjectId>
-    
+
     @Field(() => Boolean, {
         description: "Whether the user has been awarded for following on X/Twitter"
     })
@@ -150,14 +151,14 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: String, required: false })
         nftBoxVector?: string
-        
+
     // last online time
     @Field(() => Date, {
         nullable: true,
         description: "The last time the user was online"
     })
     @Prop({ type: Date, required: false })
-        lastOnlineTime?: Date  
+        lastOnlineTime?: Date
 
     // is online
     @Field(() => Boolean, {
@@ -216,6 +217,32 @@ export class UserSchema extends AbstractSchema {
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false })
         followeeUserIds: Array<Types.ObjectId>
+
+    @Field(() => Boolean)
+    @Prop({ type: Boolean, default: false })
+        tutorialStart: boolean
+
+    @Field(() => Boolean)
+    @Prop({ type: Boolean, default: false })
+        tutorialShop: boolean
+
+    @Field(() => Boolean)
+    @Prop({ type: Boolean, default: false })
+        tutorialInventory: boolean
+
+    // trigger when inventory has been closed
+    @Field(() => Boolean)
+    @Prop({ type: Boolean, default: false })
+        tutorialPlant: boolean
+
+    @Field(() => TutorialSchema, {
+        nullable: true
+    })
+    @Prop({
+        type: TutorialSchemaClass,
+        nullable: true
+    })
+        tutorial?: TutorialSchema
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

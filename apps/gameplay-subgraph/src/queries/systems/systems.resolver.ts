@@ -10,7 +10,6 @@ import {
     FruitInfo,
     HoneycombInfo,
     NFTCollections,
-    WholesaleMarket,
     GoldPurchases,
     BeeHouseInfo,
     FlowerInfo,
@@ -117,15 +116,6 @@ export class SystemsResolver {
     })
     nftCollections(): NFTCollections {
         return this.systemsService.nftCollections()
-    }
-
-    @UseGuards(GraphQLThrottlerGuard)
-    @Query(() => WholesaleMarket, {
-        name: "wholesaleMarket",
-        description: "Get the wholesale market"
-    })
-    wholesaleMarket(): WholesaleMarket {
-        return this.systemsService.wholesaleMarket()
     }
 
     @UseGuards(GraphQLThrottlerGuard)

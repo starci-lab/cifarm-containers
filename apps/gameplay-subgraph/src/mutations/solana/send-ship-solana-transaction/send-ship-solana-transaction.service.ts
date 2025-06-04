@@ -39,7 +39,7 @@ export class SendShipSolanaTransactionService {
         private readonly sha256Service: Sha256Service,
         private readonly shipService: ShipService,
         private readonly vaultService: VaultService
-    ) {}
+    ) { }
 
     async sendShipSolanaTransaction(
         { id }: UserLike,
@@ -122,24 +122,24 @@ export class SendShipSolanaTransactionService {
                         await inventoryUpdated.save({ session })
                     }
                 }
-                
+
                 // reduce token in the vault
                 const vaultInfos = await this.connection
                     .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                     .findById<
-                            KeyValueRecord<VaultInfos>
-                        >(createObjectId(KeyValueStoreId.VaultInfos))
+                        KeyValueRecord<VaultInfos>
+                    >(createObjectId(KeyValueStoreId.VaultInfos))
                     .session(session)
                 if (!vaultInfos) {
                     throw new GraphQLError("Vault infos not found", {
                         extensions: {
                             code: "VAULTS_INFO_NOT_FOUND"
-                        }
+                        }   
                     })
                 }
                 const paidAmount = await this.vaultService.computePaidAmount({
-                    network: user.network,
-                    vaultInfoData: vaultInfos.value[user.network]
+                    vaultData: vaultInfos.value[user.network].data.find((data) => data.tokenKey === this.staticService.nftBoxInfo.tokenKey),
+                    bulk: this.staticService.seasons.find((season) => season.active)?.bulks.find((bulk) => bulk.id === cachedTx.bulkId)
                 })
                 await this.connection
                     .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
@@ -150,12 +150,7 @@ export class SendShipSolanaTransactionService {
                         {
                             value: {
                                 [user.network]: {
-                                    paidCount: (vaultInfos.value[user.network].paidCount ?? 0) + 1,
-                                    tokenLocked: vaultInfos.value[user.network].tokenLocked - paidAmount,
-                                    currentMaxPaidAmount:
-                                        (vaultInfos.value[user.network].currentMaxPaidAmount ??
-                                            this.staticService.tokenVaults[user.network].maxPaidAmount) *
-                                        (1 - this.staticService.tokenVaults[user.network].maxPaidDecreasePercentage)
+                                    tokenLocked: vaultInfos.value[user.network][this.staticService.nftBoxInfo.tokenKey].tokenLocked - paidAmount,
                                 }
                             }
                         }

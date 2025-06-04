@@ -17,12 +17,8 @@ import {
     NFTRarity,
     NFTBoxInfo,
     NFTType,
-    ProductId,
-
     SystemId,
     SystemSchema,
-    WholesaleMarket,
-    PaymentKind,
     RevenueRecipients,
     GoldPurchases,
     InteractionPermissions,
@@ -795,83 +791,9 @@ export class SystemSeeder implements Seeder {
                     epicRarityChance: 0.9
                 }
             ],
-            paymentKind: PaymentKind.USDC,
+            tokenKey: TokenKey.USDC,
             boxPrice: 0.5, // 0.5 USDC
             feePercentage: 0.02 // 2% to fee collector, will to the fee collector address
-        }
-
-        const tokenVaults = {
-            [Network.Testnet]: {
-                maxPaidAmount: 5,
-                maxPaidDecreasePercentage: 0.0001,
-                vaultPaidPercentage: 0.05
-            },
-            [Network.Mainnet]: {
-                maxPaidAmount: 5,
-                maxPaidDecreasePercentage: 0.0001,
-                vaultPaidPercentage: 0.05
-            }
-        }
-
-        const wholesaleMarket: WholesaleMarket = {
-            bulks: [
-                {
-                    bulkName: "Greeting Bulk",
-                    bulkId: "greeting-bulk",
-                    products: [
-                        {
-                            productId: createObjectId(ProductId.Apple),
-                            quantity: 20,
-                        },
-                        {
-                            productId: createObjectId(ProductId.Banana),
-                            quantity: 20,
-                        },
-                        {
-                            productId: createObjectId(ProductId.Tomato),
-                            quantity: 20,
-                        },
-                        {
-                            productId: createObjectId(ProductId.Eggplant),
-                            quantity: 20,
-                        },
-                        {
-                            productId: createObjectId(ProductId.Milk),
-                            quantity: 20,
-                        },
-                        {
-                            productId: createObjectId(ProductId.Egg),
-                            quantity: 20,
-                        },
-                    ],
-                    price: 0.5,
-                    paymentKind: PaymentKind.USDC
-                },
-                {
-                    bulkName: "Basic NFTs Bulk",
-                    bulkId: "basic-nfts-bulk",
-                    products: [
-                        {
-                            productId: createObjectId(ProductId.DragonFruitQuality),
-                            quantity: 20,
-                        },
-                        {
-                            productId: createObjectId(ProductId.JackfruitQuality),
-                            quantity: 20,
-                        },
-                        {
-                            productId: createObjectId(ProductId.RambutanQuality),
-                            quantity: 20,
-                        },
-                        {
-                            productId: createObjectId(ProductId.PomegranateQuality),
-                            quantity: 20,
-                        },
-                    ],
-                    price: 5,
-                    paymentKind: PaymentKind.USDC
-                },
-            ],
         }
 
         const revenueRecipients: RevenueRecipients = {
@@ -889,17 +811,17 @@ export class SystemSeeder implements Seeder {
                     {
                         amount: 10000,
                         price: 1,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     },
                     {
                         amount: 100000,
                         price: 5,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     },
                     {
                         amount: 1000000,
                         price: 25,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     }
                 ]
             },
@@ -908,17 +830,17 @@ export class SystemSeeder implements Seeder {
                     {
                         amount: 10000,
                         price: 1,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     },
                     {
                         amount: 100000,
                         price: 5,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     },
                     {
                         amount: 1000000,
                         price: 25,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     },
                 ]
             }
@@ -1112,17 +1034,17 @@ export class SystemSeeder implements Seeder {
                     {
                         percentage: 25,
                         price: 2,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     },
                     {
                         percentage: 50,
                         price: 4,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     },
                     {
                         percentage: 100,
                         price: 6,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     }
                 ]
             },
@@ -1131,17 +1053,17 @@ export class SystemSeeder implements Seeder {
                     {
                         percentage: 25,
                         price: 2,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     },
                     {
                         percentage: 50,
                         price: 4,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     },
                     {
                         percentage: 100,
                         price: 6,
-                        paymentKind: PaymentKind.USDC
+                        tokenKey: TokenKey.USDC
                     }
                 ]
             }
@@ -1207,16 +1129,6 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.NFTBoxInfo),
                 displayId: SystemId.NFTBoxInfo,
                 value: nftBoxInfo
-            },
-            {
-                _id: createObjectId(SystemId.TokenVaults),
-                displayId: SystemId.TokenVaults,
-                value: tokenVaults
-            },
-            {
-                _id: createObjectId(SystemId.WholesaleMarket),
-                displayId: SystemId.WholesaleMarket,
-                value: wholesaleMarket
             },
             {
                 _id: createObjectId(SystemId.RevenueRecipients),

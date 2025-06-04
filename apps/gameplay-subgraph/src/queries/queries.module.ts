@@ -19,6 +19,7 @@ import { NftsModule } from "./nfts"
 import { NFTMetadatasModule } from "./nft-metadatas"
 import { VaultModule } from "./vault"
 import { TerrainsModule } from "./terrains"
+import { SeasonsModule } from "./seasons"
 @Module({
     imports: [
         AnimalsModule,
@@ -40,6 +41,7 @@ import { TerrainsModule } from "./terrains"
         ProductsModule,
         FlowersModule,
         NFTMetadatasModule,
+        SeasonsModule,
         VaultModule
     ]
 })

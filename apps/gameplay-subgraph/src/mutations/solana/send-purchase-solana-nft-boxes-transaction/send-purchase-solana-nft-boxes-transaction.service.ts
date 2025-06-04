@@ -16,7 +16,7 @@ import { Sha256Service } from "@src/crypto"
 import { createObjectId } from "@src/common"
 import { PurchaseSolanaNFTBoxTransactionCache } from "@src/cache"
 import { Transaction, TransactionSignature } from "@metaplex-foundation/umi"
-
+import { StaticService } from "@src/gameplay"
 @Injectable()
 export class SendPurchaseSolanaNFTBoxesTransactionService {
     private readonly logger = new Logger(SendPurchaseSolanaNFTBoxesTransactionService.name)
@@ -26,7 +26,8 @@ export class SendPurchaseSolanaNFTBoxesTransactionService {
         private readonly solanaService: SolanaService,
         @InjectCache()
         private readonly cacheManager: Cache,
-        private readonly sha256Service: Sha256Service
+        private readonly sha256Service: Sha256Service,
+        private readonly staticService: StaticService
     ) {}
 
     async sendPurchaseSolanaNFTBoxesTransaction(
@@ -94,7 +95,7 @@ export class SendPurchaseSolanaNFTBoxesTransactionService {
                                 ...vaultInfos.value,
                                 [network]: {
                                     tokenLocked:
-                                        vaultInfos.value[network]
+                                        vaultInfos.value[network][this.staticService.nftBoxInfo.tokenKey]
                                             .tokenLocked +
                                             tokenAmount
                                 }

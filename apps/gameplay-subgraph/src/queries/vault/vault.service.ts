@@ -20,15 +20,8 @@ export class GraphQLVaultService {
         const { value: vaultInfos } = await this.connection
             .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
             .findById<KeyValueRecord<VaultInfos>>(createObjectId(KeyValueStoreId.VaultInfos))
-
-        const paidAmount = await this.vaultService.computePaidAmount({
-            network,
-            vaultInfoData: vaultInfos[network]
-        })
-
         return {
-            paidAmount,
-            tokenLocked: vaultInfos[network].tokenLocked || 0
+            data: vaultInfos[network].data
         }
     }
 }

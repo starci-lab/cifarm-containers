@@ -1,9 +1,8 @@
-import { VaultInfoData } from "@src/databases"
-import { Network } from "@src/env"
+import { BulkSchema, VaultData } from "@src/databases"
 
 export interface ComputePaidAmountParams {
-    network: Network
-    vaultInfoData: VaultInfoData
+    vaultData: VaultData
+    bulk: BulkSchema
 }
 
 

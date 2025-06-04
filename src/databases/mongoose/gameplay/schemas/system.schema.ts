@@ -9,11 +9,10 @@ import {
     NFTType,
     NFTRarity,
     GraphQLTypeNFTType,
-    PaymentKind,
-    GraphQLTypePaymentKind,
     TokenType,
     GraphQLTypeTokenType,
-    TokenKey
+    TokenKey,
+    GraphQLTypeTokenKey
 } from "../enums"
 import { AbstractSchema } from "./abstract"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
@@ -882,100 +881,15 @@ export class NFTBoxInfo {
     })
         boxPrice: number
 
-    @Field(() => GraphQLTypePaymentKind, {
+    @Field(() => GraphQLTypeTokenKey, {
         description: "Payment kind"
     })
-        paymentKind: PaymentKind
+        tokenKey: TokenKey
     
     @Field(() => Float, {
         description: "Fee percentage"
     })
         feePercentage: number
-}
-
-@ObjectType({
-    description: "Token vault"
-})
-export class TokenVault {   
-    @Field(() => Float, {
-        description: "Max paid amount"
-    })
-        maxPaidAmount: number
-
-    @Field(() => Float, {
-        description: "Vault paid percentage"
-    })
-        vaultPaidPercentage: number
-}
-
-@ObjectType({
-    description: "Token vault"
-})
-export class TokenVaults {
-    @Field(() => TokenVault, {
-        description: "Token vault"
-    })
-    [Network.Testnet]: TokenVault
-
-    @Field(() => TokenVault, {
-        description: "Token vault"
-    })
-    [Network.Mainnet]: TokenVault
-}
-
-@ObjectType({
-    description: "Wholesale market product"
-})
-export class WholesaleMarketProduct {
-    @Field(() => ID, {
-        description: "Product id"
-    })
-        productId: Types.ObjectId
-
-    @Field(() => Int, {
-        description: "Product quantity"
-    })
-        quantity: number
-}
-
-@ObjectType({
-    description: "Wholesale market bulk"
-})
-export class WholesaleMarketBulk {
-    @Field(() => ID, {
-        description: "Wholesale market bulk id"
-    })
-        bulkId: string
-
-    @Field(() => String, {
-        description: "Wholesale market bulk name"
-    })
-        bulkName: string    
-
-    @Field(() => [WholesaleMarketProduct], {
-        description: "Wholesale market bulk products"
-    })
-        products: Array<WholesaleMarketProduct>
-
-    @Field(() => Float, {
-        description: "Wholesale market bulk price"
-    })
-        price: number
-
-    @Field(() => GraphQLTypePaymentKind, {
-        description: "Wholesale market bulk payment kind"
-    })
-        paymentKind: PaymentKind
-}
-
-@ObjectType({
-    description: "Configuration for wholesale market"
-})
-export class WholesaleMarket {
-    @Field(() => [WholesaleMarketBulk], {
-        description: "Wholesale market bulk"
-    })
-        bulks: Array<WholesaleMarketBulk>
 }
 
 @ObjectType({
@@ -1016,10 +930,10 @@ export class GoldPurchaseOption {
         description: "Amount"
     })
         amount: number
-    @Field(() => GraphQLTypePaymentKind, {
+    @Field(() => GraphQLTypeTokenKey, {
         description: "Payment kind"
     })
-        paymentKind: PaymentKind
+        tokenKey: TokenKey
 }
 
 @ObjectType({
@@ -1244,10 +1158,10 @@ export class EnergyPurchaseOption {
         description: "Percentage"
     })
         percentage: number
-    @Field(() => GraphQLTypePaymentKind, {
-        description: "Payment kind"
+    @Field(() => GraphQLTypeTokenKey, {
+        description: "Token key"
     })
-        paymentKind: PaymentKind
+        tokenKey: TokenKey
 }
 
 @ObjectType({

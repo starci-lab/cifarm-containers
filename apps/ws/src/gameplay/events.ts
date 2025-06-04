@@ -80,7 +80,8 @@ export enum ReceiverEventName {
     SelectCat = "select_cat",
     // Inventories
     SortInventories = "sort_inventories",
-    DeleteInventory = "delete_inventory"
+    DeleteInventory = "delete_inventory",
+    UpdateTutorial = "update_tutorial"
 }
 
 // sync user

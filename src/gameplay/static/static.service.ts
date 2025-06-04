@@ -29,20 +29,17 @@ import {
     BeeHouseInfo,
     NFTCollections,
     NFTBoxInfo,
-    TokenVaults,
-    WholesaleMarket,
     RevenueRecipients,
     GoldPurchases,
-    PaymentKind,
     InteractionPermissions,
     PetInfo,
     Tokens,
     TerrainSchema,
     Referral,
     NFTConversion,
-    EnergyPurchases
+    EnergyPurchases,
+    SeasonSchema
 } from "@src/databases"
-import { ChainKey, Network } from "@src/env"
 import { Connection } from "mongoose"
 @Injectable()
 export class StaticService implements OnModuleInit {
@@ -72,8 +69,6 @@ export class StaticService implements OnModuleInit {
     public beeHouseInfo: BeeHouseInfo
     public nftCollections: NFTCollections
     public nftBoxInfo: NFTBoxInfo
-    public tokenVaults: TokenVaults
-    public wholesaleMarket: WholesaleMarket
     public revenueRecipients: RevenueRecipients
     public goldPurchases: GoldPurchases
     public energyPurchases: EnergyPurchases
@@ -83,6 +78,7 @@ export class StaticService implements OnModuleInit {
     public terrains: Array<TerrainSchema>
     public referral: Referral
     public nftConversion: NFTConversion
+    public seasons: Array<SeasonSchema>
     
     constructor(
         @InjectMongoose()
@@ -155,16 +151,6 @@ export class StaticService implements OnModuleInit {
             .findById<KeyValueRecord<NFTBoxInfo>>(createObjectId(SystemId.NFTBoxInfo))
         this.nftBoxInfo = nftBoxInfoDoc.value
 
-        const tokenVaultsDoc = await this.connection
-            .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<TokenVaults>>(createObjectId(SystemId.TokenVaults))
-        this.tokenVaults = tokenVaultsDoc.value
-
-        const wholesaleMarketDoc = await this.connection
-            .model<SystemSchema>(SystemSchema.name)
-            .findById<KeyValueRecord<WholesaleMarket>>(createObjectId(SystemId.WholesaleMarket))
-        this.wholesaleMarket = wholesaleMarketDoc.value
-
         const revenueRecipientsDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<RevenueRecipients>>(createObjectId(SystemId.RevenueRecipients))
@@ -204,7 +190,6 @@ export class StaticService implements OnModuleInit {
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<NFTConversion>>(createObjectId(SystemId.NFTConversion))
         this.nftConversion = nftConversionDoc.value
-
         // Load collections
         this.placedItemTypes = await this.connection
             .model<PlacedItemTypeSchema>(PlacedItemTypeSchema.name)
@@ -236,6 +221,8 @@ export class StaticService implements OnModuleInit {
 
         this.terrains = await this.connection.model<TerrainSchema>(TerrainSchema.name).find()
 
+        this.seasons = await this.connection.model<SeasonSchema>(SeasonSchema.name).find()
+
         this.logger.verbose("All static data loaded")
         this.logger.verbose(`Animals: ${this.animals.length}`)
         this.logger.verbose(`Crops: ${this.crops.length}`)
@@ -247,36 +234,6 @@ export class StaticService implements OnModuleInit {
         this.logger.verbose(`Supplies: ${this.supplies.length}`)
         this.logger.verbose(`Flowers: ${this.flowers.length}`)
         this.logger.verbose(`Terrains: ${this.terrains.length}`)
+        this.logger.verbose(`Seasons: ${this.seasons.length}`)
     }
-
-    // only solana
-    public getTokenAddressFromPaymentKind({
-        paymentKind,
-        network,
-        chainKey    
-    }: GetTokenAddressFromPaymentKindParams): GetTokenAddressFromPaymentKindResult {
-        switch (paymentKind) {
-        case PaymentKind.USDC: {
-            const { tokenAddress, decimals } =
-                    this.tokens.usdc[chainKey][network]
-            return {
-                tokenAddress,
-                decimals
-            }
-        }
-        default:
-            throw new Error(`Invalid payment kind: ${paymentKind}`)
-        }
-    }
-}
-
-export interface GetTokenAddressFromPaymentKindParams {
-    paymentKind: PaymentKind
-    network: Network
-    chainKey: ChainKey
-}
-
-export interface GetTokenAddressFromPaymentKindResult {
-    tokenAddress: string
-    decimals: number
 }

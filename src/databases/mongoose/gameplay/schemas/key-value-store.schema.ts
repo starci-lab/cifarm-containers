@@ -1,7 +1,7 @@
 import { Field, Float, Int, ObjectType } from "@nestjs/graphql"
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose"
 import { AbstractSchema } from "./abstract"
-import { KeyValueStoreId, GraphQLTypeKeyValueStoreId } from "../enums"
+import { KeyValueStoreId, GraphQLTypeKeyValueStoreId, GraphQLTypeTokenKey, TokenKey } from "../enums"
 import { Network } from "@src/env"
 
 @ObjectType({
@@ -85,14 +85,30 @@ export class PlantLastSchedule {
 }
 
 @ObjectType({
-    description: "Vault info"
+    description: "Vault data"
 })
-export class VaultInfo {
+export class VaultData {
     @Field(() => Float, {
         description: "The number of tokens locked in the vault",
         defaultValue: 0
     })
         tokenLocked: number
+    
+    @Field(() => GraphQLTypeTokenKey, {
+        description: "The token key",
+        defaultValue: TokenKey.USDC
+    })
+        tokenKey: TokenKey
+}
+
+@ObjectType({
+    description: "Vault info"
+})
+export class VaultInfo {
+    @Field(() => [VaultData], {
+        description: "The vault data",
+    })
+        data: Array<VaultData>
 }
 
 @ObjectType({

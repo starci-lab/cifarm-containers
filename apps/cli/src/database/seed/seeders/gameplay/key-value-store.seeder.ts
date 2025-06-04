@@ -2,7 +2,7 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import { Injectable, Logger } from "@nestjs/common"
 import { Seeder } from "nestjs-seeder"
-import { InjectMongoose, KeyValueStoreId, KeyValueStoreSchema } from "@src/databases"
+import { InjectMongoose, KeyValueStoreId, KeyValueStoreSchema, TokenKey } from "@src/databases"
 import { createObjectId, DeepPartial } from "@src/common"
 import { Connection } from "mongoose"
 import { Network } from "@src/env"
@@ -66,13 +66,31 @@ export class KeyValueStoreSeeder implements Seeder {
                 displayId: KeyValueStoreId.VaultInfos,
                 value: {
                     [Network.Mainnet]: {
-                        tokenLocked: 0
+                        data: [ 
+                            {
+                                tokenLocked: 0,
+                                tokenKey: TokenKey.USDC
+                            },
+                            {
+                                tokenLocked: 0,
+                                tokenKey: TokenKey.CIFARM
+                            },
+                        ]
                     },
                     [Network.Testnet]: {
-                        tokenLocked: 0
+                        data: [
+                            {
+                                tokenLocked: 0,
+                                tokenKey: TokenKey.USDC
+                            },
+                            {
+                                tokenLocked: 0,
+                                tokenKey: TokenKey.CIFARM
+                            },
+                        ]
                     },
                 },
-                version: 4
+                version: 6
             }
         ]
 

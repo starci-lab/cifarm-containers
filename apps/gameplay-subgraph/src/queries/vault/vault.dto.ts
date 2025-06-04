@@ -1,6 +1,7 @@
-import { InputType, Field, ObjectType, Float } from "@nestjs/graphql"
+import { InputType, Field, ObjectType } from "@nestjs/graphql"
 import { GraphQLTypeNetwork, Network } from "@src/env"
-import { IsEnum, Min } from "class-validator"
+import { VaultData } from "@src/databases"
+import { IsEnum } from "class-validator"
 
 @InputType({
     description: "Get vault current request"
@@ -11,15 +12,11 @@ export class VaultCurrentRequest {
         network: Network
 }
 
+
 @ObjectType({
     description: "Vault current response"
 })
 export class VaultCurrentResponse {
-    @Min(0)
-    @Field(() => Float, { description: "The paid amount" })
-        paidAmount: number
-
-    @Min(0)
-    @Field(() => Float, { description: "The total amount of token locked" })
-        tokenLocked: number 
+    @Field(() => [VaultData], { description: "The paid amount" })
+        data: Array<VaultData> 
 }

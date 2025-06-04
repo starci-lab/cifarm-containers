@@ -67,7 +67,13 @@ import {
     TerrainSchema,
     TerrainSchemaClass,
     TerrainInfoSchema,
-    TerrainInfoSchemaClass
+    TerrainInfoSchemaClass,
+    TutorialSchema,
+    TutorialSchemaClass,
+    SeasonSchema,
+    SeasonSchemaClass,
+    BulkSchema,
+    BulkSchemaClass
 } from "./gameplay"
 import { Connection } from "mongoose"
 import { normalizeMongoose } from "./plugins"
@@ -127,6 +133,14 @@ export class MongooseModule extends ConfigurableModuleClass {
                             useFactory: () => FlowerSchemaClass
                         },
                         {
+                            name: BulkSchema.name,
+                            useFactory: () => BulkSchemaClass
+                        },
+                        {
+                            name: SeasonSchema.name,
+                            useFactory: () => SeasonSchemaClass
+                        },
+                        {
                             name: PetInfoSchema.name,
                             useFactory: () => PetInfoSchemaClass
                         },
@@ -161,6 +175,10 @@ export class MongooseModule extends ConfigurableModuleClass {
                         {
                             name: FruitSchema.name,
                             useFactory: () => FruitSchemaClass
+                        },
+                        {
+                            name: TutorialSchema.name,
+                            useFactory: () => TutorialSchemaClass
                         },
                         {
                             name: UserSchema.name,

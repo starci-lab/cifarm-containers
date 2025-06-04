@@ -17,6 +17,7 @@ import {
     FruitSeeder,
     FlowerSeeder,
     FishSeeder,
+    SeasonSeeder,
     TerrainSeeder
 } from "./gameplay"
 import { MODULE_OPTIONS_TOKEN } from "./seeders.module-definition"
@@ -48,7 +49,8 @@ export class SeedersService {
             PetSeeder,
             FruitSeeder,
             FishSeeder,
-            TerrainSeeder
+            TerrainSeeder,
+            SeasonSeeder
         ])
     }
 }

@@ -325,36 +325,6 @@ registerEnumType(GraphQLTypeNFTRarity, {
     }
 })
 
-// Stable Coin Name Enum
-export enum StableCoinName {
-    USDC = "usdc",
-    USDT = "usdt"
-}
-
-export enum PaymentKind {
-    USDC = "usdc",
-    USDT = "usdt",
-    Token = "token"
-}
-
-export const GraphQLTypePaymentKind = createEnumType(PaymentKind)
-
-registerEnumType(GraphQLTypePaymentKind, {
-    name: "PaymentKind",
-    description: "The kind of wholesale market payment",
-    valuesMap: {
-        [PaymentKind.USDC]: {
-            description: "Wholesale market payment in USDC"
-        },
-        [PaymentKind.USDT]: {
-            description: "Wholesale market payment in USDT"
-        },
-        [PaymentKind.Token]: {
-            description: "Wholesale market payment in token"
-        }
-    }
-})
-
 export enum OauthProviderName {
     Google = "google",
     Facebook = "facebook",
@@ -405,6 +375,27 @@ export enum TokenKey {
     USDT = "usdt",
     CIFARM = "cifarm",
 }
+
+export const GraphQLTypeTokenKey = createEnumType(TokenKey)
+
+registerEnumType(GraphQLTypeTokenKey, {
+    name: "TokenKey",
+    description: "The key of the token",
+    valuesMap: {
+        [TokenKey.Native]: {
+            description: "The native token"
+        },
+        [TokenKey.USDC]: {
+            description: "The USDC token"
+        },
+        [TokenKey.USDT]: {
+            description: "The USDT token"
+        },
+        [TokenKey.CIFARM]: {
+            description: "The CIFARM token"
+        }
+    }
+})  
 
 export enum TerrainType {
     Stone = "stone",

@@ -9,7 +9,7 @@ import {
 import { StaticService } from "../static"
 import { InjectMongoose, InventoryKind, InventorySchema, InventoryType } from "@src/databases"
 import { Connection } from "mongoose"
-import { BulkNotFoundException, ProductNotFoundException } from "../exceptions"
+import { BulkNotFoundException, ProductNotFoundException, SeasonNotFoundException } from "../exceptions"
 
 @Injectable()
 export class ShipService {
@@ -26,7 +26,10 @@ export class ShipService {
         session,
         bulkId
     }: PartitionInventoriesParams): Promise<PartitionInventoriesResult> {
-        const wholesaleMarket = this.staticService.wholesaleMarket
+        const activeSeason = this.staticService.seasons.find(season => season.active)
+        if (!activeSeason) {
+            throw new SeasonNotFoundException()
+        }
         const productInventoryTypeIds = this.staticService.inventoryTypes
             .filter(type => type.type === InventoryType.Product)
             .map(type => type.id)
@@ -40,7 +43,7 @@ export class ShipService {
             })
             .session(session)
     
-        const bulk = wholesaleMarket.bulks.find(b => b.bulkId === bulkId)
+        const bulk = activeSeason.bulks.find(bulk => bulk.id === bulkId)
         if (!bulk) {
             throw new BulkNotFoundException()
         }

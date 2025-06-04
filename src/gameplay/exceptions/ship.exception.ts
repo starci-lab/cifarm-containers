@@ -17,3 +17,12 @@ export class ProductNotFoundException extends GameplayException {
         )
     }
 }
+
+export class SeasonNotFoundException extends GameplayException {
+    constructor() {
+        super(
+            "Season not found",
+            GameplayErrorCode.SeasonNotFound
+        )
+    }
+}

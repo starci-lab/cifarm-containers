@@ -53,12 +53,8 @@ export class CreateBuyEnergySolanaTransactionService {
                 if (!option) {
                     throw new GraphQLError("Invalid selection index")
                 }
-                const { price, paymentKind } = option
-                const { tokenAddress, decimals } = this.staticService.getTokenAddressFromPaymentKind({
-                    paymentKind,
-                    network: user.network,
-                    chainKey: ChainKey.Solana
-                })
+                const { price, tokenKey } = option
+                const { tokenAddress, decimals } = this.staticService.tokens[tokenKey][ChainKey.Solana][user.network]
                 // create a transaction to buy the golds
                 const { limitTransaction, priceTransaction } =
                     await this.solanaService.createComputeBudgetTransactions({

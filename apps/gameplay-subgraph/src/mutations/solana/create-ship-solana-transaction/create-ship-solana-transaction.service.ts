@@ -39,7 +39,7 @@ export class CreateShipSolanaTransactionService {
         private readonly sha256Service: Sha256Service,
         private readonly shipService: ShipService,
         private readonly vaultService: VaultService
-    ) {}
+    ) { }
 
     async createShipSolanaTransaction(
         { id }: UserLike,
@@ -87,19 +87,15 @@ export class CreateShipSolanaTransactionService {
                 }
                 // compute the paid amount
                 const paidAmount = await this.vaultService.computePaidAmount({
-                    network: user.network,
-                    vaultInfoData: vaultInfos.value[user.network]
+                    vaultData: vaultInfos.value[user.network].data.find((data) => data.tokenKey === this.staticService.nftBoxInfo.tokenKey),
+                    bulk: this.staticService.seasons.find((season) => season.active)?.bulks.find((bulk) => bulk.id === bulkId)
                 })
                 // get the stable coin address
                 const tokenVaultAddress = this.solanaService
                     .getVaultUmi(user.network)
                     .identity.publicKey.toString()
                 const { tokenAddress, decimals: tokenDecimals } =
-                this.staticService.getTokenAddressFromPaymentKind({
-                    paymentKind: this.staticService.nftBoxInfo.paymentKind,
-                    network: user.network,
-                    chainKey: ChainKey.Solana,
-                })
+                    this.staticService.tokens[this.staticService.nftBoxInfo.tokenKey][ChainKey.Solana][user.network]
                 // create a tx to transfer token from the vault to the user
 
                 const { limitTransaction, priceTransaction } =

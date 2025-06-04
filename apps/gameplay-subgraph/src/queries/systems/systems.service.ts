@@ -10,7 +10,6 @@ import {
     GoldPurchases,
     HoneycombInfo,
     NFTCollections,
-    WholesaleMarket,
     BeeHouseInfo,
     FlowerInfo,
     InteractionPermissions,
@@ -67,9 +66,6 @@ export class SystemsService {
         return this.staticService.nftCollections
     }
 
-    wholesaleMarket(): WholesaleMarket {
-        return this.staticService.wholesaleMarket
-    }
     
     goldPurchases(): GoldPurchases {
         return this.staticService.goldPurchases

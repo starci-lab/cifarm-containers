@@ -113,11 +113,7 @@ export class CreatePurchaseSolanaNFTBoxesTransactionService {
                     })
                     //get the stable coin address
                     const { tokenAddress, decimals: tokenDecimals } =
-                this.staticService.getTokenAddressFromPaymentKind({
-                    paymentKind: this.staticService.nftBoxInfo.paymentKind,
-                    network: user.network,
-                    chainKey: ChainKey.Solana
-                })
+                this.staticService.tokens[this.staticService.nftBoxInfo.tokenKey][ChainKey.Solana][user.network]
                     // first season is USDC so that we hardcode the token address
                     const tokenVaultAddress = this.solanaService
                         .getVaultUmi(user.network)
