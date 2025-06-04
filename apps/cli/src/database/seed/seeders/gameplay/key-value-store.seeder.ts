@@ -90,7 +90,7 @@ export class KeyValueStoreSeeder implements Seeder {
                         ]
                     },
                 },
-                version: 6
+                version: 7
             }
         ]
 

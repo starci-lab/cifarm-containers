@@ -54,6 +54,7 @@ export interface PurchaseSolanaNFTBoxTransactionCache {
 
 export interface CreateShipSolanaTransactionCacheData {
     bulkId: string
+    paidAmount: number
 }
 
 export interface ConvertedNFT { nftName: string, nftType: NFTType, rarity: NFTRarity, nftAddress: string }

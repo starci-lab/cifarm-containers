@@ -23,7 +23,7 @@ import { ShipService, InventoryService } from "@src/gameplay"
 import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
 import base58 from "bs58"
-import { createObjectId } from "@src/common"
+import { createObjectId, roundNumber } from "@src/common"
 
 @Injectable()
 export class SendShipSolanaTransactionService {
@@ -137,23 +137,23 @@ export class SendShipSolanaTransactionService {
                         }   
                     })
                 }
-                const paidAmount = await this.vaultService.computePaidAmount({
-                    vaultData: vaultInfos.value[user.network].data.find((data) => data.tokenKey === this.staticService.nftBoxInfo.tokenKey),
-                    bulk: this.staticService.seasons.find((season) => season.active)?.bulks.find((bulk) => bulk.id === cachedTx.bulkId)
-                })
+                const index = vaultInfos.value[user.network].data.findIndex(
+                    (data) => data.tokenKey === this.staticService.nftBoxInfo.tokenKey
+                )
+                if (index === -1) {
+                    throw new GraphQLError("Token key not found in vault infos", {
+                        extensions: {
+                            code: "TOKEN_KEY_NOT_FOUND_IN_VAULT_INFOS"
+                        }
+                    })
+                }
+                const newTokenAmount = roundNumber(vaultInfos.value[user.network].data[index].tokenLocked - cachedTx.paidAmount)
+                // call the update vault infos function
                 await this.connection
                     .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                     .updateOne(
-                        {
-                            _id: createObjectId(KeyValueStoreId.VaultInfos)
-                        },
-                        {
-                            value: {
-                                [user.network]: {
-                                    tokenLocked: vaultInfos.value[user.network][this.staticService.nftBoxInfo.tokenKey].tokenLocked - paidAmount,
-                                }
-                            }
-                        }
+                        { _id: createObjectId(KeyValueStoreId.VaultInfos) },
+                        { $set: { [`value.${user.network}.data.${index}.tokenLocked`]: newTokenAmount } }
                     )
                     .session(session)
                 const signedTxWithAuthority = await this.solanaService

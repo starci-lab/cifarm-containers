@@ -103,7 +103,6 @@ export class CreateShipSolanaTransactionService {
                         network: user.network
                     })
                 let builder = transactionBuilder().add(limitTransaction).add(priceTransaction)
-
                 const { transaction: transferTokenTransaction } =
                     await this.solanaService.createTransferTokenTransaction({
                         network: user.network,
@@ -130,7 +129,8 @@ export class CreateShipSolanaTransactionService {
                     )
                 )
                 const cacheData: CreateShipSolanaTransactionCacheData = {
-                    bulkId
+                    bulkId,
+                    paidAmount
                 }
                 await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes
                 return {

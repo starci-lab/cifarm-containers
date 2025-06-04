@@ -84,26 +84,25 @@ export class SendPurchaseSolanaNFTBoxesTransactionService {
                 if (!vaultInfos) {
                     throw new GraphQLError("Vault infos not found")
                 }
+                const index = vaultInfos.value[network].data.findIndex(
+                    (data) => data.tokenKey === this.staticService.nftBoxInfo.tokenKey
+                )
+                if (index === -1) {
+                    throw new GraphQLError("Token key not found in vault infos", {
+                        extensions: {
+                            code: "TOKEN_KEY_NOT_FOUND_IN_VAULT_INFOS"
+                        }
+                    })
+                }
+                const newTokenAmount = vaultInfos.value[network].data[index].tokenLocked + tokenAmount
+                // call the update vault infos function
                 await this.connection
                     .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                     .updateOne(
-                        {
-                            _id: createObjectId(KeyValueStoreId.VaultInfos)
-                        },
-                        {
-                            value: {
-                                ...vaultInfos.value,
-                                [network]: {
-                                    tokenLocked:
-                                        vaultInfos.value[network][this.staticService.nftBoxInfo.tokenKey]
-                                            .tokenLocked +
-                                            tokenAmount
-                                }
-                            }
-                        }
+                        { _id: createObjectId(KeyValueStoreId.VaultInfos) },
+                        { $set: { [`value.${network}.data.${index}.tokenLocked`]: newTokenAmount } }
                     )
                     .session(session)
-                //console.log(signedTx.signatures.length)
                 // sign the transactions
                 const txHashes: Array<TransactionSignature> = []
                 await Promise.all(txs.map(async (tx) => {

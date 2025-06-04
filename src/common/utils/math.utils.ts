@@ -29,7 +29,7 @@ export const computeDenomination = (
 
 export const computeRaw = (amount: number, decimals = 8): bigint => {
     const mutiplier = 10 ** decimals
-    return BigInt(amount * mutiplier)
+    return BigInt((amount * mutiplier).toFixed(0))
 }
 
 export const roundNumber = (amount: number, decimals = 5): number => {
