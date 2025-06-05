@@ -18,7 +18,8 @@ import {
     PetInfo,
     Referral,
     NFTConversion,
-    EnergyPurchases
+    EnergyPurchases,
+    LandLimitInfo
 } from "@src/databases"
 import { StaticService } from "@src/gameplay"                                           
 
@@ -105,5 +106,9 @@ export class SystemsService {
 
     energyPurchases(): EnergyPurchases {
         return this.staticService.energyPurchases
+    }
+
+    landLimitInfo(): LandLimitInfo {
+        return this.staticService.landLimitInfo
     }
 }

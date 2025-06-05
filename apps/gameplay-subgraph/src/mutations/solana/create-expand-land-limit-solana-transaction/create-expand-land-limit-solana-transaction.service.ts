@@ -32,7 +32,7 @@ export class CreateExpandLandLimitSolanaTransactionService {
 
     async createExpandLandLimitSolanaTransaction(
         { id }: UserLike,
-        { selectionIndex, accountAddress }: CreateExpandLandLimitSolanaTransactionRequest
+        { accountAddress }: CreateExpandLandLimitSolanaTransactionRequest
     ): Promise<CreateExpandLandLimitSolanaTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
@@ -45,12 +45,13 @@ export class CreateExpandLandLimitSolanaTransactionService {
                 if (!user) {
                     throw new GraphQLError("User not found")
                 }
+                const selectionIndex = user.landLimitIndex + 1
                 const limit =
                     this.staticService.landLimitInfo.landLimits.find(
-                        (limit) => limit.index === user.landLimitIndex
+                        (limit) => limit.index === selectionIndex
                     )
                 if (!limit) {
-                    throw new GraphQLError("Invalid selection index")
+                    throw new GraphQLError("Invalid land limit index")
                 }
                 const { price, tokenKey } = limit
                 const { tokenAddress, decimals } = this.staticService.tokens[tokenKey][ChainKey.Solana][user.network]

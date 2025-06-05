@@ -19,7 +19,8 @@ import {
     PetInfo,
     Referral,
     NFTConversion,
-    EnergyPurchases
+    EnergyPurchases,
+    LandLimitInfo
 } from "@src/databases"
 import { SystemsService } from "./systems.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
@@ -206,5 +207,14 @@ export class SystemsResolver {
     })
     energyPurchases(): EnergyPurchases {
         return this.systemsService.energyPurchases()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard)
+    @Query(() => LandLimitInfo, {
+        name: "landLimitInfo",
+        description: "Get the land limit info"
+    })
+    landLimitInfo(): LandLimitInfo {
+        return this.systemsService.landLimitInfo()
     }
 }

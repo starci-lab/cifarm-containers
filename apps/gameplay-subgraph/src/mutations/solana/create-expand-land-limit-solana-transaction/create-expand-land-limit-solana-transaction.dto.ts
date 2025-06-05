@@ -1,16 +1,11 @@
-import { Field, InputType, Int, ObjectType } from "@nestjs/graphql"
+import { Field, InputType, ObjectType } from "@nestjs/graphql"
 import { IResponseLike, ResponseLike } from "@src/graphql"
-import { IsBase58, IsInt, Min } from "class-validator"
+import { IsBase58 } from "class-validator"
 
 @InputType({
     description: "Create Expand Land Limit Solana Transaction request"
 })
 export class CreateExpandLandLimitSolanaTransactionRequest {
-    @IsInt()
-    @Min(0)
-    @Field(() => Int)
-        selectionIndex: number
-
     @IsBase58()
     @Field(() => String)
         accountAddress: string

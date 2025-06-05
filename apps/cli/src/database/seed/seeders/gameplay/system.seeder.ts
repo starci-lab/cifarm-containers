@@ -873,7 +873,7 @@ export class SystemSeeder implements Seeder {
                 },
                 {
                     index: 1,
-                    price: 100,
+                    price: 10,
                     tokenKey: TokenKey.USDC,
                     tileLimit: 100,
                     fruitLimit: 20,
@@ -882,7 +882,7 @@ export class SystemSeeder implements Seeder {
                 },
                 {
                     index: 2,
-                    price: 300,
+                    price: 50,
                     tokenKey: TokenKey.USDC,
                     tileLimit: 150,
                     fruitLimit: 30,
@@ -891,7 +891,7 @@ export class SystemSeeder implements Seeder {
                 },
                 {
                     index: 3,
-                    price: 750,
+                    price: 200,
                     tokenKey: TokenKey.USDC,
                     tileLimit: 200,
                     fruitLimit: 40,
