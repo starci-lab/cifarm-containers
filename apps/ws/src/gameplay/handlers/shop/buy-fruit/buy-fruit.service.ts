@@ -54,8 +54,6 @@ export class BuyFruitService {
                     throw new WsException("Fruit not available in shop")
                 }
 
-                const { fruitLimit } = this.staticService.defaultInfo
-
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
@@ -68,6 +66,10 @@ export class BuyFruitService {
                 if (!user) {
                     throw new WsException("User not found")
                 }
+                const { fruitLimit } = this.staticService.landLimitInfo.landLimits.find(
+                    (limit) => limit.index === user.landLimitIndex
+                )
+
                 // save user snapshot
                 const userSnapshot = user.$clone()
 
@@ -187,7 +189,7 @@ export class BuyFruitService {
                 // check can continue
                 const limitResult = await this.limitService.getFruitLimit({
                     session,
-                    userId
+                    user
                 })
                 stopBuying =
                     !limitResult.placedItemCountNotExceedLimit ||

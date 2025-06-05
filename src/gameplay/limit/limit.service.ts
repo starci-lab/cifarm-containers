@@ -7,7 +7,8 @@ import {
     PetSchema,
     PlacedItemType,
     PlacedItemTypeId,
-    BuildingKind
+    BuildingKind,
+    UserSchema
 } from "@src/databases"
 import { StaticService } from "../static"
 import { ClientSession, Connection } from "mongoose"
@@ -18,7 +19,7 @@ export interface LimitResult {
 }
 
 export interface GetLimitParams {
-    userId: string
+    user: UserSchema
     session: ClientSession
 }
 export type GetFruitLimitParams = GetLimitParams
@@ -42,16 +43,16 @@ export class LimitService {
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly staticSerivce: StaticService
-    ) {}
+    ) { }
 
-    public async getFruitLimit({ userId, session }: GetFruitLimitParams): Promise<LimitResult> {
+    public async getFruitLimit({ user, session }: GetFruitLimitParams): Promise<LimitResult> {
         const placedItemTypeFruits = this.staticSerivce.placedItemTypes.filter(
             (placedItemType) => placedItemType.type === PlacedItemType.Fruit
         )
         const placedItemCount = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .countDocuments({
-                user: userId,
+                user: user.id,
                 isStored: {
                     $ne: true
                 },
@@ -62,18 +63,18 @@ export class LimitService {
             .session(session)
         return {
             placedItemCountNotExceedLimit:
-                placedItemCount < this.staticSerivce.defaultInfo.fruitLimit
+                placedItemCount < this.staticSerivce.landLimitInfo.landLimits[user.landLimitIndex].fruitLimit
         }
     }
 
-    public async getTileLimit({ userId, session }: GetTileLimitParams): Promise<LimitResult> {
+    public async getTileLimit({ user, session }: GetTileLimitParams): Promise<LimitResult> {
         const placedItemTypeTiles = this.staticSerivce.placedItemTypes.filter(
             (placedItemType) => placedItemType.type === PlacedItemType.Tile
         )
         const placedItemCount = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .countDocuments({
-                user: userId,
+                user: user.id,
                 placedItemType: {
                     $in: placedItemTypeTiles.map((placedItemType) => placedItemType.id)
                 }
@@ -82,12 +83,19 @@ export class LimitService {
 
         return {
             placedItemCountNotExceedLimit:
-                placedItemCount < this.staticSerivce.defaultInfo.tileLimit
+                placedItemCount < this.staticSerivce.landLimitInfo.landLimits[user.landLimitIndex].tileLimit
         }
     }
 
+    public getSameBuildingLimit({
+        building,
+        user
+    }: GetSameBuildingLimitParams): number {
+        return building.unique ? 1 : this.staticSerivce.landLimitInfo.landLimits[user.landLimitIndex].sameBuildingLimit
+    }
+
     public async getBuildingLimit({
-        userId,
+        user,
         session,
         building
     }: GetBuildingLimitParams): Promise<LimitResult> {
@@ -99,7 +107,7 @@ export class LimitService {
         const placedItemCount = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .countDocuments({
-                user: userId,
+                user: user.id,
                 placedItemType: {
                     $in: placedItemTypeBuildings.map((placedItemType) => placedItemType.id)
                 }
@@ -117,20 +125,21 @@ export class LimitService {
         const selectedPlacedItemCount = await this.connection
             .model<PlacedItemSchema>(PlacedItemSchema.name)
             .countDocuments({
-                user: userId,
+                user: user.id,
                 placedItemType: selectedPlacedItemType.id
             })
             .session(session)
         return {
             placedItemCountNotExceedLimit:
-                placedItemCount < this.staticSerivce.defaultInfo.buildingLimit,
-            selectedPlacedItemCountNotExceedLimit: selectedPlacedItemCount < building.maxOwnership
+                placedItemCount < this.staticSerivce.landLimitInfo.landLimits[user.landLimitIndex].buildingLimit,
+            selectedPlacedItemCountNotExceedLimit: selectedPlacedItemCount <
+                this.getSameBuildingLimit({ user, building })
         }
     }
 
     public async getAnimalLimit({
         animal,
-        userId,
+        user,
         session
     }: GetAnimalLimitParams): Promise<LimitResult> {
         try {
@@ -152,7 +161,7 @@ export class LimitService {
             const placedItemBuildings = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .find({
-                    user: userId,
+                    user: user.id,
                     placedItemType: placedItemTypeBuilding.id
                 })
                 .select({
@@ -186,7 +195,7 @@ export class LimitService {
             const placedItemAnimalCount = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .countDocuments({
-                    user: userId,
+                    user: user.id,
                     placedItemType: placedItemTypeAnimal.id
                 })
                 .session(session)
@@ -199,11 +208,11 @@ export class LimitService {
         }
     }
 
-    public async getPetLimit({ pet, userId, session }: GetPetLimitParams): Promise<LimitResult> {
+    public async getPetLimit({ pet, user, session }: GetPetLimitParams): Promise<LimitResult> {
         try {
             const placedItemTypePets = this.staticSerivce.placedItemTypes.filter((placedItemType) => {
                 const correspondingPet = this.staticSerivce.pets.find(
-                    (pet) => 
+                    (pet) =>
                         placedItemType.type === PlacedItemType.Pet &&
                         pet.id === placedItemType.pet.toString()
                 )
@@ -219,7 +228,7 @@ export class LimitService {
             const placedItemCount = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .countDocuments({
-                    user: userId,
+                    user: user.id,
                     placedItemType: {
                         $in: placedItemTypePets.map((placedItemType) => placedItemType.id)
                     }
@@ -233,7 +242,7 @@ export class LimitService {
                 throw new Error(`No building found for pet type: ${pet.type}`)
             }
             const placedItemTypeBuilding = this.staticSerivce.placedItemTypes.find(
-                (placedItemType) => 
+                (placedItemType) =>
                     placedItemType.type === PlacedItemType.Building &&
                     placedItemType.building.toString() === building.id
             )
@@ -244,7 +253,7 @@ export class LimitService {
             const placedItemBuilding = await this.connection
                 .model<PlacedItemSchema>(PlacedItemSchema.name)
                 .findOne({
-                    user: userId,
+                    user: user.id,
                     placedItemType: placedItemTypeBuilding.id
                 })
                 .select({
@@ -272,3 +281,9 @@ export class LimitService {
         }
     }
 }
+
+export interface GetSameBuildingLimitParams {
+    user: UserSchema
+    building: BuildingSchema
+}
+

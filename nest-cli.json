@@ -15,8 +15,8 @@
       "entryFile": "main",
       "sourceRoot": "apps/ws/src",
       "compilerOptions": {
-        "webpack": true,
         "tsConfigPath": "apps/ws/tsconfig.app.json",
+        "webpack": true,
         "webpackConfigPath": "apps/ws/webpack.config.js"
       }
     },

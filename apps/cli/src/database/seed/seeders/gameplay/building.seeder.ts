@@ -31,7 +31,7 @@ export class BuildingSeeder implements Seeder {
                     price: 0,
                     upgradeable: false,
                     unlockLevel: 0, 
-                    maxOwnership: 1,
+                    unique: true,
                     kind: BuildingKind.Neutral
                 },
                 {
@@ -43,7 +43,6 @@ export class BuildingSeeder implements Seeder {
                     price: 2000,
                     unlockLevel: 5,
                     upgradeable: true,
-                    maxOwnership: 3,
                     kind: BuildingKind.AnimalHouse,
                     sellable: true,
                     sellPrice: 1000,
@@ -73,7 +72,6 @@ export class BuildingSeeder implements Seeder {
                     price: 4000,
                     unlockLevel: 10,
                     upgradeable: true,
-                    maxOwnership: 3,
                     kind: BuildingKind.AnimalHouse,
                     sellable: true,
                     sellPrice: 2000,
@@ -102,7 +100,6 @@ export class BuildingSeeder implements Seeder {
                     price: 2000,
                     unlockLevel: 10,
                     upgradeable: true,
-                    maxOwnership: 3,
                     kind: BuildingKind.BeeHouse,
                     beeHouseYieldTime: 3600,
                     beeHouseBasicHarvestExperiences: 10,
@@ -136,7 +133,6 @@ export class BuildingSeeder implements Seeder {
                     price: 2000,
                     unlockLevel: 10,
                     upgradeable: true,
-                    maxOwnership: 1,
                     kind: BuildingKind.PetHouse,
                     upgrades: [
                         {   
@@ -166,7 +162,6 @@ export class BuildingSeeder implements Seeder {
                     price: 2000,
                     unlockLevel: 10,
                     upgradeable: true,
-                    maxOwnership: 3,
                     kind: BuildingKind.FishPond,
                     sellable: true,
                     sellPrice: 1000,

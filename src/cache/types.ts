@@ -30,11 +30,11 @@ export interface UnwrapSolanaMetaplexNFTTransactionCache {
     nftMetadataId: string
 }
 
-export interface BuyGoldsSolanaTransactionCache {
+export interface CreateBuyGoldsSolanaTransactionCache {
     selectionIndex: number
 }
 
-export interface BuyEnergySolanaTransactionCache {
+export interface CreateBuyEnergySolanaTransactionCache {
     selectionIndex: number
 }
 
@@ -61,5 +61,9 @@ export interface ConvertedNFT { nftName: string, nftType: NFTType, rarity: NFTRa
 export interface ConvertSolanaMetaplexNFTsTransactionCache {
     convertedNFTs: Array<ConvertedNFT>
     network: Network 
+}
+
+export interface CreateExpandLandLimitSolanaTransactionCache {
+    selectionIndex: number
 }
 

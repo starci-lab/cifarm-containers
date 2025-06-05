@@ -13,7 +13,8 @@ import { CreateConvertSolanaMetaplexNFTsTransactionModule } from "./create-conve
 import { SendConvertSolanaMetaplexNFTsTransactionModule } from "./send-convert-metaplex-solana-nfts-transaction"
 import { CreateBuyEnergySolanaTransactionModule } from "./create-buy-energy-solana-transaction"
 import { SendBuyEnergySolanaTransactionModule } from "./send-buy-energy-solana-transaction"
-
+import { CreateExpandLandLimitSolanaTransactionModule } from "./create-expand-land-limit-solana-transaction"
+import { SendExpandLandLimitSolanaTransactionModule } from "./send-expand-land-limit-solana-transaction"
 @Module({
     imports: [
         CreatePurchaseSolanaNFTBoxesTransactionModule,
@@ -29,7 +30,9 @@ import { SendBuyEnergySolanaTransactionModule } from "./send-buy-energy-solana-t
         CreateConvertSolanaMetaplexNFTsTransactionModule,
         SendConvertSolanaMetaplexNFTsTransactionModule,
         CreateBuyEnergySolanaTransactionModule,
-        SendBuyEnergySolanaTransactionModule
+        SendBuyEnergySolanaTransactionModule,
+        CreateExpandLandLimitSolanaTransactionModule,
+        SendExpandLandLimitSolanaTransactionModule
     ]
 })
 export class SolanaModule {}

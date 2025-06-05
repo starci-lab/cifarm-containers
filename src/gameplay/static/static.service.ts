@@ -38,7 +38,8 @@ import {
     Referral,
     NFTConversion,
     EnergyPurchases,
-    SeasonSchema
+    SeasonSchema,
+    LandLimitInfo
 } from "@src/databases"
 import { Connection } from "mongoose"
 @Injectable()
@@ -57,6 +58,7 @@ export class StaticService implements OnModuleInit {
     public animals: Array<AnimalSchema>
     public crops: Array<CropSchema>
     public buildings: Array<BuildingSchema>
+    public landLimitInfo: LandLimitInfo
     public inventoryTypes: Array<InventoryTypeSchema>
     public products: Array<ProductSchema>
     public pets: Array<PetSchema>
@@ -186,6 +188,11 @@ export class StaticService implements OnModuleInit {
             .findById<KeyValueRecord<Referral>>(createObjectId(SystemId.Referral))
         this.referral = referralDoc.value
 
+        const landLimitInfoDoc = await this.connection
+            .model<SystemSchema>(SystemSchema.name)
+            .findById<KeyValueRecord<LandLimitInfo>>(createObjectId(SystemId.LandLimitInfo))
+        this.landLimitInfo = landLimitInfoDoc.value
+        
         const nftConversionDoc = await this.connection
             .model<SystemSchema>(SystemSchema.name)
             .findById<KeyValueRecord<NFTConversion>>(createObjectId(SystemId.NFTConversion))

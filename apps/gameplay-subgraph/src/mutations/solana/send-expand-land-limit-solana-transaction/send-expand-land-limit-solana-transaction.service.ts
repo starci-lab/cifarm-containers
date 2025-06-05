@@ -1,45 +1,47 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { EnergyPurchaseOption, InjectMongoose } from "@src/databases"
+import {
+    InjectMongoose,
+    GoldPurchaseOption
+} from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
-import { UserSchema } from "@src/databases"
-import { GraphQLError } from "graphql"
 import {
-    SendBuyEnergySolanaTransactionRequest,
-    SendBuyEnergySolanaTransactionResponse
-} from "./send-buy-energy-solana-transaction.dto"
+    SendExpandLandLimitSolanaTransactionRequest,
+    SendExpandLandLimitSolanaTransactionResponse
+} from "./send-expand-land-limit-solana-transaction.dto"
 import { SolanaService } from "@src/blockchain"
-import { StaticService, SyncService } from "@src/gameplay"
-import base58 from "bs58"
+import { GoldBalanceService, StaticService, SyncService } from "@src/gameplay"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
-import { CreateBuyEnergySolanaTransactionCache } from "@src/cache"
-import { EnergyService } from "@src/gameplay"
-import { KafkaTopic } from "@src/brokers"
+import { UserSchema } from "@src/databases"
+import { GraphQLError } from "graphql"
+import base58 from "bs58"
+import { CreateExpandLandLimitSolanaTransactionCache } from "@src/cache"
+import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
-import { InjectKafkaProducer } from "@src/brokers"
+
 @Injectable()
-export class SendBuyEnergySolanaTransactionService {
-    private readonly logger = new Logger(SendBuyEnergySolanaTransactionService.name)
+export class SendExpandLandLimitSolanaTransactionService {
+    private readonly logger = new Logger(SendExpandLandLimitSolanaTransactionService.name)
     constructor(
         @InjectMongoose()
         private readonly connection: Connection,
         private readonly solanaService: SolanaService,
         private readonly staticService: StaticService,
-        private readonly energyService: EnergyService,
-        @InjectKafkaProducer()
+        private readonly goldBalanceService: GoldBalanceService,  
+        @InjectKafkaProducer()  
         private readonly kafkaProducer: Producer,
-        private readonly syncService: SyncService,
         @InjectCache()
         private readonly cacheManager: Cache,
-        private readonly sha256Service: Sha256Service
-    ) { }
+        private readonly sha256Service: Sha256Service,
+        private readonly syncService: SyncService
+    ) {}
 
-    async sendBuyEnergySolanaTransaction(
+    async sendExpandLandLimitSolanaTransaction(
         { id }: UserLike,
-        { serializedTx }: SendBuyEnergySolanaTransactionRequest
-    ): Promise<SendBuyEnergySolanaTransactionResponse> {
+        { serializedTx }: SendExpandLandLimitSolanaTransactionRequest
+    ): Promise<SendExpandLandLimitSolanaTransactionResponse> {
         const mongoSession = await this.connection.startSession()
         try {
             // Using withTransaction to handle the transaction lifecycle
@@ -62,7 +64,7 @@ export class SendBuyEnergySolanaTransactionService {
                             .transactions.serializeMessage(tx.message)
                     )
                 )
-                const cachedTx = await this.cacheManager.get<CreateBuyEnergySolanaTransactionCache>(cacheKey)
+                const cachedTx = await this.cacheManager.get<CreateExpandLandLimitSolanaTransactionCache>(cacheKey)
                 if (!cachedTx) {
                     throw new GraphQLError("Transaction not found in cache", {
                         extensions: {
@@ -71,31 +73,26 @@ export class SendBuyEnergySolanaTransactionService {
                     })
                 }
                 const { selectionIndex } = cachedTx
-                // add the energy to the user
-                const option =
-                    this.staticService.energyPurchases[user.network].options[
-                        selectionIndex
-                    ] as EnergyPurchaseOption
+                const option = this.staticService.goldPurchases[user.network].options[selectionIndex] as GoldPurchaseOption
                 if (!option) {
-                    throw new GraphQLError("Invalid selection index")
-                }
-                const { percentage } = option
-                // add the amount to the user's gold balance
-                const maxEnergy = this.energyService.getMaxEnergy(user.level)
-                if (user.energyFull) {
-                    throw new GraphQLError("Energy is already at the maximum limit", {
+                    throw new GraphQLError("Invalid selection index", {
                         extensions: {
-                            code: "ENERGY_ALREADY_AT_THE_MAXIMUM_LIMIT"
+                            code: "INVALID_SELECTION_INDEX"
                         }
                     })
-                }   
-                const newEnergy = Math.min(maxEnergy, user.energy + Math.floor((maxEnergy * percentage) / 100))
-
+                }
                 const userSnapshot = user.$clone()
-                this.energyService.add({
-                    user,
-                    quantity: newEnergy - user.energy
-                })
+                // send the land limit for user
+                if (
+                    selectionIndex < user.landLimitIndex
+                ) {
+                    throw new GraphQLError("Invalid selection index", {
+                        extensions: {
+                            code: "INVALID_SELECTION_INDEX"
+                        }
+                    })
+                }
+                user.landLimitIndex = selectionIndex
                 await user.save({ session })
                 // const signedTx = await this.solanaService
                 //     .getUmi(user.network)

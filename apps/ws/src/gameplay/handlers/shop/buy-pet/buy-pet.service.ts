@@ -224,7 +224,7 @@ export class BuyPetService {
 
                 const limitData = await this.limitService.getPetLimit({
                     pet,
-                    userId,
+                    user,
                     session
                 })
                 console.log("limitData", limitData)

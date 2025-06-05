@@ -223,7 +223,7 @@ export class BuyAnimalService {
 
                 const limitData = await this.limitService.getAnimalLimit({
                     animal,
-                    userId,
+                    user,
                     session
                 })
                 

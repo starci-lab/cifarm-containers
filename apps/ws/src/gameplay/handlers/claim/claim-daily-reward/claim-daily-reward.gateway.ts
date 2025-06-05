@@ -42,6 +42,6 @@ export class ClaimDailyRewardGateway implements OnGatewayInit {
             userId: user.id,
             syncedResponse
         })
-        socket.emit(EmitterEventName.DailyRewardClaimed)
+        socket.emit(EmitterEventName.ClaimDailyRewardResponsed)
     }
 }

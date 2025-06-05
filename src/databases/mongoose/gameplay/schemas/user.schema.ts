@@ -243,6 +243,21 @@ export class UserSchema extends AbstractSchema {
         nullable: true
     })
         tutorial?: TutorialSchema
+
+    @Field(() => Int, {
+        description: "The index of the land limit the user has",
+        defaultValue: 0
+    })
+    @Prop({ type: Number, default: 0 })
+        landLimitIndex: number
+
+    // fairy is a machenic that allow everything in game grow without take care
+    @Field(() => Date, {
+        description: "The duration of the fairy",
+        defaultValue: null
+    })
+    @Prop({ type: Date, required: false })
+        fairyDuration?: Date
 }
 
 export const UserSchemaClass = SchemaFactory.createForClass(UserSchema)

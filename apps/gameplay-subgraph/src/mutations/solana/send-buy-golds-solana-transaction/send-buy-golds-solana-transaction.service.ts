@@ -17,7 +17,7 @@ import { Sha256Service } from "@src/crypto"
 import { UserSchema } from "@src/databases"
 import { GraphQLError } from "graphql"
 import base58 from "bs58"
-import { BuyGoldsSolanaTransactionCache } from "@src/cache"
+import { CreateBuyGoldsSolanaTransactionCache } from "@src/cache"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
 
@@ -64,7 +64,7 @@ export class SendBuyGoldsSolanaTransactionService {
                             .transactions.serializeMessage(tx.message)
                     )
                 )
-                const cachedTx = await this.cacheManager.get<BuyGoldsSolanaTransactionCache>(cacheKey)
+                const cachedTx = await this.cacheManager.get<CreateBuyGoldsSolanaTransactionCache>(cacheKey)
                 if (!cachedTx) {
                     throw new GraphQLError("Transaction not found in cache", {
                         extensions: {

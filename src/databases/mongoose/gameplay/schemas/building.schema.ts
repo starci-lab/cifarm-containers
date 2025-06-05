@@ -45,12 +45,12 @@ export class BuildingSchema extends AbstractSchema {
     @Prop({ type: Number, required: false })
         maxUpgrade?: number
 
-    @Field(() => Int, {
-        description: "The maximum ownership of the building",
+    @Field(() => Boolean, {
+        description: "Whether the building is unique",
         nullable: true
     })
-    @Prop({ type: Number, required: false })
-        maxOwnership?: number
+    @Prop({ type: Boolean, required: false })
+        unique: boolean
 
     @Field(() => Int, {
         description: "The price of the building",

@@ -469,6 +469,65 @@ export class Positions {
 @ObjectType({
     description: "Default configuration for new users"
 })
+export class LandLimit {
+    @Field(() => Int, {
+        description: "Current land limit index",
+        nullable: true
+    })
+        index: number
+
+    @Field(() => Float, {
+        description: "Default land limit price",
+        nullable: true
+    })
+        price?: number
+
+    @Field(() => GraphQLTypeTokenKey, {
+        description: "Default token key",
+        nullable: true
+    })
+        tokenKey?: TokenKey
+
+    @Field(() => Boolean, {
+        description: "Default option for land limit",
+        nullable: true
+    })
+        default?: boolean
+    
+    @Field(() => Int, {
+        description: "Default land limit"
+    })
+        tileLimit: number
+
+    @Field(() => Int, {
+        description: "Default fruit limit"
+    })
+        fruitLimit: number
+
+    @Field(() => Int, {
+        description: "Default building limit"
+    })
+        buildingLimit: number
+
+    @Field(() => Int, {
+        description: "Default same building limit"
+    })
+        sameBuildingLimit: number
+}
+
+@ObjectType({
+    description: "Default configuration for new users"
+})
+export class LandLimitInfo {
+    @Field(() => [LandLimit], {
+        description: "Default land limits"
+    })
+        landLimits: Array<LandLimit>      
+}
+
+@ObjectType({
+    description: "Default configuration for new users"
+})
 export class DefaultInfo {
     @Field(() => Int, {
         description: "Default starting gold amount"
@@ -534,21 +593,6 @@ export class DefaultInfo {
         description: "Reward quantity for following on X/Twitter"
     })
         followXRewardQuantity: number
-
-    @Field(() => Int, {
-        description: "Maximum number of tiles a user can have"
-    })
-        tileLimit: number
-
-    @Field(() => Int, {
-        description: "Maximum number of fruits a user can have"
-    })
-        fruitLimit: number
-
-    @Field(() => Int, {
-        description: "Maximum number of buildings a user can have"
-    })
-        buildingLimit: number
 }
 
 @ObjectType({

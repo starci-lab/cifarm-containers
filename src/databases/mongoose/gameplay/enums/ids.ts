@@ -545,6 +545,7 @@ export enum SystemId {
     CropInfo = "cropInfo",
     AnimalInfo = "animalInfo",
     FruitInfo = "fruitInfo",
+    LandLimitInfo = "landLimitInfo",
     EnergyPurchases = "energyPurchases",
     DefaultInfo = "defaultInfo",
     EnergyRegen = "energyRegen",
@@ -572,6 +573,9 @@ registerEnumType(GraphQLTypeSystemId, {
     valuesMap: {
         [SystemId.Activities]: {
             description: "The activities id.",
+        },
+        [SystemId.LandLimitInfo]: {
+            description: "The land limit info id.",
         },
         [SystemId.CropInfo]: {
             description: "The crop info id.",

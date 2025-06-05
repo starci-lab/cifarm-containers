@@ -108,7 +108,10 @@ export class BuyBuildingService {
                     })
                     .session(session)
 
-                if (placedItemBuildings.length >= building.maxOwnership) {
+                if (placedItemBuildings.length >= this.limitService.getSameBuildingLimit({
+                    user,
+                    building
+                })) {
                     throw new WsException("Max building ownership reached")
                 }
 
@@ -275,7 +278,7 @@ export class BuyBuildingService {
                 // Check if the user has reached the limit for this building
                 const limitResult = await this.limitService.getBuildingLimit({
                     session,
-                    userId,
+                    user,
                     building
                 })
                 stopBuying = !limitResult.placedItemCountNotExceedLimit

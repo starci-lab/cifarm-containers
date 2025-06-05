@@ -29,7 +29,8 @@ import {
     PlacedItemTypeId,
     Referral,
     NFTConversion,
-    EnergyPurchases
+    EnergyPurchases,
+    LandLimitInfo
 } from "@src/databases"
 import { ChainKey, Network } from "@src/env"
 import { AttributeName } from "@src/blockchain"
@@ -411,9 +412,6 @@ export class SystemSeeder implements Seeder {
             referralRewardQuantity: 4000,
             referredRewardQuantity: 2000,
             followXRewardQuantity: 2000,
-            tileLimit: 60,
-            fruitLimit: 10,
-            buildingLimit: 30
         }
         const energyRegen: EnergyRegen = {
             // 5 minutes
@@ -863,6 +861,46 @@ export class SystemSeeder implements Seeder {
             }
         }
 
+        const landLimitInfo: LandLimitInfo = {
+            landLimits: [
+                {
+                    index: 0,
+                    default: true,
+                    tileLimit: 50,
+                    fruitLimit: 10,
+                    buildingLimit: 30,
+                    sameBuildingLimit: 3
+                },
+                {
+                    index: 1,
+                    price: 100,
+                    tokenKey: TokenKey.USDC,
+                    tileLimit: 100,
+                    fruitLimit: 20,
+                    buildingLimit: 50,
+                    sameBuildingLimit: 6
+                },
+                {
+                    index: 2,
+                    price: 300,
+                    tokenKey: TokenKey.USDC,
+                    tileLimit: 150,
+                    fruitLimit: 30,
+                    buildingLimit: 75,
+                    sameBuildingLimit: 9
+                },
+                {
+                    index: 3,
+                    price: 750,
+                    tokenKey: TokenKey.USDC,
+                    tileLimit: 200,
+                    fruitLimit: 40,
+                    buildingLimit: 100,
+                    sameBuildingLimit: 12
+                }
+            ]
+        }
+
         const tokens: Tokens = {
             [TokenKey.Native]: {
                 [ChainKey.Solana]: {
@@ -1169,6 +1207,11 @@ export class SystemSeeder implements Seeder {
                 _id: createObjectId(SystemId.EnergyPurchases),
                 displayId: SystemId.EnergyPurchases,
                 value: energyPurchases
+            },
+            {
+                _id: createObjectId(SystemId.LandLimitInfo),
+                displayId: SystemId.LandLimitInfo,
+                value: landLimitInfo
             }
         ]
         await this.connection.model<SystemSchema>(SystemSchema.name).insertMany(data)

@@ -1,8 +1,8 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InjectMongoose, PlacedItemSchema } from "@src/databases"
+import { InjectMongoose, PlacedItemSchema, UserSchema } from "@src/databases"
 import { PlaceNFTMessage } from "./place-nft.dto"
 import { UserLike } from "@src/jwt"
-import { PositionService, StaticService, SyncService, LimitService } from "@src/gameplay"
+import { PositionService, StaticService, SyncService } from "@src/gameplay"
 import { Connection } from "mongoose"
 import { WithStatus } from "@src/common"
 import { WsException } from "@nestjs/websockets"
@@ -17,8 +17,7 @@ export class PlaceNFTService {
         private readonly connection: Connection,
         private readonly syncService: SyncService,
         private readonly staticService: StaticService,  
-        private readonly positionService: PositionService,
-        private readonly limitService: LimitService
+        private readonly positionService: PositionService
     ) {}
 
     async placeNFT(
@@ -53,13 +52,22 @@ export class PlaceNFTService {
                 if (!placedItemType) {
                     throw new WsException("Placed item type not found")
                 }
+                const user = await this.connection
+                    .model<UserSchema>(UserSchema.name)
+                    .findById(userId)
+                    .session(session)
+                if (!user) {
+                    throw new WsException("User not found")
+                }
                 // we require validation like buy fruit, tiles, pets, etc...
                 switch (placedItemType.type) {
                 case PlacedItemType.Fruit: {
                     const placedItemTypes = this.staticService.placedItemTypes.filter(
                         (placedItemType) => placedItemType.type === PlacedItemType.Fruit
                     )
-                    const { fruitLimit } = this.staticService.defaultInfo
+                    const { fruitLimit } = this.staticService.landLimitInfo.landLimits.find(
+                        (limit) => limit.index === user.landLimitIndex
+                    )
                     const count = await this.connection
                         .model<PlacedItemSchema>(PlacedItemSchema.name)
                         .countDocuments({

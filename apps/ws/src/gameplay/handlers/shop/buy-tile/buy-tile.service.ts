@@ -49,8 +49,6 @@ export class BuyTileService {
                     throw new WsException("Tile not available in shop")
                 }
 
-                const { tileLimit } = this.staticService.defaultInfo
-
                 /************************************************************
                  * RETRIEVE AND VALIDATE USER DATA
                  ************************************************************/
@@ -63,6 +61,11 @@ export class BuyTileService {
                 if (!user) {
                     throw new WsException("User not found")
                 }
+
+                const { tileLimit } = this.staticService.landLimitInfo.landLimits.find(
+                    (limit) => limit.index === user.landLimitIndex
+                )
+                
                 // save user snapshot
                 const userSnapshot = user.$clone()
 
@@ -166,7 +169,7 @@ export class BuyTileService {
                 }
 
                 const { placedItemCountNotExceedLimit } = await this.limitService.getTileLimit({
-                    userId,
+                    user,
                     session
                 })
                 stopBuying = !placedItemCountNotExceedLimit || user.golds < tile.price

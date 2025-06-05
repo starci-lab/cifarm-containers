@@ -15,7 +15,7 @@ import base58 from "bs58"
 import { InjectCache } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
-import { BuyGoldsSolanaTransactionCache } from "@src/cache"
+import { CreateBuyGoldsSolanaTransactionCache } from "@src/cache"
 import { ChainKey } from "@src/env"
 
 @Injectable()
@@ -85,7 +85,7 @@ export class CreateBuyGoldsSolanaTransactionService {
                     )
                 )
 
-                const cacheData: BuyGoldsSolanaTransactionCache = {
+                const cacheData: CreateBuyGoldsSolanaTransactionCache = {
                     selectionIndex
                 }
                 await this.cacheManager.set(cacheKey, cacheData, 1000 * 60 * 15) // 15 minutes to verify the transaction
