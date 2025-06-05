@@ -10,6 +10,7 @@ import { EnergyService, StaticService, SyncService } from "@src/gameplay"
 import { InjectKafkaProducer, KafkaTopic } from "@src/brokers"
 import { Producer } from "kafkajs"
 import { envConfig } from "@src/env"
+
 @Processor(bullData[BullQueueName.Energy].name)
 export class EnergyWorker extends WorkerHost {
     private readonly logger = new Logger(EnergyWorker.name)
@@ -66,8 +67,10 @@ export class EnergyWorker extends WorkerHost {
                                 user.energyRegenTime = 0
                                 // Check if the user's energy is full
                                 user.energyFull = user.energy >= this.energyService.getMaxEnergy(user.level) 
+
+                                return true
                             }
-                            return true
+                            return false
                         }
                         const userSnapshot = user.$clone()
                         const synced = updateUser()

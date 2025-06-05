@@ -4,7 +4,7 @@ import { PlacedItemsService } from "./placed-items.service"
 import { PlacedItemSchema } from "@src/databases"
 import { GraphQLUser } from "@src/decorators"
 import { GraphQLJwtAuthGuard, UserLike } from "@src/jwt"
-import { PlacedItemsRequest, StoredPlacedItemsRequest, StoredPlacedItemsResponse } from "./placed-items.dto"
+import { OccupiedPlacedItemCountsResponse, PlacedItemsRequest, StoredPlacedItemsRequest, StoredPlacedItemsResponse } from "./placed-items.dto"
 import { GraphQLThrottlerGuard } from "@src/throttler"
 
 @Resolver()
@@ -22,7 +22,7 @@ export class PlacedItemsResolver {
     async placedItem(
         @Args("id", { type: () => ID, description: "The ID of the placed item" }) id: string
     ): Promise<PlacedItemSchema> {
-        return this.placeditemsService.getPlacedItem(id)
+        return this.placeditemsService.placedItem(id)
     }
 
     
@@ -36,7 +36,7 @@ export class PlacedItemsResolver {
         @Args("request", { type: () => PlacedItemsRequest, nullable: true })
             request: PlacedItemsRequest
     ): Promise<Array<PlacedItemSchema>> {
-        return this.placeditemsService.getPlacedItems(user, request)
+        return this.placeditemsService.placedItems(user, request)
     }
 
     @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
@@ -49,6 +49,16 @@ export class PlacedItemsResolver {
         @Args("request", { type: () => StoredPlacedItemsRequest, nullable: true })
             request: StoredPlacedItemsRequest
     ): Promise<StoredPlacedItemsResponse> {
-        return this.placeditemsService.getStoredPlacedItems(user, request)
+        return this.placeditemsService.storedPlacedItems(user, request)
     }
+
+    @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
+    @Query(() => OccupiedPlacedItemCountsResponse, {
+        name: "occupiedPlacedItemCounts",
+        description: "Get the number of occupied placed items"
+    })
+    async occupiedPlacedItemCounts(@GraphQLUser() user: UserLike): Promise<OccupiedPlacedItemCountsResponse> {  
+        return this.placeditemsService.occupiedPlacedItemCounts(user)
+    }
+
 }

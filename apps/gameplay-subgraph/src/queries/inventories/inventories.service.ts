@@ -17,19 +17,29 @@ export class InventoriesService {
     ) {}
 
     async getInventory(id: string, { id: userId }: UserLike): Promise<InventorySchema> {
-        const inventory = await this.connection.model(InventorySchema.name).findById(id)
-        if (!inventory) {
-            throw new NotFoundException("Inventory not found")
+        try {
+            const inventory = await this.connection.model(InventorySchema.name).findById(id)
+            if (!inventory) {
+                throw new NotFoundException("Inventory not found")
+            }
+            if (inventory.user.toString() !== userId) {
+                throw new ForbiddenException("You are not allowed to access this inventory")
+            }
+            return inventory
+        } catch (error) {
+            this.logger.error(error)
+            throw error
         }
-        if (inventory.user.toString() !== userId) {
-            throw new ForbiddenException("You are not allowed to access this inventory")
-        }
-        return inventory
     }
 
     async getInventories({ id }: UserLike): Promise<Array<InventorySchema>> {
-        return await this.connection.model(InventorySchema.name).find({
-            user: id
-        })
+        try {
+            return await this.connection.model(InventorySchema.name).find({
+                user: id
+            })
+        } catch (error) {
+            this.logger.error(error)
+            throw error
+        }
     }
 }

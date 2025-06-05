@@ -1,4 +1,4 @@
-import { Field, ID, InputType, ObjectType } from "@nestjs/graphql"
+import { Field, ID, InputType, Int, ObjectType } from "@nestjs/graphql"
 import { PlacedItemSchema } from "@src/databases"
 import { IPaginatedResponse, PaginatedRequest, PaginatedResponse } from "@src/graphql"
 import { IsMongoId, IsOptional } from "class-validator"
@@ -32,4 +32,22 @@ export class StoredPlacedItemsResponse
 {
     @Field(() => [PlacedItemSchema])
         data: Array<PlacedItemSchema>
+}
+
+@ObjectType()
+export class OccupiedPlacedItemCountsResponse {
+    @Field(() => Int, {
+        description: "Total number of tiles occupied by placed items"
+    })
+        tileCount: number
+
+    @Field(() => Int, {
+        description: "Total number of fruits occupied by placed items"
+    })
+        fruitCount: number
+
+    @Field(() => Int, {
+        description: "Total number of buildings occupied by placed items"
+    })
+        buildingCount: number
 }
