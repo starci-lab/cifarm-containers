@@ -8,7 +8,7 @@ import {
     CheckLevelGapParams
 } from "./types"
 import { MODULE_OPTIONS_TOKEN } from "../gameplay.module-definition"
-import { GameplayOptions } from "../gameplay.types"
+import { GameplayOptions } from "../types"
 import { StaticService } from "../static"
 import { LevelGapIsNotEnoughException } from "../exceptions"
 

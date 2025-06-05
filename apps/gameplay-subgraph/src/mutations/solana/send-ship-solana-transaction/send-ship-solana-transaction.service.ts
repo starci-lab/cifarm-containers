@@ -15,7 +15,7 @@ import {
     SendShipSolanaTransactionResponse
 } from "./send-ship-solana-transaction.dto"
 import { SolanaService } from "@src/blockchain"
-import { StaticService, VaultService } from "@src/gameplay"
+import { StaticService, TCIFARMBalanceService } from "@src/gameplay"
 import { InjectCache, CreateShipSolanaTransactionCacheData } from "@src/cache"
 import { Cache } from "cache-manager"
 import { Sha256Service } from "@src/crypto"
@@ -38,7 +38,7 @@ export class SendShipSolanaTransactionService {
         private readonly cacheManager: Cache,
         private readonly sha256Service: Sha256Service,
         private readonly shipService: ShipService,
-        private readonly vaultService: VaultService
+        private readonly tCIFARMBalanceService: TCIFARMBalanceService
     ) { }
 
     async sendShipSolanaTransaction(
@@ -121,6 +121,25 @@ export class SendShipSolanaTransactionService {
                     for (const { inventoryUpdated } of updatedInventories) {
                         await inventoryUpdated.save({ session })
                     }
+
+                    // add tCIFARM to the user
+                    const bulk = this.staticService.seasons.find(
+                        (season) => season.active
+                    ).bulks.find(
+                        (bulk) => bulk.id === cachedTx.bulkId
+                    )
+                    if (!bulk) {
+                        throw new GraphQLError("Bulk not found", {
+                            extensions: {
+                                code: "BULK_NOT_FOUND"
+                            }
+                        })
+                    }
+                    this.tCIFARMBalanceService.add({
+                        amount: bulk.tCIFARM,
+                        user
+                    })
+                    await user.save({ session })
                 }
 
                 // reduce token in the vault

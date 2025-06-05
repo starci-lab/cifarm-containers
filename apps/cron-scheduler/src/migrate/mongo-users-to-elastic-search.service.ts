@@ -19,27 +19,18 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
 
     async onModuleInit() {
         try {
+            // delete the old index to avoid conflicts
             const indexExists = await this.elasticSearchService.indices.exists({
                 index: createIndexName(this.collectionName),
             })
             if (indexExists) {
-                await this.elasticSearchService.deleteByQuery({
-                    index: createIndexName(this.collectionName),
-                    query: {
-                        match_all: {}
-                    }
-                })
-                await this.elasticSearchService.search({
-                    index: createIndexName(this.collectionName),
-                    query: {
-                        match_all: {}
-                    }
-                })
-            } else {
-                await this.elasticSearchService.indices.create({
+                await this.elasticSearchService.indices.delete({
                     index: createIndexName(this.collectionName),
                 })
             }
+            await this.elasticSearchService.indices.create({
+                index: createIndexName(this.collectionName),
+            })
             // get the number of users in the collection
             const users = await this.connection.model<UserSchema>(UserSchema.name).find()
             const usersCount = users.length
@@ -50,7 +41,9 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
             // check if the index exists
             for (const userChunk of usersChunks) {
                 for (const user of userChunk) {
-                    const userObject = user.toJSON()
+                    const raw = user.toJSON()
+                    const userObject = _.pickBy(raw, (value) => value !== null && value !== undefined) as typeof raw
+                    userObject.followeeUserIds = userObject.followeeUserIds || []
                     await this.elasticSearchService.index({
                         index: createIndexName(this.collectionName),
                         id: userObject.id,
@@ -68,6 +61,7 @@ export class MongoUsersToElasticSearchService implements OnModuleInit {
                         const userObject = _.cloneDeep(user)
                         userObject.id = userObject._id.toString()
                         delete userObject._id
+                        userObject.followeeUserIds = userObject.followeeUserIds || []
                         await this.elasticSearchService.index({
                             index: createIndexName(this.collectionName),
                             id: userObject.id,

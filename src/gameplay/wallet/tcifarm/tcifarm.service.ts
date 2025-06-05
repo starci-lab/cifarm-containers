@@ -4,7 +4,7 @@ import { AddParams, AddResult, SubtractParams, SubtractResult } from "./types"
 import { CheckSufficientParams } from "@src/common"
 
 @Injectable()
-export class GoldBalanceService {
+export class TCIFARMBalanceService {
     constructor() {}
 
     public checkSufficient({ current, required }: CheckSufficientParams) {
@@ -13,7 +13,7 @@ export class GoldBalanceService {
 
     public add({ amount, user }: AddParams): AddResult {
         if (amount < 0) throw new GoldCannotBeZeroOrNegativeException(amount)
-        user.golds += amount
+        user.tCIFARM += amount
         return user
     }
 
@@ -21,11 +21,11 @@ export class GoldBalanceService {
         if (amount < 0) throw new GoldCannotBeZeroOrNegativeException(amount)
 
         this.checkSufficient({
-            current: user.golds,
+            current: user.tCIFARM,
             required: amount
         })
 
-        user.golds -= amount
+        user.tCIFARM -= amount
         return user
     }
 }

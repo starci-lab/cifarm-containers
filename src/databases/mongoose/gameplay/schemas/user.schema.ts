@@ -205,15 +205,15 @@ export class UserSchema extends AbstractSchema {
         oauthProviderId?: string
 
     @Field(() => Float, {
-        description: "The credits of the user",
-        nullable: true
+        description: "The tCIFARM balance of the user",
+        defaultValue: 0
     })
-    @Prop({ type: Number, required: false })
-        credits?: number
+    @Prop({ type: Number, default: 0 })
+        tCIFARM: number
 
     @Field(() => [ID], {
         description: "The IDs of users that the user is following",
-        nullable: true
+        defaultValue: []
     })
     @Prop({ type: [MongooseSchema.Types.ObjectId], required: false })
         followeeUserIds: Array<Types.ObjectId>

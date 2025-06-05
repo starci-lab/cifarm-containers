@@ -1122,17 +1122,17 @@ export class Tokens {
 })
 export class Referral {
     @Field(() => Float, {
-        description: "Credits per successful referral"
+        description: "Amount per successful referral"
     })
-        creditsPerSuccessfulReferral: number
+        amountPerSuccessfulReferral: number
     @Field(() => Float, {
-        description: "Credits when joining with a referral"
+        description: "Amount when joining with a referral"
     })
-        creditsWhenJoiningWithReferral: number
+        amountWhenJoiningWithReferral: number
     @Field(() => Float, {
-        description: "Credits when your referral invites someone"
+        description: "Amount when your referral invites someone"
     })
-        creditsWhenYourReferralInviteSomeone: number
+        amountWhenYourReferralInviteSomeone: number
 }
 
 @ObjectType({

@@ -1019,9 +1019,9 @@ export class SystemSeeder implements Seeder {
         }
 
         const referral: Referral = {
-            creditsPerSuccessfulReferral: 5,
-            creditsWhenJoiningWithReferral: 20,
-            creditsWhenYourReferralInviteSomeone: 2
+            amountPerSuccessfulReferral: 5,
+            amountWhenJoiningWithReferral: 20,
+            amountWhenYourReferralInviteSomeone: 2
         }
 
         const nftConversion: NFTConversion = {

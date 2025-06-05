@@ -27,6 +27,14 @@ export class GoldCannotBeZeroOrNegativeException extends GameplayException {
     }
 }
 
+export class tCIFARMCannotBeZeroOrNegativeException extends GameplayException {
+    constructor(amount: number) {
+        super(
+            `tCIFARM amount cannot be zero or negative: ${amount}`,
+            GameplayErrorCode.tCIFARMCannotBeZeroOrNegative
+        )
+    }
+}
 export class UserInsufficientGoldException extends GameplayException {
     constructor(current: number, required: number) {
         super(

@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common"
 import { MODULE_OPTIONS_TOKEN } from "../gameplay.module-definition"
-import { GameplayOptions } from "../gameplay.types"
+import { GameplayOptions } from "../types"
 import {
     InventoryMapData,
     PartitionInventoriesParams,

@@ -59,6 +59,12 @@ export class BulkSchema extends AbstractSchema {
     })
     @Prop({ type: String, enum: TokenKey, required: true })
         tokenKey: TokenKey
+
+    @Field(() => Float, {
+        description: "Bulk tCIFARM"
+    })
+    @Prop({ type: Number, required: true })
+        tCIFARM: number
 }
 
 // Generate Mongoose Schema

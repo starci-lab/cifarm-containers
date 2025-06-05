@@ -38,10 +38,10 @@ export class GoogleService {
                         this.staticService.defaultInfo
 
                     // if referralUserId is provided, add credits
-                    let creditsChange: DeepPartial<UserSchema> = {}
+                    let amountChange: DeepPartial<UserSchema> = {}
                     if (_user.referralUserId) {
-                        creditsChange = {
-                            credits: this.staticService.referral.creditsWhenJoiningWithReferral,
+                        amountChange = {
+                            tCIFARM: this.staticService.referral.amountPerSuccessfulReferral,
                             referralUserId: _user.referralUserId
                         }
                         // the referral user should also get credits
@@ -51,7 +51,7 @@ export class GoogleService {
                         })
                         // check if the referral user exists
                         if (referralUser) {
-                            referralUser.credits += this.staticService.referral.creditsWhenYourReferralInviteSomeone
+                            referralUser.tCIFARM += this.staticService.referral.amountWhenYourReferralInviteSomeone
                             await referralUser.save({ session })
 
                             // check if the referral user has a referral user
@@ -62,7 +62,7 @@ export class GoogleService {
                                     network: _user.network,
                                 })
                                 if (referralUserReferralUser) {
-                                    referralUserReferralUser.credits += this.staticService.referral.creditsWhenYourReferralInviteSomeone
+                                    referralUserReferralUser.tCIFARM += this.staticService.referral.amountWhenYourReferralInviteSomeone
                                     await referralUserReferralUser.save({ session })
                                 }
                             }
@@ -82,7 +82,7 @@ export class GoogleService {
                                     golds,
                                     network: _user.network,
                                     energy,
-                                    ...creditsChange
+                                    ...amountChange
                                 }
                             ],
                             { session }

@@ -63,8 +63,9 @@ export class SeasonSeeder implements Seeder {
                             },
                         ],
                         maxPaidAmount: 0.5,
-                        maxPaidPercentage: 0.05,
-                        tokenKey: TokenKey.USDC
+                        maxPaidPercentage: 0.005,
+                        tokenKey: TokenKey.USDC,
+                        tCIFARM: 5
                     },
                     {
                         bulkName: "Season NFTs Bulk",
@@ -89,7 +90,8 @@ export class SeasonSeeder implements Seeder {
                         ],
                         maxPaidAmount: 5,
                         maxPaidPercentage: 0.05,
-                        tokenKey: TokenKey.USDC
+                        tokenKey: TokenKey.USDC,
+                        tCIFARM: 50
                     },
                 ]
 

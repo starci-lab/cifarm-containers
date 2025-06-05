@@ -13,7 +13,8 @@ export enum GameplayErrorCode {
     InventoryNotStackable = "INVENTORY_NOT_STACKABLE",
     BulkNotFound = "BULK_NOT_FOUND",
     ProductNotFound = "PRODUCT_NOT_FOUND",
-    SeasonNotFound = "SEASON_NOT_FOUND"
+    SeasonNotFound = "SEASON_NOT_FOUND",
+    tCIFARMCannotBeZeroOrNegative = "TCIFARM_CANNOT_BE_ZERO_OR_NEGATIVE"
 }
 
 export class GameplayException extends Error {
