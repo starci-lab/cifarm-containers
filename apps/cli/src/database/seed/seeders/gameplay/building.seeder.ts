@@ -48,17 +48,17 @@ export class BuildingSeeder implements Seeder {
                     sellPrice: 1000,
                     upgrades: [
                         {
-                            capacity: 2,
+                            capacity: 3,
                             upgradeLevel: 1,
                         },
                         {
                             upgradePrice: 2000,
-                            capacity: 4,
+                            capacity: 5,
                             upgradeLevel: 2,
                         },
                         {
                             upgradePrice: 4000,
-                            capacity: 6,
+                            capacity: 7,
                             upgradeLevel: 3,
                         }
                     ]
@@ -77,17 +77,17 @@ export class BuildingSeeder implements Seeder {
                     sellPrice: 2000,
                     upgrades: [
                         {
-                            capacity: 2,
+                            capacity: 3,
                             upgradeLevel: 1,
                         },
                         {
                             upgradePrice: 4000,
-                            capacity: 4,
+                            capacity: 5,
                             upgradeLevel: 2,
                         },
                         {
                             upgradePrice: 8000,
-                            capacity: 6,
+                            capacity: 7,
                             upgradeLevel: 3,
                         }
                     ],
@@ -102,8 +102,8 @@ export class BuildingSeeder implements Seeder {
                     upgradeable: true,
                     kind: BuildingKind.BeeHouse,
                     beeHouseYieldTime: 3600,
-                    beeHouseBasicHarvestExperiences: 10,
-                    beeHouseQualityHarvestExperiences: 15,
+                    beeHouseBasicHarvestExperiences: 5,
+                    beeHouseQualityHarvestExperiences: 10,
                     baseHoneyYieldCoefficient: 10,
                     sellable: true,
                     sellPrice: 1000,

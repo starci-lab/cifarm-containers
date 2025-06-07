@@ -763,34 +763,34 @@ export class SystemSeeder implements Seeder {
                 {
                     nftType: NFTType.Jackfruit,
                     startChance: 0,
-                    endChance: 0.3,
+                    endChance: 0.25,
                     rareRarityChance: 0.8,
                     epicRarityChance: 0.9
                 },
                 {
                     nftType: NFTType.Pomegranate,
-                    startChance: 0.3,
-                    endChance: 0.6,
+                    startChance: 0.25,
+                    endChance: 0.5,
                     rareRarityChance: 0.8,
                     epicRarityChance: 0.9
                 },
                 {
                     nftType: NFTType.Rambutan,
-                    startChance: 0.6,
-                    endChance: 0.9,
+                    startChance: 0.5,
+                    endChance: 0.75,
                     rareRarityChance: 0.8,
                     epicRarityChance: 0.9
                 },
                 {
                     nftType: NFTType.DragonFruit,
-                    startChance: 0.9,
+                    startChance: 0.75,
                     endChance: 1,
                     rareRarityChance: 0.8,
                     epicRarityChance: 0.9
                 }
             ],
             tokenKey: TokenKey.USDC,
-            boxPrice: 0.5, // 0.5 USDC
+            boxPrice: 2, // 2 USDC
             feePercentage: 0.02 // 2% to fee collector, will to the fee collector address
         }
 

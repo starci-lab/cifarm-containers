@@ -25,10 +25,10 @@ export class AnimalSeeder implements Seeder {
             {
                 _id: createObjectId(AnimalId.Chicken),
                 displayId: AnimalId.Chicken,
-                yieldTime: 60 * 60 * 24,
+                yieldTime: 60 * 60 * 6, // 6 hours
                 offspringPrice: 1000,
                 isNFT: false,
-                growthTime: 60 * 60 * 24 * 3,
+                growthTime: 60 * 60 * 24 * 4, // 4 days
                 availableInShop: true,
                 hungerTime: 60 * 60 * 12,
                 harvestQuantity: 20,
@@ -43,10 +43,10 @@ export class AnimalSeeder implements Seeder {
             {
                 _id: createObjectId(AnimalId.Cow),
                 displayId: AnimalId.Cow,
-                yieldTime: 60 * 60 * 24 * 2,
+                yieldTime: 60 * 60 * 8, // 8 hours
                 offspringPrice: 2500,
                 isNFT: false,
-                growthTime: 60 * 60 * 24 * 7,
+                growthTime: 60 * 60 * 24 * 10, // 10 days
                 availableInShop: true,
                 hungerTime: 60 * 60 * 12,
                 harvestQuantity: 20,

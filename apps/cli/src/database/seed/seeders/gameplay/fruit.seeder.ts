@@ -24,8 +24,8 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Banana),
                 displayId: FruitId.Banana,
                 price: 5000,
-                youngGrowthStageDuration: 60 * 60 * 12, // 12 hours
-                matureGrowthStageDuration: 60 * 60 * 6, // 6 hours
+                youngGrowthStageDuration: 60 * 60 * 24 * 2, // 2 days
+                matureGrowthStageDuration: 60 * 60 * 24, // 1 day
                 fertilizerTime: 60 * 60 * 8, // 8 hour
                 unlockLevel: 10,
                 basicHarvestExperiences: 12,
@@ -39,8 +39,8 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Apple),
                 displayId: FruitId.Apple,
                 price: 5000,
-                youngGrowthStageDuration: 60 * 60 * 12, // 12 hours
-                matureGrowthStageDuration: 60 * 60 * 6, // 6 hours
+                youngGrowthStageDuration: 60 * 60 * 24 * 2, // 2 days
+                matureGrowthStageDuration: 60 * 60 * 24, // 1 day
                 fertilizerTime: 60 * 60 * 8, // 8 hour
                 unlockLevel: 10,
                 basicHarvestExperiences: 12,
@@ -49,13 +49,13 @@ export class FruitSeeder implements Seeder {
                 availableInShop: true,
                 sellable: true,
                 sellPrice: 2500
-            },
+            },  
             {
                 _id: createObjectId(FruitId.DragonFruit),
                 displayId: FruitId.DragonFruit,
                 price: 5000,
-                youngGrowthStageDuration: 60 * 60 * 18, // 18 hours
-                matureGrowthStageDuration: 60 * 60 * 9, // 9 hours
+                youngGrowthStageDuration: 60 * 60 * 24 * 2, // 2 days
+                matureGrowthStageDuration: 60 * 60 * 24, // 1 day
                 fertilizerTime: 60 * 60 * 8, // 8 hour
                 basicHarvestExperiences: 24,
                 qualityHarvestExperiences: 48,
@@ -68,8 +68,8 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Jackfruit),
                 displayId: FruitId.Jackfruit,
                 price: 5000,
-                youngGrowthStageDuration: 60 * 60 * 18, // 18 hours
-                matureGrowthStageDuration: 60 * 60 * 9, // 9 hours
+                youngGrowthStageDuration: 60 * 60 * 24 * 2, // 2 days
+                matureGrowthStageDuration: 60 * 60 * 24, // 1 day
                 fertilizerTime: 60 * 60 * 8, // 8 hour
                 basicHarvestExperiences: 24,
                 qualityHarvestExperiences: 48,
@@ -82,8 +82,8 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Rambutan),
                 displayId: FruitId.Rambutan,
                 price: 5000,
-                youngGrowthStageDuration: 60 * 60 * 18, // 18 hours
-                matureGrowthStageDuration: 60 * 60 * 9, // 9 hours
+                youngGrowthStageDuration: 60 * 60 * 24 * 2, // 2 days
+                matureGrowthStageDuration: 60 * 60 * 24, // 1 day
                 fertilizerTime: 60 * 60 * 8, // 8 hour
                 basicHarvestExperiences: 24,
                 qualityHarvestExperiences: 48,
@@ -96,8 +96,8 @@ export class FruitSeeder implements Seeder {
                 _id: createObjectId(FruitId.Pomegranate),   
                 displayId: FruitId.Pomegranate,
                 price: 5000,
-                youngGrowthStageDuration: 60 * 60 * 18, // 18 hours
-                matureGrowthStageDuration: 60 * 60 * 9, // 9 hours
+                youngGrowthStageDuration: 60 * 60 * 24 * 2, // 2 days
+                matureGrowthStageDuration: 60 * 60 * 24, // 1 day
                 fertilizerTime: 60 * 60 * 8, // 8 hour
                 basicHarvestExperiences: 24,
                 qualityHarvestExperiences: 48,

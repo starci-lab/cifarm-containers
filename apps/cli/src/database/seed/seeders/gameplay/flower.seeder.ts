@@ -37,15 +37,15 @@ export class FlowerSeeder implements Seeder {
                 {
                     _id: createObjectId(FlowerId.Sunflower),
                     displayId: FlowerId.Sunflower,
-                    price: 50,
-                    growthStageDuration: 300,
-                    unlockLevel: 1,
-                    basicHarvestExperiences: 6,
-                    qualityHarvestExperiences: 12,
+                    price: 100,
+                    growthStageDuration: 4320,
+                    unlockLevel: 10,
+                    basicHarvestExperiences: 12,
+                    qualityHarvestExperiences: 24,
                     harvestQuantity: 20,
                     availableInShop: true,
-                    honeyYieldCoefficient: 2.5,
-                    honeyQualityChancePlus: 0
+                    honeyYieldCoefficient: 5,
+                    honeyQualityChancePlus: 10
                 }
             ]
 
