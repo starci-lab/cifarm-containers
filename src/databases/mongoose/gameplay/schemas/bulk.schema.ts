@@ -65,6 +65,12 @@ export class BulkSchema extends AbstractSchema {
     })
     @Prop({ type: Number, required: true })
         tCIFARM: number
+
+    @Field(() => Float, {
+        description: "Bulk decrement percentage"
+    })
+    @Prop({ type: Number, required: true })
+        decrementPercentage: number
 }
 
 // Generate Mongoose Schema

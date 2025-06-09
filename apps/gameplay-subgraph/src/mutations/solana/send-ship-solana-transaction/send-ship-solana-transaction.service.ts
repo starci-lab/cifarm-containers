@@ -6,7 +6,8 @@ import {
     KeyValueStoreSchema,
     KeyValueRecord,
     KeyValueStoreId,
-    VaultInfos
+    VaultInfos,
+    BulkPaids
 } from "@src/databases"
 import { Connection } from "mongoose"
 import { UserLike } from "@src/jwt"
@@ -75,6 +76,30 @@ export class SendShipSolanaTransactionService {
                         }
                     })
                 }
+                const signedTxWithAuthority = await this.solanaService
+                    .getUmi(user.network)
+                    .identity.signTransaction(tx)
+                const signedTxWithVault = await this.solanaService
+                    .getVaultUmi(user.network)
+                    .identity.signTransaction(signedTxWithAuthority)
+                const txHash = await this.solanaService
+                    .getUmi(user.network)
+                    .rpc.sendTransaction(signedTxWithVault)
+                const latestBlockhash = await this.solanaService
+                    .getUmi(user.network)
+                    .rpc.getLatestBlockhash()
+                await this.solanaService
+                    .getUmi(user.network)
+                    .rpc.confirmTransaction(txHash, {
+                        commitment: "finalized",
+                        strategy: {
+                            type: "blockhash",
+                            blockhash: latestBlockhash.blockhash,
+                            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+                        }
+                    })
+                // we must process the transaction first to not have any race condition
+                // because the bulk paid is updated in the same transaction
                 const { inventoryMap } = await this.shipService.partitionInventories({
                     userId: id,
                     session,
@@ -96,7 +121,7 @@ export class SendShipSolanaTransactionService {
                     const inventoryType = this.staticService.inventoryTypes.find(
                         (inventoryType) =>
                             inventoryType.type === InventoryType.Product &&
-                            inventoryType.product.toString() === product.id
+                                inventoryType.product.toString() === product.id
                     )
                     if (!inventoryType) {
                         throw new GraphQLError("Inventory type not found", {
@@ -106,22 +131,22 @@ export class SendShipSolanaTransactionService {
                         })
                     }
                     const { removedInventoryIds, updatedInventories } =
-                        this.inventoryService.remove({
-                            inventoryType,
-                            quantity: requiredQuantity,
-                            inventories
-                        })
-
+                            this.inventoryService.remove({
+                                inventoryType,
+                                quantity: requiredQuantity,
+                                inventories
+                            })
+    
                     // delete the inventories
                     await this.connection
                         .model<InventorySchema>(InventorySchema.name)
                         .deleteMany({ _id: { $in: removedInventoryIds } })
-
+    
                     // update the inventories
                     for (const { inventoryUpdated } of updatedInventories) {
                         await inventoryUpdated.save({ session })
                     }
-
+    
                     // add tCIFARM to the user
                     const bulk = this.staticService.seasons.find(
                         (season) => season.active
@@ -141,13 +166,13 @@ export class SendShipSolanaTransactionService {
                     })
                     await user.save({ session })
                 }
-
+    
                 // reduce token in the vault
                 const vaultInfos = await this.connection
                     .model<KeyValueStoreSchema>(KeyValueStoreSchema.name)
                     .findById<
-                        KeyValueRecord<VaultInfos>
-                    >(createObjectId(KeyValueStoreId.VaultInfos))
+                            KeyValueRecord<VaultInfos>
+                        >(createObjectId(KeyValueStoreId.VaultInfos))
                     .session(session)
                 if (!vaultInfos) {
                     throw new GraphQLError("Vault infos not found", {
@@ -175,28 +200,45 @@ export class SendShipSolanaTransactionService {
                         { $set: { [`value.${user.network}.data.${index}.tokenLocked`]: newTokenAmount } }
                     )
                     .session(session)
-                const signedTxWithAuthority = await this.solanaService
-                    .getUmi(user.network)
-                    .identity.signTransaction(tx)
-                const signedTxWithVault = await this.solanaService
-                    .getVaultUmi(user.network)
-                    .identity.signTransaction(signedTxWithAuthority)
-                const txHash = await this.solanaService
-                    .getUmi(user.network)
-                    .rpc.sendTransaction(signedTxWithVault)
-                const latestBlockhash = await this.solanaService
-                    .getUmi(user.network)
-                    .rpc.getLatestBlockhash()
-                await this.solanaService
-                    .getUmi(user.network)
-                    .rpc.confirmTransaction(txHash, {
-                        commitment: "finalized",
-                        strategy: {
-                            type: "blockhash",
-                            blockhash: latestBlockhash.blockhash,
-                            lastValidBlockHeight: latestBlockhash.lastValidBlockHeight
+                
+                const bulkPaids = await this.connection.model<KeyValueStoreSchema>(
+                    KeyValueStoreSchema.name).findById<KeyValueRecord<BulkPaids>>(
+                        createObjectId(KeyValueStoreId.BulkPaids)
+                    )
+                if (!bulkPaids) {
+                    throw new GraphQLError("Bulk paids not found", {
+                        extensions: {
+                            code: "BULK_PAIDS_NOT_FOUND"
                         }
                     })
+                }
+                const bulkPaid = bulkPaids.value?.[cachedTx.bulkId]?.[user.network] ?? {
+                    count: 0,
+                    decrementPercentage: 0
+                }
+                const bulk = this.staticService.seasons.find(
+                    (season) => season.active
+                ).bulks.find(
+                    (bulk) => bulk.id === cachedTx.bulkId
+                )
+                if (!bulk) {
+                    throw new GraphQLError("Bulk not found", {
+                        extensions: {
+                            code: "BULK_NOT_FOUND"
+                        }
+                    })
+                }
+                // update the bulk paid
+                console.log(bulkPaid)
+                bulkPaid.count += 1
+                bulkPaid.decrementPercentage = roundNumber(1 - (1 - bulkPaid.decrementPercentage) * (1 - bulk.decrementPercentage))
+                // update the bulk paids
+                await this.connection.model<KeyValueStoreSchema>(
+                    KeyValueStoreSchema.name
+                ).updateOne(
+                    { _id: createObjectId(KeyValueStoreId.BulkPaids) },
+                    { $set: { [`value.${cachedTx.bulkId}.${user.network}`]: bulkPaid } }
+                )
                 return {
                     success: true,
                     message: "Ship Solana transaction sent successfully",

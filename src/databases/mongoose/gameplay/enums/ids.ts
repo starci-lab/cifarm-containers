@@ -641,6 +641,7 @@ export enum KeyValueStoreId {
     BeeHouseLastSchedule = "beeHouseLastSchedule",
     PlantLastSchedule = "plantLastSchedule",
     VaultInfos = "vaultInfos",
+    BulkPaids = "bulkPaids",
 }
 
 export const GraphQLTypeKeyValueStoreId = createEnumType(KeyValueStoreId)
@@ -666,6 +667,9 @@ registerEnumType(GraphQLTypeKeyValueStoreId, {
         },
         vaultInfos: {
             description: "The vaults info id.",
+        },
+        bulkPaids: {
+            description: "The bulk paids id.",
         },
     },
 })

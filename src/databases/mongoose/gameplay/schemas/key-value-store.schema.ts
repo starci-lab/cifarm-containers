@@ -124,3 +124,25 @@ export class VaultInfos {
     })
     [Network.Testnet]: VaultInfo
 }
+
+@ObjectType({
+    description: "Bulk paid"
+})
+export class BulkPaid {
+    @Field(() => Int, {
+        description: "The count of bulk paid"
+    })
+        count: number
+
+    @Field(() => Float, {
+        description: "The decrement percentage of bulk paid"
+    })
+        decrementPercentage: number
+
+    @Field(() => String, {
+        description: "The bulk id"
+    })
+        bulkId?: string
+}
+
+export type BulkPaids = Record<string, Record<Network, BulkPaid>>

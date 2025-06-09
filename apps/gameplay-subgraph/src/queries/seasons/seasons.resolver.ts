@@ -3,7 +3,10 @@ import { Args, ID, Query, Resolver } from "@nestjs/graphql"
 import { SeasonSchema, SeasonId } from "@src/databases"
 import { SeasonsService } from "./seasons.service"
 import { GraphQLThrottlerGuard } from "@src/throttler"
-
+import { UserLike } from "@src/jwt"
+import { GraphQLUser } from "@src/decorators"
+import { BulkPaid } from "@src/databases"
+import { GraphQLJwtAuthGuard } from "@src/jwt"
 @Resolver()
 export class SeasonsResolver {
     private readonly logger = new Logger(SeasonsResolver.name)
@@ -39,5 +42,17 @@ export class SeasonsResolver {
     })
     activeSeason(): SeasonSchema {
         return this.seasonsService.activeSeason()
+    }
+
+    @UseGuards(GraphQLThrottlerGuard, GraphQLJwtAuthGuard)
+    @Query(() => [BulkPaid], {
+        name: "bulkPaids",
+        description: "Get the bulk paids"
+    })
+    bulkPaids(
+        @GraphQLUser()
+            user: UserLike
+    ): Promise<Array<BulkPaid>  > {
+        return this.seasonsService.bulkPaids(user)
     }
 }

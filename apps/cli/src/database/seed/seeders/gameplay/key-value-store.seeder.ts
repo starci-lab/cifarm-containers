@@ -91,9 +91,14 @@ export class KeyValueStoreSeeder implements Seeder {
                     },
                 },
                 version: 7
-            }
+            },
+            {
+                _id: createObjectId(KeyValueStoreId.BulkPaids),
+                displayId: KeyValueStoreId.BulkPaids,
+                value: {},
+                version: 1
+            },
         ]
-
         // Check each entry and only insert if it doesn't exist
         for (const entry of data) {
             const existingEntry = await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).findById(entry._id)

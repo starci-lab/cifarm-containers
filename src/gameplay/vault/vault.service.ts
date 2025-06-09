@@ -6,13 +6,16 @@ export class VaultService {
     public async computePaidAmount({
         vaultData,
         bulk,
+        bulkPaid
     }: ComputePaidAmountParams) {
         const { tokenLocked } = vaultData
         const { maxPaidAmount, maxPaidPercentage } = bulk
-        return roundNumber(Math.min(
-            tokenLocked * maxPaidPercentage,
-            maxPaidAmount
-        ))
+        return roundNumber(
+            Math.min(
+                tokenLocked * maxPaidPercentage,
+                maxPaidAmount
+            ) * (1 - bulkPaid.decrementPercentage)
+        )
     }
 }
 

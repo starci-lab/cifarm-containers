@@ -1,5 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import {
+    BulkPaids,
     InjectMongoose,
     KeyValueRecord,
     KeyValueStoreId,
@@ -20,6 +21,7 @@ import { Sha256Service } from "@src/crypto"
 import { ShipService, VaultService } from "@src/gameplay"
 import { GraphQLError } from "graphql"
 import { UserSchema } from "@src/databases"
+import { createObjectId } from "@src/common"
 import { createNoopSigner } from "@metaplex-foundation/umi"
 import { publicKey } from "@metaplex-foundation/umi"
 import { transactionBuilder } from "@metaplex-foundation/umi"
@@ -85,10 +87,20 @@ export class CreateShipSolanaTransactionService {
                         }
                     })
                 }
+                const  bulkPaids = await this.connection.model<KeyValueStoreSchema>(
+                    KeyValueStoreSchema.name).findById<KeyValueRecord<BulkPaids>>(
+                        createObjectId(KeyValueStoreId.BulkPaids)
+                    )
+                // get the bulk paid for corresponding bulk and network
+                const bulkPaid = bulkPaids.value?.[bulkId]?.[user.network] ?? {
+                    count: 0,
+                    decrementPercentage: 0
+                }
                 // compute the paid amount
                 const paidAmount = await this.vaultService.computePaidAmount({
                     vaultData: vaultInfos.value[user.network].data.find((data) => data.tokenKey === this.staticService.nftBoxInfo.tokenKey),
-                    bulk: this.staticService.seasons.find((season) => season.active)?.bulks.find((bulk) => bulk.id === bulkId)
+                    bulk: this.staticService.seasons.find((season) => season.active)?.bulks.find((bulk) => bulk.id === bulkId),
+                    bulkPaid
                 })
                 // get the stable coin address
                 const tokenVaultAddress = this.solanaService
