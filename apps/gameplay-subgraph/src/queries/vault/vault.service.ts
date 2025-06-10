@@ -7,6 +7,7 @@ import { UserLike } from "@src/jwt"
 import { GraphQLError } from "graphql"
 import { UserSchema } from "@src/databases"
 import { createObjectId } from "@src/common"
+import { Network } from "@src/env"
 // use different service name to ensure DI is working
 @Injectable()
 export class GraphQLVaultService {
@@ -18,16 +19,21 @@ export class GraphQLVaultService {
         private readonly solanaService: SolanaService
     ) {}
 
-    async vaultCurrent({ id: userId }: UserLike): Promise<VaultCurrentResponse> {
-        const user = await this.connection.model<UserSchema>(UserSchema.name).findById(userId)
-        if (!user) {
-            throw new GraphQLError("User not found", {
-                extensions: {
-                    code: "USER_NOT_FOUND"
-                }
-            })
+    async vaultCurrent({ id: userId, network }: UserLike): Promise<VaultCurrentResponse> {
+        let _network: Network
+        if (network === undefined) {
+            const user = await this.connection.model<UserSchema>(UserSchema.name).findById(userId)
+            if (!user) {
+                throw new GraphQLError("User not found", {
+                    extensions: {
+                        code: "USER_NOT_FOUND"
+                    }
+                })
+            }
+            _network = user.network
         }
-        const vaultAddress = this.solanaService.getVaultUmi(user.network).identity.publicKey.toString()
+        
+        const vaultAddress = this.solanaService.getVaultUmi(_network).identity.publicKey.toString()
         const vaultInfos = await this.connection.model<KeyValueStoreSchema>(KeyValueStoreSchema.name).findById<KeyValueRecord<VaultInfos>>(createObjectId(KeyValueStoreId.VaultInfos))
         if (!vaultInfos) {
             throw new GraphQLError("Vault infos not found", {
@@ -37,7 +43,7 @@ export class GraphQLVaultService {
             })
         }
         return {
-            data: vaultInfos.value[user.network].data,
+            data: vaultInfos.value[_network].data,
             vaultAddress
         }
     }

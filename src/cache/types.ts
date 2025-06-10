@@ -19,7 +19,11 @@ export enum CacheType {
 
 export enum CacheKey {
     PlacedItems = "placed-items",
-    Inventories = "inventories"
+    Inventories = "inventories",
+    BlockchainBalances = "blockchain-balances",
+    BlockchainBalancesRefreshed = "blockchain-balances-refreshed",
+    BlockchainCollections = "blockchain-collections",
+    BlockchainCollectionsRefreshed = "blockchain-collections-refreshed"
 }
 
 export interface WrapSolanaMetaplexNFTTransactionCache {

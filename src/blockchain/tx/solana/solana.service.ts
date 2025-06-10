@@ -43,8 +43,14 @@ import {
     CreateSolanaUpgradeNFTTransactionParams,
     CreateSolanaUpgradeNFTTransactionResponse,
     GetNFTParams,
+    GetBalanceParams,
+    GetBalanceResponse,
     TransferNftParams,
-    TransferNftResponse
+    TransferNftResponse,
+    GetCollectionParams,
+    GetCollectionResponse,
+    NFT,
+    MetaplexNFTMetadata
 } from "./types"
 import {
     transferTokens,
@@ -54,15 +60,23 @@ import {
     setComputeUnitLimit,
     setComputeUnitPrice,
 } from "@metaplex-foundation/mpl-toolbox"
-import { computeRaw } from "@src/common"
+import { computeDenomination, computeRaw } from "@src/common"
 import { S3Service } from "@src/s3"
 import { CipherService } from "@src/crypto"
-
+import { dasApi } from "@metaplex-foundation/digital-asset-standard-api"
+import { Connection, PublicKey } from "@solana/web3.js"
+import { das } from "@metaplex-foundation/mpl-core-das"
+import { HttpService } from "@nestjs/axios"
+import { lastValueFrom } from "rxjs"
 
 @Injectable()
 export class SolanaService {
     private umis: Record<Network, Umi>
-    constructor(private readonly s3Service: S3Service, private readonly cipherService: CipherService) {
+    constructor(
+        private readonly s3Service: S3Service,
+        private readonly cipherService: CipherService,
+        private readonly httpService: HttpService
+    ) {
         // Constructor logic here
         this.umis = {
             [Network.Mainnet]: this.createUmi(Network.Mainnet),
@@ -71,15 +85,20 @@ export class SolanaService {
     }
 
     private createUmi(network: Network): Umi {
-        const umi = createUmi(solanaHttpRpcUrl(ChainKey.Solana, network)).use(mplCore())
+        const umi = createUmi(solanaHttpRpcUrl(ChainKey.Solana, network))
         const signer = umi.eddsa.createKeypairFromSecretKey(
             base58.decode(
                 this.cipherService.decrypt(
                     envConfig().chainCredentials[ChainKey.Solana].metaplexAuthority[network].privateKey
-                )   
+                )
             )
         )
-        umi.use(keypairIdentity(signer)).use(mplToolbox())
+        umi.use(keypairIdentity(signer))
+            .use(mplToolbox())
+            .use(mplCore())
+            .use(
+                dasApi()
+            )
         return umi
     }
 
@@ -345,4 +364,67 @@ export class SolanaService {
         return { signature: base58.encode(signature) }
     }
 
+    public async getBalance({
+        network = Network.Mainnet,
+        tokenAddress,
+        accountAddress,
+        native = false
+    }: GetBalanceParams): Promise<GetBalanceResponse> {
+        const connection = new Connection(solanaHttpRpcUrl(ChainKey.Solana, network))
+        if (native) {
+            const balance = await connection.getBalance(new PublicKey(accountAddress))
+            return {
+                balance: computeDenomination(balance, 9)
+            }
+        }
+        if (!tokenAddress) {
+            throw new Error("Token address is required")
+        }
+        const token = await connection.getParsedTokenAccountsByOwner(
+            new PublicKey(accountAddress),
+            {
+                mint: new PublicKey(tokenAddress)
+            }
+        )
+        return {
+            balance: token.value[0].account.data.parsed.info.tokenAmount.uiAmount
+        }
+    }
+
+    public async getCollection({
+        network = Network.Mainnet,
+        collectionAddress,
+        limit = 10,
+        skip = 0,
+        accountAddress
+    }: GetCollectionParams): Promise<GetCollectionResponse> {
+        const umi = this.umis[network]
+        const  assets = await das.searchAssets(umi, {
+            grouping: ["collection", collectionAddress],
+            owner: publicKey(accountAddress),   
+            limit,
+            page: Math.floor(skip / limit) + 1,
+        })
+        const nfts: Array<NFT> = []
+        const promises: Array<Promise<void>> = []
+        // we fetch the nfts from the s3 service
+        for (const asset of assets) {
+            const promise = async () => {
+                const { data: { image } } = await lastValueFrom(this.httpService.get<MetaplexNFTMetadata>(asset.uri))
+                const nft: NFT = {
+                    nftAddress: asset.publicKey.toString(),
+                    name: asset.name,
+                    image: image,
+                    description: "",
+                    attributes: asset.attributes.attributeList
+                }
+                nfts.push(nft)
+            }
+            promises.push(promise())
+        }
+        await Promise.all(promises)
+        return {
+            nfts
+        }
+    }   
 }

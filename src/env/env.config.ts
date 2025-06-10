@@ -388,5 +388,9 @@ export const envConfig = () => ({
         username: process.env.ELASTICSEARCH_USERNAME,
         password: process.env.ELASTICSEARCH_PASSWORD,
         requireTLS: process.env.ELASTICSEARCH_REQUIRE_TLS === "true"
+    },
+    blockchainRpc: {
+        refreshInterval: Number.parseInt(process.env.BLOCKCHAIN_RPC_REFRESH_INTERVAL ?? "1800"), // 15 minutes
+        dataCacheTime: Number.parseInt(process.env.BLOCKCHAIN_RPC_DATA_CACHE_TIME ?? "86400") // 1 day
     }
 })

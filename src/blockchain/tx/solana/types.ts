@@ -1,6 +1,6 @@
 import { Attribute } from "@metaplex-foundation/mpl-core"
 import { TransactionBuilder } from "@metaplex-foundation/umi"
-import { WithFeePayer, WithNetwork } from "@src/blockchain/types"
+import { WithFeePayer, WithNetwork } from "../../types"
 
 export interface CreateSolanaFreezeNFTTransactionParams extends WithFeePayer {
     nftAddress: string
@@ -165,4 +165,33 @@ export interface CreateSolanaBurnNFTTransactionResponse {
 export interface CreateSolanaBurnNFTTransactionParams extends WithFeePayer {
     nftAddress: string
     collectionAddress: string
+}
+
+export interface GetBalanceParams extends WithNetwork {
+    accountAddress: string
+    tokenAddress?: string
+    native?: boolean
+}
+
+export interface GetBalanceResponse {
+    balance: number
+}
+
+export interface GetCollectionParams extends WithNetwork {
+    collectionAddress: string
+    limit?: number
+    skip?: number
+    accountAddress: string
+}
+
+export interface NFT {
+    nftAddress: string
+    name: string
+    image: string
+    description: string
+    attributes: Array<Attribute>
+}
+
+export interface GetCollectionResponse {
+    nfts: Array<NFT>
 }

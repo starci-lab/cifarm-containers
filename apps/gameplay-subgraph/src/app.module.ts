@@ -19,7 +19,7 @@ import { ThrottlerModule } from "@src/throttler"
 import { BlockchainDatabaseModule } from "@src/blockchain-database"
 import { S3Module } from "@src/s3"
 import { ElasticsearchModule } from "@src/elasticsearch"
-
+import { HttpModule } from "@nestjs/axios"
 @Module({
     imports: [
         IdModule.register({
@@ -50,6 +50,9 @@ import { ElasticsearchModule } from "@src/elasticsearch"
         }),
         DateModule.register({
             isGlobal: true
+        }),
+        HttpModule.register({
+            global: true
         }),
         HoneycombModule.register({
             isGlobal: true

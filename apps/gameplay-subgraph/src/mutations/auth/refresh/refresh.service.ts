@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { JwtService } from "@src/jwt"
 import { RefreshRequest, RefreshResponse } from "./refresh.dto"
 import { DateUtcService } from "@src/date"
-import { InjectMongoose, SessionSchema } from "@src/databases"
+import { InjectMongoose, SessionSchema, UserSchema } from "@src/databases"
 import { Connection } from "mongoose"
 import { GraphQLError } from "graphql"
 
@@ -50,7 +50,14 @@ export class RefreshService {
                         }
                     })
                 }
-
+                const user = await this.connection.model<UserSchema>(UserSchema.name).findById(sessionData.user)
+                if (!user) {
+                    throw new GraphQLError("User not found", {
+                        extensions: {
+                            code: "USER_NOT_FOUND"
+                        }
+                    })
+                }
                 /************************************************************
                  * GENERATE NEW TOKENS
                  ************************************************************/
@@ -60,8 +67,8 @@ export class RefreshService {
                     refreshToken: { token: newRefreshToken, expiredAt: newExpiredAt }
                 } = await this.jwtService.generateAuthCredentials({
                     id: sessionData.user.toString(),
+                    network: user.network
                 })
-
                 /************************************************************
                  * CREATE NEW SESSION
                  ************************************************************/

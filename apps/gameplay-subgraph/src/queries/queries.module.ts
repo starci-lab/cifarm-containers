@@ -20,6 +20,8 @@ import { NFTMetadatasModule } from "./nft-metadatas"
 import { VaultModule } from "./vault"
 import { TerrainsModule } from "./terrains"
 import { SeasonsModule } from "./seasons"
+import { BlockchainModule } from "./blockchain"
+
 @Module({
     imports: [
         AnimalsModule,
@@ -42,7 +44,8 @@ import { SeasonsModule } from "./seasons"
         FlowersModule,
         NFTMetadatasModule,
         SeasonsModule,
-        VaultModule
+        VaultModule,
+        BlockchainModule
     ]
 })
 export class QueriesModule {}

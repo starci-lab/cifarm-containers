@@ -253,7 +253,8 @@ export class SetupService {
             accessToken,
             refreshToken: { token: refreshToken, expiredAt }
         } = await this.jwtService.generateAuthCredentials({
-            id: user.id
+            id: user.id,
+            network: user.network
         })
 
         await connection.model<SessionSchema>(SessionSchema.name).create(
